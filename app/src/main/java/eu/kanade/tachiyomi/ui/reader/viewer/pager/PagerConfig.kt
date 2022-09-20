@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerConfig
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
@@ -24,10 +24,10 @@ import uy.kohesive.injekt.api.get
 class PagerConfig(
     private val viewer: PagerViewer,
     scope: CoroutineScope,
-    preferences: PreferencesHelper = Injekt.get(),
-) : ViewerConfig(preferences, scope) {
+    readerPreferences: ReaderPreferences = Injekt.get(),
+) : ViewerConfig(readerPreferences, scope) {
 
-    var theme = preferences.readerTheme().get()
+    var theme = readerPreferences.readerTheme().get()
         private set
 
     var automaticBackground = false
@@ -57,7 +57,7 @@ class PagerConfig(
 
     var shiftDoublePage = false
 
-    var doublePages = preferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !preferences.dualPageSplitPaged().get()
+    var doublePages = readerPreferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !readerPreferences.dualPageSplitPaged().get()
         set(value) {
             field = value
             if (!value) {
@@ -67,7 +67,7 @@ class PagerConfig(
 
     var invertDoublePages = false
 
-    var autoDoublePages = preferences.pageLayout().get() == PageLayout.AUTOMATIC
+    var autoDoublePages = readerPreferences.pageLayout().get() == PageLayout.AUTOMATIC
 
     @ColorInt
     var pageCanvasColor = Color.WHITE
@@ -77,7 +77,7 @@ class PagerConfig(
     // SY <--
 
     init {
-        preferences.readerTheme()
+        readerPreferences.readerTheme()
             .register(
                 {
                     theme = it
@@ -86,32 +86,32 @@ class PagerConfig(
                 { imagePropertyChangedListener?.invoke() },
             )
 
-        preferences.imageScaleType()
+        readerPreferences.imageScaleType()
             .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.zoomStart()
+        readerPreferences.zoomStart()
             .register({ zoomTypeFromPreference(it) }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.cropBorders()
+        readerPreferences.cropBorders()
             .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.navigateToPan()
+        readerPreferences.navigateToPan()
             .register({ navigateToPan = it })
 
-        preferences.landscapeZoom()
+        readerPreferences.landscapeZoom()
             .register({ landscapeZoom = it }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.navigationModePager()
+        readerPreferences.navigationModePager()
             .register({ navigationMode = it }, { updateNavigation(navigationMode) })
 
-        preferences.pagerNavInverted()
+        readerPreferences.pagerNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
-        preferences.pagerNavInverted().changes()
+        readerPreferences.pagerNavInverted().changes()
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)
 
-        preferences.dualPageSplitPaged()
+        readerPreferences.dualPageSplitPaged()
             .register(
                 { dualPageSplit = it },
                 {
@@ -120,13 +120,13 @@ class PagerConfig(
                 },
             )
 
-        preferences.dualPageInvertPaged()
+        readerPreferences.dualPageInvertPaged()
             .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
 
         // SY -->
-        preferences.pageTransitionsPager()
+        readerPreferences.pageTransitionsPager()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
-        preferences.readerTheme()
+        readerPreferences.readerTheme()
             .register(
                 {
                     themeToColor(it)
@@ -136,7 +136,7 @@ class PagerConfig(
                     reloadChapterListener?.invoke(doublePages)
                 },
             )
-        preferences.pageLayout()
+        readerPreferences.pageLayout()
             .register(
                 {
                     autoDoublePages = it == PageLayout.AUTOMATIC
@@ -153,10 +153,10 @@ class PagerConfig(
                 },
             )
 
-        preferences.centerMarginType()
+        readerPreferences.centerMarginType()
             .register({ centerMarginType = it }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.invertDoublePages()
+        readerPreferences.invertDoublePages()
             .register({ invertDoublePages = it && dualPageSplit == false }, { imagePropertyChangedListener?.invoke() })
         // SY <--
     }

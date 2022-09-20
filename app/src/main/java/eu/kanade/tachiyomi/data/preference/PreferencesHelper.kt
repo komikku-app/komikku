@@ -10,10 +10,6 @@ import eu.kanade.tachiyomi.core.preference.getEnum
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.isDynamicColorAvailable
 import java.io.File
@@ -61,95 +57,6 @@ class PreferencesHelper(
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
-    // SY -->
-    fun pageTransitionsPager() = preferenceStore.getBoolean("pref_enable_transitions_pager_key", true)
-
-    fun pageTransitionsWebtoon() = preferenceStore.getBoolean("pref_enable_transitions_webtoon_key", true)
-
-    fun doubleTapAnimSpeed() = preferenceStore.getInt("pref_double_tap_anim_speed", 500)
-
-    fun showPageNumber() = preferenceStore.getBoolean("pref_show_page_number_key", true)
-
-    fun dualPageSplitPaged() = preferenceStore.getBoolean("pref_dual_page_split", false)
-
-    fun dualPageInvertPaged() = preferenceStore.getBoolean("pref_dual_page_invert", false)
-
-    fun dualPageSplitWebtoon() = preferenceStore.getBoolean("pref_dual_page_split_webtoon", false)
-
-    fun dualPageInvertWebtoon() = preferenceStore.getBoolean("pref_dual_page_invert_webtoon", false)
-
-    fun longStripSplitWebtoon() = preferenceStore.getBoolean("pref_long_strip_split_webtoon", true)
-
-    fun showReadingMode() = preferenceStore.getBoolean("pref_show_reading_mode", true)
-
-    fun trueColor() = preferenceStore.getBoolean("pref_true_color_key", false)
-
-    fun fullscreen() = preferenceStore.getBoolean("fullscreen", true)
-
-    fun cutoutShort() = preferenceStore.getBoolean("cutout_short", true)
-
-    fun keepScreenOn() = preferenceStore.getBoolean("pref_keep_screen_on_key", true)
-
-    fun customBrightness() = preferenceStore.getBoolean("pref_custom_brightness_key", false)
-
-    fun customBrightnessValue() = preferenceStore.getInt("custom_brightness_value", 0)
-
-    fun colorFilter() = preferenceStore.getBoolean("pref_color_filter_key", false)
-
-    fun colorFilterValue() = preferenceStore.getInt("color_filter_value", 0)
-
-    fun colorFilterMode() = preferenceStore.getInt("color_filter_mode", 0)
-
-    fun grayscale() = preferenceStore.getBoolean("pref_grayscale", false)
-
-    fun invertedColors() = preferenceStore.getBoolean("pref_inverted_colors", false)
-
-    fun defaultReadingMode() = preferenceStore.getInt("pref_default_reading_mode_key", ReadingModeType.RIGHT_TO_LEFT.flagValue)
-
-    fun defaultOrientationType() = preferenceStore.getInt("pref_default_orientation_type_key", OrientationType.FREE.flagValue)
-
-    fun imageScaleType() = preferenceStore.getInt("pref_image_scale_type_key", 1)
-
-    fun zoomStart() = preferenceStore.getInt("pref_zoom_start_key", 1)
-
-    fun readerTheme() = preferenceStore.getInt("pref_reader_theme_key", 3)
-
-    fun alwaysShowChapterTransition() = preferenceStore.getBoolean("always_show_chapter_transition", true)
-
-    fun cropBorders() = preferenceStore.getBoolean("crop_borders", false)
-
-    fun navigateToPan() = preferenceStore.getBoolean("navigate_pan", true)
-
-    fun landscapeZoom() = preferenceStore.getBoolean("landscape_zoom", true)
-
-    fun cropBordersWebtoon() = preferenceStore.getBoolean("crop_borders_webtoon", false)
-
-    fun webtoonSidePadding() = preferenceStore.getInt("webtoon_side_padding", 0)
-
-    fun readWithTapping() = preferenceStore.getBoolean("reader_tap", true)
-
-    fun pagerNavInverted() = preferenceStore.getEnum("reader_tapping_inverted", Values.TappingInvertMode.NONE)
-
-    fun webtoonNavInverted() = preferenceStore.getEnum("reader_tapping_inverted_webtoon", Values.TappingInvertMode.NONE)
-
-    fun readWithLongTap() = preferenceStore.getBoolean("reader_long_tap", true)
-
-    fun readWithVolumeKeys() = preferenceStore.getBoolean("reader_volume_keys", false)
-
-    fun readWithVolumeKeysInverted() = preferenceStore.getBoolean("reader_volume_keys_inverted", false)
-
-    fun navigationModePager() = preferenceStore.getInt("reader_navigation_mode_pager", 0)
-
-    fun navigationModeWebtoon() = preferenceStore.getInt("reader_navigation_mode_webtoon", 0)
-
-    fun showNavigationOverlayNewUser() = preferenceStore.getBoolean("reader_navigation_overlay_new_user", true)
-
-    fun showNavigationOverlayOnStart() = preferenceStore.getBoolean("reader_navigation_overlay_on_start", false)
-
-    fun readerHideThreshold() = preferenceStore.getEnum("reader_hide_threshold", Values.ReaderHideThreshold.LOW)
-
-    fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
-
     fun lastVersionCode() = preferenceStore.getInt("last_version_code", 0)
 
     fun trackUsername(sync: TrackService) = preferenceStore.getString(Keys.trackUsername(sync.id), "")
@@ -182,8 +89,6 @@ class PreferencesHelper(
 
     fun splitTallImages() = preferenceStore.getBoolean("split_tall_images", false)
 
-    fun folderPerManga() = preferenceStore.getBoolean("create_folder_per_manga", false)
-
     fun numberOfBackups() = preferenceStore.getInt("backup_slots", 2)
 
     fun backupInterval() = preferenceStore.getInt("backup_interval", 12)
@@ -210,9 +115,7 @@ class PreferencesHelper(
 
     fun autoDownloadWhileReading() = preferenceStore.getInt("auto_download_while_reading", 0)
 
-    fun skipRead() = preferenceStore.getBoolean("skip_read", false)
-
-    fun skipFiltered() = preferenceStore.getBoolean("skip_filtered", true)
+    fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
 
     fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
 
@@ -299,16 +202,6 @@ class PreferencesHelper(
 
     fun expandFilters() = preferenceStore.getBoolean("eh_expand_filters", false)
 
-    fun readerThreads() = preferenceStore.getInt("eh_reader_threads", 2)
-
-    fun readerInstantRetry() = preferenceStore.getBoolean("eh_reader_instant_retry", true)
-
-    fun autoscrollInterval() = preferenceStore.getFloat("eh_util_autoscroll_interval", 3f)
-
-    fun cacheSize() = preferenceStore.getString("eh_cache_size", "75")
-
-    fun preserveReadingPosition() = preferenceStore.getBoolean("eh_preserve_reading_position", false)
-
     fun autoSolveCaptcha() = preferenceStore.getBoolean("eh_autosolve_captchas", false)
 
     fun ehLastVersionCode() = preferenceStore.getInt("eh_last_version_code", 0)
@@ -320,12 +213,6 @@ class PreferencesHelper(
     fun exhAutoUpdateRequirements() = preferenceStore.getStringSet("eh_auto_update_restrictions", emptySet())
 
     fun exhAutoUpdateStats() = preferenceStore.getString("eh_auto_update_stats", "")
-
-    fun aggressivePageLoading() = preferenceStore.getBoolean("eh_aggressive_page_loading", false)
-
-    fun preloadSize() = preferenceStore.getInt("eh_preload_size", 10)
-
-    fun useAutoWebtoon() = preferenceStore.getBoolean("eh_use_auto_webtoon", true)
 
     fun exhWatchedListDefaultState() = preferenceStore.getBoolean("eh_watched_list_default_state", false)
 
@@ -349,10 +236,6 @@ class PreferencesHelper(
 
     fun enhancedEHentaiView() = preferenceStore.getBoolean("enhanced_e_hentai_view", true)
 
-    fun webtoonEnableZoomOut() = preferenceStore.getBoolean("webtoon_enable_zoom_out", false)
-
-    fun continuousVerticalTappingByPage() = preferenceStore.getBoolean("continuous_vertical_tapping_by_page", false)
-
     fun useNewSourceNavigation() = preferenceStore.getBoolean("use_new_source_navigation", true)
 
     fun preferredMangaDexId() = preferenceStore.getString("preferred_mangaDex_id", "0")
@@ -363,25 +246,9 @@ class PreferencesHelper(
 
     fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
 
-    fun cropBordersContinuousVertical() = preferenceStore.getBoolean("crop_borders_continues_vertical", false)
-
-    fun forceHorizontalSeekbar() = preferenceStore.getBoolean("pref_force_horz_seekbar", false)
-
-    fun landscapeVerticalSeekbar() = preferenceStore.getBoolean("pref_show_vert_seekbar_landscape", false)
-
-    fun leftVerticalSeekbar() = preferenceStore.getBoolean("pref_left_handed_vertical_seekbar", false)
-
-    fun readerBottomButtons() = preferenceStore.getStringSet("reader_bottom_buttons", ReaderBottomButton.BUTTONS_DEFAULTS)
-
     fun bottomBarLabels() = preferenceStore.getBoolean("pref_show_bottom_bar_labels", true)
 
     fun showNavUpdates() = preferenceStore.getBoolean("pref_show_updates_button", true)
 
     fun showNavHistory() = preferenceStore.getBoolean("pref_show_history_button", true)
-
-    fun pageLayout() = preferenceStore.getInt("page_layout", PagerConfig.PageLayout.AUTOMATIC)
-
-    fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
-
-    fun invertDoublePages() = preferenceStore.getBoolean("invert_double_pages", false)
 }

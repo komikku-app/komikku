@@ -3,11 +3,11 @@ package eu.kanade.tachiyomi.ui.reader.loader
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.isEhBasedSource
@@ -34,7 +34,7 @@ class HttpPageLoader(
     private val source: HttpSource,
     private val chapterCache: ChapterCache = Injekt.get(),
     // SY -->
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     // SY <--
 ) : PageLoader() {
@@ -49,7 +49,7 @@ class HttpPageLoader(
      */
     private val subscriptions = CompositeSubscription()
 
-    private val preloadSize = /* SY --> */ preferences.preloadSize().get() // SY <--
+    private val preloadSize = /* SY --> */ readerPreferences.preloadSize().get() // SY <--
 
     // SY -->
     private val dataSaver = DataSaver(source, sourcePreferences)
@@ -57,7 +57,7 @@ class HttpPageLoader(
 
     init {
         // EXH -->
-        repeat(preferences.readerThreads().get()) {
+        repeat(readerPreferences.readerThreads().get()) {
             // EXH <--
             subscriptions += Observable.defer { Observable.just(queue.take().page) }
                 .filter { it.status == Page.QUEUE }
@@ -114,7 +114,7 @@ class HttpPageLoader(
                     // Don't trust sources and use our own indexing
                     ReaderPage(index, page.url, page.imageUrl)
                 }
-                if (preferences.aggressivePageLoading().get()) {
+                if (readerPreferences.aggressivePageLoading().get()) {
                     rp.forEach {
                         if (it.status == Page.QUEUE) {
                             queue.offer(PriorityPage(it, 0))
@@ -199,7 +199,7 @@ class HttpPageLoader(
             page.imageUrl = null
         }
 
-        if (preferences.readerInstantRetry().get()) // EXH <--
+        if (readerPreferences.readerInstantRetry().get()) // EXH <--
             {
                 boostPage(page)
             } else {

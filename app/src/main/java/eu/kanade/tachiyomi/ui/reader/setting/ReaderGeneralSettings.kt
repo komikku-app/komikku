@@ -8,7 +8,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ReaderGeneralSettingsBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.preference.asHotFlow
@@ -22,7 +21,7 @@ import uy.kohesive.injekt.injectLazy
 class ReaderGeneralSettings @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     NestedScrollView(context, attrs) {
 
-    private val preferences: PreferencesHelper by injectLazy()
+    private val readerPreferences: ReaderPreferences by injectLazy()
 
     private val binding = ReaderGeneralSettingsBinding.inflate(LayoutInflater.from(context), this, false)
 
@@ -36,39 +35,39 @@ class ReaderGeneralSettings @JvmOverloads constructor(context: Context, attrs: A
      * Init general reader preferences.
      */
     private fun initGeneralPreferences() {
-        binding.backgroundColor.bindToIntPreference(preferences.readerTheme(), R.array.reader_themes_values)
-        binding.showPageNumber.bindToPreference(preferences.showPageNumber())
-        binding.fullscreen.bindToPreference(preferences.fullscreen())
-        preferences.fullscreen()
+        binding.backgroundColor.bindToIntPreference(readerPreferences.readerTheme(), R.array.reader_themes_values)
+        binding.showPageNumber.bindToPreference(readerPreferences.showPageNumber())
+        binding.fullscreen.bindToPreference(readerPreferences.fullscreen())
+        readerPreferences.fullscreen()
             .asHotFlow {
                 // If the preference is explicitly disabled, that means the setting was configured since there is a cutout
-                binding.cutoutShort.isVisible = it && ((context as ReaderActivity).hasCutout || !preferences.cutoutShort().get())
-                binding.cutoutShort.bindToPreference(preferences.cutoutShort())
+                binding.cutoutShort.isVisible = it && ((context as ReaderActivity).hasCutout || !readerPreferences.cutoutShort().get())
+                binding.cutoutShort.bindToPreference(readerPreferences.cutoutShort())
             }
             .launchIn((context as ReaderActivity).lifecycleScope)
 
-        binding.keepscreen.bindToPreference(preferences.keepScreenOn())
-        binding.longTap.bindToPreference(preferences.readWithLongTap())
-        binding.alwaysShowChapterTransition.bindToPreference(preferences.alwaysShowChapterTransition())
-        // binding.pageTransitions.bindToPreference(preferences.pageTransitions())
+        binding.keepscreen.bindToPreference(readerPreferences.keepScreenOn())
+        binding.longTap.bindToPreference(readerPreferences.readWithLongTap())
+        binding.alwaysShowChapterTransition.bindToPreference(readerPreferences.alwaysShowChapterTransition())
+        // binding.pageTransitions.bindToPreference(readerPreferences.pageTransitions())
 
         // SY -->
-        binding.forceHorzSeekbar.bindToPreference(preferences.forceHorizontalSeekbar())
-        binding.landscapeVerticalSeekbar.bindToPreference(preferences.landscapeVerticalSeekbar())
-        binding.leftVerticalSeekbar.bindToPreference(preferences.leftVerticalSeekbar())
+        binding.forceHorzSeekbar.bindToPreference(readerPreferences.forceHorizontalSeekbar())
+        binding.landscapeVerticalSeekbar.bindToPreference(readerPreferences.landscapeVerticalSeekbar())
+        binding.leftVerticalSeekbar.bindToPreference(readerPreferences.leftVerticalSeekbar())
 
-        binding.autoWebtoonMode.bindToPreference(preferences.useAutoWebtoon())
+        binding.autoWebtoonMode.bindToPreference(readerPreferences.useAutoWebtoon())
 
         // Hides landscapeVerticalSeekbar & leftVerticalSeekbar option when forceHorizontalSeekbar is enabled
-        binding.forceHorzSeekbar.bindToPreference(preferences.forceHorizontalSeekbar())
-        preferences.forceHorizontalSeekbar()
+        binding.forceHorzSeekbar.bindToPreference(readerPreferences.forceHorizontalSeekbar())
+        readerPreferences.forceHorizontalSeekbar()
             .asHotFlow {
                 binding.landscapeVerticalSeekbar.isGone = it
                 binding.leftVerticalSeekbar.isGone = it
             }
             .launchIn((context as ReaderActivity).lifecycleScope)
-        binding.landscapeVerticalSeekbar.bindToPreference(preferences.landscapeVerticalSeekbar())
-        binding.leftVerticalSeekbar.bindToPreference(preferences.leftVerticalSeekbar())
+        binding.landscapeVerticalSeekbar.bindToPreference(readerPreferences.landscapeVerticalSeekbar())
+        binding.leftVerticalSeekbar.bindToPreference(readerPreferences.leftVerticalSeekbar())
         // SY <--
     }
 }

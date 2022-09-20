@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
@@ -38,6 +39,7 @@ object DebugFunctions {
     val sourcePrefs: SourcePreferences by injectLazy()
     val securityPrefs: SecurityPreferences by injectLazy()
     val libraryPrefs: LibraryPreferences by injectLazy()
+    val readerPrefs: ReaderPreferences by injectLazy()
     val sourceManager: SourceManager by injectLazy()
     val updateManga: UpdateManga by injectLazy()
     val getFavorites: GetFavorites by injectLazy()
@@ -49,12 +51,12 @@ object DebugFunctions {
 
     fun forceUpgradeMigration() {
         prefs.ehLastVersionCode().set(1)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs)
     }
 
     fun forceSetupJobs() {
         prefs.ehLastVersionCode().set(0)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs)
     }
 
     fun resetAgedFlagInEXHManga() {

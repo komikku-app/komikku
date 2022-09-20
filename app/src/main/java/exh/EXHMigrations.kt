@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.logcat
@@ -98,6 +99,7 @@ object EXHMigrations {
         sourcePreferences: SourcePreferences,
         securityPreferences: SecurityPreferences,
         libraryPreferences: LibraryPreferences,
+        readerPreferences: ReaderPreferences,
     ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
@@ -265,9 +267,9 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 18) {
-                    val readerTheme = preferences.readerTheme().get()
+                    val readerTheme = readerPreferences.readerTheme().get()
                     if (readerTheme == 4) {
-                        preferences.readerTheme().set(3)
+                        readerPreferences.readerTheme().set(3)
                     }
                     val updateInterval = libraryPreferences.libraryUpdateInterval().get()
                     if (updateInterval == 1 || updateInterval == 2) {
@@ -418,8 +420,8 @@ object EXHMigrations {
                 if (oldVersion under 32) {
                     val oldReaderTap = prefs.getBoolean("reader_tap", false)
                     if (!oldReaderTap) {
-                        preferences.navigationModePager().set(5)
-                        preferences.navigationModeWebtoon().set(5)
+                        readerPreferences.navigationModePager().set(5)
+                        readerPreferences.navigationModeWebtoon().set(5)
                     }
                 }
                 if (oldVersion under 38) {

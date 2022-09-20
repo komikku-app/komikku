@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.util.system.logcat
-import exh.debug.DebugFunctions.prefs
+import exh.debug.DebugFunctions.readerPrefs
 import exh.merged.sql.models.MergedMangaReference
 import rx.Completable
 import rx.Observable
@@ -67,7 +67,7 @@ class ChapterLoader(
 
                 // If the chapter is partially read, set the starting page to the last the user read
                 // otherwise use the requested page.
-                if (!chapter.chapter.read /* --> EH */ || prefs
+                if (!chapter.chapter.read /* --> EH */ || readerPrefs
                     .preserveReadingPosition()
                     .get() // <-- EH
                 ) {

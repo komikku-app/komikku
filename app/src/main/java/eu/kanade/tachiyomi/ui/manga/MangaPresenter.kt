@@ -61,6 +61,7 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -132,6 +133,7 @@ class MangaPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
     // SY -->
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
@@ -357,7 +359,7 @@ class MangaPresenter(
                             preferences.dateFormat()
                         },
                         mergedData = mergedData,
-                        alwaysShowReadingProgress = preferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
+                        alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                         // SY <--
                     )
                     updateSuccessState {

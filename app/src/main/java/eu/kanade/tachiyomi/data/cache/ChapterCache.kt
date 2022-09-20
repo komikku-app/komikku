@@ -4,8 +4,8 @@ import android.content.Context
 import android.text.format.Formatter
 import com.jakewharton.disklrucache.DiskLruCache
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import kotlinx.coroutines.CoroutineScope
@@ -51,13 +51,13 @@ class ChapterCache(private val context: Context) {
     private val json: Json by injectLazy()
 
     // --> EH
-    private val prefs: PreferencesHelper by injectLazy()
+    private val readerPreferences: ReaderPreferences by injectLazy()
 
     /** Cache class used for cache management.  */
-    private var diskCache = setupDiskCache(prefs.cacheSize().get().toLong())
+    private var diskCache = setupDiskCache(readerPreferences.cacheSize().get().toLong())
 
     init {
-        prefs.cacheSize().changes()
+        readerPreferences.cacheSize().changes()
             .onEach {
                 // Save old cache for destruction later
                 val oldCache = diskCache

@@ -71,6 +71,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
@@ -145,6 +146,8 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         const val EXTRA_IS_TRANSITION = "${BuildConfig.APPLICATION_ID}.READER_IS_TRANSITION"
         const val SHARED_ELEMENT_NAME = "reader_shared_element_root"
     }
+
+    private val readerPreferences: ReaderPreferences by injectLazy()
 
     lateinit var binding: ReaderActivityBinding
 
@@ -561,7 +564,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                     presenter.setMangaReadingMode(newReadingMode.flagValue)
 
                     menuToggleToast?.cancel()
-                    if (!preferences.showReadingMode().get()) {
+                    if (!readerPreferences.showReadingMode().get()) {
                         menuToggleToast = toast(newReadingMode.stringRes)
                     }
 
@@ -580,13 +583,13 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 // SY <--
                 val isPagerType = ReadingModeType.isPagerType(mangaViewer)
                 val enabled = if (isPagerType) {
-                    preferences.cropBorders().toggle()
+                    readerPreferences.cropBorders().toggle()
                 } else {
                     // SY -->
                     if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                        preferences.cropBordersContinuousVertical().toggle()
+                        readerPreferences.cropBordersContinuousVertical().toggle()
                     } else {
-                        preferences.cropBordersWebtoon().toggle()
+                        readerPreferences.cropBordersWebtoon().toggle()
                     }
                     // SY <--
                 }
@@ -602,7 +605,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             }
         }
         updateCropBordersShortcut()
-        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuousVertical()/* SY <-- */)
+        listOf(readerPreferences.cropBorders(), readerPreferences.cropBordersWebtoon() /* SY --> */, readerPreferences.cropBordersContinuousVertical()/* SY <-- */)
             .forEach { pref ->
                 pref.changes()
                     .onEach { updateCropBordersShortcut() }
@@ -617,7 +620,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 popupMenu(
                     items = OrientationType.values().map { it.flagValue to it.stringRes },
                     selectedItemId = presenter.manga?.orientationType
-                        ?: preferences.defaultOrientationType().get(),
+                        ?: readerPreferences.defaultOrientationType().get(),
                 ) {
                     val newOrientation = OrientationType.fromPreference(itemId)
 
@@ -666,14 +669,14 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             setTooltip(R.string.page_layout)
 
             setOnClickListener {
-                if (preferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
+                if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
                     (viewer as? PagerViewer)?.config?.let { config ->
                         config.doublePages = !config.doublePages
                         reloadChapters(config.doublePages, true)
                     }
                     updateBottomButtons()
                 } else {
-                    preferences.pageLayout().set(1 - preferences.pageLayout().get())
+                    readerPreferences.pageLayout().set(1 - readerPreferences.pageLayout().get())
                 }
             }
         }
@@ -695,7 +698,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             .launchIn(lifecycleScope)
 
         binding.ehAutoscrollFreq.setText(
-            preferences.autoscrollInterval().get().let {
+            readerPreferences.autoscrollInterval().get().let {
                 if (it == -1f) {
                     ""
                 } else {
@@ -713,11 +716,11 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
                 if (parsed == null || parsed <= 0 || parsed > 9999) {
                     binding.ehAutoscrollFreq.error = getString(R.string.eh_autoscroll_freq_invalid)
-                    preferences.autoscrollInterval().set(-1f)
+                    readerPreferences.autoscrollInterval().set(-1f)
                     binding.ehAutoscroll.isEnabled = false
                 } else {
                     binding.ehAutoscrollFreq.error = null
-                    preferences.autoscrollInterval().set(parsed.toFloat())
+                    readerPreferences.autoscrollInterval().set(parsed.toFloat())
                     binding.ehAutoscroll.isEnabled = true
                     if (checked) {
                         repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -844,13 +847,13 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
     }
 
     fun updateBottomButtons() {
-        val enabledButtons = preferences.readerBottomButtons().get()
+        val enabledButtons = readerPreferences.readerBottomButtons().get()
         with(binding) {
             actionReadingMode.isVisible = ReaderBottomButton.ReadingMode.isIn(enabledButtons)
             actionRotation.isVisible =
                 ReaderBottomButton.Rotation.isIn(enabledButtons)
             doublePage.isVisible =
-                viewer is PagerViewer && ReaderBottomButton.PageLayout.isIn(enabledButtons) && !preferences.dualPageSplitPaged().get()
+                viewer is PagerViewer && ReaderBottomButton.PageLayout.isIn(enabledButtons) && !readerPreferences.dualPageSplitPaged().get()
             actionCropBorders.isVisible =
                 if (viewer is PagerViewer) {
                     ReaderBottomButton.CropBordersPager.isIn(enabledButtons)
@@ -917,13 +920,13 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         val mangaViewer = presenter.getMangaReadingMode()
         val isPagerType = ReadingModeType.isPagerType(mangaViewer)
         val enabled = if (isPagerType) {
-            preferences.cropBorders().get()
+            readerPreferences.cropBorders().get()
         } else {
             // SY -->
             if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                preferences.cropBordersContinuousVertical().get()
+                readerPreferences.cropBordersContinuousVertical().get()
             } else {
-                preferences.cropBordersWebtoon().get()
+                readerPreferences.cropBordersWebtoon().get()
             }
             // SY <--
         }
@@ -964,7 +967,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
                 val vertAnimation = AnimationUtils.loadAnimation(this, R.anim.fade_in_side)
                 val vertAnimationLeft = AnimationUtils.loadAnimation(this, R.anim.fade_in_side_left)
-                if (preferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
+                if (readerPreferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
                     binding.seekbarVertContainer.startAnimation(vertAnimationLeft)
                 } else {
                     binding.seekbarVertContainer.startAnimation(vertAnimation)
@@ -975,11 +978,11 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
-            if (preferences.showPageNumber().get()) {
+            if (readerPreferences.showPageNumber().get()) {
                 config?.setPageNumberVisibility(false)
             }
         } else {
-            if (preferences.fullscreen().get()) {
+            if (readerPreferences.fullscreen().get()) {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                 windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
@@ -1000,7 +1003,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
                 val vertAnimation = AnimationUtils.loadAnimation(this, R.anim.fade_out_side)
                 val vertAnimationLeft = AnimationUtils.loadAnimation(this, R.anim.fade_out_side_left)
-                if (preferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
+                if (readerPreferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
                     binding.seekbarVertContainer.startAnimation(vertAnimationLeft)
                 } else {
                     binding.seekbarVertContainer.startAnimation(vertAnimation)
@@ -1011,7 +1014,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
-            if (preferences.showPageNumber().get()) {
+            if (readerPreferences.showPageNumber().get()) {
                 config?.setPageNumberVisibility(true)
             }
         }
@@ -1064,22 +1067,22 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             binding.viewerContainer.removeAllViews()
         }
         viewer = newViewer
-        updateViewerInset(preferences.fullscreen().get())
+        updateViewerInset(readerPreferences.fullscreen().get())
         binding.viewerContainer.addView(newViewer.getView())
 
         // SY -->
         if (newViewer is PagerViewer) {
-            if (preferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
+            if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
                 setDoublePageMode(newViewer)
             }
             lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
         }
 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
-        if (preferences.useAutoWebtoon().get() && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
+        if (readerPreferences.useAutoWebtoon().get() && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
             readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
-        } else if (preferences.showReadingMode().get()) {
+        } else if (readerPreferences.showReadingMode().get()) {
             // SY <--
             showReadingModeToast(presenter.getMangaReadingMode())
         }
@@ -1089,10 +1092,10 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         // --> Vertical seekbar hide on landscape
 
         if (
-            !preferences.forceHorizontalSeekbar().get() &&
+            !readerPreferences.forceHorizontalSeekbar().get() &&
             (
                 (
-                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && preferences.landscapeVerticalSeekbar().get()
+                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && readerPreferences.landscapeVerticalSeekbar().get()
                     ) ||
                     resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
                 ) &&
@@ -1110,7 +1113,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         // --> Left-handed vertical seekbar
 
         val params = binding.readerNavVert.layoutParams as RelativeLayout.LayoutParams
-        if (preferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
+        if (readerPreferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
             params.removeRule(RelativeLayout.ALIGN_PARENT_END)
             binding.readerNavVert.layoutParams = params
         }
@@ -1510,10 +1513,10 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
          * Initializes the reader subscriptions.
          */
         init {
-            preferences.readerTheme().changes()
-                .onEach {
+            readerPreferences.readerTheme().changes()
+                .onEach { theme ->
                     binding.readerContainer.setBackgroundResource(
-                        when (preferences.readerTheme().get()) {
+                        when (theme) {
                             0 -> android.R.color.white
                             2 -> R.color.reader_background_dark
                             3 -> automaticBackgroundColor()
@@ -1523,41 +1526,41 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 }
                 .launchIn(lifecycleScope)
 
-            preferences.showPageNumber().changes()
+            readerPreferences.showPageNumber().changes()
                 .onEach { setPageNumberVisibility(it) }
                 .launchIn(lifecycleScope)
 
-            preferences.trueColor().changes()
+            readerPreferences.trueColor().changes()
                 .onEach { setTrueColor(it) }
                 .launchIn(lifecycleScope)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                preferences.cutoutShort().changes()
+                readerPreferences.cutoutShort().changes()
                     .onEach { setCutoutShort(it) }
                     .launchIn(lifecycleScope)
             }
 
-            preferences.keepScreenOn().changes()
+            readerPreferences.keepScreenOn().changes()
                 .onEach { setKeepScreenOn(it) }
                 .launchIn(lifecycleScope)
 
-            preferences.customBrightness().changes()
+            readerPreferences.customBrightness().changes()
                 .onEach { setCustomBrightness(it) }
                 .launchIn(lifecycleScope)
 
-            preferences.colorFilter().changes()
+            readerPreferences.colorFilter().changes()
                 .onEach { setColorFilter(it) }
                 .launchIn(lifecycleScope)
 
-            preferences.colorFilterMode().changes()
-                .onEach { setColorFilter(preferences.colorFilter().get()) }
+            readerPreferences.colorFilterMode().changes()
+                .onEach { setColorFilter(readerPreferences.colorFilter().get()) }
                 .launchIn(lifecycleScope)
 
-            merge(preferences.grayscale().changes(), preferences.invertedColors().changes())
-                .onEach { setLayerPaint(preferences.grayscale().get(), preferences.invertedColors().get()) }
+            merge(readerPreferences.grayscale().changes(), readerPreferences.invertedColors().changes())
+                .onEach { setLayerPaint(readerPreferences.grayscale().get(), readerPreferences.invertedColors().get()) }
                 .launchIn(lifecycleScope)
 
-            preferences.fullscreen().changes()
+            readerPreferences.fullscreen().changes()
                 .onEach {
                     WindowCompat.setDecorFitsSystemWindows(window, !it)
                     updateViewerInset(it)
@@ -1565,18 +1568,18 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 .launchIn(lifecycleScope)
 
             // SY -->
-            preferences.pageLayout().changes()
+            readerPreferences.pageLayout().changes()
                 .drop(1)
                 .onEach { updateBottomButtons() }
                 .launchIn(lifecycleScope)
 
-            preferences.dualPageSplitPaged().changes()
+            readerPreferences.dualPageSplitPaged().changes()
                 .drop(1)
                 .onEach {
                     if (viewer !is PagerViewer) return@onEach
                     updateBottomButtons()
                     reloadChapters(
-                        !it && when (preferences.pageLayout().get()) {
+                        !it && when (readerPreferences.pageLayout().get()) {
                             PagerConfig.PageLayout.DOUBLE_PAGES -> true
                             PagerConfig.PageLayout.AUTOMATIC -> resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                             else -> false
@@ -1644,7 +1647,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
          */
         private fun setCustomBrightness(enabled: Boolean) {
             if (enabled) {
-                preferences.customBrightnessValue().changes()
+                readerPreferences.customBrightnessValue().changes()
                     .sample(100)
                     .onEach { setCustomBrightnessValue(it) }
                     .launchIn(lifecycleScope)
@@ -1658,7 +1661,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
          */
         private fun setColorFilter(enabled: Boolean) {
             if (enabled) {
-                preferences.colorFilterValue().changes()
+                readerPreferences.colorFilterValue().changes()
                     .sample(100)
                     .onEach { setColorFilterValue(it) }
                     .launchIn(lifecycleScope)
@@ -1702,7 +1705,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
          */
         private fun setColorFilterValue(value: Int) {
             binding.colorOverlay.isVisible = true
-            binding.colorOverlay.setFilterColor(value, preferences.colorFilterMode().get())
+            binding.colorOverlay.setFilterColor(value, readerPreferences.colorFilterMode().get())
         }
 
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {

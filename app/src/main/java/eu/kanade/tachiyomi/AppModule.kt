@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
 import exh.pref.DelegateSourcePreferences
@@ -177,6 +178,9 @@ class PreferenceModule(val application: Application) : InjektModule {
         }
         addSingletonFactory {
             LibraryPreferences(get())
+        }
+        addSingletonFactory {
+            ReaderPreferences(get())
         }
         addSingletonFactory {
             PreferencesHelper(
