@@ -50,7 +50,6 @@ import kotlinx.coroutines.runBlocking
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsLibraryController : SettingsController() {
 
@@ -298,17 +297,15 @@ class SettingsLibraryController : SettingsController() {
             }
             // SY <--
             switchPreference {
-                key = Keys.autoUpdateMetadata
+                bindTo(preferences.autoUpdateMetadata())
                 titleRes = R.string.pref_library_update_refresh_metadata
                 summaryRes = R.string.pref_library_update_refresh_metadata_summary
-                defaultValue = false
             }
             if (trackManager.hasLoggedServices()) {
                 switchPreference {
-                    key = Keys.autoUpdateTrackers
+                    bindTo(preferences.autoUpdateTrackers())
                     titleRes = R.string.pref_library_update_refresh_trackers
                     summaryRes = R.string.pref_library_update_refresh_trackers_summary
-                    defaultValue = false
                 }
             }
         }

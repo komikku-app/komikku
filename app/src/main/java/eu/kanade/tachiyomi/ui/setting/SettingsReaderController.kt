@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.preference.bindTo
-import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
@@ -28,7 +27,6 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsReaderController : SettingsController() {
 
@@ -36,7 +34,7 @@ class SettingsReaderController : SettingsController() {
         titleRes = R.string.pref_category_reader
 
         intListPreference {
-            key = Keys.defaultReadingMode
+            bindTo(preferences.defaultReadingMode())
             titleRes = R.string.pref_viewer_type
             entriesRes = arrayOf(
                 R.string.left_to_right_viewer,
@@ -47,7 +45,6 @@ class SettingsReaderController : SettingsController() {
             )
             entryValues = ReadingModeType.values().drop(1)
                 .map { value -> "${value.flagValue}" }.toTypedArray()
-            defaultValue = "${ReadingModeType.RIGHT_TO_LEFT.flagValue}"
             summary = "%s"
         }
         intListPreference {
@@ -58,10 +55,9 @@ class SettingsReaderController : SettingsController() {
             summary = "%s"
         }
         switchPreference {
-            key = Keys.showReadingMode
+            bindTo(preferences.showReadingMode())
             titleRes = R.string.pref_show_reading_mode
             summaryRes = R.string.pref_show_reading_mode_summary
-            defaultValue = true
         }
         switchPreference {
             bindTo(preferences.showNavigationOverlayOnStart())
@@ -99,7 +95,7 @@ class SettingsReaderController : SettingsController() {
             titleRes = R.string.pref_category_display
 
             intListPreference {
-                key = Keys.defaultOrientationType
+                bindTo(preferences.defaultOrientationType())
                 titleRes = R.string.pref_rotation_type
                 entriesRes = arrayOf(
                     R.string.rotation_free,
@@ -111,7 +107,6 @@ class SettingsReaderController : SettingsController() {
                 )
                 entryValues = OrientationType.values().drop(1)
                     .map { value -> "${value.flagValue}" }.toTypedArray()
-                defaultValue = "${OrientationType.FREE.flagValue}"
                 summary = "%s"
             }
             intListPreference {
@@ -149,14 +144,12 @@ class SettingsReaderController : SettingsController() {
             titleRes = R.string.pref_category_reading
 
             switchPreference {
-                key = Keys.skipRead
+                bindTo(preferences.skipRead())
                 titleRes = R.string.pref_skip_read_chapters
-                defaultValue = false
             }
             switchPreference {
-                key = Keys.skipFiltered
+                bindTo(preferences.skipFiltered())
                 titleRes = R.string.pref_skip_filtered_chapters
-                defaultValue = true
             }
             switchPreference {
                 bindTo(preferences.alwaysShowChapterTransition())
@@ -376,10 +369,9 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_read_with_long_tap
             }
             switchPreference {
-                key = Keys.folderPerManga
+                bindTo(preferences.folderPerManga())
                 titleRes = R.string.pref_create_folder_per_manga
                 summaryRes = R.string.pref_create_folder_per_manga_summary
-                defaultValue = false
             }
         }
 

@@ -83,7 +83,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsAdvancedController(
     private val mangaRepository: MangaRepository = Injekt.get(),
@@ -184,9 +183,8 @@ class SettingsAdvancedController(
             }
             // SY <--
             switchPreference {
-                key = Keys.autoClearChapterCache
+                bindTo(preferences.autoClearChapterCache())
                 titleRes = R.string.pref_auto_clear_chapter_cache
-                defaultValue = false
             }
             preference {
                 key = "pref_clear_database"
