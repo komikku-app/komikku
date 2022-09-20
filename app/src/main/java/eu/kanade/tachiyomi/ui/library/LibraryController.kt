@@ -12,6 +12,7 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.core.prefs.CheckboxState
+import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga

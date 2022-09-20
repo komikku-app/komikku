@@ -26,6 +26,12 @@ import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.library.model.LibraryDisplayMode
+import eu.kanade.domain.library.model.LibraryGroup
+import eu.kanade.domain.library.model.LibrarySort
+import eu.kanade.domain.library.model.display
+import eu.kanade.domain.library.model.sort
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
@@ -58,10 +64,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
-import eu.kanade.tachiyomi.ui.library.setting.LibrarySort
-import eu.kanade.tachiyomi.ui.library.setting.display
-import eu.kanade.tachiyomi.ui.library.setting.sort
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
@@ -130,6 +132,7 @@ class LibraryPresenter(
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
@@ -150,10 +153,10 @@ class LibraryPresenter(
 
     val isLibraryEmpty by derivedStateOf { loadedManga.isEmpty() }
 
-    val tabVisibility by preferences.categoryTabs().asState()
-    val mangaCountVisibility by preferences.categoryNumberOfItems().asState()
+    val tabVisibility by libraryPreferences.categoryTabs().asState()
+    val mangaCountVisibility by libraryPreferences.categoryNumberOfItems().asState()
 
-    var activeCategory: Int by preferences.lastUsedCategory().asState()
+    var activeCategory: Int by libraryPreferences.lastUsedCategory().asState()
 
     val isDownloadOnly: Boolean by preferences.downloadedOnly().asState()
     val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
@@ -248,7 +251,7 @@ class LibraryPresenter(
                     .asFlow()
                     .collectLatest {
                         // SY -->
-                        state.groupType = preferences.groupLibraryBy().get()
+                        state.groupType = libraryPreferences.groupLibraryBy().get()
                         state.categories = it.categories
                         // SY <--
                         state.isLoading = false
@@ -265,17 +268,17 @@ class LibraryPresenter(
      */
     private fun applyFilters(map: LibraryMap, trackMap: Map<Long, Map<Long, Boolean>>): LibraryMap {
         val downloadedOnly = preferences.downloadedOnly().get()
-        val filterDownloaded = preferences.filterDownloaded().get()
-        val filterUnread = preferences.filterUnread().get()
-        val filterStarted = preferences.filterStarted().get()
-        val filterCompleted = preferences.filterCompleted().get()
+        val filterDownloaded = libraryPreferences.filterDownloaded().get()
+        val filterUnread = libraryPreferences.filterUnread().get()
+        val filterStarted = libraryPreferences.filterStarted().get()
+        val filterCompleted = libraryPreferences.filterCompleted().get()
         val loggedInServices = trackManager.services.filter { trackService -> trackService.isLogged }
             .associate { trackService ->
-                Pair(trackService.id, preferences.filterTracking(trackService.id).get())
+                Pair(trackService.id, libraryPreferences.filterTracking(trackService.id.toInt()).get())
             }
         val isNotAnyLoggedIn = !loggedInServices.values.any()
         // SY -->
-        val filterLewd = preferences.filterLewd().get()
+        val filterLewd = libraryPreferences.filterLewd().get()
         // SY <--
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
@@ -386,7 +389,7 @@ class LibraryPresenter(
      * @param map the map of manga.
      */
     private fun setButtons(map: LibraryMap) {
-        val startReadingButton = preferences.startReadingButton().get()
+        val startReadingButton = libraryPreferences.startReadingButton().get()
 
         for ((_, itemList) in map) {
             for (item in itemList) {
@@ -402,10 +405,10 @@ class LibraryPresenter(
      * @param map the map of manga.
      */
     private fun setBadges(map: LibraryMap) {
-        val showDownloadBadges = preferences.downloadBadge().get()
-        val showUnreadBadges = preferences.unreadBadge().get()
-        val showLocalBadges = preferences.localBadge().get()
-        val showLanguageBadges = preferences.languageBadge().get()
+        val showDownloadBadges = libraryPreferences.downloadBadge().get()
+        val showUnreadBadges = libraryPreferences.unreadBadge().get()
+        val showLocalBadges = libraryPreferences.localBadge().get()
+        val showLanguageBadges = libraryPreferences.languageBadge().get()
 
         for ((_, itemList) in map) {
             for (item in itemList) {
@@ -485,7 +488,7 @@ class LibraryPresenter(
 
         // SY -->
         val listOfTags by lazy {
-            preferences.sortTagsForLibrary().get()
+            libraryPreferences.sortTagsForLibrary().get()
                 .asSequence()
                 .mapNotNull {
                     val list = it.split("|")
@@ -498,8 +501,8 @@ class LibraryPresenter(
         // SY <--
 
         // SY -->
-        val groupType = preferences.groupLibraryBy().get()
-        val groupSort = preferences.librarySortingMode().get()
+        val groupType = libraryPreferences.groupLibraryBy().get()
+        val groupSort = libraryPreferences.librarySortingMode().get()
         // SY <--
         val sortModes = categories.associate { category ->
             // SY -->
@@ -614,7 +617,7 @@ class LibraryPresenter(
 
     // SY -->
     private fun applyGrouping(map: LibraryMap, categories: List<Category>): Pair<LibraryMap, List<Category>> {
-        val groupType = preferences.groupLibraryBy().get()
+        val groupType = libraryPreferences.groupLibraryBy().get()
         var editedCategories = categories
         val items = when (groupType) {
             LibraryGroup.BY_DEFAULT -> map
@@ -899,7 +902,7 @@ class LibraryPresenter(
     }
 
     fun getColumnsPreferenceForCurrentOrientation(isLandscape: Boolean): PreferenceMutableState<Int> {
-        return (if (isLandscape) preferences.landscapeColumns() else preferences.portraitColumns()).asState()
+        return (if (isLandscape) libraryPreferences.landscapeColumns() else libraryPreferences.portraitColumns()).asState()
     }
 
     // TODO: This is good but should we separate title from count or get categories with count from db
@@ -1114,7 +1117,7 @@ class LibraryPresenter(
         }
     }
 
-    private val libraryDisplayMode by preferences.libraryDisplayMode().asState()
+    private val libraryDisplayMode by libraryPreferences.libraryDisplayMode().asState()
     // SY <--
 
     @Composable

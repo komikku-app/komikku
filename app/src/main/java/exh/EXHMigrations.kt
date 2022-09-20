@@ -11,6 +11,7 @@ import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.InsertMergedReference
@@ -25,7 +26,6 @@ import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -97,6 +97,7 @@ object EXHMigrations {
         networkPreferences: NetworkPreferences,
         sourcePreferences: SourcePreferences,
         securityPreferences: SecurityPreferences,
+        libraryPreferences: LibraryPreferences,
     ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
@@ -268,15 +269,15 @@ object EXHMigrations {
                     if (readerTheme == 4) {
                         preferences.readerTheme().set(3)
                     }
-                    val updateInterval = preferences.libraryUpdateInterval().get()
+                    val updateInterval = libraryPreferences.libraryUpdateInterval().get()
                     if (updateInterval == 1 || updateInterval == 2) {
-                        preferences.libraryUpdateInterval().set(3)
+                        libraryPreferences.libraryUpdateInterval().set(3)
                         LibraryUpdateJob.setupTask(context, 3)
                     }
                 }
                 if (oldVersion under 20) {
                     try {
-                        val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0 /* ALPHABETICAL */)
+                        val oldSortingMode = prefs.getInt(libraryPreferences.librarySortingMode().key(), 0 /* ALPHABETICAL */)
                         val oldSortingDirection = prefs.getBoolean("library_sorting_ascending", true)
 
                         val newSortingMode = when (oldSortingMode) {
@@ -299,12 +300,12 @@ object EXHMigrations {
                         }
 
                         prefs.edit(commit = true) {
-                            remove(PreferenceKeys.librarySortingMode)
+                            remove(libraryPreferences.librarySortingMode().key())
                             remove("library_sorting_ascending")
                         }
 
                         prefs.edit {
-                            putString(PreferenceKeys.librarySortingMode, newSortingMode)
+                            putString(libraryPreferences.librarySortingMode().key(), newSortingMode)
                             putString("library_sorting_ascending", newSortingDirection)
                         }
                     } catch (e: Exception) {
@@ -321,16 +322,16 @@ object EXHMigrations {
                 }
                 if (oldVersion under 22) {
                     // Handle removed every 3, 4, 6, and 8 hour library updates
-                    val updateInterval = preferences.libraryUpdateInterval().get()
+                    val updateInterval = libraryPreferences.libraryUpdateInterval().get()
                     if (updateInterval in listOf(3, 4, 6, 8)) {
-                        preferences.libraryUpdateInterval().set(12)
+                        libraryPreferences.libraryUpdateInterval().set(12)
                         LibraryUpdateJob.setupTask(context, 12)
                     }
                 }
                 if (oldVersion under 23) {
                     val oldUpdateOngoingOnly = prefs.getBoolean("pref_update_only_non_completed_key", true)
                     if (!oldUpdateOngoingOnly) {
-                        preferences.libraryUpdateMangaRestriction() -= MANGA_NON_COMPLETED
+                        libraryPreferences.libraryUpdateMangaRestriction() -= MANGA_NON_COMPLETED
                     }
                 }
                 if (oldVersion under 24) {
@@ -424,7 +425,7 @@ object EXHMigrations {
                 if (oldVersion under 38) {
                     // Handle renamed enum values
                     @Suppress("DEPRECATION")
-                    val newSortingMode = when (val oldSortingMode = prefs.getString(PreferenceKeys.librarySortingMode, "ALPHABETICAL")) {
+                    val newSortingMode = when (val oldSortingMode = prefs.getString(libraryPreferences.librarySortingMode().key(), "ALPHABETICAL")) {
                         "LAST_CHECKED" -> "LAST_MANGA_UPDATE"
                         "UNREAD" -> "UNREAD_COUNT"
                         "DATE_FETCHED" -> "CHAPTER_FETCH_DATE"
@@ -432,7 +433,7 @@ object EXHMigrations {
                         else -> oldSortingMode
                     }
                     prefs.edit {
-                        putString(PreferenceKeys.librarySortingMode, newSortingMode)
+                        putString(libraryPreferences.librarySortingMode().key(), newSortingMode)
                     }
                     runBlocking {
                         handler.await(true) {
@@ -451,9 +452,9 @@ object EXHMigrations {
                 }
                 if (oldVersion under 39) {
                     prefs.edit {
-                        val sort = prefs.getString(PreferenceKeys.librarySortingMode, null) ?: return@edit
+                        val sort = prefs.getString(libraryPreferences.librarySortingMode().key(), null) ?: return@edit
                         val direction = prefs.getString("library_sorting_ascending", "ASCENDING")!!
-                        putString(PreferenceKeys.librarySortingMode, "$sort,$direction")
+                        putString(libraryPreferences.librarySortingMode().key(), "$sort,$direction")
                         remove("library_sorting_ascending")
                     }
                 }

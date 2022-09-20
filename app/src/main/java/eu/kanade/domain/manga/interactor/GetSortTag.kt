@@ -1,10 +1,10 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.library.service.LibraryPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class GetSortTag(private val preferences: PreferencesHelper) {
+class GetSortTag(private val preferences: LibraryPreferences) {
 
     fun subscribe(): Flow<List<String>> {
         return preferences.sortTagsForLibrary().changes()
@@ -14,7 +14,7 @@ class GetSortTag(private val preferences: PreferencesHelper) {
     fun await() = getSortTags(preferences).let(::mapSortTags)
 
     companion object {
-        fun getSortTags(preferences: PreferencesHelper) = preferences.sortTagsForLibrary().get()
+        fun getSortTags(preferences: LibraryPreferences) = preferences.sortTagsForLibrary().get()
 
         fun mapSortTags(tags: Set<String>) = tags.mapNotNull {
             val index = it.indexOf('|')

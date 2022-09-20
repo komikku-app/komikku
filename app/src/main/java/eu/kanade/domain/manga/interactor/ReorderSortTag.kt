@@ -1,9 +1,9 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.library.service.LibraryPreferences
 
 class ReorderSortTag(
-    private val preferences: PreferencesHelper,
+    private val preferences: LibraryPreferences,
     private val getSortTag: GetSortTag,
 ) {
 

@@ -6,8 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import eu.kanade.domain.category.model.Category
+import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
-import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.library.LibraryPresenter
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID

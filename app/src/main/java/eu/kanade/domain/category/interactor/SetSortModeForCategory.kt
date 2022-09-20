@@ -3,13 +3,13 @@ package eu.kanade.domain.category.interactor
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.domain.category.repository.CategoryRepository
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.ui.library.LibraryGroup
-import eu.kanade.tachiyomi.ui.library.setting.LibrarySort
-import eu.kanade.tachiyomi.ui.library.setting.plus
+import eu.kanade.domain.library.model.LibraryGroup
+import eu.kanade.domain.library.model.LibrarySort
+import eu.kanade.domain.library.model.plus
+import eu.kanade.domain.library.service.LibraryPreferences
 
 class SetSortModeForCategory(
-    private val preferences: PreferencesHelper,
+    private val preferences: LibraryPreferences,
     private val categoryRepository: CategoryRepository,
 ) {
 

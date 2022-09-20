@@ -7,12 +7,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
+import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
-import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
 
 @Composable
 fun BrowseMangadexFollowsScreen(

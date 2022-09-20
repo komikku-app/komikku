@@ -78,12 +78,4 @@ object PreferenceValues {
         PACKAGEINSTALLER(R.string.ext_installer_packageinstaller),
         SHIZUKU(R.string.ext_installer_shizuku),
     }
-
-    // SY -->
-    enum class GroupLibraryMode {
-        GLOBAL,
-        ALL_BUT_UNGROUPED,
-        ALL,
-    }
-    // SY <--
 }

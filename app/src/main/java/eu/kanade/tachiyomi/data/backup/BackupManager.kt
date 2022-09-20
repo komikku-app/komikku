@@ -12,6 +12,7 @@ import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.history.model.HistoryUpdate
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetMergedManga
@@ -76,6 +77,7 @@ class BackupManager(
     private val handler: DatabaseHandler = Injekt.get()
     private val sourceManager: SourceManager = Injekt.get()
     private val preferences: PreferencesHelper = Injekt.get()
+    private val libraryPreferences: LibraryPreferences = Injekt.get()
     private val getCategories: GetCategories = Injekt.get()
     private val getFavorites: GetFavorites = Injekt.get()
 
@@ -329,7 +331,7 @@ class BackupManager(
             category
         }
 
-        preferences.categorizedDisplaySettings().set(
+        libraryPreferences.categorizedDisplaySettings().set(
             (dbCategories + categories)
                 .distinctBy { it.flags }
                 .size > 1,

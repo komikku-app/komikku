@@ -1,10 +1,10 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.tachiyomi.util.preference.minusAssign
 
 class DeleteSortTag(
-    private val preferences: PreferencesHelper,
+    private val preferences: LibraryPreferences,
     private val getSortTag: GetSortTag,
 ) {
 

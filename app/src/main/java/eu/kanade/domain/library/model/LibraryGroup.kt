@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.library
+package eu.kanade.domain.library.model
 
 import eu.kanade.tachiyomi.R
 
