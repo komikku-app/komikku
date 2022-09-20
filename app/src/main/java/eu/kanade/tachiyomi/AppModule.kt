@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
+import exh.pref.DelegateSourcePreferences
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
 import nl.adaptivity.xmlutil.serialization.UnknownChildHandler
@@ -187,7 +188,7 @@ class SYPreferenceModule(val application: Application) : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
         addSingletonFactory {
-            SourcePreferences(
+            DelegateSourcePreferences(
                 preferenceStore = get(),
             )
         }
