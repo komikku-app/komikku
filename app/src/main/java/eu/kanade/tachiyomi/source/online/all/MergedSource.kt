@@ -5,13 +5,13 @@ import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -45,7 +45,7 @@ class MergedSource : HttpSource() {
     private val getCategories: GetCategories by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
-    private val preferences: PreferencesHelper by injectLazy()
+    private val downloadPreferences: DownloadPreferences by injectLazy()
 
     override val id: Long = MERGED_SOURCE_ID
 
@@ -175,7 +175,7 @@ class MergedSource : HttpSource() {
             throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
         }
 
-        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(getCategories.await(manga.id).map { it.id }, preferences)
+        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(getCategories.await(manga.id).map { it.id }, downloadPreferences)
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {

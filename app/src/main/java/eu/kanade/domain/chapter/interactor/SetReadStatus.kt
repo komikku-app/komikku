@@ -4,9 +4,9 @@ import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.repository.ChapterRepository
 import eu.kanade.domain.download.interactor.DeleteDownload
+import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.repository.MangaRepository
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.system.logcat
@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import logcat.LogPriority
 
 class SetReadStatus(
-    private val preferences: PreferencesHelper,
+    private val downloadPreferences: DownloadPreferences,
     private val deleteDownload: DeleteDownload,
     private val mangaRepository: MangaRepository,
     private val chapterRepository: ChapterRepository,
@@ -56,7 +56,7 @@ class SetReadStatus(
             return@withContext Result.InternalError(e)
         }
 
-        if (read && preferences.removeAfterMarkedAsRead().get()) {
+        if (read && downloadPreferences.removeAfterMarkedAsRead().get()) {
             manga.forEach {
                 deleteDownload.awaitAll(
                     manga = it,

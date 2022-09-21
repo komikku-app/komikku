@@ -13,6 +13,7 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.library.model.GroupLibraryMode
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -104,7 +105,7 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
  */
 class LibraryUpdateService(
     val sourceManager: SourceManager = Injekt.get(),
-    val preferences: PreferencesHelper = Injekt.get(),
+    val downloadPreferences: DownloadPreferences = Injekt.get(),
     val libraryPreferences: LibraryPreferences = Injekt.get(),
     val downloadManager: DownloadManager = Injekt.get(),
     val trackManager: TrackManager = Injekt.get(),
@@ -442,7 +443,7 @@ class LibraryUpdateService(
 
                                                     if (newChapters.isNotEmpty()) {
                                                         val categoryIds = getCategories.await(domainManga.id).map { it.id }
-                                                        if (domainManga.shouldDownloadNewChapters(categoryIds, preferences)) {
+                                                        if (domainManga.shouldDownloadNewChapters(categoryIds, downloadPreferences)) {
                                                             downloadChapters(mangaWithNotif, newDbChapters)
                                                             hasDownloads.set(true)
                                                         }
@@ -701,6 +702,7 @@ class LibraryUpdateService(
      * filter all follows from Mangadex and only add reading or rereading manga to library
      */
     private suspend fun syncFollows() {
+        val preferences = Injekt.get<PreferencesHelper>()
         var count = 0
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager) ?: return
         val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
