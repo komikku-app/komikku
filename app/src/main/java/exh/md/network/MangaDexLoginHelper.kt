@@ -1,6 +1,6 @@
 package exh.md.network
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.xLogE
@@ -13,7 +13,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
 
-class MangaDexLoginHelper(authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
+class MangaDexLoginHelper(authServiceLazy: Lazy<MangaDexAuthService>, val preferences: TrackPreferences, val mdList: MdList) {
     private val authService by authServiceLazy
     suspend fun isAuthenticated(): Boolean {
         return runCatching { authService.checkToken().isAuthenticated }

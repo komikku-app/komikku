@@ -154,7 +154,7 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
 
     override fun logout() {
         super.logout()
-        preferences.trackToken(this).delete()
+        trackPreferences.trackToken(this).delete()
     }
 
     class MangaDexNotFoundException : Exception("Mangadex not enabled")

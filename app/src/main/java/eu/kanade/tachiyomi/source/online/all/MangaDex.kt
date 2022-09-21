@@ -3,8 +3,8 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -49,6 +49,7 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
 
 @Suppress("OverridingDeprecatedMember")
@@ -68,16 +69,16 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
-    val preferences = Injekt.get<PreferencesHelper>()
-    val mdList: MdList = Injekt.get<TrackManager>().mdList
+    val trackPreferences: TrackPreferences by injectLazy()
+    val mdList: MdList by lazy { Injekt.get<TrackManager>().mdList }
 
     private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, preferences, mdList) }
+    private val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, trackPreferences, mdList) }
 
-    private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, preferences, mdList)
+    private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, trackPreferences, mdList)
 
     override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
         .authenticator(
@@ -133,7 +134,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             bilibiliHandler,
             azukHandler,
             mangaHotHandler,
-            preferences,
+            trackPreferences,
             mdList,
         )
     }

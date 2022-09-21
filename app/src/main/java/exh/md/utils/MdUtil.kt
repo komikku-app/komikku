@@ -1,6 +1,7 @@
 package exh.md.utils
 
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.source.SourceManager
@@ -312,7 +313,7 @@ class MdUtil {
             return "$cdnUrl/covers/$dexId/$fileName"
         }
 
-        fun getLoginBody(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList)
+        fun getLoginBody(preferences: TrackPreferences, mdList: MdList) = preferences.trackToken(mdList)
             .get()
             .nullIfBlank()
             ?.let {
@@ -324,15 +325,15 @@ class MdUtil {
                 }
             }
 
-        fun sessionToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.session
+        fun sessionToken(preferences: TrackPreferences, mdList: MdList) = getLoginBody(preferences, mdList)?.session
 
-        fun refreshToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.refresh
+        fun refreshToken(preferences: TrackPreferences, mdList: MdList) = getLoginBody(preferences, mdList)?.refresh
 
-        fun updateLoginToken(token: LoginBodyTokenDto, preferences: PreferencesHelper, mdList: MdList) {
+        fun updateLoginToken(token: LoginBodyTokenDto, preferences: TrackPreferences, mdList: MdList) {
             preferences.trackToken(mdList).set(jsonParser.encodeToString(token))
         }
 
-        fun getAuthHeaders(headers: Headers, preferences: PreferencesHelper, mdList: MdList) =
+        fun getAuthHeaders(headers: Headers, preferences: TrackPreferences, mdList: MdList) =
             headers.newBuilder().add(
                 "Authorization",
                 "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException()),

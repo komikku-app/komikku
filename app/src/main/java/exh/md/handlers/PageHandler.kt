@@ -1,6 +1,6 @@
 package exh.md.handlers
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -27,7 +27,7 @@ class PageHandler(
     private val bilibiliHandler: BilibiliHandler,
     private val azukiHandler: AzukiHandler,
     private val mangaHotHandler: MangaHotHandler,
-    private val preferences: PreferencesHelper,
+    private val preferences: TrackPreferences,
     private val mdList: MdList,
 ) {
 

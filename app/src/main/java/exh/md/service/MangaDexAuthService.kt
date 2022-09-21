@@ -1,6 +1,6 @@
 package exh.md.service
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
@@ -31,7 +31,7 @@ import okhttp3.Request
 class MangaDexAuthService(
     private val client: OkHttpClient,
     private val headers: Headers,
-    private val preferences: PreferencesHelper,
+    private val preferences: TrackPreferences,
     private val mdList: MdList,
 ) {
     private val noAuthenticatorClient = client.newBuilder()
