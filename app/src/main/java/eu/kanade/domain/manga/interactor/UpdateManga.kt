@@ -34,10 +34,16 @@ class UpdateManga(
         downloadManager: DownloadManager = Injekt.get(),
         // SY <--
     ): Boolean {
-        // SY -->
-        val title = if (remoteManga.title.isNotBlank() && localManga.ogTitle != remoteManga.title) {
-            downloadManager.renameMangaDir(localManga.ogTitle, remoteManga.title, localManga.source)
+        val remoteTitle = try {
             remoteManga.title
+        } catch (_: UninitializedPropertyAccessException) {
+            ""
+        }
+
+        // SY -->
+        val title = if (remoteTitle.isNotBlank() && localManga.ogTitle != remoteTitle) {
+            downloadManager.renameMangaDir(localManga.ogTitle, remoteTitle, localManga.source)
+            remoteTitle
         } else {
             null
         }
@@ -59,16 +65,18 @@ class UpdateManga(
                 }
             }
 
+        val thumbnailUrl = remoteManga.thumbnail_url?.takeIf { it.isNotEmpty() }
+
         return mangaRepository.update(
             MangaUpdate(
                 id = localManga.id,
-                title = title?.takeIf { it.isNotEmpty() },
+                title = title,
                 coverLastModified = coverLastModified,
                 author = remoteManga.author,
                 artist = remoteManga.artist,
                 description = remoteManga.description,
                 genre = remoteManga.getGenres(),
-                thumbnailUrl = remoteManga.thumbnail_url?.takeIf { it.isNotEmpty() },
+                thumbnailUrl = thumbnailUrl,
                 status = remoteManga.status.toLong(),
                 initialized = true,
             ),
