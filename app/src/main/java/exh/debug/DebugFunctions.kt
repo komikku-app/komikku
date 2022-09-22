@@ -3,6 +3,7 @@ package exh.debug
 import android.app.Application
 import androidx.work.WorkManager
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -40,6 +41,7 @@ object DebugFunctions {
     val securityPrefs: SecurityPreferences by injectLazy()
     val libraryPrefs: LibraryPreferences by injectLazy()
     val readerPrefs: ReaderPreferences by injectLazy()
+    val backupPrefs: BackupPreferences by injectLazy()
     val sourceManager: SourceManager by injectLazy()
     val updateManga: UpdateManga by injectLazy()
     val getFavorites: GetFavorites by injectLazy()
@@ -51,12 +53,12 @@ object DebugFunctions {
 
     fun forceUpgradeMigration() {
         prefs.ehLastVersionCode().set(1)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
     }
 
     fun forceSetupJobs() {
         prefs.ehLastVersionCode().set(0)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
     }
 
     fun resetAgedFlagInEXHManga() {

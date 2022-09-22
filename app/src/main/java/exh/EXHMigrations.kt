@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.category.categoryMapper
 import eu.kanade.data.chapter.chapterMapper
+import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
@@ -100,6 +101,7 @@ object EXHMigrations {
         securityPreferences: SecurityPreferences,
         libraryPreferences: LibraryPreferences,
         readerPreferences: ReaderPreferences,
+        backupPreferences: BackupPreferences,
     ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
@@ -461,11 +463,11 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 40) {
-                    if (preferences.numberOfBackups().get() == 1) {
-                        preferences.numberOfBackups().set(2)
+                    if (backupPreferences.numberOfBackups().get() == 1) {
+                        backupPreferences.numberOfBackups().set(2)
                     }
-                    if (preferences.backupInterval().get() == 0) {
-                        preferences.backupInterval().set(12)
+                    if (backupPreferences.backupInterval().get() == 0) {
+                        backupPreferences.backupInterval().set(12)
                         BackupCreatorJob.setupTask(context)
                     }
                 }
