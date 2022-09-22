@@ -1,25 +1,16 @@
 package eu.kanade.tachiyomi.ui.browse.migration.search
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import reactivecircus.flowbinding.appcompat.QueryTextEvent
-import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -77,36 +68,6 @@ class SearchController(
     override fun onMangaLongClick(manga: Manga) {
         // Call parent's default click listener
         super.onMangaClick(manga)
-    }
-
-    /**
-     * Adds items to the options menu.
-     *
-     * @param menu menu containing options.
-     * @param inflater used to load the menu xml.
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate menu.
-        inflater.inflate(R.menu.global_search, menu)
-
-        // Initialize search menu
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as SearchView
-
-        searchItem.fixExpand({
-            searchView.onActionViewExpanded() // Required to show the query in the view
-            searchView.setQuery(presenter.query, false)
-            true
-        },)
-
-        searchView.queryTextEvents()
-            .filter { it is QueryTextEvent.QuerySubmitted }
-            .onEach {
-                presenter.search(it.queryText.toString())
-                searchItem.collapseActionView()
-                setTitle() // Update toolbar title
-            }
-            .launchIn(viewScope)
     }
 
     override fun onTitleClick(source: CatalogueSource) {
