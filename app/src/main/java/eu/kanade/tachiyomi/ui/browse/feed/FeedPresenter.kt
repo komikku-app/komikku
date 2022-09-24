@@ -27,7 +27,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
@@ -141,7 +141,7 @@ open class FeedPresenter(
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
-        presenterScope.launchNonCancellableIO {
+        presenterScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -154,7 +154,7 @@ open class FeedPresenter(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        presenterScope.launchNonCancellableIO {
+        presenterScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }

@@ -27,7 +27,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
@@ -108,7 +108,7 @@ open class SourceFeedPresenter(
     }
 
     fun createFeed(savedSearchId: Long) {
-        presenterScope.launchNonCancellableIO {
+        presenterScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -121,7 +121,7 @@ open class SourceFeedPresenter(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        presenterScope.launchNonCancellableIO {
+        presenterScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }

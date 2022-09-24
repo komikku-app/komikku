@@ -6,7 +6,7 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,11 +25,11 @@ class MetadataViewPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        presenterScope.launchNonCancellableIO {
+        presenterScope.launchNonCancellable {
             val metadataSource = source.getMainSource<MetadataSource<*, *>>()
             if (metadataSource == null) {
                 _state.value = MetadataViewState.SourceNotFound
-                return@launchNonCancellableIO
+                return@launchNonCancellable
             }
 
             _state.value = when (val flatMetadata = getFlatMetadataById.await(manga.id)) {

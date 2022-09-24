@@ -48,7 +48,7 @@ import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.setting.database.ClearDatabaseController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
@@ -108,7 +108,7 @@ class SettingsAdvancedController(
             summaryRes = R.string.pref_dump_crash_logs_summary
 
             onClick {
-                viewScope.launchNonCancellableIO {
+                viewScope.launchNonCancellable {
                     CrashLogUtil(context).dumpLogs()
                 }
             }
@@ -593,7 +593,7 @@ class SettingsAdvancedController(
 
     private fun clearChapterCache() {
         val activity = activity ?: return
-        viewScope.launchNonCancellableIO {
+        viewScope.launchNonCancellable {
             try {
                 val deletedFiles = chapterCache.clear()
                 withUIContext {
@@ -629,7 +629,7 @@ class SettingsAdvancedController(
 
     private fun resetViewerFlags() {
         val activity = activity ?: return
-        viewScope.launchNonCancellableIO {
+        viewScope.launchNonCancellable {
             val success = mangaRepository.resetViewerFlags()
             withUIContext {
                 val message = if (success) {

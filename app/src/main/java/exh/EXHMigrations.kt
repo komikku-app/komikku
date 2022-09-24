@@ -471,6 +471,27 @@ object EXHMigrations {
                         BackupCreatorJob.setupTask(context)
                     }
                 }
+                if (oldVersion under 41) {
+                    @Suppress("NAME_SHADOWING")
+                    val preferences = listOf(
+                        libraryPreferences.filterChapterByRead(),
+                        libraryPreferences.filterChapterByDownloaded(),
+                        libraryPreferences.filterChapterByBookmarked(),
+                        libraryPreferences.sortChapterBySourceOrNumber(),
+                        libraryPreferences.displayChapterByNameOrNumber(),
+                        libraryPreferences.sortChapterByAscendingOrDescending(),
+                    )
+
+                    prefs.edit {
+                        preferences.forEach { preference ->
+                            val key = preference.key()
+                            val value = prefs.getInt(key, Int.MIN_VALUE)
+                            if (value == Int.MIN_VALUE) return@forEach
+                            remove(key)
+                            putLong(key, value.toLong())
+                        }
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
