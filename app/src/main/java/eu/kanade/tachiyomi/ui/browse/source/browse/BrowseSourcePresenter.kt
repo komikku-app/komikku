@@ -327,8 +327,8 @@ open class BrowseSourcePresenter(
             var new = manga.copy(
                 favorite = !manga.favorite,
                 dateAdded = when (manga.favorite) {
-                    true -> Date().time
-                    false -> 0
+                    true -> 0
+                    false -> Date().time
                 },
             )
 
@@ -360,7 +360,6 @@ open class BrowseSourcePresenter(
                     moveMangaToCategories(manga, defaultCategory)
 
                     changeMangaFavorite(manga)
-                    // activity.toast(activity.getString(R.string.manga_added_library))
                 }
 
                 // Automatic 'Default' or no categories
@@ -368,7 +367,6 @@ open class BrowseSourcePresenter(
                     moveMangaToCategories(manga)
 
                     changeMangaFavorite(manga)
-                    // activity.toast(activity.getString(R.string.manga_added_library))
                 }
 
                 // Choose a category
