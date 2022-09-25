@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -434,6 +435,9 @@ class LibraryUpdateService(
 
                                             MANGA_NON_READ in restrictions && mangaWithNotif.totalChapters > 0 && !mangaWithNotif.hasStarted ->
                                                 skippedUpdates.add(mangaWithNotif to getString(R.string.skipped_reason_not_started))
+
+                                            mangaWithNotif.update_strategy != UpdateStrategy.ALWAYS_UPDATE ->
+                                                skippedUpdates.add(mangaWithNotif to getString(R.string.skipped_reason_not_always_update))
 
                                             else -> {
                                                 // Convert to the manga that contains new chapters

@@ -4,6 +4,7 @@ import com.squareup.sqldelight.Query
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.internal.copyOnWriteList
+import eu.kanade.data.updateStrategyAdapter
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import exh.source.MERGED_SOURCE_ID
 
@@ -27,9 +28,10 @@ private val mapper = { cursor: SqlCursor ->
         cover_last_modified = cursor.getLong(16)!!
         date_added = cursor.getLong(17)!!
         filtered_scanlators = cursor.getString(18)
-        unreadCount = cursor.getLong(19)!!.toInt()
-        readCount = cursor.getLong(20)!!.toInt()
-        category = cursor.getLong(21)!!.toInt()
+        update_strategy = updateStrategyAdapter.decode(cursor.getLong(19)!!)
+        unreadCount = cursor.getLong(20)!!.toInt()
+        readCount = cursor.getLong(21)!!.toInt()
+        category = cursor.getLong(22)!!.toInt()
     }
 }
 

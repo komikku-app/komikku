@@ -4,6 +4,7 @@ import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.data.updateStrategyAdapter
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.repository.MangaRepository
@@ -96,6 +97,10 @@ class MangaRepositoryImpl(
                 chapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
+                // SY -->
+                filteredScanlators = manga.filteredScanlators,
+                // SY <--
+                updateStrategy = manga.updateStrategy,
             )
             mangasQueries.selectLastInsertedRowId()
         }
@@ -141,8 +146,11 @@ class MangaRepositoryImpl(
                     chapterFlags = value.chapterFlags,
                     coverLastModified = value.coverLastModified,
                     dateAdded = value.dateAdded,
+                    // SY -->
                     filteredScanlators = value.filteredScanlators?.let(listOfStringsAndAdapter::encode),
+                    // SY <--
                     mangaId = value.id,
+                    updateStrategy = value.updateStrategy?.let(updateStrategyAdapter::encode),
                 )
             }
         }

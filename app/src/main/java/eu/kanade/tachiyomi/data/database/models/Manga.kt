@@ -105,6 +105,7 @@ fun Manga.toDomainManga(): DomainManga? {
         ogStatus = originalStatus.toLong(),
         // SY <--
         thumbnailUrl = thumbnail_url,
+        updateStrategy = update_strategy,
         initialized = initialized,
         // SY -->
         filteredScanlators = filtered_scanlators?.let(listOfStringsAndAdapter::decode)?.nullIfEmpty(),

@@ -78,6 +78,7 @@ class UpdateManga(
                 genre = remoteManga.getGenres(),
                 thumbnailUrl = thumbnailUrl,
                 status = remoteManga.status.toLong(),
+                updateStrategy = remoteManga.update_strategy,
                 initialized = true,
             ),
         )

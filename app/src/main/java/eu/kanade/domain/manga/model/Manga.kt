@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -34,6 +35,7 @@ data class Manga(
     val ogStatus: Long,
     // SY <--
     val thumbnailUrl: String?,
+    val updateStrategy: UpdateStrategy,
     val initialized: Boolean,
     // SY -->
     val filteredScanlators: List<String>?,
@@ -183,6 +185,7 @@ data class Manga(
             ogStatus = 0L,
             // SY <--
             thumbnailUrl = null,
+            updateStrategy = UpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
             // SY -->
             filteredScanlators = null,
@@ -229,6 +232,7 @@ fun Manga.toDbManga(): DbManga = MangaImpl().also {
     it.status = ogStatus.toInt()
     // SY <--
     it.thumbnail_url = thumbnailUrl
+    it.update_strategy = updateStrategy
     it.initialized = initialized
     // SY -->
     it.filtered_scanlators = filteredScanlators?.let(listOfStringsAndAdapter::encode)
@@ -255,6 +259,7 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         status = ogStatus,
         // SY <--
         thumbnailUrl = thumbnailUrl,
+        updateStrategy = updateStrategy,
         initialized = initialized,
         // SY -->
         filteredScanlators = filteredScanlators,

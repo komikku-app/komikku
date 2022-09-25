@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.database.models
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -57,6 +58,8 @@ open class MangaImpl : Manga {
     override var last_update: Long = 0
 
     override var date_added: Long = 0
+
+    override var update_strategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE
 
     override var initialized: Boolean = false
 

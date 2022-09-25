@@ -16,6 +16,7 @@ import eu.kanade.data.dateAdapter
 import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.data.updateStrategyAdapter
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
@@ -95,6 +96,7 @@ class AppModule(val app: Application) : InjektModule {
                 ),
                 mangasAdapter = Mangas.Adapter(
                     genreAdapter = listOfStringsAdapter,
+                    update_strategyAdapter = updateStrategyAdapter,
                     // SY -->
                     filtered_scanlatorsAdapter = listOfStringsAndAdapter,
                     // SY <--

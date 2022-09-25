@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
@@ -40,6 +41,7 @@ data class BackupManga(
     @ProtoNumber(102) var brokenHistory: List<BrokenBackupHistory> = emptyList(),
     @ProtoNumber(103) var viewer_flags: Int? = null,
     @ProtoNumber(104) var history: List<BackupHistory> = emptyList(),
+    @ProtoNumber(105) var updateStrategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE,
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -72,6 +74,7 @@ data class BackupManga(
             date_added = this@BackupManga.dateAdded
             viewer_flags = this@BackupManga.viewer_flags ?: this@BackupManga.viewer
             chapter_flags = this@BackupManga.chapterFlags
+            update_strategy = this@BackupManga.updateStrategy
             filtered_scanlators = this@BackupManga.filtered_scanlators
         }
     }
@@ -130,6 +133,7 @@ data class BackupManga(
                 viewer = (manga.viewerFlags.toInt() and ReadingModeType.MASK),
                 viewer_flags = manga.viewerFlags.toInt(),
                 chapterFlags = manga.chapterFlags.toInt(),
+                updateStrategy = manga.updateStrategy,
                 // SY -->
                 filtered_scanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
             ).also { backupManga ->
