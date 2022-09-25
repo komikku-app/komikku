@@ -37,7 +37,6 @@ fun BrowseSourceComfortableGrid(
     // SY -->
     getMetadataState: @Composable ((Manga, RaisedSearchMetadata?) -> State<RaisedSearchMetadata?>),
     // SY <--
-    header: (@Composable () -> Unit)? = null,
     columns: GridCells,
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
@@ -49,12 +48,6 @@ fun BrowseSourceComfortableGrid(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (header != null) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                header()
-            }
-        }
-
         if (mangaList.loadState.prepend is LoadState.Loading) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 BrowseSourceLoadingItem()
