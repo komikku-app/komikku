@@ -19,6 +19,8 @@ import androidx.paging.map
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.core.prefs.mapAsCheckboxState
+import eu.kanade.domain.UnsortedPreferences
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
@@ -45,7 +47,6 @@ import eu.kanade.presentation.browse.BrowseSourceStateImpl
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -112,8 +113,8 @@ open class BrowseSourcePresenter(
     // SY <--
     private val state: BrowseSourceStateImpl = BrowseSourceState(searchQuery) as BrowseSourceStateImpl,
     private val sourceManager: SourceManager = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get(),
-    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    preferences: BasePreferences = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getRemoteManga: GetRemoteManga = Injekt.get(),
@@ -129,6 +130,7 @@ open class BrowseSourcePresenter(
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
 
     // SY -->
+    unsortedPreferences: UnsortedPreferences = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
     private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
@@ -144,7 +146,7 @@ open class BrowseSourcePresenter(
     val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
 
     // SY -->
-    val ehentaiBrowseDisplayMode by preferences.enhancedEHentaiView().asState()
+    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState()
     // SY <--
 
     @Composable

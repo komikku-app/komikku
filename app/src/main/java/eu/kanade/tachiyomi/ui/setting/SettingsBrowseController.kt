@@ -2,7 +2,9 @@ package eu.kanade.tachiyomi.ui.setting
 
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceScreen
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -24,6 +26,11 @@ import uy.kohesive.injekt.injectLazy
 class SettingsBrowseController : SettingsController() {
 
     private val sourcePreferences: SourcePreferences by injectLazy()
+
+    // SY -->
+    private val uiPreferences: UiPreferences by injectLazy()
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    // SY <--
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.browse
@@ -49,12 +56,12 @@ class SettingsBrowseController : SettingsController() {
                 summaryRes = R.string.pref_source_source_filtering_summery
             }
             switchPreference {
-                bindTo(preferences.useNewSourceNavigation())
+                bindTo(uiPreferences.useNewSourceNavigation())
                 titleRes = R.string.pref_source_navigation
                 summaryRes = R.string.pref_source_navigation_summery
             }
             switchPreference {
-                bindTo(preferences.allowLocalSourceHiddenFolders())
+                bindTo(unsortedPreferences.allowLocalSourceHiddenFolders())
                 titleRes = R.string.pref_local_source_hidden_folders
                 summaryRes = R.string.pref_local_source_hidden_folders_summery
             }
@@ -64,7 +71,7 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.feed
 
             switchPreference {
-                bindTo(preferences.feedTabInFront())
+                bindTo(uiPreferences.feedTabInFront())
                 titleRes = R.string.pref_feed_position
                 summaryRes = R.string.pref_feed_position_summery
             }
@@ -99,7 +106,7 @@ class SettingsBrowseController : SettingsController() {
                 key = "pref_edit_extension_repos"
                 titleRes = R.string.action_edit_repos
 
-                val catCount = preferences.extensionRepos().get().count()
+                val catCount = unsortedPreferences.extensionRepos().get().count()
                 summary = context.resources.getQuantityString(R.plurals.num_repos, catCount, catCount)
 
                 onClick {

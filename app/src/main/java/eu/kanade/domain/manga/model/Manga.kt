@@ -2,10 +2,10 @@ package eu.kanade.domain.manga.model
 
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
@@ -112,7 +112,7 @@ data class Manga(
     }
 
     fun forceDownloaded(): Boolean {
-        return favorite && Injekt.get<PreferencesHelper>().downloadedOnly().get()
+        return favorite && Injekt.get<BasePreferences>().downloadedOnly().get()
     }
 
     fun sortDescending(): Boolean {

@@ -1,12 +1,12 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GetShowLatest(
-    private val preferences: PreferencesHelper,
+    private val preferences: UiPreferences,
 ) {
 
     fun subscribe(mode: SourcesController.Mode): Flow<Boolean> {

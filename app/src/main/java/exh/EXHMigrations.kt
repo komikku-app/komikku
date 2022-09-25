@@ -9,6 +9,7 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.category.categoryMapper
 import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.domain.backup.service.BackupPreferences
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
@@ -21,14 +22,15 @@ import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
@@ -95,7 +97,9 @@ object EXHMigrations {
      */
     fun upgrade(
         context: Context,
-        preferences: PreferencesHelper,
+        preferenceStore: PreferenceStore,
+        basePreferences: BasePreferences,
+        uiPreferences: UiPreferences,
         networkPreferences: NetworkPreferences,
         sourcePreferences: SourcePreferences,
         securityPreferences: SecurityPreferences,
@@ -103,10 +107,11 @@ object EXHMigrations {
         readerPreferences: ReaderPreferences,
         backupPreferences: BackupPreferences,
     ): Boolean {
-        val oldVersion = preferences.ehLastVersionCode().get()
+        val lastVersionCode = preferenceStore.getInt("eh_last_version_code", 0)
+        val oldVersion = lastVersionCode.get()
         try {
             if (oldVersion < BuildConfig.VERSION_CODE) {
-                preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
+                lastVersionCode.set(BuildConfig.VERSION_CODE)
 
                 if (BuildConfig.INCLUDE_UPDATER) {
                     AppUpdateJob.setupTask(context)
@@ -363,8 +368,8 @@ object EXHMigrations {
                     if (oldSecureScreen) {
                         securityPreferences.secureScreen().set(SecurityPreferences.SecureScreenMode.ALWAYS)
                     }
-                    if (DeviceUtil.isMiui && preferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
-                        preferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)
+                    if (DeviceUtil.isMiui && basePreferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
+                        basePreferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)
                     }
                 }
                 if (oldVersion under 28) {
@@ -489,6 +494,14 @@ object EXHMigrations {
                             if (value == Int.MIN_VALUE) return@forEach
                             remove(key)
                             putLong(key, value.toLong())
+                        }
+                    }
+                }
+                if (oldVersion under 42) {
+                    if (uiPreferences.themeMode().isSet()) {
+                        prefs.edit {
+                            val themeMode = prefs.getString(uiPreferences.themeMode().key(), null) ?: return@edit
+                            putString(uiPreferences.themeMode().key(), themeMode.uppercase())
                         }
                     }
                 }

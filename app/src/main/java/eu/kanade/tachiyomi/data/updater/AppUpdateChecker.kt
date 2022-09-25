@@ -2,7 +2,8 @@ package eu.kanade.tachiyomi.data.updater
 
 import android.content.Context
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.core.preference.Preference
+import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
@@ -17,11 +18,14 @@ import java.util.concurrent.TimeUnit
 class AppUpdateChecker {
 
     private val networkService: NetworkHelper by injectLazy()
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferenceStore: PreferenceStore by injectLazy()
+    private val lastAppCheck: Preference<Long> by lazy {
+        preferenceStore.getLong("last_app_check", 0)
+    }
 
     suspend fun checkForUpdate(context: Context, isUserPrompt: Boolean = false): AppUpdateResult {
         // Limit checks to once a day at most
-        if (isUserPrompt.not() && Date().time < preferences.lastAppCheck().get() + TimeUnit.DAYS.toMillis(1)) {
+        if (isUserPrompt.not() && Date().time < lastAppCheck.get() + TimeUnit.DAYS.toMillis(1)) {
             return AppUpdateResult.NoNewUpdate
         }
 
@@ -31,7 +35,7 @@ class AppUpdateChecker {
                 .await()
                 .parseAs<GithubRelease>()
                 .let {
-                    preferences.lastAppCheck().set(Date().time)
+                    lastAppCheck.set(Date().time)
 
                     // Check if latest version is different from current version
                     if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {

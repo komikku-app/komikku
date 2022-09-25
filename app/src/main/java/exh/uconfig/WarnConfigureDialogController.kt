@@ -4,15 +4,15 @@ import android.app.Dialog
 import android.os.Bundle
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class WarnConfigureDialogController : DialogController() {
-    private val prefs: PreferencesHelper by injectLazy()
+    private val prefs: UnsortedPreferences by injectLazy()
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         return MaterialAlertDialogBuilder(activity!!)
             .setTitle(R.string.settings_profile_note)
@@ -27,7 +27,7 @@ class WarnConfigureDialogController : DialogController() {
 
     companion object {
         fun uploadSettings(router: Router) {
-            if (Injekt.get<PreferencesHelper>().exhShowSettingsUploadWarning().get()) {
+            if (Injekt.get<UnsortedPreferences>().exhShowSettingsUploadWarning().get()) {
                 WarnConfigureDialogController().showDialog(router)
             } else {
                 ConfiguringDialogController().showDialog(router)

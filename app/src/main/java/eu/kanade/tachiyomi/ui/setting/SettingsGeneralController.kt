@@ -6,7 +6,9 @@ import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.preference.PreferenceScreen
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.library.service.LibraryPreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.listPreference
@@ -24,6 +26,11 @@ import uy.kohesive.injekt.injectLazy
 class SettingsGeneralController : SettingsController() {
 
     private val libraryPreferences: LibraryPreferences by injectLazy()
+
+    // SY -->
+    private val uiPreferences: UiPreferences by injectLazy()
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    // SY <--
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_general
@@ -95,24 +102,24 @@ class SettingsGeneralController : SettingsController() {
             titleRes = R.string.pref_category_fork
 
             switchPreference {
-                bindTo(preferences.expandFilters())
+                bindTo(uiPreferences.expandFilters())
                 titleRes = R.string.toggle_expand_search_filters
             }
 
             switchPreference {
-                bindTo(preferences.autoSolveCaptcha())
+                bindTo(unsortedPreferences.autoSolveCaptcha())
                 titleRes = R.string.auto_solve_captchas
                 summaryRes = R.string.auto_solve_captchas_summary
             }
 
             switchPreference {
-                bindTo(preferences.recommendsInOverflow())
+                bindTo(uiPreferences.recommendsInOverflow())
                 titleRes = R.string.put_recommends_in_overflow
                 summaryRes = R.string.put_recommends_in_overflow_summary
             }
 
             switchPreference {
-                bindTo(preferences.mergeInOverflow())
+                bindTo(uiPreferences.mergeInOverflow())
                 titleRes = R.string.put_merge_in_overflow
                 summaryRes = R.string.put_merge_in_overflow_summary
             }

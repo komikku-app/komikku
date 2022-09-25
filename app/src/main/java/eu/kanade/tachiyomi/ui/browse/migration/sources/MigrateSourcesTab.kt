@@ -6,12 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import com.bluelinelabs.conductor.Router
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
@@ -59,7 +59,7 @@ fun migrateSourcesTab(
                         withUIContext {
                             if (router != null) {
                                 PreMigrationController.navigateToMigration(
-                                    Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                                     router,
                                     sourceMangas,
                                 )

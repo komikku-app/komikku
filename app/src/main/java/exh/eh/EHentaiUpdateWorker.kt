@@ -11,6 +11,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
@@ -22,7 +23,6 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
@@ -45,7 +45,7 @@ import kotlin.time.Duration.Companion.days
 
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
-    private val prefs: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger: Logger = xLog()
@@ -60,7 +60,6 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
     override suspend fun doWork(): Result {
         return try {
-            val preferences = Injekt.get<PreferencesHelper>()
             if (requiresWifiConnection(preferences) && !context.isConnectedToWifi()) {
                 Result.failure()
             } else {
@@ -179,7 +178,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 updatedThisIteration++
             }
         } finally {
-            prefs.exhAutoUpdateStats().set(
+            preferences.exhAutoUpdateStats().set(
                 Json.encodeToString(
                     EHentaiUpdaterStats(
                         startTime,
@@ -237,7 +236,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
 
         fun scheduleBackground(context: Context, prefInterval: Int? = null) {
-            val preferences = Injekt.get<PreferencesHelper>()
+            val preferences = Injekt.get<UnsortedPreferences>()
             val interval = prefInterval ?: preferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
                 val restrictions = preferences.exhAutoUpdateRequirements().get()
@@ -270,7 +269,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
     }
 
-    fun requiresWifiConnection(preferences: PreferencesHelper): Boolean {
+    fun requiresWifiConnection(preferences: UnsortedPreferences): Boolean {
         val restrictions = preferences.exhAutoUpdateRequirements().get()
         return DEVICE_ONLY_ON_WIFI in restrictions
     }

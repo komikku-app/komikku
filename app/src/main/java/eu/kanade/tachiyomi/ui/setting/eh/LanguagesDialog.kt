@@ -7,8 +7,8 @@ import android.widget.ScrollView
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhDialogLanguagesBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.setting.SettingsEhController
@@ -21,7 +21,7 @@ class LanguagesDialog(
     var binding: EhDialogLanguagesBinding? = null
         private set
 
-    val preferences: PreferencesHelper by injectLazy()
+    val preferences: UnsortedPreferences by injectLazy()
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = EhDialogLanguagesBinding.inflate(LayoutInflater.from(activity!!))
@@ -170,7 +170,7 @@ class LanguagesDialog(
         preferences.exhSettingsLanguages().set(languages)
 
         with(targetController as? SettingsEhController ?: return) {
-            preferences.exhSettingsLanguages().reconfigure()
+            unsortedPreferences.exhSettingsLanguages().reconfigure()
         }
     }
 

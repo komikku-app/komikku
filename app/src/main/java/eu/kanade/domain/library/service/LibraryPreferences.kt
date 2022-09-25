@@ -110,6 +110,8 @@ class LibraryPreferences(
         sortChapterByAscendingOrDescending().set(if (manga.sortDescending()) Manga.CHAPTER_SORT_DESC else Manga.CHAPTER_SORT_ASC)
     }
 
+    fun autoClearChapterCache() = preferenceStore.getBoolean("auto_clear_chapter_cache", false)
+
     // endregion
 
     // SY -->

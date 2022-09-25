@@ -3,12 +3,12 @@ package exh.favorites
 import android.content.Context
 import androidx.core.text.HtmlCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import uy.kohesive.injekt.injectLazy
 
 class FavoritesIntroDialog {
-    private val prefs: PreferencesHelper by injectLazy()
+    private val prefs: UnsortedPreferences by injectLazy()
 
     fun show(context: Context) = MaterialAlertDialogBuilder(context)
         .setTitle(R.string.favorites_sync_notes)

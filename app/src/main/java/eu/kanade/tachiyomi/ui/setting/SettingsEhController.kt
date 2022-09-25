@@ -13,6 +13,7 @@ import androidx.core.content.getSystemService
 import androidx.core.widget.doAfterTextChanged
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
@@ -69,6 +70,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 
 class SettingsEhController : SettingsController() {
+    val unsortedPreferences: UnsortedPreferences by injectLazy()
     private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
     private val deleteFavoriteEntries: DeleteFavoriteEntries by injectLazy()
     private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
@@ -94,11 +96,11 @@ class SettingsEhController : SettingsController() {
             titleRes = R.string.ehentai_prefs_account_settings
 
             switchPreference {
-                bindTo(preferences.enableExhentai())
+                bindTo(unsortedPreferences.enableExhentai())
                 titleRes = R.string.enable_exhentai
                 summaryOff = context.getString(R.string.requires_login)
                 isPersistent = false
-                preferences.enableExhentai()
+                unsortedPreferences.enableExhentai()
                     .changes()
                     .onEach {
                         isChecked = it
@@ -108,7 +110,7 @@ class SettingsEhController : SettingsController() {
                 onChange { newVal ->
                     newVal as Boolean
                     if (!newVal) {
-                        preferences.enableExhentai().set(false)
+                        unsortedPreferences.enableExhentai().set(false)
                         true
                     } else {
                         startActivityForResult(EhLoginActivity.newIntent(activity!!), LOGIN_RESULT)
@@ -118,7 +120,7 @@ class SettingsEhController : SettingsController() {
             }
 
             intListPreference {
-                bindTo(preferences.useHentaiAtHome())
+                bindTo(unsortedPreferences.useHentaiAtHome())
                 titleRes = R.string.use_hentai_at_home
                 summaryRes = R.string.use_hentai_at_home_summary
                 entriesRes = arrayOf(
@@ -127,31 +129,31 @@ class SettingsEhController : SettingsController() {
                 )
                 entryValues = arrayOf("0", "1")
 
-                onChange { preferences.useHentaiAtHome().reconfigure() }
+                onChange { unsortedPreferences.useHentaiAtHome().reconfigure() }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.useJapaneseTitle())
+                bindTo(unsortedPreferences.useJapaneseTitle())
                 titleRes = R.string.show_japanese_titles
                 summaryOn = context.getString(R.string.show_japanese_titles_option_1)
                 summaryOff = context.getString(R.string.show_japanese_titles_option_2)
 
-                onChange { preferences.useJapaneseTitle().reconfigure() }
+                onChange { unsortedPreferences.useJapaneseTitle().reconfigure() }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.exhUseOriginalImages())
+                bindTo(unsortedPreferences.exhUseOriginalImages())
                 titleRes = R.string.use_original_images
                 summaryOn = context.getString(R.string.use_original_images_on)
                 summaryOff = context.getString(R.string.use_original_images_off)
 
-                onChange { preferences.exhUseOriginalImages().reconfigure() }
+                onChange { unsortedPreferences.exhUseOriginalImages().reconfigure() }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             preference {
@@ -159,7 +161,7 @@ class SettingsEhController : SettingsController() {
                 titleRes = R.string.watched_tags
                 summaryRes = R.string.watched_tags_summary
                 onClick {
-                    val intent = if (preferences.enableExhentai().get()) {
+                    val intent = if (unsortedPreferences.enableExhentai().get()) {
                         WebViewActivity.newIntent(activity!!, url = "https://exhentai.org/mytags", title = context.getString(R.string.watched_tags_exh))
                     } else {
                         WebViewActivity.newIntent(activity!!, url = "https://e-hentai.org/mytags", title = context.getString(R.string.watched_tags_eh))
@@ -167,16 +169,16 @@ class SettingsEhController : SettingsController() {
                     startActivity(intent)
                 }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             preference {
-                bindTo(preferences.ehTagFilterValue())
+                bindTo(unsortedPreferences.ehTagFilterValue())
                 titleRes = R.string.tag_filtering_threshold
-                summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
+                summary = context.getString(R.string.tag_filtering_threshhold_summary, unsortedPreferences.ehTagFilterValue().get())
 
                 onClick {
-                    var value: Int? = preferences.ehTagFilterValue().get()
+                    var value: Int? = unsortedPreferences.ehTagFilterValue().get()
                     MaterialAlertDialogBuilder(activity!!)
                         .setTitle(R.string.tag_filtering_threshold)
                         .let { builder ->
@@ -201,24 +203,24 @@ class SettingsEhController : SettingsController() {
                             builder.setView(binding.root)
                         }
                         .setPositiveButton(android.R.string.ok) { _, _ ->
-                            preferences.ehTagFilterValue().set(value ?: return@setPositiveButton)
-                            summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
-                            preferences.ehTagFilterValue().reconfigure()
+                            unsortedPreferences.ehTagFilterValue().set(value ?: return@setPositiveButton)
+                            summary = context.getString(R.string.tag_filtering_threshhold_summary, unsortedPreferences.ehTagFilterValue().get())
+                            unsortedPreferences.ehTagFilterValue().reconfigure()
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .show()
                 }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             preference {
-                bindTo(preferences.ehTagWatchingValue())
+                bindTo(unsortedPreferences.ehTagWatchingValue())
                 titleRes = R.string.tag_watching_threshhold
-                summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
+                summary = context.getString(R.string.tag_watching_threshhold_summary, unsortedPreferences.ehTagWatchingValue().get())
 
                 onClick {
-                    var value: Int? = preferences.ehTagWatchingValue().get()
+                    var value: Int? = unsortedPreferences.ehTagWatchingValue().get()
                     MaterialAlertDialogBuilder(activity!!)
                         .setTitle(R.string.tag_watching_threshhold)
                         .let { builder ->
@@ -244,19 +246,19 @@ class SettingsEhController : SettingsController() {
                             builder.setView(binding.root)
                         }
                         .setPositiveButton(android.R.string.ok) { _, _ ->
-                            preferences.ehTagWatchingValue().set(value ?: return@setPositiveButton)
-                            summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
-                            preferences.ehTagWatchingValue().reconfigure()
+                            unsortedPreferences.ehTagWatchingValue().set(value ?: return@setPositiveButton)
+                            summary = context.getString(R.string.tag_watching_threshhold_summary, unsortedPreferences.ehTagWatchingValue().get())
+                            unsortedPreferences.ehTagWatchingValue().reconfigure()
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .show()
                 }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             preference {
-                bindTo(preferences.exhSettingsLanguages())
+                bindTo(unsortedPreferences.exhSettingsLanguages())
                 titleRes = R.string.language_filtering
                 summaryRes = R.string.language_filtering_summary
 
@@ -266,11 +268,11 @@ class SettingsEhController : SettingsController() {
                     dialog.showDialog(router)
                 }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             preference {
-                bindTo(preferences.exhEnabledCategories())
+                bindTo(unsortedPreferences.exhEnabledCategories())
                 titleRes = R.string.frong_page_categories
                 summaryRes = R.string.fromt_page_categories_summary
 
@@ -280,19 +282,19 @@ class SettingsEhController : SettingsController() {
                     dialog.showDialog(router)
                 }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.exhWatchedListDefaultState())
+                bindTo(unsortedPreferences.exhWatchedListDefaultState())
                 titleRes = R.string.watched_list_default
                 summaryRes = R.string.watched_list_state_summary
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             listPreference {
-                bindTo(preferences.imageQuality())
+                bindTo(unsortedPreferences.imageQuality())
                 summaryRes = R.string.eh_image_quality_summary
                 titleRes = R.string.eh_image_quality
                 entriesRes = arrayOf(
@@ -312,13 +314,13 @@ class SettingsEhController : SettingsController() {
                     "low",
                 )
 
-                onChange { preferences.imageQuality().reconfigure() }
+                onChange { unsortedPreferences.imageQuality().reconfigure() }
 
-                visibleIf(preferences.enableExhentai()) { it }
+                visibleIf(unsortedPreferences.enableExhentai()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.enhancedEHentaiView())
+                bindTo(unsortedPreferences.enhancedEHentaiView())
                 titleRes = R.string.pref_enhanced_e_hentai_view
                 summaryRes = R.string.pref_enhanced_e_hentai_view_summary
             }
@@ -328,7 +330,7 @@ class SettingsEhController : SettingsController() {
             titleRes = R.string.favorites_sync
 
             switchPreference {
-                bindTo(preferences.exhReadOnlySync())
+                bindTo(unsortedPreferences.exhReadOnlySync())
                 titleRes = R.string.disable_favorites_uploading
                 summaryRes = R.string.disable_favorites_uploading_summary
             }
@@ -346,7 +348,7 @@ class SettingsEhController : SettingsController() {
             }
 
             switchPreference {
-                bindTo(preferences.exhLenientSync())
+                bindTo(unsortedPreferences.exhLenientSync())
                 titleRes = R.string.ignore_sync_errors
                 summaryRes = R.string.ignore_sync_errors_summary
             }
@@ -381,7 +383,7 @@ class SettingsEhController : SettingsController() {
             titleRes = R.string.gallery_update_checker
 
             intListPreference {
-                bindTo(preferences.exhAutoUpdateFrequency())
+                bindTo(unsortedPreferences.exhAutoUpdateFrequency())
                 titleRes = R.string.time_between_batches
                 entriesRes = arrayOf(
                     R.string.time_between_batches_never,
@@ -395,7 +397,7 @@ class SettingsEhController : SettingsController() {
                 )
                 entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
 
-                preferences.exhAutoUpdateFrequency().changes()
+                unsortedPreferences.exhAutoUpdateFrequency().changes()
                     .onEach { newVal ->
                         summary = if (newVal == 0) {
                             context.getString(R.string.time_between_batches_summary_1, context.getString(R.string.app_name))
@@ -413,13 +415,13 @@ class SettingsEhController : SettingsController() {
             }
 
             multiSelectListPreference {
-                bindTo(preferences.exhAutoUpdateRequirements())
+                bindTo(unsortedPreferences.exhAutoUpdateRequirements())
                 titleRes = R.string.auto_update_restrictions
                 entriesRes = arrayOf(R.string.connected_to_wifi, R.string.charging)
                 entryValues = arrayOf(DEVICE_ONLY_ON_WIFI, DEVICE_CHARGING)
 
                 fun updateSummary() {
-                    val restrictions = preferences.exhAutoUpdateRequirements().get()
+                    val restrictions = unsortedPreferences.exhAutoUpdateRequirements().get()
                         .sorted()
                         .map {
                             when (it) {
@@ -437,7 +439,7 @@ class SettingsEhController : SettingsController() {
                     summary = context.getString(R.string.restrictions, restrictionsText)
                 }
 
-                visibleIf(preferences.exhAutoUpdateFrequency()) { it > 0 }
+                visibleIf(unsortedPreferences.exhAutoUpdateFrequency()) { it > 0 }
 
                 onChange {
                     // Post to event looper to allow the preference to be updated.
@@ -445,7 +447,7 @@ class SettingsEhController : SettingsController() {
                     true
                 }
 
-                preferences.exhAutoUpdateRequirements().changes()
+                unsortedPreferences.exhAutoUpdateRequirements().changes()
                     .onEach { updateSummary() }
                     .launchIn(viewScope)
             }
@@ -464,7 +466,7 @@ class SettingsEhController : SettingsController() {
                     viewScope.launch(Dispatchers.IO) {
                         val updateInfo = try {
                             val stats =
-                                preferences.exhAutoUpdateStats().get().nullIfBlank()?.let {
+                                unsortedPreferences.exhAutoUpdateStats().get().nullIfBlank()?.let {
                                     Json.decodeFromString<EHentaiUpdaterStats>(it)
                                 }
 

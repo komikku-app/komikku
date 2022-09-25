@@ -1,68 +1,14 @@
-package eu.kanade.tachiyomi.data.preference
+package eu.kanade.domain
 
-import android.content.Context
-import android.os.Build
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
-import eu.kanade.tachiyomi.core.preference.getEnum
-import eu.kanade.tachiyomi.util.system.DeviceUtil
-import eu.kanade.tachiyomi.util.system.isDynamicColorAvailable
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Locale
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
-import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 
-class PreferencesHelper(
-    val context: Context,
+class UnsortedPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
-    fun confirmExit() = preferenceStore.getBoolean("pref_confirm_exit", false)
-
-    fun sideNavIconAlignment() = preferenceStore.getInt("pref_side_nav_icon_alignment", 0)
-
-    fun themeMode() = preferenceStore.getEnum(
-        "pref_theme_mode_key",
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { Values.ThemeMode.system } else { Values.ThemeMode.light },
-    )
-
-    fun appTheme() = preferenceStore.getEnum(
-        "pref_app_theme",
-        if (DeviceUtil.isDynamicColorAvailable) { Values.AppTheme.MONET } else { Values.AppTheme.DEFAULT },
-    )
-
-    fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
-
-    fun lastVersionCode() = preferenceStore.getInt("last_version_code", 0)
-
-    fun relativeTime() = preferenceStore.getInt("relative_time", 7)
-
-    fun dateFormat(format: String = preferenceStore.getString(Keys.dateFormat, "").get()): DateFormat = when (format) {
-        "" -> DateFormat.getDateInstance(DateFormat.SHORT)
-        else -> SimpleDateFormat(format, Locale.getDefault())
-    }
-
-    fun downloadedOnly() = preferenceStore.getBoolean("pref_downloaded_only", false)
-
-    fun automaticExtUpdates() = preferenceStore.getBoolean("automatic_ext_updates", true)
-
-    fun lastAppCheck() = preferenceStore.getLong("last_app_check", 0)
-    fun lastExtCheck() = preferenceStore.getLong("last_ext_check", 0)
+    // SY -->
 
     fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
-
-    fun incognitoMode() = preferenceStore.getBoolean("incognito_mode", false)
-
-    fun tabletUiMode() = preferenceStore.getEnum("tablet_ui_mode", Values.TabletUiMode.AUTOMATIC)
-
-    fun extensionInstaller() = preferenceStore.getEnum(
-        "extension_installer",
-        if (DeviceUtil.isMiui) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER,
-    )
-
-    fun autoClearChapterCache() = preferenceStore.getBoolean("auto_clear_chapter_cache", false)
-
-    // SY -->
 
     fun defaultMangaOrder() = preferenceStore.getString("default_manga_order", "")
 
@@ -111,11 +57,7 @@ class PreferencesHelper(
 
     fun exhShowSettingsUploadWarning() = preferenceStore.getBoolean("eh_showSettingsUploadWarning2", true)
 
-    fun expandFilters() = preferenceStore.getBoolean("eh_expand_filters", false)
-
     fun autoSolveCaptcha() = preferenceStore.getBoolean("eh_autosolve_captchas", false)
-
-    fun ehLastVersionCode() = preferenceStore.getInt("eh_last_version_code", 0)
 
     fun logLevel() = preferenceStore.getInt("eh_log_level", 0)
 
@@ -137,17 +79,9 @@ class PreferencesHelper(
         "false,false,false,false,false,false,false,false,false,false",
     )
 
-    fun feedTabInFront() = preferenceStore.getBoolean("latest_tab_position", false)
-
     fun sourceSorting() = preferenceStore.getInt("sources_sort", 0)
 
-    fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)
-
-    fun mergeInOverflow() = preferenceStore.getBoolean("merge_in_overflow", false)
-
     fun enhancedEHentaiView() = preferenceStore.getBoolean("enhanced_e_hentai_view", true)
-
-    fun useNewSourceNavigation() = preferenceStore.getBoolean("use_new_source_navigation", true)
 
     fun preferredMangaDexId() = preferenceStore.getString("preferred_mangaDex_id", "0")
 
@@ -156,10 +90,4 @@ class PreferencesHelper(
     fun allowLocalSourceHiddenFolders() = preferenceStore.getBoolean("allow_local_source_hidden_folders", false)
 
     fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
-
-    fun bottomBarLabels() = preferenceStore.getBoolean("pref_show_bottom_bar_labels", true)
-
-    fun showNavUpdates() = preferenceStore.getBoolean("pref_show_updates_button", true)
-
-    fun showNavHistory() = preferenceStore.getBoolean("pref_show_history_button", true)
 }

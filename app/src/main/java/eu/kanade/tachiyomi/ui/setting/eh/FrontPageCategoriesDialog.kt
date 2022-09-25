@@ -7,8 +7,8 @@ import android.widget.ScrollView
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.setting.SettingsEhController
@@ -21,7 +21,7 @@ class FrontPageCategoriesDialog(
     var binding: EhDialogCategoriesBinding? = null
         private set
 
-    val preferences: PreferencesHelper by injectLazy()
+    val preferences: UnsortedPreferences by injectLazy()
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = EhDialogCategoriesBinding.inflate(LayoutInflater.from(activity!!))
@@ -80,7 +80,7 @@ class FrontPageCategoriesDialog(
             )
         }
         with(targetController as? SettingsEhController ?: return) {
-            preferences.exhSettingsLanguages().reconfigure()
+            unsortedPreferences.exhSettingsLanguages().reconfigure()
         }
     }
 

@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.core.preference.Preference
+import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.AvailableSources
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -24,11 +26,15 @@ import java.util.concurrent.TimeUnit
 internal class ExtensionGithubApi {
 
     private val networkService: NetworkHelper by injectLazy()
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferenceStore: PreferenceStore by injectLazy()
+    private val lastExtCheck: Preference<Long> by lazy {
+        preferenceStore.getLong("last_ext_check", 0)
+    }
     private val extensionManager: ExtensionManager by injectLazy()
 
     // SY -->
     private val sourcePreferences: SourcePreferences by injectLazy()
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
     // SY <--
 
     private var requiresFallbackSource = false
@@ -57,7 +63,7 @@ internal class ExtensionGithubApi {
 
             val extensions = response
                 .parseAs<List<ExtensionJsonObject>>()
-                .toExtensions() /* SY --> */ + preferences.extensionRepos()
+                .toExtensions() /* SY --> */ + unsortedPreferences.extensionRepos()
                 .get()
                 .flatMap { repoPath ->
                     val url = if (requiresFallbackSource) {
@@ -85,14 +91,14 @@ internal class ExtensionGithubApi {
 
     suspend fun checkForUpdates(context: Context, fromAvailableExtensionList: Boolean = false): List<Extension.Installed>? {
         // Limit checks to once a day at most
-        if (fromAvailableExtensionList.not() && Date().time < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
+        if (fromAvailableExtensionList.not() && Date().time < lastExtCheck.get() + TimeUnit.DAYS.toMillis(1)) {
             return null
         }
 
         val extensions = if (fromAvailableExtensionList) {
             extensionManager.availableExtensions
         } else {
-            findExtensions().also { preferences.lastExtCheck().set(Date().time) }
+            findExtensions().also { lastExtCheck.set(Date().time) }
         }
 
         // SY -->

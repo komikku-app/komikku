@@ -5,9 +5,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
@@ -117,7 +117,7 @@ class EHentai(
     override val lang = "all"
     override val supportsLatest = true
 
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
     /**

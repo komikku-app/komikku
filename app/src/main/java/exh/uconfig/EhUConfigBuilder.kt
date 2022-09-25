@@ -1,12 +1,12 @@
 package exh.uconfig
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.UnsortedPreferences
 import okhttp3.FormBody
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class EhUConfigBuilder {
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
 
     fun build(hathPerks: EHHathPerksResponse): FormBody {
         val configItems = mutableListOf<ConfigItem>()

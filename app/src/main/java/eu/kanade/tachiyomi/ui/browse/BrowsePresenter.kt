@@ -2,7 +2,8 @@ package eu.kanade.tachiyomi.ui.browse
 
 import android.os.Bundle
 import androidx.compose.runtime.getValue
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsPresenter
 import eu.kanade.tachiyomi.ui.browse.feed.FeedPresenter
@@ -13,14 +14,17 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class BrowsePresenter(
-    preferences: PreferencesHelper = Injekt.get(),
+    preferences: BasePreferences = Injekt.get(),
+    // SY -->
+    uiPreferences: UiPreferences = Injekt.get(),
+    // SY <--
 ) : BasePresenter<BrowseController>() {
 
     val isDownloadOnly: Boolean by preferences.downloadedOnly().asState()
     val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
 
     // SY -->
-    val feedTabInFront = preferences.feedTabInFront().get()
+    val feedTabInFront = uiPreferences.feedTabInFront().get()
     // SY <--
 
     // SY -->

@@ -19,6 +19,7 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.data.chapter.NoChaptersException
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.ChapterDownloadAction
@@ -32,7 +33,6 @@ import eu.kanade.presentation.util.calculateWindowWidthSizeClass
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.download.model.Download
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -523,7 +523,7 @@ class MangaController : FullComposeController<MangaPresenter> {
         val manga = presenter.manga ?: return
         // SY -->
         PreMigrationController.navigateToMigration(
-            Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
             router,
             listOf(manga.id),
         )

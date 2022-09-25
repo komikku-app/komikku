@@ -12,8 +12,8 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -48,7 +48,7 @@ import java.util.UUID
 
 class BrowserActionActivity : AppCompatActivity() {
     private val sourceManager: SourceManager by injectLazy()
-    private val preferencesHelper: PreferencesHelper by injectLazy()
+    private val preferencesHelper: UnsortedPreferences by injectLazy()
     private val networkHelper: NetworkHelper by injectLazy()
 
     val httpClient = networkHelper.client

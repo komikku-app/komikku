@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.source
 import android.content.Context
 import com.github.junrar.Archive
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.model.ComicInfo
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -43,7 +43,7 @@ class LocalSource(
     private val xml: XML by injectLazy()
 
     // SY -->
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
     // SY <--
 
     override val name: String = context.getString(R.string.local_source)

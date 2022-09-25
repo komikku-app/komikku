@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -21,7 +22,6 @@ import eu.kanade.presentation.browse.SourceFeedStateImpl
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -59,7 +59,7 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 open class SourceFeedPresenter(
     private val state: SourceFeedStateImpl = SourceFeedState() as SourceFeedStateImpl,
     val source: CatalogueSource,
-    val preferences: PreferencesHelper = Injekt.get(),
+    private val preferences: BasePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val insertManga: InsertManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),

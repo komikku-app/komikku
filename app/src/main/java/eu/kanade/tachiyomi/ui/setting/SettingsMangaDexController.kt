@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.setting
 
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
@@ -23,8 +24,9 @@ class SettingsMangaDexController :
     MangadexLoginDialog.Listener,
     MangadexLogoutDialog.Listener {
 
-    private val mdex by lazy { MdUtil.getEnabledMangaDex(preferences) }
     private val sourcePreferences: SourcePreferences by injectLazy()
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    private val mdex by lazy { MdUtil.getEnabledMangaDex(unsortedPreferences, sourcePreferences) }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.mangadex_specific_settings
@@ -48,7 +50,7 @@ class SettingsMangaDexController :
         addPreference(sourcePreference)
 
         listPreference {
-            bindTo(preferences.preferredMangaDexId())
+            bindTo(unsortedPreferences.preferredMangaDexId())
             titleRes = R.string.mangadex_preffered_source
             summaryRes = R.string.mangadex_preffered_source_summary
             val mangaDexs = MdUtil.getEnabledMangaDexs(sourcePreferences)
@@ -78,7 +80,7 @@ class SettingsMangaDexController :
                         selection[which] = selected
                     }
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        preferences.mangadexSyncToLibraryIndexes().set(
+                        unsortedPreferences.mangadexSyncToLibraryIndexes().set(
                             items.filterIndexed { index, _ -> selection[index] }
                                 .mapIndexed { index, _ -> (index + 1).toString() }
                                 .toSet(),

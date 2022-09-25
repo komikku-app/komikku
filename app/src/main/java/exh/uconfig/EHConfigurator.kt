@@ -1,8 +1,8 @@
 package exh.uconfig
 
 import android.content.Context
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -18,7 +18,7 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class EHConfigurator(val context: Context) {
-    private val prefs: PreferencesHelper by injectLazy()
+    private val prefs: UnsortedPreferences by injectLazy()
     private val sources: SourceManager by injectLazy()
 
     private val configuratorClient = OkHttpClient.Builder()

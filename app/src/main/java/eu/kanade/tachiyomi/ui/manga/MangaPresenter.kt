@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.compose.runtime.Immutable
 import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.core.prefs.mapAsCheckboxState
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
@@ -45,13 +46,13 @@ import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -127,7 +128,8 @@ class MangaPresenter(
     val mangaId: Long,
     val isFromSource: Boolean,
     val smartSearched: Boolean,
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val basePreferences: BasePreferences = Injekt.get(),
+    private val uiPreferences: UiPreferences = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
@@ -267,8 +269,8 @@ class MangaPresenter(
                     isDownloadedOnlyMode = downloadedOnlyMode,
                     dialog = null,
                     // SY -->
-                    showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
-                    showMergeInOverflow = preferences.mergeInOverflow().get(),
+                    showRecommendationsInOverflow = uiPreferences.recommendsInOverflow().get(),
+                    showMergeInOverflow = uiPreferences.mergeInOverflow().get(),
                     showMergeWithAnother = smartSearched,
                     mergedData = null,
                     meta = null,
@@ -355,11 +357,11 @@ class MangaPresenter(
                         context = view?.activity ?: Injekt.get<Application>(),
                         manga = manga,
                         // SY -->
-                        dateRelativeTime = if (manga.isEhBasedManga()) 0 else preferences.relativeTime().get(),
+                        dateRelativeTime = if (manga.isEhBasedManga()) 0 else uiPreferences.relativeTime().get(),
                         dateFormat = if (manga.isEhBasedManga()) {
                             MetadataUtil.EX_DATE_FORMAT
                         } else {
-                            preferences.dateFormat()
+                            UiPreferences.dateFormat(uiPreferences.dateFormat().get())
                         },
                         mergedData = mergedData,
                         alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
@@ -390,11 +392,11 @@ class MangaPresenter(
                 }
         }
 
-        preferences.incognitoMode()
+        basePreferences.incognitoMode()
             .asHotFlow { incognitoMode = it }
             .launchIn(presenterScope)
 
-        preferences.downloadedOnly()
+        basePreferences.downloadedOnly()
             .asHotFlow { downloadedOnlyMode = it }
             .launchIn(presenterScope)
     }

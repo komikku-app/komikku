@@ -8,9 +8,9 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import android.widget.Toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.presentation.webview.EhLoginWebViewScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.toast
@@ -25,7 +25,7 @@ import java.util.Locale
  * LoginController
  */
 class EhLoginActivity : BaseActivity() {
-    private val preferenceManager: PreferencesHelper by injectLazy()
+    private val preferenceManager: UnsortedPreferences by injectLazy()
 
     private var igneous: String? = null
 

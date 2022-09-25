@@ -3,8 +3,8 @@ package eu.kanade.tachiyomi.ui.browse.migration.manga
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.presentation.browse.MigrateMangaScreen
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
@@ -40,7 +40,7 @@ class MigrationMangaController : FullComposeController<MigrateMangaPresenter> {
             presenter = presenter,
             onClickItem = {
                 PreMigrationController.navigateToMigration(
-                    Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                     router,
                     listOf(it.id),
                 )

@@ -1,9 +1,9 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.util.preference.plusAssign
 
-class CreateSourceRepo(private val preferences: PreferencesHelper) {
+class CreateSourceRepo(private val preferences: UnsortedPreferences) {
 
     fun await(name: String): Result {
         // Do not allow duplicate repos.

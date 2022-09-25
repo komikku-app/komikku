@@ -20,7 +20,6 @@ import eu.kanade.presentation.browse.FeedState
 import eu.kanade.presentation.browse.FeedStateImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -55,16 +54,11 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
  * Presenter of [feedTab]
- * Function calls should be done from here. UI calls should be done from the controller.
- *
- * @param sourceManager manages the different sources.
- * @param preferences manages the preference calls.
  */
 open class FeedPresenter(
     private val presenterScope: CoroutineScope,
     private val state: FeedStateImpl = FeedState() as FeedStateImpl,
     val sourceManager: SourceManager = Injekt.get(),
-    val preferences: PreferencesHelper = Injekt.get(),
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val insertManga: InsertManga = Injekt.get(),

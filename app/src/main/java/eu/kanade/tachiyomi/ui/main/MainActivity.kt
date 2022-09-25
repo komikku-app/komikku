@@ -33,8 +33,10 @@ import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -90,6 +92,11 @@ class MainActivity : BaseActivity() {
 
     private val sourcePreferences: SourcePreferences by injectLazy()
     private val libraryPreferences: LibraryPreferences by injectLazy()
+    private val uiPreferences: UiPreferences by injectLazy()
+
+    // SY -->
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    // SY <--
 
     lateinit var binding: MainActivityBinding
 
@@ -142,7 +149,9 @@ class MainActivity : BaseActivity() {
         val didMigration = if (savedInstanceState == null) {
             EXHMigrations.upgrade(
                 context = applicationContext,
-                preferences = preferences,
+                basePreferences = preferences,
+                uiPreferences = uiPreferences,
+                preferenceStore = Injekt.get(),
                 networkPreferences = Injekt.get(),
                 sourcePreferences = sourcePreferences,
                 securityPreferences = Injekt.get(),
@@ -181,7 +190,7 @@ class MainActivity : BaseActivity() {
         setSplashScreenExitAnimation(splashScreen)
 
         if (binding.sideNav != null) {
-            preferences.sideNavIconAlignment()
+            uiPreferences.sideNavIconAlignment()
                 .asHotFlow {
                     binding.sideNav?.menuGravity = when (it) {
                         1 -> Gravity.CENTER
@@ -285,8 +294,8 @@ class MainActivity : BaseActivity() {
             // SY -->
             initWhenIdle {
                 // Upload settings
-                if (preferences.enableExhentai().get() &&
-                    preferences.exhShowSettingsUploadWarning().get()
+                if (unsortedPreferences.enableExhentai().get() &&
+                    unsortedPreferences.exhShowSettingsUploadWarning().get()
                 ) {
                     WarnConfigureDialogController.uploadSettings(router)
                 }
@@ -302,7 +311,7 @@ class MainActivity : BaseActivity() {
             }
         }
         // SY -->
-        if (!preferences.isHentaiEnabled().get()) {
+        if (!unsortedPreferences.isHentaiEnabled().get()) {
             BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
             BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
         }
@@ -337,7 +346,7 @@ class MainActivity : BaseActivity() {
             .launchIn(lifecycleScope)
 
         // SY -->
-        preferences.bottomBarLabels()
+        uiPreferences.bottomBarLabels()
             .asHotFlow { setNavLabelVisibility() }
             .launchIn(lifecycleScope)
         // SY <--
@@ -564,7 +573,7 @@ class MainActivity : BaseActivity() {
             lifecycleScope.launchUI { resetExitConfirmation() }
         } else if (backstackSize == 1 || !router.handleBack()) {
             // Regular back (i.e. closing the app)
-            if (preferences.autoClearChapterCache().get()) {
+            if (libraryPreferences.autoClearChapterCache().get()) {
                 chapterCache.clear()
             }
             super.onBackPressed()
@@ -709,8 +718,8 @@ class MainActivity : BaseActivity() {
 
     // SY -->
     private fun updateNavMenu(menu: Menu) {
-        menu.findItem(R.id.nav_updates).isVisible = preferences.showNavUpdates().get()
-        menu.findItem(R.id.nav_history).isVisible = preferences.showNavHistory().get()
+        menu.findItem(R.id.nav_updates).isVisible = uiPreferences.showNavUpdates().get()
+        menu.findItem(R.id.nav_history).isVisible = uiPreferences.showNavHistory().get()
     }
     // SY <--
 
@@ -719,7 +728,7 @@ class MainActivity : BaseActivity() {
 
     // SY -->
     private fun setNavLabelVisibility() {
-        if (preferences.bottomBarLabels().get()) {
+        if (uiPreferences.bottomBarLabels().get()) {
             nav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
         } else {
             nav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_SELECTED

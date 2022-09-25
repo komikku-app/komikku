@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.os.Bundle
 import android.widget.Toast
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
@@ -26,7 +27,6 @@ import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -60,7 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class MigrationListPresenter(
     private val config: MigrationProcedureConfig,
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val preferences: UnsortedPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),

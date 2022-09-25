@@ -16,11 +16,14 @@ import eu.kanade.data.dateAdapter
 import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.backup.service.BackupPreferences
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.preference.AndroidPreferenceStore
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.provider.AndroidBackupFolderProvider
@@ -31,7 +34,6 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
@@ -209,10 +211,10 @@ class PreferenceModule(val application: Application) : InjektModule {
             )
         }
         addSingletonFactory {
-            PreferencesHelper(
-                context = application,
-                preferenceStore = get(),
-            )
+            UiPreferences(get())
+        }
+        addSingletonFactory {
+            BasePreferences(application, get())
         }
     }
 }
@@ -225,6 +227,10 @@ class SYPreferenceModule(val application: Application) : InjektModule {
             DelegateSourcePreferences(
                 preferenceStore = get(),
             )
+        }
+
+        addSingletonFactory {
+            UnsortedPreferences(get())
         }
     }
 }

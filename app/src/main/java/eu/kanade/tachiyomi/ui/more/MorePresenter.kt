@@ -1,9 +1,10 @@
 package eu.kanade.tachiyomi.ui.more
 
 import android.os.Bundle
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadService
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,15 +19,18 @@ import uy.kohesive.injekt.api.get
 
 class MorePresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
-    preferences: PreferencesHelper = Injekt.get(),
+    preferences: BasePreferences = Injekt.get(),
+    // SY -->
+    uiPreferences: UiPreferences = Injekt.get(),
+    // SY <--
 ) : BasePresenter<MoreController>() {
 
     val downloadedOnly = preferences.downloadedOnly().asState()
     val incognitoMode = preferences.incognitoMode().asState()
 
     // SY -->
-    val showNavUpdates = preferences.showNavUpdates().asState()
-    val showNavHistory = preferences.showNavHistory().asState()
+    val showNavUpdates = uiPreferences.showNavUpdates().asState()
+    val showNavHistory = uiPreferences.showNavHistory().asState()
     // SY <--
 
     private var _state: MutableStateFlow<DownloadQueueState> = MutableStateFlow(DownloadQueueState.Stopped)

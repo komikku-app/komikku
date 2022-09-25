@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.ResetCategoryFlags
 import eu.kanade.domain.category.model.Category
@@ -29,7 +30,6 @@ import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.category.genre.SortTagController
 import eu.kanade.tachiyomi.util.preference.bindTo
-import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
@@ -57,6 +57,10 @@ class SettingsLibraryController : SettingsController() {
     private val trackManager: TrackManager by injectLazy()
     private val resetCategoryFlags: ResetCategoryFlags by injectLazy()
     private val libraryPreferences: LibraryPreferences by injectLazy()
+
+    // SY -->
+    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    // SY <--
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_library
@@ -324,14 +328,14 @@ class SettingsLibraryController : SettingsController() {
             }
         }
 
-        if (preferences.skipPreMigration().get() || preferences.migrationSources().get()
+        if (unsortedPreferences.skipPreMigration().get() || unsortedPreferences.migrationSources().get()
             .isNotEmpty()
         ) {
             preferenceCategory {
                 titleRes = R.string.migration
 
                 switchPreference {
-                    bindTo(preferences.skipPreMigration())
+                    bindTo(unsortedPreferences.skipPreMigration())
                     titleRes = R.string.skip_pre_migration
                     summaryRes = R.string.pref_skip_pre_migration_summary
                 }

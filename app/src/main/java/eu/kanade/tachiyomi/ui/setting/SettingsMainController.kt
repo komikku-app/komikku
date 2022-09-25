@@ -13,11 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.SettingsMainScreen
 import eu.kanade.presentation.more.settings.SettingsSection
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.setting.search.SettingsSearchController
@@ -26,7 +26,7 @@ import uy.kohesive.injekt.injectLazy
 
 class SettingsMainController : BasicFullComposeController() {
 
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
 
     // SY -->
     private val sourcePreferences: SourcePreferences by injectLazy()

@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.model.SourceData
 import eu.kanade.domain.source.repository.SourceDataRepository
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -72,7 +72,7 @@ class SourceManager(
     val onlineSources: Flow<List<HttpSource>> = catalogueSources.map { sources -> sources.filterIsInstance<HttpSource>() }
 
     // SY -->
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
     // SY <--
 
     init {

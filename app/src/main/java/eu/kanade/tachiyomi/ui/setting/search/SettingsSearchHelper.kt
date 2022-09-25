@@ -9,8 +9,8 @@ import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceManager
 import androidx.preference.forEach
 import androidx.preference.get
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.setting.SettingsAdvancedController
 import eu.kanade.tachiyomi.ui.setting.SettingsAppearanceController
 import eu.kanade.tachiyomi.ui.setting.SettingsBackupController
@@ -52,7 +52,7 @@ object SettingsSearchHelper {
             SettingsSecurityController::class,
             SettingsTrackingController::class,
         )
-        val preferences = Injekt.get<PreferencesHelper>()
+        val preferences = Injekt.get<UnsortedPreferences>()
         val sourcePreferences = Injekt.get<SourcePreferences>()
         if (MdUtil.getEnabledMangaDexs(sourcePreferences).isNotEmpty()) {
             controllers += SettingsMangaDexController::class

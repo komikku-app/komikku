@@ -12,6 +12,7 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.core.prefs.CheckboxState
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.isLocal
@@ -22,7 +23,6 @@ import eu.kanade.presentation.library.LibraryScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -120,7 +120,7 @@ class LibraryController(
                 presenter.clearSelection()
                 if (selectedMangaIds.isNotEmpty()) {
                     PreMigrationController.navigateToMigration(
-                        Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                        Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                         router,
                         selectedMangaIds,
                     )
@@ -134,7 +134,7 @@ class LibraryController(
             },
             onClickSyncExh = {
                 // TODO
-                if (Injekt.get<PreferencesHelper>().exhShowSyncIntro().get()) {
+                if (Injekt.get<UnsortedPreferences>().exhShowSyncIntro().get()) {
                     activity?.let { FavoritesIntroDialog().show(it) }
                 } else {
                     MaterialAlertDialogBuilder(activity!!)

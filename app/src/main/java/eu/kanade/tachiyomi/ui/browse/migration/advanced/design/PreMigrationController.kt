@@ -39,13 +39,13 @@ import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bluelinelabs.conductor.Router
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -69,7 +69,7 @@ class PreMigrationController(bundle: Bundle? = null) :
     )
 
     private val sourceManager: SourceManager by injectLazy()
-    private val prefs: PreferencesHelper by injectLazy()
+    private val prefs: UnsortedPreferences by injectLazy()
     private val sourcePreferences: SourcePreferences by injectLazy()
 
     private var adapter: MigrationSourceAdapter? = null

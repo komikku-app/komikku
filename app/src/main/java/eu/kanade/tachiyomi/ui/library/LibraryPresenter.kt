@@ -18,6 +18,8 @@ import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.core.util.asFlow
 import eu.kanade.core.util.asObservable
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.domain.UnsortedPreferences
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
@@ -54,7 +56,6 @@ import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.LocalSource
@@ -131,13 +132,14 @@ class LibraryPresenter(
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val preferences: BasePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     // SY -->
+    private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val searchEngine: SearchEngine = SearchEngine(),
     private val customMangaManager: CustomMangaManager = Injekt.get(),
@@ -205,9 +207,9 @@ class LibraryPresenter(
 
         // SY -->
         combine(
-            preferences.isHentaiEnabled().changes(),
+            unsortedPreferences.isHentaiEnabled().changes(),
             sourcePreferences.disabledSources().changes(),
-            preferences.enableExhentai().changes(),
+            unsortedPreferences.enableExhentai().changes(),
         ) { isHentaiEnabled, disabledSources, enableExhentai ->
             state.showSyncExh = isHentaiEnabled && (EH_SOURCE_ID.toString() !in disabledSources || enableExhentai)
         }.flowOn(Dispatchers.IO).launchIn(presenterScope)
@@ -806,7 +808,7 @@ class LibraryPresenter(
 
     fun syncMangaToDex(mangaList: List<DbManga>) {
         launchIO {
-            MdUtil.getEnabledMangaDex(preferences, sourcePreferences, sourceManager)?.let { mdex ->
+            MdUtil.getEnabledMangaDex(unsortedPreferences, sourcePreferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
                     mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING)
                 }

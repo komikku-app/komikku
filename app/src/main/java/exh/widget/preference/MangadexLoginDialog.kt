@@ -9,8 +9,8 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.dd.processbutton.iml.ActionProcessButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.PrefSiteLoginTwoFactorAuthBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -34,7 +34,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as LoginSource
 
-    val preferences: PreferencesHelper by injectLazy()
+    val preferences: UnsortedPreferences by injectLazy()
 
     val scope = CoroutineScope(Job() + Dispatchers.Main)
 

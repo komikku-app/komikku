@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.work.WorkManager
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.backup.service.BackupPreferences
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -13,8 +14,9 @@ import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -35,7 +37,9 @@ import java.util.UUID
 object DebugFunctions {
     val app: Application by injectLazy()
     val handler: DatabaseHandler by injectLazy()
-    val prefs: PreferencesHelper by injectLazy()
+    val prefsStore: PreferenceStore by injectLazy()
+    val basePrefs: BasePreferences by injectLazy()
+    val uiPrefs: UiPreferences by injectLazy()
     val networkPrefs: NetworkPreferences by injectLazy()
     val sourcePrefs: SourcePreferences by injectLazy()
     val securityPrefs: SecurityPreferences by injectLazy()
@@ -52,13 +56,15 @@ object DebugFunctions {
     val getAllManga: GetAllManga by injectLazy()
 
     fun forceUpgradeMigration() {
-        prefs.ehLastVersionCode().set(1)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
+        val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
+        lastVersionCode.set(1)
+        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
     }
 
     fun forceSetupJobs() {
-        prefs.ehLastVersionCode().set(0)
-        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
+        val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
+        lastVersionCode.set(0)
+        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
     }
 
     fun resetAgedFlagInEXHManga() {

@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
+import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
@@ -10,10 +11,10 @@ import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.model.Pin
 import eu.kanade.domain.source.model.Source
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceUiModel
 import eu.kanade.presentation.browse.SourcesState
 import eu.kanade.presentation.browse.SourcesStateImpl
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,12 +33,13 @@ import java.util.TreeMap
 class SourcesPresenter(
     private val presenterScope: CoroutineScope,
     private val state: SourcesStateImpl = SourcesState() as SourcesStateImpl,
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val preferences: BasePreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getEnabledSources: GetEnabledSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
     // SY -->
+    private val uiPreferences: UiPreferences = Injekt.get(),
     private val getSourceCategories: GetSourceCategories = Injekt.get(),
     private val getShowLatest: GetShowLatest = Injekt.get(),
     private val toggleExcludeFromDataSaver: ToggleExcludeFromDataSaver = Injekt.get(),
@@ -50,7 +52,7 @@ class SourcesPresenter(
     private val _events = Channel<Event>(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
 
-    val useNewSourceNavigation = preferences.useNewSourceNavigation().get()
+    val useNewSourceNavigation = uiPreferences.useNewSourceNavigation().get()
 
     fun onCreate() {
         // SY -->
