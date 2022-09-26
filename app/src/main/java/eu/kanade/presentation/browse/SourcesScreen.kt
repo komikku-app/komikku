@@ -106,7 +106,7 @@ private fun SourceList(
             key = {
                 when (it) {
                     is SourceUiModel.Header -> it.hashCode()
-                    is SourceUiModel.Item -> it.source.key()
+                    is SourceUiModel.Item -> "source-${it.source.key()}"
                 }
             },
         ) { model ->

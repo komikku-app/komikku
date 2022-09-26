@@ -123,7 +123,7 @@ private fun MigrateSourceList(
 
         items(
             items = list,
-            key = { (source, _) -> source.id },
+            key = { (source, _) -> "migrate-${source.id}" },
         ) { (source, count) ->
             MigrateSourceItem(
                 modifier = Modifier.animateItemPlacement(),

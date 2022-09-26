@@ -101,7 +101,7 @@ private fun SourcesFilterContent(
             key = {
                 when (it) {
                     is FilterUiModel.Header, is FilterUiModel.ToggleHeader -> it.hashCode()
-                    is FilterUiModel.Item -> it.source.key()
+                    is FilterUiModel.Item -> "source-filter-${it.source.key()}"
                 }
             },
         ) { model ->
