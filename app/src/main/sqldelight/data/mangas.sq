@@ -206,3 +206,8 @@ selectLastInsertRow:
 SELECT *
 FROM mangas
 WHERE _id = last_insert_rowid();
+
+getIdByUrlAndSource:
+SELECT _id
+FROM mangas
+WHERE url = :url AND source = :source;
