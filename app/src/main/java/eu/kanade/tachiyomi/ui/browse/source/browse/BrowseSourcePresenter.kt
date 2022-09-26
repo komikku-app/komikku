@@ -74,6 +74,7 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TextSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
@@ -473,7 +474,7 @@ open class BrowseSourcePresenter(
 
     // EXH -->
     fun saveSearch(name: String, query: String, filterList: FilterList) {
-        launchIO {
+        presenterScope.launchNonCancellable {
             insertSavedSearch.await(
                 SavedSearch(
                     id = -1,
@@ -487,7 +488,7 @@ open class BrowseSourcePresenter(
     }
 
     fun deleteSearch(savedSearchId: Long) {
-        launchIO {
+        presenterScope.launchNonCancellable {
             deleteSavedSearchById.await(savedSearchId)
         }
     }
