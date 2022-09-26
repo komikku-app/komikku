@@ -104,6 +104,9 @@
 # === Keep RxAndroid, https://github.com/ReactiveX/RxAndroid/issues/350
 -keep class rx.android.** { *; }
 
+# XmlUtil
+-keep public enum nl.adaptivity.xmlutil.EventType { *; }
+
 # Design library
 -dontwarn com.google.android.material.**
 -keep class com.google.android.material.** { *; }
