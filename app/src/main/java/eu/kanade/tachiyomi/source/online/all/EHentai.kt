@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.newCallWithProgress
+import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
 import eu.kanade.tachiyomi.source.PagePreviewInfo
 import eu.kanade.tachiyomi.source.PagePreviewPage
 import eu.kanade.tachiyomi.source.PagePreviewSource
@@ -1165,7 +1165,7 @@ class EHentai(
     }
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
-        return client.newCallWithProgress(exGet(page.imageUrl, cacheControl = cacheControl), page).await()
+        return client.newCachelessCallWithProgress(exGet(page.imageUrl, cacheControl = cacheControl), page).await()
     }
 
     /**

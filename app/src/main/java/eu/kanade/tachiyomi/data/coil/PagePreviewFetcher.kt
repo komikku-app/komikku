@@ -12,7 +12,6 @@ import coil.request.Options
 import coil.request.Parameters
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
-import eu.kanade.tachiyomi.network.CACHE_CONTROL_NO_STORE
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -243,6 +242,7 @@ class PagePreviewFetcher(
     }
 
     companion object {
+        private val CACHE_CONTROL_NO_STORE = CacheControl.Builder().noStore().build()
         private val CACHE_CONTROL_NO_NETWORK_NO_CACHE = CacheControl.Builder().noCache().onlyIfCached().build()
     }
 }

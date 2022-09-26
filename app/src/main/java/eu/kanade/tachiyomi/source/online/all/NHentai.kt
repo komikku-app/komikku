@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.newCallWithProgress
+import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
 import eu.kanade.tachiyomi.source.PagePreviewInfo
 import eu.kanade.tachiyomi.source.PagePreviewPage
 import eu.kanade.tachiyomi.source.PagePreviewSource
@@ -191,7 +191,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
-        return client.newCallWithProgress(
+        return client.newCachelessCallWithProgress(
             if (cacheControl != null) {
                 GET(page.imageUrl, cache = cacheControl)
             } else {
