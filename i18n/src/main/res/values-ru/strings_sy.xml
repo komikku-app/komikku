@@ -4,9 +4,9 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Перетаскивание</string>
     <string name="action_sort_enabled">Включено</string>
-    <string name="action_skip_manga">Не мигриговать</string>
+    <string name="action_skip_manga">Не переносить</string>
     <string name="action_search_manually">Поиск вручную</string>
-    <string name="action_migrate_now">Мигрировать сейчас</string>
+    <string name="action_migrate_now">Перенести сейчас</string>
     <string name="action_copy_now">Копировать сейчас</string>
     <string name="action_clean_titles">Очистить названия</string>
     <string name="action_start_reading_button">Кнопка «Начать чтение»</string>
@@ -171,16 +171,18 @@
     <string name="auto_solve_captchas_summary">Использовать (ОЧЕНЬ ЭКСПЕРЕМЕНТАЛЬНО) автоматическое прохождение ReCAPTCHA. Если устройство не поддерживается, это меню будет выделено серым цветом.</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
     <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню вместо размещения на сведеньях серии</string>
+    <string name="put_merge_in_overflow">Объединение в выпадающем меню</string>
+    <string name="put_merge_in_overflow_summary">Поместить кнопку «Объединение» в выпадающее меню вместо размещения на сведеньях серии</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Панель навигации</string>
-    <string name="pref_hide_updates_button">Вкладка (Обновления) на панели навигации</string>
-    <string name="pref_hide_history_button">Вкладка (История) на панели навигации</string>
+    <string name="pref_hide_updates_button">Вкладка «Обновления» на панели навигации</string>
+    <string name="pref_hide_history_button">Вкладка «История» на панели навигации</string>
     <string name="pref_show_bottom_bar_labels">Названия вкладок на панели навигации</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки сортировки</string>
-    <string name="pref_skip_pre_migration_summary">Использовать последние сохранённые премиграционные настройки и источники для массовой миграции</string>
+    <string name="pref_skip_pre_migration_summary">Использовать последние сохранённые предпереносные настройки и источники для массового переноса</string>
     <string name="library_settings_sheet">Панель настроек библиотеки</string>
     <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
     <string name="library_group_updates">Обновления библиотеки для динамических категорий</string>
@@ -218,13 +220,13 @@
     <string name="biometric_lock_time_deleted_snack">Биометрическое время блокировки удалено</string>
     <string name="biometric_lock_days">Дни биометрической блокировки</string>
     <string name="biometric_lock_days_summary">Выбрать дни биометрической блокировки приложения</string>
+    <string name="sunday">Воскресенье</string>
     <string name="monday">Понедельник</string>
     <string name="tuesday">Вторник</string>
     <string name="wednesday">Среда</string>
     <string name="thursday">Четверг</string>
     <string name="friday">Пятница</string>
     <string name="saturday">Суббота</string>
-    <string name="sunday">Воскресенье</string>
 
     <!-- Reader Settings -->
     <string name="page_downloading">Загрузка страниц</string>
@@ -251,7 +253,7 @@
     <string name="auto_webtoon_mode_summary">Использовать автоматический режим веб-комикса для серий, которые, вероятно, имеют формат длинной вертикальной страницы</string>
     <string name="enable_zoom_out">Включить уменьшение масштаба</string>
     <string name="tap_scroll_page">Нажатия пролистывают постранично</string>
-    <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, заместо размера экрана устройства</string>
+    <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, вместо размера экрана устройства</string>
     <string name="reader_bottom_buttons">Кнопки в нижней части читалки</string>
     <string name="reader_bottom_buttons_summary">Настройка отображения кнопок в нижней части читалки</string>
     <string name="pref_show_vert_seekbar_landscape">Показывать вертикальную полосу прокрутки</string>
@@ -315,22 +317,22 @@
     <!-- Center margin -->
     <string name="center_margin">Отступ по центру</string>
     <string name="center_margin_none">Нет</string>
-    <string name="center_margin_double_page">Добавить к двойной странице</string>
-    <string name="center_margin_wide_page">Добавить к широкой странице</string>
-    <string name="center_margin_double_and_wide_page">Добавить к обоим</string>
+    <string name="center_margin_double_page">Двойная страница</string>
+    <string name="center_margin_wide_page">Широкая страница</string>
+    <string name="center_margin_double_and_wide_page">Оба варианта</string>
     <string name="pref_center_margin">Отступ по центру</string>
     <string name="pref_center_margin_summary">Вставить проставку для устранения зазоров на складных устройствах.</string>
 
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">Рекомендации</string>
-    <string name="merge">Слияние</string>
-    <string name="merge_with_another_source">Слиться</string>
-    <string name="manga_merged">Серия слита!</string>
-    <string name="failed_merge">Ошибка слияния серии: %1$s</string>
+    <string name="merge">Объединение</string>
+    <string name="merge_with_another_source">Объединиться</string>
+    <string name="manga_merged">Серия объеденена!</string>
+    <string name="failed_merge">Ошибка объединения серии: %1$s</string>
     <string name="merge_unknown_manga">Неизвестный ID серии: %1$d</string>
-    <string name="merged_already">Эта серия уже слита с текущей серией!</string>
-    <string name="merge_duplicate">Эта слитая серия является дубликатом!</string>
+    <string name="merged_already">Эта серия уже объеденена с текущей серией!</string>
+    <string name="merge_duplicate">Эта объеденённая серия является дубликатом!</string>
 
     <!-- Manga Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
@@ -352,7 +354,7 @@
     <string name="automatic_search_error">Ошибка при выполнении автоматического поиска!</string>
 
     <!-- Saved Searches -->
-    <string name="saved_searches">Сохранение запроса</string>
+    <string name="saved_searches">Сохраненные запросы</string>
     <string name="save_search">Сохранить текущий поисковой запрос?</string>
     <string name="save_search_hint">Имя запроса</string>
     <string name="save_search_failed_to_load">Не удалось загрузить сохраненные поисковые запросы!</string>
@@ -390,7 +392,9 @@
     <string name="error_tag_exists">Этот тэг уже существует!</string>
     <string name="snack_tags_deleted">Тэги удалены</string>
     <string name="delete_tag">Удалить тэг</string>
-    <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s</string>
+    <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
+    <string name="delete_time_range">Удалить время блокировки</string>
+    <string name="delete_time_range_confirmation">Хотите ли вы удалить время блокировки %s?</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
@@ -412,18 +416,18 @@
     <string name="invalid_repo_name">Недопустимое имя репозитория</string>
     <string name="repo_source">Источник репозитория</string>
     <string name="delete_repo">Удалить репозиторий</string>
-    <string name="delete_repo_confirmation">Хотите ли вы удалить репозиторий %s</string>
+    <string name="delete_repo_confirmation">Хотите ли вы удалить репозиторий %s?</string>
 
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
-    <string name="source_migration">Миграция источника</string>
-    <string name="migration">Миграция</string>
-    <string name="skip_pre_migration">Пропустить настройку миграции</string>
+    <string name="source_migration">Перенос источника</string>
+    <string name="migration">Перенос</string>
+    <string name="skip_pre_migration">Пропустить настройку переноса</string>
     <string name="pre_migration_skip_toast">Чтобы снова показать этот экран, перейдите по (Настройки -&gt; Библиотека).</string>
-    <string name="select_a_source_to_migrate_from">Выберите источник для миграции</string>
+    <string name="select_a_source_to_migrate_from">Выберите источник для переноса</string>
     <string name="use_intelligent_search">Поиск названия + ключевые слова</string>
-    <string name="data_to_include_in_migration">Какие данные мигрировать</string>
+    <string name="data_to_include_in_migration">Какие данные перенести</string>
     <string name="include_extra_search_parameter">Дополнительный параметр при поиске</string>
     <string name="use_most_chapters">Использовать источник с наибольшим количеством глав (Медленнее)</string>
     <string name="use_first_source">Использовать первый источник с альтернативой</string>
@@ -431,17 +435,17 @@
     <string name="hide_not_found_manga">Скрыть не найденые серии</string>
     <string name="search_parameter">Параметр поиска (Например - language:english)</string>
     <string name="latest_">Последняя: %1$s</string>
-    <string name="migrating_to">Мигрировать в</string>
+    <string name="migrating_to">Перенести в</string>
     <string name="match_pinned_sources">Соответствие закреплённых источников</string>
     <string name="match_enabled_sources">Соответствие включённых источников</string>
-    <string name="no_chapters_found_for_migration">Глав не найдено. Эта серия не может быть использована для миграции</string>
+    <string name="no_chapters_found_for_migration">Глав не найдено. Эта серия не может быть использована для переноса</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
-    <string name="stop_migrating">Остановить миграцию?</string>
+    <string name="stop_migrating">Остановить перенос?</string>
     <plurals name="migrate_manga">
-        <item quantity="one">Мигрировать %1$d%2$s серию?</item>
-        <item quantity="few">Мигрировать %1$d%2$s серии?</item>
-        <item quantity="many">Мигрировать %1$d%2$s серий?</item>
-        <item quantity="other">Мигрировать %1$d%2$s серий?</item>
+        <item quantity="one">Перенести %1$d%2$s серию?</item>
+        <item quantity="few">Перенести %1$d%2$s серии?</item>
+        <item quantity="many">Перенести %1$d%2$s серий?</item>
+        <item quantity="other">Перенести %1$d%2$s серий?</item>
     </plurals>
     <plurals name="copy_manga">
         <item quantity="one">Копировать %1$d%2$s серию?</item>
@@ -462,7 +466,7 @@
     <string name="no_valid_manga">Выбрана недопустимая серия</string>
 
     <!-- Library Sheet -->
-    <string name="lewd">18+</string>
+    <string name="lewd">Для взрослых</string>
     <string name="started">Начато</string>
 
     <!-- Library Grouping -->
@@ -647,17 +651,17 @@
     </plurals>
 
     <!-- Merged manga -->
-    <string name="merge_settings">Настройки слияния</string>
+    <string name="merge_settings">Настройки объединения</string>
     <string name="fetch_chapter_updates">Получить обновления глав</string>
     <string name="delete_merged_manga">Вы уверены?</string>
-    <string name="delete_merged_manga_desc">Это приведет к удалению серии из слияния, а также потеряет все несохранённые изменения, применённые к слитой серии</string>
+    <string name="delete_merged_manga_desc">Это приведёт к удалению серии из объединения, а также будут утеряны все несохранённые изменения, применённые к объединённой серии</string>
     <string name="chapter_updates_merged_manga">Переключатель обновлений глав</string>
-    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит/включит обновления глав для этой слитой серии</string>
+    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит/включит обновления глав для этой объеденённой серии</string>
     <string name="download_merged_manga">Переключатель загрузки глав</string>
-    <string name="download_merged_manga_desc">Переключение этого параметра отключит/включит загрузку глав для этой слитой серии</string>
-    <string name="merged_references_invalid">Недействительные слитые ссылки</string>
+    <string name="download_merged_manga_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой серии</string>
+    <string name="merged_references_invalid">Недействительные объеденённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
-    <string name="merged_references">Слитые ссылки</string>
+    <string name="merged_references">Объеденённые ссылки</string>
     <string name="merged_toggle_chapter_updates_find_error">Не удалось найти серию для переключения обновлений глав</string>
     <string name="merged_toggle_download_chapters_error">Ошибка переключения загрузки глав</string>
     <string name="merged_toggle_download_chapters_find_error">Не удалось найти серию для переключения загрузки глав</string>
@@ -685,7 +689,7 @@
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку (MangaDex)</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex</string>
-    <string name="mangadex_similar">MangaDex похожее</string>
+    <string name="mangadex_similar">Похожее с MangaDex</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
 
     <!-- Scanlator filters -->
