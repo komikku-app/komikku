@@ -1136,6 +1136,7 @@ class MangaPresenter(
 
     /**
      * Deletes the given list of chapter.
+     *
      * @param chapters the list of chapters to delete.
      */
     fun deleteChapters(chapters: List<DomainChapter>) {
@@ -1163,7 +1164,6 @@ class MangaPresenter(
                     }
                     successState.copy(chapters = newChapters)
                 }
-                toggleAllSelection(false)
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
             }
