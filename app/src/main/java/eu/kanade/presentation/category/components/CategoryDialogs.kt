@@ -83,7 +83,7 @@ fun CategoryRenameDialog(
     category: String,
 ) {
     val (name, onNameChange) = remember { mutableStateOf(category) }
-    val focusRequester = remember { FocusRequester.Default }
+    val focusRequester = remember { FocusRequester() }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
