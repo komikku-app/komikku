@@ -369,7 +369,7 @@ private fun MangaScreenSmallImpl(
         val topPadding = contentPadding.calculateTopPadding()
 
         SwipeRefresh(
-            state = rememberSwipeRefreshState(state.isRefreshingInfo || state.isRefreshingChapter),
+            state = rememberSwipeRefreshState(state.isRefreshingData),
             onRefresh = onRefresh,
             swipeEnabled = !chapters.any { it.selected },
             indicatorPadding = contentPadding,
@@ -565,7 +565,7 @@ fun MangaScreenLargeImpl(
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
     val (topBarHeight, onTopBarHeightChanged) = remember { mutableStateOf(0) }
     SwipeRefresh(
-        state = rememberSwipeRefreshState(state.isRefreshingInfo || state.isRefreshingChapter),
+        state = rememberSwipeRefreshState(state.isRefreshingData),
         onRefresh = onRefresh,
         swipeEnabled = !chapters.any { it.selected },
         indicatorPadding = PaddingValues(
