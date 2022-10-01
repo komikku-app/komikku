@@ -76,6 +76,7 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.logcat
@@ -83,7 +84,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.savedsearches.models.SavedSearch
 import exh.source.getMainSource
 import exh.util.nullIfBlank
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
@@ -92,7 +92,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -300,17 +299,13 @@ open class BrowseSourcePresenter(
      */
     private suspend fun initializeManga(manga: DomainManga) {
         if (manga.thumbnailUrl != null || manga.initialized) return
-        withContext(NonCancellable) {
-            val db = manga.toDbManga()
+        withNonCancellableContext {
             try {
-                val networkManga = source!!.getMangaDetails(db.copy())
-                db.copyFrom(networkManga)
-                db.initialized = true
-                updateManga.await(
-                    db
-                        .toDomainManga()
-                        ?.toMangaUpdate()!!,
-                )
+                val networkManga = source!!.getMangaDetails(manga.toSManga())
+                val updatedManga = manga.copyFrom(networkManga)
+                    .copy(initialized = true)
+
+                updateManga.await(updatedManga.toMangaUpdate())
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
             }

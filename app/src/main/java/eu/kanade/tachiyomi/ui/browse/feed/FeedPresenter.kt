@@ -28,18 +28,17 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
@@ -286,17 +285,13 @@ open class FeedPresenter(
      */
     private suspend fun initializeManga(source: CatalogueSource?, manga: DomainManga) {
         if (source == null || manga.thumbnailUrl != null || manga.initialized) return
-        withContext(NonCancellable) {
-            val db = manga.toDbManga()
+        withNonCancellableContext {
             try {
-                val networkManga = source.getMangaDetails(db.copy())
-                db.copyFrom(networkManga)
-                db.initialized = true
-                updateManga.await(
-                    db
-                        .toDomainManga()
-                        ?.toMangaUpdate()!!,
-                )
+                val networkManga = source.getMangaDetails(manga.toSManga())
+                val updatedManga = manga.copyFrom(networkManga)
+                    .copy(initialized = true)
+
+                updateManga.await(updatedManga.toMangaUpdate())
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
             }

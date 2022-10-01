@@ -135,6 +135,34 @@ data class Manga(
         it.initialized = initialized
     }
 
+    fun copyFrom(other: SManga): Manga {
+        // SY -->
+        val author = other.author ?: ogAuthor
+        val artist = other.artist ?: ogArtist
+        val description = other.description ?: ogDescription
+        val genres = if (other.genre != null) {
+            other.getGenres()
+        } else {
+            ogGenre
+        }
+        // SY <--
+        val thumbnailUrl = other.thumbnail_url ?: thumbnailUrl
+        return this.copy(
+            // SY -->
+            ogAuthor = author,
+            ogArtist = artist,
+            ogDescription = description,
+            ogGenre = genres,
+            // SY <--
+            thumbnailUrl = thumbnailUrl,
+            // SY -->
+            ogStatus = other.status.toLong(),
+            // SY <--
+            updateStrategy = other.update_strategy,
+            initialized = other.initialized && initialized,
+        )
+    }
+
     companion object {
         // Generic filter that does not filter anything
         const val SHOW_ALL = 0x00000000L
