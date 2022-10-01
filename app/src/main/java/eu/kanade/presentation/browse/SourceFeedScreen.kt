@@ -27,6 +27,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -260,6 +262,9 @@ fun SourceFeedToolbar(
     downloadedOnlyMode: Boolean,
     onClickSearch: () -> Unit,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     when {
         state.searchQuery != null -> SearchToolbar(
             searchQuery = state.searchQuery!!,
@@ -269,10 +274,13 @@ fun SourceFeedToolbar(
             scrollBehavior = scrollBehavior,
             incognitoMode = incognitoMode,
             downloadedOnlyMode = downloadedOnlyMode,
+            placeholderText = stringResource(R.string.action_search_hint),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
                     onClickSearch()
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
                 },
             ),
         )
