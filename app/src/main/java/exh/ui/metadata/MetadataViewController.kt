@@ -14,8 +14,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -84,24 +84,35 @@ class MetadataViewController : FullComposeController<MetadataViewPresenter> {
                 MetadataViewState.SourceNotFound -> EmptyScreen(R.string.source_empty_screen)
                 is MetadataViewState.Success -> {
                     val context = LocalContext.current
-                    val items by derivedStateOf { state.meta.getExtraInfoPairs(context) }
+                    val items = remember(state.meta) { state.meta.getExtraInfoPairs(context) }
                     ScrollbarLazyColumn(
                         contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
                     ) {
                         items(items) { (title, text) ->
                             Row(
-                                Modifier.fillMaxWidth()
-                                    .clickableNoIndication(onLongClick = { context.copyToClipboard(title, text) }, onClick = {})
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickableNoIndication(
+                                        onLongClick = {
+                                            context.copyToClipboard(title,
+                                                text)
+                                        },
+                                        onClick = {}
+                                    )
                                     .padding(vertical = 8.dp),
                             ) {
                                 Text(
                                     title,
-                                    modifier = Modifier.width(140.dp).padding(start = 16.dp),
+                                    modifier = Modifier
+                                        .width(140.dp)
+                                        .padding(start = 16.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                                 Text(
                                     text,
-                                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 8.dp, end = 8.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = LocalContentColor.current.copy(alpha = 0.7F),
                                 )
