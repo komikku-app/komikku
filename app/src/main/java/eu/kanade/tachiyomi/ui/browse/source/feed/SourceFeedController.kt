@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -178,6 +179,10 @@ open class SourceFeedController :
             onClickManga = ::onMangaClick,
             onClickSearch = ::onSearchClick,
         )
+
+        BackHandler(presenter.searchQuery != null) {
+            presenter.searchQuery = null
+        }
     }
 
     /**
@@ -208,16 +213,6 @@ open class SourceFeedController :
 
     private fun onSearchClick() {
         onBrowseClick(presenter.searchQuery?.nullIfBlank())
-    }
-
-    override fun handleBack(): Boolean {
-        return when {
-            presenter.searchQuery != null -> {
-                presenter.searchQuery = null
-                true
-            }
-            else -> false
-        }
     }
 
     private fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
