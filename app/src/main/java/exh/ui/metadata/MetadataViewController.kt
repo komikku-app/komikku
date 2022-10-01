@@ -94,10 +94,12 @@ class MetadataViewController : FullComposeController<MetadataViewPresenter> {
                                     .fillMaxWidth()
                                     .clickableNoIndication(
                                         onLongClick = {
-                                            context.copyToClipboard(title,
-                                                text)
+                                            context.copyToClipboard(
+                                                title,
+                                                text,
+                                            )
                                         },
-                                        onClick = {}
+                                        onClick = {},
                                     )
                                     .padding(vertical = 8.dp),
                             ) {

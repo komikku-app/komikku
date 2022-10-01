@@ -366,7 +366,7 @@ private fun ExtensionItemActions(
     onClickItemAction: (Extension) -> Unit = {},
 ) {
     val isIdle = installStep.isCompleted()
-    Row(modifier = modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         if (isIdle) {
             // SY -->
             if (
