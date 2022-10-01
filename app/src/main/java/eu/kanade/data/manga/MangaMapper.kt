@@ -1,8 +1,7 @@
 package eu.kanade.data.manga
 
-import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 
 val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy) -> Manga =
@@ -35,29 +34,32 @@ val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, 
     }
 
 val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long, Long, Long) -> LibraryManga =
-    { _id, source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, filtered_scanlators, update_strategy, unread_count, read_count, category ->
-        LibraryManga().apply {
-            this.id = _id
-            this.source = source
-            this.url = url
-            this.artist = artist
-            this.author = author
-            this.description = description
-            this.genre = genre?.joinToString()
-            this.title = title
-            this.status = status.toInt()
-            this.thumbnail_url = thumbnail_url
-            this.favorite = favorite
-            this.last_update = last_update ?: 0
-            this.update_strategy = update_strategy
-            this.initialized = initialized
-            this.viewer_flags = viewer.toInt()
-            this.chapter_flags = chapter_flags.toInt()
-            this.cover_last_modified = cover_last_modified
-            this.date_added = date_added
-            this.filtered_scanlators = filtered_scanlators?.let(listOfStringsAndAdapter::encode)
-            this.unreadCount = unread_count.toInt()
-            this.readCount = read_count.toInt()
-            this.category = category.toInt()
-        }
+    { _id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, nextUpdate, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, unreadCount, readCount, category ->
+        LibraryManga(
+            manga = mangaMapper(
+                _id,
+                source,
+                url,
+                artist,
+                author,
+                description,
+                genre,
+                title,
+                status,
+                thumbnailUrl,
+                favorite,
+                lastUpdate,
+                nextUpdate,
+                initialized,
+                viewerFlags,
+                chapterFlags,
+                coverLastModified,
+                dateAdded,
+                filteredScanlators,
+                updateStrategy,
+            ),
+            category = category,
+            unreadCount = unreadCount,
+            readCount = readCount,
+        )
     }

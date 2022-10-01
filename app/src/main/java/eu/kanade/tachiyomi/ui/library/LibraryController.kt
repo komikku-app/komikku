@@ -21,7 +21,6 @@ import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibraryScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
@@ -115,8 +114,8 @@ class LibraryController(
             onClickCleanTitles = ::cleanTitles,
             onClickMigrate = {
                 val selectedMangaIds = presenter.selection
-                    .filterNot { it.source == MERGED_SOURCE_ID }
-                    .mapNotNull { it.id }
+                    .filterNot { it.manga.source == MERGED_SOURCE_ID }
+                    .map { it.manga.id }
                 presenter.clearSelection()
                 if (selectedMangaIds.isNotEmpty()) {
                     PreMigrationController.navigateToMigration(
@@ -130,7 +129,7 @@ class LibraryController(
             },
             onClickAddToMangaDex = ::pushToMdList,
             onOpenReader = {
-                startReading(it.toDomainManga()!!)
+                startReading(it.manga)
             },
             onClickSyncExh = {
                 // TODO
@@ -296,7 +295,7 @@ class LibraryController(
     private fun showMangaCategoriesDialog() {
         viewScope.launchIO {
             // Create a copy of selected manga
-            val mangaList = presenter.selection.mapNotNull { it.toDomainManga() }.toList()
+            val mangaList = presenter.selection.map { it.manga }
 
             // Hide the default category because it has a different behavior than the ones from db.
             val categories = presenter.ogCategories.filter { it.id != 0L } // SY <--
@@ -318,28 +317,28 @@ class LibraryController(
 
     private fun downloadUnreadChapters() {
         val mangaList = presenter.selection.toList()
-        presenter.downloadUnreadChapters(mangaList.mapNotNull { it.toDomainManga() })
+        presenter.downloadUnreadChapters(mangaList.map { it.manga })
         presenter.clearSelection()
     }
 
     private fun markReadStatus(read: Boolean) {
         val mangaList = presenter.selection.toList()
-        presenter.markReadStatus(mangaList.mapNotNull { it.toDomainManga() }, read)
+        presenter.markReadStatus(mangaList.map { it.manga }, read)
         presenter.clearSelection()
     }
 
     private fun showDeleteMangaDialog() {
-        val mangaList = presenter.selection.mapNotNull { it.toDomainManga() }.toList()
+        val mangaList = presenter.selection.map { it.manga }
         presenter.dialog = LibraryPresenter.Dialog.DeleteManga(mangaList)
     }
 
     // SY -->
     private fun cleanTitles() {
         val mangas = presenter.selection.filter {
-            it.isEhBasedManga() ||
-                it.source in nHentaiSourceIds ||
-                it.source == PERV_EDEN_EN_SOURCE_ID ||
-                it.source == PERV_EDEN_IT_SOURCE_ID
+            it.manga.isEhBasedManga() ||
+                it.manga.source in nHentaiSourceIds ||
+                it.manga.source == PERV_EDEN_EN_SOURCE_ID ||
+                it.manga.source == PERV_EDEN_IT_SOURCE_ID
         }
         presenter.cleanTitles(mangas)
         presenter.clearSelection()
@@ -347,7 +346,7 @@ class LibraryController(
 
     private fun pushToMdList() {
         val mangas = presenter.selection.filter {
-            it.source in mangaDexSourceIds
+            it.manga.source in mangaDexSourceIds
         }
         presenter.syncMangaToDex(mangas)
         presenter.clearSelection()

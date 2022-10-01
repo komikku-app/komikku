@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.tachiyomi.data.database.models.LibraryManga
+import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.tachiyomi.ui.library.LibraryPresenter
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
@@ -55,14 +55,14 @@ class LibraryStateImpl : LibraryState {
     override var showSyncExh: Boolean by mutableStateOf(true)
     override val showCleanTitles: Boolean by derivedStateOf {
         selection.any {
-            it.isEhBasedManga() ||
-                it.source in nHentaiSourceIds ||
-                it.source == PERV_EDEN_EN_SOURCE_ID ||
-                it.source == PERV_EDEN_IT_SOURCE_ID
+            it.manga.isEhBasedManga() ||
+                it.manga.source in nHentaiSourceIds ||
+                it.manga.source == PERV_EDEN_EN_SOURCE_ID ||
+                it.manga.source == PERV_EDEN_IT_SOURCE_ID
         }
     }
     override val showAddToMangadex: Boolean by derivedStateOf {
-        selection.any { it.source in mangaDexSourceIds }
+        selection.any { it.manga.source in mangaDexSourceIds }
     }
     // SY <--
 }

@@ -15,7 +15,6 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
@@ -98,17 +97,17 @@ class FavoritesSyncHelper(val context: Context) {
         status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
         val libraryManga = getLibraryManga.await()
         val seenManga = HashSet<Long>(libraryManga.size)
-        libraryManga.forEach {
-            if (!it.isEhBasedManga()) return@forEach
+        libraryManga.forEach { (manga) ->
+            if (!manga.isEhBasedManga()) return@forEach
 
-            if (it.id in seenManga) {
-                val inCategories = getCategories.await(it.id!!)
-                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it.toDomainManga()!!, inCategories, context)
+            if (manga.id in seenManga) {
+                val inCategories = getCategories.await(manga.id)
+                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(manga, inCategories, context)
 
-                logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))
+                logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, manga.id))
                 return
             } else {
-                seenManga += it.id!!
+                seenManga += manga.id
             }
         }
 
