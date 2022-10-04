@@ -207,7 +207,7 @@ private fun SourceItem(
         source = source,
         onClickItem = { onClickItem(source, GetRemoteManga.QUERY_POPULAR) },
         onLongClickItem = { onLongClickItem(source) },
-        action = { source ->
+        action = {
             if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
                 TextButton(onClick = { onClickItem(source, GetRemoteManga.QUERY_LATEST) }) {
                     Text(
