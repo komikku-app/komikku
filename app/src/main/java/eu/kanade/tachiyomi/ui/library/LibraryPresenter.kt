@@ -556,7 +556,7 @@ class LibraryPresenter(
                     manga1chapterFetchDate.compareTo(manga2chapterFetchDate)
                 }
                 LibrarySort.Type.DateAdded -> {
-                    i1.libraryManga.manga.dateAdded.compareTo(i1.libraryManga.manga.dateAdded)
+                    i1.libraryManga.manga.dateAdded.compareTo(i2.libraryManga.manga.dateAdded)
                 }
                 // SY -->
                 LibrarySort.Type.TagList -> {
