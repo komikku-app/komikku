@@ -59,9 +59,22 @@ android {
             isShrinkResources = true
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
         }
+        create("benchmark") {
+            initWith(getByName("release"))
+
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks.add("release")
+            isDebuggable = false
+            versionNameSuffix = "-benchmark"
+            applicationIdSuffix = ".benchmark"
+        }
     }
 
-    flavorDimensions += "default"
+    sourceSets {
+        getByName("benchmark").res.srcDirs("src/debug/res")
+    }
+
+    flavorDimensions.add("default")
 
     productFlavors {
         create("standard") {
@@ -176,6 +189,7 @@ dependencies {
     implementation(androidx.recyclerview)
     implementation(androidx.viewpager)
     implementation(androidx.glance)
+    implementation(androidx.profileinstaller)
 
     implementation(androidx.bundles.lifecycle)
 
@@ -287,6 +301,15 @@ dependencies {
     // RatingBar (SY)
     implementation(sylibs.ratingbar)
     implementation(sylibs.composeRatingbar)
+}
+
+androidComponents {
+    beforeVariants { variantBuilder ->
+        // Disables standardBenchmark
+        if (variantBuilder.buildType == "benchmark") {
+            variantBuilder.enable = variantBuilder.productFlavors.containsAll(listOf("default" to "dev"))
+        }
+    }
 }
 
 tasks {
