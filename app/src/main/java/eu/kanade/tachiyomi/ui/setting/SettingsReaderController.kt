@@ -189,6 +189,11 @@ class SettingsReaderController : SettingsController() {
                 summary = "%s"
                 visibleIf(readerPreferences.navigationModePager()) { it != 5 }
             }
+            switchPreference {
+                bindTo(readerPreferences.navigateToPan())
+                titleRes = R.string.pref_navigate_pan
+                visibleIf(readerPreferences.navigationModePager()) { it != 5 }
+            }
             intListPreference {
                 bindTo(readerPreferences.imageScaleType())
                 titleRes = R.string.pref_image_scale_type
@@ -230,10 +235,6 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_page_transitions
             }
             // SY <--
-            switchPreference {
-                bindTo(readerPreferences.navigateToPan())
-                titleRes = R.string.pref_navigate_pan
-            }
             switchPreference {
                 bindTo(readerPreferences.dualPageSplitPaged())
                 titleRes = R.string.pref_dual_page_split
