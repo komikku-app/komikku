@@ -116,11 +116,13 @@ open class GlobalSearchPresenter(
         var filteredSources: List<CatalogueSource>? = null
 
         if (!filter.isNullOrEmpty()) {
-            filteredSources = extensionManager.installedExtensions
+            // SY -->
+            val filteredSourceIds = extensionManager.installedExtensions
                 .filter { it.pkgName == filter }
                 .flatMap { it.sources }
-                .filter { it in enabledSources }
-                .filterIsInstance<CatalogueSource>()
+                .map { it.id }
+            filteredSources = enabledSources.filter { it.id in filteredSourceIds }
+            // SY <--
         }
 
         if (filteredSources != null && filteredSources.isNotEmpty()) {
