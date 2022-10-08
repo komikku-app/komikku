@@ -15,7 +15,6 @@ import eu.kanade.presentation.components.DuplicateMangaDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -192,7 +191,10 @@ open class BrowseSourceController(bundle: Bundle) :
     private fun navigateUp() {
         when {
             presenter.searchQuery != null -> presenter.searchQuery = null
-            presenter.isUserQuery -> presenter.search()
+            presenter.isUserQuery -> {
+                val (_, filters) = presenter.currentFilter as BrowseSourcePresenter.Filter.UserInput
+                presenter.search(query = "", filters = filters)
+            }
             else -> router.popCurrentController()
         }
     }
@@ -210,10 +212,10 @@ open class BrowseSourceController(bundle: Bundle) :
             emptyList(),
             // SY <--
             onFilterClicked = {
-                presenter.setSourceFilter(presenter.filters)
+                presenter.search(filters = presenter.filters)
             },
             onResetClicked = {
-                presenter.resetFilter()
+                presenter.reset()
                 filterSheet?.setFilters(presenter.filterItems)
             },
             // EXH -->
@@ -258,16 +260,17 @@ open class BrowseSourceController(bundle: Bundle) :
                         return@launchUI
                     }
 
-                    if (search.filterList != null) {
-                        presenter.setFilter(FilterList(search.filterList))
-                        filterSheet?.setFilters(presenter.filterItems)
-                    }
                     val allDefault = search.filterList != null && presenter.filters == presenter.source!!.getFilterList()
                     filterSheet?.dismiss()
 
                     presenter.searchQuery = search.query.nullIfBlank()
-                    presenter.setSourceFilter(if (allDefault) FilterList() else presenter.filters)
-                    presenter.search()
+                    if (search.filterList != null) {
+                        filterSheet?.setFilters(search.filterList.toItems())
+                    }
+                    presenter.search(
+                        query = search.query,
+                        filters = if (allDefault) null else search.filterList,
+                    )
                 }
             },
             onSavedSearchDeleteClicked = { idToDelete, name ->
@@ -337,10 +340,9 @@ open class BrowseSourceController(bundle: Bundle) :
         }
 
         if (genreExists) {
-            filterSheet?.setFilters(presenter.filterItems)
+            filterSheet?.setFilters(defaultFilters.toItems())
 
-            presenter.searchQuery = ""
-            presenter.setFilter(defaultFilters)
+            presenter.search(filters = defaultFilters)
         } else {
             searchWithQuery(genreName)
         }

@@ -210,22 +210,25 @@ open class BrowseSourcePresenter(
     }
     // SY <--
 
-    fun setFilter(filters: FilterList) {
-        state.filters = filters
-    }
-
-    fun resetFilter() {
+    fun reset() {
         state.filters = source!!.getFilterList()
         if (currentFilter !is Filter.UserInput) return
         state.currentFilter = (currentFilter as Filter.UserInput).copy(filters = state.filters)
     }
 
-    fun search(query: String? = null) {
-        var new = Filter.valueOf(query ?: searchQuery ?: "")
-        if (new is Filter.UserInput && currentFilter is Filter.UserInput) {
-            new = new.copy(filters = currentFilter.filters)
+    fun search(query: String? = null, filters: FilterList? = null) {
+        Filter.valueOf(query ?: "").let {
+            if (it !is Filter.UserInput) {
+                state.currentFilter = it
+                return
+            }
         }
-        state.currentFilter = new
+
+        val input: Filter.UserInput = if (currentFilter is Filter.UserInput) currentFilter as Filter.UserInput else Filter.UserInput()
+        state.currentFilter = input.copy(
+            query = query ?: input.query,
+            filters = filters ?: input.filters,
+        )
     }
 
     // SY -->
@@ -245,16 +248,13 @@ open class BrowseSourcePresenter(
             val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
             if (savedSearch != null) {
                 state.searchQuery = savedSearch.query.nullIfBlank()
-                if (savedSearch.filterList != null) {
-                    setSourceFilter(savedSearch.filterList)
-                }
-                search()
+                search(query = savedSearch.query, filters = savedSearch.filterList)
             }
         } else if (jsonFilters != null) {
             runCatching {
                 val filters = Json.decodeFromString<JsonArray>(jsonFilters)
                 filterSerializer.deserialize(this.filters, filters)
-                setSourceFilter(this.filters)
+                search(filters = this.filters)
             }
         }
 
@@ -391,18 +391,6 @@ open class BrowseSourcePresenter(
                     logcat(LogPriority.WARN, e) { "Could not match manga: ${manga.title} with service $service" }
                 }
             }
-    }
-
-    /**
-     * Set the filter states for the current source.
-     *
-     * @param filters a list of active filters.
-     */
-    fun setSourceFilter(filters: FilterList) {
-        state.currentFilter = when (val filter = currentFilter) {
-            Filter.Latest, Filter.Popular -> Filter.UserInput(filters = filters)
-            is Filter.UserInput -> filter.copy(filters = filters)
-        }
     }
 
     // SY -->
