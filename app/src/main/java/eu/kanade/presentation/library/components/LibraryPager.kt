@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +20,7 @@ import eu.kanade.tachiyomi.ui.library.LibraryItem
 @Composable
 fun LibraryPager(
     state: PagerState,
+    contentPadding: PaddingValues,
     pageCount: Int,
     selectedManga: List<LibraryManga>,
     searchQuery: String?,
@@ -57,6 +59,7 @@ fun LibraryPager(
             LibraryDisplayMode.List -> {
                 LibraryList(
                     items = library,
+                    contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
@@ -68,6 +71,7 @@ fun LibraryPager(
                 LibraryCompactGrid(
                     items = library,
                     columns = columns,
+                    contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
@@ -82,6 +86,7 @@ fun LibraryPager(
                 LibraryComfortableGrid(
                     items = library,
                     columns = columns,
+                    contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
@@ -96,6 +101,7 @@ fun LibraryPager(
                 LibraryCoverOnlyGrid(
                     items = library,
                     columns = columns,
+                    contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,

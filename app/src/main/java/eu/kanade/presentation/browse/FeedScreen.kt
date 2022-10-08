@@ -49,12 +49,12 @@ import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.MangaCover
 import eu.kanade.presentation.components.ScrollbarLazyColumn
-import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedPresenter
+import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import eu.kanade.domain.manga.model.MangaCover as MangaCoverData
@@ -111,7 +111,7 @@ fun FeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = bottomNavPaddingValues + topPaddingValues,
+        contentPadding = bottomNavPadding + topPaddingValues,
     ) {
         items(
             state.items.orEmpty(),

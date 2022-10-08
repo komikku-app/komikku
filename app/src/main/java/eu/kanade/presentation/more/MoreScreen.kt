@@ -23,12 +23,12 @@ import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SwitchPreference
-import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.quantityStringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import eu.kanade.tachiyomi.ui.more.MoreController
 import eu.kanade.tachiyomi.ui.more.MorePresenter
+import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
 
 @Composable
 fun MoreScreen(
@@ -47,7 +47,7 @@ fun MoreScreen(
 
     ScrollbarLazyColumn(
         modifier = Modifier.statusBarsPadding(),
-        contentPadding = bottomNavPaddingValues,
+        contentPadding = bottomNavPadding,
     ) {
         item {
             LogoHeader()

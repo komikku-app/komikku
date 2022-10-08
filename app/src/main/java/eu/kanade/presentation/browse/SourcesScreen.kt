@@ -36,7 +36,6 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.theme.header
-import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -46,6 +45,7 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter
 import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter.Dialog
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -93,7 +93,7 @@ private fun SourceList(
     onClickToggleDataSaver: (Source) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+        contentPadding = bottomNavPadding + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
             items = state.items,
