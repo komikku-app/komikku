@@ -44,6 +44,9 @@ dependencies {
 
     implementation(androidx.corektx)
 
+    // JavaScript engine
+    implementation(libs.bundles.js.engine)
+
     // SY -->
     implementation(sylibs.xlog)
     // SY <--
