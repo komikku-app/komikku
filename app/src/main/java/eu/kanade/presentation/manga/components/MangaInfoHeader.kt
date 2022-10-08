@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Block
@@ -224,7 +225,6 @@ fun ExpandableMangaDescription(
     doSearch: (query: String, global: Boolean) -> Unit,
     // SY <--
 ) {
-    val context = LocalContext.current
     Column(modifier = modifier) {
         val (expanded, onExpanded) = rememberSaveable {
             mutableStateOf(defaultExpandState)
@@ -243,10 +243,7 @@ fun ExpandableMangaDescription(
             modifier = Modifier
                 .padding(top = 8.dp)
                 .padding(horizontal = 16.dp)
-                .clickableNoIndication(
-                    onLongClick = { context.copyToClipboard(desc, desc) },
-                    onClick = { onExpanded(!expanded) },
-                ),
+                .clickableNoIndication { onExpanded(!expanded) },
         )
         val tags = tagsProvider()
         if (!tags.isNullOrEmpty()) {
@@ -597,13 +594,15 @@ private fun MangaSummary(
         expandedHeight = expandedPlaceable.maxByOrNull { it.height }?.height?.coerceAtLeast(shrunkHeight) ?: 0
 
         val actualPlaceable = subcompose("description") {
-            Text(
-                text = if (expanded) expandedDescription else shrunkDescription,
-                maxLines = Int.MAX_VALUE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.secondaryItemAlpha(),
-            )
+            SelectionContainer {
+                Text(
+                    text = if (expanded) expandedDescription else shrunkDescription,
+                    maxLines = Int.MAX_VALUE,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.secondaryItemAlpha(),
+                )
+            }
         }.map { it.measure(constraints) }
 
         val scrimPlaceable = subcompose("scrim") {
