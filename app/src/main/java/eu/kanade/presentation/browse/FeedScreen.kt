@@ -86,15 +86,47 @@ fun FeedScreen(
             FeedList(
                 state = presenter,
                 getMangaState = { item, source -> presenter.getManga(item, source) },
-                onClickAdd = onClickAdd,
-                onClickCreate = onClickCreate,
                 onClickSavedSearch = onClickSavedSearch,
                 onClickSource = onClickSource,
                 onClickDelete = onClickDelete,
-                onClickDeleteConfirm = onClickDeleteConfirm,
                 onClickManga = onClickManga,
             )
         }
+    }
+
+    when (val dialog = presenter.dialog) {
+        is FeedPresenter.Dialog.AddFeed -> {
+            FeedAddDialog(
+                sources = dialog.options,
+                onDismiss = { presenter.dialog = null },
+                onClickAdd = {
+                    presenter.dialog = null
+                    onClickAdd(it ?: return@FeedAddDialog)
+                },
+            )
+        }
+        is FeedPresenter.Dialog.AddFeedSearch -> {
+            FeedAddSearchDialog(
+                source = dialog.source,
+                savedSearches = dialog.options,
+                onDismiss = { presenter.dialog = null },
+                onClickAdd = { source, savedSearch ->
+                    presenter.dialog = null
+                    onClickCreate(source, savedSearch)
+                },
+            )
+        }
+        is FeedPresenter.Dialog.DeleteFeed -> {
+            FeedDeleteConfirmDialog(
+                feed = dialog.feed,
+                onDismiss = { presenter.dialog = null },
+                onClickDeleteConfirm = {
+                    presenter.dialog = null
+                    onClickDeleteConfirm(it)
+                },
+            )
+        }
+        null -> Unit
     }
 }
 
@@ -102,12 +134,9 @@ fun FeedScreen(
 fun FeedList(
     state: FeedState,
     getMangaState: @Composable ((Manga, CatalogueSource?) -> State<Manga>),
-    onClickAdd: (CatalogueSource) -> Unit,
-    onClickCreate: (CatalogueSource, SavedSearch?) -> Unit,
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
-    onClickDeleteConfirm: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
@@ -127,41 +156,6 @@ fun FeedList(
                 onClickManga = onClickManga,
             )
         }
-    }
-
-    when (val dialog = state.dialog) {
-        is FeedPresenter.Dialog.AddFeed -> {
-            FeedAddDialog(
-                sources = dialog.options,
-                onDismiss = { state.dialog = null },
-                onClickAdd = {
-                    state.dialog = null
-                    onClickAdd(it ?: return@FeedAddDialog)
-                },
-            )
-        }
-        is FeedPresenter.Dialog.AddFeedSearch -> {
-            FeedAddSearchDialog(
-                source = dialog.source,
-                savedSearches = dialog.options,
-                onDismiss = { state.dialog = null },
-                onClickAdd = { source, savedSearch ->
-                    state.dialog = null
-                    onClickCreate(source, savedSearch)
-                },
-            )
-        }
-        is FeedPresenter.Dialog.DeleteFeed -> {
-            FeedDeleteConfirmDialog(
-                feed = dialog.feed,
-                onDismiss = { state.dialog = null },
-                onClickDeleteConfirm = {
-                    state.dialog = null
-                    onClickDeleteConfirm(it)
-                },
-            )
-        }
-        null -> Unit
     }
 }
 
