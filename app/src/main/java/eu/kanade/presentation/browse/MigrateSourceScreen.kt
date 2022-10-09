@@ -39,6 +39,7 @@ import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.theme.header
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
+import eu.kanade.presentation.util.secondaryItemAlpha
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesPresenter
@@ -189,6 +190,7 @@ private fun MigrateSourceItem(
                 ) {
                     if (sourceLangString != null) {
                         Text(
+                            modifier = Modifier.secondaryItemAlpha(),
                             text = sourceLangString,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -197,6 +199,7 @@ private fun MigrateSourceItem(
                     }
                     if (source.isStub) {
                         Text(
+                            modifier = Modifier.secondaryItemAlpha(),
                             text = stringResource(R.string.not_installed),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
