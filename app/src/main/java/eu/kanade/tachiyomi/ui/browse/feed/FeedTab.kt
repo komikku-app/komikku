@@ -29,9 +29,10 @@ fun feedTab(
             },
         ),
     ),
-    content = {
+    content = { contentPadding ->
         FeedScreen(
             presenter = presenter,
+            contentPadding = contentPadding,
             onClickAdd = {
                 presenter.openAddSearchDialog(it)
             },

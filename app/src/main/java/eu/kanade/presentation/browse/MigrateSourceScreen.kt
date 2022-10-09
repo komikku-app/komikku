@@ -3,10 +3,8 @@ package eu.kanade.presentation.browse
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -44,11 +42,11 @@ import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesPresenter
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
 
 @Composable
 fun MigrateSourceScreen(
     presenter: MigrationSourcesPresenter,
+    contentPadding: PaddingValues,
     onClickItem: (Source) -> Unit,
     // SY -->
     onClickAll: (Source) -> Unit,
@@ -57,10 +55,14 @@ fun MigrateSourceScreen(
     val context = LocalContext.current
     when {
         presenter.isLoading -> LoadingScreen()
-        presenter.isEmpty -> EmptyScreen(textResource = R.string.information_empty_library)
+        presenter.isEmpty -> EmptyScreen(
+            textResource = R.string.information_empty_library,
+            modifier = Modifier.padding(contentPadding),
+        )
         else ->
             MigrateSourceList(
                 list = presenter.items,
+                contentPadding = contentPadding,
                 onClickItem = onClickItem,
                 onLongClickItem = { source ->
                     val sourceId = source.id.toString()
@@ -80,6 +82,7 @@ fun MigrateSourceScreen(
 @Composable
 private fun MigrateSourceList(
     list: List<Pair<Source, Long>>,
+    contentPadding: PaddingValues,
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,
     sortingMode: SetMigrateSorting.Mode,
@@ -91,7 +94,7 @@ private fun MigrateSourceList(
     // SY <--
 ) {
     ScrollbarLazyColumn(
-        contentPadding = bottomNavPadding + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+        contentPadding = contentPadding + topPaddingValues,
     ) {
         stickyHeader(key = "header") {
             Row(

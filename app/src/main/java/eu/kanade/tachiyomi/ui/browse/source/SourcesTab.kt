@@ -44,9 +44,10 @@ fun sourcesTab(
         emptyList()
     },
     // SY <--
-    content = {
+    content = { contentPadding ->
         SourcesScreen(
             presenter = presenter,
+            contentPadding = contentPadding,
             onClickItem = { source, query ->
                 // SY -->
                 val controller = when {

@@ -54,7 +54,6 @@ import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedPresenter
-import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import eu.kanade.domain.manga.model.MangaCover as MangaCoverData
@@ -71,6 +70,7 @@ data class FeedItemUI(
 @Composable
 fun FeedScreen(
     presenter: FeedPresenter,
+    contentPadding: PaddingValues,
     onClickAdd: (CatalogueSource) -> Unit,
     onClickCreate: (CatalogueSource, SavedSearch?) -> Unit,
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
@@ -81,10 +81,14 @@ fun FeedScreen(
 ) {
     when {
         presenter.isLoading -> LoadingScreen()
-        presenter.isEmpty -> EmptyScreen(R.string.feed_tab_empty)
+        presenter.isEmpty -> EmptyScreen(
+            textResource = R.string.feed_tab_empty,
+            modifier = Modifier.padding(contentPadding),
+        )
         else -> {
             FeedList(
                 state = presenter,
+                contentPadding = contentPadding,
                 getMangaState = { item, source -> presenter.getManga(item, source) },
                 onClickSavedSearch = onClickSavedSearch,
                 onClickSource = onClickSource,
@@ -133,6 +137,7 @@ fun FeedScreen(
 @Composable
 fun FeedList(
     state: FeedState,
+    contentPadding: PaddingValues,
     getMangaState: @Composable ((Manga, CatalogueSource?) -> State<Manga>),
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
@@ -140,7 +145,7 @@ fun FeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = bottomNavPadding + topPaddingValues,
+        contentPadding = contentPadding + topPaddingValues,
     ) {
         items(
             state.items.orEmpty(),

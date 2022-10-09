@@ -28,7 +28,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import eu.kanade.tachiyomi.ui.more.MoreController
 import eu.kanade.tachiyomi.ui.more.MorePresenter
-import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView.Companion.bottomNavPadding
+import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView
 
 @Composable
 fun MoreScreen(
@@ -47,7 +47,7 @@ fun MoreScreen(
 
     ScrollbarLazyColumn(
         modifier = Modifier.statusBarsPadding(),
-        contentPadding = bottomNavPadding,
+        contentPadding = TachiyomiBottomNavigationView.withBottomNavPadding(),
     ) {
         item {
             LogoHeader()

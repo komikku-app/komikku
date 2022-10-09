@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.NewReleases
@@ -49,6 +52,7 @@ import eu.kanade.presentation.browse.components.BrowseSourceToolbar
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.EmptyScreenAction
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
@@ -56,7 +60,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 import eu.kanade.tachiyomi.ui.more.MoreController
-import eu.kanade.tachiyomi.widget.EmptyView
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedSource
 
@@ -286,14 +289,38 @@ fun BrowseSourceContent(
             message = getErrorMessage(errorState),
             actions = if (state.source is LocalSource /* SY --> */ && onLocalSourceHelpClick != null /* SY <-- */) {
                 listOf(
-                    EmptyView.Action(R.string.local_source_help_guide, R.drawable.ic_help_24dp) { onLocalSourceHelpClick() },
+                    EmptyScreenAction(
+                        stringResId = R.string.local_source_help_guide,
+                        icon = Icons.Default.HelpOutline,
+                        onClick = onLocalSourceHelpClick,
+                    ),
                 )
             } else {
                 listOfNotNull(
-                    EmptyView.Action(R.string.action_retry, R.drawable.ic_refresh_24dp) { mangaList.refresh() },
+                    EmptyScreenAction(
+                        stringResId = R.string.action_retry,
+                        icon = Icons.Default.Refresh,
+                        onClick = mangaList::refresh,
+                    ),
                     // SY -->
-                    EmptyView.Action(R.string.action_open_in_web_view, R.drawable.ic_public_24dp) { onWebViewClick?.invoke() }.takeIf { onWebViewClick != null },
-                    EmptyView.Action(R.string.label_help, R.drawable.ic_help_24dp) { onHelpClick?.invoke() }.takeIf { onHelpClick != null },
+                    if (onWebViewClick != null) {
+                        EmptyScreenAction(
+                            stringResId = R.string.action_open_in_web_view,
+                            icon = Icons.Default.Public,
+                            onClick = onWebViewClick,
+                        )
+                    } else {
+                        null
+                    },
+                    if (onHelpClick != null) {
+                        EmptyScreenAction(
+                            stringResId = R.string.label_help,
+                            icon = Icons.Default.HelpOutline,
+                            onClick = onHelpClick,
+                        )
+                    } else {
+                        null
+                    },
                     // SY <--
                 )
             },
