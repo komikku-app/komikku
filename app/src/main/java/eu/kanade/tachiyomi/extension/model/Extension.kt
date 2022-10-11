@@ -32,6 +32,8 @@ sealed class Extension {
         val isUnofficial: Boolean = false,
         // SY -->
         val isRedundant: Boolean = false,
+        val repoUrl: String? = null,
+        val isRepoSource: Boolean = false,
         // SY <--
     ) : Extension()
 

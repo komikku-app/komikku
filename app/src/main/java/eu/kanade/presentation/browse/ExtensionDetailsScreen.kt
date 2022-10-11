@@ -148,6 +148,21 @@ private fun ExtensionDetails(
                         item {
                             WarningBanner(R.string.redundant_extension_message)
                         }
+                    extension.isRepoSource ->
+                        item {
+                            val uriHandler = LocalUriHandler.current
+                            WarningBanner(
+                                R.string.repo_extension_message,
+                                modifier = Modifier.clickable {
+                                    extension.repoUrl ?: return@clickable
+                                    uriHandler.openUri(
+                                        extension.repoUrl
+                                            .replace("https://raw.githubusercontent.com", "https://github.com")
+                                            .removeSuffix("/repo/"),
+                                    )
+                                },
+                            )
+                        }
                     // SY <--
                     extension.isUnofficial ->
                         item {
@@ -199,9 +214,14 @@ private fun ExtensionDetails(
 }
 
 @Composable
-private fun WarningBanner(@StringRes textRes: Int) {
+private fun WarningBanner(
+    @StringRes textRes: Int,
+    // SY -->
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
+            // SY <--
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.error)
             .padding(16.dp),

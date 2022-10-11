@@ -302,6 +302,10 @@ private fun ExtensionItemContent(
 
                 val warning = when {
                     extension is Extension.Untrusted -> R.string.ext_untrusted
+                    // SY -->
+                    extension is Extension.Installed && extension.isRepoSource -> R.string.repo_source
+                    extension is Extension.Available && extension.isRepoSource -> R.string.repo_source
+                    // SY <--
                     extension is Extension.Installed && extension.isUnofficial -> R.string.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> R.string.ext_obsolete
                     extension is Extension.Installed && extension.isRedundant -> R.string.ext_redundant
@@ -310,14 +314,7 @@ private fun ExtensionItemContent(
                 }
                 if (warning != null) {
                     Text(
-                        text = stringResource(warning).uppercase() /* SY --> */ plusRepo extension, /* SY <-- */
-                        color = MaterialTheme.colorScheme.error,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                } /* SY --> */ else if (extension is Extension.Available && extension.isRepoSource) {
-                    Text(
-                        text = stringResource(R.string.repo_source).uppercase(),
+                        text = stringResource(warning).uppercase(),
                         color = MaterialTheme.colorScheme.error,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -336,23 +333,6 @@ private fun ExtensionItemContent(
                     )
                 }
             }
-            // SY <--
-        }
-    }
-}
-
-@Composable
-private infix fun String.plusRepo(extension: Extension): String {
-    val context = LocalContext.current
-    return remember(this, extension, context) {
-        if (extension is Extension.Available && extension.isRepoSource) {
-            if (isNullOrEmpty()) {
-                ""
-            } else {
-                "$this • "
-            } + context.getString(R.string.repo_source)
-        } else {
-            this
         }
     }
 }
