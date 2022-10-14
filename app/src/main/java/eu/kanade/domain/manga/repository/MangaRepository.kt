@@ -33,7 +33,7 @@ interface MangaRepository {
 
     suspend fun update(update: MangaUpdate): Boolean
 
-    suspend fun updateAll(values: List<MangaUpdate>): Boolean
+    suspend fun updateAll(mangaUpdates: List<MangaUpdate>): Boolean
 
     suspend fun getMangaBySourceId(sourceId: Long): List<Manga>
 

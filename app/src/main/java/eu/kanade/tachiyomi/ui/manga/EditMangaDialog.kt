@@ -15,9 +15,9 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
-import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
@@ -71,8 +71,6 @@ class EditMangaDialog : DialogController {
     fun onViewCreated() {
         loadCover()
 
-        val isLocal = manga.source == LocalSource.ID
-
         val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
             context,
             android.R.layout.simple_spinner_dropdown_item,
@@ -103,7 +101,7 @@ class EditMangaDialog : DialogController {
             )
         }
 
-        if (isLocal) {
+        if (manga.isLocal()) {
             if (manga.title != manga.url) {
                 binding.title.setText(manga.title)
             }
@@ -151,7 +149,7 @@ class EditMangaDialog : DialogController {
     }
 
     private fun resetTags() {
-        if (manga.genre.isNullOrEmpty() || manga.source == LocalSource.ID) {
+        if (manga.genre.isNullOrEmpty() || manga.isLocal()) {
             binding.mangaGenresTags.setChips(emptyList())
         } else {
             binding.mangaGenresTags.setChips(manga.ogGenre.orEmpty())

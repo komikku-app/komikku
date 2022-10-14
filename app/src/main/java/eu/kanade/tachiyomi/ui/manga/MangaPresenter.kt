@@ -1125,7 +1125,7 @@ class MangaPresenter(
         presenterScope.launchIO {
             setReadStatus.await(
                 read = read,
-                values = chapters.toTypedArray(),
+                chapters = chapters.toTypedArray(),
             )
         }
         toggleAllSelection(false)
