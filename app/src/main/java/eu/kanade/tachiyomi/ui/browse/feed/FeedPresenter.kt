@@ -114,17 +114,20 @@ open class FeedPresenter(
         }
     }
 
-    suspend fun hasTooManyFeeds(): Boolean {
+    private suspend fun hasTooManyFeeds(): Boolean {
         return countFeedSavedSearchGlobal.await() > 10
     }
 
     fun getEnabledSources(): List<CatalogueSource> {
         val languages = sourcePreferences.enabledLanguages().get()
         val pinnedSources = sourcePreferences.pinnedSources().get()
+        val disabledSources = sourcePreferences.disabledSources().get()
+            .mapNotNull { it.toLongOrNull() }
 
         val list = sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in languages }
-            .sortedBy { "(${it.lang}) ${it.name}" }
+            .filterNot { it.id in disabledSources }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { "(${it.lang}) ${it.name}" })
 
         return list.sortedBy { it.id.toString() !in pinnedSources }
     }
