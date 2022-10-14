@@ -59,10 +59,10 @@ import eu.kanade.presentation.components.VerticalFastScroller
 import eu.kanade.presentation.manga.components.ChapterHeader
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
-import eu.kanade.presentation.manga.components.MangaAppBar
 import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.presentation.manga.components.MangaInfoBox
 import eu.kanade.presentation.manga.components.MangaInfoButtons
+import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.isScrolledToEnd
@@ -150,7 +150,7 @@ fun MangaScreen(
             onWebViewClicked = onWebViewClicked,
             onTrackingClicked = onTrackingClicked,
             onTagClicked = onTagClicked,
-            onFilterButtonClicked = onFilterButtonClicked,
+            onFilterClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
             onSearch = onSearch,
@@ -228,7 +228,7 @@ private fun MangaScreenSmallImpl(
     onWebViewClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
     onTagClicked: (String) -> Unit,
-    onFilterButtonClicked: () -> Unit,
+    onFilterClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
     onSearch: (query: String, global: Boolean) -> Unit,
@@ -294,25 +294,24 @@ private fun MangaScreenSmallImpl(
             val animatedBgAlpha by animateFloatAsState(
                 if (firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0) 1f else 0f,
             )
-            MangaAppBar(
+            MangaToolbar(
                 title = state.manga.title,
                 titleAlphaProvider = { animatedTitleAlpha },
                 backgroundAlphaProvider = { animatedBgAlpha },
+                hasFilters = state.manga.chaptersFiltered(),
                 incognitoMode = state.isIncognitoMode,
                 downloadedOnlyMode = state.isDownloadedOnlyMode,
                 onBackClicked = internalOnBackPressed,
-                onShareClicked = onShareClicked,
-                onDownloadClicked = onDownloadActionClicked,
-                onEditCategoryClicked = onEditCategoryClicked,
-                onMigrateClicked = onMigrateClicked,
+                onClickFilter = onFilterClicked,
+                onClickShare = onShareClicked,
+                onClickDownload = onDownloadActionClicked,
+                onClickEditCategory = onEditCategoryClicked,
+                onClickMigrate = onMigrateClicked,
                 // SY -->
-                showEditInfo = state.manga.favorite,
-                onEditInfoClicked = onEditInfoClicked,
-                showRecommends = state.showRecommendationsInOverflow,
-                onRecommendClicked = onRecommendClicked,
-                showMergeSettings = state.manga.source == MERGED_SOURCE_ID,
-                onMergedSettingsClicked = onMergedSettingsClicked,
-                onMergeClicked = onMergeClicked.takeIf { state.showMergeInOverflow },
+                onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
+                onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
+                onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
+                onClickMerge = onMergeClicked.takeIf { state.showMergeInOverflow },
                 // SY <--
                 actionModeCounter = chapters.count { it.selected },
                 onSelectAll = { onAllChapterSelected(true) },
@@ -474,8 +473,7 @@ private fun MangaScreenSmallImpl(
                     ) {
                         ChapterHeader(
                             chapterCount = chapters.size,
-                            isChapterFiltered = state.manga.chaptersFiltered(),
-                            onFilterButtonClicked = onFilterButtonClicked,
+                            onClick = onFilterClicked,
                         )
                     }
 
@@ -572,26 +570,25 @@ fun MangaScreenLargeImpl(
         Scaffold(
             modifier = Modifier.padding(insetPadding),
             topBar = {
-                MangaAppBar(
+                MangaToolbar(
                     modifier = Modifier.onSizeChanged { onTopBarHeightChanged(it.height) },
                     title = state.manga.title,
                     titleAlphaProvider = { if (chapters.any { it.selected }) 1f else 0f },
                     backgroundAlphaProvider = { 1f },
+                    hasFilters = state.manga.chaptersFiltered(),
                     incognitoMode = state.isIncognitoMode,
                     downloadedOnlyMode = state.isDownloadedOnlyMode,
                     onBackClicked = internalOnBackPressed,
-                    onShareClicked = onShareClicked,
-                    onDownloadClicked = onDownloadActionClicked,
-                    onEditCategoryClicked = onEditCategoryClicked,
-                    onMigrateClicked = onMigrateClicked,
+                    onClickFilter = onFilterButtonClicked,
+                    onClickShare = onShareClicked,
+                    onClickDownload = onDownloadActionClicked,
+                    onClickEditCategory = onEditCategoryClicked,
+                    onClickMigrate = onMigrateClicked,
                     // SY -->
-                    showEditInfo = state.manga.favorite,
-                    onEditInfoClicked = onEditInfoClicked,
-                    showRecommends = state.showRecommendationsInOverflow,
-                    onRecommendClicked = onRecommendClicked,
-                    showMergeSettings = state.manga.source == MERGED_SOURCE_ID,
-                    onMergedSettingsClicked = onMergedSettingsClicked,
-                    onMergeClicked = onMergeClicked.takeIf { state.showMergeInOverflow },
+                    onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
+                    onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
+                    onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
+                    onClickMerge = onMergeClicked.takeIf { state.showMergeInOverflow },
                     // SY <--
                     actionModeCounter = chapters.count { it.selected },
                     onSelectAll = { onAllChapterSelected(true) },
@@ -728,8 +725,7 @@ fun MangaScreenLargeImpl(
                         ) {
                             ChapterHeader(
                                 chapterCount = chapters.size,
-                                isChapterFiltered = state.manga.chaptersFiltered(),
-                                onFilterButtonClicked = onFilterButtonClicked,
+                                onClick = onFilterButtonClicked,
                             )
                         }
 

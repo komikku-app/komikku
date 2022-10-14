@@ -11,10 +11,11 @@ import androidx.compose.material.icons.filled.FlipToBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,29 +32,29 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.presentation.theme.active
 import eu.kanade.tachiyomi.R
 
 @Composable
-fun MangaAppBar(
+fun MangaToolbar(
     modifier: Modifier = Modifier,
     title: String,
     titleAlphaProvider: () -> Float,
     backgroundAlphaProvider: () -> Float = titleAlphaProvider,
+    hasFilters: Boolean,
     incognitoMode: Boolean,
     downloadedOnlyMode: Boolean,
     onBackClicked: () -> Unit,
-    onShareClicked: (() -> Unit)?,
-    onDownloadClicked: ((DownloadAction) -> Unit)?,
-    onEditCategoryClicked: (() -> Unit)?,
-    onMigrateClicked: (() -> Unit)?,
+    onClickFilter: () -> Unit,
+    onClickShare: (() -> Unit)?,
+    onClickDownload: ((DownloadAction) -> Unit)?,
+    onClickEditCategory: (() -> Unit)?,
+    onClickMigrate: (() -> Unit)?,
     // SY -->
-    showEditInfo: Boolean,
-    onEditInfoClicked: () -> Unit,
-    showRecommends: Boolean,
-    onRecommendClicked: () -> Unit,
-    onMergeClicked: (() -> Unit)?,
-    showMergeSettings: Boolean,
-    onMergedSettingsClicked: () -> Unit,
+    onClickEditInfo: (() -> Unit)?,
+    onClickRecommend: (() -> Unit)?,
+    onClickMerge: (() -> Unit)?,
+    onClickMergedSettings: (() -> Unit)?,
     // SY <--
     // For action mode
     actionModeCounter: Int,
@@ -96,16 +97,7 @@ fun MangaAppBar(
                         )
                     }
                 } else {
-                    if (onShareClicked != null) {
-                        IconButton(onClick = onShareClicked) {
-                            Icon(
-                                imageVector = Icons.Outlined.Share,
-                                contentDescription = stringResource(R.string.action_share),
-                            )
-                        }
-                    }
-
-                    if (onDownloadClicked != null) {
+                    if (onClickDownload != null) {
                         val (downloadExpanded, onDownloadExpanded) = remember { mutableStateOf(false) }
                         Box {
                             IconButton(onClick = { onDownloadExpanded(!downloadExpanded) }) {
@@ -122,42 +114,42 @@ fun MangaAppBar(
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_1)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.NEXT_1_CHAPTER)
+                                        onClickDownload(DownloadAction.NEXT_1_CHAPTER)
                                         onDismissRequest()
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_5)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.NEXT_5_CHAPTERS)
+                                        onClickDownload(DownloadAction.NEXT_5_CHAPTERS)
                                         onDismissRequest()
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_10)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.NEXT_10_CHAPTERS)
+                                        onClickDownload(DownloadAction.NEXT_10_CHAPTERS)
                                         onDismissRequest()
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_custom)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.CUSTOM)
+                                        onClickDownload(DownloadAction.CUSTOM)
                                         onDismissRequest()
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_unread)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.UNREAD_CHAPTERS)
+                                        onClickDownload(DownloadAction.UNREAD_CHAPTERS)
                                         onDismissRequest()
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.download_all)) },
                                     onClick = {
-                                        onDownloadClicked(DownloadAction.ALL_CHAPTERS)
+                                        onClickDownload(DownloadAction.ALL_CHAPTERS)
                                         onDismissRequest()
                                     },
                                 )
@@ -165,7 +157,12 @@ fun MangaAppBar(
                         }
                     }
 
-                    if (onEditCategoryClicked != null || onMigrateClicked != null || showEditInfo || showRecommends || showMergeSettings) {
+                    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
+                    IconButton(onClick = onClickFilter) {
+                        Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
+                    }
+
+                    if (listOfNotNull(onClickShare, onClickEditCategory, onClickMigrate, onClickEditInfo, onClickRecommend, onClickMergedSettings).isNotEmpty()) {
                         val (moreExpanded, onMoreExpanded) = remember { mutableStateOf(false) }
                         Box {
                             IconButton(onClick = { onMoreExpanded(!moreExpanded) }) {
@@ -179,56 +176,65 @@ fun MangaAppBar(
                                 expanded = moreExpanded,
                                 onDismissRequest = onDismissRequest,
                             ) {
-                                if (onEditCategoryClicked != null) {
+                                if (onClickShare != null) {
+                                    DropdownMenuItem(
+                                        text = { Text(text = stringResource(R.string.action_share)) },
+                                        onClick = {
+                                            onClickShare()
+                                            onDismissRequest()
+                                        },
+                                    )
+                                }
+                                if (onClickEditCategory != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.action_edit_categories)) },
                                         onClick = {
-                                            onEditCategoryClicked()
+                                            onClickEditCategory()
                                             onDismissRequest()
                                         },
                                     )
                                 }
-                                if (onMigrateClicked != null) {
+                                if (onClickMigrate != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.action_migrate)) },
                                         onClick = {
-                                            onMigrateClicked()
+                                            onClickMigrate()
                                             onDismissRequest()
                                         },
                                     )
                                 }
-                                if (onMergeClicked != null) {
+                                if (onClickMerge != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.merge)) },
                                         onClick = {
-                                            onMergeClicked()
+                                            onClickMerge()
                                             onDismissRequest()
                                         },
                                     )
                                 }
-                                if (showEditInfo) {
+                                if (onClickEditInfo != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.action_edit_info)) },
                                         onClick = {
-                                            onEditInfoClicked()
+                                            onClickEditInfo()
                                             onDismissRequest()
                                         },
                                     )
                                 }
-                                if (showRecommends) {
+                                if (onClickRecommend != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.az_recommends)) },
                                         onClick = {
-                                            onRecommendClicked()
+                                            onClickRecommend()
                                             onDismissRequest()
                                         },
                                     )
                                 }
-                                if (showMergeSettings) {
+                                if (onClickMergedSettings != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.merge_settings)) },
                                         onClick = {
-                                            onMergedSettingsClicked()
+                                            onClickMergedSettings()
                                             onDismissRequest()
                                         },
                                     )
