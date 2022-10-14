@@ -42,6 +42,7 @@ fun LibraryContent(
     onChangeCurrentPage: (Int) -> Unit,
     onMangaClicked: (Long) -> Unit,
     onToggleSelection: (LibraryManga) -> Unit,
+    onToggleRangeSelection: (LibraryManga) -> Unit,
     onRefresh: (Category?) -> Boolean,
     onGlobalSearchClicked: () -> Unit,
     getNumberOfMangaForCategory: @Composable (Long) -> State<Int?>,
@@ -94,7 +95,7 @@ fun LibraryContent(
             }
         }
         val onLongClickManga = { manga: LibraryManga ->
-            onToggleSelection(manga)
+            onToggleRangeSelection(manga)
         }
 
         SwipeRefresh(
