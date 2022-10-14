@@ -16,7 +16,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,7 +65,7 @@ value class SearchMetadataChips(
                                 } ?: it.name,
                                 border = if (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) {
                                     when (it.type) {
-                                        EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 3
+                                        EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 2
                                         EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1
                                         else -> null
                                     }
@@ -113,7 +112,7 @@ fun NamespaceTags(
                     crossAxisSpacing = 8.dp,
                 ) {
                     tags.forEach { (_, text, search, border) ->
-                        val borderDp = border?.let { with(LocalDensity.current) { it.toDp() } }
+                        val borderDp = border?.dp
                         TagsChip(
                             text = text,
                             onClick = { onClick(search) },
