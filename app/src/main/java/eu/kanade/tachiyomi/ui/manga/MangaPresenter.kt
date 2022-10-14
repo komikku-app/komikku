@@ -364,7 +364,7 @@ class MangaPresenter(
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
                 .toChapterItemsParams(manga, null)
-            val mergedData = getMergedReferencesById.await(mangaId).let { references ->
+            val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
                     references,
                     getMergedMangaById.await(mangaId).associateBy { it.id },
