@@ -29,7 +29,6 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.savedsearches.EXHSavedSearch
-import exh.util.nullIfBlank
 
 open class BrowseSourceController(bundle: Bundle) :
     FullComposeController<BrowseSourcePresenter>(bundle) {
@@ -231,7 +230,11 @@ open class BrowseSourceController(bundle: Bundle) :
                             }
                             .setPositiveButton(R.string.action_save) { _, _ ->
                                 if (searchName.isNotBlank() && searchName !in names) {
-                                    presenter.saveSearch(searchName.trim(), presenter.searchQuery.orEmpty(), presenter.filters)
+                                    presenter.saveSearch(
+                                        name = searchName.trim(),
+                                        query = presenter.currentFilter.query,
+                                        filterList = presenter.currentFilter.filters.ifEmpty { presenter.source!!.getFilterList() },
+                                    )
                                 } else {
                                     it.toast(R.string.save_search_invalid_name)
                                 }
@@ -263,10 +266,6 @@ open class BrowseSourceController(bundle: Bundle) :
                     val allDefault = search.filterList != null && presenter.filters == presenter.source!!.getFilterList()
                     filterSheet?.dismiss()
 
-                    presenter.searchQuery = search.query.nullIfBlank()
-                    if (search.filterList != null) {
-                        filterSheet?.setFilters(search.filterList.toItems())
-                    }
                     presenter.search(
                         query = search.query,
                         filters = if (allDefault) null else search.filterList,

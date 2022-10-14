@@ -217,6 +217,11 @@ open class BrowseSourcePresenter(
     }
 
     fun search(query: String? = null, filters: FilterList? = null) {
+        // SY -->
+        if (filters != null && filters !== state.filters) {
+            state.filters = filters
+        }
+        // SY <--
         Filter.valueOf(query ?: "").let {
             if (it !is Filter.UserInput) {
                 state.currentFilter = it
@@ -247,8 +252,7 @@ open class BrowseSourcePresenter(
         if (savedSearchFilters != null) {
             val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
             if (savedSearch != null) {
-                state.searchQuery = savedSearch.query.nullIfBlank()
-                search(query = savedSearch.query, filters = savedSearch.filterList)
+                search(query = savedSearch.query.nullIfBlank(), filters = savedSearch.filterList)
             }
         } else if (jsonFilters != null) {
             runCatching {
