@@ -42,8 +42,7 @@ class MangaDexService(
                             addQueryParameter("ids[]", it)
                         }
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
         ).await().parseAs(MdUtil.jsonParser)
@@ -62,8 +61,7 @@ class MangaDexService(
                         addQueryParameter("includes[]", MdConstants.Types.author)
                         addQueryParameter("includes[]", MdConstants.Types.artist)
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
         ).await().parseAs(MdUtil.jsonParser)
@@ -81,8 +79,7 @@ class MangaDexService(
                             addQueryParameter("manga[]", id)
                         }
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
         ).await().parseAs(MdUtil.jsonParser)
@@ -101,8 +98,7 @@ class MangaDexService(
                         addPathSegment("aggregate")
                         addQueryParameter("translatedLanguage[]", translatedLanguage)
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
         ).await().parseAs(MdUtil.jsonParser)
@@ -140,7 +136,6 @@ class MangaDexService(
                 }
             }
             .build()
-            .toString()
 
         return client.newCall(
             GET(
@@ -189,8 +184,7 @@ class MangaDexService(
                         addPathSegment(id)
                         addPathSegment("relation")
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
         ).await().parseAs(MdUtil.jsonParser)

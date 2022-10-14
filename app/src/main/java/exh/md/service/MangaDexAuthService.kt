@@ -223,8 +223,7 @@ class MangaDexAuthService(
                             addQueryParameter("manga[]", it)
                         }
                     }
-                    .build()
-                    .toString(),
+                    .build(),
                 getHeaders(),
                 cache = CacheControl.FORCE_NETWORK,
             ),

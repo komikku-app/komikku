@@ -79,8 +79,6 @@ class UnsortedPreferences(
         "false,false,false,false,false,false,false,false,false,false",
     )
 
-    fun sourceSorting() = preferenceStore.getInt("sources_sort", 0)
-
     fun enhancedEHentaiView() = preferenceStore.getBoolean("enhanced_e_hentai_view", true)
 
     fun preferredMangaDexId() = preferenceStore.getString("preferred_mangaDex_id", "0")

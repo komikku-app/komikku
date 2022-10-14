@@ -16,6 +16,7 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.Source
@@ -33,7 +34,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -301,29 +302,26 @@ class BrowserActionActivity : AppCompatActivity() {
             val audioFile = response.body.bytes()
 
             httpClient.newCall(
-                Request.Builder()
-                    .url(
-                        "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize".toHttpUrlOrNull()!!
-                            .newBuilder()
-                            .addQueryParameter("watson-token", token)
-                            .build(),
-                    )
-                    .post(
-                        MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("jsonDescription", RECOGNIZE_JSON)
-                            .addFormDataPart(
-                                "audio.mp3",
-                                "audio.mp3",
-                                audioFile.toRequestBody(
-                                    "audio/mp3".toMediaTypeOrNull(),
-                                    0,
-                                    audioFile.size,
-                                ),
-                            )
-                            .build(),
-                    )
-                    .build(),
+                POST(
+                    "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize".toHttpUrl()
+                        .newBuilder()
+                        .addQueryParameter("watson-token", token)
+                        .build()
+                        .toString(),
+                    body = MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("jsonDescription", RECOGNIZE_JSON)
+                        .addFormDataPart(
+                            "audio.mp3",
+                            "audio.mp3",
+                            audioFile.toRequestBody(
+                                "audio/mp3".toMediaTypeOrNull(),
+                                0,
+                                audioFile.size,
+                            ),
+                        )
+                        .build(),
+                ),
             ).asObservableSuccess()
         }.map { response ->
             response.parseAs<JsonObject>()["results"]!!
