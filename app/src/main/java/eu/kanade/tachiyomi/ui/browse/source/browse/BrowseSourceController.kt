@@ -214,8 +214,8 @@ open class BrowseSourceController(bundle: Bundle) :
                 presenter.search(filters = presenter.filters)
             },
             onResetClicked = {
+                filterSheet?.dismiss()
                 presenter.reset()
-                filterSheet?.setFilters(presenter.filterItems)
             },
             // EXH -->
             onSaveClicked = {
