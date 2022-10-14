@@ -70,6 +70,7 @@ class MangaDexFollowsController(bundle: Bundle) : BrowseSourceController(bundle)
                     onConfirm = {
                         presenter.changeMangaFavorite(dialog.manga)
                     },
+                    mangaToRemove = dialog.manga,
                 )
             }
             is BrowseSourcePresenter.Dialog.ChangeMangaCategory -> {
