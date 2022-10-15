@@ -235,11 +235,11 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<EHentaiUpdateWorker>().build())
         }
 
-        fun scheduleBackground(context: Context, prefInterval: Int? = null) {
+        fun scheduleBackground(context: Context, prefInterval: Int? = null, prefRestrictions: Set<String>? = null) {
             val preferences = Injekt.get<UnsortedPreferences>()
             val interval = prefInterval ?: preferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
-                val restrictions = preferences.exhAutoUpdateRequirements().get()
+                val restrictions = prefRestrictions ?: preferences.exhAutoUpdateRequirements().get()
                 val acRestriction = DEVICE_CHARGING in restrictions
 
                 val constraints = Constraints.Builder()

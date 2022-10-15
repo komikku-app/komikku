@@ -73,6 +73,6 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
     }
 
     val defaultUserAgent by lazy {
-        preferences.defaultUserAgent().get()
+        preferences.defaultUserAgent().get().trim()
     }
 }

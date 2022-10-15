@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
-import eu.kanade.tachiyomi.ui.setting.SettingsBackupController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import exh.ui.batchadd.BatchAddController
 
@@ -25,7 +24,7 @@ class MoreController :
             presenter = presenter,
             onClickDownloadQueue = { router.pushController(DownloadController()) },
             onClickCategories = { router.pushController(CategoryController()) },
-            onClickBackupAndRestore = { router.pushController(SettingsBackupController()) },
+            onClickBackupAndRestore = { router.pushController(SettingsMainController(toBackupScreen = true)) },
             onClickSettings = { router.pushController(SettingsMainController()) },
             onClickAbout = { router.pushController(AboutController()) },
             // SY -->
