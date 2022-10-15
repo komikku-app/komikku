@@ -1,5 +1,6 @@
 package eu.kanade.presentation.more.settings.screen
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -59,7 +60,8 @@ class SettingsMangadexScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    override fun getTitle(): String = stringResource(R.string.pref_category_mangadex)
+    @StringRes
+    override fun getTitleRes() = R.string.pref_category_mangadex
 
     override fun isEnabled(): Boolean = MdUtil.getEnabledMangaDexs(Injekt.get()).isNotEmpty()
 
@@ -93,7 +95,7 @@ class SettingsMangadexScreen : SearchableSettings {
 
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(text = stringResource(id = R.string.login_title, mdex.name)) },
+            title = { Text(text = stringResource(R.string.login_title, mdex.name)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -179,7 +181,7 @@ class SettingsMangadexScreen : SearchableSettings {
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onDismissRequest,
                     ) {
-                        Text(text = stringResource(id = android.R.string.cancel))
+                        Text(text = stringResource(android.R.string.cancel))
                     }
                 }
             },

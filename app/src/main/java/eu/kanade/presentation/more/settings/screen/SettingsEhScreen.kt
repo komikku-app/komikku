@@ -5,6 +5,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,7 +87,8 @@ class SettingsEhScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    override fun getTitle(): String = stringResource(R.string.pref_category_eh)
+    @StringRes
+    override fun getTitleRes() = R.string.pref_category_eh
 
     override fun isEnabled(): Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
 
