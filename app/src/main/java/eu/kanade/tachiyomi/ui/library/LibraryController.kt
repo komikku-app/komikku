@@ -36,8 +36,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
-import exh.source.PERV_EDEN_EN_SOURCE_ID
-import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
@@ -336,9 +334,7 @@ class LibraryController(
     private fun cleanTitles() {
         val mangas = presenter.selection.filter {
             it.manga.isEhBasedManga() ||
-                it.manga.source in nHentaiSourceIds ||
-                it.manga.source == PERV_EDEN_EN_SOURCE_ID ||
-                it.manga.source == PERV_EDEN_IT_SOURCE_ID
+                it.manga.source in nHentaiSourceIds
         }
         presenter.cleanTitles(mangas)
         presenter.clearSelection()

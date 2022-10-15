@@ -76,10 +76,8 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
@@ -92,10 +90,8 @@ import exh.source.getMainSource
 import exh.ui.metadata.adapters.EHentaiDescription
 import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.HBrowseDescription
-import exh.ui.metadata.adapters.HitomiDescription
 import exh.ui.metadata.adapters.MangaDexDescription
 import exh.ui.metadata.adapters.NHentaiDescription
-import exh.ui.metadata.adapters.PervEdenDescription
 import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
 
@@ -873,17 +869,11 @@ fun metadataDescription(source: Source): MetadataDescriptionComposable? {
             is EHentai -> { state, openMetadataViewer, search ->
                 EHentaiDescription(state, openMetadataViewer, search)
             }
-            is Hitomi -> { state, openMetadataViewer, _ ->
-                HitomiDescription(state, openMetadataViewer)
-            }
             is MangaDex -> { state, openMetadataViewer, _ ->
                 MangaDexDescription(state, openMetadataViewer)
             }
             is NHentai -> { state, openMetadataViewer, _ ->
                 NHentaiDescription(state, openMetadataViewer)
-            }
-            is PervEden -> { state, openMetadataViewer, _ ->
-                PervEdenDescription(state, openMetadataViewer)
             }
             is EightMuses -> { state, openMetadataViewer, _ ->
                 EightMusesDescription(state, openMetadataViewer)

@@ -12,11 +12,9 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
@@ -30,8 +28,6 @@ import exh.source.EXH_SOURCE_ID
 import exh.source.EnhancedHttpSource
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
-import exh.source.PERV_EDEN_EN_SOURCE_ID
-import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
 import exh.source.handleSourceLibrary
@@ -291,25 +287,6 @@ class SourceManager(
                 EIGHTMUSES_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.eightmuses.EightMuses",
                 EightMuses::class,
-            ),
-            DelegatedSource(
-                "Hitomi",
-                fillInSourceId,
-                "eu.kanade.tachiyomi.extension.all.hitomi.Hitomi",
-                Hitomi::class,
-                true,
-            ),
-            DelegatedSource(
-                "PervEden English",
-                PERV_EDEN_EN_SOURCE_ID,
-                "eu.kanade.tachiyomi.extension.en.perveden.Perveden",
-                PervEden::class,
-            ),
-            DelegatedSource(
-                "PervEden Italian",
-                PERV_EDEN_IT_SOURCE_ID,
-                "eu.kanade.tachiyomi.extension.it.perveden.Perveden",
-                PervEden::class,
             ),
             DelegatedSource(
                 "NHentai",

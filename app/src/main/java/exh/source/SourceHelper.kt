@@ -3,10 +3,8 @@ package exh.source
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
@@ -21,8 +19,6 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 const val LEWD_SOURCE_SERIES = 6900L
 const val EH_SOURCE_ID = LEWD_SOURCE_SERIES + 1
 const val EXH_SOURCE_ID = LEWD_SOURCE_SERIES + 2
-const val PERV_EDEN_EN_SOURCE_ID = 4673633799850248749
-const val PERV_EDEN_IT_SOURCE_ID = 1433898225963724122
 const val PURURIN_SOURCE_ID = 2221515250486218861
 const val TSUMINO_SOURCE_ID = 6707338697138388238
 const val EIGHTMUSES_SOURCE_ID = 1802675169972965535
@@ -35,16 +31,12 @@ private val DELEGATED_METADATA_SOURCES by lazy {
         Tsumino::class,
         HBrowse::class,
         EightMuses::class,
-        Hitomi::class,
-        PervEden::class,
         NHentai::class,
     )
 }
 
 // Used to speed up isLewdSource
 var metadataDelegatedSourceIds: List<Long> = emptyList()
-
-var hitomiSourceIds: List<Long> = emptyList()
 
 var nHentaiSourceIds: List<Long> = emptyList()
 
@@ -60,13 +52,6 @@ fun handleSourceLibrary() {
     metadataDelegatedSourceIds = SourceManager.currentDelegatedSources
         .filter {
             it.value.newSourceClass in DELEGATED_METADATA_SOURCES
-        }
-        .map { it.value.sourceId }
-        .sorted()
-
-    hitomiSourceIds = SourceManager.currentDelegatedSources
-        .filter {
-            it.value.newSourceClass == Hitomi::class
         }
         .map { it.value.sourceId }
         .sorted()
@@ -89,7 +74,7 @@ fun handleSourceLibrary() {
         EH_SOURCE_ID,
         EXH_SOURCE_ID,
         PURURIN_SOURCE_ID,
-    ) + hitomiSourceIds + nHentaiSourceIds
+    ) + nHentaiSourceIds
 }
 
 // This method MUST be fast!

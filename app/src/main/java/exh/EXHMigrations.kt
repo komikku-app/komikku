@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -54,8 +53,6 @@ import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
-import exh.source.PERV_EDEN_EN_SOURCE_ID
-import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
 import exh.util.nullIfBlank
 import exh.util.under
@@ -139,13 +136,7 @@ object EXHMigrations {
                         updateManga.awaitAll(mangaUpdates)
                     }
                 }
-                if (oldVersion under 5) {
-                    // Migrate Hitomi source IDs
-                    updateSourceId(Hitomi.otherId, 6910)
-                }
                 if (oldVersion under 6) {
-                    updateSourceId(PERV_EDEN_EN_SOURCE_ID, 6905)
-                    updateSourceId(PERV_EDEN_IT_SOURCE_ID, 6906)
                     updateSourceId(NHentai.otherId, 6907)
                 }
                 if (oldVersion under 7) {
@@ -518,14 +509,6 @@ object EXHMigrations {
     }
 
     fun migrateBackupEntry(manga: Manga) {
-        if (manga.source == 6905L) {
-            manga.source = PERV_EDEN_EN_SOURCE_ID
-        }
-
-        if (manga.source == 6906L) {
-            manga.source = PERV_EDEN_IT_SOURCE_ID
-        }
-
         if (manga.source == 6907L) {
             // Migrate the old source to the delegated one
             manga.source = NHentai.otherId
@@ -536,10 +519,6 @@ object EXHMigrations {
         // Migrate Tsumino source IDs
         if (manga.source == 6909L) {
             manga.source = TSUMINO_SOURCE_ID
-        }
-
-        if (manga.source == 6910L) {
-            manga.source = Hitomi.otherId
         }
 
         if (manga.source == 6912L) {

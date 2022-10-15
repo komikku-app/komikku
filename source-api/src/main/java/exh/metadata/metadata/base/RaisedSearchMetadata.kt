@@ -5,10 +5,8 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.HBrowseSearchMetadata
-import exh.metadata.metadata.HitomiSearchMetadata
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.NHentaiSearchMetadata
-import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
@@ -163,10 +161,8 @@ abstract class RaisedSearchMetadata {
                 subclass(EHentaiSearchMetadata::class)
                 subclass(EightMusesSearchMetadata::class)
                 subclass(HBrowseSearchMetadata::class)
-                subclass(HitomiSearchMetadata::class)
                 subclass(MangaDexSearchMetadata::class)
                 subclass(NHentaiSearchMetadata::class)
-                subclass(PervEdenSearchMetadata::class)
                 subclass(PururinSearchMetadata::class)
                 subclass(TsuminoSearchMetadata::class)
             }

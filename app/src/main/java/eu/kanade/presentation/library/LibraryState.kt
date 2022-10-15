@@ -9,8 +9,6 @@ import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.tachiyomi.ui.library.LibraryPresenter
-import exh.source.PERV_EDEN_EN_SOURCE_ID
-import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
@@ -56,9 +54,7 @@ class LibraryStateImpl : LibraryState {
     override val showCleanTitles: Boolean by derivedStateOf {
         selection.any {
             it.manga.isEhBasedManga() ||
-                it.manga.source in nHentaiSourceIds ||
-                it.manga.source == PERV_EDEN_EN_SOURCE_ID ||
-                it.manga.source == PERV_EDEN_IT_SOURCE_ID
+                it.manga.source in nHentaiSourceIds
         }
     }
     override val showAddToMangadex: Boolean by derivedStateOf {
