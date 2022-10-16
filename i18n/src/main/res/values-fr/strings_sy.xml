@@ -513,10 +513,10 @@
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Désabonné</string>
     <string name="mangadex_specific_settings">Paramètres de MangaDex</string>
-    <string name="mangadex_sync_follows_to_library">Sync Mangadex manga dans Neko</string>
+    <string name="mangadex_sync_follows_to_library">Sync MangaDex manga dans Neko</string>
     <string name="mangadex_sync_follows_to_library_summary">Extrait le manga de lecture/relecture de Mangadex dans votre bibliothèque Neko</string>
     <string name="mangadex_preffered_source">Source MangaDex préférée</string>
-    <string name="mangadex_preffered_source_summary">Définissez votre source mangadex choisie, cela sera utilisé pour les suivis et un tas d\'autres fonctionnalités autour de l\'application</string>
+    <string name="mangadex_preffered_source_summary">Définissez votre source MangaDex choisie, cela sera utilisé pour les suivis et un tas d\'autres fonctionnalités autour de l\'application</string>
     <string name="two_factor">Code de double identification </string>
     <string name="fields_cannot_be_blank">Les champs ne peut pas être vide</string>
     <string name="mangadex_add_to_follows">Ajouter au suivie MangaDex</string>
@@ -525,8 +525,8 @@
 
 
     <!-- Scanlator filters -->
-<!--    <string name="select_scanlators">Scanlator groups to show</string>-->
-    <!--    <string name="no_scanlators">No scanlators available</string>-->
+    <!--<string name="select_scanlators">Scanlator groups to show</string>-->
+    <!--<string name="no_scanlators">No scanlators available</string>-->
 
     <!-- Similar -->
     <string name="similar">Manga similaire %1$s</string>

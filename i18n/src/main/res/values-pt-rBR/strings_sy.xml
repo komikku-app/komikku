@@ -601,7 +601,7 @@
     <string name="mangadex_sync_follows_to_library">Sincronizar mangá do MangaDex a sua bilioteca</string>
     <string name="mangadex_sync_follows_to_library_summary">Move mangás do MangaDex a sua biblioteca, se ainda não adicionados.</string>
     <string name="mangadex_preffered_source">Fonte do MangaDex preferida</string>
-    <string name="mangadex_preffered_source_summary">Define sua fonte do mangadex escolhida, ela será usada para os follows e muitas outras funções ao redor do app</string>
+    <string name="mangadex_preffered_source_summary">Define sua fonte do MangaDex escolhida, ela será usada para os follows e muitas outras funções ao redor do app</string>
     <string name="two_factor">Código 2FA</string>
     <string name="fields_cannot_be_blank">Campos não podem estar vazios</string>
     <string name="mangadex_add_to_follows">Adicionar aos follows do MangaDex</string>

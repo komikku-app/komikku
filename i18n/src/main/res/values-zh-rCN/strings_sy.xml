@@ -635,10 +635,10 @@
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">取消关注</string>
     <string name="mangadex_specific_settings">MangaDex 设置</string>
-    <string name="mangadex_sync_follows_to_library">同步 Mangadex 中的漫画到书架</string>
+    <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的漫画到书架</string>
     <string name="mangadex_sync_follows_to_library_summary">如果未被添加则从 MangaDex 拉取漫画到你的书架</string>
     <string name="mangadex_preffered_source">首选 MangaDex 来源</string>
-    <string name="mangadex_preffered_source_summary">设置你所选择的 mangadex 来源，这将用于关注和应用中一系列其他功能。</string>
+    <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 来源，这将用于关注和应用中一系列其他功能。</string>
     <string name="two_factor">2FA 验证码</string>
     <string name="fields_cannot_be_blank">字段不能为空</string>
     <string name="mangadex_add_to_follows">添加到 MangaDex 关注</string>

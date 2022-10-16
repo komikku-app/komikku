@@ -34,6 +34,9 @@
     <string name="pref_category_fork">Fork Settings</string>
     <string name="pref_category_mangadex">MangaDex</string>
 
+    <string name="pref_ehentai_summary">E-Hentai, ExHentai login, gallery sync</string>
+    <string name="pref_mangadex_summary">MangaDex, login, follows sync</string>
+
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
     <string name="enable_exhentai">Enable ExHentai</string>
@@ -664,10 +667,10 @@
     <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Unfollowed</string>
     <string name="mangadex_specific_settings">MangaDex settings</string>
-    <string name="mangadex_sync_follows_to_library">Sync Mangadex manga to your library</string>
+    <string name="mangadex_sync_follows_to_library">Sync MangaDex manga to your library</string>
     <string name="mangadex_sync_follows_to_library_summary">Pulls manga from MangaDex into your library if they are not already added.</string>
     <string name="mangadex_preffered_source">Preferred MangaDex source</string>
-    <string name="mangadex_preffered_source_summary">Set your chosen mangadex source, this will be used for follows and a bunch more features around the app</string>
+    <string name="mangadex_preffered_source_summary">Set your chosen MangaDex source, this will be used for follows and a bunch more features around the app</string>
     <string name="two_factor">2FA Code</string>
     <string name="fields_cannot_be_blank">Fields cannot be blank</string>
     <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
@@ -685,7 +688,7 @@
     <string name="similar">Similar to %1$s</string>
     <string name="similar_no_results">No Similar Manga found</string>
 
-    <!-- Mangadex relations-->
+    <!-- MangaDex relations-->
     <string name="relation_similar">Similar</string>
     <string name="relation_monochrome">Monochrome</string>
     <string name="relation_main_story">Main story</string>

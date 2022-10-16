@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -95,7 +96,20 @@ class SettingsMangadexScreen : SearchableSettings {
 
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(text = stringResource(R.string.login_title, mdex.name)) },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.login_title, mdex.name),
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.action_close),
+                        )
+                    }
+                }
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -138,51 +152,43 @@ class SettingsMangadexScreen : SearchableSettings {
                 }
             },
             confirmButton = {
-                Column {
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !processing,
-                        onClick = {
-                            if (username.text.isEmpty() || password.text.isEmpty()) {
-                                inputError = true
-                                return@Button
-                            }
-                            scope.launchIO {
-                                try {
-                                    inputError = false
-                                    processing = true
-                                    val result = mdex.login(
-                                        username = username.text,
-                                        password = password.text,
-                                        twoFactorCode = null,
-                                    )
-                                    if (result) {
-                                        onDismissRequest()
-                                        onLoginSuccess()
-                                        withUIContext {
-                                            context.toast(R.string.login_success)
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    xLogW("Login to Mangadex error", e)
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !processing,
+                    onClick = {
+                        if (username.text.isEmpty() || password.text.isEmpty()) {
+                            inputError = true
+                            return@Button
+                        }
+                        scope.launchIO {
+                            try {
+                                inputError = false
+                                processing = true
+                                val result = mdex.login(
+                                    username = username.text,
+                                    password = password.text,
+                                    twoFactorCode = null,
+                                )
+                                if (result) {
+                                    onDismissRequest()
+                                    onLoginSuccess()
                                     withUIContext {
-                                        e.message?.let { context.toast(it) }
+                                        context.toast(R.string.login_success)
                                     }
-                                } finally {
-                                    processing = false
                                 }
+                            } catch (e: Exception) {
+                                xLogW("Login to Mangadex error", e)
+                                withUIContext {
+                                    e.message?.let { context.toast(it) }
+                                }
+                            } finally {
+                                processing = false
                             }
-                        },
-                    ) {
-                        val id = if (processing) R.string.loading else R.string.login
-                        Text(text = stringResource(id))
-                    }
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onDismissRequest,
-                    ) {
-                        Text(text = stringResource(android.R.string.cancel))
-                    }
+                        }
+                    },
+                ) {
+                    val id = if (processing) R.string.loading else R.string.login
+                    Text(text = stringResource(id))
                 }
             },
             properties = DialogProperties(
