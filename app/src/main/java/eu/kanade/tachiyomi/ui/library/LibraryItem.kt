@@ -17,10 +17,6 @@ class LibraryItem(
     var isLocal = false
     var sourceLanguage = ""
 
-    // SY -->
-    var startReadingButton = false
-    // SY <--
-
     /**
      * Filters a manga depending on a query.
      *

@@ -20,6 +20,13 @@ import eu.kanade.tachiyomi.ui.library.LibraryItem
 @Composable
 fun LibraryComfortableGrid(
     items: List<LibraryItem>,
+    showDownloadBadges: Boolean,
+    showUnreadBadges: Boolean,
+    showLocalBadges: Boolean,
+    showLanguageBadges: Boolean,
+    // SY -->
+    showStartReadingButton: Boolean,
+    // SY <--
     columns: Int,
     contentPadding: PaddingValues,
     selection: List<LibraryManga>,
@@ -43,12 +50,19 @@ fun LibraryComfortableGrid(
             contentType = { "library_comfortable_grid_item" },
         ) { libraryItem ->
             LibraryComfortableGridItem(
-                libraryItem,
-                libraryItem.libraryManga in selection,
-                onClick,
-                onLongClick,
+                item = libraryItem,
+                showDownloadBadge = showDownloadBadges,
+                showUnreadBadge = showUnreadBadges,
+                showLocalBadge = showLocalBadges,
+                showLanguageBadge = showLanguageBadges,
                 // SY -->
-                onOpenReader,
+                showStartReadingButton = showStartReadingButton,
+                // SY <--
+                isSelected = libraryItem.libraryManga in selection,
+                onClick = onClick,
+                onLongClick = onLongClick,
+                // SY -->
+                onOpenReader = onOpenReader,
                 // SY <--
             )
         }
@@ -58,10 +72,19 @@ fun LibraryComfortableGrid(
 @Composable
 fun LibraryComfortableGridItem(
     item: LibraryItem,
+    showDownloadBadge: Boolean,
+    showUnreadBadge: Boolean,
+    showLocalBadge: Boolean,
+    showLanguageBadge: Boolean,
+    // SY -->
+    showStartReadingButton: Boolean,
+    // SY <--
     isSelected: Boolean,
     onClick: (LibraryManga) -> Unit,
     onLongClick: (LibraryManga) -> Unit,
+    // SY -->
     onOpenReader: (LibraryManga) -> Unit,
+    // SY <--
 ) {
     val libraryManga = item.libraryManga
     val manga = libraryManga.manga
@@ -85,12 +108,13 @@ fun LibraryComfortableGridItem(
                     manga.thumbnailUrl,
                     manga.coverLastModified,
                 ),
-                downloadCount = item.downloadCount,
-                unreadCount = item.unreadCount,
-                isLocal = item.isLocal,
-                language = item.sourceLanguage,
+                item = item,
+                showDownloadBadge = showDownloadBadge,
+                showUnreadBadge = showUnreadBadge,
+                showLocalBadge = showLocalBadge,
+                showLanguageBadge = showLanguageBadge,
                 // SY -->
-                showPlayButton = item.startReadingButton && item.libraryManga.unreadCount > 0,
+                showStartReadingButton = showStartReadingButton && item.libraryManga.unreadCount > 0,
                 onOpenReader = {
                     onOpenReader(item.libraryManga)
                 },

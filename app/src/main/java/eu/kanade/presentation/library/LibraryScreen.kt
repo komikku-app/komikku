@@ -120,6 +120,13 @@ fun LibraryScreen(
                     // SY <--
                     getColumnsForOrientation = { presenter.getColumnsPreferenceForCurrentOrientation(it) },
                     getLibraryForPage = { presenter.getMangaForCategory(page = it) },
+                    showDownloadBadges = presenter.showDownloadBadges,
+                    showUnreadBadges = presenter.showUnreadBadges,
+                    showLocalBadges = presenter.showLocalBadges,
+                    showLanguageBadges = presenter.showLanguageBadges,
+                    // SY -->
+                    showStartReadingButton = presenter.showStartReadingButton,
+                    // SY <--
                     isIncognitoMode = presenter.isIncognitoMode,
                     isDownloadOnly = presenter.isDownloadOnly,
                     // SY -->

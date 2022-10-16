@@ -210,13 +210,10 @@ class LibraryController(
             when (group) {
                 is LibrarySettingsSheet.Filter.FilterGroup -> onFilterChanged()
                 is LibrarySettingsSheet.Sort.SortGroup -> onSortChanged()
-                is LibrarySettingsSheet.Display.DisplayGroup -> {}
-                is LibrarySettingsSheet.Display.BadgeGroup -> onBadgeSettingChanged()
-                is LibrarySettingsSheet.Display.TabsGroup -> {} // onTabsSettingsChanged()
                 // SY -->
                 is LibrarySettingsSheet.Grouping.InternalGroup -> onGroupSettingChanged()
-                is LibrarySettingsSheet.Display.ButtonsGroup -> onButtonSettingChanged()
-                // SY -->
+                // SY <--
+                else -> {} // Handled via different mechanisms
             }
         }
     }
@@ -245,15 +242,7 @@ class LibraryController(
         activity?.invalidateOptionsMenu()
     }
 
-    private fun onBadgeSettingChanged() {
-        presenter.requestBadgesUpdate()
-    }
-
     // SY -->
-    private fun onButtonSettingChanged() {
-        presenter.requestButtonsUpdate()
-    }
-
     private fun onGroupSettingChanged() {
         presenter.requestGroupsUpdate()
     }
