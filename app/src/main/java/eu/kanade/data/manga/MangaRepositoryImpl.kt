@@ -40,12 +40,12 @@ class MangaRepositoryImpl(
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
         return handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
-        // return handler.awaitList { mangasQueries.getLibrary(libraryManga) }
+        // return handler.awaitList { libraryViewQueries.library(libraryManga) }
     }
 
     override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
         return handler.subscribeToList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
-        // return handler.subscribeToList { mangasQueries.getLibrary(libraryManga) }
+        // return handler.subscribeToList { libraryViewQueries.library(libraryManga) }
     }
 
     override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {

@@ -36,7 +36,10 @@ private val mapper = { cursor: SqlCursor ->
         ),
         unreadCount = cursor.getLong(20)!!,
         readCount = cursor.getLong(21)!!,
-        category = cursor.getLong(22)!!,
+        latestUpload = cursor.getLong(22)!!,
+        chapterFetchedAt = cursor.getLong(23)!!,
+        lastRead = cursor.getLong(24)!!,
+        category = cursor.getLong(25)!!,
     )
 }
 
@@ -45,56 +48,67 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
         return driver.executeQuery(
             null,
             """
-            SELECT M.*, COALESCE(MC.category_id, 0) AS category
-            FROM (
-                SELECT mangas.*, COALESCE(UR.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
-                    FROM mangas
-                    LEFT JOIN (
-                        SELECT chapters.manga_id, COUNT(*) AS unreadCount
-                        FROM chapters
-                        WHERE chapters.read = 0
-                        GROUP BY chapters.manga_id
-                    ) AS UR
-                    ON mangas._id = UR.manga_id
-                    LEFT JOIN (
-                        SELECT chapters.manga_id, COUNT(*) AS readCount
-                        FROM chapters
-                        WHERE chapters.read = 1
-                        GROUP BY chapters.manga_id
-                    ) AS R
-                    ON mangas._id = R.manga_id
-                    WHERE mangas.favorite = 1 AND mangas.source <> $MERGED_SOURCE_ID
-                    GROUP BY mangas._id
-                UNION
-                SELECT mangas.*, COALESCE(UR.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
-                    FROM mangas
-                    LEFT JOIN (
-                        SELECT merged.merge_id, COUNT(*) as unreadCount
-                        FROM merged
-                        JOIN chapters
-                        ON chapters.manga_id = merged.manga_id
-                        WHERE chapters.read = 0
-                        GROUP BY merged.merge_id
-                    ) AS UR
-                    ON mangas._id = UR.merge_id
-                    LEFT JOIN (
-                        SELECT merged.merge_id, COUNT(*) as readCount
-                        FROM merged
-                        JOIN chapters
-                        ON chapters.manga_id = merged.manga_id
-                        WHERE chapters.read = 1
-                        GROUP BY merged.merge_id
-                    ) AS R
-                    ON mangas._id = R.merge_id
-                    WHERE mangas.favorite = 1 AND mangas.source = $MERGED_SOURCE_ID
-                    GROUP BY mangas._id
-                ORDER BY mangas.title
-            ) AS M
+            SELECT
+                M.*,
+                coalesce(C.total - C.readCount, 0) AS unreadCount,
+                coalesce(C.readCount, 0) AS readCount,
+                coalesce(C.latestUpload, 0) AS latestUpload,
+                coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
+                coalesce(C.lastRead, 0) AS lastRead,
+                COALESCE(MC.category_id, 0) AS category
+            FROM mangas M
+            LEFT JOIN mangas_categories AS MC
+            ON MC.manga_id = M._id
+            LEFT JOIN(
+                SELECT
+                    chapters.manga_id,
+                    count(*) AS total,
+                    sum(read) AS readCount,
+                    coalesce(max(chapters.date_upload), 0) AS latestUpload,
+                    coalesce(max(history.last_read), 0) AS lastRead,
+                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt
+                FROM chapters
+                LEFT JOIN history
+                ON chapters._id = history.chapter_id
+                GROUP BY chapters.manga_id
+            ) AS C
+            ON M._id = C.manga_id
+            WHERE M.favorite = 1 AND M.source <> $MERGED_SOURCE_ID
+            UNION
+            SELECT
+                M.*,
+                coalesce(C.total - C.readCount, 0) AS unreadCount,
+                coalesce(C.readCount, 0) AS readCount,
+                coalesce(C.latestUpload, 0) AS latestUpload,
+                coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
+                coalesce(C.lastRead, 0) AS lastRead,
+                COALESCE(MC.category_id, 0) AS category
+            FROM mangas M
             LEFT JOIN (
-                SELECT *
-                FROM mangas_categories
-            ) AS MC
-            ON M._id = MC.manga_id;
+                SELECT merged.manga_id,merged.merge_id
+                FROM merged
+                GROUP BY merged.merge_id
+            ) as ME
+            ON ME.merge_id = M._id
+            LEFT JOIN mangas_categories AS MC
+            ON MC.manga_id = M._id
+            LEFT JOIN(
+                SELECT
+                    ME.merge_id,
+                    count(*) AS total,
+                    sum(read) AS readCount,
+                    coalesce(max(chapters.date_upload), 0) AS latestUpload,
+                    coalesce(max(history.last_read), 0) AS lastRead,
+                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt
+                FROM chapters
+                LEFT JOIN history
+                ON chapters._id = history.chapter_id
+                LEFT JOIN merged as ME
+                ON ME.manga_id = chapters.manga_id
+                GROUP BY ME.merge_id
+            ) AS C
+            ON ME.merge_id = C.merge_id
+            WHERE M.favorite = 1 AND M.source = $MERGED_SOURCE_ID;
             """.trimIndent(),
             1,
         )
