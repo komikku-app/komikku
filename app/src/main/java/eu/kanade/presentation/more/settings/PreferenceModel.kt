@@ -1,7 +1,5 @@
 package eu.kanade.presentation.more.settings
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.ui.graphics.vector.ImageVector
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -128,6 +126,15 @@ sealed class Preference {
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true }
         }
 
+        data class InfoPreference(
+            override val title: String,
+        ) : PreferenceItem<String>() {
+            override val enabled: Boolean = true
+            override val subtitle: String? = null
+            override val icon: ImageVector? = null
+            override val onValueChanged: suspend (newValue: String) -> Boolean = { true }
+        }
+
         // SY -->
         /**
          * A [PreferenceItem] for mangadex login.
@@ -152,12 +159,4 @@ sealed class Preference {
 
         val preferenceItems: List<PreferenceItem<out Any>>,
     ) : Preference()
-
-    companion object {
-        fun infoPreference(info: String) = PreferenceItem.TextPreference(
-            title = "",
-            subtitle = info,
-            icon = Icons.Outlined.Info,
-        )
-    }
 }

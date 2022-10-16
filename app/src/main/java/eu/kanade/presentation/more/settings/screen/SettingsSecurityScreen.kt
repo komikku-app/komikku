@@ -136,7 +136,7 @@ class SettingsSecurityScreen : SearchableSettings {
                 )
             },
             // SY <--
-            Preference.infoPreference(stringResource(R.string.secure_screen_summary)),
+            Preference.PreferenceItem.InfoPreference(stringResource(R.string.secure_screen_summary)),
         )
     }
 
