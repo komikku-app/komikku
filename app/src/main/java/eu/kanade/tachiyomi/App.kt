@@ -45,6 +45,8 @@ import eu.kanade.domain.SYDomainModule
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.ThemeMode
+import eu.kanade.tachiyomi.crash.CrashActivity
+import eu.kanade.tachiyomi.crash.GlobalExceptionHandler
 import eu.kanade.tachiyomi.data.coil.DomainMangaKeyer
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.coil.MangaCoverKeyer
@@ -102,6 +104,8 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         setupExhLogging() // EXH logging
         LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
         if (!BuildConfig.DEBUG) addAnalytics()
+
+        GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
 
         // TLS 1.3 support for Android < 10
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

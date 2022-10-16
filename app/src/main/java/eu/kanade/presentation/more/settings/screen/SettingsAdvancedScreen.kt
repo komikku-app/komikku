@@ -89,6 +89,7 @@ import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import logcat.LogPriority
 import rikka.sui.Sui
 import uy.kohesive.injekt.Injekt
@@ -119,7 +120,7 @@ class SettingsAdvancedScreen : SearchableSettings {
                 title = stringResource(R.string.pref_dump_crash_logs),
                 subtitle = stringResource(R.string.pref_dump_crash_logs_summary),
                 onClick = {
-                    scope.launchNonCancellable {
+                    scope.launch {
                         CrashLogUtil(context).dumpLogs()
                     }
                 },
