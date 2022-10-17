@@ -8,6 +8,7 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import eu.kanade.data.manga.LibraryQuery
+import eu.kanade.data.updates.UpdatesQuery
 import eu.kanade.tachiyomi.Database
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -91,5 +92,7 @@ class AndroidDatabaseHandler(
 
     // SY -->
     fun getLibraryQuery() = LibraryQuery(driver)
+
+    fun getUpdatesQuery(after: Long) = UpdatesQuery(driver, after)
     // SY <--
 }
