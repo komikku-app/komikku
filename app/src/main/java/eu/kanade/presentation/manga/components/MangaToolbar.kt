@@ -176,15 +176,6 @@ fun MangaToolbar(
                                 expanded = moreExpanded,
                                 onDismissRequest = onDismissRequest,
                             ) {
-                                if (onClickShare != null) {
-                                    DropdownMenuItem(
-                                        text = { Text(text = stringResource(R.string.action_share)) },
-                                        onClick = {
-                                            onClickShare()
-                                            onDismissRequest()
-                                        },
-                                    )
-                                }
                                 if (onClickEditCategory != null) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(R.string.action_edit_categories)) },
@@ -199,6 +190,15 @@ fun MangaToolbar(
                                         text = { Text(text = stringResource(R.string.action_migrate)) },
                                         onClick = {
                                             onClickMigrate()
+                                            onDismissRequest()
+                                        },
+                                    )
+                                }
+                                if (onClickShare != null) {
+                                    DropdownMenuItem(
+                                        text = { Text(text = stringResource(R.string.action_share)) },
+                                        onClick = {
+                                            onClickShare()
                                             onDismissRequest()
                                         },
                                     )
