@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
@@ -88,6 +89,7 @@ import exh.pref.DelegateSourcePreferences
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.util.toAnnotatedString
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -729,9 +731,12 @@ class SettingsAdvancedScreen : SearchableSettings {
                         stringResource(R.string.app_name),
                     ),
                 ),
-                Preference.PreferenceItem.TextPreference(
+                Preference.PreferenceItem.AnnotatedTextPreference(
                     title = stringResource(R.string.open_debug_menu),
-                    subtitle = stringResource(R.string.open_debug_menu_summary), // todo make red
+                    annotatedSubtitle = remember {
+                        HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_COMPACT)
+                            .toAnnotatedString()
+                    },
                     onClick = { router.pushController(SettingsDebugController()) },
                 ),
             ),

@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.settings
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.AnnotatedString
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.core.preference.Preference as PreferenceData
@@ -149,6 +150,21 @@ sealed class Preference {
             override val subtitle: String? = null
             override val icon: ImageVector? = null
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true }
+        }
+
+        /**
+         * A basic [PreferenceItem] that only displays texts.
+         */
+        data class AnnotatedTextPreference(
+            override val title: String,
+            val annotatedSubtitle: AnnotatedString,
+            override val icon: ImageVector? = null,
+            override val enabled: Boolean = true,
+            override val onValueChanged: suspend (newValue: String) -> Boolean = { true },
+
+            val onClick: (() -> Unit)? = null,
+        ) : PreferenceItem<String>() {
+            override val subtitle: String = annotatedSubtitle.text
         }
         // SY <--
     }

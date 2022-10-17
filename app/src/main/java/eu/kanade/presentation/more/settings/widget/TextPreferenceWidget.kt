@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import eu.kanade.presentation.util.secondaryItemAlpha
 
@@ -58,6 +62,47 @@ fun TextPreferenceWidget(
     )
 }
 
+// SY -->
+@Composable
+fun TextPreferenceWidget(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: AnnotatedString,
+    icon: ImageVector? = null,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    widget: @Composable (() -> Unit)? = null,
+    onPreferenceClick: (() -> Unit)? = null,
+) {
+    BasePreferenceWidget(
+        modifier = modifier,
+        title = title,
+        subcomponent = {
+            Text(
+                text = subtitle,
+                modifier = Modifier
+                    .padding(horizontal = HorizontalPadding)
+                    .secondaryItemAlpha(),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 10,
+            )
+        },
+        icon = if (icon != null) {
+            {
+                Icon(
+                    imageVector = icon,
+                    tint = iconTint,
+                    contentDescription = null,
+                )
+            }
+        } else {
+            null
+        },
+        onClick = onPreferenceClick,
+        widget = widget,
+    )
+}
+// SY <--
+
 @Preview
 @Composable
 private fun TextPreferenceWidgetPreview() {
@@ -75,6 +120,19 @@ private fun TextPreferenceWidgetPreview() {
                     subtitle = "Text preference summary",
                     onPreferenceClick = {},
                 )
+                // SY -->
+                TextPreferenceWidget(
+                    title = "Text preference",
+                    subtitle = buildAnnotatedString {
+                        append("Text preference ")
+
+                        withStyle(SpanStyle(Color.Red)) {
+                            append("summary")
+                        }
+                    },
+                    onPreferenceClick = {},
+                )
+                // SY <--
             }
         }
     }
