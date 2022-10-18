@@ -5,8 +5,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Label
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SettingsBackupRestore
@@ -14,16 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.Divider
-import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
-import eu.kanade.presentation.components.SwitchPreference
+import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import eu.kanade.tachiyomi.ui.more.MoreController
@@ -61,19 +63,21 @@ fun MoreScreen(
         }
 
         item {
-            SwitchPreference(
-                preference = presenter.downloadedOnly,
+            SwitchPreferenceWidget(
                 title = stringResource(R.string.label_downloaded_only),
                 subtitle = stringResource(R.string.downloaded_only_summary),
-                painter = rememberVectorPainter(Icons.Outlined.CloudOff),
+                icon = Icons.Outlined.CloudOff,
+                checked = presenter.downloadedOnly.value,
+                onCheckedChanged = { presenter.downloadedOnly.value = it },
             )
         }
         item {
-            SwitchPreference(
-                preference = presenter.incognitoMode,
+            SwitchPreferenceWidget(
                 title = stringResource(R.string.pref_incognito_mode),
                 subtitle = stringResource(R.string.pref_incognito_mode_summary),
-                painter = painterResource(R.drawable.ic_glasses_24dp),
+                icon = ImageVector.vectorResource(R.drawable.ic_glasses_24dp),
+                checked = presenter.incognitoMode.value,
+                onCheckedChanged = { presenter.incognitoMode.value = it },
             )
         }
 
@@ -82,26 +86,26 @@ fun MoreScreen(
         // SY -->
         if (!presenter.showNavUpdates.value) {
             item {
-                PreferenceRow(
+                TextPreferenceWidget(
                     title = stringResource(R.string.label_recent_updates),
-                    painter = painterResource(R.drawable.ic_updates_outline_24dp),
-                    onClick = onClickUpdates,
+                    icon = Icons.Outlined.NewReleases,
+                    onPreferenceClick = onClickUpdates,
                 )
             }
         }
         if (!presenter.showNavHistory.value) {
             item {
-                PreferenceRow(
+                TextPreferenceWidget(
                     title = stringResource(R.string.label_recent_manga),
-                    painter = painterResource(R.drawable.ic_history_24dp),
-                    onClick = onClickHistory,
+                    icon = Icons.Outlined.History,
+                    onPreferenceClick = onClickHistory,
                 )
             }
         }
         // SY <--
 
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.label_download_queue),
                 subtitle = when (downloadQueueState) {
                     DownloadQueueState.Stopped -> null
@@ -124,30 +128,30 @@ fun MoreScreen(
                         pluralStringResource(id = R.plurals.download_queue_summary, count = pending, pending)
                     }
                 },
-                painter = rememberVectorPainter(Icons.Outlined.GetApp),
-                onClick = onClickDownloadQueue,
+                icon = Icons.Outlined.GetApp,
+                onPreferenceClick = onClickDownloadQueue,
             )
         }
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.categories),
-                painter = rememberVectorPainter(Icons.Outlined.Label),
-                onClick = onClickCategories,
+                icon = Icons.Outlined.Label,
+                onPreferenceClick = onClickCategories,
             )
         }
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.label_backup),
-                painter = rememberVectorPainter(Icons.Outlined.SettingsBackupRestore),
-                onClick = onClickBackupAndRestore,
+                icon = Icons.Outlined.SettingsBackupRestore,
+                onPreferenceClick = onClickBackupAndRestore,
             )
         }
         // SY -->
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.eh_batch_add),
-                painter = rememberVectorPainter(Icons.Outlined.PlaylistAdd),
-                onClick = onClickBatchAdd,
+                icon = Icons.Outlined.PlaylistAdd,
+                onPreferenceClick = onClickBatchAdd,
             )
         }
         // SY <--
@@ -155,24 +159,24 @@ fun MoreScreen(
         item { Divider() }
 
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.label_settings),
-                painter = rememberVectorPainter(Icons.Outlined.Settings),
-                onClick = onClickSettings,
+                icon = Icons.Outlined.Settings,
+                onPreferenceClick = onClickSettings,
             )
         }
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.pref_category_about),
-                painter = rememberVectorPainter(Icons.Outlined.Info),
-                onClick = onClickAbout,
+                icon = Icons.Outlined.Info,
+                onPreferenceClick = onClickAbout,
             )
         }
         item {
-            PreferenceRow(
+            TextPreferenceWidget(
                 title = stringResource(R.string.label_help),
-                painter = rememberVectorPainter(Icons.Outlined.HelpOutline),
-                onClick = { uriHandler.openUri(MoreController.URL_HELP) },
+                icon = Icons.Outlined.HelpOutline,
+                onPreferenceClick = { uriHandler.openUri(MoreController.URL_HELP) },
             )
         }
     }

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
@@ -19,6 +20,8 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.xmlpull.v1.XmlPullParser
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -32,6 +35,7 @@ class SettingsGeneralScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
+        val scope = rememberCoroutineScope()
         val prefs = remember { Injekt.get<BasePreferences>() }
         val libraryPrefs = remember { Injekt.get<LibraryPreferences>() }
         // SY -->
@@ -77,12 +81,15 @@ class SettingsGeneralScreen : SearchableSettings {
                     subtitle = "%s",
                     entries = langs,
                     onValueChanged = { newValue ->
-                        val locale = if (newValue.isEmpty()) {
-                            LocaleListCompat.getEmptyLocaleList()
-                        } else {
-                            LocaleListCompat.forLanguageTags(newValue)
+                        scope.launch {
+                            delay(1000)
+                            val locale = if (newValue.isEmpty()) {
+                                LocaleListCompat.getEmptyLocaleList()
+                            } else {
+                                LocaleListCompat.forLanguageTags(newValue)
+                            }
+                            AppCompatDelegate.setApplicationLocales(locale)
                         }
-                        AppCompatDelegate.setApplicationLocales(locale)
                         true
                     },
                 ),

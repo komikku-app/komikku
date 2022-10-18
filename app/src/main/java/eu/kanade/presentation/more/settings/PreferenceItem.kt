@@ -23,10 +23,10 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
-import eu.kanade.presentation.more.settings.widget.HorizontalPadding
 import eu.kanade.presentation.more.settings.widget.InfoWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
@@ -186,7 +186,7 @@ internal fun PreferenceItem(
                             imageVector = Icons.Outlined.PeopleAlt,
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(start = 12.dp, end = HorizontalPadding)
+                                .padding(start = 12.dp, end = PrefsHorizontalPadding)
                                 .secondaryItemAlpha(),
                             tint = if (item.loggedIn) {
                                 MaterialTheme.colorScheme.primary
