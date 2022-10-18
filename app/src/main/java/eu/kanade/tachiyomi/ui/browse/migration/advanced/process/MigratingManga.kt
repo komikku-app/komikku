@@ -14,7 +14,7 @@ class MigratingManga(
     parentContext: CoroutineContext,
     val getManga: suspend (SearchResult.Result) -> Manga?,
     val getChapterInfo: suspend (SearchResult.Result) -> ChapterInfo,
-    val getSourceName: (Manga) -> String?,
+    val getSourceName: (Manga) -> String,
 ) {
     val migrationScope = CoroutineScope(parentContext + SupervisorJob() + Dispatchers.Default)
 

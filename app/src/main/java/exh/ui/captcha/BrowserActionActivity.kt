@@ -166,7 +166,7 @@ class BrowserActionActivity : AppCompatActivity() {
                                 // Rob demo credentials
                                 .url("https://speech-to-text-demo.ng.bluemix.net/api/v1/credentials")
                                 .build(),
-                        ).await().parseAs<JsonObject>()["token"]!!.jsonPrimitive.content
+                        ).await().parseAs<JsonObject>()["token"]!!.jsonPrimitive.content,
                     )
                 } catch (e: Exception) {
                     xLogE("Failed to get credentials", e)
@@ -269,7 +269,6 @@ class BrowserActionActivity : AppCompatActivity() {
                         } catch (e: Exception) {
                             captchaSolveFail()
                         }
-
                     }
                 } else {
                     binding.webview.postDelayed(

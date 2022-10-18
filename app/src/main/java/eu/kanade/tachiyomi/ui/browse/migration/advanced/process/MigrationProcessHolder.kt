@@ -101,7 +101,7 @@ class MigrationProcessHolder(
                     }
                     if (resultManga != null) {
                         val (sourceName, latestChapter) = withIOContext {
-                            val sourceNameAsync = async { migrateManga.getSourceName(resultManga).orEmpty() }
+                            val sourceNameAsync = async { migrateManga.getSourceName(resultManga) }
                             val latestChapterAsync = async { migrateManga.getChapterInfo(searchResult as SearchResult.Result) }
                             sourceNameAsync.await() to latestChapterAsync.await()
                         }
