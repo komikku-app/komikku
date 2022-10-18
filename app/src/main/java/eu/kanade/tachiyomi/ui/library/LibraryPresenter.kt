@@ -22,7 +22,6 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
-import eu.kanade.domain.chapter.interactor.GetBookmarkedChaptersByMangaId
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
@@ -126,7 +125,6 @@ class LibraryPresenter(
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
-    private val getBookmarkedChaptersByMangaId: GetBookmarkedChaptersByMangaId = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
@@ -315,14 +313,13 @@ class LibraryPresenter(
 
         val filterFnBookmarked: (LibraryItem) -> Boolean = bookmarked@{ item ->
             if (filterBookmarked == State.IGNORE.value) return@bookmarked true
-            return@bookmarked runBlocking {
-                val isBookmarked = getBookmarkedChaptersByMangaId.await(item.libraryManga.manga.id).isNotEmpty()
 
-                return@runBlocking if (filterBookmarked == State.INCLUDE.value) {
-                    isBookmarked
-                } else {
-                    !isBookmarked
-                }
+            val hasBookmarks = item.libraryManga.hasBookmarks
+
+            return@bookmarked if (filterBookmarked == State.INCLUDE.value) {
+                hasBookmarks
+            } else {
+                !hasBookmarks
             }
         }
 

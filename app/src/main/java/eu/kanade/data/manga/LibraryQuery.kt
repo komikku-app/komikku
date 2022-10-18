@@ -34,12 +34,13 @@ private val mapper = { cursor: SqlCursor ->
             cursor.getString(18)?.let(listOfStringsAndAdapter::decode),
             updateStrategyAdapter.decode(cursor.getLong(19)!!),
         ),
-        unreadCount = cursor.getLong(20)!!,
+        totalChapters = cursor.getLong(20)!!,
         readCount = cursor.getLong(21)!!,
         latestUpload = cursor.getLong(22)!!,
         chapterFetchedAt = cursor.getLong(23)!!,
         lastRead = cursor.getLong(24)!!,
-        category = cursor.getLong(25)!!,
+        bookmarkCount = cursor.getLong(25)!!,
+        category = cursor.getLong(26)!!,
     )
 }
 
@@ -50,15 +51,14 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
             """
             SELECT
                 M.*,
-                coalesce(C.total - C.readCount, 0) AS unreadCount,
+                coalesce(C.total, 0) AS totalCount,
                 coalesce(C.readCount, 0) AS readCount,
                 coalesce(C.latestUpload, 0) AS latestUpload,
                 coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
                 coalesce(C.lastRead, 0) AS lastRead,
-                COALESCE(MC.category_id, 0) AS category
+                coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+                coalesce(MC.category_id, 0) AS category
             FROM mangas M
-            LEFT JOIN mangas_categories AS MC
-            ON MC.manga_id = M._id
             LEFT JOIN(
                 SELECT
                     chapters.manga_id,
@@ -66,23 +66,27 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                     sum(read) AS readCount,
                     coalesce(max(chapters.date_upload), 0) AS latestUpload,
                     coalesce(max(history.last_read), 0) AS lastRead,
-                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt
+                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
+                    sum(chapters.bookmark) AS bookmarkCount
                 FROM chapters
                 LEFT JOIN history
                 ON chapters._id = history.chapter_id
                 GROUP BY chapters.manga_id
             ) AS C
             ON M._id = C.manga_id
+            LEFT JOIN mangas_categories AS MC
+            ON MC.manga_id = M._id
             WHERE M.favorite = 1 AND M.source <> $MERGED_SOURCE_ID
             UNION
             SELECT
                 M.*,
-                coalesce(C.total - C.readCount, 0) AS unreadCount,
+                coalesce(C.total, 0) AS totalCount,
                 coalesce(C.readCount, 0) AS readCount,
                 coalesce(C.latestUpload, 0) AS latestUpload,
                 coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
                 coalesce(C.lastRead, 0) AS lastRead,
-                COALESCE(MC.category_id, 0) AS category
+                coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+                coalesce(MC.category_id, 0) AS category
             FROM mangas M
             LEFT JOIN (
                 SELECT merged.manga_id,merged.merge_id
@@ -90,8 +94,6 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                 GROUP BY merged.merge_id
             ) as ME
             ON ME.merge_id = M._id
-            LEFT JOIN mangas_categories AS MC
-            ON MC.manga_id = M._id
             LEFT JOIN(
                 SELECT
                     ME.merge_id,
@@ -99,7 +101,8 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                     sum(read) AS readCount,
                     coalesce(max(chapters.date_upload), 0) AS latestUpload,
                     coalesce(max(history.last_read), 0) AS lastRead,
-                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt
+                    coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
+                    sum(chapters.bookmark) AS bookmarkCount
                 FROM chapters
                 LEFT JOIN history
                 ON chapters._id = history.chapter_id
@@ -108,6 +111,8 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                 GROUP BY ME.merge_id
             ) AS C
             ON ME.merge_id = C.merge_id
+            LEFT JOIN mangas_categories AS MC
+            ON MC.manga_id = M._id
             WHERE M.favorite = 1 AND M.source = $MERGED_SOURCE_ID;
             """.trimIndent(),
             1,
