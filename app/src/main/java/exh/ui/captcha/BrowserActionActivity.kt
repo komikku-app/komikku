@@ -11,25 +11,28 @@ import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.getSerializableExtraCompat
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.source.DelegatedHttpSource
-import exh.util.melt
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -39,9 +42,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import rx.Observable
-import rx.Single
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.net.URL
@@ -58,7 +58,7 @@ class BrowserActionActivity : AppCompatActivity() {
     private var validateCurrentLoopId: String? = null
     private var strictValidationStartTime: Long? = null
 
-    private lateinit var credentialsObservable: Observable<String>
+    private val credentialsFlow = MutableSharedFlow<String>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private lateinit var binding: EhActivityCaptchaBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,17 +158,20 @@ class BrowserActionActivity : AppCompatActivity() {
 
         binding.webview.webViewClient = if (actionName == null && preferencesHelper.autoSolveCaptcha().get()) {
             // Fetch auto-solve credentials early for speed
-            credentialsObservable = httpClient.newCall(
-                Request.Builder()
-                    // Rob demo credentials
-                    .url("https://speech-to-text-demo.ng.bluemix.net/api/v1/credentials")
-                    .build(),
-            )
-                .asObservableSuccess()
-                .subscribeOn(Schedulers.io())
-                .map {
-                    it.parseAs<JsonObject>()["token"]!!.jsonPrimitive.content
-                }.melt()
+            lifecycleScope.launchIO {
+                try {
+                    credentialsFlow.emit(
+                        httpClient.newCall(
+                            Request.Builder()
+                                // Rob demo credentials
+                                .url("https://speech-to-text-demo.ng.bluemix.net/api/v1/credentials")
+                                .build(),
+                        ).await().parseAs<JsonObject>()["token"]!!.jsonPrimitive.content
+                    )
+                } catch (e: Exception) {
+                    xLogE("Failed to get credentials", e)
+                }
+            }
 
             binding.webview.addJavascriptInterface(this@BrowserActionActivity, "exh")
             AutoSolvingWebViewClient(this, verifyComplete, script, headers)
@@ -250,25 +253,24 @@ class BrowserActionActivity : AppCompatActivity() {
             STAGE_DOWNLOAD_AUDIO -> {
                 if (result != null) {
                     xLogD("Got audio URL: $result")
-                    performRecognize(result)
-                        .observeOn(Schedulers.io())
-                        .subscribe(
-                            {
-                                xLogD("Got audio transcript: $it")
-                                binding.webview.post {
-                                    typeResult(
-                                        loopId,
-                                        it!!
-                                            .replace(TRANSCRIPT_CLEANER_REGEX, "")
-                                            .replace(SPACE_DEDUPE_REGEX, " ")
-                                            .trim(),
-                                    )
-                                }
-                            },
-                            {
-                                runBlocking { captchaSolveFail() }
-                            },
-                        )
+                    lifecycleScope.launchIO {
+                        try {
+                            val transcript = performRecognize(result)
+                            xLogD("Got audio transcript: $transcript")
+                            binding.webview.post {
+                                typeResult(
+                                    loopId,
+                                    transcript
+                                        .replace(TRANSCRIPT_CLEANER_REGEX, "")
+                                        .replace(SPACE_DEDUPE_REGEX, " ")
+                                        .trim(),
+                                )
+                            }
+                        } catch (e: Exception) {
+                            captchaSolveFail()
+                        }
+
+                    }
                 } else {
                     binding.webview.postDelayed(
                         {
@@ -289,50 +291,43 @@ class BrowserActionActivity : AppCompatActivity() {
         }
     }
 
-    private fun performRecognize(url: String): Single<String> {
-        return credentialsObservable.flatMap { token ->
-            httpClient.newCall(
-                Request.Builder()
-                    .url(url)
+    private suspend fun performRecognize(url: String): String {
+        val token = credentialsFlow.first()
+        val audioFile = httpClient.newCall(
+            Request.Builder()
+                .url(url)
+                .build(),
+        ).await().body.bytes()
+        val response = httpClient.newCall(
+            POST(
+                "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize".toHttpUrl()
+                    .newBuilder()
+                    .addQueryParameter("watson-token", token)
+                    .build()
+                    .toString(),
+                body = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("jsonDescription", RECOGNIZE_JSON)
+                    .addFormDataPart(
+                        "audio.mp3",
+                        "audio.mp3",
+                        audioFile.toRequestBody(
+                            "audio/mp3".toMediaTypeOrNull(),
+                            0,
+                            audioFile.size,
+                        ),
+                    )
                     .build(),
-            ).asObservableSuccess().map {
-                token to it
-            }
-        }.flatMap { (token, response) ->
-            val audioFile = response.body.bytes()
-
-            httpClient.newCall(
-                POST(
-                    "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize".toHttpUrl()
-                        .newBuilder()
-                        .addQueryParameter("watson-token", token)
-                        .build()
-                        .toString(),
-                    body = MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart("jsonDescription", RECOGNIZE_JSON)
-                        .addFormDataPart(
-                            "audio.mp3",
-                            "audio.mp3",
-                            audioFile.toRequestBody(
-                                "audio/mp3".toMediaTypeOrNull(),
-                                0,
-                                audioFile.size,
-                            ),
-                        )
-                        .build(),
-                ),
-            ).asObservableSuccess()
-        }.map { response ->
-            response.parseAs<JsonObject>()["results"]!!
-                .jsonArray[0]
-                .jsonObject["alternatives"]!!
-                .jsonArray[0]
-                .jsonObject["transcript"]!!
-                .jsonPrimitive
-                .content
-                .trim()
-        }.toSingle()
+            ),
+        ).await()
+        return response.parseAs<JsonObject>()["results"]!!
+            .jsonArray[0]
+            .jsonObject["alternatives"]!!
+            .jsonArray[0]
+            .jsonObject["transcript"]!!
+            .jsonPrimitive
+            .content
+            .trim()
     }
 
     private fun doStageCheckbox(loopId: String) {
