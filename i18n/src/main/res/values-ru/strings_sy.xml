@@ -161,9 +161,9 @@
     <string name="log_minimal">Минимально</string>
     <string name="log_extra">Дополнительно</string>
     <string name="log_extreme">Экстремально</string>
-    <string name="log_minimal_desc">только критические ошибки</string>
-    <string name="log_extra_desc">регистрировать всё</string>
-    <string name="log_extreme_desc">режим проверки сети</string>
+    <string name="log_minimal_desc">Только критические ошибки</string>
+    <string name="log_extra_desc">Регистрировать всё</string>
+    <string name="log_extreme_desc">Режим проверки сети</string>
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Развернуть все поисковые фильтры</string>
