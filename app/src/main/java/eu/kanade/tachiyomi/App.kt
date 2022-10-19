@@ -42,6 +42,8 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.tachiyomi.crash.CrashActivity
 import eu.kanade.tachiyomi.crash.GlobalExceptionHandler
 import eu.kanade.tachiyomi.data.coil.DomainMangaKeyer
@@ -155,6 +157,8 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 }
             }
             .launchIn(ProcessLifecycleOwner.get().lifecycleScope)
+
+        setAppCompatDelegateThemeMode(Injekt.get<UiPreferences>().themeMode().get())
 
         // Updates widget update
         Injekt.get<DatabaseHandler>()
