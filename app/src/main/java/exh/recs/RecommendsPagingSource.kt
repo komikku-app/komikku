@@ -98,7 +98,7 @@ class Anilist : API("https://graphql.anilist.co/") {
     }
 
     private fun languageContains(obj: JsonObject, language: String, search: String): Boolean {
-        return obj["title"]?.jsonObject?.get(language)?.jsonPrimitive?.content?.contains(search, true) == true
+        return obj["title"]?.jsonObject?.get(language)?.jsonPrimitive?.contentOrNull?.contains(search, true) == true
     }
 
     private fun getTitle(obj: JsonObject): String {
@@ -109,7 +109,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         val native = titleObj["native"]?.jsonPrimitive?.contentOrNull
         val synonym = obj["synonyms"]!!.jsonArray.getOrNull(0)?.jsonPrimitive?.contentOrNull
 
-        val isJP = obj["countryOfOrigin"]!!.jsonPrimitive.content == "JP"
+        val isJP = obj["countryOfOrigin"]?.jsonPrimitive?.contentOrNull == "JP"
 
         return when {
             !english.isNullOrBlank() -> english
@@ -174,16 +174,15 @@ class Anilist : API("https://graphql.anilist.co/") {
             .jsonArray
             .ifEmpty { throw Exception("'$search' not found") }
 
-        val result = media.sortedWith(
-            compareBy(
-                { languageContains(it.jsonObject, "romaji", search) },
-                { languageContains(it.jsonObject, "english", search) },
-                { languageContains(it.jsonObject, "native", search) },
-                { countOccurrence(it.jsonObject["synonyms"]!!.jsonArray, search) > 0 },
-            ),
-        ).last().jsonObject
+        val result = media.filter {
+            val jsonObject = it.jsonObject
+            languageContains(jsonObject, "romaji", search) ||
+                languageContains(jsonObject, "english", search) ||
+                languageContains(jsonObject, "native", search) ||
+                countOccurrence(jsonObject["synonyms"]!!.jsonArray, search) > 0
+        }
 
-        return result["recommendations"]!!.jsonObject["edges"]!!.jsonArray.map {
+        return result.flatMap { it.jsonObject["recommendations"]!!.jsonObject["edges"]!!.jsonArray }.map {
             val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
             val recTitle = getTitle(rec)
             logcat { "ANILIST > RECOMMENDATION: $recTitle" }
