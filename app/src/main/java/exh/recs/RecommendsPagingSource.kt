@@ -3,6 +3,8 @@ package exh.recs
 import eu.kanade.data.source.NoResultsException
 import eu.kanade.data.source.SourcePagingSource
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.track.interactor.GetTracks
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
@@ -29,6 +31,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 abstract class API(val endpoint: String) {
     val client by lazy {
@@ -36,10 +39,12 @@ abstract class API(val endpoint: String) {
     }
 
     abstract suspend fun getRecsBySearch(search: String): List<SManga>
+
+    abstract suspend fun getRecsById(id: String): List<SManga>
 }
 
 class MyAnimeList : API("https://api.jikan.moe/v4/") {
-    private suspend fun getRecsById(id: String): List<SManga> {
+    override suspend fun getRecsById(id: String): List<SManga> {
         val apiUrl = endpoint.toHttpUrl()
             .newBuilder()
             .addPathSegment("manga")
@@ -120,6 +125,81 @@ class Anilist : API("https://graphql.anilist.co/") {
         }
     }
 
+    private suspend fun getRecs(
+        query: String,
+        variables: JsonObject,
+        queryParam: String? = null,
+        filter: List<JsonElement>.() -> List<JsonElement> = { this }
+    ): List<SManga> {
+        val payload = buildJsonObject {
+            put("query", query)
+            put("variables", variables)
+        }
+        val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+
+        val data = client.newCall(POST(endpoint, body = payloadBody)).await()
+            .parseAs<JsonObject>()
+
+        val media = data["data"]!!
+            .jsonObject["Page"]!!
+            .jsonObject["media"]!!
+            .jsonArray
+            .ifEmpty { throw Exception("'$queryParam' not found") }
+            .filter()
+
+        return media.flatMap { it.jsonObject["recommendations"]!!.jsonObject["edges"]!!.jsonArray }.map {
+            val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
+            val recTitle = getTitle(rec)
+            logcat { "ANILIST > RECOMMENDATION: $recTitle" }
+            SManga(
+                title = recTitle,
+                thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content,
+                initialized = true,
+                url = rec["siteUrl"]!!.jsonPrimitive.content,
+            )
+        }
+    }
+
+    override suspend fun getRecsById(id: String): List<SManga> {
+        val query =
+            """
+            |query Recommendations(${'$'}id: Int!) {
+                |Page {
+                    |media(id: ${'$'}id, type: MANGA) {
+                        |recommendations {
+                            |edges {
+                                |node {
+                                    |mediaRecommendation {
+                                        |countryOfOrigin
+                                        |siteUrl
+                                        |title {
+                                            |romaji
+                                            |english
+                                            |native
+                                        |}
+                                        |synonyms
+                                        |coverImage {
+                                            |large
+                                        |}
+                                    |}
+                                |}
+                            |}
+                        |}
+                    |}
+                |}
+            |}
+            |
+            """.trimMargin()
+        val variables = buildJsonObject {
+            put("id", id)
+        }
+
+        return getRecs(
+            query = query,
+            variables = variables,
+        )
+    }
+
     override suspend fun getRecsBySearch(search: String): List<SManga> {
         val query =
             """
@@ -159,40 +239,20 @@ class Anilist : API("https://graphql.anilist.co/") {
         val variables = buildJsonObject {
             put("search", search)
         }
-        val payload = buildJsonObject {
-            put("query", query)
-            put("variables", variables)
-        }
-        val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-
-        val data = client.newCall(POST(endpoint, body = payloadBody)).await()
-            .parseAs<JsonObject>()
-
-        val media = data["data"]!!
-            .jsonObject["Page"]!!
-            .jsonObject["media"]!!
-            .jsonArray
-            .ifEmpty { throw Exception("'$search' not found") }
-
-        val result = media.filter {
-            val jsonObject = it.jsonObject
-            languageContains(jsonObject, "romaji", search) ||
-                languageContains(jsonObject, "english", search) ||
-                languageContains(jsonObject, "native", search) ||
-                countOccurrence(jsonObject["synonyms"]!!.jsonArray, search) > 0
-        }
-
-        return result.flatMap { it.jsonObject["recommendations"]!!.jsonObject["edges"]!!.jsonArray }.map {
-            val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
-            val recTitle = getTitle(rec)
-            logcat { "ANILIST > RECOMMENDATION: $recTitle" }
-            SManga(
-                title = recTitle,
-                thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content,
-                initialized = true,
-                url = rec["siteUrl"]!!.jsonPrimitive.content,
-            )
-        }
+        return getRecs(
+            queryParam = search,
+            query = query,
+            variables = variables,
+            filter = {
+                filter {
+                    val jsonObject = it.jsonObject
+                    languageContains(jsonObject, "romaji", search) ||
+                        languageContains(jsonObject, "english", search) ||
+                        languageContains(jsonObject, "native", search) ||
+                        countOccurrence(jsonObject["synonyms"]!!.jsonArray, search) > 0
+                }
+            }
+        )
     }
 }
 
@@ -202,14 +262,27 @@ open class RecommendsPagingSource(
     private val smart: Boolean = true,
     private var preferredApi: API = API.MYANIMELIST,
 ) : SourcePagingSource(source) {
+    val getTracks: GetTracks by injectLazy()
+
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 
         val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
 
+        val tracks = getTracks.await(manga.id)
+
         val recs = apiList.firstNotNullOfOrNull { (key, api) ->
             try {
-                val recs = api.getRecsBySearch(manga.ogTitle)
+                val id = when (key) {
+                    API.MYANIMELIST -> tracks.find { it.syncId == TrackManager.MYANIMELIST }?.remoteId
+                    API.ANILIST -> tracks.find { it.syncId == TrackManager.ANILIST }?.remoteId
+                }
+
+                val recs = if (id != null) {
+                    api.getRecsById(id.toString())
+                } else {
+                    api.getRecsBySearch(manga.ogTitle)
+                }
                 logcat { key.toString() + " > Results: " + recs.size }
                 recs.ifEmpty { null }
             } catch (e: Exception) {
