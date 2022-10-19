@@ -509,7 +509,7 @@ class SettingsEhScreen : SearchableSettings {
                 checked = columnState == LanguageDialogState.ColumnState.Enabled,
                 onCheckedChange = {
                     if (it) {
-                        onStateChange(LanguageDialogState.ColumnState.Disabled)
+                        onStateChange(LanguageDialogState.ColumnState.Enabled)
                     } else {
                         onStateChange(LanguageDialogState.ColumnState.Disabled)
                     }
