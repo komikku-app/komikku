@@ -102,7 +102,7 @@ class LibraryController(
                     },
                 )
                 // SY <--
-                context.toast(if (started) R.string.updating_library else R.string.update_already_running)
+                context.toast(if (started) R.string.updating_category else R.string.update_already_running)
                 started
             },
             onClickInvertSelection = { presenter.invertSelection(presenter.activeCategory) },
