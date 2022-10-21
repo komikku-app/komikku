@@ -117,7 +117,7 @@ open class GlobalSearchPresenter(
 
         if (!filter.isNullOrEmpty()) {
             // SY -->
-            val filteredSourceIds = extensionManager.installedExtensions
+            val filteredSourceIds = extensionManager.installedExtensionsFlow.value
                 .filter { it.pkgName == filter }
                 .flatMap { it.sources }
                 .map { it.id }

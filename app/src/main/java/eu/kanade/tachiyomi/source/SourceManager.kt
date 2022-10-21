@@ -73,7 +73,7 @@ class SourceManager(
 
     init {
         scope.launch {
-            extensionManager.getInstalledExtensionsFlow()
+            extensionManager.installedExtensionsFlow
                 // SY -->
                 .combine(preferences.enableExhentai().changes()) { extensions, enableExhentai ->
                     extensions to enableExhentai

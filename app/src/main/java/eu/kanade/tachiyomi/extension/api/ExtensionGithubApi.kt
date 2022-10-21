@@ -96,7 +96,7 @@ internal class ExtensionGithubApi {
         }
 
         val extensions = if (fromAvailableExtensionList) {
-            extensionManager.availableExtensions
+            extensionManager.availableExtensionsFlow.value
         } else {
             findExtensions().also { lastExtCheck.set(Date().time) }
         }
