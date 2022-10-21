@@ -93,6 +93,7 @@ import exh.util.toAnnotatedString
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import okhttp3.Headers
 import rikka.sui.Sui
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -328,6 +329,13 @@ class SettingsAdvancedScreen : SearchableSettings {
                     onValueChanged = {
                         if (it.isBlank()) {
                             context.toast(R.string.error_user_agent_string_blank)
+                            return@EditTextPreference false
+                        }
+                        try {
+                            // OkHttp checks for valid values internally
+                            Headers.Builder().add("User-Agent", it)
+                        } catch (_: IllegalArgumentException) {
+                            context.toast(R.string.error_user_agent_string_invalid)
                             return@EditTextPreference false
                         }
                         context.toast(R.string.requires_app_restart)
