@@ -252,7 +252,6 @@ dependencies {
     implementation(libs.cascade)
     implementation(libs.numberpicker)
     implementation(libs.bundles.voyager)
-    implementation(libs.materialmotion.core)
 
     // Conductor
     implementation(libs.bundles.conductor)
