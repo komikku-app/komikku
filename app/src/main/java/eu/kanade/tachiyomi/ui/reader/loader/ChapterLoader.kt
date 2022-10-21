@@ -5,6 +5,7 @@ import com.github.junrar.exception.UnsupportedRarV5Exception
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -25,6 +26,7 @@ import rx.schedulers.Schedulers
 class ChapterLoader(
     private val context: Context,
     private val downloadManager: DownloadManager,
+    private val downloadProvider: DownloadProvider,
     private val manga: Manga,
     private val source: Source,
     // SY -->
@@ -98,7 +100,7 @@ class ChapterLoader(
                 val manga = mergedManga[chapter.chapter.manga_id] ?: error("Manga for merged chapter was null")
                 val isMergedMangaDownloaded = downloadManager.isChapterDownloaded(chapter.chapter.name, chapter.chapter.scanlator, manga.ogTitle, manga.source, true)
                 when {
-                    isMergedMangaDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager)
+                    isMergedMangaDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
                     source is HttpSource -> HttpPageLoader(chapter, source)
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {
@@ -112,7 +114,7 @@ class ChapterLoader(
                 }
             }
             // SY <--
-            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager)
+            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
             source is HttpSource -> HttpPageLoader(chapter, source)
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {

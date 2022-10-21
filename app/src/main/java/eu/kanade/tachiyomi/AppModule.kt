@@ -33,7 +33,9 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -132,7 +134,9 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { SourceManager(app, get(), get()) }
         addSingletonFactory { ExtensionManager(app) }
 
+        addSingletonFactory { DownloadProvider(app) }
         addSingletonFactory { DownloadManager(app) }
+        addSingletonFactory { DownloadCache(app) }
 
         addSingletonFactory { TrackManager(app) }
         addSingletonFactory { DelayedTrackingStore(app) }

@@ -117,9 +117,6 @@ private data class Library(val categories: List<Category>, val mangaMap: Library
  */
 typealias LibraryMap = Map<Long, List<LibraryItem>>
 
-/**
- * Presenter of [LibraryController].
- */
 class LibraryPresenter(
     private val state: LibraryStateImpl = LibraryState() as LibraryStateImpl,
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
