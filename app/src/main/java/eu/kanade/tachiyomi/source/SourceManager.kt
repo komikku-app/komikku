@@ -209,7 +209,7 @@ class SourceManager(
     }
 
     @Suppress("OverridingDeprecatedMember")
-    open inner class StubSource(val sourceData: SourceData) : Source {
+    open inner class StubSource(private val sourceData: SourceData) : Source {
 
         override val id: Long = sourceData.id
 
@@ -221,6 +221,7 @@ class SourceManager(
             throw getSourceNotInstalledException()
         }
 
+        @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
         override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
             return Observable.error(getSourceNotInstalledException())
         }
@@ -229,6 +230,7 @@ class SourceManager(
             throw getSourceNotInstalledException()
         }
 
+        @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
         override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
             return Observable.error(getSourceNotInstalledException())
         }
@@ -237,6 +239,7 @@ class SourceManager(
             throw getSourceNotInstalledException()
         }
 
+        @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
         override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
             return Observable.error(getSourceNotInstalledException())
         }

@@ -53,6 +53,9 @@ class ExtensionManager(
     private val preferences: SourcePreferences = Injekt.get(),
 ) {
 
+    var isInitialized = false
+        private set
+
     /**
      * API where all the available extensions can be found.
      */
@@ -130,6 +133,8 @@ class ExtensionManager(
             // SY -->
             .filterNotBlacklisted()
         // SY <--
+
+        isInitialized = true
     }
 
     // EXH -->

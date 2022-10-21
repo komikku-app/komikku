@@ -53,6 +53,7 @@ import eu.kanade.presentation.library.components.LibraryToolbarTitle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -131,6 +132,7 @@ class LibraryPresenter(
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
+    private val downloadCache: DownloadCache = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     // SY -->
     private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
@@ -493,7 +495,8 @@ class LibraryPresenter(
         val libraryMangasFlow = combine(
             getLibraryManga.subscribe(),
             libraryPreferences.downloadBadge().changes(),
-        ) { libraryMangaList, downloadBadgePref ->
+            downloadCache.changes,
+        ) { libraryMangaList, downloadBadgePref, _ ->
             libraryMangaList
                 .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
