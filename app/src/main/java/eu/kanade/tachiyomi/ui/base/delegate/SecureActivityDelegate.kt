@@ -7,14 +7,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_ALL_DAYS
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_FRIDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_MONDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_SATURDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_SUNDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_THURSDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_TUESDAY
-import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_WEDNESDAY
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
 import eu.kanade.tachiyomi.ui.security.UnlockActivity
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
@@ -27,7 +19,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
-import java.util.Date
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -46,47 +37,80 @@ interface SecureActivityDelegate {
         const val LOCK_ALL_DAYS = 0x7F
         // SY <--
 
-        fun onApplicationCreated() {
-            val lockDelay = Injekt.get<SecurityPreferences>().lockAppAfter().get()
-            if (lockDelay <= 0) {
-                // Restore always active/on start app lock
-                // Delayed lock will be restored later on activity resume
-                lockState = LockState.ACTIVE
-            }
-        }
+        /**
+         * Set to true if we need the first activity to authenticate.
+         *
+         * Always require unlock if app is killed.
+         */
+        var requireUnlock = true
 
         fun onApplicationStopped() {
             val preferences = Injekt.get<SecurityPreferences>()
             if (!preferences.useAuthenticator().get()) return
-            if (lockState != LockState.ACTIVE) {
-                preferences.lastAppClosed().set(Date().time)
-            }
+
             if (!AuthenticatorUtil.isAuthenticating) {
-                val lockAfter = preferences.lockAppAfter().get()
-                lockState = if (lockAfter > 0) {
-                    LockState.PENDING
-                } else if (lockAfter == -1) {
-                    // Never lock on idle
-                    LockState.INACTIVE
-                } else {
-                    LockState.ACTIVE
+                // Return if app is closed in locked state
+                if (requireUnlock) return
+                // Save app close time if lock is delayed
+                if (preferences.lockAppAfter().get() > 0) {
+                    preferences.lastAppClosed().set(System.currentTimeMillis())
                 }
             }
         }
 
+        // SY -->
+        private fun canLockNow(preferences: SecurityPreferences): Boolean {
+            val today: Calendar = Calendar.getInstance()
+            val timeRanges = preferences.authenticatorTimeRanges().get()
+                .mapNotNull { TimeRange.fromPreferenceString(it) }
+            val canLockNow = if (timeRanges.isNotEmpty()) {
+                val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
+                timeRanges.any { now in it }
+            } else {
+                true
+            }
+
+            val lockedDays = preferences.authenticatorDays().get()
+            val canLockToday = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
+                Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
+                Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
+                Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
+                Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
+                Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
+                Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
+                Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
+                else -> false
+            }
+
+            return canLockNow && canLockToday
+        }
+        // SY <--
+
+        /**
+         * Checks if unlock is needed when app comes foreground.
+         */
+        fun onApplicationStart() {
+            val preferences = Injekt.get<SecurityPreferences>()
+            if (!preferences.useAuthenticator().get()) return
+
+            val lastClosedPref = preferences.lastAppClosed()
+
+            // `requireUnlock` can be true on process start or if app was closed in locked state
+            if (!AuthenticatorUtil.isAuthenticating && !requireUnlock) {
+                requireUnlock = /* SY --> */ canLockNow(preferences) && /* SY <-- */ when (val lockDelay = preferences.lockAppAfter().get()) {
+                    -1 -> false // Never
+                    0 -> true // Always
+                    else -> lastClosedPref.get() + lockDelay * 60_000 <= System.currentTimeMillis()
+                }
+            }
+
+            lastClosedPref.delete()
+        }
+
         fun unlock() {
-            lockState = LockState.INACTIVE
-            Injekt.get<SecurityPreferences>().lastAppClosed().delete()
+            requireUnlock = false
         }
     }
-}
-
-private var lockState = LockState.INACTIVE
-
-private enum class LockState {
-    INACTIVE,
-    PENDING,
-    ACTIVE,
 }
 
 class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObserver {
@@ -123,61 +147,11 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
     private fun setAppLock() {
         if (!securityPreferences.useAuthenticator().get()) return
         if (activity.isAuthenticationSupported()) {
-            updatePendingLockStatus()
-            if (!isAppLocked()) return
+            if (!SecureActivityDelegate.requireUnlock) return
             activity.startActivity(Intent(activity, UnlockActivity::class.java))
             activity.overridePendingTransition(0, 0)
         } else {
             securityPreferences.useAuthenticator().set(false)
         }
-    }
-
-    private fun updatePendingLockStatus() {
-        val lastClosedPref = securityPreferences.lastAppClosed()
-        val lockDelay = 60000 * securityPreferences.lockAppAfter().get()
-        if (lastClosedPref.isSet() && lockDelay > 0) {
-            // Restore pending status in case app was killed
-            lockState = LockState.PENDING
-        }
-        if (lockState != LockState.PENDING) {
-            return
-        }
-        if (Date().time >= lastClosedPref.get() + lockDelay) {
-            // Activate lock after delay
-            lockState = LockState.ACTIVE
-        }
-    }
-
-    private fun isAppLocked(): Boolean {
-        // SY -->
-        val today: Calendar = Calendar.getInstance()
-        val timeRanges = securityPreferences.authenticatorTimeRanges().get()
-            .mapNotNull { TimeRange.fromPreferenceString(it) }
-        if (timeRanges.isNotEmpty()) {
-            val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
-            val lockedNow = timeRanges.any { now in it }
-            if (!lockedNow) {
-                return false
-            }
-        }
-
-        val lockedDays = securityPreferences.authenticatorDays().get()
-        val lockedToday = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
-            Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
-            Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
-            Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
-            Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
-            Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
-            Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
-            else -> false
-        }
-
-        if (!lockedToday) {
-            return false
-        }
-        // SY <--
-
-        return lockState == LockState.ACTIVE
     }
 }

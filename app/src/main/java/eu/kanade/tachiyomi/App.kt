@@ -208,8 +208,8 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         }.build()
     }
 
-    override fun onCreate(owner: LifecycleOwner) {
-        SecureActivityDelegate.onApplicationCreated()
+    override fun onStart(owner: LifecycleOwner) {
+        SecureActivityDelegate.onApplicationStart()
     }
 
     private fun addAnalytics() {
