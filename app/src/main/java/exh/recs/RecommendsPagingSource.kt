@@ -129,7 +129,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         query: String,
         variables: JsonObject,
         queryParam: String? = null,
-        filter: List<JsonElement>.() -> List<JsonElement> = { this }
+        filter: List<JsonElement>.() -> List<JsonElement> = { this },
     ): List<SManga> {
         val payload = buildJsonObject {
             put("query", query)
@@ -251,7 +251,7 @@ class Anilist : API("https://graphql.anilist.co/") {
                         languageContains(jsonObject, "native", search) ||
                         countOccurrence(jsonObject["synonyms"]!!.jsonArray, search) > 0
                 }
-            }
+            },
         )
     }
 }
