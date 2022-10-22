@@ -17,6 +17,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
+import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -30,6 +31,7 @@ import exh.source.EXH_SOURCE_ID
 import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 
@@ -306,4 +308,9 @@ object DebugFunctions {
     fun resetFilteredScanlatorsForAllManga() {
         runBlocking { handler.await { ehQueries.resetFilteredScanlatorsForAllManga() } }
     }
+
+    fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(
+        Backup.serializer().descriptor,
+        "eu.kanade.tachiyomi.data.backup.models",
+    )
 }
