@@ -556,8 +556,7 @@ class MangaController : FullComposeController<MangaPresenter> {
                     }
                 }
                 ChapterDownloadAction.START_NOW -> {
-                    val chapterId = items.singleOrNull()?.chapter?.id ?: return@launch
-                    presenter.startDownloadingNow(chapterId)
+                    downloadChapters(items.map { it.chapter }, startNow = true)
                 }
                 ChapterDownloadAction.CANCEL -> {
                     val chapterId = items.singleOrNull()?.chapter?.id ?: return@launch
@@ -570,8 +569,13 @@ class MangaController : FullComposeController<MangaPresenter> {
         }
     }
 
-    private suspend fun downloadChapters(chapters: List<DomainChapter>) {
-        presenter.downloadChapters(chapters)
+    private suspend fun downloadChapters(chapters: List<DomainChapter>, startNow: Boolean = false) {
+        if (startNow) {
+            val chapterId = chapters.singleOrNull()?.id ?: return
+            presenter.startDownloadingNow(chapterId)
+        } else {
+            presenter.downloadChapters(chapters)
+        }
 
         if (!presenter.isFavoritedManga) {
             val result = snackbarHostState.showSnackbar(
