@@ -115,7 +115,7 @@ class SettingsAdvancedScreen : SearchableSettings {
                 pref = basePreferences.acraEnabled(),
                 title = stringResource(R.string.pref_enable_acra),
                 subtitle = stringResource(R.string.pref_acra_summary),
-                enabled = !isDevFlavor,
+                enabled = isPreviewBuildType || isReleaseBuildType,
             ), SY <-- */
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(R.string.pref_dump_crash_logs),

@@ -41,6 +41,7 @@ import eu.kanade.tachiyomi.util.lang.toDateTimestampString
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
@@ -217,7 +218,7 @@ class AboutScreen : Screen {
                     }
                 }
                 // SY -->
-                syDebugVersion != "0" -> {
+                isPreviewBuildType -> {
                     "Preview r$syDebugVersion".let {
                         if (withBuildDate) {
                             "$it (${BuildConfig.COMMIT_SHA}, ${getFormattedBuildTime()})"

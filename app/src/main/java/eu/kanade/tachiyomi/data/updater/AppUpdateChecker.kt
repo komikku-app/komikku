@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.getInstallerPackageName
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import exh.syDebugVersion
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
@@ -60,7 +62,7 @@ class AppUpdateChecker {
     }
 
     // SY -->
-    private fun isNewVersionSY(versionTag: String) = (versionTag != BuildConfig.VERSION_NAME && syDebugVersion == "0") || (syDebugVersion != "0" && versionTag != syDebugVersion)
+    private fun isNewVersionSY(versionTag: String) = (versionTag != BuildConfig.VERSION_NAME && isReleaseBuildType) || (isPreviewBuildType && versionTag != syDebugVersion)
     // SY <--
 
     private fun isNewVersion(versionTag: String): Boolean {
@@ -91,8 +93,8 @@ class AppUpdateChecker {
 }
 
 val GITHUB_REPO: String by lazy {
-    // Sy -->
-    if (syDebugVersion != "0") {
+    // SY -->
+    if (isPreviewBuildType) {
         "jobobby04/TachiyomiSYPreview"
     } else {
         "jobobby04/tachiyomiSY"

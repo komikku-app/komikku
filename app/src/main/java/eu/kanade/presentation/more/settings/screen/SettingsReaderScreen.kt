@@ -19,7 +19,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
-import eu.kanade.tachiyomi.util.system.isReleaseFlavor
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -333,7 +333,7 @@ class SettingsReaderScreen : SearchableSettings {
                     pref = readerPreferences.longStripSplitWebtoon(),
                     title = stringResource(R.string.pref_long_strip_split),
                     subtitle = stringResource(R.string.split_tall_images_summary),
-                    enabled = !isReleaseFlavor, // TODO: Show in release build when the feature is stable
+                    enabled = !isReleaseBuildType, // TODO: Show in release build when the feature is stable
                 ),
                 // SY -->
                 Preference.PreferenceItem.SwitchPreference(
