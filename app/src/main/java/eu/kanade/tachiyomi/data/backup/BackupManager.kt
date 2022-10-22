@@ -130,7 +130,9 @@ class BackupManager(
 
                     // Delete older backups
                     val numberOfBackups = backupPreferences.numberOfBackups().get()
-                    val backupRegex = Regex("""tachiyomi_\d+-\d+-\d+_\d+-\d+.proto.gz""")
+                    // SY -->
+                    val backupRegex = Regex("""tachiyomi(?:_sy)?_\d+-\d+-\d+_\d+-\d+.proto.gz""")
+                    // SY <--
                     dir.listFiles { _, filename -> backupRegex.matches(filename) }
                         .orEmpty()
                         .sortedByDescending { it.name }

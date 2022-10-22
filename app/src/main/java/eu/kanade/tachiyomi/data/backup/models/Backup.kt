@@ -20,7 +20,7 @@ data class Backup(
     companion object {
         fun getBackupFilename(): String {
             val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
-            return "tachiyomi_$date.proto.gz"
+            return "tachiyomi_sy_$date.proto.gz"
         }
     }
 }
