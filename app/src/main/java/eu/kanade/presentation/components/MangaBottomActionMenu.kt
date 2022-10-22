@@ -60,6 +60,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MangaBottomActionMenu(
@@ -92,7 +93,7 @@ fun MangaBottomActionMenu(
                 (0 until 7).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
-                    delay(1000)
+                    delay(1.seconds)
                     if (isActive) confirm[toConfirmIndex] = false
                 }
             }
@@ -244,7 +245,7 @@ fun LibraryBottomActionMenu(
                 (0 until 5).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
-                    delay(1000)
+                    delay(1.seconds)
                     if (isActive) confirm[toConfirmIndex] = false
                 }
             }

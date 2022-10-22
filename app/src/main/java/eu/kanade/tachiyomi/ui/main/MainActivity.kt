@@ -87,6 +87,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
+import kotlin.time.Duration.Companion.seconds
 
 class MainActivity : BaseActivity() {
 
@@ -609,7 +610,7 @@ class MainActivity : BaseActivity() {
     private suspend fun resetExitConfirmation() {
         isConfirmingExit = true
         val toast = toast(R.string.confirm_exit, Toast.LENGTH_LONG)
-        delay(2000)
+        delay(2.seconds)
         toast.cancel()
         isConfirmingExit = false
     }
