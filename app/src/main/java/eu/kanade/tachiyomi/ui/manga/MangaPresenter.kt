@@ -50,6 +50,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -136,6 +137,7 @@ class MangaPresenter(
     private val trackManager: TrackManager = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
+    private val downloadCache: DownloadCache = Injekt.get(),
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
     // SY -->
     private val uiPreferences: UiPreferences = Injekt.get(),
@@ -173,9 +175,6 @@ class MangaPresenter(
 
     private val successState: MangaScreenState.Success?
         get() = state.value as? MangaScreenState.Success
-
-    private var observeDownloadsStatusJob: Job? = null
-    private var observeDownloadsPageJob: Job? = null
 
     private var _trackList: List<TrackItem> = emptyList()
     val trackList get() = _trackList
@@ -264,7 +263,7 @@ class MangaPresenter(
         }
 
         // For UI changes
-        presenterScope.launch {
+        presenterScope.launchIO {
             getMangaAndChapters.subscribe(mangaId)
                 .distinctUntilChanged()
                 // SY -->
@@ -332,6 +331,7 @@ class MangaPresenter(
                 ) { state, mergedData ->
                     state.copy(mergedData = mergedData)
                 }
+                .combine(downloadCache.changes) { state, _ -> state }
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterItemsParams(manga /* SY --> */, mergedData /* SY <-- */)
@@ -345,20 +345,11 @@ class MangaPresenter(
                             // SY <--
                         )
                     }
-
-                    observeDownloads()
                 }
         }
 
-        basePreferences.incognitoMode()
-            .asHotFlow { incognitoMode = it }
-            .launchIn(presenterScope)
+        observeDownloads()
 
-        basePreferences.downloadedOnly()
-            .asHotFlow { downloadedOnlyMode = it }
-            .launchIn(presenterScope)
-
-        // This block runs once on create
         presenterScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
@@ -382,7 +373,7 @@ class MangaPresenter(
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
 
-            // Show what we have earlier.
+            // Show what we have earlier
             _state.update {
                 val source = sourceManager.getOrStub(manga.source)
                 MangaScreenState.Success(
@@ -427,6 +418,14 @@ class MangaPresenter(
             // Initial loading finished
             updateSuccessState { it.copy(isRefreshingData = false) }
         }
+
+        basePreferences.incognitoMode()
+            .asHotFlow { incognitoMode = it }
+            .launchIn(presenterScope)
+
+        basePreferences.downloadedOnly()
+            .asHotFlow { downloadedOnlyMode = it }
+            .launchIn(presenterScope)
     }
 
     fun fetchAllFromSource(manualFetch: Boolean = true) {
@@ -901,9 +900,8 @@ class MangaPresenter(
         val isMergedSource = source is MergedSource
         val mergedIds = if (isMergedSource) successState?.mergedData?.manga?.keys.orEmpty() else emptySet()
         // SY <--
-        observeDownloadsStatusJob?.cancel()
-        observeDownloadsStatusJob = presenterScope.launchIO {
-            downloadManager.queue.getStatusAsFlow()
+        presenterScope.launchIO {
+            downloadManager.queue.statusFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
@@ -913,9 +911,8 @@ class MangaPresenter(
                 }
         }
 
-        observeDownloadsPageJob?.cancel()
-        observeDownloadsPageJob = presenterScope.launchIO {
-            downloadManager.queue.getProgressAsFlow()
+        presenterScope.launchIO {
+            downloadManager.queue.progressFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {

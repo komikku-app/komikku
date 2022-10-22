@@ -20,7 +20,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -57,7 +59,7 @@ class SourcesPresenter(
     fun onCreate() {
         // SY -->
         combine(
-            getEnabledSources.subscribe(),
+            getEnabledSources.subscribe().debounce(500), // Avoid crashes due to LazyColumn rendering
             getSourceCategories.subscribe(),
             getShowLatest.subscribe(controllerMode),
             flowOf(controllerMode == SourcesController.Mode.CATALOGUE),
