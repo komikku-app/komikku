@@ -18,7 +18,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -38,8 +38,8 @@ import eu.kanade.presentation.components.Pill
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.library.LibraryState
 import eu.kanade.presentation.theme.active
-import eu.kanade.presentation.util.calculateWindowWidthSizeClass
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.system.isTabletUi
 
 @Composable
 fun LibraryToolbar(
@@ -148,7 +148,8 @@ fun LibraryRegularToolbar(
                 Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
             }
             // SY -->
-            val moveGlobalUpdate = showSyncExh && calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
+            val configuration = LocalConfiguration.current
+            val moveGlobalUpdate = showSyncExh && remember { !configuration.isTabletUi() }
             if (!moveGlobalUpdate) {
                 IconButton(onClick = onClickRefresh) {
                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.pref_category_library_update))

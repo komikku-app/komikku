@@ -37,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -49,13 +48,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.util.calculateWindowWidthSizeClass
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.system.isTabletUi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -250,7 +250,8 @@ fun LibraryBottomActionMenu(
             }
             // SY -->
             val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null
-            val moveMarkPrev = onDeleteClicked != null && calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
+            val configuration = LocalConfiguration.current
+            val moveMarkPrev = onDeleteClicked != null && remember { !configuration.isTabletUi() }
             var overFlowOpen by remember { mutableStateOf(false) }
             // SY <--
             Row(
