@@ -309,8 +309,5 @@ object DebugFunctions {
         runBlocking { handler.await { ehQueries.resetFilteredScanlatorsForAllManga() } }
     }
 
-    fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(
-        Backup.serializer().descriptor,
-        "eu.kanade.tachiyomi.data.backup.models",
-    )
+    fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(Backup.serializer().descriptor)
 }
