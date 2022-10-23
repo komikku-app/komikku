@@ -495,13 +495,14 @@ class LibraryPresenter(
         val libraryMangasFlow = combine(
             getLibraryManga.subscribe(),
             libraryPreferences.downloadBadge().changes(),
+            libraryPreferences.filterDownloaded().changes(),
             downloadCache.changes,
-        ) { libraryMangaList, downloadBadgePref, _ ->
+        ) { libraryMangaList, downloadBadgePref, filterDownloadedPref, _ ->
             libraryMangaList
                 .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
                     LibraryItem(libraryManga).apply {
-                        downloadCount = if (downloadBadgePref) {
+                        downloadCount = if (downloadBadgePref || filterDownloadedPref == State.INCLUDE.value) {
                             // SY -->
                             if (libraryManga.manga.source == MERGED_SOURCE_ID) {
                                 runBlocking {
