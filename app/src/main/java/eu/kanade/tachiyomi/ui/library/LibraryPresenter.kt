@@ -532,7 +532,7 @@ class LibraryPresenter(
             // SY -->
             state.ogCategories = displayCategories
             // SY <--
-            Library(categories, libraryManga)
+            Library(displayCategories, libraryManga)
         }
     }
 
