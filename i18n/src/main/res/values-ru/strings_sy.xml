@@ -32,6 +32,8 @@
     <!-- Subsections -->
     <string name="pref_category_all_sources">Все источники</string>
     <string name="pref_category_fork">Настройки Fork\'а</string>
+    <string name="pref_ehentai_summary">Вход в E/ExHentai, синхронизация галерей</string>
+    <string name="pref_mangadex_summary">Вход в MangaDex, синхронизация отслеживаемого</string>
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Настройки учетной записи (E-Hentai)</string>
