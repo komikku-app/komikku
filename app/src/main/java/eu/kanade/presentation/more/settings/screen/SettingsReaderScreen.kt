@@ -511,7 +511,7 @@ class SettingsReaderScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = readerPreferences.centerMarginType(),
                     title = stringResource(R.string.center_margin),
-                    subtitle = stringResource(R.string.automatic_can_still_switch),
+                    subtitle = stringResource(R.string.pref_center_margin_summary),
                     entries = mapOf(
                         0 to stringResource(R.string.center_margin_none),
                         1 to stringResource(R.string.center_margin_double_page),
