@@ -69,13 +69,13 @@ class SettingsReaderScreen : SearchableSettings {
                 subtitle = stringResource(R.string.pref_force_horz_seekbar_summary),
             ),
             Preference.PreferenceItem.SwitchPreference(
-                pref = readerPref.forceHorizontalSeekbar(),
+                pref = readerPref.landscapeVerticalSeekbar(),
                 title = stringResource(R.string.pref_show_vert_seekbar_landscape),
                 subtitle = stringResource(R.string.pref_show_vert_seekbar_landscape_summary),
                 enabled = !forceHorizontalSeekbar,
             ),
             Preference.PreferenceItem.SwitchPreference(
-                pref = readerPref.forceHorizontalSeekbar(),
+                pref = readerPref.leftVerticalSeekbar(),
                 title = stringResource(R.string.pref_left_handed_vertical_seekbar),
                 subtitle = stringResource(R.string.pref_left_handed_vertical_seekbar_summary),
                 enabled = !forceHorizontalSeekbar,
