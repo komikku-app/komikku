@@ -1372,9 +1372,11 @@ class MangaPresenter(
                 .catch { logcat(LogPriority.ERROR, it) }
                 .map { tracks ->
                     val dbTracks = tracks.map { it.toDbTrack() }
-                    loggedServices.map { service ->
-                        TrackItem(dbTracks.find { it.sync_id.toLong() == service.id }, service)
-                    }
+                    loggedServices
+                        // Map to TrackItem
+                        .map { service -> TrackItem(dbTracks.find { it.sync_id.toLong() == service.id }, service) }
+                        // Show only if the service supports this manga's source
+                        .filter { (it.service as? EnhancedTrackService)?.accept(source!!) ?: true }
                 }
                 // SY -->
                 .map { trackItems ->
