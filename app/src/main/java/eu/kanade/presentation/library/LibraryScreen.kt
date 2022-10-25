@@ -1,6 +1,5 @@
 package eu.kanade.presentation.library
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HelpOutline
@@ -45,96 +44,96 @@ fun LibraryScreen(
     onOpenReader: (LibraryManga) -> Unit,
     // SY <--
 ) {
-    Crossfade(targetState = presenter.isLoading) { state ->
-        when (state) {
-            true -> LoadingScreen()
-            false -> Scaffold(
-                topBar = { scrollBehavior ->
-                    val title by presenter.getToolbarTitle()
-                    val tabVisible = presenter.tabVisibility && presenter.categories.size > 1
-                    LibraryToolbar(
-                        state = presenter,
-                        title = title,
-                        incognitoMode = !tabVisible && presenter.isIncognitoMode,
-                        downloadedOnlyMode = !tabVisible && presenter.isDownloadOnly,
-                        onClickUnselectAll = onClickUnselectAll,
-                        onClickSelectAll = onClickSelectAll,
-                        onClickInvertSelection = onClickInvertSelection,
-                        onClickFilter = onClickFilter,
-                        onClickRefresh = { onClickRefresh(null) },
-                        // SY -->
-                        onClickSyncExh = onClickSyncExh,
-                        // SY <--
-                        scrollBehavior = scrollBehavior.takeIf { !tabVisible }, // For scroll overlay when no tab
-                    )
-                },
-                bottomBar = {
-                    LibraryBottomActionMenu(
-                        visible = presenter.selectionMode,
-                        onChangeCategoryClicked = onChangeCategoryClicked,
-                        onMarkAsReadClicked = onMarkAsReadClicked,
-                        onMarkAsUnreadClicked = onMarkAsUnreadClicked,
-                        onDownloadClicked = onDownloadClicked.takeIf { presenter.selection.none { it.manga.isLocal() } },
-                        onDeleteClicked = onDeleteClicked,
-                        // SY -->
-                        onClickCleanTitles = onClickCleanTitles.takeIf { presenter.showCleanTitles },
-                        onClickMigrate = onClickMigrate,
-                        onClickAddToMangaDex = onClickAddToMangaDex.takeIf { presenter.showAddToMangadex },
-                        // SY <--
-                    )
-                },
-            ) { paddingValues ->
-                val contentPadding = TachiyomiBottomNavigationView.withBottomNavPadding(paddingValues)
-                if (presenter.searchQuery.isNullOrEmpty() && presenter.isLibraryEmpty) {
-                    val handler = LocalUriHandler.current
-                    EmptyScreen(
-                        textResource = R.string.information_empty_library,
-                        modifier = Modifier.padding(contentPadding),
-                        actions = listOf(
-                            EmptyScreenAction(
-                                stringResId = R.string.getting_started_guide,
-                                icon = Icons.Default.HelpOutline,
-                                onClick = { handler.openUri("https://tachiyomi.org/help/guides/getting-started") },
-                            ),
-                        ),
-                    )
-                    return@Scaffold
-                }
-
-                LibraryContent(
-                    state = presenter,
-                    contentPadding = contentPadding,
-                    currentPage = { presenter.activeCategory },
-                    isLibraryEmpty = presenter.isLibraryEmpty,
-                    showPageTabs = presenter.tabVisibility,
-                    showMangaCount = presenter.mangaCountVisibility,
-                    onChangeCurrentPage = { presenter.activeCategory = it },
-                    onMangaClicked = onMangaClicked,
-                    onToggleSelection = { presenter.toggleSelection(it) },
-                    onToggleRangeSelection = { presenter.toggleRangeSelection(it) },
-                    onRefresh = onClickRefresh,
-                    onGlobalSearchClicked = onGlobalSearchClicked,
-                    getNumberOfMangaForCategory = { presenter.getMangaCountForCategory(it) },
-                    // SY -->
-                    getDisplayModeForPage = { presenter.getDisplayMode(index = it) },
-                    // SY <--
-                    getColumnsForOrientation = { presenter.getColumnsPreferenceForCurrentOrientation(it) },
-                    getLibraryForPage = { presenter.getMangaForCategory(page = it) },
-                    showDownloadBadges = presenter.showDownloadBadges,
-                    showUnreadBadges = presenter.showUnreadBadges,
-                    showLocalBadges = presenter.showLocalBadges,
-                    showLanguageBadges = presenter.showLanguageBadges,
-                    // SY -->
-                    showStartReadingButton = presenter.showStartReadingButton,
-                    // SY <--
-                    isIncognitoMode = presenter.isIncognitoMode,
-                    isDownloadOnly = presenter.isDownloadOnly,
-                    // SY -->
-                    onOpenReader = onOpenReader,
-                    getCategoryName = presenter::getCategoryName,
-                    // SY <--
-                )
-            }
+    Scaffold(
+        topBar = { scrollBehavior ->
+            val title by presenter.getToolbarTitle()
+            val tabVisible = presenter.tabVisibility && presenter.categories.size > 1
+            LibraryToolbar(
+                state = presenter,
+                title = title,
+                incognitoMode = !tabVisible && presenter.isIncognitoMode,
+                downloadedOnlyMode = !tabVisible && presenter.isDownloadOnly,
+                onClickUnselectAll = onClickUnselectAll,
+                onClickSelectAll = onClickSelectAll,
+                onClickInvertSelection = onClickInvertSelection,
+                onClickFilter = onClickFilter,
+                onClickRefresh = { onClickRefresh(null) },
+                // SY -->
+                onClickSyncExh = onClickSyncExh,
+                // SY <--
+                scrollBehavior = scrollBehavior.takeIf { !tabVisible }, // For scroll overlay when no tab
+            )
+        },
+        bottomBar = {
+            LibraryBottomActionMenu(
+                visible = presenter.selectionMode,
+                onChangeCategoryClicked = onChangeCategoryClicked,
+                onMarkAsReadClicked = onMarkAsReadClicked,
+                onMarkAsUnreadClicked = onMarkAsUnreadClicked,
+                onDownloadClicked = onDownloadClicked.takeIf { presenter.selection.none { it.manga.isLocal() } },
+                onDeleteClicked = onDeleteClicked,
+                // SY -->
+                onClickCleanTitles = onClickCleanTitles.takeIf { presenter.showCleanTitles },
+                onClickMigrate = onClickMigrate,
+                onClickAddToMangaDex = onClickAddToMangaDex.takeIf { presenter.showAddToMangadex },
+                // SY <--
+            )
+        },
+    ) { paddingValues ->
+        if (presenter.isLoading) {
+            LoadingScreen()
+            return@Scaffold
         }
+
+        val contentPadding = TachiyomiBottomNavigationView.withBottomNavPadding(paddingValues)
+        if (presenter.searchQuery.isNullOrEmpty() && presenter.isLibraryEmpty) {
+            val handler = LocalUriHandler.current
+            EmptyScreen(
+                textResource = R.string.information_empty_library,
+                modifier = Modifier.padding(contentPadding),
+                actions = listOf(
+                    EmptyScreenAction(
+                        stringResId = R.string.getting_started_guide,
+                        icon = Icons.Default.HelpOutline,
+                        onClick = { handler.openUri("https://tachiyomi.org/help/guides/getting-started") },
+                    ),
+                ),
+            )
+            return@Scaffold
+        }
+
+        LibraryContent(
+            state = presenter,
+            contentPadding = contentPadding,
+            currentPage = { presenter.activeCategory },
+            isLibraryEmpty = presenter.isLibraryEmpty,
+            showPageTabs = presenter.tabVisibility,
+            showMangaCount = presenter.mangaCountVisibility,
+            onChangeCurrentPage = { presenter.activeCategory = it },
+            onMangaClicked = onMangaClicked,
+            onToggleSelection = { presenter.toggleSelection(it) },
+            onToggleRangeSelection = { presenter.toggleRangeSelection(it) },
+            onRefresh = onClickRefresh,
+            onGlobalSearchClicked = onGlobalSearchClicked,
+            getNumberOfMangaForCategory = { presenter.getMangaCountForCategory(it) },
+            // SY -->
+            getDisplayModeForPage = { presenter.getDisplayMode(index = it) },
+            // SY <--
+            getColumnsForOrientation = { presenter.getColumnsPreferenceForCurrentOrientation(it) },
+            getLibraryForPage = { presenter.getMangaForCategory(page = it) },
+            showDownloadBadges = presenter.showDownloadBadges,
+            showUnreadBadges = presenter.showUnreadBadges,
+            showLocalBadges = presenter.showLocalBadges,
+            showLanguageBadges = presenter.showLanguageBadges,
+            // SY -->
+            showStartReadingButton = presenter.showStartReadingButton,
+            // SY <--
+            isIncognitoMode = presenter.isIncognitoMode,
+            isDownloadOnly = presenter.isDownloadOnly,
+            // SY -->
+            onOpenReader = onOpenReader,
+            getCategoryName = presenter::getCategoryName,
+            // SY <--
+        )
     }
 }
