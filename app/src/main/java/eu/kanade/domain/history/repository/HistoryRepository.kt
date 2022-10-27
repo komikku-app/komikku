@@ -1,6 +1,5 @@
 package eu.kanade.domain.history.repository
 
-import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.history.model.History
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.history.model.HistoryWithRelations
@@ -11,8 +10,6 @@ interface HistoryRepository {
     fun getHistory(query: String): Flow<List<HistoryWithRelations>>
 
     suspend fun getLastHistory(): HistoryWithRelations?
-
-    suspend fun getNextChapter(mangaId: Long, chapterId: Long): Chapter?
 
     suspend fun resetHistory(historyId: Long)
 
