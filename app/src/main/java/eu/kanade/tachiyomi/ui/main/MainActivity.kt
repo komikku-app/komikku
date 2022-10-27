@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
-import android.view.Gravity
 import android.view.Menu
 import android.view.ViewGroup
 import android.view.Window
@@ -189,18 +188,6 @@ class MainActivity : BaseActivity() {
             elapsed <= SPLASH_MIN_DURATION || (!ready && elapsed <= SPLASH_MAX_DURATION)
         }
         setSplashScreenExitAnimation(splashScreen)
-
-        if (binding.sideNav != null) {
-            uiPreferences.sideNavIconAlignment()
-                .asHotFlow {
-                    binding.sideNav?.menuGravity = when (it) {
-                        1 -> Gravity.CENTER
-                        2 -> Gravity.BOTTOM
-                        else -> Gravity.TOP
-                    }
-                }
-                .launchIn(lifecycleScope)
-        }
 
         nav.setOnItemSelectedListener { item ->
             val id = item.itemId
