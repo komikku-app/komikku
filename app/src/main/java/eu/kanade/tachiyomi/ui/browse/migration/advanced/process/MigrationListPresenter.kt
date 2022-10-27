@@ -15,7 +15,7 @@ import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -26,12 +26,10 @@ import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
@@ -64,7 +62,7 @@ class MigrationListPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
@@ -182,7 +180,7 @@ class MigrationListPresenter(
                                             }
 
                                             if (searchResult != null && !(searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
-                                                val localManga = networkToLocalManga(
+                                                val localManga = networkToLocalManga.await(
                                                     searchResult,
                                                     source.id,
                                                 )
@@ -222,7 +220,7 @@ class MigrationListPresenter(
                                     }
 
                                     if (searchResult != null) {
-                                        val localManga = networkToLocalManga(searchResult, source.id)
+                                        val localManga = networkToLocalManga.await(searchResult, source.id)
                                         val chapters = try {
                                             if (source is EHentai) {
                                                 source.getChapterList(localManga.toSManga(), throttleManager::throttle)
@@ -385,7 +383,7 @@ class MigrationListPresenter(
         migratingManga.searchResult.value = SearchResult.Searching
         presenterScope.launchIO {
             val result = migratingManga.migrationScope.async {
-                val localManga = networkToLocalManga(manga.toDbManga(), source.id)
+                val localManga = networkToLocalManga.await(manga, source.id)
                 try {
                     val chapters = source.getChapterList(localManga.toSManga())
                     syncChaptersWithSource.await(chapters, localManga, source)
@@ -523,31 +521,5 @@ class MigrationListPresenter(
         migratingItems.value.forEach {
             it.migrationScope.cancel()
         }
-    }
-
-    /**
-     * Returns a manga from the database for the given manga from network. It creates a new entry
-     * if the manga is not yet in the database.
-     *
-     * @param sManga the manga from the source.
-     * @return a manga from the database.
-     */
-    private suspend fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = getManga.await(sManga.url, sourceId)
-        if (localManga == null) {
-            val newManga = eu.kanade.tachiyomi.data.database.models.Manga.create(sManga.url, sManga.title, sourceId)
-            newManga.copyFrom(sManga)
-            newManga.id = -1
-            val result = run {
-                val id = insertManga.await(newManga.toDomainManga()!!)
-                getManga.await(id!!)
-            }
-            localManga = result
-        } else if (!localManga.favorite) {
-            // if the manga isn't a favorite, set its display title from source
-            // if it later becomes a favorite, updated title will go to db
-            localManga = localManga.copy(ogTitle = sManga.title)
-        }
-        return localManga!!
     }
 }

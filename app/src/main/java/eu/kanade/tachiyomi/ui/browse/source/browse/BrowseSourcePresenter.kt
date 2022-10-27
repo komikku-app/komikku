@@ -30,9 +30,10 @@ import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.domain.source.interactor.DeleteSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
@@ -45,8 +46,6 @@ import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.presentation.browse.BrowseSourceState
 import eu.kanade.presentation.browse.BrowseSourceStateImpl
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -55,7 +54,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.filter.AutoComplete
@@ -124,7 +122,7 @@ open class BrowseSourcePresenter(
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
@@ -170,11 +168,11 @@ open class BrowseSourcePresenter(
                 createSourcePagingSource(currentFilter.query, currentFilter.filters)
             }.flow
                 .map {
-                    it.map {
+                    it.map { (sManga, metadata) ->
                         // SY -->
                         withIOContext {
-                            networkToLocalManga(it.first, sourceId).toDomainManga()!!
-                        } to it.second
+                            networkToLocalManga.await(sManga.toDomainManga(), sourceId)
+                        } to metadata
                         // SY <--
                     }
                 }
@@ -270,30 +268,6 @@ open class BrowseSourcePresenter(
             }
             .launchIn(presenterScope)
         // SY <--
-    }
-
-    /**
-     * Returns a manga from the database for the given manga from network. It creates a new entry
-     * if the manga is not yet in the database.
-     *
-     * @param sManga the manga from the source.
-     * @return a manga from the database.
-     */
-    private suspend fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = getManga.await(sManga.url, sourceId)
-        if (localManga == null) {
-            val newManga = Manga.create(sManga.url, sManga.title, sourceId)
-            newManga.copyFrom(sManga)
-            newManga.id = -1
-            val id = insertManga.await(newManga.toDomainManga()!!)
-            val result = getManga.await(id!!)
-            localManga = result
-        } else if (!localManga.favorite) {
-            // if the manga isn't a favorite, set its display title from source
-            // if it later becomes a favorite, updated title will go to db
-            localManga = localManga.copy(ogTitle = sManga.title)
-        }
-        return localManga?.toDbManga()!!
     }
 
     /**

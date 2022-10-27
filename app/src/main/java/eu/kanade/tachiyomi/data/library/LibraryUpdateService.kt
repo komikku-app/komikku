@@ -25,7 +25,7 @@ import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaForDownloading
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
@@ -119,7 +119,7 @@ class LibraryUpdateService(
     // SY -->
     private val getFavorites: GetFavorites = Injekt.get(),
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val getMergedMangaForDownloading: GetMergedMangaForDownloading = Injekt.get(),
     // SY <--
 ) : Service() {
@@ -728,18 +728,16 @@ class LibraryUpdateService(
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 
                 if (dbManga == null) {
-                    val newManga = Manga.create().copy(
-                        url = networkManga.url,
-                        ogTitle = networkManga.title,
-                        source = mangaDex.id,
-                        favorite = true,
-                        dateAdded = System.currentTimeMillis(),
+                    dbManga = networkToLocalManga.await(
+                        Manga.create().copy(
+                            url = networkManga.url,
+                            ogTitle = networkManga.title,
+                            source = mangaDex.id,
+                            favorite = true,
+                            dateAdded = System.currentTimeMillis(),
+                        ),
+                        mangaDex.id,
                     )
-                    val result = runBlocking {
-                        val id = insertManga.await(newManga)
-                        getManga.await(id!!)
-                    }
-                    dbManga = result ?: return
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }

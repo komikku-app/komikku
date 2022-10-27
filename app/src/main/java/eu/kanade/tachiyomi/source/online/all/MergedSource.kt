@@ -8,7 +8,7 @@ import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -40,7 +40,7 @@ class MergedSource : HttpSource() {
     private val getManga: GetManga by injectLazy()
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
     private val getMergedChaptersByMangaId: GetMergedChapterByMangaId by injectLazy()
-    private val insertManga: InsertManga by injectLazy()
+    private val networkToLocalManga: NetworkToLocalManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val getCategories: GetCategories by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
@@ -187,8 +187,7 @@ class MergedSource : HttpSource() {
                         semaphore.withPermit {
                             values.flatMap {
                                 try {
-                                    val (source, loadedManga, reference) =
-                                        it.load(sourceManager, getManga, insertManga, updateManga)
+                                    val (source, loadedManga, reference) = it.load()
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toSManga())
                                         val results =
@@ -219,19 +218,19 @@ class MergedSource : HttpSource() {
         }
     }
 
-    suspend fun MergedMangaReference.load(sourceManager: SourceManager, getManga: GetManga, insertManga: InsertManga, updateManga: UpdateManga): LoadedMangaSource {
+    suspend fun MergedMangaReference.load(): LoadedMangaSource {
         var manga = getManga.await(mangaUrl, mangaSourceId)
         val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
-            val id = insertManga.await(
+            val newManga = networkToLocalManga.await(
                 Manga.create().copy(
                     source = mangaSourceId,
                     url = mangaUrl,
                 ),
-            )!!
-            val newManga = getManga.await(id)!!
+                mangaSourceId,
+            )
             updateManga.awaitUpdateFromSource(newManga, source.getMangaDetails(newManga.toSManga()), false)
-            manga = getManga.await(id)!!
+            manga = getManga.await(newManga.id)!!
         }
         return LoadedMangaSource(source, manga, this)
     }

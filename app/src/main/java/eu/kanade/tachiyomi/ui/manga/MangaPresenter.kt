@@ -29,8 +29,8 @@ import eu.kanade.domain.manga.interactor.GetMangaWithChapters
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.GetPagePreviews
-import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.InsertMergedReference
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.SetMangaChapterFlags
 import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -49,7 +49,6 @@ import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -125,7 +124,6 @@ import java.text.DecimalFormatSymbols
 import java.util.Date
 import eu.kanade.domain.chapter.model.Chapter as DomainChapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
-import eu.kanade.tachiyomi.data.database.models.Manga.Companion as DbManga
 
 class MangaPresenter(
     val mangaId: Long,
@@ -149,7 +147,7 @@ class MangaPresenter(
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val insertMergedReference: InsertMergedReference = Injekt.get(),
     private val updateMergedSettings: UpdateMergedSettings = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val deleteMangaById: DeleteMangaById = Injekt.get(),
     private val deleteByMergeId: DeleteByMergeId = Injekt.get(),
     private val getFlatMetadata: GetFlatMetadataById = Injekt.get(),
@@ -577,15 +575,20 @@ class MangaPresenter(
 
             return originalManga
         } else {
-            val mergedManga = DbManga.create(originalManga.url, originalManga.title, MERGED_SOURCE_ID).apply {
-                copyFrom(originalManga.toSManga())
-                favorite = true
-                last_update = originalManga.lastUpdate
-                viewer_flags = originalManga.viewerFlags.toInt()
-                chapter_flags = originalManga.chapterFlags.toInt()
-                sorting = DomainManga.CHAPTER_SORTING_NUMBER.toInt()
-                date_added = System.currentTimeMillis()
-            }
+            var mergedManga = DomainManga.create()
+                .copy(
+                    url = originalManga.url,
+                    ogTitle = originalManga.title,
+                    source = MERGED_SOURCE_ID,
+                )
+                .copyFrom(originalManga.toSManga())
+                .copy(
+                    favorite = true,
+                    lastUpdate = originalManga.lastUpdate,
+                    viewerFlags = originalManga.viewerFlags,
+                    chapterFlags = originalManga.chapterFlags,
+                    dateAdded = System.currentTimeMillis(),
+                )
 
             var existingManga = getManga.await(mergedManga.url, mergedManga.source)
             while (existingManga != null) {
@@ -602,15 +605,11 @@ class MangaPresenter(
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
-            // Reload chapters immediately
-            mergedManga.initialized = false
-            mergedManga.id = -1
-            val newId = insertManga.await(mergedManga.toDomainManga()!!)
-            mergedManga.id = newId ?: throw NullPointerException("Invalid new manga id")
+            mergedManga = networkToLocalManga.await(mergedManga, mergedManga.source)
 
             getCategories.await(originalMangaId)
                 .let {
-                    setMangaCategories.await(newId, it.map { it.id })
+                    setMangaCategories.await(mergedManga.id, it.map { it.id })
                 }
 
             val originalMangaReference = MergedMangaReference(
@@ -620,7 +619,7 @@ class MangaPresenter(
                 chapterSortMode = 0,
                 chapterPriority = 0,
                 downloadChapters = true,
-                mergeId = mergedManga.id!!,
+                mergeId = mergedManga.id,
                 mergeUrl = mergedManga.url,
                 mangaId = originalManga.id,
                 mangaUrl = originalManga.url,
@@ -634,7 +633,7 @@ class MangaPresenter(
                 chapterSortMode = 0,
                 chapterPriority = 0,
                 downloadChapters = true,
-                mergeId = mergedManga.id!!,
+                mergeId = mergedManga.id,
                 mergeUrl = mergedManga.url,
                 mangaId = manga.id,
                 mangaUrl = manga.url,
@@ -648,16 +647,16 @@ class MangaPresenter(
                 chapterSortMode = 0,
                 chapterPriority = -1,
                 downloadChapters = false,
-                mergeId = mergedManga.id!!,
+                mergeId = mergedManga.id,
                 mergeUrl = mergedManga.url,
-                mangaId = mergedManga.id!!,
+                mangaId = mergedManga.id,
                 mangaUrl = mergedManga.url,
                 mangaSourceId = MERGED_SOURCE_ID,
             )
 
             insertMergedReference.awaitAll(listOf(originalMangaReference, newMangaReference, mergedMangaReference))
 
-            return mergedManga.toDomainManga()!!
+            return mergedManga
         }
 
         // Note that if the manga are merged in a different order, this won't trigger, but I don't care lol

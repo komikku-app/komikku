@@ -1,9 +1,7 @@
 package exh.smartsearch
 
-import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -12,19 +10,14 @@ import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
-import uy.kohesive.injekt.injectLazy
 import java.util.Locale
-import eu.kanade.tachiyomi.data.database.models.Manga.Companion as DbManga
 
 class SmartSearchEngine(
     private val extraSearchParams: String? = null,
 ) {
-    private val getManga: GetManga by injectLazy()
-    private val insertManga: InsertManga by injectLazy()
-
     private val normalizedLevenshtein = NormalizedLevenshtein()
 
-    suspend fun smartSearch(source: CatalogueSource, title: String): SManga? {
+    suspend fun smartSearch(source: CatalogueSource, title: String): Manga? {
         val cleanedTitle = cleanSmartSearchTitle(title)
 
         val queries = getSmartSearchQueries(cleanedTitle)
@@ -51,10 +44,10 @@ class SmartSearchEngine(
             }.flatMap { it.await() }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga?.toDomainManga()
     }
 
-    suspend fun normalSearch(source: CatalogueSource, title: String): SManga? {
+    suspend fun normalSearch(source: CatalogueSource, title: String): Manga? {
         val eligibleManga = supervisorScope {
             val searchQuery = if (extraSearchParams != null) {
                 "$title ${extraSearchParams.trim()}"
@@ -75,7 +68,7 @@ class SmartSearchEngine(
             }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga?.toDomainManga()
     }
 
     private fun getSmartSearchQueries(cleanedTitle: String): List<String> {
@@ -167,32 +160,6 @@ class SmartSearchEngine(
         }
 
         return result.toString()
-    }
-
-    /**
-     * Returns a manga from the database for the given manga from network. It creates a new entry
-     * if the manga is not yet in the database.
-     *
-     * @param sManga the manga from the source.
-     * @return a manga from the database.
-     */
-    suspend fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = getManga.await(sManga.url, sourceId)
-        if (localManga == null) {
-            val newManga = DbManga.create(sManga.url, sManga.title, sourceId)
-            newManga.copyFrom(sManga)
-            newManga.id = -1
-            val result = run {
-                val id = insertManga.await(newManga.toDomainManga()!!)
-                getManga.await(id!!)
-            }
-            localManga = result
-        } else if (!localManga.favorite) {
-            // if the manga isn't a favorite, set its display title from source
-            // if it later becomes a favorite, updated title will go to db
-            localManga = localManga.copy(ogTitle = sManga.title)
-        }
-        return localManga!!
     }
 
     companion object {

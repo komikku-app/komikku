@@ -1,6 +1,7 @@
 package exh.ui.smartsearch
 
 import android.os.Bundle
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
@@ -10,8 +11,14 @@ import exh.smartsearch.SmartSearchEngine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
-class SmartSearchPresenter(private val source: CatalogueSource, private val config: SourcesController.SmartSearchConfig) :
+class SmartSearchPresenter(
+    private val source: CatalogueSource,
+    private val config: SourcesController.SmartSearchConfig,
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+) :
     BasePresenter<SmartSearchController>() {
 
     private val _smartSearchFlow = MutableSharedFlow<SearchResults>()
@@ -26,7 +33,7 @@ class SmartSearchPresenter(private val source: CatalogueSource, private val conf
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {
-                    val localManga = smartSearchEngine.networkToLocalManga(resultManga, source.id)
+                    val localManga = networkToLocalManga.await(resultManga, source.id)
                     SearchResults.Found(localManga)
                 } else {
                     SearchResults.NotFound

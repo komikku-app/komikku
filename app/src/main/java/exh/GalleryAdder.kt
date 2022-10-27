@@ -6,7 +6,7 @@ import eu.kanade.domain.chapter.interactor.GetChapter
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.service.SourcePreferences
@@ -22,7 +22,7 @@ import uy.kohesive.injekt.api.get
 class GalleryAdder(
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val getChapter: GetChapter = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
@@ -129,15 +129,13 @@ class GalleryAdder(
 
             // Use manga in DB if possible, otherwise, make a new manga
             var manga = getManga.await(cleanedMangaUrl, source.id)
-                ?: run {
-                    insertManga.await(
-                        Manga.create().copy(
-                            source = source.id,
-                            url = cleanedMangaUrl,
-                        ),
-                    )
-                    getManga.await(cleanedMangaUrl, source.id)!!
-                }
+                ?: networkToLocalManga.await(
+                    Manga.create().copy(
+                        source = source.id,
+                        url = cleanedMangaUrl,
+                    ),
+                    source.id,
+                )
 
             // Fetch and copy details
             val newManga = source.getMangaDetails(manga.toSManga())

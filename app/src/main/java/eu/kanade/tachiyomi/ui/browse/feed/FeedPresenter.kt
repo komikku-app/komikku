@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.domain.source.interactor.CountFeedSavedSearchGlobal
 import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
@@ -18,13 +18,10 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.presentation.browse.FeedState
 import eu.kanade.presentation.browse.FeedStateImpl
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -60,7 +57,7 @@ open class FeedPresenter(
     val sourceManager: SourceManager = Injekt.get(),
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val insertManga: InsertManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
@@ -204,8 +201,8 @@ open class FeedPresenter(
                             .subscribeOn(Schedulers.io())
                             .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
                             .map { it.mangas } // Get manga from search result.
-                            .map { list -> list.map { networkToLocalManga(it, itemUI.source.id) } } // Convert to local manga.
-                            .map { list -> itemUI.copy(results = list.mapNotNull { it.toDomainManga() }) }
+                            .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(), itemUI.source.id) } } } // Convert to local manga.
+                            .map { list -> itemUI.copy(results = list) }
                     } else {
                         Observable.just(itemUI.copy(results = emptyList()))
                     }
@@ -253,32 +250,6 @@ open class FeedPresenter(
                     value = manga
                 }
         }
-    }
-
-    /**
-     * Returns a manga from the database for the given manga from network. It creates a new entry
-     * if the manga is not yet in the database.
-     *
-     * @param sManga the manga from the source.
-     * @return a manga from the database.
-     */
-    private fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = runBlocking { getManga.await(sManga.url, sourceId) }
-        if (localManga == null) {
-            val newManga = Manga.create(sManga.url, sManga.title, sourceId)
-            newManga.copyFrom(sManga)
-            newManga.id = -1
-            val result = runBlocking {
-                val id = insertManga.await(newManga.toDomainManga()!!)
-                getManga.await(id!!)
-            }
-            localManga = result
-        } else if (!localManga.favorite) {
-            // if the manga isn't a favorite, set its display title from source
-            // if it later becomes a favorite, updated title will go to db
-            localManga = localManga.copy(ogTitle = sManga.title)
-        }
-        return localManga?.toDbManga()!!
     }
 
     /**
