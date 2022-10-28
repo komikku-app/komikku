@@ -20,12 +20,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -58,7 +60,7 @@ class SourcesPresenter(
     fun onCreate() {
         // SY -->
         combine(
-            getEnabledSources.subscribe().debounce(500), // Avoid crashes due to LazyColumn rendering
+            getEnabledSources.subscribe(), // Avoid crashes due to LazyColumn rendering
             getSourceCategories.subscribe(),
             getShowLatest.subscribe(controllerMode),
             flowOf(controllerMode == SourcesController.Mode.CATALOGUE),
@@ -69,6 +71,7 @@ class SourcesPresenter(
                 _events.send(Event.FailedFetchingSources)
             }
             .flowOn(Dispatchers.IO)
+            .stateIn(presenterScope)
             .launchIn(presenterScope)
         // SY <--
     }
