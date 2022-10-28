@@ -134,7 +134,7 @@ internal class ExtensionGithubApi {
     ): List<Extension.Available> {
         return this
             .filter {
-                val libVersion = it.version.substringBeforeLast('.').toDouble()
+                val libVersion = it.extractLibVersion()
                 libVersion >= ExtensionLoader.LIB_VERSION_MIN && libVersion <= ExtensionLoader.LIB_VERSION_MAX
             }
             .map {
@@ -143,6 +143,7 @@ internal class ExtensionGithubApi {
                     pkgName = it.pkg,
                     versionName = it.version,
                     versionCode = it.code,
+                    libVersion = it.extractLibVersion(),
                     lang = it.lang,
                     isNsfw = it.nsfw == 1,
                     hasReadme = it.hasReadme == 1,
@@ -179,6 +180,10 @@ internal class ExtensionGithubApi {
         } else {
             REPO_URL_PREFIX
         }
+    }
+
+    private fun ExtensionJsonObject.extractLibVersion(): Double {
+        return version.substringBeforeLast('.').toDouble()
     }
 
     // SY -->
