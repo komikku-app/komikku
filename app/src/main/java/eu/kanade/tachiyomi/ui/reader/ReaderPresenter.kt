@@ -40,6 +40,7 @@ import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingUpdateJob
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
@@ -707,6 +708,15 @@ class ReaderPresenter(
      */
     fun getCurrentChapter(): ReaderChapter? {
         return viewerChaptersRelay.value?.currChapter
+    }
+
+    fun getSource() = manga?.source?.let { sourceManager.getOrStub(it) } as? HttpSource
+
+    fun getChapterUrl(): String? {
+        val sChapter = getCurrentChapter()?.chapter ?: return null
+        val source = getSource() ?: return null
+
+        return source.getChapterUrl(sChapter)
     }
 
     /**

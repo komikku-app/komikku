@@ -353,6 +353,9 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
      */
     /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_open_in_web_view -> {
+                openChapterInWebview()
+            }
             R.id.action_bookmark -> {
                 presenter.bookmarkCurrentChapter(true)
                 invalidateOptionsMenu()
@@ -653,7 +656,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             setTooltip(R.string.action_open_in_web_view)
 
             setOnClickListener {
-                openMangaInBrowser()
+                openChapterInWebview()
             }
         }
 
@@ -1020,25 +1023,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         }
     }
 
-    // SY -->
-    fun openMangaInBrowser() {
-        val source = sourceManager.getOrStub(presenter.manga!!.source) as? HttpSource ?: return
-        val url = try {
-            source.mangaDetailsRequest(presenter.manga!!).url.toString()
-        } catch (e: Exception) {
-            return
-        }
-
-        val intent = WebViewActivity.newIntent(
-            applicationContext,
-            url,
-            source.id,
-            presenter.manga!!.title,
-        )
-        startActivity(intent)
-    }
-    // SY <--
-
     /**
      * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer
      * and the toolbar title.
@@ -1144,6 +1128,15 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
+    }
+
+    private fun openChapterInWebview() {
+        val manga = presenter.manga ?: return
+        val source = presenter.getSource() ?: return
+        val url = presenter.getChapterUrl() ?: return
+
+        val intent = WebViewActivity.newIntent(this, url, source.id, manga.title)
+        startActivity(intent)
     }
 
     private fun showReadingModeToast(mode: Int) {
