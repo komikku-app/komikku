@@ -485,7 +485,7 @@ class LibraryPresenter(
                 .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
                     LibraryItem(libraryManga).apply {
-                        downloadCount = if (downloadBadgePref || filterDownloadedPref == State.INCLUDE.value) {
+                        downloadCount = if (downloadBadgePref || filterDownloadedPref != State.IGNORE.value) {
                             // SY -->
                             if (libraryManga.manga.source == MERGED_SOURCE_ID) {
                                 runBlocking {
