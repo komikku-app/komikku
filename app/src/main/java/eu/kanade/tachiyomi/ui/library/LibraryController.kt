@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
@@ -209,9 +210,8 @@ class LibraryController(
         settingsSheet = LibrarySettingsSheet(router) { group ->
             when (group) {
                 is LibrarySettingsSheet.Filter.FilterGroup -> onFilterChanged()
-                is LibrarySettingsSheet.Sort.SortGroup -> onSortChanged()
                 // SY -->
-                is LibrarySettingsSheet.Grouping.InternalGroup -> onGroupSettingChanged()
+                is LibrarySettingsSheet.Grouping.InternalGroup -> onGroupChanged()
                 // SY <--
                 else -> {} // Handled via different mechanisms
             }
@@ -238,19 +238,19 @@ class LibraryController(
     }
 
     private fun onFilterChanged() {
-        presenter.requestFilterUpdate()
-        activity?.invalidateOptionsMenu()
+        viewScope.launchUI {
+            presenter.requestFilterUpdate()
+            activity?.invalidateOptionsMenu()
+        }
     }
 
     // SY -->
-    private fun onGroupSettingChanged() {
-        presenter.requestGroupsUpdate()
+    private fun onGroupChanged() {
+        viewScope.launchUI {
+            presenter.requestGroupUpdate()
+        }
     }
     // SY <--
-
-    private fun onSortChanged() {
-        presenter.requestSortUpdate()
-    }
 
     fun search(query: String) {
         presenter.searchQuery = query
@@ -272,7 +272,7 @@ class LibraryController(
      * Clear all of the manga currently selected, and
      * invalidate the action mode to revert the top toolbar
      */
-    fun clearSelection() {
+    private fun clearSelection() {
         presenter.clearSelection()
     }
 
