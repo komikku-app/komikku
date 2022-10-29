@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -222,20 +221,17 @@ private fun WarningBanner(
     // SY -->
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Text(
+        text = stringResource(textRes),
         modifier = modifier
             // SY <--
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.error)
             .padding(16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(textRes),
-            color = MaterialTheme.colorScheme.onError,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
+        color = MaterialTheme.colorScheme.onError,
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center,
+    )
 }
 
 @Composable
