@@ -75,7 +75,6 @@ class SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = themeModePref,
                     title = stringResource(R.string.pref_theme_mode),
-                    subtitle = "%s",
                     entries = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         mapOf(
                             ThemeMode.SYSTEM to stringResource(R.string.theme_system),
@@ -132,7 +131,6 @@ class SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.relativeTime(),
                     title = stringResource(R.string.pref_relative_format),
-                    subtitle = "%s",
                     entries = mapOf(
                         0 to stringResource(R.string.off),
                         2 to stringResource(R.string.pref_relative_time_short),
@@ -142,7 +140,6 @@ class SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.dateFormat(),
                     title = stringResource(R.string.pref_date_format),
-                    subtitle = "%s",
                     entries = DateFormats
                         .associateWith {
                             val formattedDate = UiPreferences.dateFormat(it).format(now)

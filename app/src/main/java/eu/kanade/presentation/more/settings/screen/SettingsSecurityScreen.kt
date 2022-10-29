@@ -71,7 +71,6 @@ class SettingsSecurityScreen : SearchableSettings {
             Preference.PreferenceItem.ListPreference(
                 pref = securityPreferences.lockAppAfter(),
                 title = stringResource(R.string.lock_when_idle),
-                subtitle = "%s",
                 enabled = authSupported && useAuth,
                 entries = LockAfterValues
                     .associateWith {
@@ -94,7 +93,6 @@ class SettingsSecurityScreen : SearchableSettings {
             Preference.PreferenceItem.ListPreference(
                 pref = securityPreferences.secureScreen(),
                 title = stringResource(R.string.secure_screen),
-                subtitle = "%s",
                 entries = SecurityPreferences.SecureScreenMode.values()
                     .associateWith { stringResource(it.titleResId) },
             ),

@@ -92,7 +92,7 @@ internal fun PreferenceItem(
                 ListPreferenceWidget(
                     value = value,
                     title = item.title,
-                    subtitle = item.subtitle,
+                    subtitle = item.internalSubtitleProvider(value, item.entries),
                     icon = item.icon,
                     entries = item.entries,
                     onValueChange = { newValue ->
@@ -108,7 +108,7 @@ internal fun PreferenceItem(
                 ListPreferenceWidget(
                     value = item.value,
                     title = item.title,
-                    subtitle = item.subtitle,
+                    subtitle = item.subtitleProvider(item.value, item.entries),
                     icon = item.icon,
                     entries = item.entries,
                     onValueChange = { scope.launch { item.onValueChanged(it) } },

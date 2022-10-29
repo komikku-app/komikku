@@ -1,8 +1,12 @@
 package eu.kanade.presentation.more.settings
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import eu.kanade.domain.ui.model.AppTheme
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.core.preference.Preference as PreferenceData
 
@@ -48,6 +52,8 @@ sealed class Preference {
             val pref: PreferenceData<T>,
             override val title: String,
             override val subtitle: String? = "%s",
+            val subtitleProvider: @Composable (value: T, entries: Map<T, String>) -> String? =
+                { v, e -> subtitle?.format(e[v]) },
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: T) -> Boolean = { true },
@@ -56,6 +62,10 @@ sealed class Preference {
         ) : PreferenceItem<T>() {
             internal fun internalSet(newValue: Any) = pref.set(newValue as T)
             internal suspend fun internalOnValueChanged(newValue: Any) = onValueChanged(newValue as T)
+
+            @Composable
+            internal fun internalSubtitleProvider(value: Any?, entries: Map<out Any?, String>) =
+                subtitleProvider(value as T, entries as Map<T, String>)
         }
 
         /**
@@ -65,6 +75,8 @@ sealed class Preference {
             val value: String,
             override val title: String,
             override val subtitle: String? = "%s",
+            val subtitleProvider: @Composable (value: String, entries: Map<String, String>) -> String? =
+                { v, e -> subtitle?.format(e[v]) },
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true },
@@ -79,7 +91,15 @@ sealed class Preference {
         data class MultiSelectListPreference(
             val pref: PreferenceData<Set<String>>,
             override val title: String,
-            override val subtitle: String? = null,
+            override val subtitle: String? = "%s",
+            val subtitleProvider: @Composable (value: Set<String>, entries: Map<String, String>) -> String? = { v, e ->
+                val combined = remember(v) {
+                    v.map { e[it] }
+                        .takeIf { it.isNotEmpty() }
+                        ?.joinToString()
+                } ?: stringResource(id = R.string.none)
+                subtitle?.format(combined)
+            },
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: Set<String>) -> Boolean = { true },
