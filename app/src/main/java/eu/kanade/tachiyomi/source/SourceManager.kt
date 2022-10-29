@@ -43,8 +43,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
-import kotlin.reflect.KClass
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
 
 class SourceManager(
     private val context: Context,

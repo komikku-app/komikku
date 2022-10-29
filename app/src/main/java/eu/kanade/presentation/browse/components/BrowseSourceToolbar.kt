@@ -53,7 +53,7 @@ fun BrowseSourceToolbar(
             title = if (state.isUserQuery) state.currentFilter.query else source?.name.orEmpty(),
             isLocalSource = source is LocalSource,
             // SY -->
-            isConfigurableSource = source.anyIs<ConfigurableSource>(),
+            isConfigurableSource = source?.anyIs<ConfigurableSource>() ?: false,
             // SY <--
             displayMode = displayMode,
             onDisplayModeChange = onDisplayModeChange,
