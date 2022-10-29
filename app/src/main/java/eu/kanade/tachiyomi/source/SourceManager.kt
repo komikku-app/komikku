@@ -44,6 +44,7 @@ import kotlinx.coroutines.runBlocking
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
+import java.util.concurrent.ConcurrentHashMap
 
 class SourceManager(
     private val context: Context,
@@ -54,7 +55,7 @@ class SourceManager(
 
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
-    private var sourcesMap = emptyMap<Long, Source>()
+    private var sourcesMap = ConcurrentHashMap<Long, Source>()
         set(value) {
             field = value
             sourcesMapFlow.value = field
@@ -62,7 +63,7 @@ class SourceManager(
 
     private val sourcesMapFlow = MutableStateFlow(sourcesMap)
 
-    private val stubSourcesMap = mutableMapOf<Long, StubSource>()
+    private val stubSourcesMap = ConcurrentHashMap<Long, StubSource>()
 
     val catalogueSources: Flow<List<CatalogueSource>> = sourcesMapFlow.map { it.values.filterIsInstance<CatalogueSource>() }
     val onlineSources: Flow<List<HttpSource>> = catalogueSources.map { sources -> sources.filterIsInstance<HttpSource>() }
@@ -80,7 +81,7 @@ class SourceManager(
                 }
                 // SY <--
                 .collectLatest { (extensions, enableExhentai) ->
-                    val mutableMap = mutableMapOf<Long, Source>(LocalSource.ID to LocalSource(context)).apply {
+                    val mutableMap = ConcurrentHashMap<Long, Source>(mapOf(LocalSource.ID to LocalSource(context))).apply {
                         // SY -->
                         put(EH_SOURCE_ID, EHentai(EH_SOURCE_ID, false, context))
                         if (enableExhentai) {
