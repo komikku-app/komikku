@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.UTurnRight
+import androidx.compose.material.icons.outlined.UTurnRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -178,7 +178,7 @@ fun PagePreviewTopAppBar(
             if (showOpenPageDialog) {
                 IconButton(onClick = onOpenPageDialog) {
                     Icon(
-                        imageVector = Icons.Default.UTurnRight,
+                        imageVector = Icons.Outlined.UTurnRight,
                         contentDescription = stringResource(R.string.page_preview_page_go_to),
                     )
                 }

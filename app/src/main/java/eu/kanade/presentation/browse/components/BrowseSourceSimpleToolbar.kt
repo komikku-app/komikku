@@ -1,8 +1,8 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -37,7 +37,7 @@ fun BrowseSourceSimpleToolbar(
                 actions = listOfNotNull(
                     AppBar.Action(
                         title = stringResource(id = R.string.action_display_mode),
-                        icon = Icons.Filled.ViewModule,
+                        icon = Icons.Outlined.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ),
                 ),

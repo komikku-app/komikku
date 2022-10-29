@@ -90,7 +90,7 @@ class ClearDatabaseScreen : Screen {
                         },
                         dismissButton = {
                             TextButton(onClick = model::hideConfirmation) {
-                                Text(text = stringResource(android.R.string.cancel))
+                                Text(text = stringResource(R.string.action_cancel))
                             }
                         },
                         text = {

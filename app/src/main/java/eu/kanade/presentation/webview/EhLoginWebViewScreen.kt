@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
@@ -67,7 +67,7 @@ fun EhLoginWebViewScreen(
                 AppBar(
                     title = "ExHentai login",
                     navigateUp = onUp,
-                    navigationIcon = Icons.Default.Close,
+                    navigationIcon = Icons.Outlined.Close,
                 )
                 when (val loadingState = state.loadingState) {
                     is LoadingState.Initializing -> LinearProgressIndicator(

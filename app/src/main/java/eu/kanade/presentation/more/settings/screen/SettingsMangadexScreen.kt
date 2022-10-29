@@ -11,9 +11,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -104,7 +104,7 @@ class SettingsMangadexScreen : SearchableSettings {
                     )
                     IconButton(onClick = onDismissRequest) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = Icons.Outlined.Close,
                             contentDescription = stringResource(R.string.action_close),
                         )
                     }
@@ -132,9 +132,9 @@ class SettingsMangadexScreen : SearchableSettings {
                             IconButton(onClick = { hidePassword = !hidePassword }) {
                                 Icon(
                                     imageVector = if (hidePassword) {
-                                        Icons.Default.Visibility
+                                        Icons.Outlined.Visibility
                                     } else {
-                                        Icons.Default.VisibilityOff
+                                        Icons.Outlined.VisibilityOff
                                     },
                                     contentDescription = null,
                                 )

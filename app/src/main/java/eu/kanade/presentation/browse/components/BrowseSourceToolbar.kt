@@ -3,12 +3,12 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ViewList
-import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ViewList
+import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -114,7 +114,7 @@ fun BrowseSourceRegularToolbar(
                     // SY -->
                     AppBar.Action(
                         title = stringResource(R.string.action_display_mode),
-                        icon = if (displayMode == LibraryDisplayMode.List) Icons.Filled.ViewList else Icons.Filled.ViewModule,
+                        icon = if (displayMode == LibraryDisplayMode.List) Icons.Outlined.ViewList else Icons.Outlined.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ).takeIf { displayMode != null },
                     // SY <--

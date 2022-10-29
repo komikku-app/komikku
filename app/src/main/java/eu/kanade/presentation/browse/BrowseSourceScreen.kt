@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -291,7 +291,7 @@ fun BrowseSourceContent(
                 listOf(
                     EmptyScreenAction(
                         stringResId = R.string.local_source_help_guide,
-                        icon = Icons.Default.HelpOutline,
+                        icon = Icons.Outlined.HelpOutline,
                         onClick = onLocalSourceHelpClick,
                     ),
                 )
@@ -299,14 +299,14 @@ fun BrowseSourceContent(
                 listOfNotNull(
                     EmptyScreenAction(
                         stringResId = R.string.action_retry,
-                        icon = Icons.Default.Refresh,
+                        icon = Icons.Outlined.Refresh,
                         onClick = mangaList::refresh,
                     ),
                     // SY -->
                     if (onWebViewClick != null) {
                         EmptyScreenAction(
                             stringResId = R.string.action_open_in_web_view,
-                            icon = Icons.Default.Public,
+                            icon = Icons.Outlined.Public,
                             onClick = onWebViewClick,
                         )
                     } else {
@@ -315,7 +315,7 @@ fun BrowseSourceContent(
                     if (onHelpClick != null) {
                         EmptyScreenAction(
                             stringResId = R.string.label_help,
-                            icon = Icons.Default.HelpOutline,
+                            icon = Icons.Outlined.HelpOutline,
                             onClick = onHelpClick,
                         )
                     } else {

@@ -22,14 +22,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkAdd
-import androidx.compose.material.icons.filled.BookmarkRemove
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.RemoveDone
+import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenuItem
@@ -105,7 +105,7 @@ fun MangaBottomActionMenu(
                 if (onBookmarkClicked != null) {
                     Button(
                         title = stringResource(R.string.action_bookmark),
-                        icon = Icons.Default.BookmarkAdd,
+                        icon = Icons.Outlined.BookmarkAdd,
                         toConfirm = confirm[0],
                         onLongClick = { onLongClickItem(0) },
                         onClick = onBookmarkClicked,
@@ -114,7 +114,7 @@ fun MangaBottomActionMenu(
                 if (onRemoveBookmarkClicked != null) {
                     Button(
                         title = stringResource(R.string.action_remove_bookmark),
-                        icon = Icons.Default.BookmarkRemove,
+                        icon = Icons.Outlined.BookmarkRemove,
                         toConfirm = confirm[1],
                         onLongClick = { onLongClickItem(1) },
                         onClick = onRemoveBookmarkClicked,
@@ -123,7 +123,7 @@ fun MangaBottomActionMenu(
                 if (onMarkAsReadClicked != null) {
                     Button(
                         title = stringResource(R.string.action_mark_as_read),
-                        icon = Icons.Default.DoneAll,
+                        icon = Icons.Outlined.DoneAll,
                         toConfirm = confirm[2],
                         onLongClick = { onLongClickItem(2) },
                         onClick = onMarkAsReadClicked,
@@ -132,7 +132,7 @@ fun MangaBottomActionMenu(
                 if (onMarkAsUnreadClicked != null) {
                     Button(
                         title = stringResource(R.string.action_mark_as_unread),
-                        icon = Icons.Default.RemoveDone,
+                        icon = Icons.Outlined.RemoveDone,
                         toConfirm = confirm[3],
                         onLongClick = { onLongClickItem(3) },
                         onClick = onMarkAsUnreadClicked,
@@ -291,7 +291,7 @@ fun LibraryBottomActionMenu(
                 if (onMarkAsReadClicked != null) {
                     Button(
                         title = stringResource(R.string.action_mark_as_read),
-                        icon = Icons.Default.DoneAll,
+                        icon = Icons.Outlined.DoneAll,
                         toConfirm = confirm[1],
                         onLongClick = { onLongClickItem(1) },
                         onClick = onMarkAsReadClicked,
@@ -301,7 +301,7 @@ fun LibraryBottomActionMenu(
                     if (!moveMarkPrev && onMarkAsUnreadClicked != null) {
                         Button(
                             title = stringResource(R.string.action_mark_as_unread),
-                            icon = Icons.Default.RemoveDone,
+                            icon = Icons.Outlined.RemoveDone,
                             toConfirm = confirm[2],
                             onLongClick = { onLongClickItem(2) },
                             onClick = onMarkAsUnreadClicked,
@@ -347,7 +347,7 @@ fun LibraryBottomActionMenu(
                     if (onMarkAsUnreadClicked != null) {
                         Button(
                             title = stringResource(R.string.action_mark_as_unread),
-                            icon = Icons.Default.RemoveDone,
+                            icon = Icons.Outlined.RemoveDone,
                             toConfirm = confirm[2],
                             onLongClick = { onLongClickItem(2) },
                             onClick = onMarkAsUnreadClicked,

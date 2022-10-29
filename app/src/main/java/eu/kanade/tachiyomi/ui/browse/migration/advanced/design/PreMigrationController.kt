@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Deselect
-import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -126,13 +126,13 @@ class PreMigrationController(bundle: Bundle? = null) :
                     actions = {
                         IconButton(onClick = { massSelect(false) }) {
                             Icon(
-                                imageVector = Icons.Default.Deselect,
+                                imageVector = Icons.Outlined.Deselect,
                                 contentDescription = stringResource(R.string.select_none),
                             )
                         }
                         IconButton(onClick = { massSelect(true) }) {
                             Icon(
-                                imageVector = Icons.Default.SelectAll,
+                                imageVector = Icons.Outlined.SelectAll,
                                 contentDescription = stringResource(R.string.action_select_all),
                             )
                         }
@@ -166,7 +166,7 @@ class PreMigrationController(bundle: Bundle? = null) :
                     text = { Text(text = stringResource(R.string.action_migrate)) },
                     icon = {
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
+                            imageVector = Icons.Outlined.ArrowForward,
                             contentDescription = stringResource(R.string.action_migrate),
                         )
                     },

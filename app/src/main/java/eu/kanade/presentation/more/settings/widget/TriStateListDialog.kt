@@ -31,6 +31,7 @@ import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.LazyColumn
 import eu.kanade.presentation.util.isScrolledToEnd
 import eu.kanade.presentation.util.isScrolledToStart
+import eu.kanade.tachiyomi.R
 
 private enum class State {
     CHECKED, INVERSED, UNCHECKED
@@ -101,7 +102,13 @@ fun <T> TriStateListDialog(
                                     } else {
                                         MaterialTheme.colorScheme.primary
                                     },
-                                    contentDescription = null,
+                                    contentDescription = stringResource(
+                                        when (state) {
+                                            State.UNCHECKED -> R.string.not_selected
+                                            State.CHECKED -> R.string.selected
+                                            State.INVERSED -> R.string.disabled
+                                        },
+                                    ),
                                 )
                                 Text(text = itemLabel(item))
                             }
@@ -115,7 +122,7 @@ fun <T> TriStateListDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(android.R.string.cancel))
+                Text(text = stringResource(R.string.action_cancel))
             }
         },
         confirmButton = {

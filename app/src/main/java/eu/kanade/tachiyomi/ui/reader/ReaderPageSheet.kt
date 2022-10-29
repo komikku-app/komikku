@@ -62,7 +62,7 @@ class ReaderPageSheet(
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 activity.setAsCover(page)
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
