@@ -401,6 +401,10 @@ class LibraryPresenter(
         val collator = Collator.getInstance(locale).apply {
             strength = Collator.PRIMARY
         }
+        val sortAlphabetically: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
+            collator.compare(i1.libraryManga.manga.title.lowercase(locale), i2.libraryManga.manga.title.lowercase(locale))
+        }
+
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             // SY -->
             val sort = when (groupType) {
@@ -410,7 +414,7 @@ class LibraryPresenter(
             // SY <--
             when (sort.type) {
                 LibrarySort.Type.Alphabetical -> {
-                    collator.compare(i1.libraryManga.manga.title.lowercase(locale), i2.libraryManga.manga.title.lowercase(locale))
+                    sortAlphabetically(i1, i2)
                 }
                 LibrarySort.Type.LastRead -> {
                     i1.libraryManga.lastRead.compareTo(i2.libraryManga.lastRead)
@@ -462,7 +466,7 @@ class LibraryPresenter(
                 Collections.reverseOrder(sortFn)
             }
 
-            entry.value.sortedWith(comparator)
+            entry.value.sortedWith(comparator.thenComparator(sortAlphabetically))
         }
     }
 
