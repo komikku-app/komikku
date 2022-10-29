@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -43,6 +44,7 @@ class SourcesFilterPresenter(
                     logcat(LogPriority.ERROR, exception)
                     _events.send(Event.FailedFetchingLanguages)
                 }
+                .stateIn(presenterScope)
                 .collectLatest(::collectLatestSourceLangMap)
         }
     }

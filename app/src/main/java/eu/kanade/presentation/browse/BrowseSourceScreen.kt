@@ -94,7 +94,7 @@ fun BrowseSourceScreen(
             Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                 BrowseSourceToolbar(
                     state = presenter,
-                    source = presenter.source!!,
+                    source = presenter.source,
                     displayMode = presenter.displayMode.takeUnless { presenter.source!!.isEhBasedSource() && presenter.ehentaiBrowseDisplayMode },
                     onDisplayModeChange = { presenter.displayMode = it },
                     navigateUp = navigateUp,
