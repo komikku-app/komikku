@@ -55,7 +55,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             val isPrevDownloaded = downloadManager.isChapterDownloaded(
                 prevChapter.name,
                 prevChapter.scanlator,
-                manga.title,
+                /* SY --> */ manga.originalTitle /* SY <-- */,
                 manga.source,
                 skipCache = true,
             )
@@ -93,7 +93,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             val isNextDownloaded = downloadManager.isChapterDownloaded(
                 nextChapter.name,
                 nextChapter.scanlator,
-                manga.title,
+                /* SY --> */ manga.originalTitle /* SY <-- */,
                 manga.source,
                 skipCache = true,
             )

@@ -12,6 +12,7 @@ import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
+import eu.kanade.domain.history.interactor.GetNextUnreadChapters
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
@@ -68,7 +69,6 @@ import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.system.toInt
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -95,7 +95,6 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import eu.kanade.domain.chapter.model.Chapter as DomainChapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
-import eu.kanade.tachiyomi.data.database.models.Chapter as DbChapter
 
 /**
  * Presenter used by the activity to perform background operations.
@@ -111,6 +110,7 @@ class ReaderPresenter(
     private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getNextUnreadChapters: GetNextUnreadChapters = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
@@ -201,8 +201,8 @@ class ReaderPresenter(
                         readerPreferences.skipFiltered().get() -> {
                             (manga.readFilter == DomainManga.CHAPTER_SHOW_READ.toInt() && !it.read) ||
                                 (manga.readFilter == DomainManga.CHAPTER_SHOW_UNREAD.toInt() && it.read) ||
-                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_DOWNLOADED.toInt() && !downloadManager.isChapterDownloaded(it.name, it.scanlator, manga.title, manga.source)) ||
-                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_NOT_DOWNLOADED.toInt() && downloadManager.isChapterDownloaded(it.name, it.scanlator, manga.title, manga.source)) ||
+                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_DOWNLOADED.toInt() && !downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, manga.source)) ||
+                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_NOT_DOWNLOADED.toInt() && downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, manga.source)) ||
                                 (manga.bookmarkedFilter == DomainManga.CHAPTER_SHOW_BOOKMARKED.toInt() && !it.bookmark) ||
                                 (manga.bookmarkedFilter == DomainManga.CHAPTER_SHOW_NOT_BOOKMARKED.toInt() && it.bookmark) ||
                                 // SY -->
@@ -481,7 +481,13 @@ class ReaderPresenter(
         if (chapter.pageLoader is HttpPageLoader) {
             val manga = manga ?: return
             val dbChapter = chapter.chapter
-            val isDownloaded = downloadManager.isChapterDownloaded(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, manga.source, skipCache = true)
+            val isDownloaded = downloadManager.isChapterDownloaded(
+                dbChapter.name,
+                dbChapter.scanlator,
+                /* SY --> */ manga.originalTitle /* SY <-- */,
+                manga.source,
+                skipCache = true,
+            )
             if (isDownloaded) {
                 chapter.state = ReaderChapter.State.Wait
             }
@@ -494,7 +500,6 @@ class ReaderPresenter(
         logcat { "Preloading ${chapter.chapter.url}" }
 
         val loader = loader ?: return
-
         loader.loadChapter(chapter)
             .observeOn(AndroidSchedulers.mainThread())
             // Update current chapters whenever a chapter is preloaded
@@ -550,7 +555,7 @@ class ReaderPresenter(
             loadNewChapter(selectedChapter)
         }
         val pages = page.chapter.pages ?: return
-        val inDownloadRange = page.number.toDouble() / pages.size > 0.2
+        val inDownloadRange = page.number.toDouble() / pages.size > 0.25
         if (inDownloadRange) {
             downloadNextChapters()
         }
@@ -558,43 +563,31 @@ class ReaderPresenter(
 
     private fun downloadNextChapters() {
         val manga = manga ?: return
+        val amount = downloadPreferences.autoDownloadWhileReading().get()
+        if (amount == 0 || !manga.favorite) return
+
+        // Only download ahead if current + next chapter is already downloaded too to avoid jank
         if (getCurrentChapter()?.pageLoader !is DownloadPageLoader) return
         val nextChapter = viewerChaptersRelay.value?.nextChapter?.chapter ?: return
-        val chaptersNumberToDownload = downloadPreferences.autoDownloadWhileReading().get()
-        if (chaptersNumberToDownload == 0 || !manga.favorite) return
-        val isNextChapterDownloadedOrQueued = downloadManager.isChapterDownloaded(
-            nextChapter.name,
-            nextChapter.scanlator,
-            manga.title,
-            manga.source,
-            skipCache = true,
-        ) || downloadManager.getChapterDownloadOrNull(nextChapter) != null
-        if (isNextChapterDownloadedOrQueued) {
-            downloadAutoNextChapters(chaptersNumberToDownload, nextChapter.id, nextChapter.read)
+
+        presenterScope.launchIO {
+            val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
+                nextChapter.name,
+                nextChapter.scanlator,
+                // SY -->
+                manga.originalTitle,
+                // SY <--
+                manga.source,
+            )
+            if (!isNextChapterDownloaded) return@launchIO
+
+            val chaptersToDownload = getNextUnreadChapters.await(manga.id!!, nextChapter.id!!)
+                .take(amount)
+            downloadManager.downloadChapters(
+                manga.toDomainManga()!!,
+                chaptersToDownload.map { it.toDbChapter() },
+            )
         }
-    }
-
-    private fun downloadAutoNextChapters(choice: Int, nextChapterId: Long?, isNextChapterRead: Boolean) {
-        val chaptersToDownload = getNextUnreadChaptersSorted(nextChapterId).take(choice - 1 + isNextChapterRead.toInt())
-        if (chaptersToDownload.isNotEmpty()) {
-            downloadChapters(chaptersToDownload)
-        }
-    }
-
-    private fun getNextUnreadChaptersSorted(nextChapterId: Long?): List<DbChapter> {
-        return chapterList.map { it.chapter.toDomainChapter()!! }
-            .filter { !it.read || it.id == nextChapterId }
-            .sortedWith(getChapterSort(manga?.toDomainManga()!!, false))
-            .map { it.toDbChapter() }
-            .takeLastWhile { it.id != nextChapterId }
-    }
-
-    /**
-     * Downloads the given list of chapters with the manager.
-     * @param chapters the list of chapters to download.
-     */
-    private fun downloadChapters(chapters: List<DbChapter>) {
-        downloadManager.downloadChapters(manga?.toDomainManga()!!, chapters)
     }
 
     /**
