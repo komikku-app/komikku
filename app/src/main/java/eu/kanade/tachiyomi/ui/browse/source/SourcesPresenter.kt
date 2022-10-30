@@ -19,14 +19,15 @@ import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -69,6 +70,7 @@ class SourcesPresenter(
                 logcat(LogPriority.ERROR, exception)
                 _events.send(Event.FailedFetchingSources)
             }
+            .onStart { delay(500) } // Defer to avoid crashing on initial render
             .flowOn(Dispatchers.IO)
             .launchIn(presenterScope)
         // SY <--
