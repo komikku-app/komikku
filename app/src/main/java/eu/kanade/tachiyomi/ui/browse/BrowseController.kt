@@ -59,7 +59,6 @@ class BrowseController : FullComposeController<BrowsePresenter>, RootController 
             // SY <--
             searchQuery = query,
             onChangeSearchQuery = { presenter.extensionsPresenter.search(it) },
-            placeholderRes = R.string.action_search_hint,
             incognitoMode = presenter.isIncognitoMode,
             downloadedOnlyMode = presenter.isDownloadOnly,
         )

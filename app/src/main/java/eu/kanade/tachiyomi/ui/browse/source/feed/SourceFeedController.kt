@@ -211,8 +211,8 @@ open class SourceFeedController :
         router.replaceTopController(BrowseSourceController(presenter.source, savedSearch = savedSearch.id).withFadeTransaction())
     }
 
-    private fun onSearchClick() {
-        onBrowseClick(presenter.searchQuery?.nullIfBlank())
+    private fun onSearchClick(query: String) {
+        onBrowseClick(query.nullIfBlank())
     }
 
     private fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {

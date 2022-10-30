@@ -11,13 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -27,14 +22,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
@@ -108,7 +100,7 @@ fun SourceFeedScreen(
     onClickSavedSearch: (SavedSearch) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
-    onClickSearch: () -> Unit,
+    onClickSearch: (String) -> Unit,
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
@@ -260,40 +252,17 @@ fun SourceFeedToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     incognitoMode: Boolean,
     downloadedOnlyMode: Boolean,
-    onClickSearch: () -> Unit,
+    onClickSearch: (String) -> Unit,
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
-    when {
-        state.searchQuery != null -> SearchToolbar(
-            searchQuery = state.searchQuery!!,
-            onChangeSearchQuery = { state.searchQuery = it },
-            onClickCloseSearch = { state.searchQuery = null },
-            onClickResetSearch = { state.searchQuery = "" },
-            scrollBehavior = scrollBehavior,
-            incognitoMode = incognitoMode,
-            downloadedOnlyMode = downloadedOnlyMode,
-            placeholderText = stringResource(R.string.action_search_hint),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onClickSearch()
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                },
-            ),
-        )
-        else -> AppBar(
-            title = title,
-            incognitoMode = incognitoMode,
-            downloadedOnlyMode = downloadedOnlyMode,
-            scrollBehavior = scrollBehavior,
-            actions = {
-                IconButton(onClick = { state.searchQuery = "" }) {
-                    Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.action_search))
-                }
-            },
-        )
-    }
+    SearchToolbar(
+        titleContent = { AppBarTitle(title) },
+        searchQuery = state.searchQuery,
+        onChangeSearchQuery = { state.searchQuery = it },
+        onSearch = onClickSearch,
+        onClickCloseSearch = { state.searchQuery = null },
+        scrollBehavior = scrollBehavior,
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
+        placeholderText = stringResource(R.string.action_search_hint),
+    )
 }
