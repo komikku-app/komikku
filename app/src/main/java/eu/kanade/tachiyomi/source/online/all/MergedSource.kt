@@ -153,7 +153,6 @@ class MergedSource : HttpSource() {
                     source = mangaSourceId,
                     url = mangaUrl,
                 ),
-                mangaSourceId,
             )
             updateManga.awaitUpdateFromSource(newManga, source.getMangaDetails(newManga.toSManga()), false)
             manga = getManga.await(newManga.id)!!

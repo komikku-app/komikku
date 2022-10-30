@@ -159,7 +159,7 @@ open class SourceFeedPresenter(
                         .subscribeOn(Schedulers.io())
                         .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
                         .map { it.mangas } // Get manga from search result.
-                        .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(), source.id) } } } // Convert to local manga.
+                        .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(source.id)) } } } // Convert to local manga.
                         .map { list -> sourceFeed.withResults(list) }
                 },
                 5,

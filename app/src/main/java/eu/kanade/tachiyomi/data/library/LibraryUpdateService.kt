@@ -734,7 +734,6 @@ class LibraryUpdateService(
                             favorite = true,
                             dateAdded = System.currentTimeMillis(),
                         ),
-                        mangaDex.id,
                     )
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)

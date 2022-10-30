@@ -171,7 +171,7 @@ open class BrowseSourcePresenter(
                     it.map { (sManga, metadata) ->
                         // SY -->
                         withIOContext {
-                            networkToLocalManga.await(sManga.toDomainManga(), sourceId)
+                            networkToLocalManga.await(sManga.toDomainManga(sourceId))
                         } to metadata
                         // SY <--
                     }

@@ -134,7 +134,6 @@ class GalleryAdder(
                         source = source.id,
                         url = cleanedMangaUrl,
                     ),
-                    source.id,
                 )
 
             // Fetch and copy details

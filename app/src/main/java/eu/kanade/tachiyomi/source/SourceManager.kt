@@ -55,13 +55,7 @@ class SourceManager(
 
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
-    private var sourcesMap = ConcurrentHashMap<Long, Source>()
-        set(value) {
-            field = value
-            sourcesMapFlow.value = field
-        }
-
-    private val sourcesMapFlow = MutableStateFlow(sourcesMap)
+    private val sourcesMapFlow = MutableStateFlow(ConcurrentHashMap<Long, Source>())
 
     private val stubSourcesMap = ConcurrentHashMap<Long, StubSource>()
 
@@ -96,7 +90,7 @@ class SourceManager(
                             registerStubSource(it.toSourceData())
                         }
                     }
-                    sourcesMap = mutableMap
+                    sourcesMapFlow.value = mutableMap
                 }
         }
 
@@ -154,18 +148,18 @@ class SourceManager(
     }
 
     fun get(sourceKey: Long): Source? {
-        return sourcesMap[sourceKey]
+        return sourcesMapFlow.value[sourceKey]
     }
 
     fun getOrStub(sourceKey: Long): Source {
-        return sourcesMap[sourceKey] ?: stubSourcesMap.getOrPut(sourceKey) {
+        return sourcesMapFlow.value[sourceKey] ?: stubSourcesMap.getOrPut(sourceKey) {
             runBlocking { createStubSource(sourceKey) }
         }
     }
 
-    fun getOnlineSources() = sourcesMap.values.filterIsInstance<HttpSource>()
+    fun getOnlineSources() = sourcesMapFlow.value.values.filterIsInstance<HttpSource>()
 
-    fun getCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>()
+    fun getCatalogueSources() = sourcesMapFlow.value.values.filterIsInstance<CatalogueSource>()
 
     fun getStubSources(): List<StubSource> {
         val onlineSourceIds = getOnlineSources().map { it.id }
@@ -173,15 +167,15 @@ class SourceManager(
     }
 
     // SY -->
-    fun getVisibleOnlineSources() = sourcesMap.values.filterIsInstance<HttpSource>().filter {
+    fun getVisibleOnlineSources() = sourcesMapFlow.value.values.filterIsInstance<HttpSource>().filter {
         it.id !in BlacklistedSources.HIDDEN_SOURCES
     }
 
-    fun getVisibleCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>().filter {
+    fun getVisibleCatalogueSources() = sourcesMapFlow.value.values.filterIsInstance<CatalogueSource>().filter {
         it.id !in BlacklistedSources.HIDDEN_SOURCES
     }
 
-    fun getDelegatedCatalogueSources() = sourcesMap.values.filterIsInstance<EnhancedHttpSource>().mapNotNull { enhancedHttpSource ->
+    fun getDelegatedCatalogueSources() = sourcesMapFlow.value.values.filterIsInstance<EnhancedHttpSource>().mapNotNull { enhancedHttpSource ->
         enhancedHttpSource.enhancedSource as? DelegatedHttpSource
     }
     // SY <--

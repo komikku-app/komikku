@@ -201,7 +201,7 @@ open class FeedPresenter(
                             .subscribeOn(Schedulers.io())
                             .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
                             .map { it.mangas } // Get manga from search result.
-                            .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(), itemUI.source.id) } } } // Convert to local manga.
+                            .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(itemUI.source.id)) } } } // Convert to local manga.
                             .map { list -> itemUI.copy(results = list) }
                     } else {
                         Observable.just(itemUI.copy(results = emptyList()))

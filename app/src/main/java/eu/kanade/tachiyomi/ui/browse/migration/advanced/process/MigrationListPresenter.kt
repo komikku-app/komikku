@@ -179,10 +179,7 @@ class MigrationListPresenter(
                                             }
 
                                             if (searchResult != null && !(searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
-                                                val localManga = networkToLocalManga.await(
-                                                    searchResult,
-                                                    source.id,
-                                                )
+                                                val localManga = networkToLocalManga.await(searchResult)
 
                                                 val chapters = if (source is EHentai) {
                                                     source.getChapterList(localManga.toSManga(), throttleManager::throttle)
@@ -219,7 +216,7 @@ class MigrationListPresenter(
                                     }
 
                                     if (searchResult != null) {
-                                        val localManga = networkToLocalManga.await(searchResult, source.id)
+                                        val localManga = networkToLocalManga.await(searchResult)
                                         val chapters = try {
                                             if (source is EHentai) {
                                                 source.getChapterList(localManga.toSManga(), throttleManager::throttle)
@@ -384,7 +381,7 @@ class MigrationListPresenter(
         migratingManga.searchResult.value = SearchResult.Searching
         presenterScope.launchIO {
             val result = migratingManga.migrationScope.async {
-                val localManga = networkToLocalManga.await(manga, source.id)
+                val localManga = networkToLocalManga.await(manga)
                 try {
                     val chapters = source.getChapterList(localManga.toSManga())
                     syncChaptersWithSource.await(chapters, localManga, source)

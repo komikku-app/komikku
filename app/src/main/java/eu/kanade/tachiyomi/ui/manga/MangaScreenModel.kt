@@ -594,7 +594,7 @@ class MangaInfoScreenModel(
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
-            mergedManga = networkToLocalManga.await(mergedManga, mergedManga.source)
+            mergedManga = networkToLocalManga.await(mergedManga)
 
             getCategories.await(originalMangaId)
                 .let {

@@ -33,7 +33,7 @@ class SmartSearchPresenter(
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {
-                    val localManga = networkToLocalManga.await(resultManga, source.id)
+                    val localManga = networkToLocalManga.await(resultManga)
                     SearchResults.Found(localManga)
                 } else {
                     SearchResults.NotFound
