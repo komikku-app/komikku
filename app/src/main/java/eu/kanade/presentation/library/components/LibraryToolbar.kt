@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.DropdownMenuItem
@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -39,7 +38,6 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.library.LibraryState
 import eu.kanade.presentation.theme.active
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.system.isTabletUi
 
 @Composable
 fun LibraryToolbar(
@@ -52,6 +50,7 @@ fun LibraryToolbar(
     onClickInvertSelection: () -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
     // SY -->
     onClickSyncExh: () -> Unit,
     // SY <--
@@ -97,9 +96,9 @@ fun LibraryToolbar(
         onClickSearch = { state.searchQuery = "" },
         onClickFilter = onClickFilter,
         onClickRefresh = onClickRefresh,
+        onClickOpenRandomManga = onClickOpenRandomManga,
         // SY -->
-        showSyncExh = state.showSyncExh,
-        onClickSyncExh = onClickSyncExh,
+        onClickSyncExh = onClickSyncExh.takeIf { state.showSyncExh },
         // SY <--
         scrollBehavior = scrollBehavior,
     )
@@ -114,9 +113,9 @@ fun LibraryRegularToolbar(
     onClickSearch: () -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
     // SY -->
-    showSyncExh: Boolean,
-    onClickSyncExh: () -> Unit,
+    onClickSyncExh: (() -> Unit)?,
     // SY <--
     scrollBehavior: TopAppBarScrollBehavior?,
 ) {
@@ -147,33 +146,46 @@ fun LibraryRegularToolbar(
             IconButton(onClick = onClickFilter) {
                 Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
             }
-            // SY -->
-            val configuration = LocalConfiguration.current
-            val moveGlobalUpdate = showSyncExh && remember { !configuration.isTabletUi() }
-            if (!moveGlobalUpdate) {
-                IconButton(onClick = onClickRefresh) {
-                    Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.pref_category_library_update))
-                }
-            }
-            var showOverflow by remember { mutableStateOf(false) }
-            if (showSyncExh) {
-                IconButton(onClick = { showOverflow = true }) {
-                    Icon(Icons.Outlined.MoreVert, contentDescription = "more")
-                }
-            }
-            DropdownMenu(showOverflow, onDismissRequest = { showOverflow = false }) {
-                if (moveGlobalUpdate) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.pref_category_library_update)) },
-                        onClick = onClickRefresh,
+            var moreExpanded by remember { mutableStateOf(false) }
+            Box {
+                IconButton(onClick = { moreExpanded = !moreExpanded }) {
+                    Icon(
+                        imageVector = Icons.Outlined.MoreVert,
+                        contentDescription = stringResource(R.string.abc_action_menu_overflow_description),
                     )
                 }
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.sync_favorites)) },
-                    onClick = onClickSyncExh,
-                )
+                val onDismissRequest = { moreExpanded = false }
+                DropdownMenu(
+                    expanded = moreExpanded,
+                    onDismissRequest = onDismissRequest,
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.pref_category_library_update)) },
+                        onClick = {
+                            onClickRefresh()
+                            onDismissRequest()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.action_open_random_manga)) },
+                        onClick = {
+                            onClickOpenRandomManga()
+                            onDismissRequest()
+                        },
+                    )
+                    // SY -->
+                    if (onClickSyncExh != null) {
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(R.string.sync_favorites)) },
+                            onClick = {
+                                onClickSyncExh()
+                                onDismissRequest()
+                            },
+                        )
+                    }
+                    // SY <--
+                }
             }
-            // SY <--
         },
         incognitoMode = incognitoMode,
         downloadedOnlyMode = downloadedOnlyMode,

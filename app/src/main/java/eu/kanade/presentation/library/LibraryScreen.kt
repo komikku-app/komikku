@@ -36,6 +36,7 @@ fun LibraryScreen(
     onClickInvertSelection: () -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: (Category?) -> Boolean,
+    onClickOpenRandomManga: () -> Unit,
     // SY -->
     onClickCleanTitles: () -> Unit,
     onClickMigrate: () -> Unit,
@@ -58,6 +59,7 @@ fun LibraryScreen(
                 onClickInvertSelection = onClickInvertSelection,
                 onClickFilter = onClickFilter,
                 onClickRefresh = { onClickRefresh(null) },
+                onClickOpenRandomManga = onClickOpenRandomManga,
                 // SY -->
                 onClickSyncExh = onClickSyncExh,
                 // SY <--
