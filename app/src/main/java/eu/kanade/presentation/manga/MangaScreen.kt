@@ -43,6 +43,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.presentation.components.ChapterDownloadAction
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
@@ -265,7 +268,7 @@ private fun MangaScreenSmallImpl(
     // SY <--
 
     val internalOnBackPressed = {
-        if (chapters.any { it.selected }) {
+        if (chapters.fastAny { it.selected }) {
             onAllChapterSelected(false)
         } else {
             onBackClicked()
@@ -325,13 +328,13 @@ private fun MangaScreenSmallImpl(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = chapters.any { !it.chapter.read } && chapters.none { it.selected },
+                visible = chapters.fastAny { !it.chapter.read } && chapters.fastAll { !it.selected },
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 ExtendedFloatingActionButton(
                     text = {
-                        val id = if (chapters.any { it.chapter.read }) {
+                        val id = if (chapters.fastAny { it.chapter.read }) {
                             R.string.action_resume
                         } else {
                             R.string.action_start
@@ -350,7 +353,7 @@ private fun MangaScreenSmallImpl(
         SwipeRefresh(
             refreshing = state.isRefreshingData,
             onRefresh = onRefresh,
-            enabled = chapters.none { it.selected },
+            enabled = chapters.fastAll { !it.selected },
             indicatorPadding = contentPadding,
         ) {
             val layoutDirection = LocalLayoutDirection.current
@@ -543,7 +546,7 @@ fun MangaScreenLargeImpl(
     SwipeRefresh(
         refreshing = state.isRefreshingData,
         onRefresh = onRefresh,
-        enabled = chapters.none { it.selected },
+        enabled = chapters.fastAll { !it.selected },
         indicatorPadding = PaddingValues(
             start = insetPadding.calculateStartPadding(layoutDirection),
             top = with(density) { topBarHeight.toDp() },
@@ -553,7 +556,7 @@ fun MangaScreenLargeImpl(
         val chapterListState = rememberLazyListState()
 
         val internalOnBackPressed = {
-            if (chapters.any { it.selected }) {
+            if (chapters.fastAny { it.selected }) {
                 onAllChapterSelected(false)
             } else {
                 onBackClicked()
@@ -566,7 +569,7 @@ fun MangaScreenLargeImpl(
                 MangaToolbar(
                     modifier = Modifier.onSizeChanged { topBarHeight = it.height },
                     title = state.manga.title,
-                    titleAlphaProvider = { if (chapters.any { it.selected }) 1f else 0f },
+                    titleAlphaProvider = { if (chapters.fastAny { it.selected }) 1f else 0f },
                     backgroundAlphaProvider = { 1f },
                     hasFilters = state.manga.chaptersFiltered(),
                     incognitoMode = state.isIncognitoMode,
@@ -607,13 +610,13 @@ fun MangaScreenLargeImpl(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             floatingActionButton = {
                 AnimatedVisibility(
-                    visible = chapters.any { !it.chapter.read } && chapters.none { it.selected },
+                    visible = chapters.fastAny { !it.chapter.read } && chapters.fastAll { !it.selected },
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
                     ExtendedFloatingActionButton(
                         text = {
-                            val id = if (chapters.any { it.chapter.read }) {
+                            val id = if (chapters.fastAny { it.chapter.read }) {
                                 R.string.action_resume
                             } else {
                                 R.string.action_start
@@ -748,29 +751,29 @@ private fun SharedMangaBottomActionMenu(
         visible = selected.isNotEmpty(),
         modifier = modifier.fillMaxWidth(fillFraction),
         onBookmarkClicked = {
-            onMultiBookmarkClicked.invoke(selected.map { it.chapter }, true)
-        }.takeIf { selected.any { !it.chapter.bookmark } },
+            onMultiBookmarkClicked.invoke(selected.fastMap { it.chapter }, true)
+        }.takeIf { selected.fastAny { !it.chapter.bookmark } },
         onRemoveBookmarkClicked = {
-            onMultiBookmarkClicked.invoke(selected.map { it.chapter }, false)
-        }.takeIf { selected.all { it.chapter.bookmark } },
+            onMultiBookmarkClicked.invoke(selected.fastMap { it.chapter }, false)
+        }.takeIf { selected.fastAll { it.chapter.bookmark } },
         onMarkAsReadClicked = {
-            onMultiMarkAsReadClicked(selected.map { it.chapter }, true)
-        }.takeIf { selected.any { !it.chapter.read } },
+            onMultiMarkAsReadClicked(selected.fastMap { it.chapter }, true)
+        }.takeIf { selected.fastAny { !it.chapter.read } },
         onMarkAsUnreadClicked = {
-            onMultiMarkAsReadClicked(selected.map { it.chapter }, false)
-        }.takeIf { selected.any { it.chapter.read || it.chapter.lastPageRead > 0L } },
+            onMultiMarkAsReadClicked(selected.fastMap { it.chapter }, false)
+        }.takeIf { selected.fastAny { it.chapter.read || it.chapter.lastPageRead > 0L } },
         onMarkPreviousAsReadClicked = {
             onMarkPreviousAsReadClicked(selected[0].chapter)
         }.takeIf { selected.size == 1 },
         onDownloadClicked = {
             onDownloadChapter!!(selected.toList(), ChapterDownloadAction.START)
         }.takeIf {
-            onDownloadChapter != null && selected.any { it.downloadState != Download.State.DOWNLOADED }
+            onDownloadChapter != null && selected.fastAny { it.downloadState != Download.State.DOWNLOADED }
         },
         onDeleteClicked = {
-            onMultiDeleteClicked(selected.map { it.chapter })
+            onMultiDeleteClicked(selected.fastMap { it.chapter })
         }.takeIf {
-            onDownloadChapter != null && selected.any { it.downloadState == Download.State.DOWNLOADED }
+            onDownloadChapter != null && selected.fastAny { it.downloadState == Download.State.DOWNLOADED }
         },
     )
 }
@@ -826,7 +829,7 @@ private fun onChapterItemClick(
 ) {
     when {
         chapterItem.selected -> onToggleSelection(false)
-        chapters.any { it.selected } -> onToggleSelection(true)
+        chapters.fastAny { it.selected } -> onToggleSelection(true)
         else -> onChapterClicked(chapterItem.chapter)
     }
 }
