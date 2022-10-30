@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
+import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import exh.ui.batchadd.BatchAddController
 
 class MoreController :
@@ -22,6 +23,7 @@ class MoreController :
     override fun ComposeContent() {
         MoreScreen(
             presenter = presenter,
+            isFDroid = activity?.isInstalledFromFDroid() ?: false,
             onClickDownloadQueue = { router.pushController(DownloadController()) },
             onClickCategories = { router.pushController(CategoryController()) },
             onClickBackupAndRestore = { router.pushController(SettingsMainController.toBackupScreen()) },

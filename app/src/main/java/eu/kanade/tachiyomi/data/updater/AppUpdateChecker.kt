@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.system.getInstallerPackageName
+import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import exh.syDebugVersion
@@ -41,7 +41,7 @@ class AppUpdateChecker {
 
                     // Check if latest version is different from current version
                     if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {
-                        if (context.getInstallerPackageName() == "org.fdroid.fdroid") {
+                        if (context.isInstalledFromFDroid()) {
                             AppUpdateResult.NewUpdateFdroidInstallation
                         } else {
                             AppUpdateResult.NewUpdate(it)
