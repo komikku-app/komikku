@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -42,8 +41,8 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
+import eu.kanade.presentation.components.OverflowMenu
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
@@ -136,27 +135,21 @@ class PreMigrationController(bundle: Bundle? = null) :
                                 contentDescription = stringResource(R.string.action_select_all),
                             )
                         }
-                        val (expanded, onExpanded) = remember { mutableStateOf(false) }
-                        Box {
-                            IconButton(onClick = { onExpanded(!expanded) }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.MoreVert,
-                                    contentDescription = stringResource(R.string.label_more),
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { onExpanded(false) },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.match_enabled_sources)) },
-                                    onClick = { matchSelection(true) },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.match_pinned_sources)) },
-                                    onClick = { matchSelection(false) },
-                                )
-                            }
+                        OverflowMenu { closeMenu ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.match_enabled_sources)) },
+                                onClick = {
+                                    matchSelection(true)
+                                    closeMenu()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.match_pinned_sources)) },
+                                onClick = {
+                                    matchSelection(false)
+                                    closeMenu()
+                                },
+                            )
                         }
                     },
                 )
