@@ -67,7 +67,7 @@ fun TextPreferenceWidget(
 fun TextPreferenceWidget(
     modifier: Modifier = Modifier,
     title: String? = null,
-    subtitle: AnnotatedString,
+    subtitle: AnnotatedString?,
     icon: ImageVector? = null,
     iconTint: Color = MaterialTheme.colorScheme.primary,
     widget: @Composable (() -> Unit)? = null,
@@ -76,15 +76,19 @@ fun TextPreferenceWidget(
     BasePreferenceWidget(
         modifier = modifier,
         title = title,
-        subcomponent = {
-            Text(
-                text = subtitle,
-                modifier = Modifier
-                    .padding(horizontal = PrefsHorizontalPadding)
-                    .secondaryItemAlpha(),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 10,
-            )
+        subcomponent = if (!subtitle.isNullOrBlank()) {
+            {
+                Text(
+                    text = subtitle,
+                    modifier = Modifier
+                        .padding(horizontal = PrefsHorizontalPadding)
+                        .secondaryItemAlpha(),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 10,
+                )
+            }
+        } else {
+            null
         },
         icon = if (icon != null) {
             {

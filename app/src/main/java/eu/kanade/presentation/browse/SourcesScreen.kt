@@ -3,6 +3,7 @@ package eu.kanade.presentation.browse
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -31,7 +33,6 @@ import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.theme.header
 import eu.kanade.presentation.util.horizontalPadding
@@ -333,19 +334,28 @@ fun SourceCategoriesDialog(
         text = {
             Column {
                 categories.forEach {
-                    PreferenceRow(
-                        title = it,
-                        onClick = {
-                            if (it in newCategories) {
-                                newCategories -= it
-                            } else {
-                                newCategories += it
-                            }
-                        },
-                        action = {
-                            Checkbox(checked = it in newCategories, onCheckedChange = null)
-                        },
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (it in newCategories) {
+                                    newCategories -= it
+                                } else {
+                                    newCategories += it
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = it in newCategories,
+                            onCheckedChange = null,
+                        )
+
+                        Text(
+                            text = it,
+                            modifier = Modifier.padding(horizontal = horizontalPadding),
+                        )
+                    }
                 }
             }
         },

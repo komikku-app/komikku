@@ -4,13 +4,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import eu.kanade.domain.source.model.Source
@@ -19,8 +15,8 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.FastScrollLazyColumn
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.Scaffold
+import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.FilterUiModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesFilterPresenter
@@ -143,13 +139,11 @@ private fun SourcesFilterHeader(
     enabled: Boolean,
     onClickItem: (String) -> Unit,
 ) {
-    PreferenceRow(
+    SwitchPreferenceWidget(
         modifier = modifier,
         title = LocaleHelper.getSourceDisplayName(language, LocalContext.current),
-        action = {
-            Switch(checked = enabled, onCheckedChange = null)
-        },
-        onClick = { onClickItem(language) },
+        checked = enabled,
+        onCheckedChanged = { onClickItem(language) },
     )
 }
 
@@ -160,14 +154,11 @@ fun SourcesFilterToggle(
     isEnabled: Boolean,
     onClickItem: () -> Unit,
 ) {
-    PreferenceRow(
+    SwitchPreferenceWidget(
         modifier = modifier,
         title = stringResource(R.string.pref_category_all_sources),
-        action = {
-            Switch(checked = isEnabled, onCheckedChange = null)
-        },
-        onClick = { onClickItem() },
-        painter = remember { ColorPainter(Color.Transparent) },
+        checked = isEnabled,
+        onCheckedChanged = { onClickItem() },
     )
 }
 

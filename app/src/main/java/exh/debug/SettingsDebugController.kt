@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,10 +47,10 @@ import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
-import eu.kanade.presentation.components.SwitchPreference
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
@@ -126,9 +127,9 @@ class SettingsDebugController : BasicFullComposeController() {
                     )
                 }
                 items(functions) { (func, name) ->
-                    PreferenceRow(
+                    TextPreferenceWidget(
                         title = name,
-                        onClick = {
+                        onPreferenceClick = {
                             scope.launch(Dispatchers.Default) {
                                 val text = try {
                                     running = true
@@ -155,16 +156,24 @@ class SettingsDebugController : BasicFullComposeController() {
                     )
                 }
                 items(toggles) { (name, pref, default) ->
-                    SwitchPreference(
-                        preference = pref,
+                    var state by pref
+                    TextPreferenceWidget(
                         title = name.replace('_', ' ')
                             .lowercase(Locale.getDefault())
                             .capitalize(Locale.getDefault()),
-                        subtitleAnnotated = if (pref.value != default) {
+                        subtitle = if (pref.value != default) {
                             AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
                         } else {
                             null
                         },
+                        widget = {
+                            Switch(
+                                checked = state,
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(start = TrailingWidgetBuffer),
+                            )
+                        },
+                        onPreferenceClick = { state = !state },
                     )
                 }
                 item {
