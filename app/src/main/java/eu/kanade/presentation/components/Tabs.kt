@@ -31,7 +31,6 @@ fun TabIndicator(currentTabPosition: TabPosition) {
 fun TabText(
     text: String,
     badgeCount: Int? = null,
-    isCurrentPage: Boolean,
 ) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
 
@@ -40,7 +39,6 @@ fun TabText(
     ) {
         Text(
             text = text,
-            color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
             // SY -->
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
