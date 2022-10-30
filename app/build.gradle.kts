@@ -173,6 +173,8 @@ dependencies {
     implementation(libs.sqldelight.android.paging)
 
     implementation(kotlinx.reflect)
+
+    implementation(platform(kotlinx.coroutines.bom))
     implementation(kotlinx.bundles.coroutines)
 
     // AndroidX libraries
