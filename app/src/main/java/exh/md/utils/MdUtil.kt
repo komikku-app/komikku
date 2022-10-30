@@ -178,6 +178,10 @@ class MdUtil {
             "(zh-Hant)",
         )
 
+        val markdownLinksRegex = "\\[([^]]+)\\]\\(([^)]+)\\)".toRegex()
+        val markdownItalicBoldRegex = "\\*+\\s*([^\\*]*)\\s*\\*+".toRegex()
+        val markdownItalicRegex = "_+\\s*([^_]*)\\s*_+".toRegex()
+
         fun buildMangaUrl(mangaUuid: String): String {
             return "/manga/$mangaUuid"
         }
@@ -215,6 +219,13 @@ class MdUtil {
             englishDescriptionTags.forEach {
                 newDescription = newDescription.replace(it, "")
             }
+
+            newDescription = newDescription
+                .substringBefore("---")
+                .replace(markdownLinksRegex, "$1")
+                .replace(markdownItalicBoldRegex, "$1")
+                .replace(markdownItalicRegex, "$1")
+
             return cleanString(newDescription).trim()
         }
 
