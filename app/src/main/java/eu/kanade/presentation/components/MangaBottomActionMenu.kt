@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -54,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.isTabletUi
 import kotlinx.coroutines.Job
@@ -218,7 +220,7 @@ fun LibraryBottomActionMenu(
     onChangeCategoryClicked: (() -> Unit)?,
     onMarkAsReadClicked: (() -> Unit)?,
     onMarkAsUnreadClicked: (() -> Unit)?,
-    onDownloadClicked: (() -> Unit)?,
+    onDownloadClicked: ((DownloadAction) -> Unit)?,
     onDeleteClicked: (() -> Unit)?,
     // SY -->
     onClickCleanTitles: (() -> Unit)?,
@@ -270,13 +272,23 @@ fun LibraryBottomActionMenu(
                     )
                 }
                 if (onDownloadClicked != null) {
-                    Button(
-                        title = stringResource(R.string.action_download),
-                        icon = Icons.Outlined.Download,
-                        toConfirm = confirm[3],
-                        onLongClick = { onLongClickItem(3) },
-                        onClick = onDownloadClicked,
-                    )
+                    Box {
+                        var downloadExpanded by remember { mutableStateOf(false) }
+                        this@Row.Button(
+                            title = stringResource(R.string.action_download),
+                            icon = Icons.Outlined.Download,
+                            toConfirm = confirm[3],
+                            onLongClick = { onLongClickItem(3) },
+                            onClick = { downloadExpanded = !downloadExpanded },
+                        )
+                        val onDismissRequest = { downloadExpanded = false }
+                        DownloadDropdownMenu(
+                            expanded = downloadExpanded,
+                            onDismissRequest = onDismissRequest,
+                            onDownloadClicked = onDownloadClicked,
+                            includeDownloadAllOption = false,
+                        )
+                    }
                 }
                 if (onDeleteClicked != null) {
                     Button(
