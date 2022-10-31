@@ -20,11 +20,11 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
-import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.history.interactor.GetNextUnreadChapters
 import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.model.LibraryManga
@@ -54,7 +54,6 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
@@ -65,7 +64,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -82,7 +80,6 @@ import exh.search.SearchEngine
 import exh.search.Text
 import exh.source.EH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
-import exh.source.isEhBasedManga
 import exh.source.isMetadataSource
 import exh.util.cancellable
 import exh.util.isLewd
@@ -123,7 +120,7 @@ class LibraryPresenter(
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
-    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getNextUnreadChapters: GetNextUnreadChapters = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -602,25 +599,6 @@ class LibraryPresenter(
         return mangaCategories.flatten().distinct().subtract(common)
     }
 
-    fun shouldDownloadChapter(manga: Manga, chapter: Chapter): Boolean {
-        val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
-        val downloaded = downloadManager.isChapterDownloaded(chapter.name, chapter.scanlator, manga.title, manga.source)
-        val state = when {
-            activeDownload != null -> activeDownload.status
-            downloaded -> Download.State.DOWNLOADED
-            else -> Download.State.NOT_DOWNLOADED
-        }
-        return state == Download.State.NOT_DOWNLOADED
-    }
-
-    suspend fun getNotDownloadedUnreadChapters(manga: Manga): List<Chapter> {
-        return getChapterByMangaId.await(manga.id)
-            .filter { chapter ->
-                !chapter.read && shouldDownloadChapter(manga, chapter)
-            }
-            .sortedWith(getChapterSort(manga, sortDescending = false))
-    }
-
     /**
      * Queues the amount specified of unread chapters from the list of mangas given.
      *
@@ -630,31 +608,48 @@ class LibraryPresenter(
     fun downloadUnreadChapters(mangas: List<Manga>, amount: Int?) {
         presenterScope.launchNonCancellable {
             mangas.forEach { manga ->
+                // SY -->
                 if (manga.source == MERGED_SOURCE_ID) {
-                    val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
                     val mergedMangas = getMergedMangaById.await(manga.id)
-                    mergedSource
-                        .getChapters(manga.id)
-                        .filter { !it.read }
+                        .associateBy { it.id }
+                    getNextUnreadChapters.await(manga.id)
                         .let { if (amount != null) it.take(amount) else it }
                         .groupBy { it.mangaId }
                         .forEach ab@{ (mangaId, chapters) ->
-                            val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@ab
-                            downloadManager.downloadChapters(mergedManga, chapters.map(Chapter::toDbChapter))
-                        }
-                } else {
-                    /* SY --> */
-                    val chapters = if (manga.isEhBasedManga()) {
-                        getChapterByMangaId.await(manga.id).minByOrNull { it.sourceOrder }
-                            ?.takeUnless { it.read }
-                            .let(::listOfNotNull)
-                    } else {
-                        /* SY <-- */ getNotDownloadedUnreadChapters(manga)
-                            .let { if (amount != null) it.take(amount) else it }
-                    }
+                            val mergedManga = mergedMangas[mangaId] ?: return@ab
+                            val downloadChapters = chapters.filterNot { chapter ->
+                                downloadManager.queue.any { chapter.id == it.chapter.id } ||
+                                    downloadManager.isChapterDownloaded(
+                                        chapter.name,
+                                        chapter.scanlator,
+                                        mergedManga.ogTitle,
+                                        mergedManga.source,
+                                    )
+                            }
 
-                    downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
+                            downloadManager.downloadChapters(mergedManga, downloadChapters.map(Chapter::toDbChapter))
+                        }
+
+                    return@forEach
                 }
+
+                // SY <--
+                val chapters = getNextUnreadChapters.await(manga.id)
+                    .filterNot { chapter ->
+                        downloadManager.queue.any { chapter.id == it.chapter.id } ||
+                            downloadManager.isChapterDownloaded(
+                                chapter.name,
+                                chapter.scanlator,
+                                // SY -->
+                                manga.ogTitle,
+                                // SY <--
+                                manga.source,
+
+                            )
+                    }
+                    .let { if (amount != null) it.take(amount) else it }
+
+                downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
             }
         }
     }
@@ -1082,18 +1077,8 @@ class LibraryPresenter(
 
     // SY -->
     /** Returns first unread chapter of a manga */
-    fun getFirstUnread(manga: Manga): Chapter? {
-        val chapters = if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.id)
-        } else {
-            runBlocking { getChapterByMangaId.await(manga.id) }
-        }
-        return if (manga.isEhBasedManga()) {
-            val chapter = chapters.sortedBy { it.sourceOrder }.getOrNull(0)
-            if (chapter?.read == false) chapter else null
-        } else {
-            chapters.sortedByDescending { it.sourceOrder }.find { !it.read }
-        }
+    suspend fun getFirstUnread(manga: Manga): Chapter? {
+        return getNextUnreadChapters.await(manga.id).firstOrNull()
     }
 
     private fun getGroupedMangaItems(groupType: Int, libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {

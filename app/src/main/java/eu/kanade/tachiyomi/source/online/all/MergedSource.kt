@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import eu.kanade.domain.category.interactor.GetCategories
-import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
@@ -27,19 +26,16 @@ import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import okhttp3.Response
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class MergedSource : HttpSource() {
     private val getManga: GetManga by injectLazy()
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
-    private val getMergedChaptersByMangaId: GetMergedChapterByMangaId by injectLazy()
+    private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
     private val networkToLocalManga: NetworkToLocalManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val getCategories: GetCategories by injectLazy()
@@ -76,18 +72,12 @@ class MergedSource : HttpSource() {
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         return withIOContext {
-            val mergedManga = getManga.await(manga.url, id) ?: throw Exception("merged manga not in db")
+            val mergedManga = requireNotNull(getManga.await(manga.url, id)) { "merged manga not in db" }
             val mangaReferences = getMergedReferencesById.await(mergedManga.id)
                 .apply {
-                    if (isEmpty()) {
-                        throw IllegalArgumentException(
-                            "Manga references are empty, info unavailable, merge is likely corrupted",
-                        )
-                    }
-                    if (size == 1 && first().mangaSourceId == MERGED_SOURCE_ID) {
-                        throw IllegalArgumentException(
-                            "Manga references contain only the merged reference, merge is likely corrupted",
-                        )
+                    require(isNotEmpty()) { "Manga references are empty, info unavailable, merge is likely corrupted" }
+                    require(!(size == 1 && first().mangaSourceId == MERGED_SOURCE_ID)) {
+                        "Manga references contain only the merged reference, merge is likely corrupted"
                     }
                 }
 
@@ -102,77 +92,14 @@ class MergedSource : HttpSource() {
         }
     }
 
-    // TODO more chapter dedupe
-    suspend fun transformMergedChapters(mangaId: Long, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
-        val mangaReferences = getMergedReferencesById.await(mangaId)
-        val chapters = if (editScanlators) {
-            val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
-            chapterList.map { chapter ->
-                val source = sources.firstOrNull { chapter.mangaId == it.second }?.first
-                if (source != null) {
-                    chapter.copy(
-                        scanlator = if (chapter.scanlator.isNullOrBlank()) {
-                            source.name
-                        } else {
-                            "$source: ${chapter.scanlator}"
-                        },
-                    )
-                } else {
-                    chapter
-                }
-            }
-        } else {
-            chapterList
-        }
-        return if (dedupe) dedupeChapterList(mangaReferences, chapters) else chapters
-    }
-
-    fun getChaptersAsBlocking(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return runBlocking { getChapters(mangaId, editScanlators, dedupe) }
-    }
-
-    suspend fun getChapters(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return transformMergedChapters(mangaId, getMergedChaptersByMangaId.await(mangaId), editScanlators, dedupe)
-    }
-
-    private fun dedupeChapterList(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>): List<Chapter> {
-        return when (mangaReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }?.chapterSortMode) {
-            MergedMangaReference.CHAPTER_SORT_NO_DEDUPE, MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
-            MergedMangaReference.CHAPTER_SORT_PRIORITY -> chapterList
-            MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> {
-                findSourceWithMostChapters(chapterList)?.let { mangaId ->
-                    chapterList.filter { it.mangaId == mangaId }
-                } ?: chapterList
-            }
-            MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> {
-                findSourceWithHighestChapterNumber(chapterList)?.let { mangaId ->
-                    chapterList.filter { it.mangaId == mangaId }
-                } ?: chapterList
-            }
-            else -> chapterList
-        }
-    }
-
-    private fun findSourceWithMostChapters(chapterList: List<Chapter>): Long? {
-        return chapterList.groupBy { it.mangaId }.maxByOrNull { it.value.size }?.key
-    }
-
-    private fun findSourceWithHighestChapterNumber(chapterList: List<Chapter>): Long? {
-        return chapterList.maxByOrNull { it.chapterNumber }?.mangaId
-    }
-
-    suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return withIOContext {
-            fetchChaptersAndSync(manga, downloadChapters)
-            getChapters(manga.id, editScanlators, dedupe)
-        }
+    suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true) {
+        fetchChaptersAndSync(manga, downloadChapters)
     }
 
     suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): List<Chapter> {
-        val syncChaptersWithSource = Injekt.get<SyncChaptersWithSource>()
         val mangaReferences = getMergedReferencesById.await(manga.id)
-        if (mangaReferences.isEmpty()) {
-            throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
+        require(mangaReferences.isNotEmpty()) {
+            "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
         val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(getCategories.await(manga.id).map { it.id }, downloadPreferences)

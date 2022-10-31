@@ -8,6 +8,7 @@ import androidx.annotation.ColorInt
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
@@ -121,6 +122,7 @@ class ReaderPresenter(
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     private val getMergedManga: GetMergedManga = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
+    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     // SY <--
 ) : BasePresenter<ReaderActivity>() {
 
@@ -183,8 +185,7 @@ class ReaderPresenter(
         // SY <--
         val chapters = runBlocking {
             /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
-                (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
-                    .getChapters(manga.id!!)
+                getMergedChapterByMangaId.await(manga.id!!)
             } else {
                 /* SY <-- */ getChapterByMangaId.await(manga.id!!)
             }

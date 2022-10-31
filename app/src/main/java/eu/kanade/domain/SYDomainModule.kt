@@ -120,7 +120,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetMergedManga(get()) }
         addFactory { GetMergedMangaById(get()) }
         addFactory { GetMergedReferencesById(get()) }
-        addFactory { GetMergedChapterByMangaId(get()) }
+        addFactory { GetMergedChapterByMangaId(get(), get(), get()) }
         addFactory { InsertMergedReference(get()) }
         addFactory { UpdateMergedSettings(get()) }
         addFactory { DeleteByMergeId(get()) }

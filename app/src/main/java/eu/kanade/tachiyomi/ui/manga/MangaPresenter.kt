@@ -266,7 +266,7 @@ class MangaPresenter(
                 .distinctUntilChanged()
                 // SY -->
                 .combine(
-                    getMergedChapterByMangaId.subscribe(mangaId)
+                    getMergedChapterByMangaId.subscribe(mangaId, true)
                         .distinctUntilChanged(),
                 ) { (manga, chapters), mergedChapters ->
                     if (manga.source == MERGED_SOURCE_ID) {
@@ -351,7 +351,7 @@ class MangaPresenter(
         presenterScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
-            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
+            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId, true) else getMangaAndChapters.awaitChapters(mangaId))
                 .toChapterItemsParams(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
@@ -1041,7 +1041,6 @@ class MangaPresenter(
                         }
                     } else {
                         successState.source.fetchChaptersForMergedManga(successState.manga, manualFetch, true, dedupe)
-                        Unit
                     }
                 }
             } catch (e: Throwable) {

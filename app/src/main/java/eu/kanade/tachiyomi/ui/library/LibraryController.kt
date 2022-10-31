@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
@@ -509,10 +510,14 @@ class LibraryController(
 
     private fun startReading(manga: Manga) {
         val activity = activity ?: return
-        val chapter = presenter.getFirstUnread(manga) ?: return
-        val intent = ReaderActivity.newIntent(activity, manga.id, chapter.id)
-        presenter.clearSelection()
-        startActivity(intent)
+        viewScope.launchIO {
+            val chapter = presenter.getFirstUnread(manga) ?: return@launchIO
+            val intent = ReaderActivity.newIntent(activity, manga.id, chapter.id)
+            presenter.clearSelection()
+            withUIContext {
+                startActivity(intent)
+            }
+        }
     }
     // <-- EXH
 }

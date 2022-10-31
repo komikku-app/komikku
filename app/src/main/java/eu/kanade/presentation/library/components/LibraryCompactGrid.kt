@@ -73,12 +73,12 @@ fun LibraryCompactGrid(
                     )
                 },
                 // SY -->
-                buttonTop = if (showStartReadingButton && showTitle) {
+                buttonTop = if (showStartReadingButton && showTitle && libraryItem.unreadCount > 0) {
                     { StartReadingButton(onOpenReader = { onOpenReader(libraryItem.libraryManga) }) }
                 } else {
                     null
                 },
-                buttonBottom = if (showStartReadingButton && !showTitle) {
+                buttonBottom = if (showStartReadingButton && !showTitle && libraryItem.unreadCount > 0) {
                     { StartReadingButton(onOpenReader = { onOpenReader(libraryItem.libraryManga) }) }
                 } else {
                     null

@@ -7,8 +7,6 @@ import eu.kanade.domain.download.interactor.DeleteDownload
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.repository.MangaRepository
-import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.MERGED_SOURCE_ID
@@ -19,7 +17,9 @@ class SetReadStatus(
     private val deleteDownload: DeleteDownload,
     private val mangaRepository: MangaRepository,
     private val chapterRepository: ChapterRepository,
-    private val sourceManager: SourceManager,
+    // SY -->
+    private val getMergedChapterByMangaId: GetMergedChapterByMangaId,
+    // SY <--
 ) {
 
     private val mapper = { chapter: Chapter, read: Boolean ->
@@ -75,11 +75,10 @@ class SetReadStatus(
 
     // SY -->
     private suspend fun awaitMerged(mangaId: Long, read: Boolean) = withNonCancellableContext f@{
-        val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
         return@f await(
             read = read,
-            chapters = mergedSource
-                .getChapters(mangaId, dedupe = false)
+            chapters = getMergedChapterByMangaId
+                .await(mangaId, dedupe = false)
                 .toTypedArray(),
         )
     }

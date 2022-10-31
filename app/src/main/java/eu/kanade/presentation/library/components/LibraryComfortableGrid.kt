@@ -72,7 +72,7 @@ fun LibraryComfortableGrid(
                     )
                 },
                 // SY -->
-                buttonBottom = if (showStartReadingButton) {
+                buttonBottom = if (showStartReadingButton && libraryItem.unreadCount > 0) {
                     { StartReadingButton(onOpenReader = { onOpenReader(libraryItem.libraryManga) }) }
                 } else {
                     null
