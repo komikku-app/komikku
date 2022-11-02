@@ -31,7 +31,8 @@
     <!-- Subsections -->
     <string name="pref_category_all_sources">所有来源</string>
     <string name="pref_category_fork">分支特色设置</string>
-
+    <string name="pref_ehentai_summary">E-Hentai、ExHentai 登录、画廊同步</string>
+    <string name="pref_mangadex_summary">MangaDex 登录、关注同步</string>
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai 网站账户设置</string>
@@ -385,6 +386,7 @@
     <!-- Extension section -->
     <string name="ext_redundant">废弃</string>
     <string name="redundant_extension_message">该扩展已废弃，将不会在此版本的 Tachiyomi 上工作。</string>
+    <string name="repo_extension_message">该扩展来自外部仓库。点击以浏览该仓库。</string>
 
     <!-- Extension Repos -->
     <string name="information_empty_repos">你没有额外的仓库。点击加号按钮以创建一个用于添加外部扩展。</string>
@@ -656,24 +658,24 @@
     <string name="similar">与 %1$s 相似</string>
     <string name="similar_no_results">未找到相似漫画</string>
 
-    <!-- Mangadex relations-->
+    <!-- MangaDex relations-->
     <string name="relation_similar">相似</string>
     <string name="relation_monochrome">单色</string>
     <string name="relation_main_story">主要故事</string>
     <string name="relation_adapted_from">改编自</string>
     <string name="relation_based_on">基于</string>
-    <string name="relation_prequel">前篇</string>
+    <string name="relation_prequel">前传</string>
     <string name="relation_side_story">外传</string>
     <string name="relation_doujinshi">同人志</string>
     <string name="relation_same_franchise">同一系列</string>
     <string name="relation_shared_universe">平行宇宙</string>
     <string name="relation_sequel">续篇</string>
     <string name="relation_spin_off">衍生作品</string>
-    <string name="relation_alternate_story">架空历史</string>
+    <string name="relation_alternate_story">备用故事</string>
     <string name="relation_preserialization">预连载</string>
     <string name="relation_colored">全彩</string>
     <string name="relation_serialization">系列</string>
-    <string name="relation_alternate_version">候补版本</string>
+    <string name="relation_alternate_version">不同演绎</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
