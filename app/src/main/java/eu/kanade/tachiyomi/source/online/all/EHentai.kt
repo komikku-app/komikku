@@ -191,7 +191,14 @@ class EHentai(
                     tags += parsedTags
 
                     if (infoElements != null) {
-                        genre = getGenre(infoElements.getOrNull(1))
+                        genre = getGenre(
+                            infoElements.getOrNull(1),
+                            genreString = infoElements.getOrNull(1)
+                                ?.text()
+                                ?.nullIfBlank()
+                                ?.lowercase()
+                                ?.replace(" ", ""),
+                        )
 
                         datePosted = getDateTag(infoElements.getOrNull(2))
 
@@ -245,9 +252,7 @@ class EHentai(
                     it.text() == ">"
                 }
                 ?: select(".searchnav >div > a")
-                    .find { it.attr("href").contains("next") }
-                    ?.let { true }
-                ?: false
+                    .any { it.attr("href").contains("next") }
         } else {
             parsedLocation.queryParameter(REVERSE_PARAM)!!.toBoolean()
         }
