@@ -2,9 +2,9 @@
 debugOverlay = "1.1.3"
 
 [libraries]
-firebase-analytics = "com.google.firebase:firebase-analytics-ktx:21.0.0"
-firebase-crashlytics-ktx = "com.google.firebase:firebase-crashlytics-ktx:18.2.11"
-firebase-crashlytics-gradle = "com.google.firebase:firebase-crashlytics-gradle:2.8.0"
+firebase-analytics = "com.google.firebase:firebase-analytics-ktx:21.2.0"
+firebase-crashlytics-ktx = "com.google.firebase:firebase-crashlytics-ktx:18.3.1"
+firebase-crashlytics-gradle = "com.google.firebase:firebase-crashlytics-gradle:2.9.2"
 
 changelog = "com.github.gabrielemariotti.changeloglib:changelog:2.1.0"
 simularity = "info.debatty:java-string-similarity:2.0.0"
