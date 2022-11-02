@@ -1,12 +1,13 @@
 package eu.kanade.data.source
 
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
+import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.lang.awaitSingle
+import exh.metadata.metadata.EHentaiSearchMetadata
 
-abstract class EHentaiPagingSource(source: CatalogueSource) : SourcePagingSource(source) {
+abstract class EHentaiPagingSource(override val source: EHentai) : SourcePagingSource(source) {
 
     private var lastMangaLink: String? = null
 
@@ -15,7 +16,13 @@ abstract class EHentaiPagingSource(source: CatalogueSource) : SourcePagingSource
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         val lastMangaLink = lastMangaLink
 
-        val mangasPage = fetchNextPage(currentPage)
+        val gid = if (lastMangaLink != null && source.exh) {
+            EHentaiSearchMetadata.galleryId(lastMangaLink).toInt()
+        } else {
+            null
+        }
+
+        val mangasPage = fetchNextPage(gid ?: currentPage)
 
         mangasPage.mangas.lastOrNull()?.let {
             this.lastMangaLink = it.url
@@ -44,19 +51,19 @@ abstract class EHentaiPagingSource(source: CatalogueSource) : SourcePagingSource
     }
 }
 
-class EHentaiSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) : EHentaiPagingSource(source) {
+class EHentaiSearchPagingSource(source: EHentai, val query: String, val filters: FilterList) : EHentaiPagingSource(source) {
     override suspend fun fetchNextPage(currentPage: Int): MangasPage {
         return source.fetchSearchManga(currentPage, query, filters).awaitSingle()
     }
 }
 
-class EHentaiPopularPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
+class EHentaiPopularPagingSource(source: EHentai) : EHentaiPagingSource(source) {
     override suspend fun fetchNextPage(currentPage: Int): MangasPage {
         return source.fetchPopularManga(currentPage).awaitSingle()
     }
 }
 
-class EHentaiLatestPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
+class EHentaiLatestPagingSource(source: EHentai) : EHentaiPagingSource(source) {
     override suspend fun fetchNextPage(currentPage: Int): MangasPage {
         return source.fetchLatestUpdates(currentPage).awaitSingle()
     }

@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.metadata.metadata.base.RaisedSearchMetadata
 
 abstract class SourcePagingSource(
-    protected val source: CatalogueSource,
+    protected open val source: CatalogueSource,
 ) : SourcePagingSourceType() {
 
     abstract suspend fun requestNextPage(currentPage: Int): MangasPage

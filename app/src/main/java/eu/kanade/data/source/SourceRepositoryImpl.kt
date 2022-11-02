@@ -9,8 +9,8 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.source.MERGED_SOURCE_ID
-import exh.source.isEhBasedSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -62,7 +62,7 @@ class SourceRepositoryImpl(
     ): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         // SY -->
-        if (source.isEhBasedSource()) {
+        if (source is EHentai) {
             return EHentaiSearchPagingSource(source, query, filterList)
         }
         // SY <--
@@ -72,7 +72,7 @@ class SourceRepositoryImpl(
     override fun getPopular(sourceId: Long): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         // SY -->
-        if (source.isEhBasedSource()) {
+        if (source is EHentai) {
             return EHentaiPopularPagingSource(source)
         }
         // SY <--
@@ -82,7 +82,7 @@ class SourceRepositoryImpl(
     override fun getLatest(sourceId: Long): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         // SY -->
-        if (source.isEhBasedSource()) {
+        if (source is EHentai) {
             return EHentaiLatestPagingSource(source)
         }
         // SY <--

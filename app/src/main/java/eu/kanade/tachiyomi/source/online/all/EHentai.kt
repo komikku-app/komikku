@@ -240,9 +240,14 @@ class EHentai(
         val hasNextPage = if (parsedLocation == null ||
             !parsedLocation.queryParameterNames.contains(REVERSE_PARAM)
         ) {
-            select("a[onclick=return false]").last()?.let {
-                it.text() == ">"
-            } ?: false
+            select("a[onclick=return false]").last()
+                ?.let {
+                    it.text() == ">"
+                }
+                ?: select(".searchnav >div > a")
+                    .find { it.attr("href").contains("next") }
+                    ?.let { true }
+                ?: false
         } else {
             parsedLocation.queryParameter(REVERSE_PARAM)!!.toBoolean()
         }
@@ -528,10 +533,18 @@ class EHentai(
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
     override fun latestUpdatesParse(response: Response) = genericMangaParse(response)
 
-    private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cacheControl: CacheControl? = null): Request {
+    private fun exGet(url: String, next: Int? = null, additionalHeaders: Headers? = null, cacheControl: CacheControl? = null): Request {
         return GET(
-            if (page != null) {
-                addParam(url, "page", (page - 1).toString())
+            if (next != null) {
+                if (exh) {
+                    if (next > 1) {
+                        addParam(url, "next", next.toString())
+                    } else {
+                        url
+                    }
+                } else {
+                    addParam(url, "page", (next - 1).toString())
+                }
             } else {
                 url
             },
@@ -777,7 +790,7 @@ class EHentai(
                 client.newCall(
                     exGet(
                         favoriteUrl,
-                        page = page,
+                        next = page,
                         cacheControl = CacheControl.FORCE_NETWORK,
                     ),
                 ).awaitResponse()
@@ -796,7 +809,7 @@ class EHentai(
             }
             // Next page
 
-            page++
+            page = parsed.first.lastOrNull()?.manga?.url?.let { EHentaiSearchMetadata.galleryId(it) }?.toInt() ?: 0
         } while (parsed.second)
 
         return Pair(result.toList(), favNames.orEmpty())
