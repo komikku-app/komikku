@@ -19,6 +19,8 @@ if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
+val SUPPORTED_ABIS = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+
 android {
     namespace = "eu.kanade.tachiyomi"
     compileSdk = AndroidConfig.compileSdk
@@ -37,9 +39,18 @@ android {
         buildConfigField("boolean", "INCLUDE_UPDATER", "false")
 
         ndk {
-            abiFilters += setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            abiFilters += SUPPORTED_ABIS
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include(*SUPPORTED_ABIS.toTypedArray())
+            isUniversalApk = true
+        }
     }
 
     buildTypes {

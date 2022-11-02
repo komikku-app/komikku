@@ -6,8 +6,9 @@ on:
     - 'master'
  
 jobs:
-  check_wrapper:
-    name: Validate Gradle Wrapper
+  trigger_preview_build:
+    name: Trigger preview build
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -16,15 +17,6 @@ jobs:
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
-
-  preview:
-    name: Build app preview
-    needs: check_wrapper
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Clone repo
-        uses: actions/checkout@v2
 
       - name: TAG - Bump version and push tag
         uses: anothrNick/github-tag-action@1.39.0
