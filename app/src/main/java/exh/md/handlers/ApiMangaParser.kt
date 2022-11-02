@@ -72,7 +72,7 @@ class ApiMangaParser(
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.cleanString(MdUtil.getTitleFromManga(mangaAttributesDto, lang))
+                title = MdUtil.getTitleFromManga(mangaAttributesDto, lang)
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 val mangaRelationshipsDto = mangaDto.data.relationships
@@ -243,7 +243,7 @@ class ApiMangaParser(
             }
         }*/
 
-        val name = MdUtil.cleanString(chapterName.toString())
+        val name = chapterName.toString()
         // Convert from unix time
         val dateUpload = MdUtil.parseDate(attributes.publishAt)
 
@@ -262,7 +262,7 @@ class ApiMangaParser(
             .toSet()
             .ifEmpty { setOf("No Group") }
 
-        val scanlator = MdUtil.cleanString(MdUtil.getScanlatorString(scanlatorName))
+        val scanlator = MdUtil.getScanlatorString(scanlatorName)
 
         // chapter.mangadex_chapter_id = MdUtil.getChapterId(chapter.url)
 

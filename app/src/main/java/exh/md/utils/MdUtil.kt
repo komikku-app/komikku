@@ -73,111 +73,6 @@ class MdUtil {
 
         val validOneShotFinalChapters = listOf("0", "1")
 
-        val englishDescriptionTags = listOf(
-            "[b][u]English:",
-            "[b][u]English",
-            "English:",
-            "English :",
-            "[English]:",
-            "English Translaton:",
-            "[B][ENG][/B]",
-        )
-
-        val bbCodeToRemove = listOf(
-            "list", "*", "hr", "u", "b", "i", "s", "center", "spoiler=",
-        )
-        val descriptionLanguages = listOf(
-            "=FRANCAIS=",
-            "[b] Spanish: [/ b]",
-            "[b][u]Chinese",
-            "[b][u]French",
-            "[b][u]German / Deutsch",
-            "[b][u]Russian",
-            "[b][u]Spanish",
-            "[b][u]Vietnamese",
-            "[b]External Links",
-            "[b]Link[/b]",
-            "[b]Links:",
-            "[Espa&ntilde;ol]:",
-            "[hr]Fr:",
-            "[hr]TH",
-            "[INDO]",
-            "[PTBR]",
-            "[right][b][u]Persian",
-            "[RUS]",
-            "[u]Russian",
-            "\r\n\r\nItalian\r\n",
-            "Arabic /",
-            "Descriptions in Other Languages",
-            "Espanol",
-            "[Espa&ntilde;",
-            "Espa&ntilde;",
-            "Farsi/",
-            "Fran&ccedil;ais",
-            "French - ",
-            "Francois",
-            "French:",
-            "French/",
-            "French /",
-            "German/",
-            "German /",
-            "Hindi /",
-            "Bahasa Indonesia",
-            "Indonesia:",
-            "Indonesian:",
-            "Indonesian :",
-            "Indo:",
-            "[u]Indonesian",
-            "Italian / ",
-            "Italian Summary:",
-            "Italian/",
-            "Italiano",
-            "Italian:",
-            "Italian summary:",
-            "Japanese /",
-            "Original Japanese",
-            "Official Japanese Translation",
-            "Official Chinese Translation",
-            "Official French Translation",
-            "Official Indonesian Translation",
-            "Links:",
-            "Pasta-Pizza-Mandolino/Italiano",
-            "Persian/فارسی",
-            "Persian /فارسی",
-            "Polish /",
-            "Polish Summary /",
-            "Polish/",
-            "Polski",
-            "Portugu&ecirc;s",
-            "Portuguese (BR)",
-            "PT/BR:",
-            "Pt/Br:",
-            "Pt-Br:",
-            "Portuguese /",
-            "[right]",
-            "R&eacute;sum&eacute; Fran&ccedil;ais",
-            "R&eacute;sume Fran&ccedil;ais",
-            "R&Eacute;SUM&Eacute; FRANCAIS :",
-            "RUS:",
-            "Ru/Pyc",
-            "\\r\\nRUS\\r\\n",
-            "Russia/",
-            "Russian /",
-            "Spanish:",
-            "Spanish /",
-            "Spanish Summary:",
-            "Spanish/",
-            "T&uuml;rk&ccedil;e",
-            "Thai:",
-            "Turkish /",
-            "Turkish/",
-            "Turkish:",
-            "Русский",
-            "العربية",
-            "정보",
-            "(zh-Hant)",
-        )
-
         val markdownLinksRegex = "\\[([^]]+)\\]\\(([^)]+)\\)".toRegex()
         val markdownItalicBoldRegex = "\\*+\\s*([^\\*]*)\\s*\\*+".toRegex()
         val markdownItalicRegex = "_+\\s*([^_]*)\\s*_+".toRegex()
@@ -191,42 +86,13 @@ class MdUtil {
 
         fun getChapterId(url: String) = url.substringAfterLast("/")
 
-        fun cleanString(string: String): String {
-            var cleanedString = string
-
-            bbCodeToRemove.forEach {
-                cleanedString = cleanedString.replace("[$it]", "", true)
-                    .replace("[/$it]", "", true)
-            }
-
-            val bbRegex =
-                """\[(\w+)[^]]*](.*?)\[/\1]""".toRegex()
-
-            // Recursively remove nested bbcode
-            while (bbRegex.containsMatchIn(cleanedString)) {
-                cleanedString = cleanedString.replace(bbRegex, "$2")
-            }
-
-            return Parser.unescapeEntities(cleanedString, false)
-        }
-
         fun cleanDescription(string: String): String {
-            var newDescription = string
-            descriptionLanguages.forEach {
-                newDescription = newDescription.substringBefore(it)
-            }
-
-            englishDescriptionTags.forEach {
-                newDescription = newDescription.replace(it, "")
-            }
-
-            newDescription = newDescription
+            return Parser.unescapeEntities(string, false)
                 .substringBefore("---")
                 .replace(markdownLinksRegex, "$1")
                 .replace(markdownItalicBoldRegex, "$1")
                 .replace(markdownItalicRegex, "$1")
-
-            return cleanString(newDescription).trim()
+                .trim()
         }
 
         fun getImageUrl(attr: String): String {
@@ -279,7 +145,7 @@ class MdUtil {
         fun createMangaEntry(json: MangaDataDto, lang: String): SManga {
             return SManga(
                 url = buildMangaUrl(json.id),
-                title = cleanString(getTitleFromManga(json.attributes, lang)),
+                title = getTitleFromManga(json.attributes, lang),
                 thumbnail_url = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
