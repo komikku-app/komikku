@@ -14,6 +14,9 @@
 *.apk
 app/**/output.json
 
+# Unnecessary file
+*.swp
+
 TODO.md
 CHANGELOG.md
 /captures
