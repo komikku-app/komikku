@@ -233,9 +233,6 @@ class LibraryController(
         settingsSheet = LibrarySettingsSheet(router) { group ->
             when (group) {
                 is LibrarySettingsSheet.Filter.FilterGroup -> onFilterChanged()
-                // SY -->
-                is LibrarySettingsSheet.Grouping.InternalGroup -> onGroupChanged()
-                // SY <--
                 else -> {} // Handled via different mechanisms
             }
         }
@@ -266,14 +263,6 @@ class LibraryController(
             activity?.invalidateOptionsMenu()
         }
     }
-
-    // SY -->
-    private fun onGroupChanged() {
-        viewScope.launchUI {
-            presenter.requestGroupUpdate()
-        }
-    }
-    // SY <--
 
     fun search(query: String) {
         presenter.searchQuery = query

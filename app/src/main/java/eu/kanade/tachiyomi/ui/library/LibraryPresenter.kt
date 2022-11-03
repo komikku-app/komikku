@@ -169,11 +169,6 @@ class LibraryPresenter(
     private val _filterChanges: Channel<Unit> = Channel(Int.MAX_VALUE)
     private val filterChanges = _filterChanges.receiveAsFlow().onStart { emit(Unit) }
 
-    // SY -->
-    private val _groupChanges: Channel<Unit> = Channel(Int.MAX_VALUE)
-    private val groupChanges = _groupChanges.receiveAsFlow().onStart { emit(Unit) }
-    // SY <--
-
     private var librarySubscription: Job? = null
 
     // SY -->
@@ -218,7 +213,7 @@ class LibraryPresenter(
                     getTracksPerManga.subscribe(),
                     filterChanges,
                     // SY -->
-                    groupChanges,
+                    libraryPreferences.groupLibraryBy().changes(),
                     libraryPreferences.librarySortingMode().changes(),
                     // SY <--
                 ) { library, tracks, _, _, _ ->
@@ -565,15 +560,6 @@ class LibraryPresenter(
     suspend fun requestFilterUpdate() = withIOContext {
         _filterChanges.send(Unit)
     }
-
-    // SY -->
-    /**
-     * Requests the library to be grouped.
-     */
-    suspend fun requestGroupUpdate() = withIOContext {
-        _groupChanges.send(Unit)
-    }
-    // SY <--
 
     /**
      * Called when a manga is opened.
