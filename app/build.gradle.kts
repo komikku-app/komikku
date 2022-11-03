@@ -57,6 +57,7 @@ android {
         named("debug") {
             versionNameSuffix = "-${getCommitCount()}"
             applicationIdSuffix = ".debug"
+            isPseudoLocalesEnabled = true
         }
         create("releaseTest") {
             applicationIdSuffix = ".rt"
