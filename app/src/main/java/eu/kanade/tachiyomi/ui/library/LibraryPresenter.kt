@@ -213,12 +213,20 @@ class LibraryPresenter(
          */
         if (librarySubscription == null || librarySubscription!!.isCancelled) {
             librarySubscription = presenterScope.launchIO {
-                combine(getLibraryFlow(), getTracksPerManga.subscribe(), filterChanges /* SY --> */, groupChanges/* SY <-- */) { library, tracks, _, _ ->
+                combine(
+                    getLibraryFlow(),
+                    getTracksPerManga.subscribe(),
+                    filterChanges,
+                    // SY -->
+                    groupChanges,
+                    libraryPreferences.librarySortingMode().changes(),
+                    // SY <--
+                ) { library, tracks, _, _, _ ->
                     library.mangaMap
-                        .applyFilters(tracks)
-                        .applySort(library.categories)
                         // SY -->
-                        .applyGrouping(library.categories)
+                        .applyGrouping(library.categories).let {
+                            it.copy(mangaMap = it.mangaMap.applyFilters(tracks).applySort(it.categories))
+                        }
                     // SY <--
                 }
                     .collectLatest {
