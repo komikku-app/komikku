@@ -21,8 +21,8 @@ class SourceFilterController : FullComposeController<SourcesFilterPresenter>() {
                 presenter.toggleSource(source)
             },
             // SY -->
-            onClickSources = { isEnable, sources ->
-                presenter.toggleSources(isEnable, sources)
+            onClickSources = { enable, sources ->
+                presenter.toggleSources(enable, sources)
             },
             // SY <--
         )

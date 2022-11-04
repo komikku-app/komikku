@@ -63,7 +63,6 @@ import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
-import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.repository.FeedSavedSearchRepository
 import eu.kanade.domain.source.repository.SavedSearchRepository
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -80,7 +79,6 @@ class SYDomainModule : InjektModule {
         addFactory { GetShowLatest(get()) }
         addFactory { ToggleExcludeFromDataSaver(get()) }
         addFactory { SetSourceCategories(get()) }
-        addFactory { ToggleSources(get()) }
         addFactory { SetMangaFilteredScanlators(get()) }
         addFactory { GetAllManga(get()) }
         addFactory { GetMangaBySource(get()) }

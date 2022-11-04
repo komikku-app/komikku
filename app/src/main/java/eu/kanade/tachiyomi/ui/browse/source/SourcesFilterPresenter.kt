@@ -4,7 +4,6 @@ import android.os.Bundle
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
-import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.model.Source
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.SourcesFilterState
@@ -26,9 +25,6 @@ class SourcesFilterPresenter(
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleLanguage: ToggleLanguage = Injekt.get(),
     private val preferences: SourcePreferences = Injekt.get(),
-    // SY -->
-    private val toggleSources: ToggleSources = Injekt.get(),
-    // SY <--
 ) : BasePresenter<SourceFilterController>(), SourcesFilterState by state {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
@@ -81,8 +77,8 @@ class SourcesFilterPresenter(
     }
 
     // SY -->
-    fun toggleSources(isEnable: Boolean, sources: List<Source>) {
-        toggleSources.await(isEnable, sources)
+    fun toggleSources(enable: Boolean, sources: List<Source>) {
+        toggleSource.await(sources.map { it.id }, enable)
     }
     // SY <--
 
