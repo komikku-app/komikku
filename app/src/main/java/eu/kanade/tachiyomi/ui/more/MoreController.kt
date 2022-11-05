@@ -7,9 +7,9 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.download.DownloadController
-import eu.kanade.tachiyomi.ui.recent.history.HistoryController
-import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
+import eu.kanade.tachiyomi.ui.history.HistoryController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
+import eu.kanade.tachiyomi.ui.updates.UpdatesController
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import exh.ui.batchadd.BatchAddController
 

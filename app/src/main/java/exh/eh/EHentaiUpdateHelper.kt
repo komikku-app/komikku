@@ -9,7 +9,7 @@ import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.repository.ChapterRepository
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
-import eu.kanade.domain.history.interactor.RemoveHistoryById
+import eu.kanade.domain.history.interactor.RemoveHistory
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.History
 import eu.kanade.domain.history.model.HistoryUpdate
@@ -42,7 +42,7 @@ class EHentaiUpdateHelper(context: Context) {
     private val getCategories: GetCategories by injectLazy()
     private val chapterRepository: ChapterRepository by injectLazy()
     private val upsertHistory: UpsertHistory by injectLazy()
-    private val removeHistoryById: RemoveHistoryById by injectLazy()
+    private val removeHistory: RemoveHistory by injectLazy()
     private val getHistoryByMangaId: GetHistoryByMangaId by injectLazy()
 
     /**
@@ -127,7 +127,7 @@ class EHentaiUpdateHelper(context: Context) {
 
                 // Delete the duplicate history first
                 deleteHistory.forEach {
-                    removeHistoryById.await(it)
+                    removeHistory.awaitById(it)
                 }
 
                 // Insert new history

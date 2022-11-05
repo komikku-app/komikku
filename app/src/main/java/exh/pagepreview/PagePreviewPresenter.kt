@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.history.interactor.GetNextUnreadChapters
+import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.Manga
@@ -27,7 +27,7 @@ class PagePreviewPresenter(
     private val mangaId: Long,
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val getNextUnreadChapters: GetNextUnreadChapters = Injekt.get(),
+    private val getNextChapters: GetNextChapters = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) : BasePresenter<PagePreviewController>() {
 
@@ -43,7 +43,7 @@ class PagePreviewPresenter(
 
         presenterScope.launchIO {
             val manga = getManga.await(mangaId)!!
-            val chapter = getNextUnreadChapters.await(mangaId).firstOrNull()
+            val chapter = getNextChapters.await(mangaId, onlyUnread = false).lastOrNull()
             if (chapter == null) {
                 _state.update {
                     PagePreviewState.Error(Exception("No chapters found"))

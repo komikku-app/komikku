@@ -24,7 +24,7 @@ import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
-import eu.kanade.domain.history.interactor.GetNextUnreadChapters
+import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.model.LibraryManga
@@ -120,7 +120,7 @@ class LibraryPresenter(
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
-    private val getNextUnreadChapters: GetNextUnreadChapters = Injekt.get(),
+    private val getNextChapters: GetNextChapters = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -606,7 +606,7 @@ class LibraryPresenter(
                 if (manga.source == MERGED_SOURCE_ID) {
                     val mergedMangas = getMergedMangaById.await(manga.id)
                         .associateBy { it.id }
-                    getNextUnreadChapters.await(manga.id)
+                    getNextChapters.await(manga.id)
                         .let { if (amount != null) it.take(amount) else it }
                         .groupBy { it.mangaId }
                         .forEach ab@{ (mangaId, chapters) ->
@@ -628,7 +628,7 @@ class LibraryPresenter(
                 }
 
                 // SY <--
-                val chapters = getNextUnreadChapters.await(manga.id)
+                val chapters = getNextChapters.await(manga.id)
                     .filterNot { chapter ->
                         downloadManager.queue.any { chapter.id == it.chapter.id } ||
                             downloadManager.isChapterDownloaded(
@@ -1072,7 +1072,7 @@ class LibraryPresenter(
     // SY -->
     /** Returns first unread chapter of a manga */
     suspend fun getFirstUnread(manga: Manga): Chapter? {
-        return getNextUnreadChapters.await(manga.id).firstOrNull()
+        return getNextChapters.await(manga.id).firstOrNull()
     }
 
     private fun getGroupedMangaItems(groupType: Int, libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
