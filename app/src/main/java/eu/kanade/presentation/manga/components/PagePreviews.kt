@@ -1,5 +1,6 @@
 package eu.kanade.presentation.manga.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -29,7 +30,11 @@ import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.util.floor
 
 @Composable
-fun PagePreviews(pagePreviewState: PagePreviewState, onMorePreviewsClicked: () -> Unit) {
+fun PagePreviews(
+    pagePreviewState: PagePreviewState,
+    onOpenPage: (Int) -> Unit,
+    onMorePreviewsClicked: () -> Unit,
+) {
     when (pagePreviewState) {
         PagePreviewState.Loading -> {
             Box(modifier = Modifier.height(60.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -52,6 +57,7 @@ fun PagePreviews(pagePreviewState: PagePreviewState, onMorePreviewsClicked: () -
                                 PagePreview(
                                     modifier = Modifier.weight(1F),
                                     page = page,
+                                    onOpenPage = onOpenPage,
                                 )
                             }
                         }
@@ -70,9 +76,11 @@ fun PagePreviews(pagePreviewState: PagePreviewState, onMorePreviewsClicked: () -
 fun PagePreview(
     modifier: Modifier,
     page: PagePreview,
+    onOpenPage: (Int) -> Unit,
 ) {
     Column(
         modifier
+            .clickable { onOpenPage(page.index - 1) }
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,

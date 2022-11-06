@@ -124,6 +124,7 @@ fun MangaScreen(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
     // SY <--
 
@@ -165,6 +166,7 @@ fun MangaScreen(
             onMergedSettingsClicked = onMergedSettingsClicked,
             onMergeClicked = onMergeClicked,
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+            onOpenPagePreview = onOpenPagePreview,
             onMorePreviewsClicked = onMorePreviewsClicked,
             // SY <--
             onMultiBookmarkClicked = onMultiBookmarkClicked,
@@ -202,6 +204,7 @@ fun MangaScreen(
             onMergedSettingsClicked = onMergedSettingsClicked,
             onMergeClicked = onMergeClicked,
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+            onOpenPagePreview = onOpenPagePreview,
             onMorePreviewsClicked = onMorePreviewsClicked,
             // SY <--
             onMultiBookmarkClicked = onMultiBookmarkClicked,
@@ -246,6 +249,7 @@ private fun MangaScreenSmallImpl(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
     // SY <--
 
@@ -460,7 +464,11 @@ private fun MangaScreenSmallImpl(
                             key = MangaScreenItem.CHAPTER_PREVIEW,
                             contentType = MangaScreenItem.CHAPTER_PREVIEW,
                         ) {
-                            PagePreviews(state.pagePreviewsState, onMorePreviewsClicked)
+                            PagePreviews(
+                                pagePreviewState = state.pagePreviewsState,
+                                onOpenPage = onOpenPagePreview,
+                                onMorePreviewsClicked = onMorePreviewsClicked,
+                            )
                         }
                     }
                     // SY <--
@@ -519,6 +527,7 @@ fun MangaScreenLargeImpl(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
     // SY <--
 
@@ -695,7 +704,11 @@ fun MangaScreenLargeImpl(
                             )
                         }
                         if (state.pagePreviewsState !is PagePreviewState.Unused) {
-                            PagePreviews(state.pagePreviewsState, onMorePreviewsClicked)
+                            PagePreviews(
+                                pagePreviewState = state.pagePreviewsState,
+                                onOpenPage = onOpenPagePreview,
+                                onMorePreviewsClicked = onMorePreviewsClicked,
+                            )
                         }
                         // SY <--
                     }

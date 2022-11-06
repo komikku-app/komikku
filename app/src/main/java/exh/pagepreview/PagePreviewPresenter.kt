@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.history.interactor.GetNextUnreadChapters
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.Manga
@@ -12,7 +14,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +27,7 @@ class PagePreviewPresenter(
     private val mangaId: Long,
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
+    private val getNextUnreadChapters: GetNextUnreadChapters = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) : BasePresenter<PagePreviewController>() {
 
@@ -41,6 +43,13 @@ class PagePreviewPresenter(
 
         presenterScope.launchIO {
             val manga = getManga.await(mangaId)!!
+            val chapter = getNextUnreadChapters.await(mangaId).firstOrNull()
+            if (chapter == null) {
+                _state.update {
+                    PagePreviewState.Error(Exception("No chapters found"))
+                }
+                return@launchIO
+            }
             val source = sourceManager.getOrStub(manga.source)
             page
                 .onEach { page ->
@@ -59,6 +68,7 @@ class PagePreviewPresenter(
                                         previews.hasNextPage,
                                         previews.pageCount,
                                         manga,
+                                        chapter,
                                         source,
                                     )
                                 }
@@ -67,7 +77,7 @@ class PagePreviewPresenter(
                                     pagePreviews = previews.pagePreviews,
                                     hasNextPage = previews.hasNextPage,
                                     pageCount = previews.pageCount,
-                                ).also { logcat { page.toString() } }
+                                )
                             }
                         }
                         GetPagePreviews.Result.Unused -> Unit
@@ -96,6 +106,7 @@ sealed class PagePreviewState {
         val hasNextPage: Boolean,
         val pageCount: Int?,
         val manga: Manga,
+        val chapter: Chapter,
         val source: Source,
     ) : PagePreviewState()
 

@@ -307,7 +307,7 @@ class ReaderPresenter(
      * Initializes this presenter with the given [mangaId] and [initialChapterId]. This method will
      * fetch the manga from the database and initialize the initial chapter.
      */
-    fun init(mangaId: Long, initialChapterId: Long) {
+    fun init(mangaId: Long, initialChapterId: Long /* SY --> */, page: Int?/* SY <-- */) {
         if (!needsInit()) return
 
         presenterScope.launchIO {
@@ -321,7 +321,7 @@ class ReaderPresenter(
                     null
                 }
                 withUIContext {
-                    init(manga.toDbManga(), initialChapterId, metadata)
+                    init(manga.toDbManga(), initialChapterId, metadata, page)
                 }
                 // SY <--
             } catch (e: Throwable) {
@@ -334,7 +334,7 @@ class ReaderPresenter(
      * Initializes this presenter with the given [manga] and [initialChapterId]. This method will
      * set the chapter loader, view subscriptions and trigger an initial load.
      */
-    private fun init(manga: Manga, initialChapterId: Long /* SY --> */, metadata: RaisedSearchMetadata?/* SY <-- */) {
+    private fun init(manga: Manga, initialChapterId: Long /* SY --> */, metadata: RaisedSearchMetadata?, page: Int?/* SY <-- */) {
         if (!needsInit()) return
 
         this.manga = manga
@@ -359,7 +359,7 @@ class ReaderPresenter(
         activeChapterSubscription?.unsubscribe()
         activeChapterSubscription = Observable
             .fromCallable { chapterList.first { chapterId == it.chapter.id } }
-            .flatMap { getLoadObservable(loader!!, it) }
+            .flatMap { getLoadObservable(loader!!, it /* SY --> */, page/* SY <-- */) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
@@ -402,8 +402,11 @@ class ReaderPresenter(
     private fun getLoadObservable(
         loader: ChapterLoader,
         chapter: ReaderChapter,
+        // SY -->
+        page: Int? = null,
+        // SY <--
     ): Observable<ViewerChapters> {
-        return loader.loadChapter(chapter)
+        return loader.loadChapter(chapter /* SY --> */, page/* SY <-- */)
             .andThen(
                 Observable.fromCallable {
                     val chapterPos = chapterList.indexOf(chapter)
@@ -535,7 +538,7 @@ class ReaderPresenter(
             selectedChapter.chapter.read = true
             // SY -->
             if (manga?.isEhBasedManga() == true) {
-                launchIO {
+                presenterScope.launchNonCancellable {
                     chapterList
                         .filter { it.chapter.source_order > selectedChapter.chapter.source_order }
                         .onEach {
@@ -733,7 +736,7 @@ class ReaderPresenter(
     fun toggleBookmark(chapterId: Long, bookmarked: Boolean) {
         val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
         chapter.bookmark = bookmarked
-        launchIO {
+        presenterScope.launchNonCancellable {
             updateChapter.await(
                 ChapterUpdate(
                     id = chapter.id!!.toLong(),

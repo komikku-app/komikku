@@ -48,6 +48,7 @@ fun PagePreviewScreen(
     state: PagePreviewState,
     pageDialogOpen: Boolean,
     onPageSelected: (Int) -> Unit,
+    onOpenPage: (Int) -> Unit,
     onOpenPageDialog: () -> Unit,
     onDismissPageDialog: () -> Unit,
     navigateUp: () -> Unit,
@@ -89,6 +90,7 @@ fun PagePreviewScreen(
                                         PagePreview(
                                             modifier = Modifier.weight(1F),
                                             page = page,
+                                            onOpenPage = onOpenPage,
                                         )
                                     }
                                 }

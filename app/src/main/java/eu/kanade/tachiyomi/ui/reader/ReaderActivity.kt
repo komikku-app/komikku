@@ -127,10 +127,13 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
     companion object {
 
-        fun newIntent(context: Context, mangaId: Long?, chapterId: Long?): Intent {
+        fun newIntent(context: Context, mangaId: Long?, chapterId: Long?/* SY --> */, page: Int? = null/* SY <-- */): Intent {
             return Intent(context, ReaderActivity::class.java).apply {
                 putExtra("manga", mangaId)
                 putExtra("chapter", chapterId)
+                // SY -->
+                putExtra("page", page)
+                // SY <--
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
         }
@@ -224,12 +227,15 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         if (presenter.needsInit()) {
             val manga = intent.extras!!.getLong("manga", -1)
             val chapter = intent.extras!!.getLong("chapter", -1)
+            // SY -->
+            val page = intent.extras!!.getInt("page", -1).takeUnless { it == -1 }
+            // SY <--
             if (manga == -1L || chapter == -1L) {
                 finish()
                 return
             }
             NotificationReceiver.dismissNotification(this, manga.hashCode(), Notifications.ID_NEW_CHAPTERS)
-            presenter.init(manga, chapter)
+            presenter.init(manga, chapter /* SY --> */, page/* SY <-- */)
         }
 
         if (savedInstanceState != null) {

@@ -192,6 +192,7 @@ class MangaController : FullComposeController<MangaPresenter> {
             onMergedSettingsClicked = this::openMergedSettingsDialog,
             onMergeClicked = this::openSmartSearch,
             onMergeWithAnotherClicked = this::mergeWithAnother,
+            onOpenPagePreview = this::openPagePreview,
             onMorePreviewsClicked = this::openMorePagePreviews,
             // SY <--
             onMultiBookmarkClicked = presenter::bookmarkChapters,
@@ -368,6 +369,13 @@ class MangaController : FullComposeController<MangaPresenter> {
     private fun openMorePagePreviews() {
         val manga = presenter.manga ?: return
         router.pushController(PagePreviewController(manga.id))
+    }
+
+    private fun openPagePreview(page: Int) {
+        val chapter = presenter.getNextUnreadChapter() ?: return
+        activity?.run {
+            startActivity(ReaderActivity.newIntent(this, chapter.mangaId, chapter.id, page))
+        }
     }
     // SY <--
 

@@ -33,14 +33,14 @@ class ChapterLoader(
     private val sourceManager: SourceManager,
     private val mergedReferences: List<MergedMangaReference>,
     private val mergedManga: Map<Long, Manga>,
-// SY <--
+    // SY <--
 ) {
 
     /**
      * Returns a completable that assigns the page loader and loads the its pages. It just
      * completes if the chapter is already loaded.
      */
-    fun loadChapter(chapter: ReaderChapter): Completable {
+    fun loadChapter(chapter: ReaderChapter /* SY --> */, page: Int? = null/* SY <-- */): Completable {
         if (chapterIsReady(chapter)) {
             return Completable.complete()
         }
@@ -71,9 +71,9 @@ class ChapterLoader(
                 // otherwise use the requested page.
                 if (!chapter.chapter.read /* --> EH */ || readerPrefs
                     .preserveReadingPosition()
-                    .get() // <-- EH
+                    .get() || page != null // <-- EH
                 ) {
-                    chapter.requestedPage = chapter.chapter.last_page_read
+                    chapter.requestedPage = /* SY --> */ page ?: /* SY <-- */ chapter.chapter.last_page_read
                 }
             }
             .toCompletable()
