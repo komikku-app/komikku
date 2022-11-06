@@ -7,6 +7,7 @@ import eu.kanade.domain.history.repository.HistoryRepository
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import exh.source.MERGED_SOURCE_ID
+import exh.source.isEhBasedManga
 import kotlin.math.max
 
 class GetNextUnreadChapters(
@@ -30,6 +31,11 @@ class GetNextUnreadChapters(
             return getMergedChapterByMangaId.await(mangaId)
                 .sortedWith(getChapterSort(manga, sortDescending = false))
                 .filterNot { it.read }
+        }
+        if (manga.isEhBasedManga()) {
+            return getChapterByMangaId.await(mangaId)
+                .sortedWith(getChapterSort(manga, sortDescending = false))
+                .takeLast(1)
         }
         // SY <--
         return getChapterByMangaId.await(mangaId)

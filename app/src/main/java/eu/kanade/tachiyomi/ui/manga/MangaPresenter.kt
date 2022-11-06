@@ -1058,9 +1058,9 @@ class MangaPresenter(
         if (successState.manga.isEhBasedManga()) {
             return successState.processedChapters.map { it.chapter }.let { chapters ->
                 if (successState.manga.sortDescending()) {
-                    chapters.firstOrNull()?.takeUnless { it.read }
+                    chapters.firstOrNull()
                 } else {
-                    chapters.lastOrNull()?.takeUnless { it.read }
+                    chapters.lastOrNull()
                 }
             }
         }
