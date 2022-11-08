@@ -13,7 +13,9 @@ import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.domain.UnsortedPreferences
+import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.library.model.LibraryGroup
+import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
@@ -35,7 +37,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
@@ -84,6 +85,7 @@ class LibraryController(
         LibraryScreen(
             presenter = presenter,
             onMangaClicked = ::openManga,
+            onContinueReadingClicked = ::continueReading,
             onGlobalSearchClicked = {
                 router.pushController(GlobalSearchController(presenter.searchQuery))
             },
@@ -140,9 +142,6 @@ class LibraryController(
                 }
             },
             onClickAddToMangaDex = ::pushToMdList,
-            onOpenReader = {
-                startReading(it.manga)
-            },
             onClickSyncExh = {
                 // TODO
                 if (Injekt.get<UnsortedPreferences>().exhShowSyncIntro().get()) {
@@ -278,6 +277,19 @@ class LibraryController(
         presenter.onOpenManga()
 
         router.pushController(MangaController(mangaId))
+    }
+
+    private fun continueReading(libraryManga: LibraryManga) {
+        viewScope.launchIO {
+            val chapter = presenter.getNextUnreadChapter(libraryManga.manga)
+            if (chapter != null) openChapter(chapter)
+        }
+    }
+
+    private fun openChapter(chapter: Chapter) {
+        activity?.run {
+            startActivity(ReaderActivity.newIntent(this, chapter.mangaId, chapter.id))
+        }
     }
 
     /**
@@ -494,18 +506,6 @@ class LibraryController(
         if (status is FavoritesSyncStatus.Processing && status.delayedMessage != null) {
             delay(5.seconds)
             favSyncDialog?.setMessage(status.delayedMessage)
-        }
-    }
-
-    private fun startReading(manga: Manga) {
-        val activity = activity ?: return
-        viewScope.launchIO {
-            val chapter = presenter.getFirstUnread(manga) ?: return@launchIO
-            val intent = ReaderActivity.newIntent(activity, manga.id, chapter.id)
-            presenter.clearSelection()
-            withUIContext {
-                startActivity(intent)
-            }
         }
     }
     // <-- EXH

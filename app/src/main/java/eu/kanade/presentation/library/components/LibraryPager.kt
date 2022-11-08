@@ -32,14 +32,10 @@ fun LibraryPager(
     showUnreadBadges: Boolean,
     showLocalBadges: Boolean,
     showLanguageBadges: Boolean,
-    // SY -->
-    showStartReadingButton: Boolean,
-    // SY <--
+    showContinueReadingButton: Boolean,
     onClickManga: (LibraryManga) -> Unit,
     onLongClickManga: (LibraryManga) -> Unit,
-    // SY -->
-    onOpenReader: (LibraryManga) -> Unit,
-    // SY <--
+    onClickContinueReading: (LibraryManga) -> Unit,
 ) {
     HorizontalPager(
         count = pageCount,
@@ -70,10 +66,12 @@ fun LibraryPager(
                     showUnreadBadges = showUnreadBadges,
                     showLocalBadges = showLocalBadges,
                     showLanguageBadges = showLanguageBadges,
+                    showContinueReadingButton = showContinueReadingButton,
                     contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
@@ -86,19 +84,15 @@ fun LibraryPager(
                     showUnreadBadges = showUnreadBadges,
                     showLocalBadges = showLocalBadges,
                     showLanguageBadges = showLanguageBadges,
-                    // SY -->
-                    showStartReadingButton = showStartReadingButton,
-                    // SY <--
+                    showContinueReadingButton = showContinueReadingButton,
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
-                    // SY -->
-                    onOpenReader = onOpenReader,
-                    // SY <--
                 )
             }
             LibraryDisplayMode.ComfortableGrid -> {
@@ -108,19 +102,15 @@ fun LibraryPager(
                     showUnreadBadges = showUnreadBadges,
                     showLocalBadges = showLocalBadges,
                     showLanguageBadges = showLanguageBadges,
-                    // SY -->
-                    showStartReadingButton = showStartReadingButton,
-                    // SY <--
+                    showContinueReadingButton = showContinueReadingButton,
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,
+                    onClickContinueReading = onClickContinueReading,
                     onLongClick = onLongClickManga,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
-                    // SY -->
-                    onOpenReader = onOpenReader,
-                    // SY <--
                 )
             }
         }

@@ -35,6 +35,8 @@ class LibraryPreferences(
 
     fun autoUpdateTrackers() = preferenceStore.getBoolean("auto_update_trackers", false)
 
+    fun showContinueReadingButton() = preferenceStore.getBoolean("display_continue_reading_button", false)
+
     // region Filter
 
     fun filterDownloaded() = preferenceStore.getInt("pref_filter_library_downloaded", ExtendedNavigationView.Item.TriStateGroup.State.IGNORE.value)
@@ -121,8 +123,6 @@ class LibraryPreferences(
     fun sortTagsForLibrary() = preferenceStore.getStringSet("sort_tags_for_library", mutableSetOf())
 
     fun groupLibraryUpdateType() = preferenceStore.getEnum("group_library_update_type", GroupLibraryMode.GLOBAL)
-
-    fun startReadingButton() = preferenceStore.getBoolean("start_reading_button", true)
 
     fun groupLibraryBy() = preferenceStore.getInt("group_library_by", LibraryGroup.BY_DEFAULT)
 

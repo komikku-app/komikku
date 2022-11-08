@@ -327,21 +327,15 @@ class LibrarySettingsSheet(
 
         private val displayGroup: DisplayGroup
         private val badgeGroup: BadgeGroup
-
-        // SY -->
-        private val buttonsGroup: ButtonsGroup
-
-        // SY <--
         private val tabsGroup: TabsGroup
+        private val otherGroup: OtherGroup
 
         init {
             displayGroup = DisplayGroup()
             badgeGroup = BadgeGroup()
-            // SY -->
-            buttonsGroup = ButtonsGroup()
-            // SY <--
             tabsGroup = TabsGroup()
-            setGroups(listOf(displayGroup, badgeGroup, /* SY --> */ buttonsGroup, /* SY <-- */ tabsGroup))
+            otherGroup = OtherGroup()
+            setGroups(listOf(displayGroup, badgeGroup, tabsGroup, otherGroup))
         }
 
         // Refreshes Display Setting selections
@@ -444,30 +438,6 @@ class LibrarySettingsSheet(
             }
         }
 
-        // SY -->
-        inner class ButtonsGroup : Group {
-            private val startReadingButton = Item.CheckboxGroup(R.string.action_start_reading_button, this)
-
-            override val header = Item.Header(R.string.buttons_header)
-            override val items = listOf(startReadingButton)
-            override val footer = null
-
-            override fun initModels() {
-                startReadingButton.checked = libraryPreferences.startReadingButton().get()
-            }
-
-            override fun onItemClicked(item: Item) {
-                item as Item.CheckboxGroup
-                item.checked = !item.checked
-                when (item) {
-                    startReadingButton -> libraryPreferences.startReadingButton().set((item.checked))
-                    else -> Unit
-                }
-                adapter.notifyItemChanged(item)
-            }
-        }
-        // SY <--
-
         inner class TabsGroup : Group {
             private val showTabs = Item.CheckboxGroup(R.string.action_display_show_tabs, this)
             private val showNumberOfItems = Item.CheckboxGroup(R.string.action_display_show_number_of_items, this)
@@ -487,6 +457,28 @@ class LibrarySettingsSheet(
                 when (item) {
                     showTabs -> libraryPreferences.categoryTabs().set(item.checked)
                     showNumberOfItems -> libraryPreferences.categoryNumberOfItems().set(item.checked)
+                    else -> {}
+                }
+                adapter.notifyItemChanged(item)
+            }
+        }
+
+        inner class OtherGroup : Group {
+            private val showContinueReadingButton = Item.CheckboxGroup(R.string.action_display_show_continue_reading_button, this)
+
+            override val header = Item.Header(R.string.other_header)
+            override val items = listOf(showContinueReadingButton)
+            override val footer = null
+
+            override fun initModels() {
+                showContinueReadingButton.checked = libraryPreferences.showContinueReadingButton().get()
+            }
+
+            override fun onItemClicked(item: Item) {
+                item as Item.CheckboxGroup
+                item.checked = !item.checked
+                when (item) {
+                    showContinueReadingButton -> libraryPreferences.showContinueReadingButton().set(item.checked)
                     else -> {}
                 }
                 adapter.notifyItemChanged(item)

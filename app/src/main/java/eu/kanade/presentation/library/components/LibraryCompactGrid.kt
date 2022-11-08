@@ -19,19 +19,15 @@ fun LibraryCompactGrid(
     showUnreadBadges: Boolean,
     showLocalBadges: Boolean,
     showLanguageBadges: Boolean,
-    // SY -->
-    showStartReadingButton: Boolean,
-    // SY <--
+    showContinueReadingButton: Boolean,
     columns: Int,
     contentPadding: PaddingValues,
     selection: List<LibraryManga>,
     onClick: (LibraryManga) -> Unit,
     onLongClick: (LibraryManga) -> Unit,
+    onClickContinueReading: (LibraryManga) -> Unit,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    // SY -->
-    onOpenReader: (LibraryManga) -> Unit,
-    // SY <--
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -72,20 +68,10 @@ fun LibraryCompactGrid(
                         item = libraryItem,
                     )
                 },
-                // SY -->
-                buttonTop = if (showStartReadingButton && showTitle && libraryItem.unreadCount > 0) {
-                    { StartReadingButton(onOpenReader = { onOpenReader(libraryItem.libraryManga) }) }
-                } else {
-                    null
-                },
-                buttonBottom = if (showStartReadingButton && !showTitle && libraryItem.unreadCount > 0) {
-                    { StartReadingButton(onOpenReader = { onOpenReader(libraryItem.libraryManga) }) }
-                } else {
-                    null
-                },
-                // SY <--
+                showContinueReadingButton = showContinueReadingButton,
                 onLongClick = { onLongClick(libraryItem.libraryManga) },
                 onClick = { onClick(libraryItem.libraryManga) },
+                onClickContinueReading = { onClickContinueReading(libraryItem.libraryManga) },
             )
         }
     }

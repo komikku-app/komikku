@@ -29,6 +29,7 @@ import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView
 fun LibraryScreen(
     presenter: LibraryPresenter,
     onMangaClicked: (Long) -> Unit,
+    onContinueReadingClicked: (LibraryManga) -> Unit,
     onGlobalSearchClicked: () -> Unit,
     onChangeCategoryClicked: () -> Unit,
     onMarkAsReadClicked: () -> Unit,
@@ -46,7 +47,6 @@ fun LibraryScreen(
     onClickMigrate: () -> Unit,
     onClickAddToMangaDex: () -> Unit,
     onClickSyncExh: () -> Unit,
-    onOpenReader: (LibraryManga) -> Unit,
     // SY <--
 ) {
     val haptic = LocalHapticFeedback.current
@@ -119,6 +119,7 @@ fun LibraryScreen(
             showMangaCount = presenter.mangaCountVisibility,
             onChangeCurrentPage = { presenter.activeCategory = it },
             onMangaClicked = onMangaClicked,
+            onContinueReadingClicked = onContinueReadingClicked,
             onToggleSelection = { presenter.toggleSelection(it) },
             onToggleRangeSelection = {
                 presenter.toggleRangeSelection(it)
@@ -136,13 +137,10 @@ fun LibraryScreen(
             showUnreadBadges = presenter.showUnreadBadges,
             showLocalBadges = presenter.showLocalBadges,
             showLanguageBadges = presenter.showLanguageBadges,
-            // SY -->
-            showStartReadingButton = presenter.showStartReadingButton,
-            // SY <--
+            showContinueReadingButton = presenter.showContinueReadingButton,
             isIncognitoMode = presenter.isIncognitoMode,
             isDownloadOnly = presenter.isDownloadOnly,
             // SY -->
-            onOpenReader = onOpenReader,
             getCategoryName = presenter::getCategoryName,
             // SY <--
         )
