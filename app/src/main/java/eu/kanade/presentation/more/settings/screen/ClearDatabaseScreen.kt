@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,8 @@ import eu.kanade.presentation.util.selectedBackground
 import eu.kanade.tachiyomi.Database
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -65,6 +68,7 @@ class ClearDatabaseScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { ClearDatabaseScreenModel() }
         val state by model.state.collectAsState()
+        val scope = rememberCoroutineScope()
 
         when (val s = state) {
             is ClearDatabaseScreenModel.State.Loading -> LoadingScreen()
@@ -78,12 +82,14 @@ class ClearDatabaseScreen : Screen {
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    // SY -->
-                                    model.removeMangaBySourceId(keepReadManga)
-                                    // SY <--
-                                    model.clearSelection()
-                                    model.hideConfirmation()
-                                    context.toast(R.string.clear_database_completed)
+                                    scope.launchUI {
+                                        // SY -->
+                                        model.removeMangaBySourceId(keepReadManga)
+                                        // SY <--
+                                        model.clearSelection()
+                                        model.hideConfirmation()
+                                        context.toast(R.string.clear_database_completed)
+                                    }
                                 },
                             ) {
                                 Text(text = stringResource(android.R.string.ok))
@@ -246,8 +252,8 @@ private class ClearDatabaseScreenModel : StateScreenModel<ClearDatabaseScreenMod
         }
     }
 
-    fun removeMangaBySourceId(/* SY --> */keepReadManga: Boolean /* SY <-- */) {
-        val state = state.value as? State.Ready ?: return
+    suspend fun removeMangaBySourceId(/* SY --> */keepReadManga: Boolean /* SY <-- */) = withNonCancellableContext {
+        val state = state.value as? State.Ready ?: return@withNonCancellableContext
         // SY -->
         if (keepReadManga) {
             database.mangasQueries.deleteMangasNotInLibraryAndNotReadBySourceIds(state.selection)
