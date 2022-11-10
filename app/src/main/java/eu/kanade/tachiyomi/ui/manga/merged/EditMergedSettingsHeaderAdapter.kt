@@ -13,7 +13,7 @@ import exh.log.xLogD
 import exh.merged.sql.models.MergedMangaReference
 import uy.kohesive.injekt.injectLazy
 
-class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettingsDialog, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {
+class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {
 
     private val sourceManager: SourceManager by injectLazy()
 
@@ -50,7 +50,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
             )
             dedupeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.dedupeModeSpinner.adapter = dedupeAdapter
-            controller.mergeReference?.let {
+            state.mergeReference?.let {
                 binding.dedupeModeSpinner.setSelection(
                     when (it.chapterSortMode) {
                         MergedMangaReference.CHAPTER_SORT_NO_DEDUPE -> 0
@@ -68,23 +68,23 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     position: Int,
                     id: Long,
                 ) {
-                    controller.mergeReference?.chapterSortMode = when (position) {
+                    state.mergeReference?.chapterSortMode = when (position) {
                         0 -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                         /*1 -> MergedMangaReference.CHAPTER_SORT_PRIORITY*/
                         1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
                         2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
                         else -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     }
-                    xLogD(controller.mergeReference?.chapterSortMode)
+                    xLogD(state.mergeReference?.chapterSortMode)
                     editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    controller.mergeReference?.chapterSortMode = MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
+                    state.mergeReference?.chapterSortMode = MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                 }
             }
 
-            val mergedMangas = controller.mergedMangas
+            val mergedMangas = state.mergedMangas
 
             val mangaInfoAdapter: ArrayAdapter<String> = ArrayAdapter(
                 itemView.context,
@@ -111,13 +111,13 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     position: Int,
                     id: Long,
                 ) {
-                    val mergedInfoManga = controller.mergedMangas
+                    val mergedInfoManga = state.mergedMangas
                         .find { mergedManga ->
                             mergedManga.second.id == mergedMangas.getOrNull(position)?.second?.id
                         }
 
                     if (mergedInfoManga != null) {
-                        controller.mergedMangas.onEach {
+                        state.mergedMangas.onEach {
                             it.second.isInfoManga = false
                         }
                         mergedInfoManga.second.isInfoManga = true
@@ -126,7 +126,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     mergedMangas.find { it.second.isInfoManga }?.second?.let { newInfoManga ->
-                        controller.mergedMangas.onEach {
+                        state.mergedMangas.onEach {
                             it.second.isInfoManga = false
                         }
                         newInfoManga.isInfoManga = true
@@ -134,14 +134,14 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                 }
             }
 
-            binding.dedupeSwitch.isChecked = controller.mergeReference?.let { it.chapterSortMode != MergedMangaReference.CHAPTER_SORT_NONE } ?: false
+            binding.dedupeSwitch.isChecked = state.mergeReference?.let { it.chapterSortMode != MergedMangaReference.CHAPTER_SORT_NONE } ?: false
             binding.dedupeSwitch.setOnCheckedChangeListener { _, isChecked ->
                 binding.dedupeModeSpinner.isEnabled = isChecked
                 binding.dedupeModeSpinner.alpha = when (isChecked) {
                     true -> 1F
                     false -> 0.5F
                 }
-                controller.mergeReference?.chapterSortMode = when (isChecked) {
+                state.mergeReference?.chapterSortMode = when (isChecked) {
                     true -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     false -> MergedMangaReference.CHAPTER_SORT_NONE
                 }
@@ -157,7 +157,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
         }
     }
 
-    fun canMove() = controller.mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
+    fun canMove() = state.mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
 
     interface SortingListener {
         fun onSetPrioritySort(isPriorityOrder: Boolean)
