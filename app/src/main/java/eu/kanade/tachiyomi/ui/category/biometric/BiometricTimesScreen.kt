@@ -1,0 +1,95 @@
+package eu.kanade.tachiyomi.ui.category.biometric
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.google.android.material.timepicker.MaterialTimePicker
+import eu.kanade.presentation.category.BiometricTimesScreen
+import eu.kanade.presentation.category.components.CategoryDeleteDialog
+import eu.kanade.presentation.components.LoadingScreen
+import eu.kanade.presentation.util.LocalRouter
+import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.flow.collectLatest
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+
+class BiometricTimesScreen : Screen {
+
+    @Composable
+    override fun Content() {
+        val context = LocalContext.current
+        val router = LocalRouter.currentOrThrow
+        val screenModel = rememberScreenModel { BiometricTimesScreenModel() }
+
+        val state by screenModel.state.collectAsState()
+
+        if (state is BiometricTimesScreenState.Loading) {
+            LoadingScreen()
+            return
+        }
+
+        val successState = state as BiometricTimesScreenState.Success
+
+        BiometricTimesScreen(
+            state = successState,
+            onClickCreate = { screenModel.showDialog(BiometricTimesDialog.Create) },
+            onClickDelete = { screenModel.showDialog(BiometricTimesDialog.Delete(it)) },
+            navigateUp = router::popCurrentController,
+        )
+
+        fun showTimePicker(startTime: Duration? = null) {
+            val activity = context as? MainActivity ?: return
+            val picker = MaterialTimePicker.Builder()
+                .setTitleText(if (startTime == null) R.string.biometric_lock_start_time else R.string.biometric_lock_end_time)
+                .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
+                .build()
+            picker.addOnPositiveButtonClickListener {
+                val timeRange = picker.hour.hours + picker.minute.minutes
+                if (startTime != null) {
+                    screenModel.dismissDialog()
+                    screenModel.createTimeRange(TimeRange(startTime, timeRange))
+                } else {
+                    showTimePicker(timeRange)
+                }
+            }
+            picker.addOnDismissListener {
+                screenModel.dismissDialog()
+            }
+            picker.show(activity.supportFragmentManager, null)
+        }
+
+        when (val dialog = successState.dialog) {
+            null -> {}
+            BiometricTimesDialog.Create -> {
+                LaunchedEffect(Unit) {
+                    showTimePicker()
+                }
+            }
+            is BiometricTimesDialog.Delete -> {
+                CategoryDeleteDialog(
+                    onDismissRequest = screenModel::dismissDialog,
+                    onDelete = { screenModel.deleteTimeRanges(dialog.timeRange) },
+                    title = stringResource(R.string.delete_time_range),
+                    text = stringResource(R.string.delete_time_range_confirmation, dialog.timeRange.formattedString),
+                )
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            screenModel.events.collectLatest { event ->
+                if (event is BiometricTimesEvent.LocalizedMessage) {
+                    context.toast(event.stringRes)
+                }
+            }
+        }
+    }
+}

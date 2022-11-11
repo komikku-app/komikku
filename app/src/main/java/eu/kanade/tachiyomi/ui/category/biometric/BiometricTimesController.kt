@@ -1,48 +1,20 @@
 package eu.kanade.tachiyomi.ui.category.biometric
 
 import androidx.compose.runtime.Composable
-import com.google.android.material.timepicker.MaterialTimePicker
-import eu.kanade.presentation.category.BiometricTimesScreen
-import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
-import eu.kanade.tachiyomi.ui.main.MainActivity
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
+import androidx.compose.runtime.CompositionLocalProvider
+import cafe.adriel.voyager.navigator.Navigator
+import eu.kanade.presentation.util.LocalRouter
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 
 /**
  * Controller to manage the lock times for the biometric lock.
  */
-class BiometricTimesController : FullComposeController<BiometricTimesPresenter>() {
-
-    override fun createPresenter() = BiometricTimesPresenter()
+class BiometricTimesController : BasicFullComposeController() {
 
     @Composable
     override fun ComposeContent() {
-        BiometricTimesScreen(
-            presenter = presenter,
-            navigateUp = router::popCurrentController,
-            openCreateDialog = ::showTimePicker,
-        )
-    }
-
-    private fun showTimePicker(startTime: Duration? = null) {
-        val picker = MaterialTimePicker.Builder()
-            .setTitleText(if (startTime == null) R.string.biometric_lock_start_time else R.string.biometric_lock_end_time)
-            .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            val timeRange = picker.hour.hours + picker.minute.minutes
-            if (startTime != null) {
-                presenter.dialog = null
-                presenter.createTimeRange(TimeRange(startTime, timeRange))
-            } else {
-                showTimePicker(timeRange)
-            }
+        CompositionLocalProvider(LocalRouter provides router) {
+            Navigator(screen = BiometricTimesScreen())
         }
-        picker.addOnDismissListener {
-            presenter.dialog = null
-        }
-        picker.show((activity as MainActivity).supportFragmentManager, null)
     }
 }
