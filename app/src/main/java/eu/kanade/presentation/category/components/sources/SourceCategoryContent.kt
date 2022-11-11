@@ -7,28 +7,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.category.SourceCategoryState
 import eu.kanade.presentation.components.LazyColumn
-import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryPresenter
 
 @Composable
 fun SourceCategoryContent(
-    state: SourceCategoryState,
+    categories: List<String>,
     lazyListState: LazyListState,
     paddingValues: PaddingValues,
+    onClickRename: (String) -> Unit,
+    onClickDelete: (String) -> Unit,
 ) {
-    val categories = state.categories
     LazyColumn(
         state = lazyListState,
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(categories) { category ->
+        items(categories, key = { it }) { category ->
             SourceCategoryListItem(
                 modifier = Modifier.animateItemPlacement(),
                 category = category,
-                onRename = { state.dialog = SourceCategoryPresenter.Dialog.Rename(category) },
-                onDelete = { state.dialog = SourceCategoryPresenter.Dialog.Delete(category) },
+                onRename = { onClickRename(category) },
+                onDelete = { onClickDelete(category) },
             )
         }
     }

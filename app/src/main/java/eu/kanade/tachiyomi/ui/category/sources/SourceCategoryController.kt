@@ -1,21 +1,20 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
 import androidx.compose.runtime.Composable
-import eu.kanade.presentation.category.SourceCategoryScreen
-import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
+import androidx.compose.runtime.CompositionLocalProvider
+import cafe.adriel.voyager.navigator.Navigator
+import eu.kanade.presentation.util.LocalRouter
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 
 /**
  * Controller to manage the categories for the users' library.
  */
-class SourceCategoryController : FullComposeController<SourceCategoryPresenter>() {
-
-    override fun createPresenter() = SourceCategoryPresenter()
+class SourceCategoryController : BasicFullComposeController() {
 
     @Composable
     override fun ComposeContent() {
-        SourceCategoryScreen(
-            presenter = presenter,
-            navigateUp = router::popCurrentController,
-        )
+        CompositionLocalProvider(LocalRouter provides router) {
+            Navigator(screen = SourceCategoryScreen())
+        }
     }
 }
