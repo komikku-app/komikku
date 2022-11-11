@@ -98,7 +98,7 @@ class ExtensionManager(
         .stateIn(GlobalScope, SharingStarted.Eagerly, emptyList())
     // SY <--
 
-    private var availableExtensionsSourcesData: Map<Long, SourceData> = mapOf()
+    private var availableExtensionsSourcesData: Map<Long, SourceData> = emptyMap()
 
     private fun setupAvailableExtensionsSourcesDataMap(extensions: List<Extension.Available>) {
         if (extensions.isEmpty()) return
