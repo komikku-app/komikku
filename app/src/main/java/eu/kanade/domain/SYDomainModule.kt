@@ -98,7 +98,7 @@ class SYDomainModule : InjektModule {
         addFactory { CreateSortTag(get(), get()) }
         addFactory { DeleteSortTag(get(), get()) }
         addFactory { ReorderSortTag(get(), get()) }
-        addFactory { GetPagePreviews(get()) }
+        addFactory { GetPagePreviews(get(), get()) }
 
         // Required for [MetadataSource]
         addFactory<MetadataSource.GetMangaId> { GetManga(get()) }

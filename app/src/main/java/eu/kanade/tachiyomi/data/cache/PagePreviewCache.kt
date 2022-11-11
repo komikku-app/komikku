@@ -81,9 +81,9 @@ class PagePreviewCache(private val context: Context) {
      * @param manga the manga.
      * @return the list of pages.
      */
-    fun getPageListFromCache(manga: Manga, page: Int): PagePreviewPage {
+    fun getPageListFromCache(manga: Manga, chapterIds: List<Long>, page: Int): PagePreviewPage {
         // Get the key for the manga.
-        val key = DiskUtil.hashKeyForDisk(getKey(manga, page))
+        val key = DiskUtil.hashKeyForDisk(getKey(manga, chapterIds, page))
 
         // Convert JSON string to list of objects. Throws an exception if snapshot is null
         return diskCache.get(key).use {
@@ -97,7 +97,7 @@ class PagePreviewCache(private val context: Context) {
      * @param manga the manga.
      * @param pages list of pages.
      */
-    fun putPageListToCache(manga: Manga, pages: PagePreviewPage) {
+    fun putPageListToCache(manga: Manga, chapterIds: List<Long>, pages: PagePreviewPage) {
         // Convert list of pages to json string.
         val cachedValue = json.encodeToString(pages)
 
@@ -106,7 +106,7 @@ class PagePreviewCache(private val context: Context) {
 
         try {
             // Get editor from md5 key.
-            val key = DiskUtil.hashKeyForDisk(getKey(manga, pages.page))
+            val key = DiskUtil.hashKeyForDisk(getKey(manga, chapterIds, pages.page))
             editor = diskCache.edit(key) ?: return
 
             // Write page preview urls to cache.
@@ -211,7 +211,7 @@ class PagePreviewCache(private val context: Context) {
         }
     }
 
-    private fun getKey(manga: Manga, page: Int): String {
-        return "${manga.id}_$page"
+    private fun getKey(manga: Manga, chapterIds: List<Long>, page: Int): String {
+        return "${manga.id}_${chapterIds.joinToString(separator = "-")}_$page"
     }
 }

@@ -1144,11 +1144,12 @@ class EHentai(
 
     override suspend fun getPagePreviewList(
         manga: SManga,
+        chapters: List<SChapter>,
         page: Int,
     ): PagePreviewPage {
         val doc = client.newCall(
             exGet(
-                (baseUrl + manga.url)
+                (baseUrl + (chapters.lastOrNull()?.url ?: manga.url))
                     .toHttpUrl()
                     .newBuilder()
                     .removeAllQueryParameters("nw")

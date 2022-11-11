@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.source.PagePreviewInfo
 import eu.kanade.tachiyomi.source.PagePreviewPage
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -172,7 +173,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         return "$baseUrl/g/${uri.pathSegments[1]}/"
     }
 
-    override suspend fun getPagePreviewList(manga: SManga, page: Int): PagePreviewPage {
+    override suspend fun getPagePreviewList(manga: SManga, chapters: List<SChapter>, page: Int): PagePreviewPage {
         val metadata = fetchOrLoadMetadata(manga.id()) {
             client.newCall(mangaDetailsRequest(manga)).await()
         }
