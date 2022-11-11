@@ -248,6 +248,10 @@ class DownloadCache(
         return UniFile.fromUri(context, dir.toUri())
     }
 
+    fun invalidateCache() {
+        lastRenew = 0L
+    }
+
     /**
      * Renews the downloads cache.
      */
