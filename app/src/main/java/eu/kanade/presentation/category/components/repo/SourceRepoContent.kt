@@ -7,17 +7,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.category.SourceRepoState
 import eu.kanade.presentation.components.LazyColumn
-import eu.kanade.tachiyomi.ui.category.repos.RepoPresenter
 
 @Composable
 fun SourceRepoContent(
-    state: SourceRepoState,
+    repos: List<String>,
     lazyListState: LazyListState,
     paddingValues: PaddingValues,
+    onClickDelete: (String) -> Unit,
 ) {
-    val repos = state.repos
     LazyColumn(
         state = lazyListState,
         contentPadding = paddingValues,
@@ -27,7 +25,7 @@ fun SourceRepoContent(
             SourceRepoListItem(
                 modifier = Modifier.animateItemPlacement(),
                 repo = repo,
-                onDelete = { state.dialog = RepoPresenter.Dialog.Delete(repo) },
+                onDelete = { onClickDelete(repo) },
             )
         }
     }
