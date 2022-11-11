@@ -290,6 +290,8 @@ class MigrationListPresenter(
         manga: Manga,
         replace: Boolean,
     ) {
+        if (prevManga.id == manga.id) return // Nothing to migrate
+
         val flags = preferences.migrateFlags().get()
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
