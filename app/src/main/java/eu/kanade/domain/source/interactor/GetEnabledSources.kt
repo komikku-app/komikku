@@ -33,7 +33,6 @@ class GetEnabledSources(
             // SY <--
             repository.getSources(),
         ) { pinnedSourceIds, (enabledLanguages, disabledSources, lastUsedSource), (excludedFromDataSaver, sourcesInCategories, sourceCategoriesFilter), sources ->
-            val duplicatePins = preferences.duplicatePinnedSources().get()
             val sourcesAndCategories = sourcesInCategories.map {
                 it.split('|').let { (source, test) -> source.toLong() to test }
             }
@@ -57,10 +56,6 @@ class GetEnabledSources(
                     val toFlatten = mutableListOf(source)
                     if (source.id == lastUsedSource) {
                         toFlatten.add(source.copy(isUsedLast = true, pin = source.pin - Pin.Actual))
-                    }
-                    if (duplicatePins && Pin.Pinned in source.pin) {
-                        toFlatten[0] = toFlatten[0].copy(pin = source.pin + Pin.Forced)
-                        toFlatten.add(source.copy(pin = source.pin - Pin.Actual))
                     }
                     // SY -->
                     categories.forEach { category ->

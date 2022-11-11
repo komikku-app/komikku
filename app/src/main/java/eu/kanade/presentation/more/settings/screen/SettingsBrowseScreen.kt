@@ -58,13 +58,6 @@ class SettingsBrowseScreen : SearchableSettings {
                             },
                         )
                     },
-                    // SY <--
-                    Preference.PreferenceItem.SwitchPreference(
-                        pref = sourcePreferences.duplicatePinnedSources(),
-                        title = stringResource(R.string.pref_duplicate_pinned_sources),
-                        subtitle = stringResource(R.string.pref_duplicate_pinned_sources_summary),
-                    ),
-                    // SY -->
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.sourcesTabCategoriesFilter(),
                         title = stringResource(R.string.pref_source_source_filtering),
