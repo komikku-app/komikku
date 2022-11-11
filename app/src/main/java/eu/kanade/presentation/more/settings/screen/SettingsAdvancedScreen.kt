@@ -41,7 +41,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
-import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.repository.MangaRepository
@@ -561,7 +560,7 @@ class SettingsAdvancedScreen : SearchableSettings {
                                 } else {
                                     val chapterList = Injekt.get<GetChapterByMangaId>().await(manga.id)
                                     foldersCleared += downloadManager.cleanupChapters(
-                                        chapterList.map { it.toDbChapter() },
+                                        chapterList,
                                         manga,
                                         source,
                                         removeRead,

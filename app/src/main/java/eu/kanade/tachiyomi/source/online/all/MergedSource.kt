@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
@@ -122,7 +121,7 @@ class MergedSource : HttpSource() {
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
                                                 loadedManga,
-                                                results.map(Chapter::toDbChapter),
+                                                results,
                                             )
                                         }
                                         results

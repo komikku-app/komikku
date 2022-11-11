@@ -14,7 +14,6 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.library.model.GroupLibraryMode
 import eu.kanade.domain.library.model.LibraryGroup
@@ -506,12 +505,11 @@ class LibraryUpdateService(
     private fun downloadChapters(manga: Manga, chapters: List<Chapter>) {
         // We don't want to start downloading while the library is updating, because websites
         // may don't like it and they could ban the user.
-        val dbChapters = chapters.map { it.toDbChapter() }
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
             val downloadingManga = runBlocking { getMergedMangaForDownloading.await(manga.id) }
                 .associateBy { it.id }
-            dbChapters.groupBy { it.manga_id }
+            chapters.groupBy { it.mangaId }
                 .forEach {
                     downloadManager.downloadChapters(
                         downloadingManga[it.key] ?: return@forEach,
@@ -523,7 +521,7 @@ class LibraryUpdateService(
             return
         }
         // SY <--
-        downloadManager.downloadChapters(manga, dbChapters, false)
+        downloadManager.downloadChapters(manga, chapters, false)
     }
 
     /**

@@ -23,6 +23,7 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -32,6 +33,7 @@ import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toMangaUpdate
@@ -99,8 +101,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.Date
-import eu.kanade.domain.category.model.Category as DomainCategory
-import eu.kanade.domain.manga.model.Manga as DomainManga
 
 open class BrowseSourcePresenter(
     private val sourceId: Long,
@@ -160,7 +160,7 @@ open class BrowseSourcePresenter(
     }
 
     @Composable
-    fun getMangaList(): Flow<PagingData</* SY --> */Pair<DomainManga, RaisedSearchMetadata?>/* SY <-- */>> {
+    fun getMangaList(): Flow<PagingData</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>> {
         return remember(currentFilter) {
             Pager(
                 PagingConfig(pageSize = 25),
@@ -181,7 +181,7 @@ open class BrowseSourcePresenter(
     }
 
     @Composable
-    fun getManga(initialManga: DomainManga): State<DomainManga> {
+    fun getManga(initialManga: Manga): State<Manga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
@@ -196,7 +196,7 @@ open class BrowseSourcePresenter(
 
     // SY -->
     @Composable
-    open fun getRaisedSearchMetadata(manga: DomainManga, initialMetadata: RaisedSearchMetadata?): State<RaisedSearchMetadata?> {
+    open fun getRaisedSearchMetadata(manga: Manga, initialMetadata: RaisedSearchMetadata?): State<RaisedSearchMetadata?> {
         return produceState(initialValue = initialMetadata, manga.id) {
             val source = source?.getMainSource<MetadataSource<*, *>>() ?: return@produceState
             getFlatMetadataById.subscribe(manga.id)
@@ -275,7 +275,7 @@ open class BrowseSourcePresenter(
      *
      * @param manga to initialize.
      */
-    private suspend fun initializeManga(manga: DomainManga) {
+    private suspend fun initializeManga(manga: Manga) {
         if (manga.thumbnailUrl != null || manga.initialized) return
         withNonCancellableContext {
             try {
@@ -295,7 +295,7 @@ open class BrowseSourcePresenter(
      *
      * @param manga the manga to update.
      */
-    fun changeMangaFavorite(manga: DomainManga) {
+    fun changeMangaFavorite(manga: Manga) {
         presenterScope.launch {
             var new = manga.copy(
                 favorite = !manga.favorite,
@@ -317,11 +317,11 @@ open class BrowseSourcePresenter(
         }
     }
 
-    fun getSourceOrStub(manga: DomainManga): Source {
+    fun getSourceOrStub(manga: Manga): Source {
         return sourceManager.getOrStub(manga.source)
     }
 
-    fun addFavorite(manga: DomainManga) {
+    fun addFavorite(manga: Manga) {
         presenterScope.launch {
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
@@ -351,7 +351,7 @@ open class BrowseSourcePresenter(
         }
     }
 
-    private suspend fun autoAddTrack(manga: DomainManga) {
+    private suspend fun autoAddTrack(manga: Manga) {
         loggedServices
             .filterIsInstance<EnhancedTrackService>()
             .filter { it.accept(source!!) }
@@ -382,22 +382,22 @@ open class BrowseSourcePresenter(
      *
      * @return List of categories, not including the default category
      */
-    suspend fun getCategories(): List<DomainCategory> {
+    suspend fun getCategories(): List<Category> {
         return getCategories.subscribe()
             .firstOrNull()
             ?.filterNot { it.isSystemCategory }
             ?: emptyList()
     }
 
-    suspend fun getDuplicateLibraryManga(manga: DomainManga): DomainManga? {
+    suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
         return getDuplicateLibraryManga.await(manga.title, manga.source)
     }
 
-    fun moveMangaToCategories(manga: DomainManga, vararg categories: DomainCategory) {
+    fun moveMangaToCategories(manga: Manga, vararg categories: Category) {
         moveMangaToCategories(manga, categories.filter { it.id != 0L }.map { it.id })
     }
 
-    fun moveMangaToCategories(manga: DomainManga, categoryIds: List<Long>) {
+    fun moveMangaToCategories(manga: Manga, categoryIds: List<Long>) {
         presenterScope.launchIO {
             setMangaCategories.await(
                 mangaId = manga.id,
@@ -423,11 +423,11 @@ open class BrowseSourcePresenter(
     }
 
     sealed class Dialog {
-        data class RemoveManga(val manga: DomainManga) : Dialog()
-        data class AddDuplicateManga(val manga: DomainManga, val duplicate: DomainManga) : Dialog()
+        data class RemoveManga(val manga: Manga) : Dialog()
+        data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
         data class ChangeMangaCategory(
-            val manga: DomainManga,
-            val initialSelection: List<CheckboxState.State<DomainCategory>>,
+            val manga: Manga,
+            val initialSelection: List<CheckboxState.State<Category>>,
         ) : Dialog()
     }
 
