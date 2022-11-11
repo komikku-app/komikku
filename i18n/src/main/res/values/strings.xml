@@ -880,7 +880,7 @@
     <string name="channel_new_chapters">Chapter updates</string>
     <string name="channel_app_updates">App updates</string>
     <string name="channel_ext_updates">Extension updates</string>
-    <string name="channel_downloader_cache">Download cache</string>
+    <string name="channel_downloader_cache">Indexing</string>
     <string name="channel_crash_logs">Crash logs</string>
 
     <!-- S Pen actions -->
