@@ -1,21 +1,20 @@
 package eu.kanade.tachiyomi.ui.category.genre
 
 import androidx.compose.runtime.Composable
-import eu.kanade.presentation.category.SortTagScreen
-import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
+import androidx.compose.runtime.CompositionLocalProvider
+import cafe.adriel.voyager.navigator.Navigator
+import eu.kanade.presentation.util.LocalRouter
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 
 /**
  * Controller to manage the categories for the users' library.
  */
-class SortTagController : FullComposeController<SortTagPresenter>() {
-
-    override fun createPresenter() = SortTagPresenter()
+class SortTagController : BasicFullComposeController() {
 
     @Composable
     override fun ComposeContent() {
-        SortTagScreen(
-            presenter = presenter,
-            navigateUp = router::popCurrentController,
-        )
+        CompositionLocalProvider(LocalRouter provides router) {
+            Navigator(screen = SortTagScreen())
+        }
     }
 }
