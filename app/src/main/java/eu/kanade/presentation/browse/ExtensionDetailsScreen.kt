@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +56,7 @@ import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
-import eu.kanade.presentation.util.horizontalPadding
+import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -229,10 +228,10 @@ private fun DetailsHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = horizontalPadding,
-                    end = horizontalPadding,
-                    top = 16.dp,
-                    bottom = 8.dp,
+                    start = MaterialTheme.padding.medium,
+                    end = MaterialTheme.padding.medium,
+                    top = MaterialTheme.padding.medium,
+                    bottom = MaterialTheme.padding.small,
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -261,8 +260,8 @@ private fun DetailsHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = horizontalPadding * 2,
-                    vertical = 8.dp,
+                    horizontal = MaterialTheme.padding.extraLarge,
+                    vertical = MaterialTheme.padding.small,
                 ),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
@@ -299,10 +298,10 @@ private fun DetailsHeader(
 
         Row(
             modifier = Modifier.padding(
-                start = horizontalPadding,
-                end = horizontalPadding,
-                top = 8.dp,
-                bottom = 16.dp,
+                start = MaterialTheme.padding.medium,
+                end = MaterialTheme.padding.medium,
+                top = MaterialTheme.padding.small,
+                bottom = MaterialTheme.padding.medium,
             ),
         ) {
             OutlinedButton(

@@ -35,9 +35,9 @@ import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.theme.header
-import eu.kanade.presentation.util.horizontalPadding
+import eu.kanade.presentation.util.padding
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter
@@ -97,7 +97,7 @@ private fun SourceList(
     onClickToggleDataSaver: (Source) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = contentPadding + topPaddingValues,
+        contentPadding = contentPadding + topSmallPaddingValues,
     ) {
         items(
             items = state.items,
@@ -189,7 +189,7 @@ private fun SourceHeader(
             language
         },
         modifier = modifier
-            .padding(horizontal = horizontalPadding, vertical = 8.dp),
+            .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         style = MaterialTheme.typography.header,
     )
 }
