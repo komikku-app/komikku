@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -47,11 +49,13 @@ fun PagePreviews(
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     pagePreviewState.pagePreviews.take(4 * itemPerRowCount).chunked(itemPerRowCount).forEach {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             it.forEach { page ->
                                 PagePreview(
@@ -80,8 +84,8 @@ fun PagePreview(
 ) {
     Column(
         modifier
-            .clickable { onOpenPage(page.index - 1) }
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .clip(MaterialTheme.shapes.small)
+            .clickable { onOpenPage(page.index - 1) },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -90,10 +94,10 @@ fun PagePreview(
             contentDescription = null,
             loading = {
                 val progress by page.progress.collectAsState()
-                if (progress != -1) {
-                    CircularProgressIndicator(progress / 0.01F)
-                } else {
+                if (progress < 0) {
                     CircularProgressIndicator()
+                } else {
+                    CircularProgressIndicator(progress / 0.01F)
                 }
             },
             success = {
@@ -101,7 +105,8 @@ fun PagePreview(
                     contentDescription = null,
                     modifier = Modifier
                         .width(120.dp)
-                        .heightIn(max = 200.dp),
+                        .heightIn(max = 200.dp)
+                        .clip(MaterialTheme.shapes.small),
                     contentScale = ContentScale.FillWidth,
                 )
             },

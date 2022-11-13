@@ -2,10 +2,13 @@ package exh.pagepreview.components
 
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.animateTo
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.UTurnRight
@@ -17,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -70,8 +72,12 @@ fun PagePreviewScreen(
             PagePreviewState.Loading -> LoadingScreen()
             is PagePreviewState.Success -> {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
-                    val itemPerRowCount by derivedStateOf { (maxWidth / 120.dp).floor() }
-                    val items by derivedStateOf { state.pagePreviews.chunked(itemPerRowCount) }
+                    val itemPerRowCount = remember(maxWidth) {
+                        (maxWidth / 120.dp).floor()
+                    }
+                    val items = remember(state.pagePreviews, itemPerRowCount) {
+                        state.pagePreviews.chunked(itemPerRowCount)
+                    }
                     val lazyListState = key(state.page) {
                         rememberLazyListState()
                     }
@@ -79,20 +85,20 @@ fun PagePreviewScreen(
                         state = lazyListState,
                         modifier = Modifier,
                         contentPadding = paddingValues + topPaddingValues,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items.forEach {
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    it.forEach { page ->
-                                        PagePreview(
-                                            modifier = Modifier.weight(1F),
-                                            page = page,
-                                            onOpenPage = onOpenPage,
-                                        )
-                                    }
+                        items(items) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                it.forEach { page ->
+                                    PagePreview(
+                                        modifier = Modifier.weight(1F),
+                                        page = page,
+                                        onOpenPage = onOpenPage,
+                                    )
                                 }
                             }
                         }

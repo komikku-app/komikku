@@ -10,8 +10,8 @@ import eu.kanade.domain.manga.model.COMIC_INFO_FILE
 import eu.kanade.domain.manga.model.ComicInfo
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.getComicInfo
-import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
