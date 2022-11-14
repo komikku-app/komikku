@@ -65,8 +65,8 @@ class SourcesPresenter(
             flowOf(controllerMode == SourcesController.Mode.CATALOGUE),
             ::collectLatestSources,
         )
-            .catch { exception ->
-                logcat(LogPriority.ERROR, exception)
+            .catch {
+                logcat(LogPriority.ERROR, it)
                 _events.send(Event.FailedFetchingSources)
             }
             .onStart { delay(500) } // Defer to avoid crashing on initial render

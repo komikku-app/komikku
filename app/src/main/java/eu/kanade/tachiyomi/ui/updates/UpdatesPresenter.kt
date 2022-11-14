@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import eu.kanade.core.util.addOrRemove
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapter
 import eu.kanade.domain.chapter.interactor.SetReadStatus
@@ -72,6 +73,7 @@ class UpdatesPresenter(
 
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
+    private val selectedChapterIds: HashSet<Long> = HashSet()
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
@@ -100,7 +102,7 @@ class UpdatesPresenter(
 
         presenterScope.launchIO {
             downloadManager.queue.statusFlow()
-                .catch { error -> logcat(LogPriority.ERROR, error) }
+                .catch { logcat(LogPriority.ERROR, it) }
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -110,7 +112,7 @@ class UpdatesPresenter(
 
         presenterScope.launchIO {
             downloadManager.queue.progressFlow()
-                .catch { error -> logcat(LogPriority.ERROR, error) }
+                .catch { logcat(LogPriority.ERROR, it) }
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -120,29 +122,28 @@ class UpdatesPresenter(
     }
 
     private fun List<UpdatesWithRelations>.toUpdateItems(): List<UpdatesItem> {
-        return this
-            .distinctBy { it.chapterId }
-            .map {
-                val activeDownload = downloadManager.queue.find { download -> it.chapterId == download.chapter.id }
-                val downloaded = downloadManager.isChapterDownloaded(
-                    it.chapterName,
-                    it.scanlator,
-                    // SY -->
-                    it.ogMangaTitle,
-                    // SY <--
-                    it.sourceId,
-                )
-                val downloadState = when {
-                    activeDownload != null -> activeDownload.status
-                    downloaded -> Download.State.DOWNLOADED
-                    else -> Download.State.NOT_DOWNLOADED
-                }
-                UpdatesItem(
-                    update = it,
-                    downloadStateProvider = { downloadState },
-                    downloadProgressProvider = { activeDownload?.progress ?: 0 },
-                )
+        return this.map {
+            val activeDownload = downloadManager.queue.find { download -> it.chapterId == download.chapter.id }
+            val downloaded = downloadManager.isChapterDownloaded(
+                it.chapterName,
+                it.scanlator,
+                // SY -->
+                it.ogMangaTitle,
+                // SY <--
+                it.sourceId,
+            )
+            val downloadState = when {
+                activeDownload != null -> activeDownload.status
+                downloaded -> Download.State.DOWNLOADED
+                else -> Download.State.NOT_DOWNLOADED
             }
+            UpdatesItem(
+                update = it,
+                downloadStateProvider = { downloadState },
+                downloadProgressProvider = { activeDownload?.progress ?: 0 },
+                selected = it.chapterId in selectedChapterIds,
+            )
+        }
     }
 
     /**
@@ -157,12 +158,14 @@ class UpdatesPresenter(
             }
             if (modifiedIndex < 0) return@apply
 
-            val item = removeAt(modifiedIndex)
-                .copy(
+            val item = get(modifiedIndex)
+            set(
+                modifiedIndex,
+                item.copy(
                     downloadStateProvider = { download.status },
                     downloadProgressProvider = { download.progress },
-                )
-            add(modifiedIndex, item)
+                ),
+            )
         }
     }
 
@@ -283,6 +286,7 @@ class UpdatesPresenter(
 
             val firstSelection = none { it.selected }
             set(selectedIndex, selectedItem.copy(selected = selected))
+            selectedChapterIds.addOrRemove(item.update.chapterId, selected)
 
             if (selected && userSelected && fromLongPress) {
                 if (firstSelection) {
@@ -305,6 +309,7 @@ class UpdatesPresenter(
                     range.forEach {
                         val inbetweenItem = get(it)
                         if (!inbetweenItem.selected) {
+                            selectedChapterIds.add(inbetweenItem.update.chapterId)
                             set(it, inbetweenItem.copy(selected = true))
                         }
                     }
@@ -329,6 +334,7 @@ class UpdatesPresenter(
 
     fun toggleAllSelection(selected: Boolean) {
         state.items = items.map {
+            selectedChapterIds.addOrRemove(it.update.chapterId, selected)
             it.copy(selected = selected)
         }
         selectedPositions[0] = -1
@@ -337,6 +343,7 @@ class UpdatesPresenter(
 
     fun invertSelection() {
         state.items = items.map {
+            selectedChapterIds.addOrRemove(it.update.chapterId, !it.selected)
             it.copy(selected = !it.selected)
         }
         selectedPositions[0] = -1
