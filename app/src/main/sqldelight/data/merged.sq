@@ -105,7 +105,8 @@ SET
     get_chapter_updates = coalesce(:getChapterUpdates, get_chapter_updates),
     download_chapters = coalesce(:downloadChapters, download_chapters),
     info_manga = coalesce(:infoManga, info_manga),
-    chapter_priority = coalesce(:chapterPriority, chapter_priority)
+    chapter_priority = coalesce(:chapterPriority, chapter_priority),
+    chapter_sort_mode = coalesce(:chapterSortMode, chapter_sort_mode)
 WHERE _id = :id;
 
 deleteById:

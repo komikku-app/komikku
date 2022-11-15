@@ -6,4 +6,5 @@ data class MergeMangaSettingsUpdate(
     var getChapterUpdates: Boolean?,
     var chapterPriority: Int?,
     var downloadChapters: Boolean?,
+    var chapterSortMode: Int?,
 )

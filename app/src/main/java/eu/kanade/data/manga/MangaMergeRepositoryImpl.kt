@@ -68,6 +68,7 @@ class MangaMergeRepositoryImpl(
                     downloadChapters = value.downloadChapters?.toLong(),
                     infoManga = value.isInfoManga?.toLong(),
                     chapterPriority = value.chapterPriority?.toLong(),
+                    chapterSortMode = value.chapterSortMode?.toLong(),
                 )
             }
         }

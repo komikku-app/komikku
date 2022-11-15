@@ -654,11 +654,12 @@ class MangaInfoScreenModel(
                 updateMergedSettings.awaitAll(
                     mergedMangaReferences.map {
                         MergeMangaSettingsUpdate(
-                            it.id!!,
-                            it.isInfoManga,
-                            it.getChapterUpdates,
-                            it.chapterPriority,
-                            it.downloadChapters,
+                            id = it.id!!,
+                            isInfoManga = it.isInfoManga,
+                            getChapterUpdates = it.getChapterUpdates,
+                            chapterPriority = it.chapterPriority,
+                            downloadChapters = it.downloadChapters,
+                            chapterSortMode = it.chapterSortMode,
                         )
                     },
                 )

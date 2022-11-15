@@ -66,7 +66,7 @@ class EditMergedSettingsState(
 
         mergedMangaAdapter?.isHandleDragEnabled = isPriorityOrder
 
-        mergedMangaAdapter?.updateDataSet(mergedMangas.map { it.toModel() })
+        mergedMangaAdapter?.updateDataSet(mergedMangas.map { it.toModel() }.sortedBy { it.mergedMangaReference.chapterPriority })
     }
 
     override fun onItemReleased(position: Int) {
@@ -143,6 +143,7 @@ class EditMergedSettingsState(
 
     fun onPositiveButtonClick() {
         onPositiveClick(listOfNotNull(mergeReference) + mergedMangas.map { it.second })
+        onDismissRequest()
     }
 }
 

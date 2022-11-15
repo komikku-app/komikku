@@ -8,8 +8,8 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import logcat.LogPriority
 
 class GetMergedChapterByMangaId(
@@ -19,14 +19,14 @@ class GetMergedChapterByMangaId(
 ) {
 
     suspend fun await(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return transformMergedChapters(mangaId, getFromDatabase(mangaId), editScanlators, dedupe)
+        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId), editScanlators, dedupe)
     }
 
     suspend fun subscribe(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): Flow<List<Chapter>> {
         return try {
             chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId)
-                .map {
-                    transformMergedChapters(mangaId, it, editScanlators, dedupe)
+                .combine(getMergedReferencesById.subscribe(mangaId)) { chapters, references ->
+                    transformMergedChapters(references, chapters, editScanlators, dedupe)
                 }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
@@ -44,8 +44,7 @@ class GetMergedChapterByMangaId(
     }
 
     // TODO more chapter dedupe
-    suspend fun transformMergedChapters(mangaId: Long, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
-        val mangaReferences = getMergedReferencesById.await(mangaId)
+    fun transformMergedChapters(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
         val chapters = if (editScanlators) {
             val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
             chapterList.map { chapter ->
