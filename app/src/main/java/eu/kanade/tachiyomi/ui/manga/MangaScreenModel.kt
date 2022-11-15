@@ -942,7 +942,7 @@ class MangaInfoScreenModel(
             val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
             // SY -->
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
-            val source = mergedData?.sources?.find { manga.source == it.id }
+            val source = mergedData?.sources?.find { manga.source == it.id }?.takeIf { mergedData.sources.size > 2 }
             // SY <--
             val downloaded = downloadManager.isChapterDownloaded(
                 // SY -->
