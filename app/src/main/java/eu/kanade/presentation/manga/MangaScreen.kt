@@ -810,6 +810,9 @@ private fun LazyListScope.sharedChapterItems(
             date = chapterItem.dateUploadString,
             readProgress = chapterItem.readProgressString,
             scanlator = chapterItem.chapter.scanlator.takeIf { !it.isNullOrBlank() /* SY --> */ && chapterItem.showScanlator /* SY <-- */ },
+            // SY -->
+            sourceName = chapterItem.sourceName,
+            // SY <--
             read = chapterItem.chapter.read,
             bookmark = chapterItem.chapter.bookmark,
             selected = chapterItem.selected,

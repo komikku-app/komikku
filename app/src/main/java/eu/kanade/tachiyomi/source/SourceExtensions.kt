@@ -13,10 +13,13 @@ fun Source.getPreferenceKey(): String = "source_$id"
 
 fun Source.toSourceData(): SourceData = SourceData(id = id, lang = lang, name = name)
 
-fun Source.getNameForMangaInfo(mergeSources: List<Source>?): String {
-    val preferences = Injekt.get<SourcePreferences>()
-    val enabledLanguages = preferences.enabledLanguages().get()
-        .filterNot { it in listOf("all", "other") }
+fun Source.getNameForMangaInfo(
+    // SY -->
+    mergeSources: List<Source>?,
+    enabledLanguages: List<String> = Injekt.get<SourcePreferences>().enabledLanguages().get()
+        .filterNot { it in listOf("all", "other") },
+    // SY <--
+): String {
     val hasOneActiveLanguages = enabledLanguages.size == 1
     val isInEnabledLanguages = lang in enabledLanguages
     return when {

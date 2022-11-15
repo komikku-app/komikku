@@ -42,6 +42,9 @@ fun MangaChapterListItem(
     date: String?,
     readProgress: String?,
     scanlator: String?,
+    // SY -->
+    sourceName: String?,
+    // SY <--
     read: Boolean,
     bookmark: Boolean,
     selected: Boolean,
@@ -104,7 +107,7 @@ fun MangaChapterListItem(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        if (readProgress != null || scanlator != null) DotSeparatorText()
+                        if (readProgress != null || scanlator != null /* SY --> */ || sourceName != null/* SY <-- */) DotSeparatorText()
                     }
                     if (readProgress != null) {
                         Text(
@@ -113,8 +116,18 @@ fun MangaChapterListItem(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.alpha(ReadItemAlpha),
                         )
+                        if (scanlator != null/* SY --> */ || sourceName != null/* SY <-- */) DotSeparatorText()
+                    }
+                    // SY -->
+                    if (sourceName != null) {
+                        Text(
+                            text = sourceName,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         if (scanlator != null) DotSeparatorText()
                     }
+                    // SY <--
                     if (scanlator != null) {
                         Text(
                             text = scanlator,

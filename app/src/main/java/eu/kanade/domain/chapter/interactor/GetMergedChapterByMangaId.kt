@@ -3,7 +3,6 @@ package eu.kanade.domain.chapter.interactor
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.repository.ChapterRepository
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
@@ -15,18 +14,17 @@ import logcat.LogPriority
 class GetMergedChapterByMangaId(
     private val chapterRepository: ChapterRepository,
     private val getMergedReferencesById: GetMergedReferencesById,
-    private val sourceManager: SourceManager,
 ) {
 
-    suspend fun await(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId), editScanlators, dedupe)
+    suspend fun await(mangaId: Long, dedupe: Boolean = true): List<Chapter> {
+        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId), dedupe)
     }
 
-    suspend fun subscribe(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): Flow<List<Chapter>> {
+    suspend fun subscribe(mangaId: Long, dedupe: Boolean = true): Flow<List<Chapter>> {
         return try {
             chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId)
                 .combine(getMergedReferencesById.subscribe(mangaId)) { chapters, references ->
-                    transformMergedChapters(references, chapters, editScanlators, dedupe)
+                    transformMergedChapters(references, chapters, dedupe)
                 }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
@@ -44,27 +42,8 @@ class GetMergedChapterByMangaId(
     }
 
     // TODO more chapter dedupe
-    fun transformMergedChapters(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
-        val chapters = if (editScanlators) {
-            val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
-            chapterList.map { chapter ->
-                val source = sources.firstOrNull { chapter.mangaId == it.second }?.first
-                if (source != null) {
-                    chapter.copy(
-                        scanlator = if (chapter.scanlator.isNullOrBlank()) {
-                            source.name
-                        } else {
-                            "$source: ${chapter.scanlator}"
-                        },
-                    )
-                } else {
-                    chapter
-                }
-            }
-        } else {
-            chapterList
-        }
-        return if (dedupe) dedupeChapterList(mangaReferences, chapters) else chapters
+    fun transformMergedChapters(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>, dedupe: Boolean): List<Chapter> {
+        return if (dedupe) dedupeChapterList(mangaReferences, chapterList) else chapterList
     }
 
     private fun dedupeChapterList(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>): List<Chapter> {

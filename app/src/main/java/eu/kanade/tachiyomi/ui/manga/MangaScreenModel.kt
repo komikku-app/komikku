@@ -45,6 +45,7 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
@@ -66,6 +67,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
@@ -324,7 +326,7 @@ class MangaInfoScreenModel(
         coroutineScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
-            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId, true) else getMangaAndChapters.awaitChapters(mangaId))
+            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
                 .toChapterItemsParams(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
@@ -933,11 +935,15 @@ class MangaInfoScreenModel(
     ): List<ChapterItem> {
         // SY -->
         val isExhManga = manga.isEhBasedManga()
+        val enabledLanguages = Injekt.get<SourcePreferences>().enabledLanguages().get()
+            .filterNot { it in listOf("all", "other") }
         // SY <--
         return map { chapter ->
             val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
-            val chapter = chapter.let { if (mergedData != null) it.toMergedDownloadedChapter() else it }
+            // SY -->
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
+            val source = mergedData?.sources?.find { manga.source == it.id }
+            // SY <--
             val downloaded = downloadManager.isChapterDownloaded(
                 // SY -->
                 chapter.name,
@@ -979,6 +985,7 @@ class MangaInfoScreenModel(
                     )
                 },
                 // SY -->
+                sourceName = source?.getNameForMangaInfo(null, enabledLanguages = enabledLanguages),
                 showScanlator = !isExhManga,
                 // SY <--
             )
@@ -986,10 +993,6 @@ class MangaInfoScreenModel(
     }
 
     // SY -->
-    private fun Chapter.toMergedDownloadedChapter() = copy(
-        scanlator = scanlator?.substringAfter(": "),
-    )
-
     private fun getPagePreviews(manga: Manga, source: Source) {
         coroutineScope.launchIO {
             when (val result = getPagePreviews.await(manga, source, 1)) {
@@ -1174,7 +1177,7 @@ class MangaInfoScreenModel(
         if (state.source is MergedSource) {
             chapters.groupBy { it.mangaId }.forEach { map ->
                 val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
-                downloadManager.downloadChapters(manga, map.value.map { it.toMergedDownloadedChapter() })
+                downloadManager.downloadChapters(manga, map.value)
             }
         } else { /* SY <-- */
             val manga = state.manga
@@ -1661,7 +1664,8 @@ data class ChapterItem(
     val selected: Boolean = false,
 
     // SY -->
-    val showScanlator: Boolean = true,
+    val sourceName: String?,
+    val showScanlator: Boolean,
     // SY <--
 ) {
     val isDownloaded = downloadState == Download.State.DOWNLOADED
