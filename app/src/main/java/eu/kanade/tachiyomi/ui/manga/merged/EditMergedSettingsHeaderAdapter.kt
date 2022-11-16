@@ -43,7 +43,7 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 android.R.layout.simple_spinner_item,
                 listOfNotNull(
                     itemView.context.getString(R.string.no_dedupe),
-                    itemView.context.getString(R.string.dedupe_priority).let { null },
+                    itemView.context.getString(R.string.dedupe_priority),
                     itemView.context.getString(R.string.dedupe_most_chapters),
                     itemView.context.getString(R.string.dedupe_highest_chapter),
                 ),
@@ -54,9 +54,9 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 binding.dedupeModeSpinner.setSelection(
                     when (it.chapterSortMode) {
                         MergedMangaReference.CHAPTER_SORT_NO_DEDUPE -> 0
-                        /*MergedMangaReference.CHAPTER_SORT_PRIORITY -> 1*/
-                        MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> 1
-                        MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> 2
+                        MergedMangaReference.CHAPTER_SORT_PRIORITY -> 1
+                        MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> 2
+                        MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> 3
                         else -> 0
                     },
                 )
@@ -70,9 +70,9 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 ) {
                     state.mergeReference?.chapterSortMode = when (position) {
                         0 -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
-                        /*1 -> MergedMangaReference.CHAPTER_SORT_PRIORITY*/
-                        1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
-                        2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
+                        1 -> MergedMangaReference.CHAPTER_SORT_PRIORITY
+                        2 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
+                        3 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
                         else -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     }
                     xLogD(state.mergeReference?.chapterSortMode)
