@@ -29,6 +29,16 @@ abstract class SourcePagingSource(
         } catch (e: Exception) {
             return LoadResult.Error(e)
         }
+
+        // SY -->
+        return getPageLoadResult(params, mangasPage)
+        // SY <--
+    }
+
+    // SY -->
+    open fun getPageLoadResult(params: LoadParams<Long>, mangasPage: MangasPage): LoadResult.Page<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */> {
+        val page = params.key ?: 1
+
         // SY -->
         val metadata = if (mangasPage is MetadataMangasPage) {
             mangasPage.mangasMetadata
@@ -46,6 +56,7 @@ abstract class SourcePagingSource(
             nextKey = if (mangasPage.hasNextPage) page + 1 else null,
         )
     }
+    // SY <--
 
     override fun getRefreshKey(state: PagingState<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */>): Long? {
         return state.anchorPosition?.let { anchorPosition ->

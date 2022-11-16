@@ -191,14 +191,7 @@ class EHentai(
                     tags += parsedTags
 
                     if (infoElements != null) {
-                        genre = getGenre(
-                            infoElements.getOrNull(1),
-                            genreString = infoElements.getOrNull(1)
-                                ?.text()
-                                ?.nullIfBlank()
-                                ?.lowercase()
-                                ?.replace(" ", ""),
-                        )
+                        genre = getGenre(infoElements.getOrNull(1))
 
                         datePosted = getDateTag(infoElements.getOrNull(2))
 
@@ -208,13 +201,7 @@ class EHentai(
 
                         length = getPageCount(infoElements.getOrNull(5))
                     } else {
-                        val parsedGenre = body.selectFirst(".gl1c div")
-                        genre = getGenre(
-                            genreString = parsedGenre?.text()
-                                ?.nullIfBlank()
-                                ?.lowercase()
-                                ?.replace(" ", ""),
-                        )
+                        genre = getGenre(body.selectFirst(".gl1c div"))
 
                         val info = body.selectFirst(".gl2c")!!
                         val extraInfo = body.selectFirst(".gl4c")!!
@@ -239,34 +226,49 @@ class EHentai(
                     }
                 },
             )
+        }.ifEmpty {
+            selectFirst(".searchwarn")?.let { throw Exception(it.text()) }
+            emptyList()
         }
 
         val parsedLocation = doc.location().toHttpUrlOrNull()
+        val isReversed = parsedLocation != null && parsedLocation.queryParameterNames.contains(REVERSE_PARAM)
 
         // Add to page if required
-        val hasNextPage = if (parsedLocation == null ||
-            !parsedLocation.queryParameterNames.contains(REVERSE_PARAM)
-        ) {
-            select("a[onclick=return false]").last()
-                ?.let {
-                    it.text() == ">"
-                }
-                ?: select(".searchnav >div > a")
-                    .any { it.attr("href").contains("next") }
+        val hasNextPage = if (isReversed) {
+            select(".searchnav >div > a")
+                .any { "prev" in it.attr("href") }
         } else {
-            parsedLocation.queryParameter(REVERSE_PARAM)!!.toBoolean()
+            select(".searchnav >div > a")
+                .any { "next" in it.attr("href") }
         }
-        parsedMangas to hasNextPage
+        val nextPage = if (parsedLocation?.pathSegments?.contains("toplist.php") == true) {
+            ((parsedLocation!!.queryParameter("p")?.toLong() ?: 0) + 2).takeIf { it <= 200 }
+        } else if (hasNextPage) {
+            parsedMangas.let { if (isReversed) it.first() else it.last() }
+                .manga
+                .url
+                .let { EHentaiSearchMetadata.galleryId(it).toLong() }
+        } else {
+            null
+        }
+
+        parsedMangas.let { if (isReversed) it.reversed() else it } to nextPage
     }
 
-    private fun getGenre(element: Element? = null, genreString: String? = null): String? {
+    private fun getGenre(element: Element?): String? {
         return element?.attr("onclick")
             ?.nullIfBlank()
             ?.substringAfterLast('/')
             ?.removeSuffix("'")
             ?.trim()
             ?.substringAfterLast('/')
-            ?.removeSuffix("'") ?: genreString
+            ?.removeSuffix("'")
+            ?: element?.text()
+                ?.nullIfBlank()
+                ?.lowercase()
+                ?.replace(" ", "")
+                ?.trim()
     }
 
     private fun getDateTag(element: Element?): Long? {
@@ -315,8 +317,13 @@ class EHentai(
     /**
      * Parse a list of galleries
      */
-    private fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let { mangaFromSource ->
-        MetadataMangasPage(mangaFromSource.first.map { it.manga }, mangaFromSource.second, mangaFromSource.first.map { it.metadata })
+    private fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let { (parsedManga, nextPage) ->
+        MetadataMangasPage(
+            parsedManga.map { it.manga },
+            nextPage != null,
+            parsedManga.map { it.metadata },
+            nextPage,
+        )
     }
 
     override suspend fun getChapterList(manga: SManga): List<SChapter> = getChapterList(manga) {}
@@ -447,7 +454,7 @@ class EHentai(
         return client.newCall(chapterPageRequest(np)).asObservableSuccess()
     }
     private fun chapterPageRequest(np: String): Request {
-        return exGet(np, null, headers)
+        return exGet(url = np, additionalHeaders = headers)
     }
 
     private fun nextPageUrl(element: Element): String? = element.select("a[onclick=return false]").last()?.let {
@@ -477,22 +484,34 @@ class EHentai(
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
-            searchMangaRequestObservable(page, query, filters).flatMap {
-                client.newCall(it).asObservableSuccess()
-            }.map { response ->
-                searchMangaParse(response)
-            }.checkValid()
+            super.fetchSearchManga(page, query, filters).checkValid()
         }
 
-    private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
+    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         val uri = baseUrl.toUri().buildUpon()
         val toplist = ToplistOption.values()[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]
+        val isReverseFilterEnabled = filters.any { it is ReverseFilter && it.state }
+        val jumpSeekValue = filters.firstNotNullOfOrNull { (it as? JumpSeekFilter)?.state?.nullIfBlank() }
 
         if (toplist == ToplistOption.NONE) {
             uri.appendQueryParameter("f_apply", "Apply+Filter")
             uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
             filters.forEach {
                 if (it is UriFilter) it.addToUri(uri)
+            }
+            // Reverse search results on filter
+            if (isReverseFilterEnabled) {
+                uri.appendQueryParameter(REVERSE_PARAM, "on")
+            }
+            if (jumpSeekValue != null && page == 1) {
+                if (
+                    MATCH_SEEK_REGEX.matches(jumpSeekValue) ||
+                    (MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let { it in 2007..2099 } == true)
+                ) {
+                    uri.appendQueryParameter("seek", jumpSeekValue)
+                } else if (MATCH_JUMP_REGEX.matches(jumpSeekValue)) {
+                    uri.appendQueryParameter("jump", jumpSeekValue)
+                }
             }
         } else {
             uri.appendPath("toplist.php")
@@ -506,31 +525,12 @@ class EHentai(
             null
         }
 
-        val request = exGet(uri.toString(), regularPage)
-
-        // Reverse search results on filter
-        if (toplist == ToplistOption.NONE && filters.any { it is ReverseFilter && it.state }) {
-            return client.newCall(request)
-                .asObservableSuccess()
-                .map {
-                    val doc = it.asJsoup()
-
-                    val elements = doc.select(".ptt > tbody > tr > td")
-
-                    val totalElement = elements[elements.size - 2]
-
-                    val thisPage = totalElement.text().toInt() - (page - 1)
-
-                    uri.appendQueryParameter(REVERSE_PARAM, (thisPage > 1).toString())
-
-                    exGet(uri.toString(), thisPage)
-                }
-        } else {
-            return Observable.just(request)
-        }
+        return exGet(
+            url = uri.toString(),
+            next = if (!isReverseFilterEnabled) regularPage else null,
+            prev = if (isReverseFilterEnabled) regularPage else null,
+        )
     }
-
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
 
     override fun latestUpdatesRequest(page: Int) = exGet(baseUrl, page)
 
@@ -538,20 +538,18 @@ class EHentai(
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
     override fun latestUpdatesParse(response: Response) = genericMangaParse(response)
 
-    private fun exGet(url: String, next: Int? = null, additionalHeaders: Headers? = null, cacheControl: CacheControl? = null): Request {
+    private fun exGet(
+        url: String,
+        next: Int? = null,
+        prev: Int? = null,
+        additionalHeaders: Headers? = null,
+        cacheControl: CacheControl? = null,
+    ): Request {
         return GET(
-            if (next != null) {
-                if (exh) {
-                    if (next > 1) {
-                        addParam(url, "next", next.toString())
-                    } else {
-                        url
-                    }
-                } else {
-                    addParam(url, "page", (next - 1).toString())
-                }
-            } else {
-                url
+            when {
+                next != null && next > 1 -> addParam(url, "next", next.toString())
+                prev != null && prev > 0 -> addParam(url, "prev", prev.toString())
+                else -> url
             },
             if (additionalHeaders != null) {
                 val headers = headers.newBuilder()
@@ -815,7 +813,7 @@ class EHentai(
             // Next page
 
             page = parsed.first.lastOrNull()?.manga?.url?.let { EHentaiSearchMetadata.galleryId(it) }?.toInt() ?: 0
-        } while (parsed.second)
+        } while (parsed.second != null)
 
         return Pair(result.toList(), favNames.orEmpty())
     }
@@ -886,8 +884,6 @@ class EHentai(
 
     // Filters
     override fun getFilterList(): FilterList {
-        val excludePrefix = "-"
-
         return FilterList(
             *if (exh) {
                 emptyArray()
@@ -898,19 +894,12 @@ class EHentai(
                     Filter.Separator(),
                 )
             },
-            AutoCompleteTags(
-                EHTags.getNamespaces().map { "$it:" } + EHTags.getAllTags(),
-                EHTags.getNamespaces().map { "$it:" },
-                excludePrefix,
-            ),
-            if (preferences.exhWatchedListDefaultState().get()) {
-                Watched(isEnabled = true)
-            } else {
-                Watched(isEnabled = false)
-            },
+            AutoCompleteTags(),
+            Watched(isEnabled = preferences.exhWatchedListDefaultState().get()),
             GenreGroup(),
             AdvancedGroup(),
             ReverseFilter(),
+            JumpSeekFilter(),
         )
     }
 
@@ -992,9 +981,16 @@ class EHentai(
             filter.state.trimAll().dropBlank().mapNotNull { tag ->
                 val split = tag.split(":").filterNot { it.isBlank() }
                 if (split.size > 1) {
-                    val namespace = split[0].removePrefix("-")
+                    val namespace = split[0].removePrefix("-").removePrefix("~")
                     val exclude = split[0].startsWith("-")
-                    AdvSearchEntry(namespace to split[1], exclude)
+                    val or = split[0].startsWith("~")
+
+                    AdvSearchEntry(namespace to split[1], exclude, or)
+                } else if (split.size == 1) {
+                    val item = split.first()
+                    val exclude = item.startsWith("-")
+                    val or = item.startsWith("~")
+                    AdvSearchEntry(null to item, exclude, or)
                 } else {
                     null
                 }
@@ -1003,10 +999,12 @@ class EHentai(
 
         advSearch.forEach { entry ->
             if (entry.exclude) stringBuilder.append("-")
+            if (entry.or) stringBuilder.append("~")
+            val namespace = entry.search.first?.let { "$it:" }.orEmpty()
             if (entry.search.second.contains(" ")) {
-                stringBuilder.append(("""${entry.search.first}:"${entry.search.second}$""""))
+                stringBuilder.append(("""$namespace"${entry.search.second}$""""))
             } else {
-                stringBuilder.append("${entry.search.first}:${entry.search.second}$")
+                stringBuilder.append("$namespace${entry.search.second}$")
             }
             stringBuilder.append(" ")
         }
@@ -1014,15 +1012,15 @@ class EHentai(
         return stringBuilder.toString().trim().also { xLogD(it) }
     }
 
-    data class AdvSearchEntry(val search: Pair<String, String>, val exclude: Boolean)
+    data class AdvSearchEntry(val search: Pair<String?, String>, val exclude: Boolean, val or: Boolean)
 
-    class AutoCompleteTags(tags: List<String>, skipAutoFillTags: List<String>, excludePrefix: String) :
+    class AutoCompleteTags :
         Filter.AutoComplete(
             name = "Tags",
             hint = "Search tags here (limit of 8)",
-            values = tags,
-            skipAutoFillTags = skipAutoFillTags,
-            excludePrefix = excludePrefix,
+            values = EHTags.getNamespaces().map { "$it:" } + EHTags.getAllTags(),
+            skipAutoFillTags = EHTags.getNamespaces().map { "$it:" },
+            validPrefixes = listOf("-", "~"),
             state = emptyList(),
         )
 
@@ -1052,21 +1050,20 @@ class EHentai(
     class AdvancedGroup : UriGroup<Filter<*>>(
         "Advanced Options",
         listOf(
-            AdvancedOption("Search Gallery Name", "f_sname", true),
-            AdvancedOption("Search Gallery Tags", "f_stags", true),
-            AdvancedOption("Search Gallery Description", "f_sdesc"),
-            AdvancedOption("Search Torrent Filenames", "f_storr"),
-            AdvancedOption("Only Show Galleries With Torrents", "f_sto"),
-            AdvancedOption("Search Low-Power Tags", "f_sdt1"),
-            AdvancedOption("Search Downvoted Tags", "f_sdt2"),
-            AdvancedOption("Show Expunged Galleries", "f_sh"),
+            AdvancedOption("Browse Expunged Galleries", "f_sh"),
+            AdvancedOption("Require Gallery Torrent", "f_sto"),
             RatingOption(),
             MinPagesOption(),
             MaxPagesOption(),
+            AdvancedOption("Disable custom Language filters", "f_sfl"),
+            AdvancedOption("Disable custom Uploader filters", "f_sfu"),
+            AdvancedOption("Disable custom Tag filters", "f_sft"),
         ),
     )
 
     class ReverseFilter : Filter.CheckBox("Reverse search results")
+
+    class JumpSeekFilter : Filter.Text("Jump/Seek")
 
     override val name = if (exh) {
         "ExHentai"
@@ -1291,6 +1288,10 @@ class EHentai(
         private const val THUMB_DOMAIN = "ehgt.org"
         private const val BLANK_THUMB = "blank.gif"
         private const val BLANK_PREVIEW_THUMB = "https://$THUMB_DOMAIN/g/$BLANK_THUMB"
+
+        private val MATCH_YEAR_REGEX = "^\\d{4}\$".toRegex()
+        private val MATCH_SEEK_REGEX = "^\\d{2,4}-\\d{1,2}".toRegex()
+        private val MATCH_JUMP_REGEX = "^\\d+(\$|d\$|w\$|m\$|y\$|-\$)".toRegex()
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!

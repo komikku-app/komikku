@@ -38,15 +38,16 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
                 holder.itemView.context,
                 android.R.layout.simple_dropdown_item_1line,
                 filter.values,
-                filter.excludePrefix,
+                filter.validPrefixes,
             ),
         )
         holder.autoComplete.threshold = 3
 
         // select from auto complete
         holder.autoComplete.setOnItemClickListener { adapterView, _, chipPosition, _ ->
-            val name = adapterView.getItemAtPosition(chipPosition) as String
-            if (name !in if (filter.excludePrefix != null && name.startsWith(filter.excludePrefix!!)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
+            var name = (adapterView.getItemAtPosition(chipPosition) as String).trim()
+            filter.validPrefixes.find { name.startsWith(it) }?.let { name = name.removePrefix(it).trim() }
+            if (name !in filter.skipAutoFillTags) {
                 holder.autoComplete.text = null
                 addTag(name, holder)
             }
@@ -54,12 +55,14 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
 
         // done keyboard button is pressed
         holder.autoComplete.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.toString() !in if (filter.excludePrefix != null && textView.text.toString().startsWith(filter.excludePrefix!!)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
+            if (actionId != EditorInfo.IME_ACTION_DONE) return@setOnEditorActionListener false
+            var name = textView.text.toString().trim()
+            filter.validPrefixes.find { name.startsWith(it) }?.let { name = name.removePrefix(it).trim() }
+            if (name !in filter.skipAutoFillTags) {
                 textView.text = null
-                addTag(textView.text.toString(), holder)
-                return@setOnEditorActionListener true
+                addTag(name, holder)
             }
-            false
+            true
         }
 
         // space or comma is detected
@@ -69,7 +72,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
             }
 
             if (it.last() == ',') {
-                val name = it.substring(0, it.length - 1)
+                val name = it.toString().dropLast(1).trim()
                 addTag(name, holder)
 
                 holder.autoComplete.text = null

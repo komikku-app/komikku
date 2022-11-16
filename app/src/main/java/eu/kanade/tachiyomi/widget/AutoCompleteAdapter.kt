@@ -5,11 +5,11 @@ import android.widget.ArrayAdapter
 import android.widget.Filter
 import android.widget.Filterable
 
-class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<String>, val excludePrefix: String?) :
+class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<String>, val validPrefixes: List<String>) :
     ArrayAdapter<String>(context, resource, objects),
     Filterable {
 
-    private var mOriginalValues: List<String>? = objects
+    private val mOriginalValues: List<String> = objects
     private var mFilter: ListFilter? = null
 
     override fun getCount(): Int {
@@ -28,21 +28,27 @@ class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<Str
     }
 
     private inner class ListFilter : Filter() {
-        override fun performFiltering(prefix: CharSequence?): FilterResults {
+        override fun performFiltering(constraint: CharSequence?): FilterResults {
             val results = FilterResults()
-            if (mOriginalValues == null) {
-                mOriginalValues = objects
-            }
 
-            if (prefix == null || prefix.isEmpty()) {
-                val list = mOriginalValues!!
+            if (constraint.isNullOrBlank()) {
+                val list = mOriginalValues
                 results.values = list
                 results.count = list.size
             } else {
-                val prefixString = prefix.toString()
-                val containsPrefix: Boolean = excludePrefix?.let { prefixString.startsWith(it) } ?: false
-                val filterResults = mOriginalValues!!.filter { it.contains(if (excludePrefix != null) prefixString.removePrefix(excludePrefix) else prefixString, true) }
-                results.values = if (containsPrefix) filterResults.map { excludePrefix + it } else filterResults
+                val constraintString = constraint.toString()
+                val prefix = validPrefixes.find { constraintString.startsWith(it) }
+                val constraintStringNoPrefix = if (prefix != null) {
+                    constraintString.removePrefix(prefix)
+                } else {
+                    constraintString
+                }
+                val filterResults = mOriginalValues.filter { it.contains(constraintStringNoPrefix, true) }
+                results.values = if (prefix != null) {
+                    filterResults.map { prefix + it }
+                } else {
+                    filterResults
+                }
                 results.count = filterResults.size
             }
             return results

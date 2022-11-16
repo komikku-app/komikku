@@ -31,7 +31,7 @@ sealed class Filter<T>(val name: String, var state: T) {
         val hint: String,
         val values: List<String>,
         val skipAutoFillTags: List<String> = emptyList(),
-        val excludePrefix: String? = null,
+        val validPrefixes: List<String> = emptyList(),
         state: List<String>,
     ) : Filter<List<String>>(name, state)
     // SY <--
