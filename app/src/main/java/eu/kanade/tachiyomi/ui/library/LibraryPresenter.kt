@@ -859,7 +859,7 @@ class LibraryPresenter(
             val parsedQuery = searchEngine.parseQuery(query)
             val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
             val tracks = if (loggedServices.isNotEmpty()) {
-                getTracks.await(unfiltered.map { it.libraryManga.manga.id }.distinct())
+                getTracks.await().groupBy { it.mangaId }
             } else {
                 emptyMap()
             }
