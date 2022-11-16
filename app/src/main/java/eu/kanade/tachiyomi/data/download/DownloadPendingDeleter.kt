@@ -184,44 +184,4 @@ class DownloadPendingDeleter(
         val title: String,
         val source: Long,
     )
-
-    /**
-     * Returns a manga entry from a manga model.
-     */
-    private fun Manga.toEntry(): MangaEntry {
-        return MangaEntry(id!!, url, /* SY --> */ ogTitle /* SY <-- */, source)
-    }
-
-    /**
-     * Returns a chapter entry from a chapter model.
-     */
-    private fun Chapter.toEntry(): ChapterEntry {
-        return ChapterEntry(id!!, url, name, scanlator)
-    }
-
-    /**
-     * Returns a manga model from a manga entry.
-     */
-    private fun MangaEntry.toModel(): Manga {
-        return Manga.create().copy(
-            url = url,
-            // SY -->
-            ogTitle = title,
-            // SY <--
-            source = source,
-            id = id,
-        )
-    }
-
-    /**
-     * Returns a chapter model from a chapter entry.
-     */
-    private fun ChapterEntry.toModel(): Chapter {
-        return Chapter.create().copy(
-            id = id,
-            url = url,
-            name = name,
-            scanlator = scanlator,
-        )
-    }
 }

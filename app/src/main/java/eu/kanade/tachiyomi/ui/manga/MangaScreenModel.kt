@@ -138,7 +138,6 @@ class MangaInfoScreenModel(
     private val downloadCache: DownloadCache = Injekt.get(),
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
     // SY -->
-    private val uiPreferences: UiPreferences = Injekt.get(),
     private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),

@@ -328,8 +328,8 @@ class DownloadManager(
         if (removeRead) {
             val readChapters = allChapters.filter { it.read }
             val readChapterDirs = provider.findChapterDirs(readChapters, manga, source)
-            readChapterDirs.forEach { it.delete() }
-            cleaned += readChapterDirs.size
+            readChapterDirs.second.forEach { it.delete() }
+            cleaned += readChapterDirs.second.size
             cache.removeChapters(readChapters, manga)
         }
 
