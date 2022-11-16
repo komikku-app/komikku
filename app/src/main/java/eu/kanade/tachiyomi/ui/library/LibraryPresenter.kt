@@ -845,62 +845,65 @@ class LibraryPresenter(
         }
 
         val items = produceState(initialValue = unfiltered, unfiltered, searchQuery) {
-            val query = searchQuery
             value = withIOContext {
-                if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
-                    // Prepare filter object
-                    val parsedQuery = searchEngine.parseQuery(query)
-                    val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
-                    val tracks = if (loggedServices.isNotEmpty()) {
-                        getTracks.await(unfiltered.map { it.libraryManga.manga.id }.distinct())
-                    } else {
-                        emptyMap()
-                    }
-                    val sources = unfiltered
-                        .distinctBy { it.libraryManga.manga.source }
-                        .mapNotNull { sourceManager.get(it.libraryManga.manga.source) }
-                        .associateBy { it.id }
-                    unfiltered.asFlow().cancellable().filter { item ->
-                        val mangaId = item.libraryManga.manga.id
-                        val sourceId = item.libraryManga.manga.source
-                        if (isMetadataSource(sourceId)) {
-                            if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
-                                // No meta? Filter using title
-                                filterManga(
-                                    queries = parsedQuery,
-                                    libraryManga = item.libraryManga,
-                                    tracks = tracks[mangaId],
-                                    source = sources[sourceId],
-                                )
-                            } else {
-                                val tags = getSearchTags.await(mangaId)
-                                val titles = getSearchTitles.await(mangaId)
-                                filterManga(
-                                    queries = parsedQuery,
-                                    libraryManga = item.libraryManga,
-                                    tracks = tracks[mangaId],
-                                    source = sources[sourceId],
-                                    checkGenre = false,
-                                    searchTags = tags,
-                                    searchTitles = titles,
-                                )
-                            }
-                        } else {
-                            filterManga(
-                                queries = parsedQuery,
-                                libraryManga = item.libraryManga,
-                                tracks = tracks[mangaId],
-                                source = sources[sourceId],
-                            )
-                        }
-                    }.toList()
-                } else {
-                    unfiltered
-                }
+                filterLibrary(unfiltered, searchQuery)
             }
         }
 
         return items.value
+    }
+
+    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?): List<LibraryItem> {
+        return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
+            // Prepare filter object
+            val parsedQuery = searchEngine.parseQuery(query)
+            val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
+            val tracks = if (loggedServices.isNotEmpty()) {
+                getTracks.await(unfiltered.map { it.libraryManga.manga.id }.distinct())
+            } else {
+                emptyMap()
+            }
+            val sources = unfiltered
+                .distinctBy { it.libraryManga.manga.source }
+                .mapNotNull { sourceManager.get(it.libraryManga.manga.source) }
+                .associateBy { it.id }
+            unfiltered.asFlow().cancellable().filter { item ->
+                val mangaId = item.libraryManga.manga.id
+                val sourceId = item.libraryManga.manga.source
+                if (isMetadataSource(sourceId)) {
+                    if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
+                        // No meta? Filter using title
+                        filterManga(
+                            queries = parsedQuery,
+                            libraryManga = item.libraryManga,
+                            tracks = tracks[mangaId],
+                            source = sources[sourceId],
+                        )
+                    } else {
+                        val tags = getSearchTags.await(mangaId)
+                        val titles = getSearchTitles.await(mangaId)
+                        filterManga(
+                            queries = parsedQuery,
+                            libraryManga = item.libraryManga,
+                            tracks = tracks[mangaId],
+                            source = sources[sourceId],
+                            checkGenre = false,
+                            searchTags = tags,
+                            searchTitles = titles,
+                        )
+                    }
+                } else {
+                    filterManga(
+                        queries = parsedQuery,
+                        libraryManga = item.libraryManga,
+                        tracks = tracks[mangaId],
+                        source = sources[sourceId],
+                    )
+                }
+            }.toList()
+        } else {
+            unfiltered
+        }
     }
 
     private fun filterManga(
@@ -1025,49 +1028,55 @@ class LibraryPresenter(
      * same category as the given manga
      */
     fun toggleRangeSelection(manga: LibraryManga) {
-        state.selection = selection.toMutableList().apply {
-            val lastSelected = lastOrNull()
-            if (lastSelected?.category != manga.category) {
-                add(manga)
-                return@apply
+        presenterScope.launchIO {
+            state.selection = selection.toMutableList().apply {
+                val lastSelected = lastOrNull()
+                if (lastSelected?.category != manga.category) {
+                    add(manga)
+                    return@apply
+                }
+                val items = loadedManga[manga.category].orEmpty().run {
+                    filterLibrary(this, searchQuery)
+                }.fastMap { it.libraryManga }
+                val lastMangaIndex = items.indexOf(lastSelected)
+                val curMangaIndex = items.indexOf(manga)
+                val selectedIds = fastMap { it.id }
+                val newSelections = when (lastMangaIndex >= curMangaIndex + 1) {
+                    true -> items.subList(curMangaIndex, lastMangaIndex)
+                    false -> items.subList(lastMangaIndex, curMangaIndex + 1)
+                }.filterNot { it.id in selectedIds }
+                addAll(newSelections)
             }
-            val items = loadedManga[manga.category].orEmpty().apply {
-                if (searchQuery.isNullOrBlank()) toList() else filter { it.filter(searchQuery!!) }
-            }.fastMap { it.libraryManga }
-            val lastMangaIndex = items.indexOf(lastSelected)
-            val curMangaIndex = items.indexOf(manga)
-            val selectedIds = fastMap { it.id }
-            val newSelections = when (lastMangaIndex >= curMangaIndex + 1) {
-                true -> items.subList(curMangaIndex, lastMangaIndex)
-                false -> items.subList(lastMangaIndex, curMangaIndex + 1)
-            }.filterNot { it.id in selectedIds }
-            addAll(newSelections)
         }
     }
 
     fun selectAll(index: Int) {
-        state.selection = state.selection.toMutableList().apply {
-            val categoryId = categories.getOrNull(index)?.id ?: -1
-            val items = loadedManga[categoryId].orEmpty().apply {
-                if (searchQuery.isNullOrBlank()) toList() else filter { it.filter(searchQuery!!) }
-            }.fastMap { it.libraryManga }
-            val selectedIds = fastMap { it.id }
-            val newSelections = items.filterNot { it.id in selectedIds }
-            addAll(newSelections)
+        presenterScope.launchIO {
+            state.selection = state.selection.toMutableList().apply {
+                val categoryId = categories.getOrNull(index)?.id ?: -1
+                val items = loadedManga[categoryId].orEmpty().run {
+                    filterLibrary(this, searchQuery)
+                }.fastMap { it.libraryManga }
+                val selectedIds = fastMap { it.id }
+                val newSelections = items.filterNot { it.id in selectedIds }
+                addAll(newSelections)
+            }
         }
     }
 
     fun invertSelection(index: Int) {
-        state.selection = selection.toMutableList().apply {
-            val categoryId = categories[index].id
-            val items = loadedManga[categoryId].orEmpty().apply {
-                if (searchQuery.isNullOrBlank()) toList() else filter { it.filter(searchQuery!!) }
-            }.fastMap { it.libraryManga }
-            val selectedIds = fastMap { it.id }
-            val (toRemove, toAdd) = items.partition { it.id in selectedIds }
-            val toRemoveIds = toRemove.fastMap { it.id }
-            removeAll { it.id in toRemoveIds }
-            addAll(toAdd)
+        presenterScope.launchIO {
+            state.selection = selection.toMutableList().apply {
+                val categoryId = categories[index].id
+                val items = loadedManga[categoryId].orEmpty().run {
+                    filterLibrary(this, searchQuery)
+                }.fastMap { it.libraryManga }
+                val selectedIds = fastMap { it.id }
+                val (toRemove, toAdd) = items.partition { it.id in selectedIds }
+                val toRemoveIds = toRemove.fastMap { it.id }
+                removeAll { it.id in toRemoveIds }
+                addAll(toAdd)
+            }
         }
     }
 
