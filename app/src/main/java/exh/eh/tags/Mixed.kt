@@ -8,6 +8,7 @@ object Mixed : TagList {
         "mixed:frottage",
         "mixed:group",
         "mixed:incest",
+        "mixed:inseki",
         "mixed:mmf threesome",
         "mixed:mmt threesome",
         "mixed:mtf threesome",

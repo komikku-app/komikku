@@ -44,6 +44,7 @@ object Other : TagList {
         "other:scanmark",
         "other:screenshots",
         "other:sketch lines",
+        "other:soushuuhen",
         "other:stereoscopic",
         "other:story arc",
         "other:tankoubon",
