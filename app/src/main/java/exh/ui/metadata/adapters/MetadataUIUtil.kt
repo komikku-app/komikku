@@ -29,7 +29,7 @@ object MetadataUIUtil {
 
     fun getGenreAndColour(context: Context, genre: String) = when (genre) {
         "doujinshi", "Doujinshi" -> SourceTagsUtil.GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
-        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.manga
+        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.manga_type
         "artistcg", "artist CG", "artist-cg", "Artist CG" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
         "gamecg", "game CG", "game-cg", "Game CG" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.game_cg
         "western" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.western
