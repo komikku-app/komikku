@@ -488,47 +488,44 @@ class EHentai(
         }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        val uri = baseUrl.toUri().buildUpon()
         val toplist = ToplistOption.values()[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]
-        val isReverseFilterEnabled = filters.any { it is ReverseFilter && it.state }
-        val jumpSeekValue = filters.firstNotNullOfOrNull { (it as? JumpSeekFilter)?.state?.nullIfBlank() }
-
-        if (toplist == ToplistOption.NONE) {
-            uri.appendQueryParameter("f_apply", "Apply+Filter")
-            uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
-            filters.forEach {
-                if (it is UriFilter) it.addToUri(uri)
-            }
-            // Reverse search results on filter
-            if (isReverseFilterEnabled) {
-                uri.appendQueryParameter(REVERSE_PARAM, "on")
-            }
-            if (jumpSeekValue != null && page == 1) {
-                if (
-                    MATCH_SEEK_REGEX.matches(jumpSeekValue) ||
-                    (MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let { it in 2007..2099 } == true)
-                ) {
-                    uri.appendQueryParameter("seek", jumpSeekValue)
-                } else if (MATCH_JUMP_REGEX.matches(jumpSeekValue)) {
-                    uri.appendQueryParameter("jump", jumpSeekValue)
-                }
-            }
-        } else {
+        if (toplist != ToplistOption.NONE) {
+            val uri = "https://e-hentai.org".toUri().buildUpon()
             uri.appendPath("toplist.php")
             uri.appendQueryParameter("tl", toplist.index.toString())
             uri.appendQueryParameter("p", (page - 1).toString())
+
+            return exGet(url = uri.toString())
         }
 
-        val regularPage = if (toplist == ToplistOption.NONE) {
-            page
-        } else {
-            null
+        val uri = baseUrl.toUri().buildUpon()
+        val isReverseFilterEnabled = filters.any { it is ReverseFilter && it.state }
+        val jumpSeekValue = filters.firstNotNullOfOrNull { (it as? JumpSeekFilter)?.state?.nullIfBlank() }
+
+        uri.appendQueryParameter("f_apply", "Apply+Filter")
+        uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
+        filters.forEach {
+            if (it is UriFilter) it.addToUri(uri)
+        }
+        // Reverse search results on filter
+        if (isReverseFilterEnabled) {
+            uri.appendQueryParameter(REVERSE_PARAM, "on")
+        }
+        if (jumpSeekValue != null && page == 1) {
+            if (
+                MATCH_SEEK_REGEX.matches(jumpSeekValue) ||
+                (MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let { it in 2007..2099 } == true)
+            ) {
+                uri.appendQueryParameter("seek", jumpSeekValue)
+            } else if (MATCH_JUMP_REGEX.matches(jumpSeekValue)) {
+                uri.appendQueryParameter("jump", jumpSeekValue)
+            }
         }
 
         return exGet(
             url = uri.toString(),
-            next = if (!isReverseFilterEnabled) regularPage else null,
-            prev = if (isReverseFilterEnabled) regularPage else null,
+            next = if (!isReverseFilterEnabled) page else null,
+            prev = if (isReverseFilterEnabled) page else null,
         )
     }
 
@@ -885,15 +882,9 @@ class EHentai(
     // Filters
     override fun getFilterList(): FilterList {
         return FilterList(
-            *if (exh) {
-                emptyArray()
-            } else {
-                arrayOf(
-                    Filter.Header("Note: Will ignore other parameters!"),
-                    ToplistOptions(),
-                    Filter.Separator(),
-                )
-            },
+            Filter.Header("Note: Will ignore other parameters!"),
+            ToplistOptions(),
+            Filter.Separator(),
             AutoCompleteTags(),
             Watched(isEnabled = preferences.exhWatchedListDefaultState().get()),
             GenreGroup(),
