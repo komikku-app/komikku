@@ -34,6 +34,7 @@ import androidx.compose.ui.util.fastMap
 import androidx.core.content.ContextCompat
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bluelinelabs.conductor.Router
+import com.commandiron.wheel_picker_compose.WheelPicker
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.ResetCategoryFlags

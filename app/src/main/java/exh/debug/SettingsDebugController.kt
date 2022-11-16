@@ -52,7 +52,7 @@ import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import exh.util.capitalize
 import kotlinx.coroutines.Dispatchers
@@ -116,7 +116,7 @@ class SettingsDebugController : BasicFullComposeController() {
                 Modifier.fillMaxSize(),
                 contentPadding = paddingValues +
                     WindowInsets.navigationBars.only(WindowInsetsSides.Vertical).asPaddingValues() +
-                    topPaddingValues,
+                    topSmallPaddingValues,
             ) {
                 item {
                     Text(

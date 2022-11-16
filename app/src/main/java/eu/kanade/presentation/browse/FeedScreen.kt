@@ -50,7 +50,7 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.MangaCover
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedPresenter
@@ -145,7 +145,7 @@ fun FeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = contentPadding + topPaddingValues,
+        contentPadding = contentPadding + topSmallPaddingValues,
     ) {
         items(
             state.items.orEmpty(),

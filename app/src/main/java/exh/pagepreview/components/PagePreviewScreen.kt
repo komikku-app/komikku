@@ -38,7 +38,7 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import exh.pagepreview.PagePreviewState
 import exh.util.floor
@@ -84,7 +84,7 @@ fun PagePreviewScreen(
                     ScrollbarLazyColumn(
                         state = lazyListState,
                         modifier = Modifier,
-                        contentPadding = paddingValues + topPaddingValues,
+                        contentPadding = paddingValues + topSmallPaddingValues,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(items) {

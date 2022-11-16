@@ -32,7 +32,7 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedPresenter
 import exh.savedsearches.models.FeedSavedSearch
@@ -152,7 +152,7 @@ fun SourceFeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = paddingValues + topPaddingValues,
+        contentPadding = paddingValues + topSmallPaddingValues,
     ) {
         items(
             state.items.orEmpty(),

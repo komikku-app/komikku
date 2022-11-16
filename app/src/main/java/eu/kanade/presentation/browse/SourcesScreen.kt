@@ -353,7 +353,7 @@ fun SourceCategoriesDialog(
 
                         Text(
                             text = it,
-                            modifier = Modifier.padding(horizontal = horizontalPadding),
+                            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
                         )
                     }
                 }

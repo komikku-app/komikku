@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,7 +44,7 @@ import androidx.compose.ui.window.DialogProperties
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.horizontalPadding
+import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -331,7 +332,7 @@ class SettingsMangadexScreen : SearchableSettings {
 
                             Text(
                                 text = followOption,
-                                modifier = Modifier.padding(horizontal = horizontalPadding),
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
                             )
                         }
                     }

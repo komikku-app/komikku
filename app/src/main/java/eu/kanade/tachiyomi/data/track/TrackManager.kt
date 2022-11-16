@@ -39,7 +39,6 @@ class TrackManager(context: Context) {
     val mangaUpdates = MangaUpdates(context, MANGA_UPDATES)
     val kavita = Kavita(context, KAVITA)
 
-
     val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita)
 
     fun getService(id: Long) = services.find { it.id == id }

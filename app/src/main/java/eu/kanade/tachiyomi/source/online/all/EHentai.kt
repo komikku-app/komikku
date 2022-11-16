@@ -243,7 +243,7 @@ class EHentai(
                 .any { "next" in it.attr("href") }
         }
         val nextPage = if (parsedLocation?.pathSegments?.contains("toplist.php") == true) {
-            ((parsedLocation!!.queryParameter("p")?.toLong() ?: 0) + 2).takeIf { it <= 200 }
+            ((parsedLocation.queryParameter("p")?.toLong() ?: 0) + 2).takeIf { it <= 200 }
         } else if (hasNextPage) {
             parsedMangas.let { if (isReversed) it.first() else it.last() }
                 .manga

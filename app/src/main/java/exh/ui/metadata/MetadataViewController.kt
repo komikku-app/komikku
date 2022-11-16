@@ -29,7 +29,7 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.clickableNoIndication
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -86,7 +86,7 @@ class MetadataViewController : FullComposeController<MetadataViewPresenter> {
                     val context = LocalContext.current
                     val items = remember(state.meta) { state.meta.getExtraInfoPairs(context) }
                     ScrollbarLazyColumn(
-                        contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+                        contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues() + topSmallPaddingValues,
                     ) {
                         items(items) { (title, text) ->
                             Row(

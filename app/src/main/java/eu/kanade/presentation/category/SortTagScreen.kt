@@ -3,6 +3,7 @@ package eu.kanade.presentation.category
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -11,9 +12,9 @@ import eu.kanade.presentation.category.components.genre.SortTagContent
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.horizontalPadding
+import eu.kanade.presentation.util.padding
 import eu.kanade.presentation.util.plus
-import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreenState
 
@@ -53,7 +54,7 @@ fun SortTagScreen(
         SortTagContent(
             tags = state.tags,
             lazyListState = lazyListState,
-            paddingValues = paddingValues + topPaddingValues + PaddingValues(horizontal = horizontalPadding),
+            paddingValues = paddingValues + topSmallPaddingValues + PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickDelete = onClickDelete,
             onMoveUp = onClickMoveUp,
             onMoveDown = onClickMoveDown,
