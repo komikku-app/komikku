@@ -496,6 +496,11 @@ object EXHMigrations {
                         }
                     }
                 }
+                if (oldVersion under 43) {
+                    if (preferenceStore.getBoolean("start_reading_button").get()) {
+                        libraryPreferences.showContinueReadingButton().set(true)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
