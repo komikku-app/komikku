@@ -1653,6 +1653,11 @@ sealed class MangaScreenState {
                         TriStateFilter.ENABLED_NOT -> !it.isDownloaded && !isLocalManga
                     }
                 }
+                // SY -->
+                .filter { chapter ->
+                    manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators.contains(group) }
+                }
+                // SY <--
                 .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }
         }
     }
