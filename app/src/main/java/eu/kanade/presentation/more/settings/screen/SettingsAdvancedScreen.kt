@@ -69,6 +69,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_MULLVAD
 import eu.kanade.tachiyomi.network.PREF_DOH_NJALLA
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
+import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.util.CrashLogUtil
@@ -318,6 +319,7 @@ class SettingsAdvancedScreen : SearchableSettings {
                         PREF_DOH_MULLVAD to "Mullvad",
                         PREF_DOH_CONTROLD to "Control D",
                         PREF_DOH_NJALLA to "Njalla",
+                        PREF_DOH_SHECAN to "Shecan",
                     ),
                     onValueChanged = {
                         context.toast(R.string.requires_app_restart)
