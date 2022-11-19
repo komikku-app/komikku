@@ -13,14 +13,18 @@ fun Uri.toShareIntent(context: Context, type: String = "image/*", message: Strin
     val uri = this
 
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        if (uri.scheme == "http" || uri.scheme == "https") putExtra(Intent.EXTRA_TEXT, uri.toString())
-        if (uri.scheme == "content") {
-            if (message != null) putExtra(Intent.EXTRA_TEXT, message)
-            putExtra(Intent.EXTRA_STREAM, uri)
+        when (uri.scheme) {
+            "http", "https" -> {
+                putExtra(Intent.EXTRA_TEXT, uri.toString())
+            }
+            "content" -> {
+                message?.let { putExtra(Intent.EXTRA_TEXT, it) }
+                putExtra(Intent.EXTRA_STREAM, uri)
+            }
         }
         clipData = ClipData.newRawUri(null, uri)
-        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         setType(type)
+        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
     }
 
     return Intent.createChooser(shareIntent, context.getString(R.string.action_share)).apply {
