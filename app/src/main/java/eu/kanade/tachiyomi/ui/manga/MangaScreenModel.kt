@@ -69,6 +69,7 @@ import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
+import eu.kanade.tachiyomi.source.isLocal
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
@@ -940,24 +941,33 @@ class MangaInfoScreenModel(
             .filterNot { it in listOf("all", "other") }
         // SY <--
         return map { chapter ->
-            val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
+            val activeDownload = if (isLocal) {
+                null
+            } else {
+                downloadManager.queue.find { chapter.id == it.chapter.id }
+            }
             // SY -->
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
             val source = mergedData?.sources?.find { manga.source == it.id }?.takeIf { mergedData.sources.size > 2 }
             // SY <--
-            val downloaded = downloadManager.isChapterDownloaded(
-                // SY -->
-                chapter.name,
-                chapter.scanlator,
-                manga.ogTitle,
-                manga.source,
-                // SY <--
-            )
+            val downloaded = if (isLocal) {
+                true
+            } else {
+                downloadManager.isChapterDownloaded(
+                    // SY -->
+                    chapter.name,
+                    chapter.scanlator,
+                    manga.ogTitle,
+                    manga.source,
+                    // SY <--
+                )
+            }
             val downloadState = when {
                 activeDownload != null -> activeDownload.status
                 downloaded -> Download.State.DOWNLOADED
                 else -> Download.State.NOT_DOWNLOADED
             }
+
             ChapterItem(
                 chapter = chapter,
                 downloadState = downloadState,
