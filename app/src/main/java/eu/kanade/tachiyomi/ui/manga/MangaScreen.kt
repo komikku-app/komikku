@@ -77,6 +77,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.similar.MangaDexSimilarController
@@ -152,6 +153,7 @@ class MangaScreen(
                 }
             }.takeIf { isHttpSource },
             // SY <--
+            onWebViewLongClicked = { copyMangaUrl(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onTrackingClicked = screenModel::showTrackDialog.takeIf { successState.trackingAvailable },
             onTagClicked = { performGenreSearch(router, it, screenModel.source!!) },
             onFilterButtonClicked = screenModel::showSettingsDialog,
@@ -431,6 +433,16 @@ class MangaScreen(
             listOf(manga.id),
         )
         // SY <--
+    }
+
+    /**
+     * Copy Manga URL to Clipboard
+     */
+    private fun copyMangaUrl(context: Context, manga_: Manga?, source_: Source?) {
+        val manga = manga_ ?: return
+        val source = source_ as? HttpSource ?: return
+        val url = source.getMangaUrl(manga.toSManga())
+        context.copyToClipboard(url, url)
     }
 
     // SY -->
