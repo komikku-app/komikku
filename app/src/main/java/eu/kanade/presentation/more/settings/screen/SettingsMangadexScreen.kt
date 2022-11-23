@@ -58,7 +58,7 @@ import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class SettingsMangadexScreen : SearchableSettings {
+object SettingsMangadexScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable

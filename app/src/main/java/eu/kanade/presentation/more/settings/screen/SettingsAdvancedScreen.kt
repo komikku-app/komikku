@@ -98,7 +98,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 
-class SettingsAdvancedScreen : SearchableSettings {
+object SettingsAdvancedScreen : SearchableSettings {
     @ReadOnlyComposable
     @Composable
     @StringRes
@@ -735,8 +735,6 @@ class SettingsAdvancedScreen : SearchableSettings {
         )
     }
 
-    companion object {
-        private var job: Job? = null
-    }
+    private var job: Job? = null
     // SY <--
 }
