@@ -3,14 +3,19 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
+import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
@@ -21,11 +26,11 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 @Composable
-fun migrateSourcesTab(
-    router: Router?,
-    presenter: MigrationSourcesPresenter,
-): TabContent {
+fun Screen.migrateSourceTab(): TabContent {
     val uriHandler = LocalUriHandler.current
+    val router = LocalRouter.currentOrThrow
+    val screenModel = rememberScreenModel { MigrateSourceScreenModel() }
+    val state by screenModel.state.collectAsState()
 
     return TabContent(
         titleRes = R.string.label_migration,
@@ -38,18 +43,20 @@ fun migrateSourcesTab(
                 },
             ),
         ),
-        content = { contentPadding ->
+        content = { contentPadding, _ ->
             MigrateSourceScreen(
-                presenter = presenter,
+                state = state,
                 contentPadding = contentPadding,
                 onClickItem = { source ->
-                    router?.pushController(
+                    router.pushController(
                         MigrationMangaController(
                             source.id,
                             source.name,
                         ),
                     )
                 },
+                onToggleSortingDirection = screenModel::toggleSortingDirection,
+                onToggleSortingMode = screenModel::toggleSortingMode,
                 // SY -->
                 onClickAll = { source ->
                     // TODO: Jay wtf, need to clean this up sometime
@@ -58,13 +65,11 @@ fun migrateSourcesTab(
                         val sourceMangas =
                             manga.asSequence().filter { it.source == source.id }.map { it.id }.toList()
                         withUIContext {
-                            if (router != null) {
-                                PreMigrationController.navigateToMigration(
-                                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                                    router,
-                                    sourceMangas,
-                                )
-                            }
+                            PreMigrationController.navigateToMigration(
+                                Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                                router,
+                                sourceMangas,
+                            )
                         }
                     }
                 },

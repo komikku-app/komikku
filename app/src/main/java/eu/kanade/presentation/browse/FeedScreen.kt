@@ -53,7 +53,7 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.browse.feed.FeedPresenter
+import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import eu.kanade.domain.manga.model.MangaCover as MangaCoverData
@@ -69,97 +69,39 @@ data class FeedItemUI(
 
 @Composable
 fun FeedScreen(
-    presenter: FeedPresenter,
+    state: FeedScreenState,
     contentPadding: PaddingValues,
-    onClickAdd: (CatalogueSource) -> Unit,
-    onClickCreate: (CatalogueSource, SavedSearch?) -> Unit,
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
-    onClickDeleteConfirm: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
 ) {
     when {
-        presenter.isLoading -> LoadingScreen()
-        presenter.isEmpty -> EmptyScreen(
+        state.isLoading -> LoadingScreen()
+        state.isEmpty -> EmptyScreen(
             textResource = R.string.feed_tab_empty,
             modifier = Modifier.padding(contentPadding),
         )
         else -> {
-            FeedList(
-                state = presenter,
-                contentPadding = contentPadding,
-                getMangaState = { item, source -> presenter.getManga(item, source) },
-                onClickSavedSearch = onClickSavedSearch,
-                onClickSource = onClickSource,
-                onClickDelete = onClickDelete,
-                onClickManga = onClickManga,
-            )
-        }
-    }
-
-    when (val dialog = presenter.dialog) {
-        is FeedPresenter.Dialog.AddFeed -> {
-            FeedAddDialog(
-                sources = dialog.options,
-                onDismiss = { presenter.dialog = null },
-                onClickAdd = {
-                    presenter.dialog = null
-                    onClickAdd(it ?: return@FeedAddDialog)
-                },
-            )
-        }
-        is FeedPresenter.Dialog.AddFeedSearch -> {
-            FeedAddSearchDialog(
-                source = dialog.source,
-                savedSearches = dialog.options,
-                onDismiss = { presenter.dialog = null },
-                onClickAdd = { source, savedSearch ->
-                    presenter.dialog = null
-                    onClickCreate(source, savedSearch)
-                },
-            )
-        }
-        is FeedPresenter.Dialog.DeleteFeed -> {
-            FeedDeleteConfirmDialog(
-                feed = dialog.feed,
-                onDismiss = { presenter.dialog = null },
-                onClickDeleteConfirm = {
-                    presenter.dialog = null
-                    onClickDeleteConfirm(it)
-                },
-            )
-        }
-        null -> Unit
-    }
-}
-
-@Composable
-fun FeedList(
-    state: FeedState,
-    contentPadding: PaddingValues,
-    getMangaState: @Composable ((Manga, CatalogueSource?) -> State<Manga>),
-    onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
-    onClickSource: (CatalogueSource) -> Unit,
-    onClickDelete: (FeedSavedSearch) -> Unit,
-    onClickManga: (Manga) -> Unit,
-) {
-    ScrollbarLazyColumn(
-        contentPadding = contentPadding + topSmallPaddingValues,
-    ) {
-        items(
-            state.items.orEmpty(),
-            key = { it.feed.id },
-        ) { item ->
-            FeedItem(
-                modifier = Modifier.animateItemPlacement(),
-                item = item,
-                getMangaState = { getMangaState(it, item.source) },
-                onClickSavedSearch = onClickSavedSearch,
-                onClickSource = onClickSource,
-                onClickDelete = onClickDelete,
-                onClickManga = onClickManga,
-            )
+            ScrollbarLazyColumn(
+                contentPadding = contentPadding + topSmallPaddingValues,
+            ) {
+                items(
+                    state.items.orEmpty(),
+                    key = { it.feed.id },
+                ) { item ->
+                    FeedItem(
+                        modifier = Modifier.animateItemPlacement(),
+                        item = item,
+                        getMangaState = { getMangaState(it, item.source) },
+                        onClickSavedSearch = onClickSavedSearch,
+                        onClickSource = onClickSource,
+                        onClickDelete = onClickDelete,
+                        onClickManga = onClickManga,
+                    )
+                }
+            }
         }
     }
 }

@@ -1,16 +1,14 @@
 package eu.kanade.tachiyomi.ui.browse.migration.sources
 
 import androidx.compose.runtime.Composable
-import eu.kanade.presentation.browse.BrowseTabWrapper
-import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
+import cafe.adriel.voyager.navigator.Navigator
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 
-class MigrationSourcesController : FullComposeController<MigrationSourcesPresenterWrapper>() {
-
-    override fun createPresenter() = MigrationSourcesPresenterWrapper()
+class MigrationSourcesController : BasicFullComposeController() {
 
     @Composable
     override fun ComposeContent() {
-        BrowseTabWrapper(migrateSourcesTab(router, presenter = presenter.presenter))
+        Navigator(screen = MigrationSourcesScreen())
     }
 }
 

@@ -53,13 +53,13 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionUiModel
-import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsPresenter
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsState
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.source.anyIs
 
 @Composable
 fun ExtensionScreen(
-    presenter: ExtensionsPresenter,
+    state: ExtensionsState,
     contentPadding: PaddingValues,
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
@@ -72,19 +72,19 @@ fun ExtensionScreen(
     onRefresh: () -> Unit,
 ) {
     SwipeRefresh(
-        refreshing = presenter.isRefreshing,
+        refreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        enabled = !presenter.isLoading,
+        enabled = !state.isLoading,
     ) {
         when {
-            presenter.isLoading -> LoadingScreen()
-            presenter.isEmpty -> EmptyScreen(
+            state.isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
+            state.isEmpty -> EmptyScreen(
                 textResource = R.string.empty_screen,
                 modifier = Modifier.padding(contentPadding),
             )
             else -> {
                 ExtensionContent(
-                    state = presenter,
+                    state = state,
                     contentPadding = contentPadding,
                     onLongClickItem = onLongClickItem,
                     onClickItemCancel = onClickItemCancel,

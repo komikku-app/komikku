@@ -3,6 +3,8 @@ package eu.kanade.tachiyomi.ui.browse.feed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
+import cafe.adriel.voyager.core.model.StateScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -16,8 +18,6 @@ import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
-import eu.kanade.presentation.browse.FeedState
-import eu.kanade.presentation.browse.FeedStateImpl
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -30,11 +30,13 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -51,9 +53,7 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 /**
  * Presenter of [feedTab]
  */
-open class FeedPresenter(
-    private val presenterScope: CoroutineScope,
-    private val state: FeedStateImpl = FeedState() as FeedStateImpl,
+open class FeedScreenModel(
     val sourceManager: SourceManager = Injekt.get(),
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -65,14 +65,17 @@ open class FeedPresenter(
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
-) : FeedState by state {
+) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
+
+    private val _events = Channel<Event>(Int.MAX_VALUE)
+    val events = _events.receiveAsFlow()
 
     /**
      * Fetches the different sources by user settings.
      */
     private var fetchSourcesSubscription: Subscription? = null
 
-    fun onCreate() {
+    init {
         getFeedSavedSearchGlobal.subscribe()
             .distinctUntilChanged()
             .onEach {
@@ -84,30 +87,46 @@ open class FeedPresenter(
                         results = null,
                     )
                 }
-                state.items = items
-                state.isEmpty = items.isEmpty()
-                state.isLoading = false
+                mutableState.update { state ->
+                    state.copy(
+                        items = items,
+                    )
+                }
                 getFeed(items)
             }
-            .launchIn(presenterScope)
-    }
-
-    fun onDestroy() {
-        fetchSourcesSubscription?.unsubscribe()
+            .launchIn(coroutineScope)
     }
 
     fun openAddDialog() {
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             if (hasTooManyFeeds()) {
                 return@launchIO
             }
-            dialog = Dialog.AddFeed(getEnabledSources())
+            mutableState.update { state ->
+                state.copy(
+                    dialog = Dialog.AddFeed(getEnabledSources()),
+                )
+            }
         }
     }
 
     fun openAddSearchDialog(source: CatalogueSource) {
-        presenterScope.launchIO {
-            dialog = Dialog.AddFeedSearch(source, (if (source.supportsLatest) listOf(null) else emptyList()) + getSourceSavedSearches(source.id))
+        coroutineScope.launchIO {
+            mutableState.update { state ->
+                state.copy(
+                    dialog = Dialog.AddFeedSearch(source, (if (source.supportsLatest) listOf(null) else emptyList()) + getSourceSavedSearches(source.id)),
+                )
+            }
+        }
+    }
+
+    fun openDeleteDialog(feed: FeedSavedSearch) {
+        coroutineScope.launchIO {
+            mutableState.update { state ->
+                state.copy(
+                    dialog = Dialog.DeleteFeed(feed),
+                )
+            }
         }
     }
 
@@ -134,7 +153,7 @@ open class FeedPresenter(
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -147,7 +166,7 @@ open class FeedPresenter(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
@@ -212,8 +231,10 @@ open class FeedPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             // Update matching source with the obtained results
             .doOnNext { result ->
-                synchronized(state) {
-                    state.items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
+                mutableState.update { state ->
+                    state.copy(
+                        items = state.items?.map { if (it.feed.id == result.feed.id) result else it },
+                    )
                 }
             }
             .subscribe(
@@ -272,9 +293,34 @@ open class FeedPresenter(
         }
     }
 
+    override fun onDispose() {
+        super.onDispose()
+        fetchSourcesSubscription?.unsubscribe()
+    }
+
+    fun dismissDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
     sealed class Dialog {
         data class AddFeed(val options: List<CatalogueSource>) : Dialog()
         data class AddFeedSearch(val source: CatalogueSource, val options: List<SavedSearch?>) : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
     }
+
+    sealed class Event {
+        object FailedFetchingSources : Event()
+        object TooManyFeeds : Event()
+    }
+}
+
+data class FeedScreenState(
+    val dialog: FeedScreenModel.Dialog? = null,
+    val items: List<FeedItemUI>? = null,
+) {
+    val isLoading
+        get() = items == null
+
+    val isEmpty
+        get() = items.isNullOrEmpty()
 }

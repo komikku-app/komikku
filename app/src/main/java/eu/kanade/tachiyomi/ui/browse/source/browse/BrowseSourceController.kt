@@ -52,7 +52,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
             // SY -->
             if (smartSearchConfig != null) {
-                putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
+                putSerializable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
             }
 
             if (savedSearch != null) {
