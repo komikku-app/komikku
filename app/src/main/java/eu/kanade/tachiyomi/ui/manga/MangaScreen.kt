@@ -445,8 +445,7 @@ class MangaScreen(
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.action_open_in_web_view)
             .setSingleChoiceItems(
-                mergedManga.mapIndexed { index, _ -> sources[index].toString() }
-                    .toTypedArray(),
+                Array(mergedManga.size) { index -> sources[index].toString() },
                 -1,
             ) { dialog, index ->
                 dialog.dismiss()

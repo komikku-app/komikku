@@ -299,7 +299,7 @@ object DebugFunctions {
         runBlocking { handler.await { ehQueries.resetReaderViewerForAllManga() } }
     }
 
-    fun migrateAllNhentaiToOtherLang() {
+    fun migrateLangNhentaiToMultiLangSource() {
         val sources = nHentaiSourceIds - NHentai.otherId
 
         runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) } }
