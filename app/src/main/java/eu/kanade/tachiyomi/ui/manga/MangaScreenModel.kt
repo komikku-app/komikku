@@ -69,7 +69,6 @@ import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
-import eu.kanade.tachiyomi.source.isLocal
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
@@ -935,6 +934,7 @@ class MangaInfoScreenModel(
         mergedData: MergedMangaData?,
         alwaysShowReadingProgress: Boolean,
     ): List<ChapterItem> {
+        val isLocal = manga.isLocal()
         // SY -->
         val isExhManga = manga.isEhBasedManga()
         val enabledLanguages = Injekt.get<SourcePreferences>().enabledLanguages().get()

@@ -340,7 +340,6 @@ class DownloadManager(
     // SY <--
 
     /**
-    /**
      * Adds a list of chapters to be deleted later.
      *
      * @param chapters the list of chapters to delete.
