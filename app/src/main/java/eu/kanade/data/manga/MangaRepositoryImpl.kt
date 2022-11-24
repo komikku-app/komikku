@@ -12,6 +12,7 @@ import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toLong
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import logcat.LogPriority
 
 class MangaRepositoryImpl(
@@ -44,8 +45,10 @@ class MangaRepositoryImpl(
     }
 
     override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
-        return handler.subscribeToList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
-        // return handler.subscribeToList { libraryViewQueries.library(libraryManga) }
+        return handler.subscribeToList { libraryViewQueries.library(libraryManga) }
+            // SY -->
+            .map { getLibraryManga() }
+        // SY <--
     }
 
     override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {
