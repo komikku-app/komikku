@@ -131,8 +131,10 @@ fun CategoryRenameDialog(
 fun CategoryDeleteDialog(
     onDismissRequest: () -> Unit,
     onDelete: () -> Unit,
+    // SY -->
     title: String,
     text: String,
+    // SY <--
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,

@@ -90,6 +90,7 @@ fun BrowseSourceListItem(
             if (manga.favorite) {
                 Badge(text = stringResource(R.string.in_library))
             }
+            // SY -->
             if (metadata is MangaDexSearchMetadata) {
                 metadata.followStatus?.let { followStatus ->
                     val text = LocalContext.current
@@ -115,6 +116,7 @@ fun BrowseSourceListItem(
                     )
                 }
             }
+            // SY <--
         },
         onLongClick = onLongClick,
         onClick = onClick,

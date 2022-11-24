@@ -55,7 +55,9 @@ val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?,
                 chapterFlags,
                 coverLastModified,
                 dateAdded,
+                // SY -->
                 filteredScanlators,
+                // SY <--
                 updateStrategy,
             ),
             category = category,

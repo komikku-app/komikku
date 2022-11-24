@@ -161,6 +161,7 @@ class MangaRepositoryImpl(
         }
     }
 
+    // SY -->
     override suspend fun getMangaBySourceId(sourceId: Long): List<Manga> {
         return handler.awaitList { mangasQueries.getBySource(sourceId, mangaMapper) }
     }
@@ -172,4 +173,5 @@ class MangaRepositoryImpl(
     override suspend fun deleteManga(mangaId: Long) {
         handler.await { mangasQueries.deleteById(mangaId) }
     }
+    // SY <--
 }

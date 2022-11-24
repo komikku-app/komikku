@@ -41,7 +41,10 @@ class LibrarySettingsSheet(
     val filters: Filter
     private val sort: Sort
     private val display: Display
+
+    // SY -->
     private val grouping: Grouping
+    // SY <--
 
     val sheetScope = CoroutineScope(Job() + Dispatchers.IO)
 
@@ -55,8 +58,10 @@ class LibrarySettingsSheet(
         display = Display(router.activity!!)
         display.onGroupClicked = onGroupClickListener
 
+        // SY -->
         grouping = Grouping(router.activity!!)
         grouping.onGroupClicked = onGroupClickListener
+        // SY <--
     }
 
     /**
@@ -75,14 +80,18 @@ class LibrarySettingsSheet(
         filters,
         sort,
         display,
+        // SY -->
         grouping,
+        // SY <--
     )
 
     override fun getTabTitles(): List<Int> = listOf(
         R.string.action_filter,
         R.string.action_sort,
         R.string.action_display,
+        // SY -->
         R.string.group,
+        // SY <--
     )
 
     /**
@@ -271,14 +280,6 @@ class LibrarySettingsSheet(
                     (it as Item.MultiStateGroup).state =
                         Item.MultiSort.SORT_NONE
                 }
-
-                item.state = when (prevState) {
-                    Item.MultiSort.SORT_NONE -> Item.MultiSort.SORT_ASC
-                    Item.MultiSort.SORT_ASC -> Item.MultiSort.SORT_DESC
-                    Item.MultiSort.SORT_DESC -> Item.MultiSort.SORT_ASC
-                    else -> throw Exception("Unknown state")
-                }
-
                 item.state = when (prevState) {
                     Item.MultiSort.SORT_NONE -> Item.MultiSort.SORT_ASC
                     Item.MultiSort.SORT_ASC -> Item.MultiSort.SORT_DESC

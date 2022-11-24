@@ -271,7 +271,7 @@ class LibraryUpdateService(
         }
 
         // Update favorite manga
-        val categoryId = intent.getLongExtra(KEY_CATEGORY, -1)
+        val categoryId = intent.getLongExtra(KEY_CATEGORY, -1L)
         val group = intent.getIntExtra(KEY_GROUP, LibraryGroup.BY_DEFAULT)
         val groupExtra = intent.getStringExtra(KEY_GROUP_EXTRA)
         addMangaToQueue(categoryId, group, groupExtra)
@@ -406,7 +406,9 @@ class LibraryUpdateService(
 
         withIOContext {
             mangaToUpdate.groupBy { it.manga.source }
+                // SY -->
                 .filterNot { it.key in LIBRARY_UPDATE_EXCLUDED_SOURCES }
+                // SY <--
                 .values
                 .map { mangaInSource ->
                     async {

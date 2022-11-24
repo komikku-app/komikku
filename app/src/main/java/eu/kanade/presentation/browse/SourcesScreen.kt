@@ -53,8 +53,10 @@ fun SourcesScreen(
     onClickItem: (Source, String) -> Unit,
     onClickDisable: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
+    // SY -->
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
+    // SY <--
 ) {
     val context = LocalContext.current
     when {
@@ -70,8 +72,10 @@ fun SourcesScreen(
                 onClickItem = onClickItem,
                 onClickDisable = onClickDisable,
                 onClickPin = onClickPin,
+                // SY -->
                 onClickSetCategories = onClickSetCategories,
                 onClickToggleDataSaver = onClickToggleDataSaver,
+                // SY <--
             )
         }
     }
@@ -93,8 +97,10 @@ private fun SourceList(
     onClickItem: (Source, String) -> Unit,
     onClickDisable: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
+    // SY -->
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
+    // SY <--
 ) {
     ScrollbarLazyColumn(
         contentPadding = contentPadding + topSmallPaddingValues,
@@ -119,16 +125,22 @@ private fun SourceList(
                     SourceHeader(
                         modifier = Modifier.animateItemPlacement(),
                         language = model.language,
+                        // SY -->
                         isCategory = model.isCategory,
+                        // SY <--
                     )
                 }
                 is SourceUiModel.Item -> SourceItem(
                     modifier = Modifier.animateItemPlacement(),
                     source = model.source,
+                    // SY -->
                     showLatest = state.showLatest,
                     showPin = state.showPin,
+                    // SY <--
                     onClickItem = onClickItem,
+                    // SY -->
                     onLongClickItem = { state.dialog = Dialog.SourceLongClick(it) },
+                    // SY <--
                     onClickPin = onClickPin,
                 )
             }
@@ -179,15 +191,19 @@ private fun SourceList(
 private fun SourceHeader(
     modifier: Modifier = Modifier,
     language: String,
+    // SY -->
     isCategory: Boolean,
+    // SY <--
 ) {
     val context = LocalContext.current
     Text(
+        // SY -->
         text = if (!isCategory) {
             LocaleHelper.getSourceDisplayName(language, context)
         } else {
             language
         },
+        // SY <--
         modifier = modifier
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         style = MaterialTheme.typography.header,
@@ -256,8 +272,10 @@ private fun SourceOptionsDialog(
     source: Source,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
+    // SY -->
     onClickSetCategories: () -> Unit,
     onClickToggleDataSaver: () -> Unit,
+    // SY <--
     onDismiss: () -> Unit,
 ) {
     AlertDialog(

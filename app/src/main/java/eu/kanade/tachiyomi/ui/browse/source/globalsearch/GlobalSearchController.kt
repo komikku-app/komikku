@@ -58,11 +58,6 @@ open class GlobalSearchController(
         return presenter.query
     }
 
-    /**
-     * Create the [GlobalSearchPresenter] used in controller.
-     *
-     * @return instance of [GlobalSearchPresenter]
-     */
     override fun createPresenter(): GlobalSearchPresenter {
         return GlobalSearchPresenter(initialQuery, extensionFilter)
     }

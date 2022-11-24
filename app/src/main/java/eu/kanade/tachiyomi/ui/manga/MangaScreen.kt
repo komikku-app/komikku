@@ -235,7 +235,9 @@ class MangaScreen(
                 onSortModeChanged = screenModel::setSorting,
                 onDisplayModeChanged = screenModel::setDisplayMode,
                 onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
+                // SY -->
                 onClickShowScanlatorSelection = { showScanlatorsDialog = true }.takeIf { successState.scanlators.size > 1 },
+                // SY <--
             )
             MangaInfoScreenModel.Dialog.TrackSheet -> {
                 var enableSwipeDismiss by remember { mutableStateOf(true) }
@@ -290,6 +292,7 @@ class MangaScreen(
                     LoadingScreen(Modifier.systemBarsPadding())
                 }
             }
+            // SY -->
             is MangaInfoScreenModel.Dialog.EditMangaInfo -> {
                 EditMangaDialog(
                     manga = dialog.manga,
@@ -305,6 +308,7 @@ class MangaScreen(
                     onPositiveClick = screenModel::updateMergeSettings,
                 )
             }
+            // SY <--
         }
         // SY -->
         if (showScanlatorsDialog) {
@@ -451,9 +455,7 @@ class MangaScreen(
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
-    // SY <--
 
-    // SY -->
     private fun openMorePagePreviews(router: Router, manga: Manga) {
         router.pushController(PagePreviewController(manga.id))
     }

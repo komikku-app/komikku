@@ -147,6 +147,7 @@ fun MangaToolbar(
                                     },
                                 )
                             }
+                            // SY -->
                             if (onClickMerge != null) {
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(R.string.merge)) },
@@ -183,6 +184,7 @@ fun MangaToolbar(
                                     },
                                 )
                             }
+                            // SY <--
                         }
                     }
                 }

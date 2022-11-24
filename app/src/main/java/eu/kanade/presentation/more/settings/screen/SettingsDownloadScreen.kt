@@ -247,7 +247,7 @@ class SettingsDownloadScreen : SearchableSettings {
                         if (it == 0) {
                             stringResource(R.string.disabled)
                         } else {
-                            pluralStringResource(R.plurals.next_unread_chapters, count = it, it)
+                            pluralStringResource(id = R.plurals.next_unread_chapters, count = it, it)
                         }
                     },
                 ),

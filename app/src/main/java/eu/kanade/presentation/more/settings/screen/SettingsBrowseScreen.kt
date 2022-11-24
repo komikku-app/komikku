@@ -43,10 +43,10 @@ class SettingsBrowseScreen : SearchableSettings {
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         // SY <--
         return listOf(
+            // SY -->
             Preference.PreferenceGroup(
                 title = stringResource(R.string.label_sources),
                 preferenceItems = listOf(
-                    // SY -->
                     kotlin.run {
                         val router = LocalRouter.currentOrThrow
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
@@ -73,10 +73,8 @@ class SettingsBrowseScreen : SearchableSettings {
                         title = stringResource(R.string.pref_local_source_hidden_folders),
                         subtitle = stringResource(R.string.pref_local_source_hidden_folders_summery),
                     ),
-                    // SY <--
                 ),
             ),
-            // SY -->
             Preference.PreferenceGroup(
                 title = stringResource(R.string.feed),
                 preferenceItems = listOf(

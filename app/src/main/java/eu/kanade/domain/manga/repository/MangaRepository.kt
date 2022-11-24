@@ -35,9 +35,11 @@ interface MangaRepository {
 
     suspend fun updateAll(mangaUpdates: List<MangaUpdate>): Boolean
 
+    // SY -->
     suspend fun getMangaBySourceId(sourceId: Long): List<Manga>
 
     suspend fun getAll(): List<Manga>
 
     suspend fun deleteManga(mangaId: Long)
+    // SY <--
 }

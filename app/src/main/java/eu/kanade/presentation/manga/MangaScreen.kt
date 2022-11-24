@@ -853,6 +853,7 @@ private fun onChapterItemClick(
     }
 }
 
+// SY -->
 typealias MetadataDescriptionComposable = @Composable (state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) -> Unit
 
 @Composable
@@ -885,3 +886,4 @@ fun metadataDescription(source: Source): MetadataDescriptionComposable? {
         }
     }
 }
+// SY <--
