@@ -1,35 +1,30 @@
 package exh.ui.smartsearch
 
-import android.os.Bundle
+import cafe.adriel.voyager.core.model.StateScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.smartsearch.SmartSearchEngine
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class SmartSearchPresenter(
-    private val source: CatalogueSource,
+class SmartSearchScreenModel(
+    private val sourceId: Long,
     private val config: SourcesController.SmartSearchConfig,
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-) :
-    BasePresenter<SmartSearchController>() {
-
-    private val _smartSearchFlow = MutableSharedFlow<SearchResults>()
-    val smartSearchFlow = _smartSearchFlow.asSharedFlow()
-
+    private val sourceManager: SourceManager = Injekt.get(),
+) : StateScreenModel<SmartSearchScreenModel.SearchResults?>(null) {
     private val smartSearchEngine = SmartSearchEngine()
 
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
+    val source = sourceManager.get(sourceId) as CatalogueSource
 
-        presenterScope.launchIO {
+    init {
+        coroutineScope.launchIO {
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {
@@ -46,7 +41,7 @@ class SmartSearchPresenter(
                 }
             }
 
-            _smartSearchFlow.emit(result)
+            mutableState.value = result
         }
     }
 

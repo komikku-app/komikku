@@ -86,7 +86,7 @@ import exh.recs.RecommendsController
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isMdBasedSource
-import exh.ui.metadata.MetadataViewController
+import exh.ui.metadata.MetadataViewScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -166,7 +166,7 @@ class MangaScreen(
             onEditCategoryClicked = screenModel::promptChangeCategories.takeIf { successState.manga.favorite },
             onMigrateClicked = { migrateManga(router, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             // SY -->
-            onMetadataViewerClicked = { openMetadataViewer(router, successState.manga) },
+            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = { openRecommends(context, router, screenModel.source?.getMainSource(), successState.manga) },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
@@ -446,8 +446,8 @@ class MangaScreen(
     }
 
     // SY -->
-    private fun openMetadataViewer(router: Router, manga: Manga) {
-        router.pushController(MetadataViewController(manga))
+    private fun openMetadataViewer(navigator: Navigator, manga: Manga) {
+        navigator.push(MetadataViewScreen(manga.id, manga.source))
     }
 
     private fun openMergedMangaWebview(context: Context, mergedMangaData: MergedMangaData) {

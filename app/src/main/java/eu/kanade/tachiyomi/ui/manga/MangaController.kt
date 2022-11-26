@@ -6,7 +6,7 @@ import androidx.core.os.bundleOf
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
-import eu.kanade.tachiyomi.util.system.getParcelableCompat
+import eu.kanade.tachiyomi.util.system.getSerializableCompat
 
 class MangaController : BasicFullComposeController {
 
@@ -33,9 +33,7 @@ class MangaController : BasicFullComposeController {
 
     // SY -->
     val smartSearchConfig: SourcesController.SmartSearchConfig?
-        get() = args.getParcelableCompat<SourcesController.SmartSearchConfig>(
-            SMART_SEARCH_CONFIG_EXTRA,
-        )
+        get() = args.getSerializableCompat(SMART_SEARCH_CONFIG_EXTRA)
     // SY <--
 
     @Composable
