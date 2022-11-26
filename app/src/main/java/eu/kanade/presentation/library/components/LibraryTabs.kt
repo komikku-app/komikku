@@ -5,7 +5,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.category.model.Category
 import eu.kanade.presentation.category.visualName
@@ -18,14 +17,10 @@ import eu.kanade.presentation.components.TabText
 fun LibraryTabs(
     categories: List<Category>,
     currentPageIndex: Int,
-    showMangaCount: Boolean,
     isDownloadOnly: Boolean,
     isIncognitoMode: Boolean,
-    getNumberOfMangaForCategory: @Composable (Long) -> State<Int?>,
+    getNumberOfMangaForCategory: (Category) -> Int?,
     onTabItemClick: (Int) -> Unit,
-    // SY -->
-    getCategoryName: @Composable (Category, String) -> String,
-    // SY <--
 ) {
     Column {
         ScrollableTabRow(
@@ -42,14 +37,8 @@ fun LibraryTabs(
                     onClick = { onTabItemClick(index) },
                     text = {
                         TabText(
-                            // SY -->
-                            text = getCategoryName(category, category.visualName),
-                            // SY <--,
-                            badgeCount = if (showMangaCount) {
-                                getNumberOfMangaForCategory(category.id)
-                            } else {
-                                null
-                            }?.value,
+                            text = category.visualName,
+                            badgeCount = getNumberOfMangaForCategory(category),
                         )
                     },
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface,

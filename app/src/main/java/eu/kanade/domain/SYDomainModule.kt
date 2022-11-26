@@ -66,6 +66,7 @@ import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.repository.FeedSavedSearchRepository
 import eu.kanade.domain.source.repository.SavedSearchRepository
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import exh.search.SearchEngine
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addFactory
@@ -99,6 +100,7 @@ class SYDomainModule : InjektModule {
         addFactory { DeleteSortTag(get(), get()) }
         addFactory { ReorderSortTag(get(), get()) }
         addFactory { GetPagePreviews(get(), get()) }
+        addFactory { SearchEngine() }
 
         // Required for [MetadataSource]
         addFactory<MetadataSource.GetMangaId> { GetManga(get()) }
