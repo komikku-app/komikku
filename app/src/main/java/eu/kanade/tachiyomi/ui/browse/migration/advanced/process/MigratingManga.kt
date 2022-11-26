@@ -1,10 +1,13 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
+import android.content.Context
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.text.DecimalFormat
 import kotlin.coroutines.CoroutineContext
 
 class MigratingManga(
@@ -12,9 +15,6 @@ class MigratingManga(
     val chapterInfo: ChapterInfo,
     val sourcesString: String,
     parentContext: CoroutineContext,
-    val getManga: suspend (SearchResult.Result) -> Manga?,
-    val getChapterInfo: suspend (SearchResult.Result) -> ChapterInfo,
-    val getSourceName: (Manga) -> String,
 ) {
     val migrationScope = CoroutineScope(parentContext + SupervisorJob() + Dispatchers.Default)
 
@@ -32,10 +32,19 @@ class MigratingManga(
     data class ChapterInfo(
         val latestChapter: Float?,
         val chapterCount: Int,
-    )
-
-    fun toModal(): MigrationProcessItem {
-        // Create the model object.
-        return MigrationProcessItem(this)
+    ) {
+        fun getFormattedLatestChapter(context: Context): String {
+            return if (latestChapter != null && latestChapter > 0f) {
+                context.getString(
+                    R.string.latest_,
+                    DecimalFormat("#.#").format(latestChapter),
+                )
+            } else {
+                context.getString(
+                    R.string.latest_,
+                    context.getString(R.string.unknown),
+                )
+            }
+        }
     }
 }

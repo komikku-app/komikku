@@ -83,6 +83,8 @@ class MigrationListPresenter(
         private set
 
     val migratingItems = MutableStateFlow<List<MigratingManga>>(emptyList())
+    val migrationDone = MutableStateFlow(false)
+    val unfinishedCount = MutableStateFlow(0)
 
     val hideNotFound = preferences.hideNotFoundMigration().get()
 
@@ -108,9 +110,6 @@ class MigrationListPresenter(
                                         },
                                     ),
                                     parentContext = presenterScope.coroutineContext,
-                                    getManga = ::getManga,
-                                    getChapterInfo = ::getChapterInfo,
-                                    getSourceName = ::getSourceName,
                                 )
                             }
                         }
@@ -124,15 +123,15 @@ class MigrationListPresenter(
         }
     }
 
-    private suspend fun getManga(result: SearchResult.Result) = getManga.await(result.id)
-    private suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
-    private suspend fun getChapterInfo(id: Long) = getChapterByMangaId.await(id).let { chapters ->
+    suspend fun getManga(result: SearchResult.Result) = getManga.await(result.id)
+    suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
+    suspend fun getChapterInfo(id: Long) = getChapterByMangaId.await(id).let { chapters ->
         MigratingManga.ChapterInfo(
             latestChapter = chapters.maxOfOrNull { it.chapterNumber },
             chapterCount = chapters.size,
         )
     }
-    private fun getSourceName(manga: Manga) = sourceManager.getOrStub(manga.source).getNameForMangaInfo(null)
+    fun getSourceName(manga: Manga) = sourceManager.getOrStub(manga.source).getNameForMangaInfo(null)
 
     fun getMigrationSources() = preferences.migrationSources().get().split("/").mapNotNull {
         val value = it.toLongOrNull() ?: return@mapNotNull null
@@ -141,6 +140,7 @@ class MigrationListPresenter(
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         throttleManager.resetThrottle()
+        unfinishedCount.value = mangas.size
         val useSourceWithMost = preferences.useSourceWithMost().get()
         val useSmartSearch = preferences.smartMigration().get()
 
@@ -269,11 +269,19 @@ class MigrationListPresenter(
                 if (result == null && hideNotFound) {
                     removeManga(manga)
                 }
-                withUIContext {
-                    view?.sourceFinished()
-                }
+                sourceFinished()
             }
         }
+    }
+
+    private suspend fun sourceFinished() {
+        unfinishedCount.value = migratingItems.value.count {
+            it.searchResult.value != SearchResult.Searching
+        }
+        if (allMangasDone()) {
+            migrationDone.value = true
+        }
+        withUIContext { view?.sourceFinished() }
     }
 
     fun allMangasDone() = migratingItems.value.all { it.searchResult.value != SearchResult.Searching } &&
@@ -292,8 +300,8 @@ class MigrationListPresenter(
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = getChapterByMangaId.await(prevManga.id)
-            val maxChapterRead =
-                prevMangaChapters.filter(Chapter::read).maxOfOrNull(Chapter::chapterNumber)
+            val maxChapterRead = prevMangaChapters.filter(Chapter::read)
+                .maxOfOrNull(Chapter::chapterNumber)
             val dbChapters = getChapterByMangaId.await(manga.id)
             val prevHistoryList = getHistoryByMangaId.await(prevManga.id)
 
@@ -489,16 +497,12 @@ class MigrationListPresenter(
             if (migratingItems.value.size == 1) {
                 item.searchResult.value = SearchResult.NotFound
                 item.migrationScope.cancel()
-                withUIContext {
-                    view?.sourceFinished()
-                }
+                sourceFinished()
                 return@launchIO
             }
             removeManga(item)
             item.migrationScope.cancel()
-            withUIContext {
-                view?.sourceFinished()
-            }
+            sourceFinished()
         }
     }
 
