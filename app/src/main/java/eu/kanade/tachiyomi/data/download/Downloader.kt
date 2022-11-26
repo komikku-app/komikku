@@ -13,7 +13,6 @@ import eu.kanade.domain.manga.model.getComicInfo
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
-import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.download.model.DownloadQueue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
@@ -551,13 +550,14 @@ class Downloader(
         }
 
         download.status = if (downloadedImagesCount == downloadPageCount) {
-            val chapterUrl = download.source.getChapterUrl(download.chapter)
-            createComicInfoFile(
-                tmpDir,
-                download.manga,
-                download.chapter.toDomainChapter()!!,
-                chapterUrl,
-            )
+            // TODO: Uncomment when #8537 is resolved
+//            val chapterUrl = download.source.getChapterUrl(download.chapter)
+//            createComicInfoFile(
+//                tmpDir,
+//                download.manga,
+//                download.chapter.toDomainChapter()!!,
+//                chapterUrl,
+//            )
             // Only rename the directory if it's downloaded.
             if (downloadPreferences.saveChaptersAsCBZ().get()) {
                 archiveChapter(mangaDir, dirname, tmpDir)
