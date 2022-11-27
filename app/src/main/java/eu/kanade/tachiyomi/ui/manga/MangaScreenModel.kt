@@ -944,7 +944,7 @@ class MangaInfoScreenModel(
             val activeDownload = if (isLocal) {
                 null
             } else {
-                downloadManager.queue.find { chapter.id == it.chapter.id }
+                downloadManager.getQueuedDownloadOrNull(chapter.id)
             }
             // SY -->
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
@@ -1152,8 +1152,8 @@ class MangaInfoScreenModel(
     }
 
     fun cancelDownload(chapterId: Long) {
-        val activeDownload = downloadManager.queue.find { chapterId == it.chapter.id } ?: return
-        downloadManager.deletePendingDownloads(listOf(activeDownload))
+        val activeDownload = downloadManager.getQueuedDownloadOrNull(chapterId) ?: return
+        downloadManager.cancelQueuedDownloads(listOf(activeDownload))
         updateDownloadState(activeDownload.apply { status = Download.State.NOT_DOWNLOADED })
     }
 

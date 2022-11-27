@@ -426,7 +426,7 @@ class ReaderPresenter(
                 newChapters.ref()
                 oldChapters?.unref()
 
-                chapterToDownload = deleteChapterFromDownloadQueue(newChapters.currChapter)
+                chapterToDownload = cancelQueuedDownloads(newChapters.currChapter)
                 viewerChaptersRelay.call(newChapters)
             }
     }
@@ -598,9 +598,9 @@ class ReaderPresenter(
      * Removes [currentChapter] from download queue
      * if setting is enabled and [currentChapter] is queued for download
      */
-    private fun deleteChapterFromDownloadQueue(currentChapter: ReaderChapter): Download? {
-        return downloadManager.getChapterDownloadOrNull(currentChapter.chapter.toDomainChapter()!!)?.also {
-            downloadManager.deletePendingDownloads(listOf(it))
+    private fun cancelQueuedDownloads(currentChapter: ReaderChapter): Download? {
+        return downloadManager.getQueuedDownloadOrNull(currentChapter.chapter.id!!.toLong())?.also {
+            downloadManager.cancelQueuedDownloads(listOf(it))
         }
     }
 
@@ -1110,7 +1110,7 @@ class ReaderPresenter(
         // SY <--
 
         presenterScope.launchNonCancellable {
-            downloadManager.enqueueDeleteChapters(listOf(chapter.chapter.toDomainChapter()!!), manga.toDomainManga()!!)
+            downloadManager.enqueueChaptersToDelete(listOf(chapter.chapter.toDomainChapter()!!), manga.toDomainManga()!!)
         }
     }
 
