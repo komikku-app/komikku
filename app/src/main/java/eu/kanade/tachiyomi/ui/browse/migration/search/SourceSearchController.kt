@@ -7,13 +7,9 @@ import androidx.core.os.bundleOf
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.SourceSearchScreen
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 class SourceSearchController(
     bundle: Bundle,
@@ -27,7 +23,7 @@ class SourceSearchController(
         ),
     )
 
-    var useMangaForMigration: ((Manga, Source) -> Unit)? = null
+    var useMangaForMigration: ((Long) -> Unit)? = null
 
     @Composable
     override fun ComposeContent() {
@@ -37,10 +33,7 @@ class SourceSearchController(
             onFabClick = { filterSheet?.show() },
             // SY -->
             onMangaClick = { manga ->
-                val sourceManager = Injekt.get<SourceManager>()
-                val source = sourceManager.get(manga.source) ?: return@SourceSearchScreen
-                useMangaForMigration?.let { it(manga, source) }
-                router.popCurrentController()
+                useMangaForMigration?.let { it(manga.id) }
                 router.popCurrentController()
             },
             // SY <--

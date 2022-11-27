@@ -17,6 +17,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaCover
+import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.components.Badge
 import eu.kanade.presentation.components.CommonMangaItemDefaults
 import eu.kanade.presentation.components.MangaComfortableGridItem
@@ -93,9 +94,7 @@ fun BrowseSourceComfortableGridItem(
         ),
         coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         coverBadgeStart = {
-            if (manga.favorite) {
-                Badge(text = stringResource(R.string.in_library))
-            }
+            InLibraryBadge(enabled = manga.favorite)
         },
         // SY -->
         coverBadgeEnd = {

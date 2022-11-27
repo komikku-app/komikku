@@ -28,7 +28,6 @@ import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -383,14 +382,16 @@ class MigrationListScreenModel(
         updateManga.awaitAll(listOfNotNull(mangaUpdate, prevMangaUpdate))
     }
 
-    fun useMangaForMigration(context: Context, manga: Manga, source: Source, selectedMangaId: Long) {
+    fun useMangaForMigration(context: Context, newMangaId: Long, selectedMangaId: Long) {
         val migratingManga = migratingItems.value.find { it.manga.id == selectedMangaId }
             ?: return
         migratingManga.searchResult.value = SearchResult.Searching
         coroutineScope.launchIO {
             val result = migratingManga.migrationScope.async {
+                val manga = getManga(newMangaId)!!
                 val localManga = networkToLocalManga.await(manga)
                 try {
+                    val source = sourceManager.get(manga.source)!!
                     val chapters = source.getChapterList(localManga.toSManga())
                     syncChaptersWithSource.await(chapters, localManga, source)
                 } catch (e: Exception) {

@@ -14,6 +14,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaCover
+import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.components.Badge
 import eu.kanade.presentation.components.CommonMangaItemDefaults
 import eu.kanade.presentation.components.LazyColumn
@@ -87,9 +88,7 @@ fun BrowseSourceListItem(
         ),
         coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         badge = {
-            if (manga.favorite) {
-                Badge(text = stringResource(R.string.in_library))
-            }
+            InLibraryBadge(enabled = manga.favorite)
             // SY -->
             if (metadata is MangaDexSearchMetadata) {
                 metadata.followStatus?.let { followStatus ->

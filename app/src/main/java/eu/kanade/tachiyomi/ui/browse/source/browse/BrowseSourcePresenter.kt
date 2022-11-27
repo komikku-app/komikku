@@ -429,6 +429,7 @@ open class BrowseSourcePresenter(
             val manga: Manga,
             val initialSelection: List<CheckboxState.State<Category>>,
         ) : Dialog()
+        data class Migrate(val newManga: Manga) : Dialog()
     }
 
     // EXH -->

@@ -59,7 +59,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController.Companion.SMART_SEARCH_SOURCE_TAG
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -137,7 +137,12 @@ class MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
             isTabletUi = isTabletUi(),
-            onBackClicked = router::popCurrentController,
+            onBackClicked = {
+                when {
+                    navigator.canPop -> navigator.pop()
+                    else -> router.popCurrentController()
+                }
+            },
             onChapterClicked = { openChapter(context, it) },
             onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
@@ -164,8 +169,8 @@ class MangaScreen(
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::promptChangeCategories.takeIf { successState.manga.favorite },
-            onMigrateClicked = { migrateManga(router, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             // SY -->
+            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = { openRecommends(context, router, screenModel.source?.getMainSource(), successState.manga) },
@@ -423,19 +428,6 @@ class MangaScreen(
     }
 
     /**
-     * Initiates source migration for the specific manga.
-     */
-    private fun migrateManga(router: Router, manga: Manga) {
-        // SY -->
-        PreMigrationController.navigateToMigration(
-            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-            router,
-            listOf(manga.id),
-        )
-        // SY <--
-    }
-
-    /**
      * Copy Manga URL to Clipboard
      */
     private fun copyMangaUrl(context: Context, manga_: Manga?, source_: Source?) {
@@ -446,6 +438,19 @@ class MangaScreen(
     }
 
     // SY -->
+    /**
+     * Initiates source migration for the specific manga.
+     */
+    private fun migrateManga(navigator: Navigator, manga: Manga) {
+        // SY -->
+        PreMigrationScreen.navigateToMigration(
+            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+            navigator,
+            listOf(manga.id),
+        )
+        // SY <--
+    }
+
     private fun openMetadataViewer(navigator: Navigator, manga: Manga) {
         navigator.push(MetadataViewScreen(manga.id, manga.source))
     }

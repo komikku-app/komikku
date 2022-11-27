@@ -86,6 +86,7 @@ class MangaDexFollowsController(bundle: Bundle) : BrowseSourceController(bundle)
                     },
                 )
             }
+            is BrowseSourcePresenter.Dialog.Migrate -> Unit
             null -> {}
         }
     }

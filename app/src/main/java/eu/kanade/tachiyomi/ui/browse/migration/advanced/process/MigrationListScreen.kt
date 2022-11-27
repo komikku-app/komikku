@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -16,17 +18,18 @@ import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.changehandler.OneWayFadeChangeHandler
-import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
-import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen {
+
+    var newSelectedItem by mutableStateOf<Pair<Long, Long>?>(null)
 
     @Composable
     override fun Content() {
@@ -55,6 +58,14 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                         router.popCurrentController()
                     }
                 }
+            }
+        }
+
+        LaunchedEffect(newSelectedItem) {
+            if (newSelectedItem != null) {
+                val (oldId, newId) = newSelectedItem!!
+                screenModel.useMangaForMigration(context, newId, oldId)
+                newSelectedItem = null
             }
         }
 
@@ -133,11 +144,8 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 } else {
                     sources.filter { it.id != migrationItem.manga.source }
                 }
-                val searchController = SearchController(migrationItem.manga, validSources)
-                searchController.useMangaForMigration = { manga, source ->
-                    screenModel.useMangaForMigration(context, manga, source, migrationItem.manga.id)
-                }
-                router.pushController(searchController)
+                val searchScreen = MigrateSearchScreen(migrationItem.manga.id, validSources.map { it.id })
+                navigator push searchScreen
             },
             migrateNow = { screenModel.migrateManga(it, false) },
             copyNow = { screenModel.migrateManga(it, true) },

@@ -14,7 +14,7 @@ import eu.kanade.presentation.browse.MigrateMangaScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -45,16 +45,14 @@ data class MigrationMangaScreen(
             state = state,
             onClickItem = {
                 // SY -->
-                PreMigrationController.navigateToMigration(
+                PreMigrationScreen.navigateToMigration(
                     Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                    router,
+                    navigator,
                     listOf(it.id),
                 )
                 // SY <--
             },
-            onClickCover = {
-                navigator.push(MangaScreen(it.id))
-            },
+            onClickCover = { navigator.push(MangaScreen(it.id)) },
         )
 
         LaunchedEffect(Unit) {

@@ -16,9 +16,8 @@ import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaScreen
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -29,9 +28,6 @@ import uy.kohesive.injekt.api.get
 fun Screen.migrateSourceTab(): TabContent {
     val uriHandler = LocalUriHandler.current
     val navigator = LocalNavigator.currentOrThrow
-    // SY -->
-    val router = LocalRouter.currentOrThrow
-    // SY <--
     val screenModel = rememberScreenModel { MigrateSourceScreenModel() }
     val state by screenModel.state.collectAsState()
 
@@ -63,9 +59,9 @@ fun Screen.migrateSourceTab(): TabContent {
                         val sourceMangas =
                             manga.asSequence().filter { it.source == source.id }.map { it.id }.toList()
                         withUIContext {
-                            PreMigrationController.navigateToMigration(
+                            PreMigrationScreen.navigateToMigration(
                                 Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                                router,
+                                navigator,
                                 sourceMangas,
                             )
                         }

@@ -152,6 +152,8 @@ open class BrowseSourceController(bundle: Bundle) :
 
         val onDismissRequest = { presenter.dialog = null }
         when (val dialog = presenter.dialog) {
+            null -> {}
+            is Dialog.Migrate -> {}
             is Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
@@ -182,7 +184,6 @@ open class BrowseSourceController(bundle: Bundle) :
                     },
                 )
             }
-            null -> {}
         }
 
         BackHandler(onBack = ::navigateUp)
