@@ -613,16 +613,17 @@ class LibraryScreenModel(
      */
     private fun getTrackingFilterFlow(): Flow<Map<Long, Int>> {
         val loggedServices = trackManager.services.filter { it.isLogged }
-        val a = loggedServices
-            .map { libraryPreferences.filterTracking(it.id.toInt()).changes() }
-            .toTypedArray()
-        if (a.isEmpty()) {
-            return flowOf(emptyMap())
-        }
-        return combine(*a) {
-            loggedServices
-                .mapIndexed { index, trackService -> trackService.id to it[index] }
-                .toMap()
+        return if (loggedServices.isNotEmpty()) {
+            val prefFlows = loggedServices
+                .map { libraryPreferences.filterTracking(it.id.toInt()).changes() }
+                .toTypedArray()
+            combine(*prefFlows) {
+                loggedServices
+                    .mapIndexed { index, trackService -> trackService.id to it[index] }
+                    .toMap()
+            }
+        } else {
+            flowOf(emptyMap())
         }
     }
 
