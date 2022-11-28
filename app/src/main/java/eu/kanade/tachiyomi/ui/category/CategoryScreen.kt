@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.uniqueScreenKey
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.CategoryScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
@@ -21,10 +23,14 @@ import kotlinx.coroutines.flow.collectLatest
 
 class CategoryScreen : Screen {
 
+    // Fix certain crash when wrapped inside a Controller
+    override val key = uniqueScreenKey
+
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { CategoryScreenModel() }
 
         val state by screenModel.state.collectAsState()
@@ -43,7 +49,12 @@ class CategoryScreen : Screen {
             onClickDelete = { screenModel.showDialog(CategoryDialog.Delete(it)) },
             onClickMoveUp = screenModel::moveUp,
             onClickMoveDown = screenModel::moveDown,
-            navigateUp = router::popCurrentController,
+            navigateUp = {
+                when {
+                    navigator.canPop -> navigator.pop()
+                    router.backstackSize > 1 -> router.handleBack()
+                }
+            },
         )
 
         when (val dialog = successState.dialog) {
