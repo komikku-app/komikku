@@ -40,7 +40,7 @@ fun MigrationMangaDialog(
         text = {
             Text(
                 text = pluralStringResource(
-                    if (copy) R.plurals.copy_manga else R.plurals.migrate_manga,
+                    if (copy) R.plurals.copy_entry else R.plurals.migrate_entry,
                     count = mangaSet,
                     mangaSet,
                     (if (mangaSkipped > 0) " " + stringResource(R.string.skipping_, mangaSkipped) else ""),

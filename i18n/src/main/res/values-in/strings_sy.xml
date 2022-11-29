@@ -3,7 +3,7 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Seret &amp; Lepas</string>
     <string name="action_sort_enabled">Diaktifkan</string>
-    <string name="action_skip_manga">Jangan pindahkan</string>
+    <string name="action_skip_entry">Jangan pindahkan</string>
     <string name="action_search_manually">Cari manual</string>
     <string name="action_migrate_now">Pindahkan</string>
     <string name="action_copy_now">Salin</string>
@@ -17,10 +17,10 @@
     <string name="buttons_header">Tombol</string>
 
     <!-- Manga Type -->
-    <string name="manhwa">Manhwa</string>
-    <string name="manhua">Manhua</string>
-    <string name="comic">Komik</string>
-    <string name="webtoon">Webtoon</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Komik</string>
+    <string name="entry_type_webtoon">Webtoon</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Gagal selesaikan captcha</string>
@@ -140,7 +140,7 @@
     <string name="no_folders_to_cleanup">Tak ada folder yang dihapus</string>
     <string name="clean_orphaned_downloads">Hapus folder kosong</string>
     <string name="clean_read_downloads">Hapus yang sudah dibaca</string>
-    <string name="clean_read_manga_not_in_library">Hapus manga yang tak ada di pustaka</string>
+    <string name="clean_read_entries_not_in_library">Hapus manga yang tak ada di pustaka</string>
     <plurals name="cleanup_done">
         <item quantity="one">Berhasil membersihkan. Menghapus %d folder</item>
         <item quantity="other">Berhasil membersihkan. Menghapus %d folder</item>
@@ -200,8 +200,8 @@
     <string name="pref_local_source_hidden_folders_summery">Izinkan sumber lokal untuk melihat folder tersembunyi</string>
 
     <!-- Backup settings -->
-    <string name="custom_manga_info">Info manga yang diedit</string>
-    <string name="all_read_manga">Semua manga yang dibaca</string>
+    <string name="custom_entry_info">Info manga yang diedit</string>
+    <string name="all_read_entries">Semua manga yang dibaca</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Waktu kunci biometrik</string>
@@ -316,9 +316,9 @@
     <string name="az_recommends">Lihat Rekomendasi</string>
     <string name="merge">Gabungkan</string>
     <string name="merge_with_another_source">Gabungkan Dengan Yang Lain</string>
-    <string name="manga_merged">Manga digabungkan!</string>
+    <string name="entry_merged">Manga digabungkan!</string>
     <string name="failed_merge">Gagal menggabungkan manga: %1$s</string>
-    <string name="merge_unknown_manga">ID manga tak diketahui: %1$d</string>
+    <string name="merge_unknown_entry">ID manga tak diketahui: %1$d</string>
     <string name="merged_already">Manga ini sudah tergabung dengan manga saat ini!</string>
     <string name="merge_duplicate">Manga gabungan ini adalah duplikat!</string>
 
@@ -338,7 +338,7 @@
 
     <!-- Smart Search -->
     <string name="searching_source">Menelusuri…</string>
-    <string name="could_not_find_manga">Tak dapat menemukan manga di sumber ini!</string>
+    <string name="could_not_find_entry">Tak dapat menemukan manga di sumber ini!</string>
     <string name="automatic_search_error">Terjadi kesalahan saat melakukan pencarian!</string>
 
     <!-- Saved Searches -->
@@ -403,7 +403,7 @@
     <string name="use_most_chapters">Pilih sumber dengan bab terbanyak (lambat)</string>
     <string name="use_first_source">Pilih sumber yang pertama terdeteksi</string>
     <string name="skip_this_step_next_time">Lewati langkah ini di lain waktu</string>
-    <string name="hide_not_found_manga">Sembunyikan manga yang tak ditemukan</string>
+    <string name="hide_not_found_entries">Sembunyikan manga yang tak ditemukan</string>
     <string name="search_parameter">Parameter penelusuran (cth. language:english)</string>
     <string name="latest_">Terbaru: %1$s</string>
     <string name="migrating_to">Pindahkan ke</string>
@@ -412,23 +412,23 @@
     <string name="no_chapters_found_for_migration">Bab tak ditemukan, manga ini tak bisa dipindahkan ke sini</string>
     <string name="no_alternatives_found">Tidak Ditemukan</string>
     <string name="stop_migrating">Hentikan migrasi?</string>
-    <plurals name="migrate_manga">
+    <plurals name="migrate_entry">
         <item quantity="one">Pindahkan %1$d%2$s manga?</item>
         <item quantity="other">Pindahkan %1$d%2$s manga?</item>
     </plurals>
-    <plurals name="copy_manga">
+    <plurals name="copy_entry">
         <item quantity="one">Salin %1$d%2$s manga?</item>
         <item quantity="other">Salin %1$d%2$s manga?</item>
     </plurals>
     <string name="skipping_">(melewati %1$d)</string>
-    <plurals name="manga_migrated">
+    <plurals name="entry_migrated">
         <item quantity="one">%d manga dipindahkan</item>
         <item quantity="other">%d manga dipindahkan</item>
     </plurals>
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_manga">Tak ada yang dipilih</string>
+    <string name="no_valid_entry">Tak ada yang dipilih</string>
 
     <!-- Library Sheet -->
     <string name="lewd">Lewd</string>
@@ -449,7 +449,7 @@
     <string name="favorites_sync_done_errors">Favorites sync complete with errors</string>
     <string name="favorites_sync_done_errors_message">Errors occurred during the sync process that were ignored:\n%1$s</string>
     <string name="favorites_sync_verifying_library">Verifying local library</string>
-    <string name="favorites_sync_manga_multiple_categories_error">Manga %1$d is in multiple categories!</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Manga %1$d is in multiple categories!</string>
     <string name="favorites_sync_downloading">Downloading favorites from remote server</string>
     <string name="favorites_sync_failed_to_featch">Failed to fetch favorites from remote server!</string>
     <string name="favorites_sync_could_not_fetch">Could not fetch favorites!</string>
@@ -472,7 +472,7 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) is not a valid gallery!</string>
     <string name="favorites_sync_waiting_for_start">Waiting for sync to start</string>
-    <string name="favorites_sync_manga_in_multiple_categories">The gallery: %1$s is in more than one category (%2$s)!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">The gallery: %1$s is in more than one category (%2$s)!</string>
     <string name="favorites_sync_initializing">Initializing sync</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nSync is currently throttling (to avoid being banned from ExHentai) and may take a long time to complete.</string>
     <string name="favorites_sync_notes">IMPORTANT FAVORITES SYNC NOTES</string>
@@ -498,21 +498,21 @@
     <string name="batch_add_unknown_type_log_message">Unknown manga type for manga: %1$s</string>
     <string name="batch_add_unknown_source_log_message">Unknown source for manga: %1$s</string>
     <string name="batch_add_not_exist_log_message">Manga does not exist: %1$s</string>
-    <string name="gallery_adder_importing_manga">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="gallery_adder_importing_gallery">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>
-    <string name="gallery_adder_uri_map_to_manga_error">Source URI map-to-manga error!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Source URI map-to-manga error!</string>
     <string name="gallery_adder_uri_map_to_chapter_error">Source URI map-to-chapter error!</string>
     <string name="gallery_adder_uri_clean_error">Source URI clean error!</string>
     <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for manga: %1$s!</string>
-    <string name="gallery_adder_could_not_add_manga">Could not add manga (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_add_gallery">Could not add manga (url: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Could not identify chapter (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
-    <string name="could_not_open_manga">Could not open this manga:\n\n%1$s</string>
-    <string name="manga_id_is_null">Manga ID is null!</string>
-    <string name="loading_manga">Loading manga…</string>
+    <string name="could_not_open_entry">Could not open this manga:\n\n%1$s</string>
+    <string name="entry_id_is_null">Manga ID is null!</string>
+    <string name="loading_entry">Loading manga…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Masterpiece</string>
@@ -606,12 +606,12 @@
     <!-- Merged manga -->
     <string name="merge_settings">Pengaturan gabung</string>
     <string name="fetch_chapter_updates">Perbarui bab</string>
-    <string name="delete_merged_manga">Apa Anda yakin?</string>
-    <string name="delete_merged_manga_desc">Ini akan menghapus manga dari penggabungan, menggunakan ini juga akan membuat hilangnya semua perubahan yang diterapkan pada manga yang sebelumnya digabungkan</string>
-    <string name="chapter_updates_merged_manga">Tombol pembaruan bab</string>
-    <string name="chapter_updates_merged_manga_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan pembaruan bab untuk manga gabungan ini</string>
-    <string name="download_merged_manga">Tombol unduhan bab baru</string>
-    <string name="download_merged_manga_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan unduhan bab untuk manga gabungan ini</string>
+    <string name="delete_merged_entry">Apa Anda yakin?</string>
+    <string name="delete_merged_entry_desc">Ini akan menghapus manga dari penggabungan, menggunakan ini juga akan membuat hilangnya semua perubahan yang diterapkan pada manga yang sebelumnya digabungkan</string>
+    <string name="chapter_updates_merged_entry">Tombol pembaruan bab</string>
+    <string name="chapter_updates_merged_entry_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan pembaruan bab untuk manga gabungan ini</string>
+    <string name="download_merged_entry">Tombol unduhan bab baru</string>
+    <string name="download_merged_entry_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan unduhan bab untuk manga gabungan ini</string>
     <string name="merged_references_invalid">Referensi penggabungan tidak valid</string>
     <string name="merged_chapter_updates_error">Tombol kesalahan pembaruan bab</string>
     <string name="merged_references">Referensi penggabungan</string>
@@ -620,7 +620,7 @@
     <string name="merged_toggle_download_chapters_find_error">Tidak dapat menemukan manga untuk unduhan bab</string>
     <string name="allow_deduplication">Izinkan deduplikasi:</string>
     <string name="deduplication_mode">Mode deduplikasi:</string>
-    <string name="manga_info_manga">Info manga:</string>
+    <string name="deduplication_entry_info">Info manga:</string>
     <string name="toggle_dedupe">Tombol deduplikasi</string>
     <string name="refresh_merge">Segarkan untuk mendapatkan info yang tepat</string>
     <string name="no_dedupe">Tak dideduplikasi</string>

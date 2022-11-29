@@ -74,7 +74,7 @@ class InterceptActivity : BaseActivity() {
                 when (status) {
                     InterceptResult.Idle, InterceptResult.Loading -> {
                         Text(
-                            text = stringResource(R.string.loading_manga),
+                            text = stringResource(R.string.loading_entry),
                             style = MaterialTheme.typography.titleLarge,
                         )
                         CircularProgressIndicator(modifier = Modifier.size(56.dp))
@@ -120,7 +120,7 @@ class InterceptActivity : BaseActivity() {
                     is InterceptResult.Failure -> {
                         MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.chapter_error)
-                            .setMessage(getString(R.string.could_not_open_manga, it.reason))
+                            .setMessage(getString(R.string.could_not_open_entry, it.reason))
                             .setPositiveButton(android.R.string.ok, null)
                             .setOnCancelListener { onBackPressed() }
                             .setOnDismissListener { onBackPressed() }

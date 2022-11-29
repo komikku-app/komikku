@@ -530,7 +530,7 @@ class MangaScreen(
                         true,
                     ).withFadeTransaction(),
                 )
-                context.toast(R.string.manga_merged)
+                context.toast(R.string.entry_merged)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
 

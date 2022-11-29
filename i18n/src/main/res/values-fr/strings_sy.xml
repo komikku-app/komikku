@@ -3,7 +3,7 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Glisser-déposer</string>
     <string name="action_sort_enabled">Activé</string>
-    <string name="action_skip_manga">Ne migrez pas</string>
+    <string name="action_skip_entry">Ne migrez pas</string>
     <string name="action_search_manually">Rechercher manuellement</string>
     <string name="action_migrate_now">Migrez maintenant</string>
     <string name="action_copy_now">Copiez maintenant</string>
@@ -17,10 +17,10 @@
     <string name="buttons_header">Boutons</string>
 
     <!-- Manga Type -->
-    <string name="manhwa">Manhwa</string>
-    <string name="manhua">Manhua</string>
-    <string name="comic">Comic</string>
-    <string name="webtoon">Webtoon</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Comic</string>
+    <string name="entry_type_webtoon">Webtoon</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Échec de la résolution dû Captcha</string>
@@ -135,7 +135,7 @@
 <!--    <string name="clean_orphaned_downloads">Clean orphaned</string>-->
 
     <string name="clean_read_downloads">Lecture propre</string>
-    <string name="clean_read_manga_not_in_library">Nettoyer les mangas pas dans la bibliothèque</string>
+    <string name="clean_read_entries_not_in_library">Nettoyer les mangas pas dans la bibliothèque</string>
     <plurals name="cleanup_done">
         <item quantity="one">Nettoyage terminé. Dossier %d supprimé</item>
         <item quantity="other">Nettoyage terminé. Dossiers %d supprimé</item>
@@ -305,16 +305,16 @@
     <string name="no_chapters_found_for_migration">Aucun chapitre trouvé, ce manga ne peut pas être utilisé pour la migration</string>
     <string name="no_alternatives_found">Aucune alternative trouvée</string>
     <string name="stop_migrating">Arrêter la migration?</string>
-    <plurals name="migrate_manga">
+    <plurals name="migrate_entry">
         <item quantity="one">Migrer %1$d%2$s manga?</item>
         <item quantity="other">Migrer %1$d%2$s manga?</item>
     </plurals>
-    <plurals name="copy_manga">
+    <plurals name="copy_entry">
         <item quantity="one">Copie %1$d%2$s manga?</item>
         <item quantity="other">Copie %1$d%2$s mangas?</item>
     </plurals>
     <string name="skipping_">(sauter %1$d)</string>
-    <plurals name="manga_migrated">
+    <plurals name="entry_migrated">
         <item quantity="one">%d manga migré</item>
         <item quantity="other">%d mangas migrés</item>
     </plurals>
@@ -339,7 +339,7 @@
     <string name="favorites_sync_done_errors">Synchronisation des favoris terminée avec des erreurs</string>
     <string name="favorites_sync_done_errors_message">Des erreurs se sont produites pendant le processus de synchronisation qui ont été ignorées:\n%1$s</string>
     <string name="favorites_sync_verifying_library">Vérification de la bibliothèque locale</string>
-    <string name="favorites_sync_manga_multiple_categories_error">Manga %1$d est dans plusieurs catégories!</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Manga %1$d est dans plusieurs catégories!</string>
     <string name="favorites_sync_downloading">Téléchargement des favoris depuis un serveur</string>
     <string name="favorites_sync_failed_to_featch">Échec de la récupération des favoris du serveur!</string>
     <string name="favorites_sync_could_not_fetch">Impossible de récupérer les favoris!</string>
@@ -362,7 +362,7 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) n\'est pas une galerie valide!</string>
     <string name="favorites_sync_waiting_for_start">En attente du démarrage de la synchronisation</string>
-    <string name="favorites_sync_manga_in_multiple_categories">La galerie: %1$s appartient à plus d\'une catégorie (%2$s)!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">La galerie: %1$s appartient à plus d\'une catégorie (%2$s)!</string>
     <string name="favorites_sync_initializing">Initialisation de la synchronisation</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nLa synchronisation est actuellement en train de ralentir (pour éviter d\'être bannie d\'ExHentai) et peut prendre du temps à se terminer.</string>
     <string name="favorites_sync_notes">REMARQUES IMPORTANTES SUR LA SYNCHRONISATION FAVORIS</string>
@@ -387,19 +387,19 @@
     <string name="batch_add_success_log_message">Ajout du manga: %1$s</string>
     <string name="batch_add_unknown_type_log_message">Type de manga inconnu pour le manga: %1$s</string>
     <string name="batch_add_not_exist_log_message">Le manga n\'existe pas: %1$s</string>
-    <string name="gallery_adder_importing_manga">Importer des mangas (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="gallery_adder_importing_gallery">Importer des mangas (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Erreur de vérification de correspondance d\'URI source!</string>
-    <string name="gallery_adder_uri_map_to_manga_error">Erreur de mappage d\'URI source vers le manga!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Erreur de mappage d\'URI source vers le manga!</string>
     <string name="gallery_adder_uri_clean_error">Erreur de nettoyage de l\'URI source!</string>
     <string name="gallery_adder_chapter_fetch_error">Échec de la mise à jour des chapitres du manga: %1$s!</string>
-    <string name="gallery_adder_could_not_add_manga">Impossible d\'ajouter le manga (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_add_gallery">Impossible d\'ajouter le manga (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Lancement de l\'application…</string>
     <string name="error_with_reason">Erreur: %1$s</string>
-    <string name="could_not_open_manga">Impossible d\'ouvrir ce manga:\n\n%1$s</string>
-    <string name="manga_id_is_null">L\'ID du manga est non connue!</string>
-    <string name="loading_manga">Chargement du manga…</string>
+    <string name="could_not_open_entry">Impossible d\'ouvrir ce manga:\n\n%1$s</string>
+    <string name="entry_id_is_null">L\'ID du manga est non connue!</string>
+    <string name="loading_entry">Chargement du manga…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Chef-d\'oeuvre</string>
@@ -492,12 +492,12 @@
     <!-- Merged manga -->
     <string name="merge_settings">Paramètres de fusion</string>
     <string name="fetch_chapter_updates">Récupérer les mises à jour des chapitres</string>
-    <string name="delete_merged_manga">Êtes-vous sûr?</string>
-    <string name="delete_merged_manga_desc">Cela supprimera le manga de la source, son utilisation fera également perdre toutes les modifications non enregistrées appliquées au manga de la nouvelle source.</string>
-    <string name="chapter_updates_merged_manga">Basculer les mises à jour des chapitres</string>
-    <string name="chapter_updates_merged_manga_desc">Activer ou désactiver cette option désactivera ou activera les mises à jour des chapitres pour ce manga</string>
-    <string name="download_merged_manga">Basculer les téléchargements de nouveaux chapitres</string>
-    <string name="download_merged_manga_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour ce manga</string>
+    <string name="delete_merged_entry">Êtes-vous sûr?</string>
+    <string name="delete_merged_entry_desc">Cela supprimera le manga de la source, son utilisation fera également perdre toutes les modifications non enregistrées appliquées au manga de la nouvelle source.</string>
+    <string name="chapter_updates_merged_entry">Basculer les mises à jour des chapitres</string>
+    <string name="chapter_updates_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les mises à jour des chapitres pour ce manga</string>
+    <string name="download_merged_entry">Basculer les téléchargements de nouveaux chapitres</string>
+    <string name="download_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour ce manga</string>
     <string name="merged_references_invalid">Références de fusion non valides</string>
     <string name="merged_chapter_updates_error">Erreur de basculement des mises à jour de chapitre</string>
     <string name="merged_references">Références fusionné</string>
@@ -506,7 +506,7 @@
     <string name="merged_toggle_download_chapters_find_error">Impossible de trouver le manga pour basculer le téléchargements des chapitres</string>
     <string name="allow_deduplication">Autoriser la déduplication:</string>
     <string name="deduplication_mode">Mode de déduplication:</string>
-    <string name="manga_info_manga">Info manga:</string>
+    <string name="deduplication_entry_info">Info manga:</string>
     <string name="toggle_dedupe">Basculer la déduplication</string>
     <string name="refresh_merge">Actualiser pour obtenir les informations appropriées</string>
 

@@ -59,7 +59,7 @@ class GalleryAdder(
         forceSource: UrlImportableSource? = null,
         throttleFunc: suspend () -> Unit = {},
     ): GalleryAddEvent {
-        logger.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
+        logger.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
         try {
             val uri = url.toUri()
 
@@ -115,7 +115,7 @@ class GalleryAdder(
             val realMangaUrl = try {
                 chapterMangaUrl ?: source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
-                logger.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
+                logger.e(context.getString(R.string.gallery_adder_uri_map_to_gallery_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -173,7 +173,7 @@ class GalleryAdder(
                 GalleryAddEvent.Success(url, manga, context)
             }
         } catch (e: Exception) {
-            logger.w(context.getString(R.string.gallery_adder_could_not_add_manga, url), e)
+            logger.w(context.getString(R.string.gallery_adder_could_not_add_gallery, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
                 return GalleryAddEvent.Fail.NotFound(url, context)

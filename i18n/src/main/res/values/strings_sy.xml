@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Drag &amp; Drop</string>
     <string name="action_sort_enabled">Enabled</string>
-    <string name="action_skip_manga">Don\'t migrate</string>
+    <string name="action_skip_entry">Don\'t migrate</string>
     <string name="action_search_manually">Search manually</string>
     <string name="action_migrate_now">Migrate now</string>
     <string name="action_copy_now">Copy now</string>
@@ -16,12 +17,12 @@
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>
 
-    <!-- Manga Type -->
-    <string name="manhwa">Manhwa</string>
-    <string name="manhua">Manhua</string>
-    <string name="comic">Comic</string>
-    <string name="webtoon">Webtoon</string>
-    <string name="manga_type">Manga</string>
+    <!-- Entry Type -->
+    <string name="entry_type_manga">Manga</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Comic</string>
+    <string name="entry_type_webtoon">Webtoon</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Captcha solve failure</string>
@@ -135,14 +136,16 @@
     <string name="enable_source_blacklist">Enable source blacklist</string>
     <string name="enable_source_blacklist_summary">Hide extensions/sources that are incompatible with %1$s. Force-restart app after changing.</string>
     <string name="open_debug_menu">Open debug menu</string>
-    <string name="open_debug_menu_summary"><![CDATA[DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color=\'red\'>IT CAN CORRUPT YOUR LIBRARY!</font>]]></string>
+    <string name="open_debug_menu_summary">
+        <![CDATA[DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color=\'red\'>IT CAN CORRUPT YOUR LIBRARY!</font>]]>
+    </string>
     <string name="starting_cleanup">Starting cleanup</string>
     <string name="clean_up_downloaded_chapters">Clean up downloaded chapters</string>
     <string name="delete_unused_chapters">Delete non-existent, partially downloaded, and read chapter folders</string>
     <string name="no_folders_to_cleanup">No folders to cleanup</string>
     <string name="clean_orphaned_downloads">Clean orphaned</string>
     <string name="clean_read_downloads">Clean read</string>
-    <string name="clean_read_manga_not_in_library">Clean manga not in library</string>
+    <string name="clean_read_entries_not_in_library">Clean entries not in library</string>
     <plurals name="cleanup_done">
         <item quantity="one">Cleanup done. Removed %d folder</item>
         <item quantity="other">Cleanup done. Removed %d folders</item>
@@ -160,24 +163,24 @@
     <string name="data_saver_color_bw">Convert to Black And White</string>
     <string name="data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
-    <string name="clear_db_exclude_read">Keep manga with read chapters</string>
+    <string name="clear_db_exclude_read">Keep entries with read chapters</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
     <string name="log_extra">Extra</string>
     <string name="log_extreme">Extreme</string>
-    <string name="log_minimal_desc">critical errors only</string>
-    <string name="log_extra_desc">log everything</string>
-    <string name="log_extreme_desc">network inspection mode</string>
+    <string name="log_minimal_desc">Critical errors only</string>
+    <string name="log_extra_desc">Log everything</string>
+    <string name="log_extreme_desc">Network inspection mode</string>
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Expand all search filters by default</string>
     <string name="auto_solve_captchas">Automatically solve captcha</string>
     <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>
     <string name="put_recommends_in_overflow">Recommendations in overflow</string>
-    <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
+    <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the entry page</string>
     <string name="put_merge_in_overflow">Merge in overflow</string>
-    <string name="put_merge_in_overflow_summary">Put the merge button in the overflow menu instead of on the manga page</string>
+    <string name="put_merge_in_overflow_summary">Put the merge button in the overflow menu instead of on the entry page</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Navbar</string>
@@ -206,8 +209,8 @@
     <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
 
     <!-- Backup settings -->
-    <string name="custom_manga_info">Custom manga info</string>
-    <string name="all_read_manga">All read manga</string>
+    <string name="custom_entry_info">Custom entry info</string>
+    <string name="all_read_entries">All read entries</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Biometric lock times</string>
@@ -251,9 +254,9 @@
     <string name="reader_preload_amount_summary">The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values</string>
     <string name="reader_cache_size">Reader cache size</string>
     <string name="reader_cache_size_summary">The amount of images to save on device while reading. Higher values will result in a smoother reading experience, at the cost of higher disk space usage</string>
-    <string name="preserve_reading_position">Preserve reading position on read manga</string>
+    <string name="preserve_reading_position">Preserve reading position on read entries</string>
     <string name="auto_webtoon_mode">Auto Webtoon Mode</string>
-    <string name="auto_webtoon_mode_summary">Use auto webtoon mode for manga that are detected to likely use the long strip format</string>
+    <string name="auto_webtoon_mode_summary">Use auto webtoon mode for entries that are detected to likely use the long strip format</string>
     <string name="enable_zoom_out">Enable zoom out</string>
     <string name="tap_scroll_page">Tap scroll by page</string>
     <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>
@@ -325,18 +328,18 @@
     <string name="pref_center_margin">Center margin type</string>
     <string name="pref_center_margin_summary">Insert spacer to accommodate deadspace on foldable devices.</string>
 
-    <!-- Manga Page -->
-    <!-- Manga Info -->
+    <!-- Entry Page -->
+    <!-- Entry Info -->
     <string name="az_recommends">See Recommendations</string>
     <string name="merge">Merge</string>
     <string name="merge_with_another_source">Merge With Another</string>
-    <string name="manga_merged">Manga merged!</string>
-    <string name="failed_merge">Failed to merge manga: %1$s</string>
-    <string name="merge_unknown_manga">Unknown manga ID: %1$d</string>
-    <string name="merged_already">This manga is already merged with the current manga!</string>
-    <string name="merge_duplicate">This merged manga is a duplicate!</string>
+    <string name="entry_merged">Entry merged!</string>
+    <string name="failed_merge">Failed to merge entry: %1$s</string>
+    <string name="merge_unknown_entry">Unknown entry ID: %1$d</string>
+    <string name="merged_already">This entry is already merged with the current entry!</string>
+    <string name="merge_duplicate">This merged entry is a duplicate!</string>
 
-    <!-- Manga Info Edit -->
+    <!-- Entry Info Edit -->
     <string name="reset_tags">Reset Tags</string>
     <string name="add_tag">Add Tag</string>
     <string name="title_hint">Title: %1$s</string>
@@ -352,7 +355,7 @@
 
     <!-- Smart Search -->
     <string name="searching_source">Searching source…</string>
-    <string name="could_not_find_manga">Couldn\'t find the manga in the source!</string>
+    <string name="could_not_find_entry">Couldn\'t find the entry in the source!</string>
     <string name="automatic_search_error">Error performing automatic search!</string>
 
     <!-- Saved Searches -->
@@ -383,9 +386,9 @@
     <string name="pref_tag_sorting">Tag sorting tags</string>
     <string name="tag_sorting">Tag sorting</string>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">No tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
-        <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
-        <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="zero">No tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
     </plurals>
     <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is\n\"female: sole female\"\nwithout quotes!\nAdding multiple variants of the same tag is supported, so feel free to do \"tag: netorare\" for NHentai and \"female: netorare\" for E-Hentai!</string>
     <string name="action_edit_tags">Edit tags</string>
@@ -432,32 +435,32 @@
     <string name="use_most_chapters">Use source with the most chapters (slower)</string>
     <string name="use_first_source">Use first source with alternative</string>
     <string name="skip_this_step_next_time">Skip this step next time</string>
-    <string name="hide_not_found_manga">Hide not found manga</string>
+    <string name="hide_not_found_entries">Hide not found entries</string>
     <string name="search_parameter">Search parameter (e.g. language:english)</string>
     <string name="latest_">Latest: %1$s</string>
     <string name="migrating_to">migrating to</string>
     <string name="match_pinned_sources">Match pinned sources</string>
     <string name="match_enabled_sources">Match enabled sources</string>
-    <string name="no_chapters_found_for_migration">No chapters found, this manga cannot be used for migration</string>
+    <string name="no_chapters_found_for_migration">No chapters found, this entry cannot be used for migration</string>
     <string name="no_alternatives_found">No Alternatives Found</string>
     <string name="stop_migrating">Stop migrating?</string>
-    <plurals name="migrate_manga">
-        <item quantity="one">Migrate %1$d%2$s manga?</item>
-        <item quantity="other">Migrate %1$d%2$s manga?</item>
+    <plurals name="migrate_entry">
+        <item quantity="one">Migrate %1$d%2$s entry?</item>
+        <item quantity="other">Migrate %1$d%2$s entries?</item>
     </plurals>
-    <plurals name="copy_manga">
-        <item quantity="one">Copy %1$d%2$s manga?</item>
-        <item quantity="other">Copy %1$d%2$s manga?</item>
+    <plurals name="copy_entry">
+        <item quantity="one">Copy %1$d%2$s entry?</item>
+        <item quantity="other">Copy %1$d%2$s entries?</item>
     </plurals>
     <string name="skipping_">(skipping %1$d)</string>
-    <plurals name="manga_migrated">
-        <item quantity="one">%d manga migrated</item>
-        <item quantity="other">%d manga migrated</item>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d entry migrated</item>
+        <item quantity="other">%d entries migrated</item>
     </plurals>
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_manga">No valid manga selected</string>
+    <string name="no_valid_entry">No valid entry selected</string>
 
     <!-- Library Sheet -->
     <string name="lewd">Lewd</string>
@@ -478,7 +481,7 @@
     <string name="favorites_sync_done_errors">Favorites sync complete with errors</string>
     <string name="favorites_sync_done_errors_message">Errors occurred during the sync process that were ignored:\n%1$s</string>
     <string name="favorites_sync_verifying_library">Verifying local library</string>
-    <string name="favorites_sync_manga_multiple_categories_error">Manga %1$d is in multiple categories!</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Gallery %1$d is in multiple categories!</string>
     <string name="favorites_sync_downloading">Downloading favorites from remote server</string>
     <string name="favorites_sync_failed_to_featch">Failed to fetch favorites from remote server!</string>
     <string name="favorites_sync_could_not_fetch">Could not fetch favorites!</string>
@@ -501,11 +504,13 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) is not a valid gallery!</string>
     <string name="favorites_sync_waiting_for_start">Waiting for sync to start</string>
-    <string name="favorites_sync_manga_in_multiple_categories">The gallery: %1$s is in more than one category (%2$s)!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">The gallery: %1$s is in more than one category (%2$s)!</string>
     <string name="favorites_sync_initializing">Initializing sync</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nSync is currently throttling (to avoid being banned from ExHentai) and may take a long time to complete.</string>
     <string name="favorites_sync_notes">IMPORTANT FAVORITES SYNC NOTES</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. Changes to category names in the app are <b>NOT</b> synced! Please <i>change the category names on ExHentai instead</i>. The category names will be copied from the ExHentai servers every sync.<br><br>2. The favorite categories on ExHentai correspond to the <b>first 10 categories in the app</b> (excluding the \'Default\' category). <i>Galleries in other categories will <b>NOT</b> be synced!</i><br><br>3. <font color=\'red\'><b>ENSURE YOU HAVE A STABLE INTERNET CONNECTION WHEN SYNC IS IN PROGRESS!</b></font> If the internet disconnects while the app is syncing, your favorites may be left in a <i>partially-synced state</i>.<br><br>4. Keep the app open while favorites are syncing. Android will close apps that are in the background sometimes and that could be bad if it happens while the app is syncing.<br><br>5. <b>Do NOT put favorites in multiple categories</b> (the app supports this). This can confuse the sync algorithm as ExHentai only allows each favorite to be in one category.<br><br>This dialog will only popup once. You can read these notes again by going to \'Settings > E-Hentai > Show favorites sync notes\'.]]></string>
+    <string name="favorites_sync_notes_message">
+        <![CDATA[1. Changes to category names in the app are <b>NOT</b> synced! Please <i>change the category names on ExHentai instead</i>. The category names will be copied from the ExHentai servers every sync.<br><br>2. The favorite categories on ExHentai correspond to the <b>first 10 categories in the app</b> (excluding the \'Default\' category). <i>Galleries in other categories will <b>NOT</b> be synced!</i><br><br>3. <font color=\'red\'><b>ENSURE YOU HAVE A STABLE INTERNET CONNECTION WHEN SYNC IS IN PROGRESS!</b></font> If the internet disconnects while the app is syncing, your favorites may be left in a <i>partially-synced state</i>.<br><br>4. Keep the app open while favorites are syncing. Android will close apps that are in the background sometimes and that could be bad if it happens while the app is syncing.<br><br>5. <b>Do NOT put favorites in multiple categories</b> (the app supports this). This can confuse the sync algorithm as ExHentai only allows each favorite to be in one category.<br><br>This dialog will only popup once. You can read these notes again by going to \'Settings > E-Hentai > Show favorites sync notes\'.]]>
+    </string>
     <string name="favorites_sync_reset">Are you sure?</string>
     <string name="favorites_sync_reset_message">Resetting the sync state can cause your next sync to be extremely slow.</string>
     <string name="favorites_sync_conformation_message">Are you sure you wish to sync your favorites with E-Hentai?</string>
@@ -519,30 +524,30 @@
     <string name="eh_batch_add_adding_galleries">Adding galleries…</string>
     <string name="eh_batch_add_finish">Finish</string>
     <string name="batch_add_no_valid_galleries">No galleries to add!</string>
-    <string name="batch_add_no_valid_galleries_message">You must specify at least one manga to add!</string>
+    <string name="batch_add_no_valid_galleries_message">You must specify at least one gallery to add!</string>
     <string name="batch_add">Batch add</string>
     <string name="batch_add_ok">[OK]</string>
     <string name="batch_add_error">[ERROR]</string>
     <string name="batch_add_summary">\nSummary:\nAdded: %1$d gallerie(s)\nFailed: %2$d gallerie(s)</string>
-    <string name="batch_add_success_log_message">Added manga: %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Unknown manga type for manga: %1$s</string>
-    <string name="batch_add_unknown_source_log_message">Unknown source for manga: %1$s</string>
-    <string name="batch_add_not_exist_log_message">Manga does not exist: %1$s</string>
-    <string name="gallery_adder_importing_manga">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="batch_add_success_log_message">Added gallery: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Unknown entry type for gallery: %1$s</string>
+    <string name="batch_add_unknown_source_log_message">Unknown source for gallery: %1$s</string>
+    <string name="batch_add_not_exist_log_message">Gallery does not exist: %1$s</string>
+    <string name="gallery_adder_importing_gallery">Importing gallery (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>
-    <string name="gallery_adder_uri_map_to_manga_error">Source URI map-to-manga error!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Source URI map-to-gallery error!</string>
     <string name="gallery_adder_uri_map_to_chapter_error">Source URI map-to-chapter error!</string>
     <string name="gallery_adder_uri_clean_error">Source URI clean error!</string>
-    <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for manga: %1$s!</string>
-    <string name="gallery_adder_could_not_add_manga">Could not add manga (url: %1$s)!</string>
+    <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for gallery: %1$s!</string>
+    <string name="gallery_adder_could_not_add_gallery">Could not add gallery (url: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Could not identify chapter (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
-    <string name="could_not_open_manga">Could not open this manga:\n\n%1$s</string>
-    <string name="manga_id_is_null">Manga ID is null!</string>
-    <string name="loading_manga">Loading manga…</string>
+    <string name="could_not_open_entry">Could not open this entry:\n\n%1$s</string>
+    <string name="entry_id_is_null">Entry ID is null!</string>
+    <string name="loading_entry">Loading entry…</string>
 
     <!-- Page previews -->
     <string name="page_previews">Page previews</string>
@@ -638,24 +643,24 @@
         <item quantity="other">%2$s, %1$d pages</item>
     </plurals>
 
-    <!-- Merged manga -->
+    <!-- Merged entry -->
     <string name="merge_settings">Merge settings</string>
     <string name="fetch_chapter_updates">Fetch chapter updates</string>
-    <string name="delete_merged_manga">Are you sure?</string>
-    <string name="delete_merged_manga_desc">This will remove the manga from the merge, using this will also lose any unsaved changes applied to the merged manga</string>
-    <string name="chapter_updates_merged_manga">Toggle chapter updates</string>
-    <string name="chapter_updates_merged_manga_desc">Toggling this will disable or enable chapter updates for this merged manga</string>
-    <string name="download_merged_manga">Toggle new chapter downloads</string>
-    <string name="download_merged_manga_desc">Toggling this will disable or enable chapter downloads for this merged manga</string>
+    <string name="delete_merged_entry">Are you sure?</string>
+    <string name="delete_merged_entry_desc">This will remove the entry from the merge, using this will also lose any unsaved changes applied to the merged entry</string>
+    <string name="chapter_updates_merged_entry">Toggle chapter updates</string>
+    <string name="chapter_updates_merged_entry_desc">Toggling this will disable or enable chapter updates for this merged entry</string>
+    <string name="download_merged_entry">Toggle new chapter downloads</string>
+    <string name="download_merged_entry_desc">Toggling this will disable or enable chapter downloads for this merged entry</string>
     <string name="merged_references_invalid">Merged references invalid</string>
     <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
     <string name="merged_references">Merged references</string>
-    <string name="merged_toggle_chapter_updates_find_error">Could not find manga to toggle chapter updates</string>
+    <string name="merged_toggle_chapter_updates_find_error">Could not find entry to toggle chapter updates</string>
     <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
-    <string name="merged_toggle_download_chapters_find_error">Could not find manga to toggle chapter downloads</string>
+    <string name="merged_toggle_download_chapters_find_error">Could not find entry to toggle chapter downloads</string>
     <string name="allow_deduplication">Allow deduplication:</string>
     <string name="deduplication_mode">Dedupe mode:</string>
-    <string name="manga_info_manga">Info manga:</string>
+    <string name="deduplication_entry_info">Info entry:</string>
     <string name="toggle_dedupe">Toggle dedupe</string>
     <string name="refresh_merge">Refresh to get proper info</string>
     <string name="no_dedupe">No dedupe</string>
@@ -667,8 +672,8 @@
     <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Unfollowed</string>
     <string name="mangadex_specific_settings">MangaDex settings</string>
-    <string name="mangadex_sync_follows_to_library">Sync MangaDex manga to your library</string>
-    <string name="mangadex_sync_follows_to_library_summary">Pulls manga from MangaDex into your library if they are not already added.</string>
+    <string name="mangadex_sync_follows_to_library">Sync MangaDex entries to your library</string>
+    <string name="mangadex_sync_follows_to_library_summary">Pulls entries from MangaDex into your library if they are not already added.</string>
     <string name="mangadex_preffered_source">Preferred MangaDex source</string>
     <string name="mangadex_preffered_source_summary">Set your chosen MangaDex source, this will be used for follows and a bunch more features around the app</string>
     <string name="two_factor">2FA Code</string>
@@ -676,8 +681,8 @@
     <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
     <string name="mangadex_follows">MangaDex follows</string>
     <string name="random">Random</string>
-    <string name="mangadex_push_favorites_to_mangadex">Sync library manga to MangaDex</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked manga to MangaDex as reading.</string>
+    <string name="mangadex_push_favorites_to_mangadex">Sync library entries to MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked entries to MangaDex as reading.</string>
     <string name="mangadex_similar">MangaDex similar</string>
     <string name="community_recommendations">Community recommendations</string>
 
@@ -686,7 +691,7 @@
 
     <!-- Similar -->
     <string name="similar">Similar to %1$s</string>
-    <string name="similar_no_results">No Similar Manga found</string>
+    <string name="similar_no_results">Similar entry not found</string>
 
     <!-- MangaDex relations-->
     <string name="relation_similar">Similar</string>

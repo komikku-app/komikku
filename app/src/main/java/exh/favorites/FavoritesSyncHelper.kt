@@ -104,7 +104,7 @@ class FavoritesSyncHelper(val context: Context) {
                 val inCategories = getCategories.await(manga.id)
                 status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(manga, inCategories, context)
 
-                logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, manga.id))
+                logger.w(context.getString(R.string.favorites_sync_gallery_multiple_categories_error, manga.id))
                 return
             } else {
                 seenManga += manga.id
@@ -418,7 +418,7 @@ sealed class FavoritesSyncStatus(val message: String) {
             val categories: List<Category>,
             context: Context,
         ) :
-            BadLibraryState(context.getString(R.string.favorites_sync_manga_in_multiple_categories, manga.title, categories.joinToString { it.name }))
+            BadLibraryState(context.getString(R.string.favorites_sync_gallery_in_multiple_categories, manga.title, categories.joinToString { it.name }))
     }
     class Initializing(context: Context) : FavoritesSyncStatus(context.getString(R.string.favorites_sync_initializing))
     class Processing(message: String, isThrottle: Boolean = false, context: Context, val title: String? = null) : FavoritesSyncStatus(

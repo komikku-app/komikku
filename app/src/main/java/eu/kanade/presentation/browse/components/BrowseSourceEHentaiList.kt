@@ -133,7 +133,7 @@ fun BrowseSourceEHentaiListItem(
         value = withIOContext {
             when (metadata.genre) {
                 "doujinshi" -> GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
-                "manga" -> GenreColor.MANGA_COLOR to R.string.manga_type
+                "manga" -> GenreColor.MANGA_COLOR to R.string.entry_type_manga
                 "artistcg" -> GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
                 "gamecg" -> GenreColor.GAME_CG_COLOR to R.string.game_cg
                 "western" -> GenreColor.WESTERN_COLOR to R.string.western

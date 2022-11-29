@@ -47,7 +47,7 @@ class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfi
                     router.replaceTopController(transaction)
                 } else {
                     if (results is SmartSearchScreenModel.SearchResults.NotFound) {
-                        context.toast(R.string.could_not_find_manga)
+                        context.toast(R.string.could_not_find_entry)
                     } else {
                         context.toast(R.string.automatic_search_error)
                     }

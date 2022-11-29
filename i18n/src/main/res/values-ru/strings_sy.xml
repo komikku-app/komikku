@@ -4,7 +4,7 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Перетаскивание</string>
     <string name="action_sort_enabled">Включено</string>
-    <string name="action_skip_manga">Не переносить</string>
+    <string name="action_skip_entry">Не переносить</string>
     <string name="action_search_manually">Искать вручную</string>
     <string name="action_migrate_now">Перенести сейчас</string>
     <string name="action_copy_now">Копировать сейчас</string>
@@ -17,11 +17,12 @@
     <!-- Library fragment -->
     <string name="buttons_header">Кнопки</string>
 
-    <!-- Manga Type -->
-    <string name="manhwa">Манхва</string>
-    <string name="manhua">Маньхуа</string>
-    <string name="comic">Комикс</string>
-    <string name="webtoon">Веб-комикс</string>
+    <!-- Entry Type -->
+    <string name="entry_type_manga">Манга</string>
+    <string name="entry_type_manhwa">Манхва</string>
+    <string name="entry_type_manhua">Маньхуа</string>
+    <string name="entry_type_comic">Комикс</string>
+    <string name="entry_type_webtoon">Веб-комикс</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Сбой при решении капчи</string>
@@ -137,7 +138,7 @@
     <string name="no_folders_to_cleanup">Нет папок для удаления</string>
     <string name="clean_orphaned_downloads">Очистить потерянное</string>
     <string name="clean_read_downloads">Очистить прочитанное</string>
-    <string name="clean_read_manga_not_in_library">Очистить отсутствующее в библиотеке</string>
+    <string name="clean_read_entries_not_in_library">Очистить отсутствующее в библиотеке</string>
     <plurals name="cleanup_done">
         <item quantity="one">Очистка завершена. %d папка удалена.</item>
         <item quantity="few">Очистка завершена. %d папки удалено.</item>
@@ -203,8 +204,8 @@
     <string name="pref_local_source_hidden_folders_summery">Дать разрешение локальному источнику просматривать скрытые папки</string>
 
     <!-- Backup settings -->
-    <string name="custom_manga_info">Сведенья пользователя</string>
-    <string name="all_read_manga">Прочитанные записи</string>
+    <string name="custom_entry_info">Сведенья пользователя</string>
+    <string name="all_read_entries">Прочитанные записи</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Биометрическое время блокировки</string>
@@ -325,18 +326,18 @@
     <string name="pref_center_margin">Отступ по центру</string>
     <string name="pref_center_margin_summary">Вставить проставку для устранения зазоров на складных устройствах.</string>
 
-    <!-- Manga Page -->
-    <!-- Manga Info -->
+    <!-- Entry Page -->
+    <!-- Entry Info -->
     <string name="az_recommends">Рекомендации</string>
     <string name="merge">Объединение</string>
     <string name="merge_with_another_source">Объединиться</string>
-    <string name="manga_merged">Запись объеденена!</string>
+    <string name="entry_merged">Запись объеденена!</string>
     <string name="failed_merge">Ошибка объединения записи: %1$s</string>
-    <string name="merge_unknown_manga">Неизвестный ID записи: %1$d</string>
+    <string name="merge_unknown_entry">Неизвестный ID записи: %1$d</string>
     <string name="merged_already">Эта запись уже объеденена с текущей записью!</string>
     <string name="merge_duplicate">Эта объеденённая запись является дубликатом!</string>
 
-    <!-- Manga Info Edit -->
+    <!-- Entry Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
     <string name="add_tag">Добавить тэг</string>
     <string name="title_hint">Название: %1$s</string>
@@ -352,7 +353,7 @@
 
     <!-- Smart Search -->
     <string name="searching_source">Поиск в источнике…</string>
-    <string name="could_not_find_manga">Не удалось найти запись!</string>
+    <string name="could_not_find_entry">Не удалось найти запись!</string>
     <string name="automatic_search_error">Ошибка при выполнении автоматического поиска!</string>
 
     <!-- Saved Searches -->
@@ -401,6 +402,7 @@
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
+    <string name="repo_extension_message">Это расширение из внешнего репозитория. Нажмите, чтобы просмотреть репозиторий.</string>
 
     <!-- Extension Repos -->
     <string name="information_empty_repos">У вас нет дополнительных репозиториев. Нажмите кнопку «Добавить» чтобы создать репозиторий для добавления внешних расширений.</string>
@@ -434,7 +436,7 @@
     <string name="use_most_chapters">Использовать источник с наибольшим количеством глав (Медленнее)</string>
     <string name="use_first_source">Использовать первый источник с альтернативой</string>
     <string name="skip_this_step_next_time">Не показывать этот экран в следующий раз</string>
-    <string name="hide_not_found_manga">Скрыть не найденные записи</string>
+    <string name="hide_not_found_entries">Скрыть не найденые записи</string>
     <string name="search_parameter">Параметр поиска (Например - language:english)</string>
     <string name="latest_">Последняя: %1$s</string>
     <string name="migrating_to">Перенести в</string>
@@ -443,20 +445,20 @@
     <string name="no_chapters_found_for_migration">Глав не найдено. Эта запись не может быть использована для переноса</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
-    <plurals name="migrate_manga">
+    <plurals name="migrate_entry">
         <item quantity="one">Перенести %1$d%2$s запись?</item>
         <item quantity="few">Перенести %1$d%2$s записи?</item>
         <item quantity="many">Перенести %1$d%2$s записей?</item>
         <item quantity="other">Перенести %1$d%2$s записей?</item>
     </plurals>
-    <plurals name="copy_manga">
+    <plurals name="copy_entry">
         <item quantity="one">Копировать %1$d%2$s запись?</item>
         <item quantity="few">Копировать %1$d%2$s записи?</item>
         <item quantity="many">Копировать %1$d%2$s записей?</item>
         <item quantity="other">Копировать %1$d%2$s записей?</item>
     </plurals>
     <string name="skipping_">(Исключая %1$d)</string>
-    <plurals name="manga_migrated">
+    <plurals name="entry_migrated">
         <item quantity="one">%d запись перемещена</item>
         <item quantity="few">%d записи перемещены</item>
         <item quantity="many">%d записей перемещено</item>
@@ -465,7 +467,7 @@
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_manga">Выбрана недопустимая запись</string>
+    <string name="no_valid_entry">Выбрана недопустимая запись</string>
 
     <!-- Library Sheet -->
     <string name="lewd">Для взрослых</string>
@@ -486,7 +488,7 @@
     <string name="favorites_sync_done_errors">Синхронизация избранного завершилась с ошибками</string>
     <string name="favorites_sync_done_errors_message">Во время процесса синхронизации возникли ошибки, которые были проигнорированы:\n%1$s</string>
     <string name="favorites_sync_verifying_library">Проверка библиотеки</string>
-    <string name="favorites_sync_manga_multiple_categories_error">Запись (%1$d) находится в нескольких категориях!</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Галерея (%1$d) находится в нескольких категориях!</string>
     <string name="favorites_sync_downloading">Загрузка избранного с удаленного сервера</string>
     <string name="favorites_sync_failed_to_featch">Не удалось получить избранное с удаленного сервера!</string>
     <string name="favorites_sync_could_not_fetch">Не удалось получить избранное!</string>
@@ -509,7 +511,7 @@
     <string name="favorites_sync_failed_to_add_to_local_error">%1$s (%2$s)</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">%1$s (%2$s) является не действительной галерей!</string>
     <string name="favorites_sync_waiting_for_start">Ожидание начала синхронизации</string>
-    <string name="favorites_sync_manga_in_multiple_categories">Галерея %1$s находится более чем в одной категории (%2$s)!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">Галерея %1$s находится более чем в одной категории (%2$s)!</string>
     <string name="favorites_sync_initializing">Инициализация синхронизации</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nСинхронизация в настоящее время регулируется (Чтобы избежать блокировки на ExHentai). Выполнение синхронизации может занять много времени</string>
     <string name="favorites_sync_notes">ЗАМЕТКИ О СИНХРОНИЗАЦИИ ИЗБРАННОГО</string>
@@ -535,24 +537,24 @@
     <string name="batch_add_error">[ОШИБКА]</string>
     <string name="batch_add_summary">\nСводка:\nДобавлено: %1$d галерей\nНе добавлено: %2$d галерей</string>
     <string name="batch_add_success_log_message">Добавлена галерея: %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Неизвестный тип комикса для галереи: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Неизвестный тип записи для галереи: %1$s</string>
     <string name="batch_add_unknown_source_log_message">Неизвестный источник для галереи: %1$s</string>
     <string name="batch_add_not_exist_log_message">Галерея не существует: %1$s</string>
-    <string name="gallery_adder_importing_manga">Импортируется галерея (URL-адрес: %1$s, Избр: %2$s, Источник: %3$s)…</string>
+    <string name="gallery_adder_importing_gallery">Импортируется галерея (URL-адрес: %1$s, Избр: %2$s, Источник: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Ошибка проверки соответствия исходного URI!</string>
-    <string name="gallery_adder_uri_map_to_manga_error">Oшибка исходного URI map-to-manga!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Oшибка исходного URI map-to-gallery!</string>
     <string name="gallery_adder_uri_map_to_chapter_error">Ошибка исходного URI map-to-chapter!</string>
     <string name="gallery_adder_uri_clean_error">Ошибка очистки исходного URI!</string>
     <string name="gallery_adder_chapter_fetch_error">Не удалось обновить главы для галереи: %1$s!</string>
-    <string name="gallery_adder_could_not_add_manga">Не удалось добавить запись (URL-адрес: %1$s)!</string>
+    <string name="gallery_adder_could_not_add_gallery">Не удалось добавить галерею (URL-адрес: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Не удалось идентифицировать главу (URL-адрес: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Запуск приложения…</string>
     <string name="error_with_reason">Ошибка: %1$s</string>
-    <string name="could_not_open_manga">Не удалось открыть эту запись:\n\n%1$s</string>
-    <string name="manga_id_is_null">ID записи равно null!</string>
-    <string name="loading_manga">Загрузка записей…</string>
+    <string name="could_not_open_entry">Не удалось открыть эту запись:\n\n%1$s</string>
+    <string name="entry_id_is_null">ID записи равно null!</string>
+    <string name="loading_entry">Загрузка записи…</string>
 
     <!-- Page previews -->
     <string name="page_previews">Предосмотр страниц</string>
@@ -652,15 +654,15 @@
         <item quantity="other">%2$s, %1$d страниц</item>
     </plurals>
 
-    <!-- Merged manga -->
+    <!-- Merged entry -->
     <string name="merge_settings">Настройки объединения</string>
     <string name="fetch_chapter_updates">Получить обновления глав</string>
-    <string name="delete_merged_manga">Вы уверены?</string>
-    <string name="delete_merged_manga_desc">Это приведёт к удалению записи из объединения, а также будут утеряны все несохранённые изменения, применённые к объединённой записи</string>
-    <string name="chapter_updates_merged_manga">Переключатель обновлений глав</string>
-    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит/включит обновления глав для этой объеденённой записи</string>
-    <string name="download_merged_manga">Переключатель загрузки глав</string>
-    <string name="download_merged_manga_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой записи</string>
+    <string name="delete_merged_entry">Вы уверены?</string>
+    <string name="delete_merged_entry_desc">Это приведёт к удалению записи из объединения, а также будут утеряны все несохранённые изменения, применённые к объединённой записи</string>
+    <string name="chapter_updates_merged_entry">Переключатель обновлений глав</string>
+    <string name="chapter_updates_merged_entry_desc">Переключение этого параметра отключит/включит обновления глав для этой объеденённой записи</string>
+    <string name="download_merged_entry">Переключатель загрузки глав</string>
+    <string name="download_merged_entry_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой записи</string>
     <string name="merged_references_invalid">Недействительные объеденённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
     <string name="merged_references">Объеденённые ссылки</string>
@@ -669,7 +671,7 @@
     <string name="merged_toggle_download_chapters_find_error">Не удалось найти запись для переключения загрузки глав</string>
     <string name="allow_deduplication">Разрешить дедупликацию:</string>
     <string name="deduplication_mode">Режим дедупликации:</string>
-    <string name="manga_info_manga">Сведенья записи:</string>
+    <string name="deduplication_entry_info">Сведенья записи:</string>
     <string name="toggle_dedupe">Переключить дедупликацию</string>
     <string name="refresh_merge">Обновите, чтобы получить правильные сведенья</string>
     <string name="no_dedupe">Без дедупликации</string>
@@ -691,7 +693,7 @@
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку (MangaDex)</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList запись как прочитанную на MangaDex</string>
-    <string name="mangadex_similar">Похожее с MangaDex</string>
+    <string name="mangadex_similar">MangaDex похожее</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
 
     <!-- Scanlator filters -->
@@ -699,7 +701,7 @@
 
     <!-- Similar -->
     <string name="similar">Похожее на %1$s</string>
-    <string name="similar_no_results">Похожая запись не найдена</string>
+    <string name="similar_no_results">Похожие записи не найдены</string>
 
     <!-- Mangadex relations-->
     <string name="relation_similar">Похожее</string>

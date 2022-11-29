@@ -3,7 +3,7 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">Arraste e solte</string>
     <string name="action_sort_enabled">Ativado</string>
-    <string name="action_skip_manga">Não migrar</string>
+    <string name="action_skip_entry">Não migrar</string>
     <string name="action_search_manually">Pesquisar manualmente</string>
     <string name="action_migrate_now">Migrar agora</string>
     <string name="action_copy_now">Copiar agora</string>
@@ -17,10 +17,10 @@
     <string name="buttons_header">Botões</string>
 
     <!-- Manga Type -->
-    <string name="manhwa">Manhwa</string>
-    <string name="manhua">Manhua</string>
-    <string name="comic">Comic</string>
-    <string name="webtoon">Webtoon</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Comic</string>
+    <string name="entry_type_webtoon">Webtoon</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Falha ao resolver Captcha</string>
@@ -140,7 +140,7 @@
     <string name="no_folders_to_cleanup">Sem pastas para limpar</string>
     <string name="clean_orphaned_downloads">Limpar orfanados</string>
     <string name="clean_read_downloads">Limpar lidos</string>
-    <string name="clean_read_manga_not_in_library">Limpar mangás fora da biblioteca</string>
+    <string name="clean_read_entries_not_in_library">Limpar mangás fora da biblioteca</string>
     <plurals name="cleanup_done">
         <item quantity="one">Limpeza feita. %d pasta removida</item>
         <item quantity="other">Limpeza feita. %d pastas removidas</item>
@@ -196,8 +196,8 @@
     <string name="pref_local_source_hidden_folders_summery">Permitir fontes locais de ler pastas ocultas</string>
 
     <!-- Backup settings -->
-    <string name="custom_manga_info">Info. de mangá personalizada</string>
-    <string name="all_read_manga">Todos os mangás lidos</string>
+    <string name="custom_entry_info">Info. de mangá personalizada</string>
+    <string name="all_read_entries">Todos os mangás lidos</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Tempos de bloqueio biométrico</string>
@@ -382,23 +382,23 @@
     <string name="no_chapters_found_for_migration">Sem capítulos encontrados, este mangá não pode ser usado para migração</string>
     <string name="no_alternatives_found">Sem alternativas encontradas</string>
     <string name="stop_migrating">Parar migração?</string>
-    <plurals name="migrate_manga">
+    <plurals name="migrate_entry">
         <item quantity="one">Migrar %1$d%2$s mangá?</item>
         <item quantity="other">Migrar %1$d%2$s mangás?</item>
     </plurals>
-    <plurals name="copy_manga">
+    <plurals name="copy_entry">
         <item quantity="one">Copiar %1$d%2$s mangá?</item>
         <item quantity="other">Copiar %1$d%2$s mangás?</item>
     </plurals>
     <string name="skipping_">(pulando %1$d)</string>
-    <plurals name="manga_migrated">
+    <plurals name="entry_migrated">
         <item quantity="one">%d mangá migrado</item>
         <item quantity="other">%d mangás migrados</item>
     </plurals>
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_manga">Sem mangás válidos selecionados</string>
+    <string name="no_valid_entry">Sem mangás válidos selecionados</string>
 
     <!-- Library Sheet -->
     <string name="lewd">Lascivo</string>
@@ -419,7 +419,7 @@
     <string name="favorites_sync_done_errors">Sincronização de favoritos concluída com erros</string>
     <string name="favorites_sync_done_errors_message">Ocorreram erros durante o processo de sincronização que foram ignorados:\n%1$s</string>
     <string name="favorites_sync_verifying_library">Verificando biblioteca local</string>
-    <string name="favorites_sync_manga_multiple_categories_error">Mangá %1$d está em várias categorias!</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Mangá %1$d está em várias categorias!</string>
     <string name="favorites_sync_downloading">Baixando favoritos do servidor remoto</string>
     <string name="favorites_sync_failed_to_featch">Falha ao buscar favoritos do servidor remoto</string>
     <string name="favorites_sync_could_not_fetch">Não foi possível buscar favoritos</string>
@@ -442,7 +442,7 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) não é uma galeria válida!</string>
     <string name="favorites_sync_waiting_for_start">Aguardando o início da sincronização</string>
-    <string name="favorites_sync_manga_in_multiple_categories">A galeria: %1$s está em várias categorias (%2$s)!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">A galeria: %1$s está em várias categorias (%2$s)!</string>
     <string name="favorites_sync_initializing">Iniciando sincronização</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nSincronização está sendo limitada (para evitar ser banido do ExHentai) e pode levar muito tempo para ser concluída.</string>
     <string name="favorites_sync_notes">NOTAS DE SINCRONIZAÇÃO DE FAVORITOS IMPORTANTES</string>
@@ -468,21 +468,21 @@
     <string name="batch_add_unknown_type_log_message">Tipo de mangá desconhecido do mangá: %1$s</string>
     <string name="batch_add_unknown_source_log_message">Tipo de fonte desconhecida do mangá: %1$s</string>
     <string name="batch_add_not_exist_log_message">Mangá não existe: %1$s</string>
-    <string name="gallery_adder_importing_manga">Importando mangá (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="gallery_adder_importing_gallery">Importando mangá (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Erro ao verificar relação do URI da fonte!</string>
-    <string name="gallery_adder_uri_map_to_manga_error">Erro map-to-manga do URI da fonte!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Erro map-to-manga do URI da fonte!</string>
     <string name="gallery_adder_uri_map_to_chapter_error">Erro map-to-chapter do URI da fonte!</string>
     <string name="gallery_adder_uri_clean_error">Erro so limpar URI da fonte!</string>
     <string name="gallery_adder_chapter_fetch_error">Falha ao atualizar capítulos da galeria: %1$s!</string>
-    <string name="gallery_adder_could_not_add_manga">Mangá não pôde ser adicionado (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_add_gallery">Mangá não pôde ser adicionado (url: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Capítulo não pôde ser identificado (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Iniciando app…</string>
     <string name="error_with_reason">Erro: %1$s</string>
-    <string name="could_not_open_manga">Este mangá não pôde ser aberto:\n\n%1$s</string>
-    <string name="manga_id_is_null">ID do mangá é nulo!</string>
-    <string name="loading_manga">Carregando mangá…</string>
+    <string name="could_not_open_entry">Este mangá não pôde ser aberto:\n\n%1$s</string>
+    <string name="entry_id_is_null">ID do mangá é nulo!</string>
+    <string name="loading_entry">Carregando mangá…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Obra-prima</string>
@@ -576,12 +576,12 @@
     <!-- Merged manga -->
     <string name="merge_settings">Configurações da junção</string>
     <string name="fetch_chapter_updates">Buscar atualizações de capítulo</string>
-    <string name="delete_merged_manga">Tem certeza?</string>
-    <string name="delete_merged_manga_desc">Isto removerá o mangá da junção e também perderá mudanças não salvas aplicadas ao mangá juntado.</string>
-    <string name="chapter_updates_merged_manga">Alternar atualizações de capítulo</string>
-    <string name="chapter_updates_merged_manga_desc">Mudar isto (des)ativará atualizações de capítulo a este mangá juntado</string>
-    <string name="download_merged_manga">Alternar downloads de capítulo novos</string>
-    <string name="download_merged_manga_desc">Mudar isto (des)ativará downloads de capítulo a este mangá juntado</string>
+    <string name="delete_merged_entry">Tem certeza?</string>
+    <string name="delete_merged_entry_desc">Isto removerá o mangá da junção e também perderá mudanças não salvas aplicadas ao mangá juntado.</string>
+    <string name="chapter_updates_merged_entry">Alternar atualizações de capítulo</string>
+    <string name="chapter_updates_merged_entry_desc">Mudar isto (des)ativará atualizações de capítulo a este mangá juntado</string>
+    <string name="download_merged_entry">Alternar downloads de capítulo novos</string>
+    <string name="download_merged_entry_desc">Mudar isto (des)ativará downloads de capítulo a este mangá juntado</string>
     <string name="merged_references_invalid">Referências juntadas inválidas</string>
     <string name="merged_chapter_updates_error">Alternar erro de atualizações de capítulo</string>
     <string name="merged_references">Referências juntadas</string>
@@ -590,7 +590,7 @@
     <string name="merged_toggle_download_chapters_find_error">Mangá não pôde ser encontrado para alternar downloads de capítulo</string>
     <string name="allow_deduplication">Permitir desduplicação:</string>
     <string name="deduplication_mode">Modo da desduplicação:</string>
-    <string name="manga_info_manga">Informações do mangá:</string>
+    <string name="deduplication_entry_info">Informações do mangá:</string>
     <string name="toggle_dedupe">Alternar desduplicação</string>
     <string name="refresh_merge">Atualize para info. adequada</string>
 

@@ -83,8 +83,8 @@ class EditMergedSettingsState(
         val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
 
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.delete_merged_manga)
-            .setMessage(R.string.delete_merged_manga_desc)
+            .setTitle(R.string.delete_merged_entry)
+            .setMessage(R.string.delete_merged_entry_desc)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 onDeleteClick(mergeMangaReference)
                 onDismissRequest()
@@ -95,8 +95,8 @@ class EditMergedSettingsState(
 
     override fun onToggleChapterUpdatesClicked(position: Int) {
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.chapter_updates_merged_manga)
-            .setMessage(R.string.chapter_updates_merged_manga_desc)
+            .setTitle(R.string.chapter_updates_merged_entry)
+            .setMessage(R.string.chapter_updates_merged_entry_desc)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 toggleChapterUpdates(position)
             }
@@ -119,8 +119,8 @@ class EditMergedSettingsState(
 
     override fun onToggleChapterDownloadsClicked(position: Int) {
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.download_merged_manga)
-            .setMessage(R.string.download_merged_manga_desc)
+            .setTitle(R.string.download_merged_entry)
+            .setMessage(R.string.download_merged_entry_desc)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 toggleChapterDownloads(position)
             }

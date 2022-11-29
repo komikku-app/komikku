@@ -203,7 +203,7 @@
                 android:layout_marginBottom="82dp"
                 android:paddingHorizontal="16.dp"
                 android:paddingVertical="16dp"
-                android:text="@string/hide_not_found_manga" />
+                android:text="@string/hide_not_found_entries" />
 
         </LinearLayout>
 

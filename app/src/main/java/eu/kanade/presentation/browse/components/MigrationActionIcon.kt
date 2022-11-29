@@ -60,7 +60,7 @@ fun MigrationActionIcon(
                     },
                 )
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text(stringResource(R.string.action_skip_manga)) },
+                    text = { Text(stringResource(R.string.action_skip_entry)) },
                     onClick = {
                         skipManga()
                         closeMenu()

@@ -520,7 +520,7 @@ class MangaInfoScreenModel(
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
         val originalManga = getManga.await(originalMangaId)
-            ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_manga, originalMangaId))
+            ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_entry, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
             val children = getMergedReferencesById.await(originalMangaId)
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {

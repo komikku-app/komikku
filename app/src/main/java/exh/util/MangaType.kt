@@ -13,11 +13,11 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 fun Manga.mangaType(context: Context): String {
     return context.getString(
         when (mangaType()) {
-            MangaType.TYPE_WEBTOON -> R.string.webtoon
-            MangaType.TYPE_MANHWA -> R.string.manhwa
-            MangaType.TYPE_MANHUA -> R.string.manhua
-            MangaType.TYPE_COMIC -> R.string.comic
-            else -> R.string.manga_type
+            MangaType.TYPE_WEBTOON -> R.string.entry_type_webtoon
+            MangaType.TYPE_MANHWA -> R.string.entry_type_manhwa
+            MangaType.TYPE_MANHUA -> R.string.entry_type_manhua
+            MangaType.TYPE_COMIC -> R.string.entry_type_comic
+            else -> R.string.entry_type_manga
         },
     ).lowercase(Locale.getDefault())
 }

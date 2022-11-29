@@ -164,7 +164,7 @@ object LibraryScreen : Screen {
                                 selectedMangaIds,
                             )
                         } else {
-                            context.toast(R.string.no_valid_manga)
+                            context.toast(R.string.no_valid_entry)
                         }
                     },
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },

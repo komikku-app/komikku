@@ -3,7 +3,7 @@
     <!-- Actions -->
     <string name="action_sort_drag_and_drop">拖动和放置</string>
     <string name="action_sort_enabled">启用</string>
-    <string name="action_skip_manga">不要迁移</string>
+    <string name="action_skip_entry">不要迁移</string>
     <string name="action_search_manually">手动搜索</string>
     <string name="action_migrate_now">开始迁移</string>
     <string name="action_copy_now">开始复制</string>
@@ -17,10 +17,10 @@
     <string name="buttons_header">按钮</string>
 
     <!-- Manga Type -->
-    <string name="manhwa">韩漫</string>
-    <string name="manhua">漫画</string>
-    <string name="comic">喜剧</string>
-    <string name="webtoon">网络漫画</string>
+    <string name="entry_type_manhwa">韩漫</string>
+    <string name="entry_type_manhua">漫画</string>
+    <string name="entry_type_comic">喜剧</string>
+    <string name="entry_type_webtoon">网络漫画</string>
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">解决验证码失败</string>
@@ -134,7 +134,7 @@
     <string name="no_folders_to_cleanup">没有可清理的文件夹</string>
     <string name="clean_orphaned_downloads">清理孤立的下载</string>
     <string name="clean_read_downloads">清理已读</string>
-    <string name="clean_read_manga_not_in_library">清理不在书架中的漫画</string>
+    <string name="clean_read_entries_not_in_library">清理不在书架中的漫画</string>
     <plurals name="cleanup_done">
         <item quantity="other">清理完成。清理了 %d 个文件夹</item>
     </plurals>
@@ -197,8 +197,8 @@
     <string name="pref_local_source_hidden_folders_summery">允许本地源读取隐藏文件夹</string>
 
     <!-- Backup settings -->
-    <string name="custom_manga_info">自定义漫画信息</string>
-    <string name="all_read_manga">所有已阅读的漫画</string>
+    <string name="custom_entry_info">自定义漫画信息</string>
+    <string name="all_read_entries">所有已阅读的漫画</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">生物识别锁定时间表</string>
@@ -320,9 +320,9 @@
     <string name="az_recommends">查看推荐</string>
     <string name="merge">合并</string>
     <string name="merge_with_another_source">与其他合并</string>
-    <string name="manga_merged">漫画已合并！</string>
+    <string name="entry_merged">漫画已合并！</string>
     <string name="failed_merge">漫画合并失败：%1$s</string>
-    <string name="merge_unknown_manga">未知的漫画 ID: %1$d</string>
+    <string name="merge_unknown_entry">未知的漫画 ID: %1$d</string>
     <string name="merged_already">该漫画已与当前漫画合并！</string>
     <string name="merge_duplicate">该已合并的漫画重复了！</string>
 
@@ -342,7 +342,7 @@
 
     <!-- Smart Search -->
     <string name="searching_source">查找来源中……</string>
-    <string name="could_not_find_manga">未能在来源中找到此漫画！</string>
+    <string name="could_not_find_entry">未能在来源中找到此漫画！</string>
     <string name="automatic_search_error">进行自动搜索过程中出现错误！</string>
 
     <!-- Saved Searches -->
@@ -417,7 +417,7 @@
     <string name="use_most_chapters">使用具有最多章节的来源（较慢）。</string>
     <string name="use_first_source">使用第一个来源的备选方案</string>
     <string name="skip_this_step_next_time">下次跳过此步骤</string>
-    <string name="hide_not_found_manga">隐藏未找到的漫画</string>
+    <string name="hide_not_found_entries">隐藏未找到的漫画</string>
     <string name="search_parameter">搜索参数（例如：language:chinese）</string>
     <string name="latest_">最新：%1$s</string>
     <string name="migrating_to">迁移到</string>
@@ -426,20 +426,20 @@
     <string name="no_chapters_found_for_migration">未找到章节，该漫画无法用于迁移</string>
     <string name="no_alternatives_found">未找到替代方案</string>
     <string name="stop_migrating">停止迁移？</string>
-    <plurals name="migrate_manga">
+    <plurals name="migrate_entry">
         <item quantity="other">迁移 %1$d%2$s 漫画？</item>
     </plurals>
-    <plurals name="copy_manga">
+    <plurals name="copy_entry">
         <item quantity="other">复制 %1$d%2$s 漫画？</item>
     </plurals>
     <string name="skipping_">（跳过 %1$d）</string>
-    <plurals name="manga_migrated">
+    <plurals name="entry_migrated">
         <item quantity="other">%d 个漫画已迁移</item>
     </plurals>
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_manga">未选择有效的漫画</string>
+    <string name="no_valid_entry">未选择有效的漫画</string>
 
     <!-- Library Sheet -->
     <string name="lewd">淫乱</string>
@@ -460,7 +460,7 @@
     <string name="favorites_sync_done_errors">收藏品同步完成，但有错误</string>
     <string name="favorites_sync_done_errors_message">同步过程中被忽略的错误：\n%1$s</string>
     <string name="favorites_sync_verifying_library">本地书架验证中</string>
-    <string name="favorites_sync_manga_multiple_categories_error">漫画 %1$d 在多个类别中！</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">漫画 %1$d 在多个类别中！</string>
     <string name="favorites_sync_downloading">从远程服务器下载收藏夹中</string>
     <string name="favorites_sync_failed_to_featch">从远程服务器获取收藏夹失败！</string>
     <string name="favorites_sync_could_not_fetch">无法获取收藏夹！</string>
@@ -483,7 +483,7 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) 不是一个有效的画廊！</string>
     <string name="favorites_sync_waiting_for_start">等待同步开始</string>
-    <string name="favorites_sync_manga_in_multiple_categories">画廊：%1$s 在多于一个类别中（%2$s）！</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">画廊：%1$s 在多于一个类别中（%2$s）！</string>
     <string name="favorites_sync_initializing">初始化同步</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\n同步工作目前正在限速（以避免被ExHentai禁止），可能需要很长时间才能完成。</string>
     <string name="favorites_sync_notes">重要的收藏夹同步注意事项</string>
@@ -508,21 +508,21 @@
     <string name="batch_add_unknown_type_log_message">未知漫画类型的漫画：%1$s</string>
     <string name="batch_add_unknown_source_log_message">未知来源的漫画：%1$s</string>
     <string name="batch_add_not_exist_log_message">漫画不存在：%1$s</string>
-    <string name="gallery_adder_importing_manga">导入漫画（地址：%1$s，收藏夹：%2$s，强制使用来源：%3$s）……</string>
+    <string name="gallery_adder_importing_gallery">导入漫画（地址：%1$s，收藏夹：%2$s，强制使用来源：%3$s）……</string>
     <string name="gallery_adder_source_uri_must_match">来源 URI 匹配检查错误！</string>
-    <string name="gallery_adder_uri_map_to_manga_error">来源 URI 映射到漫画错误！</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">来源 URI 映射到漫画错误！</string>
     <string name="gallery_adder_uri_map_to_chapter_error">来源 URI 映射到章节错误！</string>
     <string name="gallery_adder_uri_clean_error">来源 URI 清理错误！</string>
     <string name="gallery_adder_chapter_fetch_error">未能更新漫画的章节：%1$s！</string>
-    <string name="gallery_adder_could_not_add_manga">无法添加漫画（地址：%1$s）！</string>
+    <string name="gallery_adder_could_not_add_gallery">无法添加漫画（地址：%1$s）！</string>
     <string name="gallery_adder_could_not_identify_chapter">无法识别章节（地址：%1$s）！</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">应用启动中……</string>
     <string name="error_with_reason">错误：%1$s</string>
-    <string name="could_not_open_manga">无法打开该漫画：\n\n%1$s</string>
-    <string name="manga_id_is_null">漫画 ID 为空！</string>
-    <string name="loading_manga">漫画加载中……</string>
+    <string name="could_not_open_entry">无法打开该漫画：\n\n%1$s</string>
+    <string name="entry_id_is_null">漫画 ID 为空！</string>
+    <string name="loading_entry">漫画加载中……</string>
 
     <!-- Page previews -->
     <string name="page_previews">页面预览</string>
@@ -612,12 +612,12 @@
     <!-- Merged manga -->
     <string name="merge_settings">合并设置</string>
     <string name="fetch_chapter_updates">获取章节更新</string>
-    <string name="delete_merged_manga">你确定吗？</string>
-    <string name="delete_merged_manga_desc">这将从合并中删除该漫画，使用这个方法会丢失任何应用于合并后的漫画的未保存的修改。</string>
-    <string name="chapter_updates_merged_manga">切换章节更新</string>
-    <string name="chapter_updates_merged_manga_desc">更改此项将禁用或启用该合并漫画的章节更新</string>
-    <string name="download_merged_manga">切换新章节下载</string>
-    <string name="download_merged_manga_desc">更改此项将禁用或启用此合并漫画的章节下载</string>
+    <string name="delete_merged_entry">你确定吗？</string>
+    <string name="delete_merged_entry_desc">这将从合并中删除该漫画，使用这个方法会丢失任何应用于合并后的漫画的未保存的修改。</string>
+    <string name="chapter_updates_merged_entry">切换章节更新</string>
+    <string name="chapter_updates_merged_entry_desc">更改此项将禁用或启用该合并漫画的章节更新</string>
+    <string name="download_merged_entry">切换新章节下载</string>
+    <string name="download_merged_entry_desc">更改此项将禁用或启用此合并漫画的章节下载</string>
     <string name="merged_references_invalid">合并后的引用无效</string>
     <string name="merged_chapter_updates_error">切换章节更新错误</string>
     <string name="merged_references">引用已合并</string>
@@ -626,7 +626,7 @@
     <string name="merged_toggle_download_chapters_find_error">找不到漫画来切换章节下载</string>
     <string name="allow_deduplication">允许删除重复数据：</string>
     <string name="deduplication_mode">去重模式：</string>
-    <string name="manga_info_manga">漫画信息：</string>
+    <string name="deduplication_entry_info">漫画信息：</string>
     <string name="toggle_dedupe">切换去重</string>
     <string name="refresh_merge">刷新以获取正确信息</string>
     <string name="no_dedupe">无重复</string>

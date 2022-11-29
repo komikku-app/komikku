@@ -29,7 +29,7 @@ object MetadataUIUtil {
 
     fun getGenreAndColour(context: Context, genre: String) = when (genre) {
         "doujinshi", "Doujinshi" -> SourceTagsUtil.GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
-        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.manga_type
+        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.entry_type_manga
         "artistcg", "artist CG", "artist-cg", "Artist CG" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
         "gamecg", "game CG", "game-cg", "Game CG" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.game_cg
         "western" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.western
@@ -38,11 +38,11 @@ object MetadataUIUtil {
         "cosplay" -> SourceTagsUtil.GenreColor.COSPLAY_COLOR to R.string.cosplay
         "asianporn", "asian Porn" -> SourceTagsUtil.GenreColor.ASIAN_PORN_COLOR to R.string.asian_porn
         "misc" -> SourceTagsUtil.GenreColor.MISC_COLOR to R.string.misc
-        "Korean Manhwa" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.manhwa
-        "Chinese Manhua" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.manhua
-        "Comic" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.comic
+        "Korean Manhwa" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.entry_type_manhwa
+        "Chinese Manhua" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.entry_type_manhua
+        "Comic" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.entry_type_comic
         "artbook" -> SourceTagsUtil.GenreColor.IMAGE_SET_COLOR to R.string.artbook
-        "webtoon" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.webtoon
+        "webtoon" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.entry_type_webtoon
         "Video" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.video
         else -> null
     }?.let { (genreColor, stringId) ->

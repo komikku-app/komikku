@@ -46,7 +46,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 val manualMigrations = screenModel.manualMigrations.value
                 context.toast(
                     context.resources.getQuantityString(
-                        R.plurals.manga_migrated,
+                        R.plurals.entry_migrated,
                         manualMigrations,
                         manualMigrations,
                     ),
