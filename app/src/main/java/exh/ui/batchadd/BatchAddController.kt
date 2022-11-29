@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import reactivecircus.flowbinding.android.view.clicks
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Batch add screen
@@ -126,7 +127,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
         target.apply {
             viewScope.launch {
                 inputViews.isVisible = false
-                delay(250L)
+                delay(0.5.seconds)
                 progressViews.isVisible = true
             }
         }.progressLog.text = ""
@@ -137,7 +138,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
             viewScope.launch {
                 progressViews.isVisible = false
                 binding.progressDismissBtn.isVisible = false
-                delay(250L)
+                delay(0.5.seconds)
                 inputViews.isVisible = true
             }
         }.galleriesBox.setText("", TextView.BufferType.EDITABLE)
