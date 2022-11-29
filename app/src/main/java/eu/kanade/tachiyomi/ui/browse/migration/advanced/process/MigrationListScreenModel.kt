@@ -1,7 +1,9 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
-import android.os.Bundle
+import android.content.Context
 import android.widget.Toast
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
@@ -30,10 +32,8 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
-import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
@@ -42,10 +42,11 @@ import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
@@ -55,7 +56,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger
 
-class MigrationListPresenter(
+class MigrationListScreenModel(
     private val config: MigrationProcedureConfig,
     private val preferences: UnsortedPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
@@ -74,56 +75,56 @@ class MigrationListPresenter(
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val deleteTrack: DeleteTrack = Injekt.get(),
-) : BasePresenter<MigrationListController>() {
+) : ScreenModel {
 
     private val smartSearchEngine = SmartSearchEngine(config.extraSearchParams)
     private val throttleManager = EHentaiThrottleManager()
-
-    var migrationsJob: Job? = null
-        private set
 
     val migratingItems = MutableStateFlow<List<MigratingManga>>(emptyList())
     val migrationDone = MutableStateFlow(false)
     val unfinishedCount = MutableStateFlow(0)
 
+    val manualMigrations = MutableStateFlow(0)
+
     val hideNotFound = preferences.hideNotFoundMigration().get()
 
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
+    val navigateOut = MutableSharedFlow<Unit>()
 
-        if (migrationsJob?.isActive != true) {
-            migrationsJob = presenterScope.launchIO {
-                runMigrations(
-                    config.mangaIds
-                        .map {
-                            async {
-                                val manga = getManga.await(it) ?: return@async null
-                                MigratingManga(
-                                    manga = manga,
-                                    chapterInfo = getChapterInfo(it),
-                                    sourcesString = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
-                                        if (manga.source == MERGED_SOURCE_ID) {
-                                            getMergedReferencesById.await(manga.id)
-                                                .map { sourceManager.getOrStub(it.mangaSourceId) }
-                                        } else {
-                                            null
-                                        },
-                                    ),
-                                    parentContext = presenterScope.coroutineContext,
-                                )
-                            }
+    val dialog = MutableStateFlow<Dialog?>(null)
+
+    init {
+        coroutineScope.launchIO {
+            runMigrations(
+                config.mangaIds
+                    .map {
+                        async {
+                            val manga = getManga.await(it) ?: return@async null
+                            MigratingManga(
+                                manga = manga,
+                                chapterInfo = getChapterInfo(it),
+                                sourcesString = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
+                                    if (manga.source == MERGED_SOURCE_ID) {
+                                        getMergedReferencesById.await(manga.id)
+                                            .map { sourceManager.getOrStub(it.mangaSourceId) }
+                                    } else {
+                                        null
+                                    },
+                                ),
+                                parentContext = coroutineScope.coroutineContext,
+                            )
                         }
-                        .awaitAll()
-                        .filterNotNull()
-                        .also {
-                            migratingItems.value = it
-                        },
-                )
-            }
+                    }
+                    .awaitAll()
+                    .filterNotNull()
+                    .also {
+                        migratingItems.value = it
+                    },
+            )
         }
     }
 
-    suspend fun getManga(result: SearchResult.Result) = getManga.await(result.id)
+    suspend fun getManga(result: SearchResult.Result) = getManga(result.id)
+    suspend fun getManga(id: Long) = getManga.await(id)
     suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
     suspend fun getChapterInfo(id: Long) = getChapterByMangaId.await(id).let { chapters ->
         MigratingManga.ChapterInfo(
@@ -146,7 +147,7 @@ class MigrationListPresenter(
 
         val sources = getMigrationSources()
         for (manga in mangas) {
-            if (migrationsJob?.isCancelled == true) {
+            if (!currentCoroutineContext().isActive) {
                 break
             }
             // in case it was removed
@@ -224,7 +225,7 @@ class MigrationListPresenter(
                                                 source.getChapterList(localManga.toSManga())
                                             }
                                         } catch (e: Exception) {
-                                            this@MigrationListPresenter.logcat(LogPriority.ERROR, e)
+                                            this@MigrationListScreenModel.logcat(LogPriority.ERROR, e)
                                             emptyList()
                                         }
                                         syncChaptersWithSource.await(chapters, localManga, source)
@@ -274,14 +275,13 @@ class MigrationListPresenter(
         }
     }
 
-    private suspend fun sourceFinished() {
+    private fun sourceFinished() {
         unfinishedCount.value = migratingItems.value.count {
             it.searchResult.value != SearchResult.Searching
         }
         if (allMangasDone()) {
             migrationDone.value = true
         }
-        withUIContext { view?.sourceFinished() }
     }
 
     fun allMangasDone() = migratingItems.value.all { it.searchResult.value != SearchResult.Searching } &&
@@ -383,11 +383,11 @@ class MigrationListPresenter(
         updateManga.awaitAll(listOfNotNull(mangaUpdate, prevMangaUpdate))
     }
 
-    fun useMangaForMigration(manga: Manga, source: Source, selectedMangaId: Long) {
+    fun useMangaForMigration(context: Context, manga: Manga, source: Source, selectedMangaId: Long) {
         val migratingManga = migratingItems.value.find { it.manga.id == selectedMangaId }
             ?: return
         migratingManga.searchResult.value = SearchResult.Searching
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             val result = migratingManga.migrationScope.async {
                 val localManga = networkToLocalManga.await(manga)
                 try {
@@ -413,14 +413,14 @@ class MigrationListPresenter(
             } else {
                 migratingManga.searchResult.value = SearchResult.NotFound
                 withUIContext {
-                    view?.activity?.toast(R.string.no_chapters_found_for_migration, Toast.LENGTH_LONG)
+                    context.toast(R.string.no_chapters_found_for_migration, Toast.LENGTH_LONG)
                 }
             }
         }
     }
 
     fun migrateMangas() {
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             migratingItems.value.forEach { manga ->
                 val searchResult = manga.searchResult.value
                 if (searchResult is SearchResult.Result) {
@@ -438,7 +438,7 @@ class MigrationListPresenter(
     }
 
     fun copyMangas() {
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             migratingItems.value.forEach { manga ->
                 val searchResult = manga.searchResult.value
                 if (searchResult is SearchResult.Result) {
@@ -455,26 +455,12 @@ class MigrationListPresenter(
     }
 
     private suspend fun navigateOut() {
-        val view = view ?: return
-        if (migratingItems.value.size == 1) {
-            val hasDetails = view.router.backstack.any { it.controller is MangaController }
-            if (hasDetails) {
-                val manga = (migratingItems.value.firstOrNull()?.searchResult?.value as? SearchResult.Result)?.let {
-                    getManga.await(it.id)
-                }
-                withUIContext {
-                    view.navigateOut(manga)
-                }
-                return
-            }
-        }
-        withUIContext {
-            view.navigateOut(null)
-        }
+        navigateOut.emit(Unit)
     }
 
     fun migrateManga(mangaId: Long, copy: Boolean) {
-        presenterScope.launchIO {
+        manualMigrations.value++
+        coroutineScope.launchIO {
             val manga = migratingItems.value.find { it.manga.id == mangaId }
                 ?: return@launchIO
 
@@ -491,7 +477,7 @@ class MigrationListPresenter(
     }
 
     fun removeManga(mangaId: Long) {
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             val item = migratingItems.value.find { it.manga.id == mangaId }
                 ?: return@launchIO
             if (migratingItems.value.size == 1) {
@@ -517,11 +503,25 @@ class MigrationListPresenter(
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        migrationsJob?.cancel()
+    override fun onDispose() {
+        super.onDispose()
         migratingItems.value.forEach {
             it.migrationScope.cancel()
         }
+    }
+
+    fun openMigrateDialog(
+        copy: Boolean,
+    ) {
+        dialog.value = Dialog.MigrateMangaDialog(
+            copy,
+            migratingItems.value.size,
+            mangasSkipped(),
+        )
+    }
+
+    sealed class Dialog {
+        data class MigrateMangaDialog(val copy: Boolean, val mangaSet: Int, val mangaSkipped: Int) : Dialog()
+        object MigrationExitDialog : Dialog()
     }
 }

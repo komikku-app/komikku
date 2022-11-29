@@ -5,9 +5,9 @@ import androidx.core.os.bundleOf
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
 import kotlinx.coroutines.runBlocking
@@ -24,23 +24,22 @@ class SearchController(
         SOURCES to sources?.map { it.id }?.toLongArray(),
     ),
 ) {
-    constructor(targetController: MigrationListController?, mangaId: Long, sources: LongArray) :
+    constructor(mangaId: Long, sources: LongArray) :
         this(
             runBlocking {
                 Injekt.get<GetManga>()
                     .await(mangaId)
             },
             sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>(),
-        ) {
-        this.targetController = targetController
-    }
+        )
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(
-        null,
         bundle.getLong(OLD_MANGA),
         bundle.getLongArray(SOURCES) ?: LongArray(0),
     )
+
+    var useMangaForMigration: ((Manga, Source) -> Unit)? = null
 
     /**
      * Called when controller is initialized.
@@ -58,10 +57,9 @@ class SearchController(
     }
 
     override fun onMangaClick(manga: Manga) {
-        val migrationListController = targetController as MigrationListController
         val sourceManager = Injekt.get<SourceManager>()
         val source = sourceManager.get(manga.source) ?: return
-        migrationListController.useMangaForMigration(manga, source)
+        useMangaForMigration?.let { it(manga, source) }
         router.popCurrentController()
     }
 
@@ -73,7 +71,7 @@ class SearchController(
     override fun onTitleClick(source: CatalogueSource) {
         presenter.sourcePreferences.lastUsedSource().set(source.id)
 
-        router.pushController(SourceSearchController(targetController as? MigrationListController ?: return, manga!!, source, presenter.query))
+        router.pushController(SourceSearchController(manga!!, source, presenter.query).also { it.useMangaForMigration = useMangaForMigration })
     }
 
     companion object {
