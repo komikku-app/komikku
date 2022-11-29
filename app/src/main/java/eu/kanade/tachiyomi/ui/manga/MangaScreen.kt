@@ -64,6 +64,7 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController.Companion.SMART_SEARCH_SOURCE_TAG
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.history.HistoryController
@@ -160,11 +161,11 @@ class MangaScreen(
             // SY <--
             onWebViewLongClicked = { copyMangaUrl(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onTrackingClicked = screenModel::showTrackDialog.takeIf { successState.trackingAvailable },
-            onTagClicked = { performGenreSearch(router, it, screenModel.source!!) },
+            onTagClicked = { performGenreSearch(router, navigator, it, screenModel.source!!) },
             onFilterButtonClicked = screenModel::showSettingsDialog,
             onRefresh = screenModel::fetchAllFromSource,
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
-            onSearch = { query, global -> performSearch(router, query, global) },
+            onSearch = { query, global -> performSearch(router, navigator, query, global) },
             onCoverClicked = screenModel::showCoverDialog,
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
@@ -368,11 +369,24 @@ class MangaScreen(
      *
      * @param query the search query to the parent controller
      */
-    private fun performSearch(router: Router, query: String, global: Boolean) {
+    private fun performSearch(router: Router, navigator: Navigator, query: String, global: Boolean) {
         if (global) {
             router.pushController(GlobalSearchController(query))
             return
         }
+
+        // SY -->
+        if (navigator.canPop) {
+            when (val previousScreen = navigator.items[navigator.items.size - 2]) {
+                is SourceFeedScreen -> {
+                    navigator.pop()
+                    previousScreen.onBrowseClick(router, previousScreen.sourceId, query)
+                }
+            }
+
+            return
+        }
+        // SY <--
 
         if (router.backstackSize < 2) {
             return
@@ -399,7 +413,8 @@ class MangaScreen(
             // SY -->
             is SourceFeedController -> {
                 router.handleBack()
-                previousController.onBrowseClick(query)
+                router.handleBack()
+                router.pushController(BrowseSourceController(previousController.sourceId, query))
             }
             // SY <--
         }
@@ -410,7 +425,7 @@ class MangaScreen(
      *
      * @param genreName the search genre to the parent controller
      */
-    private fun performGenreSearch(router: Router, genreName: String, source: Source) {
+    private fun performGenreSearch(router: Router, navigator: Navigator, genreName: String, source: Source) {
         if (router.backstackSize < 2) {
             return
         }
@@ -423,7 +438,7 @@ class MangaScreen(
             router.handleBack()
             previousController.searchWithGenre(genreName)
         } else {
-            performSearch(router, genreName, global = false)
+            performSearch(router, navigator, genreName, global = false)
         }
     }
 

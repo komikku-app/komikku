@@ -208,7 +208,7 @@ open class BrowseSourceController(bundle: Bundle) :
         filterSheet = SourceFilterSheet(
             activity!!,
             // SY -->
-            this,
+            router,
             presenter.source!!,
             emptyList(),
             // SY <--

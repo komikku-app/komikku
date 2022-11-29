@@ -34,7 +34,6 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedPresenter
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 
@@ -93,41 +92,49 @@ sealed class SourceFeedUI {
 
 @Composable
 fun SourceFeedScreen(
-    presenter: SourceFeedPresenter,
-    onFabClick: () -> Unit,
+    name: String,
+    isLoading: Boolean,
+    items: List<SourceFeedUI>,
+    onFabClick: (() -> Unit)?,
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
+    searchQuery: String?,
+    onSearchQueryChange: (String?) -> Unit,
+    isIncognitoMode: Boolean,
+    isDownloadOnly: Boolean,
+    getMangaState: @Composable (Manga) -> State<Manga>,
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
             SourceFeedToolbar(
-                title = presenter.source.name,
-                state = presenter,
+                title = name,
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange,
                 scrollBehavior = scrollBehavior,
-                incognitoMode = presenter.isIncognitoMode,
-                downloadedOnlyMode = presenter.isDownloadOnly,
+                incognitoMode = isIncognitoMode,
+                downloadedOnlyMode = isDownloadOnly,
                 onClickSearch = onClickSearch,
             )
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(
-                isVisible = presenter.filterItems.isNotEmpty(),
-                onFabClick = onFabClick,
+                isVisible = onFabClick != null,
+                onFabClick = onFabClick ?: {},
             )
         },
     ) { paddingValues ->
-        Crossfade(targetState = presenter.isLoading) { state ->
+        Crossfade(targetState = isLoading) { state ->
             when (state) {
                 true -> LoadingScreen()
                 false -> {
                     SourceFeedList(
-                        state = presenter,
+                        items = items,
                         paddingValues = paddingValues,
-                        getMangaState = { presenter.getManga(it) },
+                        getMangaState = getMangaState,
                         onClickBrowse = onClickBrowse,
                         onClickLatest = onClickLatest,
                         onClickSavedSearch = onClickSavedSearch,
@@ -142,7 +149,7 @@ fun SourceFeedScreen(
 
 @Composable
 fun SourceFeedList(
-    state: SourceFeedState,
+    items: List<SourceFeedUI>,
     paddingValues: PaddingValues,
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickBrowse: () -> Unit,
@@ -155,7 +162,7 @@ fun SourceFeedList(
         contentPadding = paddingValues + topSmallPaddingValues,
     ) {
         items(
-            state.items.orEmpty(),
+            items.orEmpty(),
             key = { it.id },
         ) { item ->
             SourceFeedItem(
@@ -248,7 +255,8 @@ fun SourceFeedItem(
 @Composable
 fun SourceFeedToolbar(
     title: String,
-    state: SourceFeedState,
+    searchQuery: String?,
+    onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     incognitoMode: Boolean,
     downloadedOnlyMode: Boolean,
@@ -256,10 +264,10 @@ fun SourceFeedToolbar(
 ) {
     SearchToolbar(
         titleContent = { AppBarTitle(title) },
-        searchQuery = state.searchQuery,
-        onChangeSearchQuery = { state.searchQuery = it },
+        searchQuery = searchQuery,
+        onChangeSearchQuery = onSearchQueryChange,
         onSearch = onClickSearch,
-        onClickCloseSearch = { state.searchQuery = null },
+        onClickCloseSearch = { onSearchQueryChange(null) },
         scrollBehavior = scrollBehavior,
         incognitoMode = incognitoMode,
         downloadedOnlyMode = downloadedOnlyMode,

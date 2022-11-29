@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -8,13 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
+import com.bluelinelabs.conductor.Router
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
-import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.md.MangaDexFabHeaderAdapter
@@ -22,9 +21,9 @@ import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
 
 class SourceFilterSheet(
-    activity: Activity,
+    context: Context,
     // SY -->
-    controller: BaseController<*>,
+    router: Router,
     source: CatalogueSource,
     searches: List<EXHSavedSearch> = emptyList(),
     // SY <--
@@ -35,14 +34,14 @@ class SourceFilterSheet(
     var onSavedSearchClicked: (Long) -> Unit = {},
     var onSavedSearchDeleteClicked: (Long, String) -> Unit = { _, _ -> },
     // EXH <--
-) : BaseBottomSheetDialog(activity) {
+) : BaseBottomSheetDialog(context) {
 
     private var filterNavView: FilterNavigationView = FilterNavigationView(
-        activity,
+        context,
         // SY -->
         searches = searches,
         source = source,
-        controller = controller,
+        router = router,
         dismissSheet = ::dismiss,
         // SY <--
     )
@@ -85,7 +84,7 @@ class SourceFilterSheet(
         // SY -->
         searches: List<EXHSavedSearch> = emptyList(),
         source: CatalogueSource? = null,
-        controller: BaseController<*>? = null,
+        router: Router? = null,
         dismissSheet: (() -> Unit)? = null,
         // SY <--
     ) :
@@ -117,10 +116,10 @@ class SourceFilterSheet(
             // SY -->
             recycler.adapter = ConcatAdapter(
                 listOfNotNull(
-                    controller?.let {
+                    router?.let {
                         source?.getMainSource<MangaDex>()
                             ?.let {
-                                MangaDexFabHeaderAdapter(controller, it) {
+                                MangaDexFabHeaderAdapter(router, it) {
                                     dismissSheet?.invoke()
                                 }
                             }

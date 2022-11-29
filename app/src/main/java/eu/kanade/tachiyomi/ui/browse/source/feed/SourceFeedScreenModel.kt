@@ -1,10 +1,14 @@
 package eu.kanade.tachiyomi.ui.browse.source.feed
 
-import android.os.Bundle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import cafe.adriel.voyager.core.model.StateScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
+import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.core.prefs.asState
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
@@ -17,33 +21,32 @@ import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
-import eu.kanade.presentation.browse.SourceFeedState
-import eu.kanade.presentation.browse.SourceFeedStateImpl
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.browse.source.browse.toItems
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
-import rx.Observable
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import java.util.concurrent.Executors
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
@@ -52,9 +55,9 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
  *
  * @param source the source.
  */
-open class SourceFeedPresenter(
-    private val state: SourceFeedStateImpl = SourceFeedState() as SourceFeedStateImpl,
-    val source: CatalogueSource,
+open class SourceFeedScreenModel(
+    val sourceId: Long,
+    private val sourceManager: SourceManager = Injekt.get(),
     private val preferences: BasePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -65,38 +68,33 @@ open class SourceFeedPresenter(
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
-) : BasePresenter<SourceFeedController>(), SourceFeedState by state {
+) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
-    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState()
-    val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
+    val source = sourceManager.getOrStub(sourceId) as CatalogueSource
 
-    /**
-     * Fetches the different sources by user settings.
-     */
-    private var fetchSourcesSubscription: Subscription? = null
+    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState(coroutineScope)
+    val isIncognitoMode: Boolean by preferences.incognitoMode().asState(coroutineScope)
 
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
+    private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
+    init {
         setFilters(source.getFilterList())
 
         getFeedSavedSearchBySourceId.subscribe(source.id)
             .onEach {
                 val items = getSourcesToGetFeed(it)
-                state.items = items
-                state.isLoading = false
+                mutableState.update { state ->
+                    state.copy(
+                        items = items,
+                    )
+                }
                 getFeed(items)
             }
-            .launchIn(presenterScope)
-    }
-
-    override fun onDestroy() {
-        fetchSourcesSubscription?.unsubscribe()
-        super.onDestroy()
+            .launchIn(coroutineScope)
     }
 
     fun setFilters(filters: FilterList) {
-        state.filters = filters
+        mutableState.update { it.copy(filters = filters) }
     }
 
     suspend fun hasTooManyFeeds(): Boolean {
@@ -104,7 +102,7 @@ open class SourceFeedPresenter(
     }
 
     fun createFeed(savedSearchId: Long) {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -117,7 +115,7 @@ open class SourceFeedPresenter(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
@@ -141,11 +139,10 @@ open class SourceFeedPresenter(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
-        fetchSourcesSubscription?.unsubscribe()
-        fetchSourcesSubscription = Observable.from(feedSavedSearch)
-            .flatMap(
-                { sourceFeed ->
-                    Observable.defer {
+        coroutineScope.launch {
+            feedSavedSearch.forEach { sourceFeed ->
+                val page = try {
+                    withContext(coroutineDispatcher) {
                         when (sourceFeed) {
                             is SourceFeedUI.Browse -> source.fetchPopularManga(1)
                             is SourceFeedUI.Latest -> source.fetchLatestUpdates(1)
@@ -154,30 +151,25 @@ open class SourceFeedPresenter(
                                 query = sourceFeed.savedSearch.query.orEmpty(),
                                 filters = getFilterList(sourceFeed.savedSearch, source),
                             )
-                        }
+                        }.awaitSingle()
+                    }.mangas
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+                val titles = page.map {
+                    withIOContext {
+                        networkToLocalManga.await(it.toDomainManga(source.id))
                     }
-                        .subscribeOn(Schedulers.io())
-                        .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
-                        .map { it.mangas } // Get manga from search result.
-                        .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(source.id)) } } } // Convert to local manga.
-                        .map { list -> sourceFeed.withResults(list) }
-                },
-                5,
-            )
-            .observeOn(AndroidSchedulers.mainThread())
-            // Update matching source with the obtained results
-            .doOnNext { result ->
-                synchronized(state) {
-                    state.items = state.items?.map { item -> if (item.id == result.id) result else item }
+                }
+
+                mutableState.update { state ->
+                    state.copy(
+                        items = state.items.map { item -> if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item },
+                    )
                 }
             }
-            // Deliver initial state
-            .subscribe(
-                {},
-                { error ->
-                    logcat(LogPriority.ERROR, error)
-                },
-            )
+        }
     }
 
     private val filterSerializer = FilterSerializer()
@@ -233,4 +225,48 @@ open class SourceFeedPresenter(
 
     suspend fun loadSearches() =
         getExhSavedSearch.await(source.id, source::getFilterList)
+
+    fun search(query: String?) {
+        mutableState.update { it.copy(searchQuery = query) }
+    }
+
+    fun openDeleteFeed(feed: FeedSavedSearch) {
+        mutableState.update { it.copy(dialog = Dialog.DeleteFeed(feed)) }
+    }
+
+    fun openAddFeed(feedId: Long, name: String) {
+        mutableState.update { it.copy(dialog = Dialog.AddFeed(feedId, name)) }
+    }
+
+    fun openFailedToLoadSavedSearch() {
+        mutableState.update { it.copy(dialog = Dialog.FailedToLoadSavedSearch) }
+    }
+
+    fun dismissDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
+    sealed class Dialog {
+        data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
+        data class AddFeed(val feedId: Long, val name: String) : Dialog()
+        object FailedToLoadSavedSearch : Dialog()
+    }
+
+    override fun onDispose() {
+        super.onDispose()
+        coroutineDispatcher.close()
+    }
+}
+
+@Immutable
+data class SourceFeedState(
+    val searchQuery: String? = null,
+    val items: List<SourceFeedUI> = emptyList(),
+    val filters: FilterList = FilterList(),
+    val dialog: SourceFeedScreenModel.Dialog? = null,
+) {
+    val filterItems: List<IFlexible<*>> by lazy { filters.toItems() }
+
+    val isLoading
+        get() = items.isEmpty()
 }
