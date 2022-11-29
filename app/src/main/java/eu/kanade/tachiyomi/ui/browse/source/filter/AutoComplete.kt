@@ -45,22 +45,22 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
 
         // select from auto complete
         holder.autoComplete.setOnItemClickListener { adapterView, _, chipPosition, _ ->
-            var name = (adapterView.getItemAtPosition(chipPosition) as String).trim()
-            filter.validPrefixes.find { name.startsWith(it) }?.let { name = name.removePrefix(it).trim() }
-            if (name !in filter.skipAutoFillTags) {
+            val tag = (adapterView.getItemAtPosition(chipPosition) as String).trim()
+            val tagNoPrefix = filter.validPrefixes.find { tag.startsWith(it) }?.let { tag.removePrefix(it).trim() } ?: tag
+            if (tagNoPrefix !in filter.skipAutoFillTags) {
                 holder.autoComplete.text = null
-                addTag(name, holder)
+                addTag(tag, holder)
             }
         }
 
         // done keyboard button is pressed
         holder.autoComplete.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId != EditorInfo.IME_ACTION_DONE) return@setOnEditorActionListener false
-            var name = textView.text.toString().trim()
-            filter.validPrefixes.find { name.startsWith(it) }?.let { name = name.removePrefix(it).trim() }
-            if (name !in filter.skipAutoFillTags) {
+            val tag = textView.text.toString().trim()
+            val tagNoPrefix = filter.validPrefixes.find { tag.startsWith(it) }?.let { tag.removePrefix(it).trim() } ?: tag
+            if (tagNoPrefix !in filter.skipAutoFillTags) {
                 textView.text = null
-                addTag(name, holder)
+                addTag(tag, holder)
             }
             true
         }
