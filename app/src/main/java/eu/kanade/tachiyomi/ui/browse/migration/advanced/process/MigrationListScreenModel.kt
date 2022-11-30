@@ -274,12 +274,15 @@ class MigrationListScreenModel(
         }
     }
 
-    private fun sourceFinished() {
+    private suspend fun sourceFinished() {
         unfinishedCount.value = migratingItems.value.count {
             it.searchResult.value != SearchResult.Searching
         }
         if (allMangasDone()) {
             migrationDone.value = true
+        }
+        if (migratingItems.value.isEmpty()) {
+            navigateOut()
         }
     }
 
@@ -481,12 +484,6 @@ class MigrationListScreenModel(
         coroutineScope.launchIO {
             val item = migratingItems.value.find { it.manga.id == mangaId }
                 ?: return@launchIO
-            if (migratingItems.value.size == 1) {
-                item.searchResult.value = SearchResult.NotFound
-                item.migrationScope.cancel()
-                sourceFinished()
-                return@launchIO
-            }
             removeManga(item)
             item.migrationScope.cancel()
             sourceFinished()
