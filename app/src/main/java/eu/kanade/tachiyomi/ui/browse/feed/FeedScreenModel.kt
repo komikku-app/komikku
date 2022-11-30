@@ -32,6 +32,7 @@ import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -90,12 +91,14 @@ open class FeedScreenModel(
                 }
                 getFeed(items)
             }
+            .catch { _events.send(Event.FailedFetchingSources) }
             .launchIn(coroutineScope)
     }
 
     fun openAddDialog() {
         coroutineScope.launchIO {
             if (hasTooManyFeeds()) {
+                _events.send(Event.TooManyFeeds)
                 return@launchIO
             }
             mutableState.update { state ->
