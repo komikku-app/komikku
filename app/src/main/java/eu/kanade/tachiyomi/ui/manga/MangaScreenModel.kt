@@ -478,6 +478,7 @@ class MangaInfoScreenModel(
                 ogDescription = description?.trimOrNull(),
                 ogGenre = tags?.nullIfEmpty(),
                 ogStatus = status ?: 0,
+                lastUpdate = manga.lastUpdate + 1,
             )
             (sourceManager.get(LocalSource.ID) as LocalSource).updateMangaInfo(manga.toSManga())
             coroutineScope.launchNonCancellable {
@@ -510,7 +511,7 @@ class MangaInfoScreenModel(
                     status.takeUnless { it == state.manga.ogStatus },
                 ),
             )
-            manga = manga.copy()
+            manga = manga.copy(lastUpdate = manga.lastUpdate + 1)
         }
 
         updateSuccessState { successState ->
