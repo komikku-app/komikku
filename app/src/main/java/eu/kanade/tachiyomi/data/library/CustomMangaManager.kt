@@ -92,7 +92,7 @@ class CustomMangaManager(val context: Context) {
     }
 
     data class CustomMangaInfo(
-        var id: Long,
+        val id: Long,
         val title: String?,
         val author: String? = null,
         val artist: String? = null,
