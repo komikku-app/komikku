@@ -82,6 +82,7 @@ fun EditMangaDialog(
                             }
                         }?.toLong(),
                     )
+                    onDismissRequest()
                 },
             ) {
                 Text(stringResource(R.string.action_save))
