@@ -21,7 +21,7 @@ import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,17 +38,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
-import rx.Observable
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import java.util.concurrent.Executors
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
@@ -70,10 +69,7 @@ open class FeedScreenModel(
     private val _events = Channel<Event>(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
 
-    /**
-     * Fetches the different sources by user settings.
-     */
-    private var fetchSourcesSubscription: Subscription? = null
+    private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
 
     init {
         getFeedSavedSearchGlobal.subscribe()
@@ -205,44 +201,43 @@ open class FeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<FeedItemUI>) {
-        fetchSourcesSubscription?.unsubscribe()
-        fetchSourcesSubscription = Observable.from(feedSavedSearch)
-            .flatMap(
-                { itemUI ->
+        coroutineScope.launch {
+            feedSavedSearch.forEach { itemUI ->
+                val page = try {
                     if (itemUI.source != null) {
-                        Observable.defer {
+                        withContext(coroutineDispatcher) {
                             if (itemUI.savedSearch == null) {
                                 itemUI.source.fetchLatestUpdates(1)
                             } else {
-                                itemUI.source.fetchSearchManga(1, itemUI.savedSearch.query.orEmpty(), getFilterList(itemUI.savedSearch, itemUI.source))
-                            }
-                        }
-                            .subscribeOn(Schedulers.io())
-                            .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
-                            .map { it.mangas } // Get manga from search result.
-                            .map { list -> runBlocking { list.map { networkToLocalManga.await(it.toDomainManga(itemUI.source.id)) } } } // Convert to local manga.
-                            .map { list -> itemUI.copy(results = list) }
+                                itemUI.source.fetchSearchManga(
+                                    1,
+                                    itemUI.savedSearch.query.orEmpty(),
+                                    getFilterList(itemUI.savedSearch, itemUI.source),
+                                )
+                            }.awaitSingle()
+                        }.mangas
                     } else {
-                        Observable.just(itemUI.copy(results = emptyList()))
+                        emptyList()
                     }
-                },
-                5,
-            )
-            .observeOn(AndroidSchedulers.mainThread())
-            // Update matching source with the obtained results
-            .doOnNext { result ->
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+                val result = itemUI.copy(
+                    results = page.map {
+                        withIOContext {
+                            networkToLocalManga.await(it.toDomainManga(itemUI.source!!.id))
+                        }
+                    },
+                )
+
                 mutableState.update { state ->
                     state.copy(
                         items = state.items?.map { if (it.feed.id == result.feed.id) result else it },
                     )
                 }
             }
-            .subscribe(
-                {},
-                { error ->
-                    logcat(LogPriority.ERROR, error)
-                },
-            )
+        }
     }
 
     private val filterSerializer = FilterSerializer()
@@ -295,7 +290,7 @@ open class FeedScreenModel(
 
     override fun onDispose() {
         super.onDispose()
-        fetchSourcesSubscription?.unsubscribe()
+        coroutineDispatcher.close()
     }
 
     fun dismissDialog() {
