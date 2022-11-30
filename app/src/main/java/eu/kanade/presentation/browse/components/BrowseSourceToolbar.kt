@@ -1,11 +1,10 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.ViewList
-import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -56,33 +55,45 @@ fun BrowseSourceToolbar(
         onClickCloseSearch = navigateUp,
         actions = {
             var selectingDisplayMode by remember { mutableStateOf(false) }
+            // SY -->
+            val isConfigurableSource = source?.anyIs<ConfigurableSource>() == true
             AppBarActions(
-                // SY -->
                 actions = listOfNotNull(
                     AppBar.Action(
                         title = stringResource(R.string.action_display_mode),
-                        icon = if (displayMode == LibraryDisplayMode.List) Icons.Outlined.ViewList else Icons.Outlined.ViewModule,
+                        icon = if (displayMode == LibraryDisplayMode.List) Icons.Filled.ViewList else Icons.Filled.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ).takeIf { displayMode != null },
-                    // SY <--
                     if (isLocalSource) {
-                        AppBar.Action(
-                            title = stringResource(R.string.label_help),
-                            icon = Icons.Outlined.Help,
-                            onClick = onHelpClick,
-                        )
+                        if (isConfigurableSource && displayMode != null) {
+                            AppBar.OverflowAction(
+                                title = stringResource(R.string.label_help),
+                                onClick = onHelpClick,
+                            )
+                        } else {
+                            AppBar.Action(
+                                title = stringResource(R.string.label_help),
+                                icon = Icons.Outlined.Help,
+                                onClick = onHelpClick,
+                            )
+                        }
                     } else {
-                        AppBar.Action(
-                            title = stringResource(R.string.action_web_view),
-                            icon = Icons.Outlined.Public,
-                            onClick = onWebViewClick,
-                        )
+                        if (isConfigurableSource && displayMode != null) {
+                            AppBar.OverflowAction(
+                                title = stringResource(R.string.action_web_view),
+                                onClick = onWebViewClick,
+                            )
+                        } else {
+                            AppBar.Action(
+                                title = stringResource(R.string.action_web_view),
+                                icon = Icons.Outlined.Public,
+                                onClick = onWebViewClick,
+                            )
+                        }
                     },
-                    // SY -->
-                    if (source?.anyIs<ConfigurableSource>() ?: false) {
-                        AppBar.Action(
+                    if (isConfigurableSource) {
+                        AppBar.OverflowAction(
                             title = stringResource(R.string.action_settings),
-                            icon = Icons.Outlined.Settings,
                             onClick = onSettingsClick,
                         )
                     } else {
