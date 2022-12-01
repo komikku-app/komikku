@@ -7,15 +7,18 @@ import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.widget.Toast
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.presentation.webview.EhLoginWebViewScreen
+import eu.kanade.presentation.webview.components.IgneousDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.log.xLogD
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
@@ -27,8 +30,6 @@ import java.util.Locale
 class EhLoginActivity : BaseActivity() {
     private val preferenceManager: UnsortedPreferences by injectLazy()
 
-    private var igneous: String? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -39,14 +40,28 @@ class EhLoginActivity : BaseActivity() {
         }
 
         setComposeContent {
+            var igneous by rememberSaveable {
+                mutableStateOf<String?>(null)
+            }
+            var igneousDialogOpen by rememberSaveable {
+                mutableStateOf(false)
+            }
+
             EhLoginWebViewScreen(
                 onUp = { finish() },
-                onPageFinished = ::onPageFinished,
+                onPageFinished = { view, url -> onPageFinished(view, url, igneous) },
                 onClickRecheckLoginStatus = ::recheckLoginStatus,
                 onClickAlternateLoginPage = ::alternateLoginPage,
                 onClickSkipPageRestyling = ::skipPageRestyling,
-                onClickCustomIgneousCookie = ::openIgneousDialog,
+                onClickCustomIgneousCookie = { igneousDialogOpen = true },
             )
+
+            if (igneousDialogOpen) {
+                IgneousDialog(
+                    onDismissRequest = { igneousDialogOpen = false },
+                    onIgneousSet = { igneous = it },
+                )
+            }
         }
     }
 
@@ -62,24 +77,7 @@ class EhLoginActivity : BaseActivity() {
         loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
     }
 
-    private fun openIgneousDialog() {
-        var igneous: CharSequence? = null
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.custom_igneous_cookie)
-            .setMessage(R.string.custom_igneous_cookie_message)
-            .setTextInput { igneousText ->
-                igneous = igneousText
-            }
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (!igneous.isNullOrBlank()) {
-                    this.igneous = igneous?.toString()?.trim()
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun onPageFinished(view: WebView, url: String) {
+    private fun onPageFinished(view: WebView, url: String, customIgneous: String?) {
         xLogD(url)
         val parsedUrl = Uri.parse(url)
         if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
@@ -94,7 +92,7 @@ class EhLoginActivity : BaseActivity() {
             }
         } else if (parsedUrl.host.equals("exhentai.org", ignoreCase = true)) {
             // At ExHentai, check that everything worked out...
-            if (applyExHentaiCookies(url)) {
+            if (applyExHentaiCookies(url, customIgneous)) {
                 preferenceManager.enableExhentai().set(true)
                 setResult(RESULT_OK)
                 finish()
@@ -121,18 +119,18 @@ class EhLoginActivity : BaseActivity() {
     /**
      * Parse cookies at ExHentai
      */
-    private fun applyExHentaiCookies(url: String): Boolean {
+    private fun applyExHentaiCookies(url: String, customIgneous: String?): Boolean {
         getCookies(url)?.let { parsed ->
 
             var memberId: String? = null
             var passHash: String? = null
-            var igneous: String? = null
+            var igneous: String? = customIgneous
 
             parsed.forEach {
                 when (it.name.lowercase(Locale.getDefault())) {
                     MEMBER_ID_COOKIE -> memberId = it.value
                     PASS_HASH_COOKIE -> passHash = it.value
-                    IGNEOUS_COOKIE -> igneous = this.igneous ?: it.value
+                    IGNEOUS_COOKIE -> igneous = customIgneous ?: it.value
                 }
             }
 

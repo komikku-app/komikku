@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -105,7 +107,7 @@ fun EhLoginWebViewScreen(
                 }
             }
         }
-        var showAdvancedOptions by remember {
+        var showAdvancedOptions by rememberSaveable {
             mutableStateOf(false)
         }
 
@@ -114,7 +116,9 @@ fun EhLoginWebViewScreen(
                 WebView(
                     state = state,
                     navigator = navigator,
-                    modifier = Modifier.padding(bottom = 48.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 48.dp),
                     onCreated = { webView ->
                         webView.setDefaultSettings()
 
@@ -143,7 +147,11 @@ fun EhLoginWebViewScreen(
                 }
             }
             if (showAdvancedOptions) {
-                Box(Modifier.background(Color(0xb5000000))) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color(0xb5000000))
+                ) {
                     Dialog(onDismissRequest = { showAdvancedOptions = false }) {
                         fun loadUrl(url: String) {
                             state.content = WebContent.Url(url)
