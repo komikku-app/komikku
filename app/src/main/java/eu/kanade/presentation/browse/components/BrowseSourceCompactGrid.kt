@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -25,14 +25,11 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun BrowseSourceCompactGrid(
-    mangaList: LazyPagingItems</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>,
-    getMangaState: @Composable ((Manga) -> State<Manga>),
-    // SY -->
-    getMetadataState: @Composable ((Manga, RaisedSearchMetadata?) -> State<RaisedSearchMetadata?>),
-    // SY <--
+    mangaList: LazyPagingItems<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>,
     columns: GridCells,
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
@@ -51,10 +48,10 @@ fun BrowseSourceCompactGrid(
         }
 
         items(mangaList.itemCount) { index ->
-            val initialManga = mangaList[index] ?: return@items
-            val manga by getMangaState(initialManga.first)
             // SY -->
-            val metadata by getMetadataState(initialManga.first, initialManga.second)
+            val pair by mangaList[index]?.collectAsState() ?: return@items
+            val manga = pair.first
+            val metadata = pair.second
             // SY <--
             BrowseSourceCompactGridItem(
                 manga = manga,

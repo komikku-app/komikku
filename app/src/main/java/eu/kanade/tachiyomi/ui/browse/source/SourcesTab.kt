@@ -68,7 +68,7 @@ fun Screen.sourcesTab(
                     val controller = when {
                         smartSearchConfig != null -> SmartSearchController(source.id, smartSearchConfig)
                         (query.isBlank() || query == QUERY_POPULAR) && screenModel.useNewSourceNavigation -> SourceFeedController(source.id)
-                        else -> BrowseSourceController(source, query)
+                        else -> BrowseSourceController(source.id, query)
                     }
                     screenModel.onOpenSource(source)
                     router.pushController(controller)

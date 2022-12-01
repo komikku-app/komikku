@@ -22,7 +22,7 @@ class MangaMetadataRepositoryImpl(
         return handler.awaitOneOrNull { search_metadataQueries.selectByMangaId(id, searchMetadataMapper) }
     }
 
-    override suspend fun subscribeMetadataById(id: Long): Flow<SearchMetadata?> {
+    override fun subscribeMetadataById(id: Long): Flow<SearchMetadata?> {
         return handler.subscribeToOneOrNull { search_metadataQueries.selectByMangaId(id, searchMetadataMapper) }
     }
 
@@ -30,7 +30,7 @@ class MangaMetadataRepositoryImpl(
         return handler.awaitList { search_tagsQueries.selectByMangaId(id, searchTagMapper) }
     }
 
-    override suspend fun subscribeTagsById(id: Long): Flow<List<SearchTag>> {
+    override fun subscribeTagsById(id: Long): Flow<List<SearchTag>> {
         return handler.subscribeToList { search_tagsQueries.selectByMangaId(id, searchTagMapper) }
     }
 
@@ -38,7 +38,7 @@ class MangaMetadataRepositoryImpl(
         return handler.awaitList { search_titlesQueries.selectByMangaId(id, searchTitleMapper) }
     }
 
-    override suspend fun subscribeTitlesById(id: Long): Flow<List<SearchTitle>> {
+    override fun subscribeTitlesById(id: Long): Flow<List<SearchTitle>> {
         return handler.subscribeToList { search_titlesQueries.selectByMangaId(id, searchTitleMapper) }
     }
 

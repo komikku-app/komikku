@@ -3,7 +3,7 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -23,14 +23,11 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun BrowseSourceList(
-    mangaList: LazyPagingItems</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>,
-    getMangaState: @Composable ((Manga) -> State<Manga>),
-    // SY -->
-    getMetadataState: @Composable ((Manga, RaisedSearchMetadata?) -> State<RaisedSearchMetadata?>),
-    // SY <--
+    mangaList: LazyPagingItems<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>,
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
@@ -44,12 +41,14 @@ fun BrowseSourceList(
             }
         }
 
-        items(mangaList) { initialManga ->
-            initialManga ?: return@items
-            val manga by getMangaState(initialManga.first)
+        items(mangaList) { mangaflow ->
+            mangaflow ?: return@items
             // SY -->
-            val metadata by getMetadataState(initialManga.first, initialManga.second)
+            val pair by mangaflow.collectAsState()
+            val manga = pair.first
+            val metadata = pair.second
             // SY <--
+
             BrowseSourceListItem(
                 manga = manga,
                 // SY -->

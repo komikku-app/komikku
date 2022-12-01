@@ -16,7 +16,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
@@ -46,15 +46,12 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor
+import kotlinx.coroutines.flow.StateFlow
 import java.util.Date
 
 @Composable
 fun BrowseSourceEHentaiList(
-    mangaList: LazyPagingItems</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>,
-    getMangaState: @Composable ((Manga) -> State<Manga>),
-    // SY -->
-    getMetadataState: @Composable ((Manga, RaisedSearchMetadata?) -> State<RaisedSearchMetadata?>),
-    // SY <--
+    mangaList: LazyPagingItems<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>,
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
@@ -69,10 +66,10 @@ fun BrowseSourceEHentaiList(
         }
 
         items(mangaList) { initialManga ->
-            initialManga ?: return@items
-            val manga by getMangaState(initialManga.first)
+            val pair by initialManga?.collectAsState() ?: return@items
+            val manga = pair.first
             // SY -->
-            val metadata by getMetadataState(initialManga.first, initialManga.second)
+            val metadata = pair.second
             // SY <--
             BrowseSourceEHentaiListItem(
                 manga = manga,

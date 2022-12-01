@@ -29,7 +29,7 @@ class GetFlatMetadataById(
         }
     }
 
-    suspend fun subscribe(id: Long): Flow<FlatMetadata?> {
+    fun subscribe(id: Long): Flow<FlatMetadata?> {
         return combine(
             mangaMetadataRepository.subscribeMetadataById(id),
             mangaMetadataRepository.subscribeTagsById(id),

@@ -59,23 +59,3 @@ fun SourceFeedDeleteDialog(
         },
     )
 }
-
-@Composable
-fun SourceFeedFailedToLoadSavedSearchDialog(
-    onDismissRequest: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(android.R.string.ok))
-            }
-        },
-        title = {
-            Text(text = stringResource(R.string.save_search_failed_to_load))
-        },
-        text = {
-            Text(text = stringResource(R.string.save_search_failed_to_load_message))
-        },
-    )
-}

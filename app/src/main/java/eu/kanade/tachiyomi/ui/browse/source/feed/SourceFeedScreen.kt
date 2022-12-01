@@ -17,9 +17,9 @@ import com.bluelinelabs.conductor.Router
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
+import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
-import eu.kanade.presentation.browse.components.SourceFeedFailedToLoadSavedSearchDialog
 import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -89,7 +89,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
                 )
             }
             SourceFeedScreenModel.Dialog.FailedToLoadSavedSearch -> {
-                SourceFeedFailedToLoadSavedSearchDialog(onDismissRequest)
+                FailedToLoadSavedSearchDialog(onDismissRequest)
             }
             null -> Unit
         }

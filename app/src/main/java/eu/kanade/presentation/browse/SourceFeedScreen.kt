@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
