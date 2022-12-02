@@ -57,7 +57,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
+import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.more.MoreController
@@ -130,7 +130,7 @@ data class BrowseSourceScreen(
                         onHelpClick = onHelpClick,
                         onSearch = { screenModel.search(it) },
                         // SY -->
-                        onSettingsClick = { router.pushController(SourcePreferencesController(sourceId)) },
+                        onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
                         // SY <--
                     )
 
