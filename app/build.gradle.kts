@@ -271,7 +271,7 @@ dependencies {
     implementation(libs.wheelpicker)
 
     // Conductor
-    implementation(libs.bundles.conductor)
+    implementation(libs.conductor)
 
     // FlowBinding
     implementation(libs.flowbinding.android)

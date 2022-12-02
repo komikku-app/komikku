@@ -45,7 +45,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
@@ -78,10 +77,14 @@ import exh.source.getMainSource
 import exh.source.isEhBasedManga
 import exh.util.defaultReaderType
 import exh.util.mangaType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
+import nucleus.presenter.RxPresenter
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -89,7 +92,6 @@ import rx.schedulers.Schedulers
 import tachiyomi.decoder.ImageDecoder
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Date
@@ -104,6 +106,7 @@ class ReaderPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadProvider: DownloadProvider = Injekt.get(),
+    private val imageSaver: ImageSaver = Injekt.get(),
     preferences: BasePreferences = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val readerPreferences: ReaderPreferences = Injekt.get(),
@@ -124,7 +127,9 @@ class ReaderPresenter(
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     // SY <--
-) : BasePresenter<ReaderActivity>() {
+) : RxPresenter<ReaderActivity>() {
+
+    private val coroutineScope: CoroutineScope = MainScope()
 
     /**
      * The manga loaded in the reader. It can be null when instantiated for a short time.
@@ -169,8 +174,6 @@ class ReaderPresenter(
      * Relay used when loading prev/next chapter needed to lock the UI (with a dialog).
      */
     private val isLoadingAdjacentChapterRelay = BehaviorRelay.create<Boolean>()
-
-    private val imageSaver: ImageSaver by injectLazy()
 
     private var chapterToDownload: Download? = null
 
@@ -254,6 +257,7 @@ class ReaderPresenter(
      */
     override fun onDestroy() {
         super.onDestroy()
+        coroutineScope.cancel()
         val currentChapters = viewerChaptersRelay.value
         if (currentChapters != null) {
             currentChapters.unref()
@@ -291,7 +295,7 @@ class ReaderPresenter(
      */
     fun onSaveInstanceStateNonConfigurationChange() {
         val currentChapter = getCurrentChapter() ?: return
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             saveChapterProgress(currentChapter)
         }
     }
@@ -310,7 +314,7 @@ class ReaderPresenter(
     fun init(mangaId: Long, initialChapterId: Long /* SY --> */, page: Int?/* SY <-- */) {
         if (!needsInit()) return
 
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             try {
                 // SY -->
                 val manga = getManga.await(mangaId) ?: return@launchIO
@@ -538,7 +542,7 @@ class ReaderPresenter(
             selectedChapter.chapter.read = true
             // SY -->
             if (manga?.isEhBasedManga() == true) {
-                presenterScope.launchNonCancellable {
+                coroutineScope.launchNonCancellable {
                     chapterList
                         .filter { it.chapter.source_order > selectedChapter.chapter.source_order }
                         .onEach {
@@ -574,7 +578,7 @@ class ReaderPresenter(
         if (getCurrentChapter()?.pageLoader !is DownloadPageLoader) return
         val nextChapter = viewerChaptersRelay.value?.nextChapter?.chapter ?: return
 
-        presenterScope.launchIO {
+        coroutineScope.launchIO {
             val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
                 nextChapter.name,
                 nextChapter.scanlator,
@@ -632,7 +636,7 @@ class ReaderPresenter(
      * Called when reader chapter is changed in reader or when activity is paused.
      */
     private fun saveReadingProgress(readerChapter: ReaderChapter) {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             saveChapterProgress(readerChapter)
             saveChapterHistory(readerChapter)
         }
@@ -722,7 +726,7 @@ class ReaderPresenter(
     fun bookmarkCurrentChapter(bookmarked: Boolean) {
         val chapter = getCurrentChapter()?.chapter ?: return
         chapter.bookmark = bookmarked // Otherwise the bookmark icon doesn't update
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             updateChapter.await(
                 ChapterUpdate(
                     id = chapter.id!!.toLong(),
@@ -736,7 +740,7 @@ class ReaderPresenter(
     fun toggleBookmark(chapterId: Long, bookmarked: Boolean) {
         val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
         chapter.bookmark = bookmarked
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             updateChapter.await(
                 ChapterUpdate(
                     id = chapter.id!!.toLong(),
@@ -857,7 +861,7 @@ class ReaderPresenter(
 
         // Copy file in background.
         try {
-            presenterScope.launchNonCancellable {
+            coroutineScope.launchNonCancellable {
                 val uri = imageSaver.save(
                     image = Image.Page(
                         inputStream = page.stream!!,
@@ -891,7 +895,7 @@ class ReaderPresenter(
 
         // Copy file in background.
         try {
-            presenterScope.launchIO {
+            coroutineScope.launchIO {
                 val uri = saveImages(
                     page1 = firstPage,
                     page2 = secondPage,
@@ -961,7 +965,7 @@ class ReaderPresenter(
         val filename = generateFilename(manga, page)
 
         try {
-            presenterScope.launchNonCancellable {
+            coroutineScope.launchNonCancellable {
                 destDir.deleteRecursively()
                 val uri = imageSaver.save(
                     image = Image.Page(
@@ -989,7 +993,7 @@ class ReaderPresenter(
         val destDir = context.cacheImageDir
 
         try {
-            presenterScope.launchIO {
+            coroutineScope.launchIO {
                 destDir.deleteRecursively()
                 val uri = saveImages(
                     page1 = firstPage,
@@ -1017,7 +1021,7 @@ class ReaderPresenter(
         val manga = manga?.toDomainManga() ?: return
         val stream = page.stream ?: return
 
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             try {
                 manga.editCover(context, stream())
                 withUIContext {
@@ -1063,7 +1067,7 @@ class ReaderPresenter(
         val trackManager = Injekt.get<TrackManager>()
         val context = Injekt.get<Application>()
 
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             getTracks.await(manga.id!!)
                 .mapNotNull { track ->
                     val service = trackManager.getService(track.syncId)
@@ -1109,7 +1113,7 @@ class ReaderPresenter(
         } ?: return
         // SY <--
 
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             downloadManager.enqueueChaptersToDelete(listOf(chapter.chapter.toDomainChapter()!!), manga.toDomainManga()!!)
         }
     }
@@ -1119,9 +1123,15 @@ class ReaderPresenter(
      * are ignored.
      */
     private fun deletePendingChapters() {
-        presenterScope.launchNonCancellable {
+        coroutineScope.launchNonCancellable {
             downloadManager.deletePendingChapters()
         }
+    }
+
+    // We're trying to avoid using Rx, so we "undeprecate" this
+    @Suppress("DEPRECATION")
+    override fun getView(): ReaderActivity? {
+        return super.getView()
     }
 
     /**

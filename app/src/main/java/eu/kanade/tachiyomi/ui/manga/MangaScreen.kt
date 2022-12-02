@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.core.os.bundleOf
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.uniqueScreenKey
@@ -56,12 +55,11 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController.Companion.SMART_SEARCH_SOURCE_TAG
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -176,8 +174,8 @@ class MangaScreen(
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = { openRecommends(context, router, screenModel.source?.getMainSource(), successState.manga) },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
-            onMergeClicked = { openSmartSearch(router, successState.manga) },
-            onMergeWithAnotherClicked = { mergeWithAnother(router, context, successState.manga, screenModel::smartSearchMerge) },
+            onMergeClicked = { openSmartSearch(navigator, successState.manga) },
+            onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
             onOpenPagePreview = { openPagePreview(context, successState.chapters.getNextUnread(successState.manga), it) },
             onMorePreviewsClicked = { openMorePagePreviews(router, successState.manga) },
             // SY <--
@@ -498,20 +496,14 @@ class MangaScreen(
     // SY <--
 
     // EXH -->
-    private fun openSmartSearch(router: Router, manga: Manga) {
+    private fun openSmartSearch(navigator: Navigator, manga: Manga) {
         val smartSearchConfig = SourcesController.SmartSearchConfig(manga.title, manga.id)
 
-        router.pushController(
-            SourcesController(
-                bundleOf(
-                    SourcesController.SMART_SEARCH_CONFIG to smartSearchConfig,
-                ),
-            ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG),
-        )
+        navigator.push(SourcesScreen(smartSearchConfig))
     }
 
     private fun mergeWithAnother(
-        router: Router,
+        navigator: Navigator,
         context: Context,
         manga: Manga,
         smartSearchMerge: suspend (Manga, Long) -> Manga,
@@ -522,14 +514,9 @@ class MangaScreen(
                     smartSearchMerge(manga, smartSearchConfig?.origMangaId!!)
                 }
 
-                router.popControllerWithTag(SMART_SEARCH_SOURCE_TAG)
-                router.popCurrentController()
-                router.replaceTopController(
-                    MangaController(
-                        mergedManga.id,
-                        true,
-                    ).withFadeTransaction(),
-                )
+                navigator.popUntil { it is SourcesScreen }
+                navigator.pop()
+                navigator replace MangaScreen(mergedManga.id, true)
                 context.toast(R.string.entry_merged)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
