@@ -89,7 +89,6 @@ object EXHMigrations {
     /**
      * Performs a migration when the application is updated.
      *
-     * @param preferences Preferences of the application.
      * @return true if a migration is performed, false otherwise.
      */
     fun upgrade(
@@ -499,6 +498,16 @@ object EXHMigrations {
                 if (oldVersion under 43) {
                     if (preferenceStore.getBoolean("start_reading_button").get()) {
                         libraryPreferences.showContinueReadingButton().set(true)
+                    }
+                }
+                if (oldVersion under 44) {
+                    val trackingQueuePref = context.getSharedPreferences("tracking_queue", Context.MODE_PRIVATE)
+                    trackingQueuePref.all.forEach {
+                        val (_, lastChapterRead) = it.value.toString().split(":")
+                        trackingQueuePref.edit {
+                            remove(it.key)
+                            putFloat(it.key, lastChapterRead.toFloat())
+                        }
                     }
                 }
 

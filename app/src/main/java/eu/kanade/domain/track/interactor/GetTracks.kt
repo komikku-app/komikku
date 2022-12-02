@@ -10,6 +10,15 @@ class GetTracks(
     private val trackRepository: TrackRepository,
 ) {
 
+    suspend fun awaitOne(id: Long): Track? {
+        return try {
+            trackRepository.getTrackById(id)
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            null
+        }
+    }
+
     // SY -->
     suspend fun await(): List<Track> {
         return try {
