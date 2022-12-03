@@ -20,9 +20,11 @@ import exh.log.xLogE
 import exh.uconfig.EHConfigurator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
@@ -75,6 +77,7 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO + NonCancellable) {
                 try {
+                    delay(0.2.seconds)
                     EHConfigurator(context).configureAll()
                     launchUI {
                         context.toast(R.string.eh_settings_successfully_uploaded)
