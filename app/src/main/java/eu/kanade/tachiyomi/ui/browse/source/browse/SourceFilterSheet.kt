@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.Navigator
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -23,7 +23,7 @@ import exh.source.getMainSource
 class SourceFilterSheet(
     context: Context,
     // SY -->
-    router: Router,
+    navigator: Navigator,
     source: CatalogueSource,
     searches: List<EXHSavedSearch> = emptyList(),
     // SY <--
@@ -41,7 +41,7 @@ class SourceFilterSheet(
         // SY -->
         searches = searches,
         source = source,
-        router = router,
+        navigator = navigator,
         dismissSheet = ::dismiss,
         // SY <--
     )
@@ -84,7 +84,7 @@ class SourceFilterSheet(
         // SY -->
         searches: List<EXHSavedSearch> = emptyList(),
         source: CatalogueSource? = null,
-        router: Router? = null,
+        navigator: Navigator? = null,
         dismissSheet: (() -> Unit)? = null,
         // SY <--
     ) :
@@ -116,10 +116,10 @@ class SourceFilterSheet(
             // SY -->
             recycler.adapter = ConcatAdapter(
                 listOfNotNull(
-                    router?.let {
+                    navigator?.let {
                         source?.getMainSource<MangaDex>()
                             ?.let {
-                                MangaDexFabHeaderAdapter(router, it) {
+                                MangaDexFabHeaderAdapter(navigator, it) {
                                     dismissSheet?.invoke()
                                 }
                             }

@@ -115,7 +115,7 @@
         <changelogtext>EHentai updater should now die less</changelogtext>
         <changelogtext>Fix 8Muses delegation</changelogtext>
         <changelogtext>Logs now output to file, logging to file is now useful, and can be used to debug</changelogtext>
-        <changelogtext>In the browse/latest menu errors now pupulate instead of just saying no results found</changelogtext>
+        <changelogtext>In the browse/latest menu errors now populate instead of just saying no results found</changelogtext>
         <changelogtext>Fix download issue with scanlator for merged manga</changelogtext>
         <changelogtext>Fix Migration getting stuck</changelogtext>
         <changelogtext>Fix crash when opening chapter from manual search in migration</changelogtext>

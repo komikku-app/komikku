@@ -46,13 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.startActivity
-import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
@@ -68,7 +66,6 @@ import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.favorites.FavoritesIntroDialog
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
 import kotlinx.serialization.decodeFromString
@@ -126,17 +123,17 @@ object SettingsEhScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
-        val router = LocalRouter.currentOrThrow
-        val openWarnConfigureDialogController = {
-            WarnConfigureDialogController.uploadSettings(router)
-        }
         val unsortedPreferences: UnsortedPreferences = remember { Injekt.get() }
         val getFlatMetadataById: GetFlatMetadataById = remember { Injekt.get() }
         val deleteFavoriteEntries: DeleteFavoriteEntries = remember { Injekt.get() }
         val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata = remember { Injekt.get() }
         val exhentaiEnabled by unsortedPreferences.enableExhentai().collectAsState()
+        var runConfigureDialog by remember { mutableStateOf(false) }
+        val openWarnConfigureDialogController = { runConfigureDialog = true }
 
         Reconfigure(unsortedPreferences, openWarnConfigureDialogController)
+
+        ConfigureExhDialog(run = runConfigureDialog, onRunning = { runConfigureDialog = false })
 
         return listOf(
             Preference.PreferenceGroup(

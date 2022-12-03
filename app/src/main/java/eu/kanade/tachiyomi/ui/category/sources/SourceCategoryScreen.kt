@@ -8,13 +8,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.SourceCategoryScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -24,7 +24,7 @@ class SourceCategoryScreen : Screen {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { SourceCategoryScreenModel() }
 
         val state by screenModel.state.collectAsState()
@@ -41,7 +41,7 @@ class SourceCategoryScreen : Screen {
             onClickCreate = { screenModel.showDialog(SourceCategoryDialog.Create) },
             onClickRename = { screenModel.showDialog(SourceCategoryDialog.Rename(it)) },
             onClickDelete = { screenModel.showDialog(SourceCategoryDialog.Delete(it)) },
-            navigateUp = router::popCurrentController,
+            navigateUp = navigator::pop,
         )
 
         when (val dialog = successState.dialog) {

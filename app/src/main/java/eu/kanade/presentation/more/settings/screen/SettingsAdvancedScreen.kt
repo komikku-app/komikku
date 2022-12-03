@@ -46,7 +46,6 @@ import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -71,7 +70,6 @@ import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -82,7 +80,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
-import exh.debug.SettingsDebugController
+import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
 import exh.source.BlacklistedSources
@@ -673,7 +671,7 @@ object SettingsAdvancedScreen : SearchableSettings {
     @Composable
     private fun getDeveloperToolsGroup(): Preference.PreferenceGroup {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         val delegateSourcePreferences = remember { Injekt.get<DelegateSourcePreferences>() }
@@ -729,7 +727,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_COMPACT)
                             .toAnnotatedString()
                     },
-                    onClick = { router.pushController(SettingsDebugController()) },
+                    onClick = { navigator.push(SettingsDebugScreen()) },
                 ),
             ),
         )

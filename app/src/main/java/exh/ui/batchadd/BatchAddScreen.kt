@@ -34,7 +34,6 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.Button
 import eu.kanade.presentation.components.LazyColumn
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.presentation.util.padding
 import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
@@ -46,19 +45,13 @@ class BatchAddScreen : Screen {
         val screenModel = rememberScreenModel { BatchAddScreenModel() }
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
-        val router = LocalRouter.currentOrThrow
         val context = LocalContext.current
 
         Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
                     title = stringResource(R.string.batch_add),
-                    navigateUp = {
-                        when {
-                            navigator.canPop -> navigator.pop()
-                            else -> router.popCurrentController()
-                        }
-                    },
+                    navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                 )
             },

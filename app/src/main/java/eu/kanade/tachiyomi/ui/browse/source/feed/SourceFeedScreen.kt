@@ -13,19 +13,16 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.bluelinelabs.conductor.Router
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -47,19 +44,18 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
         val screenModel = rememberScreenModel { SourceFeedScreenModel(sourceId) }
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
-        val router = LocalRouter.currentOrThrow
 
         SourceFeedScreen(
             name = screenModel.source.name,
             isLoading = state.isLoading,
             items = state.items,
             onFabClick = if (state.filters.isEmpty()) null else { { filterSheet?.show() } },
-            onClickBrowse = { onBrowseClick(router, screenModel.source) },
-            onClickLatest = { onLatestClick(router, screenModel.source) },
-            onClickSavedSearch = { onSavedSearchClick(router, screenModel.source, it) },
+            onClickBrowse = { onBrowseClick(navigator, screenModel.source) },
+            onClickLatest = { onLatestClick(navigator, screenModel.source) },
+            onClickSavedSearch = { onSavedSearchClick(navigator, screenModel.source, it) },
             onClickDelete = screenModel::openDeleteFeed,
             onClickManga = { onMangaClick(navigator, it) },
-            onClickSearch = { onSearchClick(router, screenModel.source, it) },
+            onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
             searchQuery = state.searchQuery,
             onSearchQueryChange = screenModel::search,
             isIncognitoMode = screenModel.isIncognitoMode,
@@ -102,7 +98,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
         val context = LocalContext.current
 
         LaunchedEffect(state.filters) {
-            initFilterSheet(state, screenModel, scope, context, router)
+            initFilterSheet(state, screenModel, scope, context, navigator)
         }
     }
 
@@ -111,28 +107,28 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
         screenModel: SourceFeedScreenModel,
         viewScope: CoroutineScope,
         context: Context,
-        router: Router,
+        navigator: Navigator,
     ) {
         val filterSerializer = FilterSerializer()
         filterSheet = SourceFilterSheet(
-            context,
+            context = context,
             // SY -->
-            router,
-            screenModel.source,
-            emptyList(),
+            navigator = navigator,
+            source = screenModel.source,
+            searches = emptyList(),
             // SY <--
             onFilterClicked = {
                 val allDefault = state.filters == screenModel.source.getFilterList()
                 filterSheet?.dismiss()
                 if (allDefault) {
                     onBrowseClick(
-                        router,
+                        navigator,
                         screenModel.source.id,
                         state.searchQuery?.nullIfBlank(),
                     )
                 } else {
                     onBrowseClick(
-                        router,
+                        navigator,
                         screenModel.source.id,
                         state.searchQuery?.nullIfBlank(),
                         filters = Json.encodeToString(filterSerializer.serialize(state.filters)),
@@ -164,7 +160,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
 
                     if (!allDefault) {
                         onBrowseClick(
-                            router,
+                            navigator,
                             screenModel.source.id,
                             search = state.searchQuery?.nullIfBlank(),
                             savedSearch = search.id,
@@ -192,23 +188,23 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
         navigator.push(MangaScreen(manga.id, true))
     }
 
-    fun onBrowseClick(router: Router, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
-        router.replaceTopController(BrowseSourceController(sourceId, search, savedSearch = savedSearch, filterList = filters).withFadeTransaction())
+    fun onBrowseClick(navigator: Navigator, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
+        navigator.replace(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
     }
 
-    private fun onLatestClick(router: Router, source: CatalogueSource) {
-        router.replaceTopController(BrowseSourceController(source, GetRemoteManga.QUERY_LATEST).withFadeTransaction())
+    private fun onLatestClick(navigator: Navigator, source: CatalogueSource) {
+        navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
     }
 
-    fun onBrowseClick(router: Router, source: CatalogueSource) {
-        router.replaceTopController(BrowseSourceController(source, GetRemoteManga.QUERY_POPULAR).withFadeTransaction())
+    fun onBrowseClick(navigator: Navigator, source: CatalogueSource) {
+        navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
     }
 
-    private fun onSavedSearchClick(router: Router, source: CatalogueSource, savedSearch: SavedSearch) {
-        router.replaceTopController(BrowseSourceController(source, savedSearch = savedSearch.id).withFadeTransaction())
+    private fun onSavedSearchClick(navigator: Navigator, source: CatalogueSource, savedSearch: SavedSearch) {
+        navigator.replace(BrowseSourceScreen(source.id, savedSearch = savedSearch.id))
     }
 
-    private fun onSearchClick(router: Router, source: CatalogueSource, query: String) {
-        onBrowseClick(router, source.id, query.nullIfBlank())
+    private fun onSearchClick(navigator: Navigator, source: CatalogueSource, query: String) {
+        onBrowseClick(navigator, source.id, query.nullIfBlank())
     }
 }

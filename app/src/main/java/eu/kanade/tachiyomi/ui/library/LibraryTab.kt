@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.ui.library
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -21,9 +23,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastAll
 import cafe.adriel.voyager.core.model.rememberScreenModel
-import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.model.LibraryGroup
@@ -44,33 +48,48 @@ import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
 import eu.kanade.presentation.library.components.SyncFavoritesProgressDialog
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.manga.components.DownloadCustomAmountDialog
-import eu.kanade.presentation.util.LocalRouter
+import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
-import eu.kanade.tachiyomi.ui.category.CategoryController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.widget.TachiyomiBottomNavigationView
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-object LibraryScreen : Screen {
+object LibraryTab : Tab {
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val isSelected = LocalTabNavigator.current.current.key == key
+            val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_library_enter)
+            return TabOptions(
+                index = 0u,
+                title = stringResource(R.string.label_library),
+                icon = rememberAnimatedVectorPainter(image, isSelected),
+            )
+        }
+
+    override suspend fun onReselect(navigator: Navigator) {
+        requestOpenSettingsSheet()
+    }
 
     @Composable
     override fun Content() {
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
@@ -127,7 +146,7 @@ object LibraryScreen : Screen {
                         scope.launch {
                             val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
                             if (randomItem != null) {
-                                router.openManga(randomItem.libraryManga.manga.id)
+                                navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
                             } else {
                                 snackbarHostState.showSnackbar(context.getString(R.string.information_no_entries_found))
                             }
@@ -158,9 +177,9 @@ object LibraryScreen : Screen {
                             .map { it.manga.id }
                         screenModel.clearSelection()
                         if (selectedMangaIds.isNotEmpty()) {
-                            PreMigrationController.navigateToMigration(
+                            PreMigrationScreen.navigateToMigration(
                                 Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                                router,
+                                navigator,
                                 selectedMangaIds,
                             )
                         } else {
@@ -172,66 +191,63 @@ object LibraryScreen : Screen {
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            contentWindowInsets = TachiyomiBottomNavigationView.withBottomNavInset(ScaffoldDefaults.contentWindowInsets),
         ) { contentPadding ->
-            if (state.isLoading) {
-                LoadingScreen(modifier = Modifier.padding(contentPadding))
-                return@Scaffold
-            }
-
-            if (state.searchQuery.isNullOrEmpty() && state.libraryCount == 0) {
-                val handler = LocalUriHandler.current
-                EmptyScreen(
-                    textResource = R.string.information_empty_library,
-                    modifier = Modifier.padding(contentPadding),
-                    actions = listOf(
-                        EmptyScreenAction(
-                            stringResId = R.string.getting_started_guide,
-                            icon = Icons.Outlined.HelpOutline,
-                            onClick = { handler.openUri("https://tachiyomi.org/help/guides/getting-started") },
+            when {
+                state.isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
+                state.searchQuery.isNullOrEmpty() && state.libraryCount == 0 -> {
+                    val handler = LocalUriHandler.current
+                    EmptyScreen(
+                        textResource = R.string.information_empty_library,
+                        modifier = Modifier.padding(contentPadding),
+                        actions = listOf(
+                            EmptyScreenAction(
+                                stringResId = R.string.getting_started_guide,
+                                icon = Icons.Outlined.HelpOutline,
+                                onClick = { handler.openUri("https://tachiyomi.org/help/guides/getting-started") },
+                            ),
                         ),
-                    ),
-                )
-                return@Scaffold
+                    )
+                }
+                else -> {
+                    LibraryContent(
+                        categories = state.categories,
+                        searchQuery = state.searchQuery,
+                        selection = state.selection,
+                        contentPadding = contentPadding,
+                        currentPage = { screenModel.activeCategory },
+                        isLibraryEmpty = state.libraryCount == 0,
+                        showPageTabs = state.showCategoryTabs,
+                        onChangeCurrentPage = { screenModel.activeCategory = it },
+                        onMangaClicked = { navigator.push(MangaScreen(it)) },
+                        onContinueReadingClicked = { it: LibraryManga ->
+                            scope.launchIO {
+                                val chapter = screenModel.getNextUnreadChapter(it.manga)
+                                if (chapter != null) {
+                                    context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
+                                } else {
+                                    snackbarHostState.showSnackbar(context.getString(R.string.no_next_chapter))
+                                }
+                            }
+                            Unit
+                        }.takeIf { state.showMangaContinueButton },
+                        onToggleSelection = { screenModel.toggleSelection(it) },
+                        onToggleRangeSelection = {
+                            screenModel.toggleRangeSelection(it)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                        onRefresh = onClickRefresh,
+                        onGlobalSearchClicked = {
+                            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
+                        },
+                        getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
+                        getDisplayModeForPage = { state.categories[it].display },
+                        getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
+                        getLibraryForPage = { state.getLibraryItemsByPage(it) },
+                        isDownloadOnly = screenModel.isDownloadOnly,
+                        isIncognitoMode = screenModel.isIncognitoMode,
+                    )
+                }
             }
-
-            LibraryContent(
-                categories = state.categories,
-                searchQuery = state.searchQuery,
-                selection = state.selection,
-                contentPadding = contentPadding,
-                currentPage = { screenModel.activeCategory },
-                isLibraryEmpty = state.libraryCount == 0,
-                showPageTabs = state.showCategoryTabs,
-                onChangeCurrentPage = { screenModel.activeCategory = it },
-                onMangaClicked = { router.openManga(it) },
-                onContinueReadingClicked = { it: LibraryManga ->
-                    scope.launchIO {
-                        val chapter = screenModel.getNextUnreadChapter(it.manga)
-                        if (chapter != null) {
-                            context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
-                        } else {
-                            snackbarHostState.showSnackbar(context.getString(R.string.no_next_chapter))
-                        }
-                    }
-                    Unit
-                }.takeIf { state.showMangaContinueButton },
-                onToggleSelection = { screenModel.toggleSelection(it) },
-                onToggleRangeSelection = {
-                    screenModel.toggleRangeSelection(it)
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-                onRefresh = onClickRefresh,
-                onGlobalSearchClicked = {
-                    router.pushController(GlobalSearchController(screenModel.state.value.searchQuery ?: ""))
-                },
-                getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
-                getDisplayModeForPage = { state.categories[it].display },
-                getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
-                getLibraryForPage = { state.getLibraryItemsByPage(it) },
-                isDownloadOnly = screenModel.isDownloadOnly,
-                isIncognitoMode = screenModel.isIncognitoMode,
-            )
         }
 
         val onDismissRequest = screenModel::closeDialog
@@ -242,7 +258,7 @@ object LibraryScreen : Screen {
                     onDismissRequest = onDismissRequest,
                     onEditCategories = {
                         screenModel.clearSelection()
-                        router.pushController(CategoryController())
+                        navigator.push(CategoryScreen())
                     },
                     onConfirm = { include, exclude ->
                         screenModel.clearSelection()
@@ -295,7 +311,7 @@ object LibraryScreen : Screen {
         SyncFavoritesProgressDialog(
             status = screenModel.favoritesSync.status.collectAsState().value,
             setStatusIdle = { screenModel.favoritesSync.status.value = FavoritesSyncStatus.Idle(context) },
-            openManga = { router.openManga(it.id) },
+            openManga = { navigator.push(MangaScreen(it.id)) },
         )
         // SY <--
 
@@ -307,11 +323,9 @@ object LibraryScreen : Screen {
         }
 
         LaunchedEffect(state.selectionMode) {
-            // Could perhaps be removed when navigation is in a Compose world
-            if (router.backstackSize == 1) {
-                (context as? MainActivity)?.showBottomNav(!state.selectionMode)
-            }
+            HomeScreen.showBottomNav(!state.selectionMode)
         }
+
         LaunchedEffect(state.isLoading) {
             if (!state.isLoading) {
                 (context as? MainActivity)?.ready = true
@@ -319,23 +333,19 @@ object LibraryScreen : Screen {
         }
 
         LaunchedEffect(Unit) {
-            launch { queryEvent.collectLatest(screenModel::search) }
-            launch { requestSettingsSheetEvent.collectLatest { onClickFilter() } }
+            launch { queryEvent.receiveAsFlow().collect(screenModel::search) }
+            launch { requestSettingsSheetEvent.receiveAsFlow().collectLatest { onClickFilter() } }
         }
     }
 
-    private fun Router.openManga(mangaId: Long) {
-        pushController(MangaController(mangaId))
-    }
-
     // For invoking search from other screen
-    private val queryEvent = MutableSharedFlow<String>(replay = 1)
-    fun search(query: String) = queryEvent.tryEmit(query)
+    private val queryEvent = Channel<String>()
+    suspend fun search(query: String) = queryEvent.send(query)
 
     // For opening settings sheet in LibraryController
-    private val requestSettingsSheetEvent = MutableSharedFlow<Unit>()
-    private val openSettingsSheetEvent_ = MutableSharedFlow<Category>()
-    val openSettingsSheetEvent = openSettingsSheetEvent_.asSharedFlow()
-    private suspend fun sendSettingsSheetIntent(category: Category) = openSettingsSheetEvent_.emit(category)
-    suspend fun requestOpenSettingsSheet() = requestSettingsSheetEvent.emit(Unit)
+    private val requestSettingsSheetEvent = Channel<Unit>()
+    private val openSettingsSheetEvent_ = Channel<Category>()
+    val openSettingsSheetEvent = openSettingsSheetEvent_.receiveAsFlow()
+    private suspend fun sendSettingsSheetIntent(category: Category) = openSettingsSheetEvent_.send(category)
+    suspend fun requestOpenSettingsSheet() = requestSettingsSheetEvent.send(Unit)
 }

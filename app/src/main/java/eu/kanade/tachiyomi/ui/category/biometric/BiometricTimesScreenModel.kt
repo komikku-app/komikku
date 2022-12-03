@@ -16,9 +16,6 @@ import kotlinx.coroutines.flow.update
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/**
- * Presenter of [BiometricTimesController]. Used to manage the categories of the library.
- */
 class BiometricTimesScreenModel(
     private val preferences: SecurityPreferences = Injekt.get(),
 ) : StateScreenModel<BiometricTimesScreenState>(BiometricTimesScreenState.Loading) {

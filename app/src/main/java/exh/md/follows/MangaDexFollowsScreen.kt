@@ -1,6 +1,5 @@
 package exh.md.follows
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -23,19 +22,16 @@ import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.DuplicateMangaDialog
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
-import eu.kanade.tachiyomi.ui.category.CategoryController
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.lang.launchIO
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
 
     @Composable
     override fun Content() {
-        val router = LocalRouter.currentOrThrow
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
@@ -44,20 +40,13 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val navigateUp: () -> Unit = {
-            when {
-                navigator.canPop -> navigator.pop()
-                router.backstackSize > 1 -> router.popCurrentController()
-            }
-        }
-
         Scaffold(
             topBar = { scrollBehavior ->
                 BrowseSourceSimpleToolbar(
                     title = stringResource(R.string.mangadex_follows),
                     displayMode = screenModel.displayMode,
                     onDisplayModeChange = { screenModel.displayMode = it },
-                    navigateUp = navigateUp,
+                    navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                 )
             },
@@ -82,7 +71,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
                 onWebViewClick = null,
                 onHelpClick = null,
                 onLocalSourceHelpClick = null,
-                onMangaClick = { router.pushController(MangaController(it.id, true)) },
+                onMangaClick = { navigator.push(MangaScreen(it.id, true)) },
                 onMangaLongClick = { manga ->
                     scope.launchIO {
                         val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
@@ -109,7 +98,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
-                    onOpenManga = { router.pushController(MangaController(dialog.duplicate.id)) },
+                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
                     duplicateFrom = screenModel.getSourceOrStub(dialog.duplicate),
                 )
             }
@@ -127,7 +116,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = {
-                        router.pushController(CategoryController())
+                        navigator.push(CategoryScreen())
                     },
                     onConfirm = { include, _ ->
                         screenModel.changeMangaFavorite(dialog.manga)
@@ -137,7 +126,5 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
             }
             else -> {}
         }
-
-        BackHandler(onBack = navigateUp)
     }
 }

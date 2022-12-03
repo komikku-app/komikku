@@ -17,9 +17,6 @@ import kotlinx.coroutines.flow.update
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/**
- * Presenter of [SourceCategoryController]. Used to manage the categories of the library.
- */
 class SourceCategoryScreenModel(
     private val getSourceCategories: GetSourceCategories = Injekt.get(),
     private val createSourceCategory: CreateSourceCategory = Injekt.get(),

@@ -1,6 +1,5 @@
 package exh.debug
 
-import android.app.Activity
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -30,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -43,6 +43,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.Divider
@@ -53,8 +56,8 @@ import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
-import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import exh.util.capitalize
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,12 +66,17 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredFunctions
 
-class SettingsDebugController : BasicFullComposeController() {
+class SettingsDebugScreen : Screen {
 
     data class DebugToggle(val name: String, val pref: PreferenceMutableState<Boolean>, val default: Boolean)
 
     @Composable
-    override fun ComposeContent() {
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
+        DisposableEffect(Unit) {
+            onDispose { navigator.pop() }
+        }
         val functions by produceState<List<Pair<KFunction<*>, String>>?>(initialValue = null) {
             value = withContext(Dispatchers.Default) {
                 DebugFunctions::class.declaredFunctions.filter {
@@ -82,7 +90,7 @@ class SettingsDebugController : BasicFullComposeController() {
         }
         val toggles by produceState(initialValue = emptyList()) {
             value = withContext(Dispatchers.Default) {
-                DebugToggles.values().map { DebugToggle(it.name, it.asPref(viewScope), it.default) }
+                DebugToggles.values().map { DebugToggle(it.name, it.asPref(scope), it.default) }
             }
         }
         Scaffold(
@@ -96,7 +104,7 @@ class SettingsDebugController : BasicFullComposeController() {
             Crossfade(functions == null) {
                 when (it) {
                     true -> LoadingScreen()
-                    false -> FunctionList(paddingValues, functions.orEmpty(), toggles)
+                    false -> FunctionList(paddingValues, functions.orEmpty(), toggles, scope)
                 }
             }
         }
@@ -107,8 +115,8 @@ class SettingsDebugController : BasicFullComposeController() {
         paddingValues: PaddingValues,
         functions: List<Pair<KFunction<*>, String>>,
         toggles: List<DebugToggle>,
+        scope: CoroutineScope,
     ) {
-        val scope = rememberCoroutineScope()
         Box(Modifier.fillMaxSize()) {
             var running by remember { mutableStateOf(false) }
             var result by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -226,10 +234,5 @@ class SettingsDebugController : BasicFullComposeController() {
                 },
             )
         }
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        super.onActivityStopped(activity)
-        router.popCurrentController()
     }
 }

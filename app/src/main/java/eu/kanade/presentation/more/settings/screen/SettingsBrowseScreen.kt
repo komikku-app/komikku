@@ -9,19 +9,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.category.repos.RepoController
-import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
+import eu.kanade.tachiyomi.ui.category.repos.RepoScreen
+import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -48,13 +47,13 @@ object SettingsBrowseScreen : SearchableSettings {
                 title = stringResource(R.string.label_sources),
                 preferenceItems = listOf(
                     kotlin.run {
-                        val router = LocalRouter.currentOrThrow
+                        val navigator = LocalNavigator.currentOrThrow
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(
                             title = stringResource(R.string.action_edit_categories),
                             subtitle = pluralStringResource(R.plurals.num_categories, count.size, count.size),
                             onClick = {
-                                router.pushController(SourceCategoryController())
+                                navigator.push(SourceCategoryScreen())
                             },
                         )
                     },
@@ -99,13 +98,13 @@ object SettingsBrowseScreen : SearchableSettings {
                     ),
                     // SY -->
                     kotlin.run {
-                        val router = LocalRouter.currentOrThrow
+                        val navigator = LocalNavigator.currentOrThrow
                         val count by unsortedPreferences.extensionRepos().collectAsState()
                         Preference.PreferenceItem.TextPreference(
                             title = stringResource(R.string.action_edit_repos),
                             subtitle = pluralStringResource(R.plurals.num_repos, count.size, count.size),
                             onClick = {
-                                router.pushController(RepoController())
+                                navigator.push(RepoScreen())
                             },
                         )
                     },

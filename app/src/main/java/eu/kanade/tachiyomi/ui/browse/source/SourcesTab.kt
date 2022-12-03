@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.interactor.GetRemoteManga.Companion.QUERY_POPULAR
 import eu.kanade.presentation.browse.SourceCategoriesDialog
@@ -17,14 +18,12 @@ import eu.kanade.presentation.browse.SourceOptionsDialog
 import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen.SmartSearchConfig
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
-import exh.ui.smartsearch.SmartSearchController
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
+import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
 fun Screen.sourcesTab(
     smartSearchConfig: SmartSearchConfig? = null,
 ): TabContent {
-    val router = LocalRouter.currentOrThrow
+    val navigator = LocalNavigator.currentOrThrow
     val screenModel = rememberScreenModel { SourcesScreenModel(smartSearchConfig = smartSearchConfig) }
     val state by screenModel.state.collectAsState()
 
@@ -47,12 +46,12 @@ fun Screen.sourcesTab(
                 AppBar.Action(
                     title = stringResource(R.string.action_global_search),
                     icon = Icons.Outlined.TravelExplore,
-                    onClick = { router.pushController(GlobalSearchController()) },
+                    onClick = { navigator.push(GlobalSearchScreen()) },
                 ),
                 AppBar.Action(
                     title = stringResource(R.string.action_filter),
                     icon = Icons.Outlined.FilterList,
-                    onClick = { router.pushController(SourceFilterController()) },
+                    onClick = { navigator.push(SourcesFilterScreen()) },
                 ),
             )
         } else {
@@ -65,13 +64,13 @@ fun Screen.sourcesTab(
                 contentPadding = contentPadding,
                 onClickItem = { source, query ->
                     // SY -->
-                    val controller = when {
-                        smartSearchConfig != null -> SmartSearchController(source.id, smartSearchConfig)
-                        (query.isBlank() || query == QUERY_POPULAR) && screenModel.useNewSourceNavigation -> SourceFeedController(source.id)
-                        else -> BrowseSourceController(source.id, query)
+                    val screen = when {
+                        smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
+                        (query.isBlank() || query == QUERY_POPULAR) && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
+                        else -> BrowseSourceScreen(source.id, query)
                     }
                     screenModel.onOpenSource(source)
-                    router.pushController(controller)
+                    navigator.push(screen)
                     // SY <--
                 },
                 onClickPin = screenModel::togglePin,

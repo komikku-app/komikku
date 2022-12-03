@@ -19,15 +19,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 
 class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfig: SourcesScreen.SmartSearchConfig) : Screen {
@@ -36,27 +35,27 @@ class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfi
     override fun Content() {
         val screenModel = rememberScreenModel { SmartSearchScreenModel(sourceId, smartSearchConfig) }
 
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val state by screenModel.state.collectAsState()
         LaunchedEffect(state) {
             val results = state
             if (results != null) {
                 if (results is SmartSearchScreenModel.SearchResults.Found) {
-                    val transaction = MangaController(results.manga.id, true, smartSearchConfig).withFadeTransaction()
-                    router.replaceTopController(transaction)
+                    navigator.replace(MangaScreen(results.manga.id, true, smartSearchConfig))
                 } else {
                     if (results is SmartSearchScreenModel.SearchResults.NotFound) {
                         context.toast(R.string.could_not_find_entry)
                     } else {
                         context.toast(R.string.automatic_search_error)
                     }
-                    val transaction = BrowseSourceController(
-                        screenModel.source,
-                        smartSearchConfig.origTitle,
-                        smartSearchConfig,
-                    ).withFadeTransaction()
-                    router.replaceTopController(transaction)
+                    navigator.push(
+                        BrowseSourceScreen(
+                            sourceId = screenModel.source.id,
+                            query = smartSearchConfig.origTitle,
+                            smartSearchConfig = smartSearchConfig,
+                        ),
+                    )
                 }
             }
         }
@@ -65,7 +64,7 @@ class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfi
             topBar = { scrollBehavior ->
                 AppBar(
                     title = screenModel.source.name,
-                    navigateUp = router::popCurrentController,
+                    navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                 )
             },

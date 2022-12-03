@@ -1,15 +1,11 @@
 package eu.kanade.presentation.util
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.bluelinelabs.conductor.Router
-
-/**
- * For interop with Conductor
- */
-val LocalRouter: ProvidableCompositionLocal<Router?> = staticCompositionLocalOf { null }
+import cafe.adriel.voyager.navigator.Navigator
 
 /**
  * For invoking back press to the parent activity
@@ -17,3 +13,12 @@ val LocalRouter: ProvidableCompositionLocal<Router?> = staticCompositionLocalOf 
 val LocalBackPress: ProvidableCompositionLocal<(() -> Unit)?> = staticCompositionLocalOf { null }
 
 val LocalNavigatorContentPadding: ProvidableCompositionLocal<PaddingValues> = compositionLocalOf { PaddingValues() }
+
+interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
+    suspend fun onReselect(navigator: Navigator) {}
+
+    // SY -->
+    @Composable
+    fun isEnabled(): Boolean = true
+    // SY <--
+}

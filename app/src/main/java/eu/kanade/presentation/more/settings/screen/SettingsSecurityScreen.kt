@@ -26,15 +26,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
-import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
+import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
 import uy.kohesive.injekt.Injekt
@@ -98,7 +97,7 @@ object SettingsSecurityScreen : SearchableSettings {
             ),
             // SY -->
             kotlin.run {
-                val router = LocalRouter.currentOrThrow
+                val navigator = LocalNavigator.currentOrThrow
                 val count by securityPreferences.authenticatorTimeRanges().collectAsState()
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.action_edit_biometric_lock_times),
@@ -108,7 +107,7 @@ object SettingsSecurityScreen : SearchableSettings {
                         count.size,
                     ),
                     onClick = {
-                        router.pushController(BiometricTimesController())
+                        navigator.push(BiometricTimesScreen())
                     },
                     enabled = useAuth,
                 )

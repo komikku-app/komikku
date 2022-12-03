@@ -49,12 +49,6 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.concurrent.Executors
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
-/**
- * Presenter of [SourceFeedController]
- * Function calls should be done from here. UI calls should be done from the controller.
- *
- * @param source the source.
- */
 open class SourceFeedScreenModel(
     val sourceId: Long,
     private val sourceManager: SourceManager = Injekt.get(),

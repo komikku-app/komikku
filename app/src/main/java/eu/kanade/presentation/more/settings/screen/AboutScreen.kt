@@ -8,7 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
@@ -19,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.bluelinelabs.conductor.Router
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.LinkIcon
@@ -29,13 +32,11 @@ import eu.kanade.presentation.more.LogoHeader
 import eu.kanade.presentation.more.about.LicensesScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateResult
-import eu.kanade.tachiyomi.ui.main.WhatsNewDialogController
-import eu.kanade.tachiyomi.ui.more.NewUpdateDialogController
+import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -63,7 +64,10 @@ object AboutScreen : Screen {
         val uriHandler = LocalUriHandler.current
         val handleBack = LocalBackPress.current
         val navigator = LocalNavigator.currentOrThrow
-        val router = LocalRouter.currentOrThrow
+
+        // SY -->
+        var showWhatsNewDialog by remember { mutableStateOf(false) }
+        // SY <--
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -98,7 +102,15 @@ object AboutScreen : Screen {
                             title = stringResource(R.string.check_for_updates),
                             onPreferenceClick = {
                                 scope.launch {
-                                    checkVersion(context, router)
+                                    checkVersion(context) { result ->
+                                        val updateScreen = NewUpdateScreen(
+                                            versionName = result.release.version,
+                                            changelogInfo = result.release.info,
+                                            releaseLink = result.release.releaseLink,
+                                            downloadLink = result.release.getDownloadLink(),
+                                        )
+                                        navigator.push(updateScreen)
+                                    }
                                 }
                             },
                         )
@@ -109,7 +121,7 @@ object AboutScreen : Screen {
                         TextPreferenceWidget(
                             title = stringResource(R.string.whats_new),
                             // SY -->
-                            onPreferenceClick = { WhatsNewDialogController().showDialog(router) },
+                            onPreferenceClick = { showWhatsNewDialog = true },
                             // SY <--
                         )
                     }
@@ -179,19 +191,25 @@ object AboutScreen : Screen {
                 }
             }
         }
+
+        // SY -->
+        if (showWhatsNewDialog) {
+            WhatsNewDialog(onDismissRequest = { showWhatsNewDialog = false })
+        }
+        // SY <--
     }
 
     /**
      * Checks version and shows a user prompt if an update is available.
      */
-    private suspend fun checkVersion(context: Context, router: Router) {
+    private suspend fun checkVersion(context: Context, onAvailableUpdate: (AppUpdateResult.NewUpdate) -> Unit) {
         val updateChecker = AppUpdateChecker()
         withUIContext {
             context.toast(R.string.update_check_look_for_updates)
             try {
                 when (val result = withIOContext { updateChecker.checkForUpdate(context, isUserPrompt = true) }) {
                     is AppUpdateResult.NewUpdate -> {
-                        NewUpdateDialogController(result).showDialog(router)
+                        onAvailableUpdate(result)
                     }
                     is AppUpdateResult.NoNewUpdate -> {
                         context.toast(R.string.update_check_no_new_updates)

@@ -16,7 +16,6 @@ import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +28,6 @@ class CategoryScreen : Screen {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { CategoryScreenModel() }
 
@@ -49,12 +47,7 @@ class CategoryScreen : Screen {
             onClickDelete = { screenModel.showDialog(CategoryDialog.Delete(it)) },
             onClickMoveUp = screenModel::moveUp,
             onClickMoveDown = screenModel::moveDown,
-            navigateUp = {
-                when {
-                    navigator.canPop -> navigator.pop()
-                    router.backstackSize > 1 -> router.handleBack()
-                }
-            },
+            navigateUp = navigator::pop,
         )
 
         when (val dialog = successState.dialog) {

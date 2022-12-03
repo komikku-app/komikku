@@ -20,13 +20,12 @@ import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
-import eu.kanade.tachiyomi.ui.more.MoreController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.Constants
 
 data class SourceSearchScreen(
     private val oldManga: Manga,
@@ -38,7 +37,6 @@ data class SourceSearchScreen(
     override fun Content() {
         val context = LocalContext.current
         val uriHandler = LocalUriHandler.current
-        val router = LocalRouter.currentOrThrow
         val navigator = LocalNavigator.currentOrThrow
 
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId = sourceId, searchQuery = query) }
@@ -46,19 +44,12 @@ data class SourceSearchScreen(
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val navigateUp: () -> Unit = {
-            when {
-                navigator.canPop -> navigator.pop()
-                router.backstackSize > 1 -> router.popCurrentController()
-            }
-        }
-
         Scaffold(
             topBar = { scrollBehavior ->
                 SearchToolbar(
                     searchQuery = state.toolbarQuery ?: "",
                     onChangeSearchQuery = screenModel::setToolbarQuery,
-                    onClickCloseSearch = navigateUp,
+                    onClickCloseSearch = navigator::pop,
                     onSearch = { screenModel.search(it) },
                     scrollBehavior = scrollBehavior,
                 )
@@ -100,7 +91,7 @@ data class SourceSearchScreen(
                     val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
                     context.startActivity(intent)
                 },
-                onHelpClick = { uriHandler.openUri(MoreController.URL_HELP) },
+                onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) },
                 onMangaClick = openMigrateDialog,
                 onMangaLongClick = openMigrateDialog,
@@ -108,7 +99,7 @@ data class SourceSearchScreen(
         }
 
         LaunchedEffect(state.filters) {
-            screenModel.initFilterSheet(context, router)
+            screenModel.initFilterSheet(context, navigator)
         }
     }
 }

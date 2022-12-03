@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.FeedAddDialog
@@ -17,17 +18,15 @@ import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
 import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
 fun Screen.feedTab(): TabContent {
-    val router = LocalRouter.currentOrThrow
+    val navigator = LocalNavigator.currentOrThrow
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
 
@@ -48,25 +47,25 @@ fun Screen.feedTab(): TabContent {
                 contentPadding = contentPadding,
                 onClickSavedSearch = { savedSearch, source ->
                     screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
-                    router.pushController(
-                        BrowseSourceController(
-                            source,
+                    navigator.push(
+                        BrowseSourceScreen(
+                            source.id,
                             savedSearch = savedSearch.id,
                         ),
                     )
                 },
                 onClickSource = { source ->
                     screenModel.sourcePreferences.lastUsedSource().set(source.id)
-                    router.pushController(
-                        BrowseSourceController(
-                            source,
+                    navigator.push(
+                        BrowseSourceScreen(
+                            source.id,
                             GetRemoteManga.QUERY_LATEST,
                         ),
                     )
                 },
                 onClickDelete = screenModel::openDeleteDialog,
                 onClickManga = { manga ->
-                    router.pushController(MangaController(manga.id, true))
+                    navigator.push(MangaScreen(manga.id, true))
                 },
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )

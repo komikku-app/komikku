@@ -8,9 +8,6 @@ import kotlinx.coroutines.runBlocking
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/**
- * Presenter of [RecommendsController]. Inherit BrowseCataloguePresenter.
- */
 class RecommendsScreenModel(
     val mangaId: Long,
     sourceId: Long,

@@ -1,7 +1,7 @@
 package exh.md.follows
 
 import android.content.Context
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -22,7 +22,7 @@ class MangaDexFollowsScreenModel(sourceId: Long) : BrowseSourceScreenModel(sourc
         return map { it to metadata }
     }
 
-    override fun initFilterSheet(context: Context, router: Router) {
+    override fun initFilterSheet(context: Context, navigator: Navigator) {
         // No-op: we don't allow filtering in recs
     }
 }

@@ -8,11 +8,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -22,7 +22,7 @@ class SortTagScreen : Screen {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { SortTagScreenModel() }
 
         val state by screenModel.state.collectAsState()
@@ -40,7 +40,7 @@ class SortTagScreen : Screen {
             onClickDelete = { screenModel.showDialog(SortTagDialog.Delete(it)) },
             onClickMoveUp = screenModel::moveUp,
             onClickMoveDown = screenModel::moveDown,
-            navigateUp = router::popCurrentController,
+            navigateUp = navigator::pop,
         )
 
         when (val dialog = successState.dialog) {

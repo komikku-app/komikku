@@ -16,9 +16,6 @@ import kotlinx.coroutines.flow.update
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/**
- * Presenter of [RepoController]. Used to manage the repos for the extensions.
- */
 class RepoScreenModel(
     private val getSourceRepos: GetSourceRepos = Injekt.get(),
     private val createSourceRepo: CreateSourceRepo = Injekt.get(),

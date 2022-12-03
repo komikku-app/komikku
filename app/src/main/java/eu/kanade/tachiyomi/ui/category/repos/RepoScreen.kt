@@ -8,12 +8,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.SourceRepoScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -23,7 +23,7 @@ class RepoScreen : Screen {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { RepoScreenModel() }
 
         val state by screenModel.state.collectAsState()
@@ -39,7 +39,7 @@ class RepoScreen : Screen {
             state = successState,
             onClickCreate = { screenModel.showDialog(RepoDialog.Create) },
             onClickDelete = { screenModel.showDialog(RepoDialog.Delete(it)) },
-            navigateUp = router::popCurrentController,
+            navigateUp = navigator::pop,
         )
 
         when (val dialog = successState.dialog) {

@@ -264,14 +264,11 @@ dependencies {
         exclude(group = "androidx.viewpager", module = "viewpager")
     }
     implementation(libs.insetter)
-    implementation(libs.markwon)
+    implementation(libs.bundles.richtext)
     implementation(libs.aboutLibraries.compose)
     implementation(libs.cascade)
     implementation(libs.bundles.voyager)
     implementation(libs.wheelpicker)
-
-    // Conductor
-    implementation(libs.conductor)
 
     // FlowBinding
     implementation(libs.flowbinding.android)
@@ -294,9 +291,6 @@ dependencies {
     implementation(libs.leakcanary.plumber)
 
     // SY -->
-    // Changelog
-    implementation(sylibs.changelog)
-
     // Text distance (EH)
     implementation (sylibs.simularity)
 
@@ -350,6 +344,7 @@ tasks {
         kotlinOptions.freeCompilerArgs += listOf(
             "-opt-in=coil.annotation.ExperimentalCoilApi",
             "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
+            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",

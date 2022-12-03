@@ -4,17 +4,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.tachiyomi.databinding.SourceFilterMangadexHeaderBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.md.follows.MangaDexFollowsController
+import exh.md.follows.MangaDexFollowsScreen
 
-class MangaDexFabHeaderAdapter(val router: Router, val source: CatalogueSource, val onClick: () -> Unit) :
+class MangaDexFabHeaderAdapter(val navigator: Navigator, val source: CatalogueSource, val onClick: () -> Unit) :
     RecyclerView.Adapter<MangaDexFabHeaderAdapter.SavedSearchesViewHolder>() {
 
     private lateinit var binding: SourceFilterMangadexHeaderBinding
@@ -33,7 +32,7 @@ class MangaDexFabHeaderAdapter(val router: Router, val source: CatalogueSource, 
     inner class SavedSearchesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
             binding.mangadexFollows.setOnClickListener {
-                router.replaceTopController(MangaDexFollowsController(source).withFadeTransaction())
+                navigator.replace(MangaDexFollowsScreen(source.id))
                 onClick()
             }
             binding.mangadexRandom.setOnClickListener {
@@ -41,11 +40,11 @@ class MangaDexFabHeaderAdapter(val router: Router, val source: CatalogueSource, 
                     val randomMangaUrl = withIOContext {
                         (source as? RandomMangaSource)?.fetchRandomMangaUrl()
                     }
-                    router.replaceTopController(
-                        BrowseSourceController(
-                            source,
+                    navigator.replace(
+                        BrowseSourceScreen(
+                            source.id,
                             "id:$randomMangaUrl",
-                        ).withFadeTransaction(),
+                        ),
                     )
                     onClick()
                 }

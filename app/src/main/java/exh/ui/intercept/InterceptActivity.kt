@@ -26,8 +26,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.Constants
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.GalleryAddEvent
 import exh.GalleryAdder
@@ -113,7 +113,7 @@ class InterceptActivity : BaseActivity() {
                                 Intent(this, MainActivity::class.java)
                                     .setAction(MainActivity.SHORTCUT_MANGA)
                                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                    .putExtra(MangaController.MANGA_EXTRA, it.mangaId)
+                                    .putExtra(Constants.MANGA_EXTRA, it.mangaId)
                             },
                         )
                     }

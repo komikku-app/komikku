@@ -17,10 +17,8 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
 class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen {
 
@@ -28,26 +26,18 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen {
     override fun Content() {
         val screenModel = rememberScreenModel { MangaDexSimilarScreenModel(mangaId, sourceId) }
         val state by screenModel.state.collectAsState()
-        val router = LocalRouter.currentOrThrow
         val navigator = LocalNavigator.currentOrThrow
 
         val onMangaClick: (Manga) -> Unit = {
-            router.pushController(MangaController(it.id, true))
+            navigator.push(MangaScreen(it.id, true))
         }
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val navigateUp: () -> Unit = {
-            when {
-                navigator.canPop -> navigator.pop()
-                router.backstackSize > 1 -> router.popCurrentController()
-            }
-        }
-
         Scaffold(
             topBar = { scrollBehavior ->
                 BrowseSourceSimpleToolbar(
-                    navigateUp = navigateUp,
+                    navigateUp = navigator::pop,
                     title = stringResource(R.string.similar, screenModel.manga.title),
                     displayMode = screenModel.displayMode,
                     onDisplayModeChange = { screenModel.displayMode = it },

@@ -8,12 +8,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.timepicker.MaterialTimePicker
 import eu.kanade.presentation.category.BiometricTimesScreen
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.toast
@@ -27,7 +27,7 @@ class BiometricTimesScreen : Screen {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val router = LocalRouter.currentOrThrow
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { BiometricTimesScreenModel() }
 
         val state by screenModel.state.collectAsState()
@@ -43,7 +43,7 @@ class BiometricTimesScreen : Screen {
             state = successState,
             onClickCreate = { screenModel.showDialog(BiometricTimesDialog.Create) },
             onClickDelete = { screenModel.showDialog(BiometricTimesDialog.Delete(it)) },
-            navigateUp = router::popCurrentController,
+            navigateUp = navigator::pop,
         )
 
         fun showTimePicker(startTime: Duration? = null) {

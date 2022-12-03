@@ -15,14 +15,9 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.MigrationListScreen
 import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
-import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.base.changehandler.OneWayFadeChangeHandler
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
-import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
@@ -39,7 +34,6 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         val unfinishedCount by screenModel.unfinishedCount.collectAsState()
         val dialog by screenModel.dialog.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
-        val router = LocalRouter.currentOrThrow
         val context = LocalContext.current
         LaunchedEffect(items) {
             if (items.isEmpty()) {
@@ -52,11 +46,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                     ),
                 )
                 if (!screenModel.hideNotFound) {
-                    if (navigator.canPop) {
-                        navigator.pop()
-                    } else {
-                        router.popCurrentController()
-                    }
+                    navigator.pop()
                 }
             }
         }
@@ -71,56 +61,29 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
 
         LaunchedEffect(screenModel) {
             screenModel.navigateOut.collect {
-                if (navigator.canPop) {
-                    if (items.size == 1) {
-                        val hasDetails = navigator.items.any { it is MangaScreen }
-                        if (hasDetails) {
-                            val manga = (items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
-                                screenModel.getManga(it.id)
-                            }
-                            withUIContext {
-                                if (manga != null) {
-                                    val newStack = navigator.items.filter {
-                                        it !is MangaScreen &&
-                                            it !is MigrationListScreen &&
-                                            it !is PreMigrationScreen
-                                    } + MangaScreen(manga.id)
-                                    navigator replaceAll newStack.first()
-                                    navigator.push(newStack.drop(1))
-                                } else {
-                                    navigator.pop()
-                                }
-                            }
+                if (items.size == 1) {
+                    val hasDetails = navigator.items.any { it is MangaScreen }
+                    if (hasDetails) {
+                        val manga = (items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
+                            screenModel.getManga(it.id)
                         }
-                    } else {
                         withUIContext {
-                            navigator.pop()
+                            if (manga != null) {
+                                val newStack = navigator.items.filter {
+                                    it !is MangaScreen &&
+                                        it !is MigrationListScreen &&
+                                        it !is PreMigrationScreen
+                                } + MangaScreen(manga.id)
+                                navigator replaceAll newStack.first()
+                                navigator.push(newStack.drop(1))
+                            } else {
+                                navigator.pop()
+                            }
                         }
                     }
                 } else {
-                    if (items.size == 1) {
-                        val hasDetails = router.backstack.any { it.controller is MangaController }
-                        if (hasDetails) {
-                            val manga = (items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
-                                screenModel.getManga(it.id)
-                            }
-                            withUIContext {
-                                if (manga != null) {
-                                    val newStack = router.backstack.filter {
-                                        it.controller !is MangaController &&
-                                            it.controller !is MigrationListController &&
-                                            it.controller !is PreMigrationController
-                                    } + MangaController(manga.id).withFadeTransaction()
-                                    router.setBackstack(newStack, OneWayFadeChangeHandler())
-                                } else {
-                                    router.popCurrentController()
-                                }
-                            }
-                        }
-                    } else {
-                        withUIContext {
-                            router.popCurrentController()
-                        }
+                    withUIContext {
+                        navigator.pop()
                     }
                 }
             }
@@ -166,13 +129,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             MigrationListScreenModel.Dialog.MigrationExitDialog -> {
                 MigrationExitDialog(
                     onDismissRequest = onDismissRequest,
-                    exitMigration = {
-                        if (navigator.canPop) {
-                            navigator.pop()
-                        } else {
-                            router.popCurrentController()
-                        }
-                    },
+                    exitMigration = navigator::pop,
                 )
             }
             null -> Unit

@@ -14,7 +14,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.Navigator
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.core.prefs.asState
@@ -454,7 +454,7 @@ open class BrowseSourceScreenModel(
         mutableState.update { it.copy(toolbarQuery = query) }
     }
 
-    open fun initFilterSheet(context: Context, router: Router) {
+    open fun initFilterSheet(context: Context, navigator: Navigator) {
         val state = state.value
         /*if (state.filters.isEmpty()) {
             return
@@ -463,7 +463,7 @@ open class BrowseSourceScreenModel(
         filterSheet = SourceFilterSheet(
             context = context,
             // SY -->
-            router = router,
+            navigator = navigator,
             source = source,
             searches = emptyList(),
             // SY <--

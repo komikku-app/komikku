@@ -1,7 +1,7 @@
 package exh.md.similar
 
 import android.content.Context
-import com.bluelinelabs.conductor.Router
+import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.model.SourcePagingSourceType
@@ -16,9 +16,6 @@ import kotlinx.coroutines.runBlocking
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/**
- * Presenter of [MangaDexSimilarController]. Inherit BrowseCataloguePresenter.
- */
 class MangaDexSimilarScreenModel(
     val mangaId: Long,
     sourceId: Long,
@@ -35,7 +32,7 @@ class MangaDexSimilarScreenModel(
         return map { it to metadata }
     }
 
-    override fun initFilterSheet(context: Context, router: Router) {
+    override fun initFilterSheet(context: Context, navigator: Navigator) {
         // No-op: we don't allow filtering in recs
     }
 }
