@@ -43,7 +43,7 @@ fun SourceRepoScreen(
     ) { paddingValues ->
         if (state.isEmpty) {
             EmptyScreen(
-                textResource = R.string.information_empty_category,
+                textResource = R.string.information_empty_repos,
                 modifier = Modifier.padding(paddingValues),
             )
             return@Scaffold

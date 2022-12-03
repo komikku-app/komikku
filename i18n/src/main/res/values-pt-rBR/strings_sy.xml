@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">Arraste e solte</string>
-    <string name="action_sort_enabled">Ativado</string>
     <string name="action_skip_entry">Não migrar</string>
     <string name="action_search_manually">Pesquisar manualmente</string>
     <string name="action_migrate_now">Migrar agora</string>
     <string name="action_copy_now">Copiar agora</string>
     <string name="action_clean_titles">Limpar títulos</string>
-    <string name="action_start_reading_button">Botão Iniciar leitura</string>
-    <string name="action_display_no_title_grid">Grade sem título</string>
     <string name="action_start_reading">Iniciar leitura</string>
     <string name="action_edit_info">Editar informações</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">Botões</string>
 
     <!-- Manga Type -->
     <string name="entry_type_manhwa">Manhwa</string>
@@ -22,18 +15,12 @@
     <string name="entry_type_comic">Comic</string>
     <string name="entry_type_webtoon">Webtoon</string>
 
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">Falha ao resolver Captcha</string>
-    <string name="captcha_solve_failure_message">Falha ao resolver Captcha automaticamente</string>
-    <string name="please_login">Por favor faça login</string>
-
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Todas as Fontes</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_fork">Configurações do fork</string>
     <string name="pref_category_mangadex">MangaDex</string>
-
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Configurações da conta do site E-Hentai</string>
@@ -52,7 +39,6 @@
     <string name="watched_tags">Tags Seguidas</string>
     <string name="watched_tags_summary">Abre a página "Watched tags" do E/ExHentai na webview</string>
     <string name="watched_tags_exh">Tags Seguidas no ExHentai</string>
-    <string name="watched_tags_eh">Tags Seguidas no E-Hentai</string>
     <string name="tag_filtering_threshold">Limite de Filtragem de Tag</string>
     <string name="tag_filtering_threshhold_error">Deve ser entre -9999 e 0!</string>
     <string name="tag_filtering_threshhold_summary">Pode-se restringir tags adicionando à página "My Tags no E/ExHentai com um peso negativo. Se uma galeria tem tags que somam um peso abaixo deste valor, é tirada de vista. Este limite pode ser de -9999 a 0. Atual: %1$d</string>
@@ -80,13 +66,13 @@
     <string name="disable_favorites_uploading_summary">Os favoritos serão só baixados do ExHentai. Qualquer mudança nos favoritos no app não será enviada. Evita a perda acidental de favoritos no ExHentai. Note que remoções ainda serão baixadas (ao remover um favorito no ExHentai, também será removido no app).</string>
     <string name="show_favorite_sync_notes">Mostrar notas sobre a sincronização de favoritos</string>
     <string name="show_favorite_sync_notes_summary">Mostra alguns avisos sobre a função de sincronizar favoritos</string>
+    <string name="please_login">Por favor faça login</string>
     <string name="ignore_sync_errors">Ignorar erros de sincronização quando possível</string>
     <string name="ignore_sync_errors_summary">Não aborta de imediato ao encontrar erros durante a sincronização. Erros ainda exibirão ao concluir a sincronização. Pode gerar perda de favoritos nalguns casos. Útil ao sincronizar grandes bibliotecas.</string>
     <string name="force_sync_state_reset">Forçar reinício do estado de sincronização</string>
     <string name="force_sync_state_reset_summary">Realiza uma ressincronização total na próxima sincronização. Remoções não serão sincronizadas. Todos os favoritos no app serão reenviados ao ExHentai e os no ExHentai serão re-baixados. Útil no reparo da sincronização após ser interrompida.</string>
     <string name="sync_state_reset">Reinício do estado de sincronização</string>
     <string name="gallery_update_checker">Verificador de atualização da galeria</string>
-    <string name="auto_update_restrictions">Restrições da atualização automática</string>
     <string name="time_between_batches">Tempo entre lotes de atualização</string>
     <string name="time_between_batches_never">Nunca atualizar galerias</string>
     <string name="time_between_batches_1_hour">1 hora</string>
@@ -169,8 +155,6 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Expandir todos os filtros de pesquisa por padrão</string>
-    <string name="auto_solve_captchas">Resolver captcha automaticamente</string>
-    <string name="auto_solve_captchas_summary">Use o Resolve-ReCAPTCHA automático ALTAMENTE EXPERIMENTAL. Ficará cinza se não suportado por seu celular.</string>
     <string name="put_recommends_in_overflow">Recomendações no menu kebab</string>
     <string name="put_recommends_in_overflow_summary">Põe o botão Recomendações no menu flutuante em vez de na página do mangá</string>
     <string name="pref_hide_updates_button">Mover Botão Atualizações para a navegação</string>
@@ -180,8 +164,6 @@
     <!-- Library settings -->
     <string name="pref_sorting_settings">Configurações de Ordenação</string>
     <string name="pref_skip_pre_migration_summary">Usa as últimas fontes e preferências da pré-migração salvas para migrar em massa</string>
-    <string name="library_settings_sheet">Painel de ajustes da biblioteca</string>
-    <string name="library_settings_sheet_summary">Mais configurações de exibição da biblioteca</string>
     <string name="library_group_updates">Atualizações dinâmicas de categorias da biblioteca</string>
     <string name="library_group_updates_global">Sempre iniciar atualizações globais</string>
     <string name="library_group_updates_all_but_ungrouped">Iniciar atualização global só em desagrupado, atualização de categoria em outros</string>
@@ -210,7 +192,6 @@
     </plurals>
     <string name="biometric_lock_start_time">Inserir tempo inicial</string>
     <string name="biometric_lock_end_time">Inserir tempo final</string>
-    <string name="biometric_lock_time_deleted_snack">Tempo de bloqueio biométrico concluído</string>
     <string name="biometric_lock_days">Dias de bloqueio biométrico</string>
     <string name="biometric_lock_days_summary">Dias para ter o app bloqueado</string>
 
@@ -319,8 +300,6 @@
     <string name="save_search_hint">Nome da minha pesquisa</string>
     <string name="save_search_failed_to_load">Falha ao carregar pesquisas salvas!</string>
     <string name="save_search_failed_to_load_message">Ocorreu um erro ao carregar suas pesquisas salvas.</string>
-    <string name="save_search_failed_to_delete">Falha ao excluir pesquisa salva!</string>
-    <string name="save_search_failed_to_delete_message">Ocorreu um erro ao excluir pesquisa.</string>
     <string name="save_search_delete">Excluir pesquisa salva?</string>
     <string name="save_search_delete_message">Tem certeza que deseja excluir sua pesquisa salva: \'%1$s\'?</string>
 
@@ -340,7 +319,6 @@
     <string name="action_edit_tags">Edit\r tags</string>
     <string name="information_empty_tags">Você não tem tags. Toque no botão Adicionar para criar um e ordenar sua biblioteca por tags</string>
     <string name="error_tag_exists">Esta tag já existe!</string>
-    <string name="snack_tags_deleted">Tags excluídas</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundante</string>
@@ -356,18 +334,15 @@
         <item quantity="other">%d repositórios adicionais</item>
     </plurals>
     <string name="error_repo_exists">Este repositório já existe!</string>
-    <string name="snack_repo_deleted">Repositório excluído</string>
     <string name="invalid_repo_name">Nome de repositório inválido</string>
     <string name="repo_source">Fonte do repositório</string>
 
     <!-- Migration -->
     <string name="select_sources">Selecionar fontes</string>
     <string name="select_none">Selecionar nenhum</string>
-    <string name="source_migration">Migração de fonte</string>
     <string name="migration">Migração</string>
     <string name="skip_pre_migration">Pular pré-migração</string>
     <string name="pre_migration_skip_toast">Para mostrar esta tela novamente, vá em Configurações > Biblioteca.</string>
-    <string name="select_a_source_to_migrate_from">Selecione uma fonte da qual migrar</string>
     <string name="use_intelligent_search">Pesquisar título + palavras-chave do título</string>
     <string name="data_to_include_in_migration">Dados a incluir na migração</string>
     <string name="include_extra_search_parameter">Incluir parâmetro de pesquisa extra ao pesquisar</string>
@@ -380,7 +355,6 @@
     <string name="match_pinned_sources">Combinar com fontes fixadas</string>
     <string name="match_enabled_sources">Combinar com fontes ativadas</string>
     <string name="no_chapters_found_for_migration">Sem capítulos encontrados, este mangá não pode ser usado para migração</string>
-    <string name="no_alternatives_found">Sem alternativas encontradas</string>
     <string name="stop_migrating">Parar migração?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Migrar %1$d%2$s mangá?</item>
@@ -402,7 +376,6 @@
 
     <!-- Library Sheet -->
     <string name="lewd">Lascivo</string>
-    <string name="started">Iniciado</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">Status de monitoramento</string>
@@ -481,7 +454,6 @@
     <string name="launching_app">Iniciando app…</string>
     <string name="error_with_reason">Erro: %1$s</string>
     <string name="could_not_open_entry">Este mangá não pôde ser aberto:\n\n%1$s</string>
-    <string name="entry_id_is_null">ID do mangá é nulo!</string>
     <string name="loading_entry">Carregando mangá…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
@@ -543,7 +515,6 @@
     <string name="thumbnail_image_file_type">Tipo arq. miniatura</string>
     <string name="scanlator">Scanlator</string>
     <string name="url">Url</string>
-    <string name="alt_titles">Alt titles</string>
     <string name="uploader_capital">Uploader Capitalizado</string>
     <string name="uploader">Uploader</string>
     <string name="rating_string">Trecho de avaliação</string>
@@ -584,26 +555,20 @@
     <string name="download_merged_entry_desc">Mudar isto (des)ativará downloads de capítulo a este mangá juntado</string>
     <string name="merged_references_invalid">Referências juntadas inválidas</string>
     <string name="merged_chapter_updates_error">Alternar erro de atualizações de capítulo</string>
-    <string name="merged_references">Referências juntadas</string>
     <string name="merged_toggle_chapter_updates_find_error">Mangá não pôde ser encontrado para alternar atualizações de capítulo</string>
     <string name="merged_toggle_download_chapters_error">Erro ao alternar downloads de capítulo</string>
     <string name="merged_toggle_download_chapters_find_error">Mangá não pôde ser encontrado para alternar downloads de capítulo</string>
     <string name="allow_deduplication">Permitir desduplicação:</string>
     <string name="deduplication_mode">Modo da desduplicação:</string>
     <string name="deduplication_entry_info">Informações do mangá:</string>
-    <string name="toggle_dedupe">Alternar desduplicação</string>
-    <string name="refresh_merge">Atualize para info. adequada</string>
 
     <!-- MangaDex -->
     <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Deixado de seguir</string>
-    <string name="mangadex_specific_settings">Configurações do MangaDex</string>
     <string name="mangadex_sync_follows_to_library">Sincronizar mangá do MangaDex a sua bilioteca</string>
     <string name="mangadex_sync_follows_to_library_summary">Move mangás do MangaDex a sua biblioteca, se ainda não adicionados.</string>
     <string name="mangadex_preffered_source">Fonte do MangaDex preferida</string>
     <string name="mangadex_preffered_source_summary">Define sua fonte do MangaDex escolhida, ela será usada para os follows e muitas outras funções ao redor do app</string>
-    <string name="two_factor">Código 2FA</string>
-    <string name="fields_cannot_be_blank">Campos não podem estar vazios</string>
     <string name="mangadex_add_to_follows">Adicionar aos follows do MangaDex</string>
     <string name="mangadex_follows">Follows do MangaDex</string>
     <string name="random">Aleatório</string>
@@ -616,7 +581,6 @@
 
     <!-- Similar -->
     <string name="similar">Similar a %1$s</string>
-    <string name="similar_no_results">Sem mangás similares encontrados</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">

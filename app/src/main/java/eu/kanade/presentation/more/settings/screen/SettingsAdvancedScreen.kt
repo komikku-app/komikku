@@ -608,10 +608,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaver(),
                     title = stringResource(R.string.data_saver),
+                    subtitle = stringResource(R.string.data_saver_summary),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = sourcePreferences.dataSaverServer(),
-                    title = stringResource(R.string.data_saver),
+                    title = stringResource(R.string.data_saver_server),
                     subtitle = stringResource(R.string.data_saver_server_summary),
                     enabled = dataSaver,
                 ),

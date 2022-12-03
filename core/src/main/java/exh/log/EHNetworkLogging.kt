@@ -8,12 +8,14 @@ import okhttp3.logging.HttpLoggingInterceptor
 
 fun OkHttpClient.Builder.maybeInjectEHLogger(): OkHttpClient.Builder {
     if (EHLogLevel.shouldLog(EHLogLevel.EXTREME)) {
+        val xlogBorder = XLog.tag("||EH-NETWORK-JSON").build()
+        val xlogNoBorder = XLog.tag("||EH-NETWORK-JSON").disableBorder().build()
         val logger: HttpLoggingInterceptor.Logger = HttpLoggingInterceptor.Logger { message ->
             try {
                 Json.decodeFromString<Any>(message)
-                XLog.tag("||EH-NETWORK-JSON").json(message)
+                xlogBorder.json(message)
             } catch (ex: Exception) {
-                XLog.tag("||EH-NETWORK").disableBorder().d(message)
+                xlogNoBorder.d(message)
             }
         }
         return addInterceptor(HttpLoggingInterceptor(logger).apply { level = HttpLoggingInterceptor.Level.BODY })

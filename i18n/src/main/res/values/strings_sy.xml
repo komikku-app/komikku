@@ -2,20 +2,13 @@
 <resources>
 
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">Drag &amp; Drop</string>
-    <string name="action_sort_enabled">Enabled</string>
     <string name="action_skip_entry">Don\'t migrate</string>
     <string name="action_search_manually">Search manually</string>
     <string name="action_migrate_now">Migrate now</string>
     <string name="action_copy_now">Copy now</string>
     <string name="action_clean_titles">Clean titles</string>
-    <string name="action_start_reading_button">Start reading button</string>
-    <string name="action_display_no_title_grid">No title grid</string>
     <string name="action_start_reading">Start reading</string>
     <string name="action_edit_info">Edit info</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">Buttons</string>
 
     <!-- Entry Type -->
     <string name="entry_type_manga">Manga</string>
@@ -23,11 +16,6 @@
     <string name="entry_type_manhua">Manhua</string>
     <string name="entry_type_comic">Comic</string>
     <string name="entry_type_webtoon">Webtoon</string>
-
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">Captcha solve failure</string>
-    <string name="captcha_solve_failure_message">Failed to auto-solve the captcha!</string>
-    <string name="please_login">Please log in!</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -58,7 +46,6 @@
     <string name="watched_tags">Watched Tags</string>
     <string name="watched_tags_summary">Opens a webview to your E/ExHentai watched tags page</string>
     <string name="watched_tags_exh">ExHentai Watched Tags</string>
-    <string name="watched_tags_eh">E-Hentai Watched Tags</string>
     <string name="tag_filtering_threshold">Tag Filtering Threshold</string>
     <string name="tag_filtering_threshhold_error">Must be between -9999 and 0!</string>
     <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %1$d</string>
@@ -86,13 +73,13 @@
     <string name="disable_favorites_uploading_summary">Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well).</string>
     <string name="show_favorite_sync_notes">Show favorites sync notes</string>
     <string name="show_favorite_sync_notes_summary">Show some information regarding the favorites sync feature</string>
+    <string name="please_login">Please log in!</string>
     <string name="ignore_sync_errors">Ignore sync errors when possible</string>
     <string name="ignore_sync_errors_summary">Do not abort immediately when encountering errors during the sync process. Errors will still be displayed when the sync is complete. Can cause loss of favorites in some cases. Useful when syncing large libraries.</string>
     <string name="force_sync_state_reset">Force sync state reset</string>
     <string name="force_sync_state_reset_summary">Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted.</string>
     <string name="sync_state_reset">Sync state reset</string>
     <string name="gallery_update_checker">Gallery update checker</string>
-    <string name="auto_update_restrictions">Auto update restrictions</string>
     <string name="time_between_batches">Time between update batches</string>
     <string name="time_between_batches_never">Never update galleries</string>
     <string name="time_between_batches_1_hour">1 hour</string>
@@ -178,8 +165,6 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Expand all search filters by default</string>
-    <string name="auto_solve_captchas">Automatically solve captcha</string>
-    <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>
     <string name="put_recommends_in_overflow">Recommendations in overflow</string>
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the entry page</string>
     <string name="put_merge_in_overflow">Merge in overflow</string>
@@ -194,8 +179,6 @@
     <!-- Library settings -->
     <string name="pref_sorting_settings">Sorting Settings</string>
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
-    <string name="library_settings_sheet">Library settings sheet</string>
-    <string name="library_settings_sheet_summary">More library display settings</string>
     <string name="library_group_updates">Library dynamic category updates</string>
     <string name="library_group_updates_global">Always launch global updates</string>
     <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
@@ -218,7 +201,7 @@
     <!-- Security settings -->
     <string name="biometric_lock_times">Biometric lock times</string>
     <string name="action_edit_biometric_lock_times">Edit lock times</string>
-    <string name="biometric_lock_times_empty">You have biometric lock times. Tap the plus button to create one.</string>
+    <string name="biometric_lock_times_empty">You have no biometric lock times. Tap the plus button to create one.</string>
     <string name="biometric_lock_time_conflicts">A lock time conflicts with one that already exists!</string>
     <plurals name="num_lock_times">
         <item quantity="one">%d lock time</item>
@@ -226,7 +209,6 @@
     </plurals>
     <string name="biometric_lock_start_time">Enter starting time</string>
     <string name="biometric_lock_end_time">Enter end time</string>
-    <string name="biometric_lock_time_deleted_snack">Biometric lock time deleted</string>
     <string name="biometric_lock_days">Biometric lock days</string>
     <string name="biometric_lock_days_summary">Days to have the app locked</string>
     <string name="sunday">Sunday</string>
@@ -367,8 +349,6 @@
     <string name="save_search_hint">My search name</string>
     <string name="save_search_failed_to_load">Failed to load saved searches!</string>
     <string name="save_search_failed_to_load_message">An error occurred while loading your saved searches.</string>
-    <string name="save_search_failed_to_delete">Failed to delete saved search!</string>
-    <string name="save_search_failed_to_delete_message">An error occurred while deleting the search.</string>
     <string name="save_search_delete">Delete saved search query?</string>
     <string name="save_search_delete_message">Are you sure you wish to delete your saved search query: \'%1$s\'?</string>
     <string name="save_search_invalid">Saved search invalid, filters have changed</string>
@@ -397,7 +377,6 @@
     <string name="action_edit_tags">Edit tags</string>
     <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
     <string name="error_tag_exists">This tag exists!</string>
-    <string name="snack_tags_deleted">Tags deleted</string>
     <string name="delete_tag">Delete tag</string>
     <string name="delete_tag_confirmation">Do you wish to delete the tag %s?</string>
     <string name="delete_time_range">Delete time range</string>
@@ -418,7 +397,6 @@
         <item quantity="other">%d additional repos</item>
     </plurals>
     <string name="error_repo_exists">This repo already exists!</string>
-    <string name="snack_repo_deleted">Repo deleted</string>
     <string name="invalid_repo_name">Invalid repo name</string>
     <string name="repo_source">Repo source</string>
     <string name="delete_repo">Delete repo</string>
@@ -427,11 +405,9 @@
     <!-- Migration -->
     <string name="select_sources">Select sources</string>
     <string name="select_none">Select none</string>
-    <string name="source_migration">Source migration</string>
     <string name="migration">Migration</string>
     <string name="skip_pre_migration">Skip pre-migration</string>
     <string name="pre_migration_skip_toast">To show this screen again, go to Settings -> Library.</string>
-    <string name="select_a_source_to_migrate_from">Select a source to migrate from</string>
     <string name="use_intelligent_search">Search title + keywords of title</string>
     <string name="data_to_include_in_migration">Data to include in migration</string>
     <string name="include_extra_search_parameter">Include extra search parameter when searching</string>
@@ -445,7 +421,6 @@
     <string name="match_pinned_sources">Match pinned sources</string>
     <string name="match_enabled_sources">Match enabled sources</string>
     <string name="no_chapters_found_for_migration">No chapters found, this entry cannot be used for migration</string>
-    <string name="no_alternatives_found">No Alternatives Found</string>
     <string name="stop_migrating">Stop migrating?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Migrate %1$d%2$s entry?</item>
@@ -467,7 +442,6 @@
 
     <!-- Library Sheet -->
     <string name="lewd">Lewd</string>
-    <string name="started">Started</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">Tracking status</string>
@@ -549,7 +523,6 @@
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
     <string name="could_not_open_entry">Could not open this entry:\n\n%1$s</string>
-    <string name="entry_id_is_null">Entry ID is null!</string>
     <string name="loading_entry">Loading entry…</string>
 
     <!-- Page previews -->
@@ -616,7 +589,6 @@
     <string name="thumbnail_image_file_type">Thumbnail image file type</string>
     <string name="scanlator">Scanlator</string>
     <string name="url">Url</string>
-    <string name="alt_titles">Alt titles</string>
     <string name="uploader_capital">Uploader Capitalized</string>
     <string name="uploader">Uploader</string>
     <string name="rating_string">Rating string</string>
@@ -657,15 +629,12 @@
     <string name="download_merged_entry_desc">Toggling this will disable or enable chapter downloads for this merged entry</string>
     <string name="merged_references_invalid">Merged references invalid</string>
     <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
-    <string name="merged_references">Merged references</string>
     <string name="merged_toggle_chapter_updates_find_error">Could not find entry to toggle chapter updates</string>
     <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
     <string name="merged_toggle_download_chapters_find_error">Could not find entry to toggle chapter downloads</string>
     <string name="allow_deduplication">Allow deduplication:</string>
     <string name="deduplication_mode">Dedupe mode:</string>
     <string name="deduplication_entry_info">Info entry:</string>
-    <string name="toggle_dedupe">Toggle dedupe</string>
-    <string name="refresh_merge">Refresh to get proper info</string>
     <string name="no_dedupe">No dedupe</string>
     <string name="dedupe_priority">Dedupe by priority</string>
     <string name="dedupe_most_chapters">Show source with most chapters</string>
@@ -674,13 +643,10 @@
     <!-- MangaDex -->
     <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Unfollowed</string>
-    <string name="mangadex_specific_settings">MangaDex settings</string>
     <string name="mangadex_sync_follows_to_library">Sync MangaDex entries to your library</string>
     <string name="mangadex_sync_follows_to_library_summary">Pulls entries from MangaDex into your library if they are not already added.</string>
     <string name="mangadex_preffered_source">Preferred MangaDex source</string>
     <string name="mangadex_preffered_source_summary">Set your chosen MangaDex source, this will be used for follows and a bunch more features around the app</string>
-    <string name="two_factor">2FA Code</string>
-    <string name="fields_cannot_be_blank">Fields cannot be blank</string>
     <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
     <string name="mangadex_follows">MangaDex follows</string>
     <string name="random">Random</string>
@@ -694,7 +660,6 @@
 
     <!-- Similar -->
     <string name="similar">Similar to %1$s</string>
-    <string name="similar_no_results">Similar entry not found</string>
 
     <!-- MangaDex relations-->
     <string name="relation_similar">Similar</string>

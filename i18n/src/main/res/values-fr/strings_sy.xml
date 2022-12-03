@@ -1,31 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">Glisser-déposer</string>
-    <string name="action_sort_enabled">Activé</string>
     <string name="action_skip_entry">Ne migrez pas</string>
     <string name="action_search_manually">Rechercher manuellement</string>
     <string name="action_migrate_now">Migrez maintenant</string>
     <string name="action_copy_now">Copiez maintenant</string>
     <string name="action_clean_titles">Nettoyer les titres</string>
-    <string name="action_start_reading_button">Bouton démarrer la lecture</string>
-    <string name="action_display_no_title_grid">Pas de grille de titre</string>
     <string name="action_start_reading">Commencer à lire</string>
     <string name="action_edit_info">Modifier les informations</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">Boutons</string>
 
     <!-- Manga Type -->
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
     <string name="entry_type_comic">Comic</string>
     <string name="entry_type_webtoon">Webtoon</string>
-
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">Échec de la résolution dû Captcha</string>
-    <string name="captcha_solve_failure_message">Échec de la résolution automatique du captcha!</string>
-    <string name="please_login">Veuillez vous connecter!</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -52,7 +40,6 @@
     <string name="watched_tags">Tags Sélectionné</string>
     <string name="watched_tags_summary">Ouvre la vue Web sur votre page de tags sélectionné E/ExHentai</string>
     <string name="watched_tags_exh">Tags Sélectionné de ExHentai</string>
-    <string name="watched_tags_eh">Tags Sélectionné de E-Hentai</string>
     <string name="tag_filtering_threshold">Seuil de filtrage des tags</string>
     <string name="tag_filtering_threshhold_error">Doit être entre -9999 et 0!</string>
     <string name="tag_filtering_threshhold_summary">Vous pouvez filtrer les tags en les ajoutant à la page "Mes tags" E/ExHentai avec un poids négatif. Si une galerie comporte des tags dont le poids est inférieur à cette valeur, elle est filtrée de la vue. Ce seuil peut être réglé entre -9999 et 0. Actuellement: %1$d</string>
@@ -80,13 +67,13 @@
     <string name="disable_favorites_uploading_summary">Les favoris ne sont téléchargés qu\'à partir d\'ExHentai. Les modifications apportées aux favoris dans l\'application ne seront pas téléchargées. Empêche la perte accidentelle de favoris sur ExHentai. Notez que les suppressions seront toujours téléchargées (si vous supprimez un favori sur ExHentai, il sera également supprimé dans l\'application).</string>
     <string name="show_favorite_sync_notes">Afficher les notes de synchronisation des favoris</string>
     <string name="show_favorite_sync_notes_summary">Afficher des informations concernant la fonction de synchronisation des favoris</string>
+    <string name="please_login">Veuillez vous connecter!</string>
     <string name="ignore_sync_errors">Ignorer les erreurs de synchronisation lorsque cela est possible</string>
     <string name="ignore_sync_errors_summary">N\'interrompez pas immédiatement lorsque vous rencontrez des erreurs pendant le processus de synchronisation. Les erreurs seront toujours affichées une fois la synchronisation terminée. Peut entraîner la perte de favoris dans certains cas. Utile lors de la synchronisation de grandes bibliothèques.</string>
     <string name="force_sync_state_reset">Forcer la réinitialisation de l\'état de synchronisation</string>
     <string name="force_sync_state_reset_summary">Effectue une resynchronisation complète à la prochaine synchronisation. Les suppressions ne seront pas synchronisées. Tous les favoris de l\'application seront de nouveau téléchargés sur ExHentai et tous les favoris sur ExHentai seront de nouveau téléchargés dans l\'application. Utile pour réparer la synchronisation après que la synchronisation est été interrompue.</string>
     <string name="sync_state_reset">Réinitialisation de l\'état de synchronisation</string>
     <string name="gallery_update_checker">Vérificateur de mise à jour de la galerie</string>
-    <string name="auto_update_restrictions">Restrictions de mise à jour automatique</string>
     <string name="time_between_batches">Temps entre les lots de mise à jour</string>
     <string name="time_between_batches_never">Ne jamais mettre à jour les galeries</string>
     <string name="time_between_batches_1_hour">1 heure</string>
@@ -163,16 +150,12 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Développez tous les filtres de recherche par défaut</string>
-    <string name="auto_solve_captchas">Résoudre automatiquement le captcha</string>
-    <string name="auto_solve_captchas_summary">Utilisez le solveur automatique ReCAPTCHA HAUTEMENT EXPÉRIMENTAL. Sera grisé s\'il n\'est pas pris en charge par votre appareil.</string>
     <string name="put_recommends_in_overflow">Afficher les Recommandations</string>
     <string name="put_recommends_in_overflow_summary">Met le bouton de recommandations dans le menu à déroulant de la page du manga</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Paramètres de tri</string>
     <string name="pref_skip_pre_migration_summary">Utilisez les dernières préférences et sources de pré-migration enregistrées pour migrer en masse</string>
-    <string name="library_settings_sheet">Feuille de paramètres de la bibliothèque</string>
-    <string name="library_settings_sheet_summary">Plus de paramètres d\'affichage de la bibliothèque</string>
     <string name="library_group_updates">Mises à jour des catégories dynamiques de la bibliothèque</string>
     <string name="library_group_updates_global">Lancez toujours les mises à jour mondiales</string>
     <string name="library_group_updates_all_but_ungrouped">Lancer des mises à jour globales uniquement pour les mises à jour de catégories non groupées pour les autres</string>
@@ -195,7 +178,6 @@
     </plurals>
     <string name="biometric_lock_start_time">Entrez l\'heure de début</string>
     <string name="biometric_lock_end_time">Entrez l\'heure de fin</string>
-    <string name="biometric_lock_time_deleted_snack">Temps de verrouillage biométrique terminé</string>
 
     <!-- Reader Settings -->
 <!--        <string name="download_threads">Download threads</string>-->
@@ -256,8 +238,6 @@
     <string name="save_search_hint">Mon nom de recherche</string>
     <string name="save_search_failed_to_load">Échec du chargement des recherches enregistrées!</string>
     <string name="save_search_failed_to_load_message">Une erreur s\'est produite lors du chargement de vos recherches enregistrées.</string>
-    <string name="save_search_failed_to_delete">Échec de la suppression de la recherche enregistrée!</string>
-    <string name="save_search_failed_to_delete_message">Une erreur s\'est produite lors de la suppression de la recherche.</string>
     <string name="save_search_delete">Supprimer la requête de recherche enregistrée?</string>
     <string name="save_search_delete_message">Voulez-vous vraiment supprimer votre requête de recherche enregistrée: \'%1$s\'?</string>
 
@@ -277,7 +257,6 @@
     <string name="action_edit_tags">Éditer tags</string>
     <string name="information_empty_tags">Vous n\'avez aucun tag. Appuyez sur le bouton plus pour en créer un pour trier votre bibliothèque par Tags</string>
     <string name="error_tag_exists">Cette Tag existe!</string>
-    <string name="snack_tags_deleted">Tags supprimées</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redondante</string>
@@ -286,11 +265,9 @@
     <!-- Migration -->
     <string name="select_sources">Sélectionnez les sources</string>
     <string name="select_none">Ne rien sélectionner</string>
-    <string name="source_migration">Migration de source</string>
     <string name="migration">Migration</string>
     <string name="skip_pre_migration">Ignorer la pré-migration</string>
     <string name="pre_migration_skip_toast">Pour afficher à nouveau cet écran, allez dans Paramètres -&gt; Bibliothèque.</string>
-    <string name="select_a_source_to_migrate_from">Sélectionnez une source à partir de laquelle migrer</string>
     <string name="use_intelligent_search">Titre de la recherche + mots-clés du titre</string>
     <string name="data_to_include_in_migration">Données à inclure dans la migration</string>
     <string name="include_extra_search_parameter">Inclure un paramètre de recherche supplémentaire lors de la recherche</string>
@@ -303,7 +280,6 @@
     <string name="match_pinned_sources">Faire correspondre les sources épinglées</string>
     <string name="match_enabled_sources">Faire correspondre les sources activées</string>
     <string name="no_chapters_found_for_migration">Aucun chapitre trouvé, ce manga ne peut pas être utilisé pour la migration</string>
-    <string name="no_alternatives_found">Aucune alternative trouvée</string>
     <string name="stop_migrating">Arrêter la migration?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Migrer %1$d%2$s manga?</item>
@@ -322,7 +298,6 @@
     <!-- Library -->
     <!-- Library Sheet -->
     <string name="lewd">Obscène</string>
-    <string name="started">Commencé</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">Statut de suivi</string>
@@ -398,7 +373,6 @@
     <string name="launching_app">Lancement de l\'application…</string>
     <string name="error_with_reason">Erreur: %1$s</string>
     <string name="could_not_open_entry">Impossible d\'ouvrir ce manga:\n\n%1$s</string>
-    <string name="entry_id_is_null">L\'ID du manga est non connue!</string>
     <string name="loading_entry">Chargement du manga…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
@@ -460,7 +434,6 @@
     <string name="thumbnail_image_file_type">Type de fichier d\'image miniature</string>
     <string name="scanlator">Scanlator</string>
     <string name="url">Url</string>
-    <string name="alt_titles">Titres alternatifs</string>
     <string name="uploader_capital">Uploader en majuscule</string>
     <string name="uploader">Uploader</string>
     <string name="rating_string">Chaîne de notation</string>
@@ -500,25 +473,19 @@
     <string name="download_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour ce manga</string>
     <string name="merged_references_invalid">Références de fusion non valides</string>
     <string name="merged_chapter_updates_error">Erreur de basculement des mises à jour de chapitre</string>
-    <string name="merged_references">Références fusionné</string>
     <string name="merged_toggle_chapter_updates_find_error">Impossible de trouver le manga pour basculer les mises à jour de chapitre</string>
     <string name="merged_toggle_download_chapters_error">Erreur de basculement des chapitres de téléchargement</string>
     <string name="merged_toggle_download_chapters_find_error">Impossible de trouver le manga pour basculer le téléchargements des chapitres</string>
     <string name="allow_deduplication">Autoriser la déduplication:</string>
     <string name="deduplication_mode">Mode de déduplication:</string>
     <string name="deduplication_entry_info">Info manga:</string>
-    <string name="toggle_dedupe">Basculer la déduplication</string>
-    <string name="refresh_merge">Actualiser pour obtenir les informations appropriées</string>
 
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Désabonné</string>
-    <string name="mangadex_specific_settings">Paramètres de MangaDex</string>
     <string name="mangadex_sync_follows_to_library">Sync MangaDex manga dans Neko</string>
     <string name="mangadex_sync_follows_to_library_summary">Extrait le manga de lecture/relecture de Mangadex dans votre bibliothèque Neko</string>
     <string name="mangadex_preffered_source">Source MangaDex préférée</string>
     <string name="mangadex_preffered_source_summary">Définissez votre source MangaDex choisie, cela sera utilisé pour les suivis et un tas d\'autres fonctionnalités autour de l\'application</string>
-    <string name="two_factor">Code de double identification </string>
-    <string name="fields_cannot_be_blank">Les champs ne peut pas être vide</string>
     <string name="mangadex_add_to_follows">Ajouter au suivie MangaDex</string>
     <string name="mangadex_follows">Suivie MangaDex</string>
     <string name="random">Aléatoire</string>

@@ -2,20 +2,13 @@
 <resources>
 
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">Перетаскивание</string>
-    <string name="action_sort_enabled">Включено</string>
     <string name="action_skip_entry">Не переносить</string>
     <string name="action_search_manually">Искать вручную</string>
     <string name="action_migrate_now">Перенести сейчас</string>
     <string name="action_copy_now">Копировать сейчас</string>
     <string name="action_clean_titles">Очистить названия</string>
-    <string name="action_start_reading_button">Кнопка «Начать чтение»</string>
-    <string name="action_display_no_title_grid">Сетка без названий</string>
     <string name="action_start_reading">Начать чтение</string>
     <string name="action_edit_info">Редактировать сведенья</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">Кнопки</string>
 
     <!-- Entry Type -->
     <string name="entry_type_manga">Манга</string>
@@ -23,11 +16,6 @@
     <string name="entry_type_manhua">Маньхуа</string>
     <string name="entry_type_comic">Комикс</string>
     <string name="entry_type_webtoon">Веб-комикс</string>
-
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">Сбой при решении капчи</string>
-    <string name="captcha_solve_failure_message">Не удалось автоматически решить капчу!</string>
-    <string name="please_login">Пожалуйста, авторизуйтесь!</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -53,7 +41,6 @@
     <string name="watched_tags">Отслеживание тэгов</string>
     <string name="watched_tags_summary">Открывает WebView страницу E/ExHentai для отслеживания тэгов</string>
     <string name="watched_tags_exh">Отслеживание тэгов ExHentai</string>
-    <string name="watched_tags_eh">Отслеживание тэгов E-Hentai</string>
     <string name="tag_filtering_threshold">Порог фильтрации тэгов</string>
     <string name="tag_filtering_threshhold_error">Должно быть между -9999 и 0!</string>
     <string name="tag_filtering_threshhold_summary">Мягкая фильтрация тэгов, которая добавляет тэги в раздел My Tags на странице E/ExHentai с отрицательным значением. Если в галерее есть теги, которые добавляются ниже этого значения, они не будут отображаться. Этот порог может быть установлен между -9999 и 0. Текущее значение: %1$d</string>
@@ -76,13 +63,13 @@
     <string name="disable_favorites_uploading_summary">Избранное загружается только с ExHentai. Любые изменения избранного в приложении не будут загружены. Предотвращает случайную потерю избранных на ExHentai. Обратите внимание, что удалённый материал все равно будут загружен (Удалённое избранное на ExHentai будет также удалено в приложении).</string>
     <string name="show_favorite_sync_notes">Показать заметки о синхронизации избранного</string>
     <string name="show_favorite_sync_notes_summary">Показывает некоторую информацию о функции синхронизации избранного</string>
+    <string name="please_login">Пожалуйста, авторизуйтесь!</string>
     <string name="ignore_sync_errors">Игнорировать ошибки синхронизации когда это возможно</string>
     <string name="ignore_sync_errors_summary">При возникновении ошибок не прерывать работу синхронизации. Ошибки по-прежнему будут отображаться после окончания синхронизации. В некоторых случаях это может привести к потере избранного. Полезно при синхронизации большой библиотеки.</string>
     <string name="force_sync_state_reset">Принудительный сброс состояния синхронизации</string>
     <string name="force_sync_state_reset_summary">Выполнять полную ресинхронизацию при следующей синхронизации. Удалённый материал не будет синхронизирован. Всё избранное в приложении будет перезагружено на ExHentai, а всё избранное на ExHentai будет перезагружено в приложение. Полезно для восстановления синхронизации после того, как она была прервана.</string>
     <string name="sync_state_reset">Сброс состояния синхронизации</string>
     <string name="gallery_update_checker">Проверка обновлений для галерей</string>
-    <string name="auto_update_restrictions">Ограничения автоматического обновления</string>
     <string name="time_between_batches">Время между обновлениями</string>
     <string name="time_between_batches_never">Никогда не обновлять</string>
     <string name="time_between_batches_1_hour">1 час</string>
@@ -170,8 +157,6 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Развернуть все поисковые фильтры</string>
-    <string name="auto_solve_captchas">Автоматическое решение капчи</string>
-    <string name="auto_solve_captchas_summary">Использовать (ОЧЕНЬ ЭКСПЕРЕМЕНТАЛЬНО) автоматическое прохождение ReCAPTCHA. Если устройство не поддерживается, это меню будет выделено серым цветом.</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
     <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню вместо размещения на сведеньях записи</string>
     <string name="put_merge_in_overflow">Объединение в выпадающем меню</string>
@@ -186,8 +171,6 @@
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки сортировки</string>
     <string name="pref_skip_pre_migration_summary">Использовать последние сохранённые предпереносные настройки и источники для массового переноса</string>
-    <string name="library_settings_sheet">Панель настроек библиотеки</string>
-    <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
     <string name="library_group_updates">Обновления библиотеки для динамических категорий</string>
     <string name="library_group_updates_global">Всегда запускать глобальные обновления</string>
     <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для группы «Не группировать». Остальные группы используют обновления категорий</string>
@@ -220,7 +203,6 @@
     </plurals>
     <string name="biometric_lock_start_time">Ввести время начала</string>
     <string name="biometric_lock_end_time">Ввести время окончания</string>
-    <string name="biometric_lock_time_deleted_snack">Биометрическое время блокировки удалено</string>
     <string name="biometric_lock_days">Дни биометрической блокировки</string>
     <string name="biometric_lock_days_summary">Выбрать дни биометрической блокировки приложения</string>
     <string name="sunday">Воскресенье</string>
@@ -362,8 +344,6 @@
     <string name="save_search_hint">Имя запроса</string>
     <string name="save_search_failed_to_load">Не удалось загрузить сохраненные поисковые запросы!</string>
     <string name="save_search_failed_to_load_message">Произошла ошибка при загрузке сохраненных поисковых запросов.</string>
-    <string name="save_search_failed_to_delete">Не удалось удалить сохраненный поисковой запрос!</string>
-    <string name="save_search_failed_to_delete_message">Произошла ошибка при удалении запроса.</string>
     <string name="save_search_delete">Удалить сохраненный поисковый запрос?</string>
     <string name="save_search_delete_message">Вы уверены, что хотите удалить сохраненный поисковый запрос: %1$s?</string>
     <string name="save_search_invalid">Сохраненный поисковый запрос недействителен. Фильтры были изменены</string>
@@ -393,7 +373,6 @@
     <string name="action_edit_tags">Редактировать тэги</string>
     <string name="information_empty_tags">Нет тэгов. Нажмите кнопку «Добавить» чтобы создать тэг для сортировки библиотеки</string>
     <string name="error_tag_exists">Этот тэг уже существует!</string>
-    <string name="snack_tags_deleted">Тэги удалены</string>
     <string name="delete_tag">Удалить тэг</string>
     <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
     <string name="delete_time_range">Удалить время блокировки</string>
@@ -416,7 +395,6 @@
         <item quantity="other">%d дополнительных репозиториев</item>
     </plurals>
     <string name="error_repo_exists">Этот репозиторий уже существует!</string>
-    <string name="snack_repo_deleted">Репозиторий удалён</string>
     <string name="invalid_repo_name">Недопустимое имя репозитория</string>
     <string name="repo_source">Источник репозитория</string>
     <string name="delete_repo">Удалить репозиторий</string>
@@ -425,11 +403,9 @@
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
-    <string name="source_migration">Перенос источника</string>
     <string name="migration">Перенос</string>
     <string name="skip_pre_migration">Пропустить настройку переноса</string>
     <string name="pre_migration_skip_toast">Чтобы снова показать этот экран, перейдите по (Настройки → Библиотека).</string>
-    <string name="select_a_source_to_migrate_from">Выберите источник для переноса</string>
     <string name="use_intelligent_search">Поиск названия + ключевые слова</string>
     <string name="data_to_include_in_migration">Какие данные перенести</string>
     <string name="include_extra_search_parameter">Дополнительный параметр при поиске</string>
@@ -443,7 +419,6 @@
     <string name="match_pinned_sources">Соответствие закреплённых источников</string>
     <string name="match_enabled_sources">Соответствие включённых источников</string>
     <string name="no_chapters_found_for_migration">Глав не найдено. Эта запись не может быть использована для переноса</string>
-    <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Перенести %1$d%2$s запись?</item>
@@ -471,7 +446,6 @@
 
     <!-- Library Sheet -->
     <string name="lewd">Для взрослых</string>
-    <string name="started">Начато</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">Статус отслеживания</string>
@@ -553,7 +527,6 @@
     <string name="launching_app">Запуск приложения…</string>
     <string name="error_with_reason">Ошибка: %1$s</string>
     <string name="could_not_open_entry">Не удалось открыть эту запись:\n\n%1$s</string>
-    <string name="entry_id_is_null">ID записи равно null!</string>
     <string name="loading_entry">Загрузка записи…</string>
 
     <!-- Page previews -->
@@ -620,7 +593,6 @@
     <string name="thumbnail_image_file_type">Тип изображения миниатюры</string>
     <string name="scanlator">Переводчик</string>
     <string name="url">URL-адрес</string>
-    <string name="alt_titles">Альт. названия</string>
     <string name="uploader_capital">Имя загрузчика с заглавной буквы</string>
     <string name="uploader">Имя загрузчика</string>
     <string name="rating_string">Строка рейтинга</string>
@@ -665,15 +637,12 @@
     <string name="download_merged_entry_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой записи</string>
     <string name="merged_references_invalid">Недействительные объеденённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
-    <string name="merged_references">Объеденённые ссылки</string>
     <string name="merged_toggle_chapter_updates_find_error">Не удалось найти запись для переключения обновлений глав</string>
     <string name="merged_toggle_download_chapters_error">Ошибка переключения загрузки глав</string>
     <string name="merged_toggle_download_chapters_find_error">Не удалось найти запись для переключения загрузки глав</string>
     <string name="allow_deduplication">Разрешить дедупликацию:</string>
     <string name="deduplication_mode">Режим дедупликации:</string>
     <string name="deduplication_entry_info">Сведенья записи:</string>
-    <string name="toggle_dedupe">Переключить дедупликацию</string>
-    <string name="refresh_merge">Обновите, чтобы получить правильные сведенья</string>
     <string name="no_dedupe">Без дедупликации</string>
     <string name="dedupe_priority">Дедупликация по приоритету</string>
     <string name="dedupe_most_chapters">Показать источник с наибольшим количеством глав</string>
@@ -681,13 +650,10 @@
 
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Без отслеживания</string>
-    <string name="mangadex_specific_settings">Настройки (MangaDex)</string>
     <string name="mangadex_sync_follows_to_library">Синхронизировать записи (MangaDex)</string>
     <string name="mangadex_sync_follows_to_library_summary">Добавляет записи из MangaDex в библиотеку, если они ещё не добавлены.</string>
     <string name="mangadex_preffered_source">Предпочитаемый источник (MangaDex)</string>
     <string name="mangadex_preffered_source_summary">Установить языковой источник MangaDex. Этот источник будет использовать приложение для некоторых функций.</string>
-    <string name="two_factor">Код 2FA</string>
-    <string name="fields_cannot_be_blank">Поля не могут быть пустыми</string>
     <string name="mangadex_add_to_follows">Добавить отслеживание (MangaDex)</string>
     <string name="mangadex_follows">Отслеживание MangaDex</string>
     <string name="random">Случайная</string>
@@ -701,7 +667,6 @@
 
     <!-- Similar -->
     <string name="similar">Похожее на %1$s</string>
-    <string name="similar_no_results">Похожие записи не найдены</string>
 
     <!-- Mangadex relations-->
     <string name="relation_similar">Похожее</string>

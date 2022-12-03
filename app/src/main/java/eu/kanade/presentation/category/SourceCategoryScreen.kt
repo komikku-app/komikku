@@ -44,7 +44,7 @@ fun SourceCategoryScreen(
     ) { paddingValues ->
         if (state.isEmpty) {
             EmptyScreen(
-                textResource = R.string.information_empty_category,
+                textResource = R.string.no_source_categories,
                 modifier = Modifier.padding(paddingValues),
             )
             return@Scaffold

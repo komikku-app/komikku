@@ -41,14 +41,12 @@ abstract class HttpSource : CatalogueSource {
             override val client: OkHttpClient
                 get() = delegate?.networkHttpClient ?: network.client
                     .newBuilder()
-                    //.injectPatches { id } todo
                     .maybeInjectEHLogger()
                     .build()
 
             override val cloudflareClient: OkHttpClient
                 get() = delegate?.networkCloudflareClient ?: network.cloudflareClient
                     .newBuilder()
-                    //.injectPatches { id } todo
                     .maybeInjectEHLogger()
                     .build()
 

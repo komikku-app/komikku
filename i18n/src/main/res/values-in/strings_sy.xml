@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">Seret &amp; Lepas</string>
-    <string name="action_sort_enabled">Diaktifkan</string>
     <string name="action_skip_entry">Jangan pindahkan</string>
     <string name="action_search_manually">Cari manual</string>
     <string name="action_migrate_now">Pindahkan</string>
     <string name="action_copy_now">Salin</string>
     <string name="action_clean_titles">Hapus judul</string>
-    <string name="action_start_reading_button">Tombol mulai baca</string>
-    <string name="action_display_no_title_grid">Grid tanpa judul</string>
     <string name="action_start_reading">Mulai baca</string>
     <string name="action_edit_info">Edit info</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">Tombol</string>
 
     <!-- Manga Type -->
     <string name="entry_type_manhwa">Manhwa</string>
@@ -22,18 +15,12 @@
     <string name="entry_type_comic">Komik</string>
     <string name="entry_type_webtoon">Webtoon</string>
 
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">Gagal selesaikan captcha</string>
-    <string name="captcha_solve_failure_message">Gagal selesaikan captcha secara otomatis!</string>
-    <string name="please_login">Silahkan login!</string>
-
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Semua Sumber</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_fork">Pengaturan Fork</string>
     <string name="pref_category_mangadex">MangaDex</string>
-
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
@@ -52,7 +39,6 @@
     <string name="watched_tags">Watched Tags</string>
     <string name="watched_tags_summary">Opens a webview to your E/ExHentai watched tags page</string>
     <string name="watched_tags_exh">ExHentai Watched Tags</string>
-    <string name="watched_tags_eh">E-Hentai Watched Tags</string>
     <string name="tag_filtering_threshold">Tag Filtering Threshold</string>
     <string name="tag_filtering_threshhold_error">Must be between -9999 and 0!</string>
     <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %1$d</string>
@@ -80,13 +66,13 @@
     <string name="disable_favorites_uploading_summary">Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well).</string>
     <string name="show_favorite_sync_notes">Show favorites sync notes</string>
     <string name="show_favorite_sync_notes_summary">Show some information regarding the favorites sync feature</string>
+    <string name="please_login">Silahkan login!</string>
     <string name="ignore_sync_errors">Ignore sync errors when possible</string>
     <string name="ignore_sync_errors_summary">Do not abort immediately when encountering errors during the sync process. Errors will still be displayed when the sync is complete. Can cause loss of favorites in some cases. Useful when syncing large libraries.</string>
     <string name="force_sync_state_reset">Force sync state reset</string>
     <string name="force_sync_state_reset_summary">Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted.</string>
     <string name="sync_state_reset">Sync state reset</string>
     <string name="gallery_update_checker">Gallery update checker</string>
-    <string name="auto_update_restrictions">Auto update restrictions</string>
     <string name="time_between_batches">Time between update batches</string>
     <string name="time_between_batches_never">Never update galleries</string>
     <string name="time_between_batches_1_hour">1 hour</string>
@@ -170,8 +156,6 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Perluas semua filter pencarian secara default</string>
-    <string name="auto_solve_captchas">Otomatis selesaikan captcha</string>
-    <string name="auto_solve_captchas_summary">Fitur ini SANGAT EKSPERIMENTAL. Akan berwarna abu-abu jika tidak didukung oleh perangkat Anda.</string>
     <string name="put_recommends_in_overflow">Rekomendasi di tombol overflow</string>
     <string name="put_recommends_in_overflow_summary">Letakkan tombol rekomendasi di tombol overflow alih-alih di halaman info manga</string>
     
@@ -184,8 +168,6 @@
     <!-- Library settings -->
     <string name="pref_sorting_settings">Pengaturan Penyortiran</string>
     <string name="pref_skip_pre_migration_summary">Gunakan preferensi dan sumber pra-migrasi yang terakhir disimpan untuk migrasi masal</string>
-    <string name="library_settings_sheet">Pengaturan Pustaka</string>
-    <string name="library_settings_sheet_summary">Pengaturan Pustaka lebih lanjut</string>
     <string name="library_group_updates">Pembaruan dinamis kategori di pustaka</string>
     <string name="library_group_updates_global">Selalu jalankan pembaruan global</string>
     <string name="library_group_updates_all_but_ungrouped">Jalankan pembaruan global hanya untuk yang tidak dikelompokkan, pembaruan kategori untuk yang lainnya</string>
@@ -214,7 +196,6 @@
     </plurals>
     <string name="biometric_lock_start_time">Dimulai pada</string>
     <string name="biometric_lock_end_time">Berakhir pada</string>
-    <string name="biometric_lock_time_deleted_snack">Kunci biometrik dihapus</string>
     <string name="biometric_lock_days">Hari kunci biometrik diaktifkan</string>
     <string name="biometric_lock_days_summary">Hari tertentu untuk mengunci aplikasi</string>
 
@@ -347,8 +328,6 @@
     <string name="save_search_hint">Nama penelusuranku</string>
     <string name="save_search_failed_to_load">Gagal memuat penelusuran yang disimpan!</string>
     <string name="save_search_failed_to_load_message">Eror terjadi saat mencoba memuat penelusuran yang disimpan.</string>
-    <string name="save_search_failed_to_delete">Gagal menghapus penelusuran yang disimpan!</string>
-    <string name="save_search_failed_to_delete_message">Eror terjadi saat mencoba untuk menghapus penelusuran yang disimpan.</string>
     <string name="save_search_delete">Hapus kueri penelusuran yang disimpan?</string>
     <string name="save_search_delete_message">Apa kamu benar-benar ingin menghapus penelusuran yang disimpan ini: \'%1$s\'?</string>
     <string name="save_search_invalid">Penelusuran yang disimpan tidak valid</string>
@@ -369,7 +348,6 @@
     <string name="action_edit_tags">Edit tagar</string>
     <string name="information_empty_tags">Kamu tidak memiliki tagar. Ketuk tombol tambah untuk membuatnya</string>
     <string name="error_tag_exists">Tagar ini sudah ada!</string>
-    <string name="snack_tags_deleted">Tagar dihapus</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Duplikat</string>
@@ -385,18 +363,15 @@
         <item quantity="other">%d repo tambahan</item>
     </plurals>
     <string name="error_repo_exists">Repo ini sudah ada!</string>
-    <string name="snack_repo_deleted">Repo dihapus</string>
     <string name="invalid_repo_name">Nama repo tidak valid</string>
     <string name="repo_source">Sumber Repo</string>
 
     <!-- Migration -->
     <string name="select_sources">Pilih sumber</string>
     <string name="select_none">Tak ada yang dipilih</string>
-    <string name="source_migration">Migrasi sumber</string>
     <string name="migration">Migrasi</string>
     <string name="skip_pre_migration">Lewati pra-migrasi</string>
     <string name="pre_migration_skip_toast">Untuk menampilkan layar ini lagi, buka Pengaturan -> Pustaka.</string>
-    <string name="select_a_source_to_migrate_from">Pilih sumber yang ingin dipindahkan</string>
     <string name="use_intelligent_search">Cari judul + kata kunci dari judul</string>
     <string name="data_to_include_in_migration">Data yang dipindahkan</string>
     <string name="include_extra_search_parameter">Gunakan parameter tambahan saat melakukan penelusuran</string>
@@ -410,7 +385,6 @@
     <string name="match_pinned_sources">Gunakan sumber yang disematkan</string>
     <string name="match_enabled_sources">Gunakan sumber yang diaktifkan</string>
     <string name="no_chapters_found_for_migration">Bab tak ditemukan, manga ini tak bisa dipindahkan ke sini</string>
-    <string name="no_alternatives_found">Tidak Ditemukan</string>
     <string name="stop_migrating">Hentikan migrasi?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Pindahkan %1$d%2$s manga?</item>
@@ -432,7 +406,6 @@
 
     <!-- Library Sheet -->
     <string name="lewd">Lewd</string>
-    <string name="started">Dimulai</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">Status pelacakan</string>
@@ -511,7 +484,6 @@
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
     <string name="could_not_open_entry">Could not open this manga:\n\n%1$s</string>
-    <string name="entry_id_is_null">Manga ID is null!</string>
     <string name="loading_entry">Loading manga…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
@@ -573,7 +545,6 @@
     <string name="thumbnail_image_file_type">Thumbnail image file type</string>
     <string name="scanlator">Scanlator</string>
     <string name="url">Url</string>
-    <string name="alt_titles">Alt titles</string>
     <string name="uploader_capital">Uploader Capitalized</string>
     <string name="uploader">Uploader</string>
     <string name="rating_string">Rating string</string>
@@ -614,15 +585,12 @@
     <string name="download_merged_entry_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan unduhan bab untuk manga gabungan ini</string>
     <string name="merged_references_invalid">Referensi penggabungan tidak valid</string>
     <string name="merged_chapter_updates_error">Tombol kesalahan pembaruan bab</string>
-    <string name="merged_references">Referensi penggabungan</string>
     <string name="merged_toggle_chapter_updates_find_error">Tidak dapat menemukan manga untuk pembaruan bab</string>
     <string name="merged_toggle_download_chapters_error">Tombol kesalahan unduhan bab</string>
     <string name="merged_toggle_download_chapters_find_error">Tidak dapat menemukan manga untuk unduhan bab</string>
     <string name="allow_deduplication">Izinkan deduplikasi:</string>
     <string name="deduplication_mode">Mode deduplikasi:</string>
     <string name="deduplication_entry_info">Info manga:</string>
-    <string name="toggle_dedupe">Tombol deduplikasi</string>
-    <string name="refresh_merge">Segarkan untuk mendapatkan info yang tepat</string>
     <string name="no_dedupe">Tak dideduplikasi</string>
     <string name="dedupe_priority">Deduplikasi menurut prioritas</string>
     <string name="dedupe_most_chapters">Tampilkan sumber dengan bab terbanyak</string>
@@ -631,13 +599,10 @@
     <!-- MangaDex -->
     <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Tak diikuti</string>
-    <string name="mangadex_specific_settings">Pengaturan MangaDex</string>
     <string name="mangadex_sync_follows_to_library">Sinkronkan MangaDex ke pustaka</string>
     <string name="mangadex_sync_follows_to_library_summary">Tambahkan manga yang belum ditambahkan ke pustaka dari akun MangaDex Anda.</string>
     <string name="mangadex_preffered_source">Sumber MangaDex pilihan</string>
     <string name="mangadex_preffered_source_summary">Tetapkan sumber MangaDex pilihan Anda, ini akan digunakan untuk fitur MangaDex follows dan lebih banyak fitur lainnya</string>
-    <string name="two_factor">Kode 2FA</string>
-    <string name="fields_cannot_be_blank">Tidak boleh dikosongkan</string>
     <string name="mangadex_add_to_follows">Tambahkan ke MangaDex follows</string>
     <string name="mangadex_follows">MangaDex follows</string>
     <string name="random">Acak</string>
@@ -650,7 +615,6 @@
 
     <!-- Similar -->
     <string name="similar">Mirip dengan %1$s</string>
-    <string name="similar_no_results">Tak ada yang mirip</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">

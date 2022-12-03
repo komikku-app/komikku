@@ -1,31 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_drag_and_drop">拖动和放置</string>
-    <string name="action_sort_enabled">启用</string>
     <string name="action_skip_entry">不要迁移</string>
     <string name="action_search_manually">手动搜索</string>
     <string name="action_migrate_now">开始迁移</string>
     <string name="action_copy_now">开始复制</string>
     <string name="action_clean_titles">清除标题</string>
-    <string name="action_start_reading_button">开始阅读按钮</string>
-    <string name="action_display_no_title_grid">无标题栏</string>
     <string name="action_start_reading">开始阅读</string>
     <string name="action_edit_info">编辑信息</string>
-
-    <!-- Library fragment -->
-    <string name="buttons_header">按钮</string>
 
     <!-- Manga Type -->
     <string name="entry_type_manhwa">韩漫</string>
     <string name="entry_type_manhua">漫画</string>
     <string name="entry_type_comic">喜剧</string>
     <string name="entry_type_webtoon">网络漫画</string>
-
-    <!-- Captcha -->
-    <string name="captcha_solve_failure">解决验证码失败</string>
-    <string name="captcha_solve_failure_message">自动通过验证失败！</string>
-    <string name="please_login">请登录！</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -51,7 +39,6 @@
     <string name="watched_tags">查看标签</string>
     <string name="watched_tags_summary">在网页视图中查看 E/ExHentai 关注的标签</string>
     <string name="watched_tags_exh">ExHentai 关注的标签</string>
-    <string name="watched_tags_eh">E-Hentai 关注的标签</string>
     <string name="tag_filtering_threshold">标签过滤阈值</string>
     <string name="tag_filtering_threshhold_error">必须介于 -9999 和 0！</string>
     <string name="tag_filtering_threshhold_summary">你可以通过在 \"我的 Tags E/ExHentai\" 页面添加负的权重来软过滤标签。如果一个画廊的标签加起来的权重低于这个值，它就会被过滤掉。这个阈值可以在 -9999 和 0 之间设置。 目前：%1$d</string>
@@ -74,13 +61,13 @@
     <string name="disable_favorites_uploading_summary">仅从 ExHentai 下载收藏夹。应用中对收藏夹的任何更改都不会被上传。防止 ExHentai 上的收藏夹意外丢失。请注意，删除的内容仍会被下载（如果您在 ExHentai 上删除了一个收藏夹，它也会在应用程序中被删除）。</string>
     <string name="show_favorite_sync_notes">显示收藏夹同步注意事项</string>
     <string name="show_favorite_sync_notes_summary">显示一些关于收藏夹同步功能的注意事项</string>
+    <string name="please_login">请登录！</string>
     <string name="ignore_sync_errors">尽可能忽略同步错误</string>
     <string name="ignore_sync_errors_summary">在同步过程中遇到错误时，不要立即中止。当同步完成时，错误仍然会显示。在某些情况下可能会导致收藏夹的丢失。在同步大型资料库时很有用。</string>
     <string name="force_sync_state_reset">强制重置同步状态</string>
     <string name="force_sync_state_reset_summary">在下次同步时执行完全的重新同步。删除的内容将不会被同步。应用中所有收藏夹将被重新上传到 ExHentai，ExHentai 上的所有收藏夹将被重新下载。有助于在同步被中断后修复同步。</string>
     <string name="sync_state_reset">同步状态重置</string>
     <string name="gallery_update_checker">画廊更新检查器</string>
-    <string name="auto_update_restrictions">自动更新限制</string>
     <string name="time_between_batches">更新批次之间的间隔时间</string>
     <string name="time_between_batches_never">从不更新画廊</string>
     <string name="time_between_batches_1_hour">1 小时</string>
@@ -163,8 +150,6 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">默认情况下展开所有搜索过滤器</string>
-    <string name="auto_solve_captchas">自动解决验证码</string>
-    <string name="auto_solve_captchas_summary">使用高度实验性的自动 ReCAPTCHA 解决器。如果您的设备不支持，则会显示为灰色。</string>
     <string name="put_recommends_in_overflow">在菜单显示推荐</string>
     <string name="put_recommends_in_overflow_summary">将推荐按钮放在弹出菜单而不是漫画页面</string>
     <string name="put_merge_in_overflow">在菜单显示合并</string>
@@ -179,8 +164,6 @@
     <!-- Library settings -->
     <string name="pref_sorting_settings">排序设置</string>
     <string name="pref_skip_pre_migration_summary">使用最后保存的预迁移偏好和来源进行大规模迁移</string>
-    <string name="library_settings_sheet">书架设置表</string>
-    <string name="library_settings_sheet_summary">更多书架显示设置</string>
     <string name="library_group_updates">书架动态目录更新</string>
     <string name="library_group_updates_global">总是加载全局更新</string>
     <string name="library_group_updates_all_but_ungrouped">仅为未分组的项目加载全局更新，为其他加载目录更新</string>
@@ -210,7 +193,6 @@
     </plurals>
     <string name="biometric_lock_start_time">输入开始时间</string>
     <string name="biometric_lock_end_time">输入结束时间</string>
-    <string name="biometric_lock_time_deleted_snack">生物识别锁定时间已删除</string>
     <string name="biometric_lock_days">生物识别锁周期</string>
     <string name="biometric_lock_days_summary">需要锁定应用的周期</string>
 
@@ -351,8 +333,6 @@
     <string name="save_search_hint">我的搜索名称</string>
     <string name="save_search_failed_to_load">加载已保存的搜索失败!</string>
     <string name="save_search_failed_to_load_message">加载已保存的搜索过程中出现问题。</string>
-    <string name="save_search_failed_to_delete">删除已保存的搜索失败！</string>
-    <string name="save_search_failed_to_delete_message">删除已保存的搜索过程中出现问题。</string>
     <string name="save_search_delete">删除已保存的搜索查询？</string>
     <string name="save_search_delete_message">你确定要删除你的搜索查询：\'%1$s\'？</string>
     <string name="save_search_invalid">保存的搜索无效，过滤器已经改变</string>
@@ -379,7 +359,6 @@
     <string name="action_edit_tags">编辑标签</string>
     <string name="information_empty_tags">你没有标签。点按+按钮以创建一个标签用来将书架排序</string>
     <string name="error_tag_exists">该标签已存在！</string>
-    <string name="snack_tags_deleted">标签已删除</string>
     <string name="delete_tag">删除标签</string>
     <string name="delete_tag_confirmation">你想要删除标签 %s 吗？</string>
 
@@ -397,7 +376,6 @@
         <item quantity="other">%d 个额外的仓库</item>
     </plurals>
     <string name="error_repo_exists">该仓库已存在！</string>
-    <string name="snack_repo_deleted">已删除仓库</string>
     <string name="invalid_repo_name">无效的仓库名称</string>
     <string name="repo_source">仓库来源</string>
     <string name="delete_repo">删除仓库</string>
@@ -406,11 +384,9 @@
     <!-- Migration -->
     <string name="select_sources">选择来源</string>
     <string name="select_none">未选择</string>
-    <string name="source_migration">迁移来源</string>
     <string name="migration">迁移</string>
     <string name="skip_pre_migration">跳过预迁移</string>
     <string name="pre_migration_skip_toast">要重新显示该页面，请到设置 -> 书架.</string>
-    <string name="select_a_source_to_migrate_from">选择一个要迁移的来源</string>
     <string name="use_intelligent_search">搜索标题 +标题关键词</string>
     <string name="data_to_include_in_migration">迁移中包含的数据</string>
     <string name="include_extra_search_parameter">搜索时包含额外的搜索参数</string>
@@ -424,7 +400,6 @@
     <string name="match_pinned_sources">匹配置顶的来源</string>
     <string name="match_enabled_sources">匹配启用的来源</string>
     <string name="no_chapters_found_for_migration">未找到章节，该漫画无法用于迁移</string>
-    <string name="no_alternatives_found">未找到替代方案</string>
     <string name="stop_migrating">停止迁移？</string>
     <plurals name="migrate_entry">
         <item quantity="other">迁移 %1$d%2$s 漫画？</item>
@@ -443,7 +418,6 @@
 
     <!-- Library Sheet -->
     <string name="lewd">淫乱</string>
-    <string name="started">已开始</string>
 
     <!-- Library Grouping -->
     <string name="tracking_status">追踪状态</string>
@@ -521,7 +495,6 @@
     <string name="launching_app">应用启动中……</string>
     <string name="error_with_reason">错误：%1$s</string>
     <string name="could_not_open_entry">无法打开该漫画：\n\n%1$s</string>
-    <string name="entry_id_is_null">漫画 ID 为空！</string>
     <string name="loading_entry">漫画加载中……</string>
 
     <!-- Page previews -->
@@ -585,7 +558,6 @@
     <string name="cover_image_file_type">转换图像类型</string>
     <string name="thumbnail_image_file_type">缓存图像类型</string>
     <string name="scanlator">扫译组</string>
-    <string name="alt_titles">其他标题</string>
     <string name="uploader_capital">上传者名字</string>
     <string name="uploader">上传者</string>
     <string name="rating_string">评分字符串</string>
@@ -620,15 +592,12 @@
     <string name="download_merged_entry_desc">更改此项将禁用或启用此合并漫画的章节下载</string>
     <string name="merged_references_invalid">合并后的引用无效</string>
     <string name="merged_chapter_updates_error">切换章节更新错误</string>
-    <string name="merged_references">引用已合并</string>
     <string name="merged_toggle_chapter_updates_find_error">找不到漫画，无法切换章节更新</string>
     <string name="merged_toggle_download_chapters_error">切换下载章节错误</string>
     <string name="merged_toggle_download_chapters_find_error">找不到漫画来切换章节下载</string>
     <string name="allow_deduplication">允许删除重复数据：</string>
     <string name="deduplication_mode">去重模式：</string>
     <string name="deduplication_entry_info">漫画信息：</string>
-    <string name="toggle_dedupe">切换去重</string>
-    <string name="refresh_merge">刷新以获取正确信息</string>
     <string name="no_dedupe">无重复</string>
     <string name="dedupe_priority">按优先级去重</string>
     <string name="dedupe_most_chapters">显示有最多章节的来源</string>
@@ -636,13 +605,10 @@
 
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">取消关注</string>
-    <string name="mangadex_specific_settings">MangaDex 设置</string>
     <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的漫画到书架</string>
     <string name="mangadex_sync_follows_to_library_summary">如果未被添加则从 MangaDex 拉取漫画到你的书架</string>
     <string name="mangadex_preffered_source">首选 MangaDex 来源</string>
     <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 来源，这将用于关注和应用中一系列其他功能。</string>
-    <string name="two_factor">2FA 验证码</string>
-    <string name="fields_cannot_be_blank">字段不能为空</string>
     <string name="mangadex_add_to_follows">添加到 MangaDex 关注</string>
     <string name="mangadex_follows">MangaDex 关注</string>
     <string name="random">随机</string>
@@ -656,7 +622,6 @@
 
     <!-- Similar -->
     <string name="similar">与 %1$s 相似</string>
-    <string name="similar_no_results">未找到相似漫画</string>
 
     <!-- MangaDex relations-->
     <string name="relation_similar">相似</string>

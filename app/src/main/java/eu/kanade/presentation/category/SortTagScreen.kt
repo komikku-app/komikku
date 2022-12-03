@@ -45,7 +45,7 @@ fun SortTagScreen(
     ) { paddingValues ->
         if (state.isEmpty) {
             EmptyScreen(
-                textResource = R.string.information_empty_category,
+                textResource = R.string.information_empty_tags,
                 modifier = Modifier.padding(paddingValues),
             )
             return@Scaffold
