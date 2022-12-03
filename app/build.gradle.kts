@@ -270,9 +270,6 @@ dependencies {
     implementation(libs.bundles.voyager)
     implementation(libs.wheelpicker)
 
-    // FlowBinding
-    implementation(libs.flowbinding.android)
-
     // Logging
     implementation(libs.logcat)
 

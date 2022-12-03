@@ -37,9 +37,6 @@ import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
 
 @Composable
 fun EditMangaDialog(
@@ -190,9 +187,7 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
     }
     binding.mangaGenresTags.clearFocus()
 
-    binding.resetTags.clicks()
-        .onEach { resetTags(manga, binding, scope) }
-        .launchIn(scope)
+    binding.resetTags.setOnClickListener { resetTags(manga, binding, scope) }
 }
 
 private fun resetTags(manga: Manga, binding: EditMangaDialogBinding, scope: CoroutineScope) {
@@ -235,7 +230,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
             setTint(context.getResourceColor(R.attr.colorAccent))
         }
 
-        clicks().onEach {
+        setOnClickListener {
             var newTag: String? = null
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.add_tag)
@@ -247,7 +242,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
-        }.launchIn(scope)
+        }
     }
     addView(addTagChip)
 }

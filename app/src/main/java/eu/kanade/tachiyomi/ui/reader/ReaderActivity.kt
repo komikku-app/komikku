@@ -16,6 +16,8 @@ import android.graphics.drawable.RippleDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
@@ -27,8 +29,10 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.CompoundButton
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
@@ -105,20 +109,22 @@ import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.floor
 import exh.util.mangaType
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.sample
 import logcat.LogPriority
 import nucleus.factory.RequiresPresenter
 import nucleus.view.NucleusAppCompatActivity
-import reactivecircus.flowbinding.android.view.clicks
-import reactivecircus.flowbinding.android.widget.checkedChanges
-import reactivecircus.flowbinding.android.widget.textChanges
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.max
@@ -432,6 +438,36 @@ class ReaderActivity :
         }
     }
 
+    // SY -->
+    fun TextView.textChanges(): Flow<CharSequence> = callbackFlow {
+        val listener = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                trySend(s)
+            }
+
+            override fun afterTextChanged(s: Editable) = Unit
+        }
+
+        addTextChangedListener(listener)
+        awaitClose { removeTextChangedListener(listener) }
+    }
+        .conflate()
+        .onStart { emit(text) }
+
+    fun CompoundButton.checkedChanges(): Flow<Boolean> = callbackFlow {
+        val listener = CompoundButton.OnCheckedChangeListener { _, isChecked ->
+            trySend(isChecked)
+        }
+        setOnCheckedChangeListener(listener)
+
+        awaitClose { setOnCheckedChangeListener(null) }
+    }
+        .conflate()
+        .onStart { emit(isChecked) }
+    // SY <--
+
     /**
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
@@ -494,30 +530,26 @@ class ReaderActivity :
 
         // SY -->
         listOf(binding.leftChapter, binding.aboveChapter).forEach {
-            it.clicks()
-                .onEach {
-                    if (viewer != null) {
-                        if (viewer is R2LPagerViewer) {
-                            loadNextChapter()
-                        } else {
-                            loadPreviousChapter()
-                        }
+            it.setOnClickListener {
+                if (viewer != null) {
+                    if (viewer is R2LPagerViewer) {
+                        loadNextChapter()
+                    } else {
+                        loadPreviousChapter()
                     }
                 }
-                .launchIn(lifecycleScope)
+            }
         }
         listOf(binding.rightChapter, binding.belowChapter).forEach {
-            it.clicks()
-                .onEach {
-                    if (viewer != null) {
-                        if (viewer is R2LPagerViewer) {
-                            loadPreviousChapter()
-                        } else {
-                            loadNextChapter()
-                        }
+            it.setOnClickListener {
+                if (viewer != null) {
+                    if (viewer is R2LPagerViewer) {
+                        loadPreviousChapter()
+                    } else {
+                        loadNextChapter()
                     }
                 }
-                .launchIn(lifecycleScope)
+            }
         }
 
         initBottomShortcuts()
@@ -713,12 +745,10 @@ class ReaderActivity :
     }
 
     fun initDropdownMenu() {
-        binding.expandEhButton.clicks()
-            .onEach {
-                ehUtilsVisible = !ehUtilsVisible
-                setEhUtilsVisibility(ehUtilsVisible)
-            }
-            .launchIn(lifecycleScope)
+        binding.expandEhButton.setOnClickListener {
+            ehUtilsVisible = !ehUtilsVisible
+            setEhUtilsVisibility(ehUtilsVisible)
+        }
 
         binding.ehAutoscrollFreq.setText(
             readerPreferences.autoscrollInterval().get().let {
@@ -763,105 +793,95 @@ class ReaderActivity :
             }
             .launchIn(lifecycleScope)
 
-        binding.ehAutoscrollHelp.clicks()
-            .onEach {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.eh_autoscroll_help)
-                    .setMessage(R.string.eh_autoscroll_help_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-            .launchIn(lifecycleScope)
+        binding.ehAutoscrollHelp.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.eh_autoscroll_help)
+                .setMessage(R.string.eh_autoscroll_help_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
 
-        binding.ehRetryAll.clicks()
-            .onEach {
-                var retried = 0
+        binding.ehRetryAll.setOnClickListener {
+            var retried = 0
 
-                presenter.viewerChaptersRelay.value
-                    .currChapter
-                    .pages
-                    ?.forEachIndexed { _, page ->
-                        var shouldQueuePage = false
-                        if (page.status == Page.ERROR) {
-                            shouldQueuePage = true
-                        } /*else if (page.status == Page.LOAD_PAGE ||
-                                    page.status == Page.DOWNLOAD_IMAGE) {
-                                // Do nothing
-                            }*/
+            presenter.viewerChaptersRelay.value
+                .currChapter
+                .pages
+                ?.forEachIndexed { _, page ->
+                    var shouldQueuePage = false
+                    if (page.status == Page.ERROR) {
+                        shouldQueuePage = true
+                    } /*else if (page.status == Page.LOAD_PAGE ||
+                                page.status == Page.DOWNLOAD_IMAGE) {
+                            // Do nothing
+                        }*/
 
-                        if (shouldQueuePage) {
-                            page.status = Page.QUEUE
-                        } else {
-                            return@forEachIndexed
-                        }
-
-                        // If we are using EHentai/ExHentai, get a new image URL
-                        presenter.manga?.let { m ->
-                            val src = sourceManager.get(m.source)
-                            if (src?.isEhBasedSource() == true) {
-                                page.imageUrl = null
-                            }
-                        }
-
-                        val loader = page.chapter.pageLoader
-                        if (page.index == exhCurrentpage()?.index && loader is HttpPageLoader) {
-                            loader.boostPage(page)
-                        } else {
-                            loader?.retryPage(page)
-                        }
-
-                        retried++
-                    }
-
-                toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
-            }
-            .launchIn(lifecycleScope)
-
-        binding.ehRetryAllHelp.clicks()
-            .onEach {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.eh_retry_all_help)
-                    .setMessage(R.string.eh_retry_all_help_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-            .launchIn(lifecycleScope)
-
-        binding.ehBoostPage.clicks()
-            .onEach {
-                viewer ?: return@onEach
-                val curPage = exhCurrentpage() ?: run {
-                    toast(R.string.eh_boost_page_invalid)
-                    return@onEach
-                }
-
-                if (curPage.status == Page.ERROR) {
-                    toast(R.string.eh_boost_page_errored)
-                } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
-                    toast(R.string.eh_boost_page_downloading)
-                } else if (curPage.status == Page.READY) {
-                    toast(R.string.eh_boost_page_downloaded)
-                } else {
-                    val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
-                    if (loader != null) {
-                        loader.boostPage(curPage)
-                        toast(R.string.eh_boost_boosted)
+                    if (shouldQueuePage) {
+                        page.status = Page.QUEUE
                     } else {
-                        toast(R.string.eh_boost_invalid_loader)
+                        return@forEachIndexed
                     }
+
+                    // If we are using EHentai/ExHentai, get a new image URL
+                    presenter.manga?.let { m ->
+                        val src = sourceManager.get(m.source)
+                        if (src?.isEhBasedSource() == true) {
+                            page.imageUrl = null
+                        }
+                    }
+
+                    val loader = page.chapter.pageLoader
+                    if (page.index == exhCurrentpage()?.index && loader is HttpPageLoader) {
+                        loader.boostPage(page)
+                    } else {
+                        loader?.retryPage(page)
+                    }
+
+                    retried++
+                }
+
+            toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
+        }
+
+        binding.ehRetryAllHelp.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.eh_retry_all_help)
+                .setMessage(R.string.eh_retry_all_help_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
+
+        binding.ehBoostPage.setOnClickListener {
+            viewer ?: return@setOnClickListener
+            val curPage = exhCurrentpage() ?: run {
+                toast(R.string.eh_boost_page_invalid)
+                return@setOnClickListener
+            }
+
+            if (curPage.status == Page.ERROR) {
+                toast(R.string.eh_boost_page_errored)
+            } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
+                toast(R.string.eh_boost_page_downloading)
+            } else if (curPage.status == Page.READY) {
+                toast(R.string.eh_boost_page_downloaded)
+            } else {
+                val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
+                if (loader != null) {
+                    loader.boostPage(curPage)
+                    toast(R.string.eh_boost_boosted)
+                } else {
+                    toast(R.string.eh_boost_invalid_loader)
                 }
             }
-            .launchIn(lifecycleScope)
+        }
 
-        binding.ehBoostPageHelp.clicks()
-            .onEach {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.eh_boost_page_help)
-                    .setMessage(R.string.eh_boost_page_help_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-            .launchIn(lifecycleScope)
+        binding.ehBoostPageHelp.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.eh_boost_page_help)
+                .setMessage(R.string.eh_boost_page_help_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     private fun exhCurrentpage(): ReaderPage? {
