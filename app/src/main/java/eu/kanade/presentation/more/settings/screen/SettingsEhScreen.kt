@@ -50,6 +50,7 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
@@ -64,7 +65,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
-import exh.favorites.FavoritesIntroDialog
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
@@ -847,13 +847,17 @@ object SettingsEhScreen : SearchableSettings {
 
     @Composable
     fun syncFavoriteNotes(): Preference.PreferenceItem.TextPreference {
-        val context = LocalContext.current
+        var dialogOpen by remember { mutableStateOf(false) }
+        if (dialogOpen) {
+            SyncFavoritesWarningDialog(
+                onDismissRequest = { dialogOpen = false },
+                onAccept = { dialogOpen = false },
+            )
+        }
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(R.string.show_favorite_sync_notes),
             subtitle = stringResource(R.string.show_favorite_sync_notes_summary),
-            onClick = {
-                FavoritesIntroDialog().show(context)
-            },
+            onClick = { dialogOpen = true },
         )
     }
 
