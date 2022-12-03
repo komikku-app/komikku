@@ -8,7 +8,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -20,7 +20,7 @@ class BrowseSourceController(bundle: Bundle) : BasicFullComposeController(bundle
         sourceId: Long,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--
@@ -51,7 +51,7 @@ class BrowseSourceController(bundle: Bundle) : BasicFullComposeController(bundle
         source: CatalogueSource,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--
@@ -67,7 +67,7 @@ class BrowseSourceController(bundle: Bundle) : BasicFullComposeController(bundle
         source: Source,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--

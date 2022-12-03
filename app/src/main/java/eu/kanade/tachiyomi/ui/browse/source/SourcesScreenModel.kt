@@ -43,7 +43,7 @@ class SourcesScreenModel(
     private val getShowLatest: GetShowLatest = Injekt.get(),
     private val toggleExcludeFromDataSaver: ToggleExcludeFromDataSaver = Injekt.get(),
     private val setSourceCategories: SetSourceCategories = Injekt.get(),
-    val smartSearchConfig: SourcesController.SmartSearchConfig?,
+    val smartSearchConfig: SourcesScreen.SmartSearchConfig?,
     // SY <--
 ) : StateScreenModel<SourcesState>(SourcesState()) {
 

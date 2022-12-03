@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.util.system.getSerializableCompat
 
 class MangaController : BasicFullComposeController {
@@ -16,7 +16,7 @@ class MangaController : BasicFullComposeController {
     constructor(
         mangaId: Long,
         fromSource: Boolean = false,
-        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
     ) : super(bundleOf(MANGA_EXTRA to mangaId, FROM_SOURCE_EXTRA to fromSource, SMART_SEARCH_CONFIG_EXTRA to smartSearchConfig))
 
     // SY -->
@@ -32,7 +32,7 @@ class MangaController : BasicFullComposeController {
         get() = args.getBoolean(FROM_SOURCE_EXTRA)
 
     // SY -->
-    val smartSearchConfig: SourcesController.SmartSearchConfig?
+    val smartSearchConfig: SourcesScreen.SmartSearchConfig?
         get() = args.getSerializableCompat(SMART_SEARCH_CONFIG_EXTRA)
     // SY <--
 

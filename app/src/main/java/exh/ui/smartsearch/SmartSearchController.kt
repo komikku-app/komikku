@@ -5,14 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.util.system.getSerializableCompat
 
 class SmartSearchController(bundle: Bundle) : BasicFullComposeController() {
     private val sourceId = bundle.getLong(ARG_SOURCE_ID, -1)
-    private val smartSearchConfig = bundle.getSerializableCompat<SourcesController.SmartSearchConfig>(ARG_SMART_SEARCH_CONFIG)!!
+    private val smartSearchConfig = bundle.getSerializableCompat<SourcesScreen.SmartSearchConfig>(ARG_SMART_SEARCH_CONFIG)!!
 
-    constructor(sourceId: Long, smartSearchConfig: SourcesController.SmartSearchConfig) : this(
+    constructor(sourceId: Long, smartSearchConfig: SourcesScreen.SmartSearchConfig) : this(
         bundleOf(
             ARG_SOURCE_ID to sourceId,
             ARG_SMART_SEARCH_CONFIG to smartSearchConfig,

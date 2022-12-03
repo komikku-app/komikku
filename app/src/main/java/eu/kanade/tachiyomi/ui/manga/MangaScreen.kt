@@ -58,7 +58,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
@@ -96,7 +95,7 @@ import uy.kohesive.injekt.api.get
 class MangaScreen(
     private val mangaId: Long,
     private val fromSource: Boolean = false,
-    private val smartSearchConfig: SourcesController.SmartSearchConfig? = null,
+    private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
 ) : Screen {
 
     override val key = uniqueScreenKey
@@ -497,7 +496,7 @@ class MangaScreen(
 
     // EXH -->
     private fun openSmartSearch(navigator: Navigator, manga: Manga) {
-        val smartSearchConfig = SourcesController.SmartSearchConfig(manga.title, manga.id)
+        val smartSearchConfig = SourcesScreen.SmartSearchConfig(manga.title, manga.id)
 
         navigator.push(SourcesScreen(smartSearchConfig))
     }

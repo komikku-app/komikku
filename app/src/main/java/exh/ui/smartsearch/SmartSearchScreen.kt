@@ -25,12 +25,12 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
 
-class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfig: SourcesController.SmartSearchConfig) : Screen {
+class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfig: SourcesScreen.SmartSearchConfig) : Screen {
 
     @Composable
     override fun Content() {

@@ -20,7 +20,7 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.presentation.util.LocalRouter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController.SmartSearchConfig
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen.SmartSearchConfig
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController

@@ -7,20 +7,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.core.os.bundleOf
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.bluelinelabs.conductor.Router
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.util.LocalRouter
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 
 class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen {
 
@@ -32,7 +30,7 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen {
         val navigator = LocalNavigator.currentOrThrow
 
         val onMangaClick: (Manga) -> Unit = { manga ->
-            openSmartSearch(router, manga.ogTitle)
+            openSmartSearch(navigator, manga.ogTitle)
         }
 
         val snackbarHostState = remember { SnackbarHostState() }
@@ -79,14 +77,8 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen {
         }
     }
 
-    private fun openSmartSearch(router: Router, title: String) {
-        val smartSearchConfig = SourcesController.SmartSearchConfig(title)
-        router.pushController(
-            SourcesController(
-                bundleOf(
-                    SourcesController.SMART_SEARCH_CONFIG to smartSearchConfig,
-                ),
-            ),
-        )
+    private fun openSmartSearch(navigator: Navigator, title: String) {
+        val smartSearchConfig = SourcesScreen.SmartSearchConfig(title)
+        navigator.push(SourcesScreen(smartSearchConfig))
     }
 }
