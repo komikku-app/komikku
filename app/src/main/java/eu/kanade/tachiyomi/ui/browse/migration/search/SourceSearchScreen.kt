@@ -64,9 +64,7 @@ data class SourceSearchScreen(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val mangaList = remember(state.currentFilter) {
-                screenModel.getMangaListFlow(state.currentFilter)
-            }.collectAsLazyPagingItems()
+            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
             val openMigrateDialog: (Manga) -> Unit = {
                 // SY -->
                 navigator.items
@@ -78,7 +76,7 @@ data class SourceSearchScreen(
             }
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = mangaList,
+                mangaList = pagingFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,

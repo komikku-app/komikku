@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -83,8 +82,10 @@ import exh.savedsearches.models.SavedSearch
 import exh.source.getMainSource
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -152,6 +153,35 @@ open class BrowseSourceScreenModel(
      */
     private var filterSheet: SourceFilterSheet? = null
 
+    /**
+     * Flow of Pager flow tied to [State.currentFilter]
+     */
+    val mangaPagerFlowFlow = state.map { it.currentFilter }
+        .distinctUntilChanged()
+        .map { currentFilter ->
+            Pager(
+                PagingConfig(pageSize = 25),
+            ) {
+                // SY -->
+                createSourcePagingSource(currentFilter.query ?: "", currentFilter.filters)
+                // SY <--
+            }.flow
+                .map { pagingData ->
+                    pagingData.map { (sManga, metadata) ->
+                        val dbManga = withIOContext { networkToLocalManga.await(sManga.toDomainManga(sourceId)) }
+                        getManga.subscribe(dbManga.url, dbManga.source)
+                            .filterNotNull()
+                            .onEach { initializeManga(it) }
+                            // SY -->
+                            .combineMetadata(dbManga, metadata)
+                            // SY <--
+                            .stateIn(coroutineScope)
+                    }
+                }
+                .cachedIn(coroutineScope)
+        }
+        .stateIn(coroutineScope, SharingStarted.Lazily, emptyFlow())
+
     // SY -->
     val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
 
@@ -196,29 +226,6 @@ open class BrowseSourceScreenModel(
             libraryPreferences.portraitColumns()
         }.get()
         return if (columns == 0) GridCells.Adaptive(128.dp) else GridCells.Fixed(columns)
-    }
-
-    fun getMangaListFlow(currentFilter: Filter): Flow<PagingData<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>> {
-        return Pager(
-            PagingConfig(pageSize = 25),
-        ) {
-            // SY -->
-            createSourcePagingSource(currentFilter.query ?: "", currentFilter.filters)
-            // SY <--
-        }.flow
-            .map { pagingData ->
-                pagingData.map { (sManga, metadata) ->
-                    val dbManga = withIOContext { networkToLocalManga.await(sManga.toDomainManga(sourceId)) }
-                    getManga.subscribe(dbManga.url, dbManga.source)
-                        .filterNotNull()
-                        .onEach { initializeManga(it) }
-                        // SY -->
-                        .combineMetadata(dbManga, metadata)
-                        // SY <--
-                        .stateIn(coroutineScope)
-                }
-            }
-            .cachedIn(coroutineScope)
     }
 
     // SY -->
