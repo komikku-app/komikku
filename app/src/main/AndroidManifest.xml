@@ -381,10 +381,6 @@
                 <data android:pathPattern="/chapter/..*" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="exh.ui.captcha.BrowserActionActivity"
-            android:theme="@style/Theme.Tachiyomi"
-            android:exported="false"/>
     </application>
 
 </manifest>

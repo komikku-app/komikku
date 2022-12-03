@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -40,7 +39,6 @@ object SettingsGeneralScreen : SearchableSettings {
         val libraryPrefs = remember { Injekt.get<LibraryPreferences>() }
         // SY -->
         val uiPrefs = remember { Injekt.get<UiPreferences>() }
-        val unsortedPrefs = remember { Injekt.get<UnsortedPreferences>() }
         // SY <--
         return mutableListOf<Preference>().apply {
             add(
@@ -103,11 +101,6 @@ object SettingsGeneralScreen : SearchableSettings {
                         Preference.PreferenceItem.SwitchPreference(
                             pref = uiPrefs.expandFilters(),
                             title = stringResource(R.string.toggle_expand_search_filters),
-                        ),
-                        Preference.PreferenceItem.SwitchPreference(
-                            pref = unsortedPrefs.autoSolveCaptcha(),
-                            title = stringResource(R.string.auto_solve_captchas),
-                            subtitle = stringResource(R.string.auto_solve_captchas_summary),
                         ),
                         Preference.PreferenceItem.SwitchPreference(
                             pref = uiPrefs.recommendsInOverflow(),
