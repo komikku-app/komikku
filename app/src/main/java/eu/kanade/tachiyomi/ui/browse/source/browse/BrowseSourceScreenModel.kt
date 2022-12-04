@@ -78,6 +78,7 @@ import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.models.SavedSearch
 import exh.source.getMainSource
 import exh.util.nullIfBlank
@@ -209,9 +210,10 @@ open class BrowseSourceScreenModel(
         }
 
         getExhSavedSearch.subscribe(source.id, source::getFilterList)
-            .onEach {
+            .onEach { savedSearches ->
+                mutableState.update { it.copy(savedSearches = savedSearches) }
                 withUIContext {
-                    filterSheet?.setSavedSearches(it)
+                    filterSheet?.setSavedSearches(savedSearches)
                 }
             }
             .launchIn(coroutineScope)
@@ -472,7 +474,7 @@ open class BrowseSourceScreenModel(
             // SY -->
             navigator = navigator,
             source = source,
-            searches = emptyList(),
+            searches = state.savedSearches,
             // SY <--
             onFilterClicked = { search(filters = state.filters) },
             onResetClicked = {
@@ -483,7 +485,7 @@ open class BrowseSourceScreenModel(
             onSaveClicked = {
                 coroutineScope.launchIO {
                     val names = loadSearches().map { it.name }
-                    mutableState.update { it.copy(dialog = Dialog.CreateSavedSearh(names)) }
+                    mutableState.update { it.copy(dialog = Dialog.CreateSavedSearch(names)) }
                 }
             },
             onSavedSearchClicked = { idOfSearch ->
@@ -546,7 +548,7 @@ open class BrowseSourceScreenModel(
         // SY -->
         object FailedToLoadSavedSearch : Dialog()
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog()
-        data class CreateSavedSearh(val currentSavedSearches: List<String>) : Dialog()
+        data class CreateSavedSearch(val currentSavedSearches: List<String>) : Dialog()
         // SY <--
     }
 
@@ -556,6 +558,9 @@ open class BrowseSourceScreenModel(
         val filters: FilterList = FilterList(),
         val toolbarQuery: String? = null,
         val dialog: Dialog? = null,
+        // SY -->
+        val savedSearches: List<EXHSavedSearch> = emptyList(),
+        // SY <--
     ) {
         val filterItems = filters.toItems()
         val isUserQuery = currentFilter is Filter.UserInput && !currentFilter.query.isNullOrEmpty()
