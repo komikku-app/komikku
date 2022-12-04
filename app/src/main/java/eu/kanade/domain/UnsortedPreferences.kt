@@ -57,8 +57,6 @@ class UnsortedPreferences(
 
     fun exhShowSettingsUploadWarning() = preferenceStore.getBoolean("eh_showSettingsUploadWarning2", true)
 
-    fun autoSolveCaptcha() = preferenceStore.getBoolean("eh_autosolve_captchas", false)
-
     fun logLevel() = preferenceStore.getInt("eh_log_level", 0)
 
     fun exhAutoUpdateFrequency() = preferenceStore.getInt("eh_auto_update_frequency", 1)

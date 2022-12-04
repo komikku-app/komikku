@@ -40,7 +40,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         val trimmedIdQuery = query.trim().removePrefix("id:")
-        val newQuery = if (trimmedIdQuery.toIntOrNull() ?: -1 >= 0) {
+        val newQuery = if ((trimmedIdQuery.toIntOrNull() ?: -1) >= 0) {
             "$baseUrl/gallery/$trimmedIdQuery/-"
         } else {
             query
