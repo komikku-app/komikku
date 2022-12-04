@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import logcat.LogPriority
@@ -66,6 +67,12 @@ class SourcesScreenModel(
                 _events.send(Event.FailedFetchingSources)
             }
             .flowOn(Dispatchers.IO)
+            .launchIn(coroutineScope)
+
+        sourcePreferences.dataSaver().changes()
+            .onEach { enabled ->
+                mutableState.update { it.copy(dataSaverEnabled = enabled) }
+            }
             .launchIn(coroutineScope)
         // SY <--
     }
@@ -182,6 +189,7 @@ data class SourcesState(
     val categories: List<String> = emptyList(),
     val showPin: Boolean = true,
     val showLatest: Boolean = false,
+    val dataSaverEnabled: Boolean = false,
     // SY <--
 ) {
     val isEmpty = items.isEmpty()

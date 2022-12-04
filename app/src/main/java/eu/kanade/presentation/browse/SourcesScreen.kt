@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
@@ -189,8 +191,8 @@ fun SourceOptionsDialog(
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
     // SY -->
-    onClickSetCategories: () -> Unit,
-    onClickToggleDataSaver: () -> Unit,
+    onClickSetCategories: (() -> Unit)?,
+    onClickToggleDataSaver: (() -> Unit)?,
     // SY <--
     onDismiss: () -> Unit,
 ) {
@@ -218,24 +220,28 @@ fun SourceOptionsDialog(
                     )
                 }
                 // SY -->
-                Text(
-                    text = stringResource(id = R.string.categories),
-                    modifier = Modifier
-                        .clickable(onClick = onClickSetCategories)
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                )
-                Text(
-                    text = if (source.isExcludedFromDataSaver) {
-                        stringResource(id = R.string.data_saver_stop_exclude)
-                    } else {
-                        stringResource(id = R.string.data_saver_exclude)
-                    },
-                    modifier = Modifier
-                        .clickable(onClick = onClickToggleDataSaver)
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                )
+                if (onClickSetCategories != null) {
+                    Text(
+                        text = stringResource(id = R.string.categories),
+                        modifier = Modifier
+                            .clickable(onClick = onClickSetCategories)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                    )
+                }
+                if (onClickToggleDataSaver != null) {
+                    Text(
+                        text = if (source.isExcludedFromDataSaver) {
+                            stringResource(id = R.string.data_saver_stop_exclude)
+                        } else {
+                            stringResource(id = R.string.data_saver_exclude)
+                        },
+                        modifier = Modifier
+                            .clickable(onClick = onClickToggleDataSaver)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                    )
+                }
                 // SY <--
             }
         },
@@ -252,12 +258,11 @@ sealed class SourceUiModel {
 // SY -->
 @Composable
 fun SourceCategoriesDialog(
-    source: Source?,
+    source: Source,
     categories: List<String>,
     onClickCategories: (List<String>) -> Unit,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
 ) {
-    source ?: return
     val newCategories = remember(source) {
         mutableStateListOf<String>().also { it += source.categories }
     }
@@ -266,7 +271,7 @@ fun SourceCategoriesDialog(
             Text(text = source.visualName)
         },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 categories.forEach {
                     Row(
                         modifier = Modifier
@@ -293,7 +298,7 @@ fun SourceCategoriesDialog(
                 }
             }
         },
-        onDismissRequest = onDismiss,
+        onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = { onClickCategories(newCategories.toList()) }) {
                 Text(text = stringResource(android.R.string.ok))

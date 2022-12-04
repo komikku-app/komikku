@@ -77,45 +77,43 @@ fun Screen.sourcesTab(
                 onLongClickItem = screenModel::showSourceDialog,
             )
 
-            state.dialog?.let { dialog ->
-                when (dialog) {
-                    is SourcesScreenModel.Dialog.SourceCategories -> {
-                        val source = dialog.source
-                        SourceOptionsDialog(
-                            source = source,
-                            onClickPin = {
-                                screenModel.togglePin(source)
-                                screenModel.closeDialog()
-                            },
-                            onClickDisable = {
-                                screenModel.toggleSource(source)
-                                screenModel.closeDialog()
-                            },
-                            // SY -->
-                            onClickSetCategories = {
-                                screenModel.showSourceCategoriesDialog(source)
-                                screenModel.closeDialog()
-                            },
-                            onClickToggleDataSaver = {
-                                screenModel.toggleExcludeFromDataSaver(source)
-                                screenModel.closeDialog()
-                            },
-                            onDismiss = screenModel::closeDialog,
-                        )
-                    }
-                    is SourcesScreenModel.Dialog.SourceLongClick -> {
-                        val source = dialog.source
-                        SourceCategoriesDialog(
-                            source = source,
-                            categories = state.categories,
-                            onClickCategories = { categories ->
-                                screenModel.setSourceCategories(source, categories)
-                                screenModel.closeDialog()
-                            },
-                            onDismiss = screenModel::closeDialog,
-                        )
-                    }
+            when (val dialog = state.dialog) {
+                is SourcesScreenModel.Dialog.SourceLongClick -> {
+                    val source = dialog.source
+                    SourceOptionsDialog(
+                        source = source,
+                        onClickPin = {
+                            screenModel.togglePin(source)
+                            screenModel.closeDialog()
+                        },
+                        onClickDisable = {
+                            screenModel.toggleSource(source)
+                            screenModel.closeDialog()
+                        },
+                        // SY -->
+                        onClickSetCategories = {
+                            screenModel.showSourceCategoriesDialog(source)
+                        }.takeIf { state.categories.isNotEmpty() },
+                        onClickToggleDataSaver = {
+                            screenModel.toggleExcludeFromDataSaver(source)
+                            screenModel.closeDialog()
+                        }.takeIf { state.dataSaverEnabled },
+                        onDismiss = screenModel::closeDialog,
+                    )
                 }
+                is SourcesScreenModel.Dialog.SourceCategories -> {
+                    val source = dialog.source
+                    SourceCategoriesDialog(
+                        source = source,
+                        categories = state.categories,
+                        onClickCategories = { categories ->
+                            screenModel.setSourceCategories(source, categories)
+                            screenModel.closeDialog()
+                        },
+                        onDismissRequest = screenModel::closeDialog,
+                    )
+                }
+                null -> Unit
             }
 
             val internalErrString = stringResource(R.string.internal_error)
