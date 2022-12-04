@@ -24,6 +24,7 @@ import eu.kanade.tachiyomi.util.system.toast
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen {
 
+    @delegate:Transient
     var newSelectedItem by mutableStateOf<Pair<Long, Long>?>(null)
 
     @Composable
