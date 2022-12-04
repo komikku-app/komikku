@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
@@ -146,7 +145,6 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen {
                         }
                     },
                     expanded = fabExpanded,
-                    modifier = Modifier.navigationBarsPadding(),
                 )
             },
         ) { contentPadding ->
