@@ -79,7 +79,7 @@ class MigrationListScreenModel(
     private val smartSearchEngine = SmartSearchEngine(config.extraSearchParams)
     private val throttleManager = EHentaiThrottleManager()
 
-    val migratingItems = MutableStateFlow<List<MigratingManga>>(emptyList())
+    val migratingItems = MutableStateFlow<List<MigratingManga>?>(null)
     val migrationDone = MutableStateFlow(false)
     val unfinishedCount = MutableStateFlow(0)
 
@@ -275,21 +275,21 @@ class MigrationListScreenModel(
     }
 
     private suspend fun sourceFinished() {
-        unfinishedCount.value = migratingItems.value.count {
+        unfinishedCount.value = migratingItems.value.orEmpty().count {
             it.searchResult.value != SearchResult.Searching
         }
         if (allMangasDone()) {
             migrationDone.value = true
         }
-        if (migratingItems.value.isEmpty()) {
+        if (migratingItems.value?.isEmpty() == true) {
             navigateOut()
         }
     }
 
-    fun allMangasDone() = migratingItems.value.all { it.searchResult.value != SearchResult.Searching } &&
-        migratingItems.value.any { it.searchResult.value is SearchResult.Result }
+    fun allMangasDone() = migratingItems.value.orEmpty().all { it.searchResult.value != SearchResult.Searching } &&
+        migratingItems.value.orEmpty().any { it.searchResult.value is SearchResult.Result }
 
-    fun mangasSkipped() = migratingItems.value.count { it.searchResult.value == SearchResult.NotFound }
+    fun mangasSkipped() = migratingItems.value.orEmpty().count { it.searchResult.value == SearchResult.NotFound }
 
     private suspend fun migrateMangaInternal(
         prevManga: Manga,
@@ -386,7 +386,7 @@ class MigrationListScreenModel(
     }
 
     fun useMangaForMigration(context: Context, newMangaId: Long, selectedMangaId: Long) {
-        val migratingManga = migratingItems.value.find { it.manga.id == selectedMangaId }
+        val migratingManga = migratingItems.value.orEmpty().find { it.manga.id == selectedMangaId }
             ?: return
         migratingManga.searchResult.value = SearchResult.Searching
         coroutineScope.launchIO {
@@ -425,7 +425,7 @@ class MigrationListScreenModel(
 
     fun migrateMangas() {
         coroutineScope.launchIO {
-            migratingItems.value.forEach { manga ->
+            migratingItems.value.orEmpty().forEach { manga ->
                 val searchResult = manga.searchResult.value
                 if (searchResult is SearchResult.Result) {
                     val toMangaObj = getManga.await(searchResult.id) ?: return@forEach
@@ -443,7 +443,7 @@ class MigrationListScreenModel(
 
     fun copyMangas() {
         coroutineScope.launchIO {
-            migratingItems.value.forEach { manga ->
+            migratingItems.value.orEmpty().forEach { manga ->
                 val searchResult = manga.searchResult.value
                 if (searchResult is SearchResult.Result) {
                     val toMangaObj = getManga.await(searchResult.id) ?: return@forEach
@@ -465,7 +465,7 @@ class MigrationListScreenModel(
     fun migrateManga(mangaId: Long, copy: Boolean) {
         manualMigrations.value++
         coroutineScope.launchIO {
-            val manga = migratingItems.value.find { it.manga.id == mangaId }
+            val manga = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
 
             val toMangaObj = getManga.await((manga.searchResult.value as? SearchResult.Result)?.id ?: return@launchIO)
@@ -482,7 +482,7 @@ class MigrationListScreenModel(
 
     fun removeManga(mangaId: Long) {
         coroutineScope.launchIO {
-            val item = migratingItems.value.find { it.manga.id == mangaId }
+            val item = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
             removeManga(item)
             item.migrationScope.cancel()
@@ -496,14 +496,14 @@ class MigrationListScreenModel(
         if (index > -1) {
             ids.removeAt(index)
             config.mangaIds = ids
-            val index2 = migratingItems.value.indexOf(item)
-            if (index2 > -1) migratingItems.value = migratingItems.value - item
+            val index2 = migratingItems.value.orEmpty().indexOf(item)
+            if (index2 > -1) migratingItems.value = migratingItems.value.orEmpty() - item
         }
     }
 
     override fun onDispose() {
         super.onDispose()
-        migratingItems.value.forEach {
+        migratingItems.value.orEmpty().forEach {
             it.migrationScope.cancel()
         }
     }
@@ -513,7 +513,7 @@ class MigrationListScreenModel(
     ) {
         dialog.value = Dialog.MigrateMangaDialog(
             copy,
-            migratingItems.value.size,
+            migratingItems.value.orEmpty().size,
             mangasSkipped(),
         )
     }

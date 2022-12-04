@@ -36,7 +36,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         LaunchedEffect(items) {
-            if (items.isEmpty()) {
+            if (items?.isEmpty() == true) {
                 val manualMigrations = screenModel.manualMigrations.value
                 context.toast(
                     context.resources.getQuantityString(
@@ -61,10 +61,10 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
 
         LaunchedEffect(screenModel) {
             screenModel.navigateOut.collect {
-                if (items.size == 1) {
+                if (items.orEmpty().size == 1) {
                     val hasDetails = navigator.items.any { it is MangaScreen }
                     if (hasDetails) {
-                        val manga = (items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
+                        val manga = (items.orEmpty().firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
                             screenModel.getManga(it.id)
                         }
                         withUIContext {
@@ -89,7 +89,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             }
         }
         MigrationListScreen(
-            items = items,
+            items = items.orEmpty(),
             migrationDone = migrationDone,
             unfinishedCount = unfinishedCount,
             getManga = screenModel::getManga,
