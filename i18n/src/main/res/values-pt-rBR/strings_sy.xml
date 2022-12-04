@@ -355,6 +355,7 @@
     <string name="match_pinned_sources">Combinar com fontes fixadas</string>
     <string name="match_enabled_sources">Combinar com fontes ativadas</string>
     <string name="no_chapters_found_for_migration">Sem capítulos encontrados, este mangá não pode ser usado para migração</string>
+    <string name="no_alternatives_found">Sem alternativas encontradas</string>
     <string name="stop_migrating">Parar migração?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Migrar %1$d%2$s mangá?</item>

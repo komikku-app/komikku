@@ -419,6 +419,7 @@
     <string name="match_pinned_sources">Соответствие закреплённых источников</string>
     <string name="match_enabled_sources">Соответствие включённых источников</string>
     <string name="no_chapters_found_for_migration">Глав не найдено. Эта запись не может быть использована для переноса</string>
+    <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Перенести %1$d%2$s запись?</item>

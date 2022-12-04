@@ -421,6 +421,7 @@
     <string name="match_pinned_sources">Match pinned sources</string>
     <string name="match_enabled_sources">Match enabled sources</string>
     <string name="no_chapters_found_for_migration">No chapters found, this entry cannot be used for migration</string>
+    <string name="no_alternatives_found">No Alternatives Found</string>
     <string name="stop_migrating">Stop migrating?</string>
     <plurals name="migrate_entry">
         <item quantity="one">Migrate %1$d%2$s entry?</item>

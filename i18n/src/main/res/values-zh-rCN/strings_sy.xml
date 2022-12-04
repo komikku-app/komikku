@@ -400,6 +400,7 @@
     <string name="match_pinned_sources">匹配置顶的来源</string>
     <string name="match_enabled_sources">匹配启用的来源</string>
     <string name="no_chapters_found_for_migration">未找到章节，该漫画无法用于迁移</string>
+    <string name="no_alternatives_found">未找到替代方案</string>
     <string name="stop_migrating">停止迁移？</string>
     <plurals name="migrate_entry">
         <item quantity="other">迁移 %1$d%2$s 漫画？</item>

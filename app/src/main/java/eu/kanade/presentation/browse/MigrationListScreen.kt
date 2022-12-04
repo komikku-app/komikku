@@ -99,7 +99,8 @@ fun MigrationListScreen(
                     MigrationItem(
                         modifier = Modifier
                             .padding(top = 8.dp)
-                            .weight(1f),
+                            .weight(1f)
+                            .align(Alignment.Top),
                         manga = migrationItem.manga,
                         sourcesString = migrationItem.sourcesString,
                         chapterInfo = migrationItem.chapterInfo,
@@ -115,7 +116,8 @@ fun MigrationListScreen(
                     MigrationItemResult(
                         modifier = Modifier
                             .padding(top = 8.dp)
-                            .weight(1f),
+                            .weight(1f)
+                            .align(Alignment.Top),
                         migrationItem = migrationItem,
                         result = result,
                         getManga = getManga,
