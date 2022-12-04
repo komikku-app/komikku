@@ -27,7 +27,6 @@ import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
@@ -549,7 +548,7 @@ class LibraryUpdateService(
             scope?.launch(handler) {
                 val tracks = getTracks.await(manga.id)
                 if (tracks.isEmpty() || tracks.none { it.syncId == TrackManager.MDLIST }) {
-                    val track = trackManager.mdList.createInitialTracker(manga.toDbManga())
+                    val track = trackManager.mdList.createInitialTracker(manga)
                     insertTrack.await(trackManager.mdList.refresh(track).toDomainTrack(false)!!)
                 }
             }
@@ -770,7 +769,7 @@ class LibraryUpdateService(
                 val dbTracks = getTracks.await(manga.id)
 
                 // find the mdlist entry if its unfollowed the follow it
-                val tracker = TrackItem(dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }?.toDbTrack() ?: trackManager.mdList.createInitialTracker(manga.toDbManga()), trackManager.mdList)
+                val tracker = TrackItem(dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }?.toDbTrack() ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)
 
                 if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
                     tracker.track.status = FollowStatus.READING.int

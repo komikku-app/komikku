@@ -3,8 +3,8 @@ package eu.kanade.tachiyomi.data.track.mdlist
 import android.content.Context
 import android.graphics.Color
 import androidx.annotation.StringRes
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -121,7 +121,7 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
 
     fun createInitialTracker(dbManga: Manga, mdManga: Manga = dbManga): Track {
         return Track.create(TrackManager.MDLIST).apply {
-            manga_id = dbManga.id!!
+            manga_id = dbManga.id
             status = FollowStatus.UNFOLLOWED.int
             tracking_url = MdUtil.baseUrl + mdManga.url
             title = mdManga.title

@@ -45,7 +45,6 @@ import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
@@ -769,7 +768,7 @@ class MangaInfoScreenModel(
                     .forEach { service ->
                         launchIO {
                             try {
-                                service.match(manga.toDbManga())?.let { track ->
+                                service.match(manga)?.let { track ->
                                     (service as TrackService).registerTracking(track, mangaId)
                                 }
                             } catch (e: Exception) {
@@ -1478,7 +1477,7 @@ class MangaInfoScreenModel(
         val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
             ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
             ?: throw IllegalArgumentException("Could not create initial track")
-        val track = trackManager.mdList.createInitialTracker(state.manga.toDbManga(), mdManga.toDbManga())
+        val track = trackManager.mdList.createInitialTracker(state.manga, mdManga)
             .toDomainTrack(false)!!
         insertTrack.await(track)
         return TrackItem(getTracks.await(mangaId).first { it.syncId == TrackManager.MDLIST }.toDbTrack(), trackManager.mdList)
