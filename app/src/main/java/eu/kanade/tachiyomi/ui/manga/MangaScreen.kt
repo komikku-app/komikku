@@ -58,7 +58,7 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
 import eu.kanade.tachiyomi.ui.manga.track.TrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
@@ -151,9 +151,9 @@ class MangaScreen(
             // SY -->
             onWebViewClicked = {
                 if (successState.mergedData == null) {
-                    openMangaInWebView(context, screenModel.manga, screenModel.source)
+                    openMangaInWebView(navigator, screenModel.manga, screenModel.source)
                 } else {
-                    openMergedMangaWebview(context, successState.mergedData)
+                    openMergedMangaWebview(context, navigator, successState.mergedData)
                 }
             }.takeIf { isHttpSource },
             // SY <--
@@ -331,10 +331,15 @@ class MangaScreen(
         }
     }
 
-    private fun openMangaInWebView(context: Context, manga_: Manga?, source_: Source?) {
+    private fun openMangaInWebView(navigator: Navigator, manga_: Manga?, source_: Source?) {
         getMangaUrl(manga_, source_)?.let { url ->
-            val intent = WebViewActivity.newIntent(context, url, source_?.id, manga_?.title)
-            context.startActivity(intent)
+            navigator.push(
+                WebViewScreen(
+                    url = url,
+                    initialTitle = manga_?.title,
+                    sourceId = source_?.id,
+                ),
+            )
         }
     }
 
@@ -434,7 +439,7 @@ class MangaScreen(
         navigator.push(MetadataViewScreen(manga.id, manga.source))
     }
 
-    private fun openMergedMangaWebview(context: Context, mergedMangaData: MergedMangaData) {
+    private fun openMergedMangaWebview(context: Context, navigator: Navigator, mergedMangaData: MergedMangaData) {
         val sourceManager: SourceManager = Injekt.get()
         val mergedManga = mergedMangaData.manga.values.filterNot { it.source == MERGED_SOURCE_ID }
         val sources = mergedManga.map { sourceManager.getOrStub(it.source) }
@@ -445,7 +450,7 @@ class MangaScreen(
                 -1,
             ) { dialog, index ->
                 dialog.dismiss()
-                openMangaInWebView(context, mergedManga[index], sources[index] as? HttpSource)
+                openMangaInWebView(navigator, mergedManga[index], sources[index] as? HttpSource)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

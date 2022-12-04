@@ -25,7 +25,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.Constants
 
 data class SourceSearchScreen(
@@ -87,8 +87,13 @@ data class SourceSearchScreen(
                 contentPadding = paddingValues,
                 onWebViewClick = {
                     val source = screenModel.source as? HttpSource ?: return@BrowseSourceContent
-                    val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
-                    context.startActivity(intent)
+                    navigator.push(
+                        WebViewScreen(
+                            url = source.baseUrl,
+                            initialTitle = source.name,
+                            sourceId = source.id,
+                        ),
+                    )
                 },
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) },
