@@ -95,8 +95,6 @@ class MainActivity : BaseActivity() {
     private val unsortedPreferences: UnsortedPreferences by injectLazy()
     // SY <--
 
-    private var isHandlingShortcut: Boolean = false
-
     private val chapterCache: ChapterCache by injectLazy()
 
     // To be checked by splash screen. If true then splash screen will be removed.
@@ -107,6 +105,7 @@ class MainActivity : BaseActivity() {
      */
     private var settingsSheet: LibrarySettingsSheet? = null
 
+    private var isHandlingShortcut: Boolean = false
     private lateinit var navigator: Navigator
 
     // SY -->
@@ -131,6 +130,12 @@ class MainActivity : BaseActivity() {
     // SY <--
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
+        if (!isTaskRoot) {
+            finish()
+            return
+        }
+
         // Prevent splash screen showing up on configuration changes
         val splashScreen = if (savedInstanceState == null) installSplashScreen() else null
 
@@ -158,14 +163,10 @@ class MainActivity : BaseActivity() {
             false
         }
 
-        // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
-        if (!isTaskRoot) {
-            finish()
-            return
-        }
-
+        // SY -->
         @Suppress("KotlinConstantConditions")
         val hasDebugOverlay = (BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest")
+        // SY <--
 
         // Draw edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -182,6 +183,32 @@ class MainActivity : BaseActivity() {
             ) { navigator ->
                 if (navigator.size == 1) {
                     ConfirmExit()
+                }
+
+                LaunchedEffect(navigator) {
+                    this@MainActivity.navigator = navigator
+
+                    if (savedInstanceState == null) {
+                        // Set start screen
+                        handleIntentAction(intent)
+
+                        // Reset Incognito Mode on relaunch
+                        preferences.incognitoMode().set(false)
+
+                        // SY -->
+                        initWhenIdle {
+                            // Upload settings
+                            if (unsortedPreferences.enableExhentai().get() &&
+                                unsortedPreferences.exhShowSettingsUploadWarning().get()
+                            ) {
+                                runExhConfigureDialog = true
+                            }
+                            // Scheduler uploader job if required
+
+                            EHentaiUpdateWorker.scheduleBackground(this@MainActivity)
+                        }
+                        // SY <--
+                    }
                 }
 
                 // Shows current screen
@@ -204,13 +231,10 @@ class MainActivity : BaseActivity() {
                         .launchIn(this)
                 }
 
-                LaunchedEffect(navigator) {
-                    this@MainActivity.navigator = navigator
-                }
-
                 CheckForUpdate()
             }
 
+            // SY -->
             if (hasDebugOverlay) {
                 val isDebugOverlayEnabled by remember {
                     DebugToggles.ENABLE_DEBUG_OVERLAY.asPref(lifecycleScope)
@@ -219,6 +243,7 @@ class MainActivity : BaseActivity() {
                     DebugModeOverlay()
                 }
             }
+            // SY <--
 
             var showChangelog by remember { mutableStateOf(didMigration && !BuildConfig.DEBUG) }
             if (showChangelog) {
@@ -227,7 +252,9 @@ class MainActivity : BaseActivity() {
                 // SY <--
             }
 
+            // SY -->
             ConfigureExhDialog(run = runExhConfigureDialog, onRunning = { runExhConfigureDialog = false })
+            // SY <--
         }
 
         val startTime = System.currentTimeMillis()
@@ -237,27 +264,6 @@ class MainActivity : BaseActivity() {
         }
         setSplashScreenExitAnimation(splashScreen)
 
-        if (savedInstanceState == null) {
-            // Set start screen
-            lifecycleScope.launch { handleIntentAction(intent) }
-
-            // Reset Incognito Mode on relaunch
-            preferences.incognitoMode().set(false)
-
-            // SY -->
-            initWhenIdle {
-                // Upload settings
-                if (unsortedPreferences.enableExhentai().get() &&
-                    unsortedPreferences.exhShowSettingsUploadWarning().get()
-                ) {
-                    runExhConfigureDialog = true
-                }
-                // Scheduler uploader job if required
-
-                EHentaiUpdateWorker.scheduleBackground(this)
-            }
-            // SY <--
-        }
         // SY -->
         if (!unsortedPreferences.isHentaiEnabled().get()) {
             BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
