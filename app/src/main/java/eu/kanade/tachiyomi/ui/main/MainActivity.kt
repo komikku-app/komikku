@@ -65,7 +65,9 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import eu.kanade.tachiyomi.util.view.setNavigationBarTransparentCompat
 import exh.EXHMigrations
+import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
+import exh.log.DebugModeOverlay
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -162,6 +164,9 @@ class MainActivity : BaseActivity() {
             return
         }
 
+        @Suppress("KotlinConstantConditions")
+        val hasDebugOverlay = (BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest")
+
         // Draw edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -204,6 +209,15 @@ class MainActivity : BaseActivity() {
                 }
 
                 CheckForUpdate()
+            }
+
+            if (hasDebugOverlay) {
+                val isDebugOverlayEnabled by remember {
+                    DebugToggles.ENABLE_DEBUG_OVERLAY.asPref(lifecycleScope)
+                }
+                if (isDebugOverlayEnabled) {
+                    DebugModeOverlay()
+                }
             }
 
             var showChangelog by remember { mutableStateOf(didMigration && !BuildConfig.DEBUG) }

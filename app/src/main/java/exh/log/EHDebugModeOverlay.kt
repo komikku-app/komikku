@@ -1,70 +1,170 @@
 package exh.log
 
 import android.content.Context
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.text.HtmlCompat
-import com.ms_square.debugoverlay.DataObserver
-import com.ms_square.debugoverlay.OverlayModule
+import android.view.Choreographer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.RememberObserver
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import eu.kanade.core.prefs.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.system.dpToPx
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.Locale
+import kotlin.time.Duration.Companion.nanoseconds
 
-class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(null, null) {
-    private var textView: TextView? = null
-    private val preferences: SourcePreferences by injectLazy()
-
-    override fun start() {}
-    override fun stop() {}
-    override fun notifyObservers() {}
-    override fun addObserver(observer: DataObserver<Any>) {
-        observer.onDataAvailable(buildInfo())
-    }
-    override fun removeObserver(observer: DataObserver<Any>) {}
-    override fun onDataAvailable(data: String?) {
-        textView?.text = HtmlCompat.fromHtml(data.orEmpty(), HtmlCompat.FROM_HTML_MODE_LEGACY)
-    }
-
-    override fun createView(root: ViewGroup, textColor: Int, textSize: Float, textAlpha: Float): View {
-        val view = LinearLayout(root.context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
-            setPadding(4.dpToPx, 0, 4.dpToPx, 4.dpToPx)
+@Composable
+fun DebugModeOverlay() {
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .windowInsetsPadding(
+                    WindowInsets.navigationBars
+                        .only(WindowInsetsSides.Bottom.plus(WindowInsetsSides.Start)),
+                )
+                .align(Alignment.BottomStart)
+                .background(Color(0x7F000000))
+                .padding(4.dp),
+        ) {
+            FpsDebugModeOverlay()
+            EHDebugModeOverlay()
         }
+    }
+}
 
-        val textView = TextView(view.context).apply {
-            setTextColor(textColor)
-            this.textSize = textSize
-            alpha = textAlpha
-            text = HtmlCompat.fromHtml(buildInfo(), HtmlCompat.FROM_HTML_MODE_LEGACY)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
-        }
-
-        view.addView(textView)
-        this.textView = textView
-        return view
+@Composable
+private fun FpsDebugModeOverlay() {
+    val fps by remember { FpsState(FpsState.DEFAULT_INTERVAL) }
+    val format = remember {
+        DecimalFormat(
+            "'fps:' 0.0",
+            DecimalFormatSymbols.getInstance(Locale.ENGLISH),
+        )
     }
 
-    private fun buildInfo() =
-        """
-        <font color='green'>===[ ${context.getString(R.string.app_name)} ]===</font><br>
-        <b>Build type:</b> ${BuildConfig.BUILD_TYPE}<br>
-        <b>Debug mode:</b> ${BuildConfig.DEBUG.asEnabledString()}<br>
-        <b>Version code:</b> ${BuildConfig.VERSION_CODE}<br>
-        <b>Commit SHA:</b> ${BuildConfig.COMMIT_SHA}<br>
-        <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.lowercase(Locale.getDefault())}<br>
-        <b>Source blacklist:</b> ${preferences.enableSourceBlacklist().get().asEnabledString()}
-        """.trimIndent()
+    Text(
+        text = remember(fps) {
+            format.format(fps)
+        },
+        color = Color.White,
+        fontSize = 12.sp,
+        fontFamily = FontFamily.Monospace,
+    )
+}
 
-    private fun Boolean.asEnabledString() = if (this) "enabled" else "disabled"
+@Composable
+private fun EHDebugModeOverlay() {
+    val scope = rememberCoroutineScope()
+    val enableSourceBlacklist by remember {
+        Injekt.get<SourcePreferences>().enableSourceBlacklist().asState(scope)
+    }
+    val context = LocalContext.current
+    Text(
+        text = remember(enableSourceBlacklist) {
+            buildInfo(context, enableSourceBlacklist)
+        },
+        color = Color.White,
+        fontSize = 12.sp,
+        lineHeight = 14.sp,
+        letterSpacing = 0.1f.sp,
+    )
+}
+
+private fun buildInfo(context: Context, sourceBlacklist: Boolean) = buildAnnotatedString {
+    withStyle(SpanStyle(color = Color.Green)) {
+        append("===[ ")
+        append(context.getString(R.string.app_name))
+        append(" ]===")
+    }
+    append('\n')
+    appendItem("Build type:", BuildConfig.BUILD_TYPE)
+    appendItem("Debug mode:", BuildConfig.DEBUG.asEnabledString())
+    appendItem("Version code:", BuildConfig.VERSION_CODE.toString())
+    appendItem("Commit SHA:", BuildConfig.COMMIT_SHA)
+    appendItem("Log level:", EHLogLevel.currentLogLevel.name.lowercase(Locale.getDefault()))
+    appendItem("Source blacklist:", sourceBlacklist.asEnabledString(), newLine = false)
+}
+
+fun AnnotatedString.Builder.appendItem(title: String, item: String, newLine: Boolean = true) {
+    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+        append(title)
+    }
+    append(' ')
+    append(item)
+    if (newLine) {
+        append('\n')
+    }
+}
+
+private fun Boolean.asEnabledString() = if (this) "enabled" else "disabled"
+
+private class FpsState(private val interval: Int) :
+    Choreographer.FrameCallback,
+    RememberObserver,
+    MutableState<Double> by mutableStateOf(0.0) {
+    private val choreographer = Choreographer.getInstance()
+    private var startFrameTimeMillis: Long = 0
+    private var numFramesRendered = 0
+
+    override fun onRemembered() {
+        choreographer.postFrameCallback(this)
+    }
+
+    override fun onAbandoned() {
+        choreographer.removeFrameCallback(this)
+    }
+
+    override fun onForgotten() {
+        choreographer.removeFrameCallback(this)
+    }
+
+    override fun doFrame(frameTimeNanos: Long) {
+        val currentFrameTimeMillis = frameTimeNanos.nanoseconds.inWholeMilliseconds
+        if (startFrameTimeMillis > 0) {
+            val duration = currentFrameTimeMillis - startFrameTimeMillis
+            numFramesRendered++
+            if (duration > interval) {
+                value = (numFramesRendered * 1000f / duration).toDouble()
+                startFrameTimeMillis = currentFrameTimeMillis
+                numFramesRendered = 0
+            }
+        } else {
+            startFrameTimeMillis = currentFrameTimeMillis
+        }
+        choreographer.postFrameCallback(this)
+    }
+
+    companion object {
+        const val DEFAULT_INTERVAL = 1000
+    }
 }

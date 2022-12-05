@@ -298,13 +298,6 @@ dependencies {
     // Better logging (EH)
     implementation(sylibs.xlog)
 
-    // Debug utils (EH)
-    debugImplementation(sylibs.debugOverlay.standard)
-    "releaseTestImplementation"(sylibs.debugOverlay.noop)
-    "benchmarkImplementation"(sylibs.debugOverlay.noop)
-    releaseImplementation(sylibs.debugOverlay.noop)
-    testImplementation(sylibs.debugOverlay.noop)
-
     // RatingBar (SY)
     implementation(sylibs.ratingbar)
     implementation(sylibs.composeRatingbar)

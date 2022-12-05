@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.os.Build
 import android.os.Environment
 import android.os.Looper
@@ -36,8 +35,6 @@ import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
-import com.ms_square.debugoverlay.DebugOverlay
-import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
@@ -63,14 +60,11 @@ import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.notification
-import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
-import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
 import exh.log.XLogLogcatLogger
 import exh.log.xLogD
-import exh.log.xLogE
 import exh.syDebugVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -126,9 +120,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         // SY <--
 
         setupNotificationChannels()
-        if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
-            setupDebugOverlay()
-        }
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
@@ -325,22 +316,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 Device product name: ${Build.PRODUCT}
             """.trimIndent(),
         )
-    }
-
-    // EXH
-    private fun setupDebugOverlay() {
-        try {
-            DebugOverlay.Builder(this)
-                .modules(FpsModule(), EHDebugModeOverlay(this))
-                .bgColor(Color.parseColor("#7F000000"))
-                .notification(false)
-                .allowSystemLayer(false)
-                .build()
-                .install()
-        } catch (e: IllegalStateException) {
-            // Crashes if app is in background
-            xLogE("Failed to initialize debug overlay, app in background?", e)
-        }
     }
 
     private inner class DisableIncognitoReceiver : BroadcastReceiver() {
