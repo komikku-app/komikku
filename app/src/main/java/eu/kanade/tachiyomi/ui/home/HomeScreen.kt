@@ -49,6 +49,7 @@ import eu.kanade.presentation.util.Transition
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
+import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.library.LibraryTab
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -72,7 +73,7 @@ object HomeScreen : Screen {
         UpdatesTab,
         HistoryTab,
         BrowseTab(),
-        MoreTab(),
+        MoreTab,
     )
 
     @Composable
@@ -165,11 +166,14 @@ object HomeScreen : Screen {
                             Tab.Updates -> UpdatesTab
                             Tab.History -> HistoryTab
                             is Tab.Browse -> BrowseTab(it.toExtensions)
-                            is Tab.More -> MoreTab(it.toDownloads)
+                            is Tab.More -> MoreTab
                         }
 
                         if (it is Tab.Library && it.mangaIdToOpen != null) {
                             navigator.push(MangaScreen(it.mangaIdToOpen))
+                        }
+                        if (it is Tab.More && it.toDownloads) {
+                            navigator.push(DownloadQueueScreen)
                         }
                     }
                 }
