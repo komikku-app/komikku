@@ -145,7 +145,7 @@
     <string name="data_saver_color_bw">Преобразование в чернобелое</string>
     <string name="data_saver_server">Прокси-сервер Bandwidth Hero</string>
     <string name="data_saver_server_summary">Поместите в эту область URL-адрес прокси-сервера Bandwidth Hero</string>
-    <string name="clear_db_exclude_read">Оставлять записи с прочитанными главами</string>
+    <string name="clear_db_exclude_read">Оставлять серии с прочитанными главами</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Минимально</string>
@@ -158,9 +158,9 @@
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Развернуть все поисковые фильтры</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
-    <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню вместо размещения на сведеньях записи</string>
+    <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню вместо размещения на сведеньях серии</string>
     <string name="put_merge_in_overflow">Объединение в выпадающем меню</string>
-    <string name="put_merge_in_overflow_summary">Поместить кнопку «Объединение» в выпадающее меню вместо размещения на сведеньях записи</string>
+    <string name="put_merge_in_overflow_summary">Поместить кнопку «Объединение» в выпадающее меню вместо размещения на сведеньях серии</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Панель навигации</string>
@@ -188,7 +188,7 @@
 
     <!-- Backup settings -->
     <string name="custom_entry_info">Сведенья пользователя</string>
-    <string name="all_read_entries">Прочитанные записи</string>
+    <string name="all_read_entries">Прочитанные серии</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Биометрическое время блокировки</string>
@@ -233,9 +233,9 @@
     <string name="reader_preload_amount_summary">Количество предварительной загрузки страниц при чтении. Более высокие значения приведут к более плавному чтению за счет увеличенного использования кэша. Рекомендуется увеличить объём выделяемого кэша для высоких значений</string>
     <string name="reader_cache_size">Размер кэша читалки</string>
     <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет увеличенного использования хранилища устройства</string>
-    <string name="preserve_reading_position">Сохранять позицию чтения для записей</string>
+    <string name="preserve_reading_position">Сохранять позицию чтения для серий</string>
     <string name="auto_webtoon_mode">Автоматический режим веб-комикса</string>
-    <string name="auto_webtoon_mode_summary">Использовать автоматический режим веб-комикса для записей, которые, вероятно, имеют формат длинной вертикальной страницы</string>
+    <string name="auto_webtoon_mode_summary">Использовать автоматический режим веб-комикса для серий, которые, вероятно, имеют формат длинной вертикальной страницы</string>
     <string name="enable_zoom_out">Включить уменьшение масштаба</string>
     <string name="tap_scroll_page">Нажатия пролистывают постранично</string>
     <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, вместо размера экрана устройства</string>
@@ -313,11 +313,11 @@
     <string name="az_recommends">Рекомендации</string>
     <string name="merge">Объединение</string>
     <string name="merge_with_another_source">Объединиться</string>
-    <string name="entry_merged">Запись объеденена!</string>
-    <string name="failed_merge">Ошибка объединения записи: %1$s</string>
-    <string name="merge_unknown_entry">Неизвестный ID записи: %1$d</string>
-    <string name="merged_already">Эта запись уже объеденена с текущей записью!</string>
-    <string name="merge_duplicate">Эта объеденённая запись является дубликатом!</string>
+    <string name="entry_merged">Серия объеденена!</string>
+    <string name="failed_merge">Ошибка объединения серии: %1$s</string>
+    <string name="merge_unknown_entry">Неизвестный ID серии: %1$d</string>
+    <string name="merged_already">Эта серия уже объеденена с текущей серией!</string>
+    <string name="merge_duplicate">Эта объеденённая серия является дубликатом!</string>
 
     <!-- Entry Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
@@ -335,7 +335,7 @@
 
     <!-- Smart Search -->
     <string name="searching_source">Поиск в источнике…</string>
-    <string name="could_not_find_entry">Не удалось найти запись!</string>
+    <string name="could_not_find_entry">Не удалось найти серию!</string>
     <string name="automatic_search_error">Ошибка при выполнении автоматического поиска!</string>
 
     <!-- Saved Searches -->
@@ -364,10 +364,10 @@
     <string name="pref_tag_sorting">Сортировка тэгов</string>
     <string name="tag_sorting">Сортировка тэгов</string>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="one">%1$d тэг в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те записи, которые имеют добавленный тэг.</item>
-        <item quantity="few">%1$d тэга в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те записи, которые имеют добавленные тэги.</item>
-        <item quantity="many">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те записи, которые имеют добавленные тэги.</item>
-        <item quantity="other">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те записи, которые имеют добавленные тэги.</item>
+        <item quantity="one">%1$d тэг в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленный тэг.</item>
+        <item quantity="few">%1$d тэга в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
+        <item quantity="many">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
+        <item quantity="other">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
     </plurals>
     <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет. Вы не можете добавить тэг netorare, чтобы отфильтровать, например, женский тэг netorare и так далее! \nСтиль тегов должен быть таким: \nfemale: sole female\nПоддерживается добавление нескольких вариантов одного и того же тега. Например: \ntag: netorare для NHentai, \nfemale: netorare для E-Hentai и т.д!</string>
     <string name="action_edit_tags">Редактировать тэги</string>
@@ -412,38 +412,38 @@
     <string name="use_most_chapters">Использовать источник с наибольшим количеством глав (Медленнее)</string>
     <string name="use_first_source">Использовать первый источник с альтернативой</string>
     <string name="skip_this_step_next_time">Не показывать этот экран в следующий раз</string>
-    <string name="hide_not_found_entries">Скрыть не найденые записи</string>
+    <string name="hide_not_found_entries">Скрыть не найденые серии</string>
     <string name="search_parameter">Параметр поиска (Например - language:english)</string>
     <string name="latest_">Последняя: %1$s</string>
     <string name="migrating_to">Перенести в</string>
     <string name="match_pinned_sources">Соответствие закреплённых источников</string>
     <string name="match_enabled_sources">Соответствие включённых источников</string>
-    <string name="no_chapters_found_for_migration">Глав не найдено. Эта запись не может быть использована для переноса</string>
+    <string name="no_chapters_found_for_migration">Глав не найдено. Эта серия не может быть использована для переноса</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
     <plurals name="migrate_entry">
-        <item quantity="one">Перенести %1$d%2$s запись?</item>
-        <item quantity="few">Перенести %1$d%2$s записи?</item>
-        <item quantity="many">Перенести %1$d%2$s записей?</item>
-        <item quantity="other">Перенести %1$d%2$s записей?</item>
+        <item quantity="one">Перенести %1$d%2$s серию?</item>
+        <item quantity="few">Перенести %1$d%2$s серии?</item>
+        <item quantity="many">Перенести %1$d%2$s серий?</item>
+        <item quantity="other">Перенести %1$d%2$s серий?</item>
     </plurals>
     <plurals name="copy_entry">
-        <item quantity="one">Копировать %1$d%2$s запись?</item>
-        <item quantity="few">Копировать %1$d%2$s записи?</item>
-        <item quantity="many">Копировать %1$d%2$s записей?</item>
-        <item quantity="other">Копировать %1$d%2$s записей?</item>
+        <item quantity="one">Копировать %1$d%2$s серию?</item>
+        <item quantity="few">Копировать %1$d%2$s серии?</item>
+        <item quantity="many">Копировать %1$d%2$s серий?</item>
+        <item quantity="other">Копировать %1$d%2$s серий?</item>
     </plurals>
     <string name="skipping_">(Исключая %1$d)</string>
     <plurals name="entry_migrated">
-        <item quantity="one">%d запись перемещена</item>
-        <item quantity="few">%d записи перемещены</item>
-        <item quantity="many">%d записей перемещено</item>
-        <item quantity="other">%d записей перемещено</item>
+        <item quantity="one">%d серию перемещена</item>
+        <item quantity="few">%d серии перемещены</item>
+        <item quantity="many">%d серий перемещено</item>
+        <item quantity="other">%d серий перемещено</item>
     </plurals>
 
     <!-- Library -->
     <!-- Library Actions -->
-    <string name="no_valid_entry">Выбрана недопустимая запись</string>
+    <string name="no_valid_entry">Выбрана недопустимая серия</string>
 
     <!-- Library Sheet -->
     <string name="lewd">Для взрослых</string>
@@ -512,7 +512,7 @@
     <string name="batch_add_error">[ОШИБКА]</string>
     <string name="batch_add_summary">\nСводка:\nДобавлено: %1$d галерей\nНе добавлено: %2$d галерей</string>
     <string name="batch_add_success_log_message">Добавлена галерея: %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Неизвестный тип записи для галереи: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Неизвестный тип серии для галереи: %1$s</string>
     <string name="batch_add_unknown_source_log_message">Неизвестный источник для галереи: %1$s</string>
     <string name="batch_add_not_exist_log_message">Галерея не существует: %1$s</string>
     <string name="gallery_adder_importing_gallery">Импортируется галерея (URL-адрес: %1$s, Избр: %2$s, Источник: %3$s)…</string>
@@ -527,8 +527,8 @@
     <!-- Intercept Activity -->
     <string name="launching_app">Запуск приложения…</string>
     <string name="error_with_reason">Ошибка: %1$s</string>
-    <string name="could_not_open_entry">Не удалось открыть эту запись:\n\n%1$s</string>
-    <string name="loading_entry">Загрузка записи…</string>
+    <string name="could_not_open_entry">Не удалось открыть эту серию:\n\n%1$s</string>
+    <string name="loading_entry">Загрузка серии…</string>
 
     <!-- Page previews -->
     <string name="page_previews">Предосмотр страниц</string>
@@ -631,19 +631,19 @@
     <string name="merge_settings">Настройки объединения</string>
     <string name="fetch_chapter_updates">Получить обновления глав</string>
     <string name="delete_merged_entry">Вы уверены?</string>
-    <string name="delete_merged_entry_desc">Это приведёт к удалению записи из объединения, а также будут утеряны все несохранённые изменения, применённые к объединённой записи</string>
+    <string name="delete_merged_entry_desc">Это приведёт к удалению серии из объединения, а также будут утеряны все несохранённые изменения, применённые к объединённой серии</string>
     <string name="chapter_updates_merged_entry">Переключатель обновлений глав</string>
-    <string name="chapter_updates_merged_entry_desc">Переключение этого параметра отключит/включит обновления глав для этой объеденённой записи</string>
+    <string name="chapter_updates_merged_entry_desc">Переключение этого параметра отключит/включит обновления глав для этой объеденённой серии</string>
     <string name="download_merged_entry">Переключатель загрузки глав</string>
-    <string name="download_merged_entry_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой записи</string>
+    <string name="download_merged_entry_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой серии</string>
     <string name="merged_references_invalid">Недействительные объеденённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
-    <string name="merged_toggle_chapter_updates_find_error">Не удалось найти запись для переключения обновлений глав</string>
+    <string name="merged_toggle_chapter_updates_find_error">Не удалось найти серию для переключения обновлений глав</string>
     <string name="merged_toggle_download_chapters_error">Ошибка переключения загрузки глав</string>
-    <string name="merged_toggle_download_chapters_find_error">Не удалось найти запись для переключения загрузки глав</string>
+    <string name="merged_toggle_download_chapters_find_error">Не удалось найти серию для переключения загрузки глав</string>
     <string name="allow_deduplication">Разрешить дедупликацию:</string>
     <string name="deduplication_mode">Режим дедупликации:</string>
-    <string name="deduplication_entry_info">Сведенья записи:</string>
+    <string name="deduplication_entry_info">Сведенья серии:</string>
     <string name="no_dedupe">Без дедупликации</string>
     <string name="dedupe_priority">Дедупликация по приоритету</string>
     <string name="dedupe_most_chapters">Показать источник с наибольшим количеством глав</string>
@@ -651,15 +651,15 @@
 
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Без отслеживания</string>
-    <string name="mangadex_sync_follows_to_library">Синхронизировать записи (MangaDex)</string>
-    <string name="mangadex_sync_follows_to_library_summary">Добавляет записи из MangaDex в библиотеку, если они ещё не добавлены.</string>
+    <string name="mangadex_sync_follows_to_library">Синхронизировать серии (MangaDex)</string>
+    <string name="mangadex_sync_follows_to_library_summary">Добавляет серии из MangaDex в библиотеку, если они ещё не добавлены.</string>
     <string name="mangadex_preffered_source">Предпочитаемый источник (MangaDex)</string>
     <string name="mangadex_preffered_source_summary">Установить языковой источник MangaDex. Этот источник будет использовать приложение для некоторых функций.</string>
     <string name="mangadex_add_to_follows">Добавить отслеживание (MangaDex)</string>
     <string name="mangadex_follows">Отслеживание MangaDex</string>
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку (MangaDex)</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList запись как прочитанную на MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex</string>
     <string name="mangadex_similar">MangaDex похожее</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
 
