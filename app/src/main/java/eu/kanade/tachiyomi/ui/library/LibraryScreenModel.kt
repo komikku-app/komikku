@@ -861,7 +861,7 @@ class LibraryScreenModel(
         return withIOContext {
             state.value
                 .getLibraryItemsByCategoryId(activeCategory.toLong())
-                .randomOrNull()
+                ?.randomOrNull()
         }
     }
 
@@ -1072,7 +1072,7 @@ class LibraryScreenModel(
                 }
 
                 val items = state.getLibraryItemsByCategoryId(manga.category)
-                    .fastMap { it.libraryManga }
+                    ?.fastMap { it.libraryManga }.orEmpty()
                 val lastMangaIndex = items.indexOf(lastSelected)
                 val curMangaIndex = items.indexOf(manga)
 
@@ -1097,12 +1097,11 @@ class LibraryScreenModel(
             val newSelection = state.selection.toMutableList().apply {
                 val categoryId = state.categories.getOrNull(index)?.id ?: -1
                 val selectedIds = fastMap { it.id }
-                val newSelections = state.getLibraryItemsByCategoryId(categoryId)
-                    .fastMapNotNull { item ->
+                state.getLibraryItemsByCategoryId(categoryId)
+                    ?.fastMapNotNull { item ->
                         item.libraryManga.takeUnless { it.id in selectedIds }
                     }
-
-                addAll(newSelections)
+                    ?.let { addAll(it) }
             }
             state.copy(selection = newSelection)
         }
@@ -1112,7 +1111,7 @@ class LibraryScreenModel(
         mutableState.update { state ->
             val newSelection = state.selection.toMutableList().apply {
                 val categoryId = state.categories[index].id
-                val items = state.getLibraryItemsByCategoryId(categoryId).fastMap { it.libraryManga }
+                val items = state.getLibraryItemsByCategoryId(categoryId)?.fastMap { it.libraryManga }.orEmpty()
                 val selectedIds = fastMap { it.id }
                 val (toRemove, toAdd) = items.fastPartition { it.id in selectedIds }
                 val toRemoveIds = toRemove.fastMap { it.id }
@@ -1335,8 +1334,8 @@ class LibraryScreenModel(
         }
         // SY <--
 
-        fun getLibraryItemsByCategoryId(categoryId: Long): List<LibraryItem> {
-            return library.firstNotNullOf { (k, v) -> v.takeIf { k.id == categoryId } }
+        fun getLibraryItemsByCategoryId(categoryId: Long): List<LibraryItem>? {
+            return library.firstNotNullOfOrNull { (k, v) -> v.takeIf { k.id == categoryId } }
         }
 
         fun getLibraryItemsByPage(page: Int): List<LibraryItem> {
