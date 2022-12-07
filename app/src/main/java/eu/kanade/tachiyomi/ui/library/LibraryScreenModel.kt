@@ -167,7 +167,7 @@ class LibraryScreenModel(
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
                     libraryPreferences.libraryDisplayMode().changes(),
-                    libraryPreferences.librarySortingMode().changes()
+                    libraryPreferences.librarySortingMode().changes(),
                 ) { a, b, c ->
                     Triple(a, b, c)
                 },
@@ -178,7 +178,7 @@ class LibraryScreenModel(
                     // SY -->
                     .applyGrouping(groupType, displayMode)
                     // SY <--
-                    .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT }/* SY <-- */)
+                    .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT } /* SY <-- */)
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
                             // Filter query
@@ -1175,7 +1175,7 @@ class LibraryScreenModel(
     private fun getGroupedMangaItems(
         groupType: Int,
         libraryManga: List<LibraryItem>,
-        displayMode: LibraryDisplayMode
+        displayMode: LibraryDisplayMode,
     ): LibraryMap {
         val context = preferences.context
         return when (groupType) {

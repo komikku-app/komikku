@@ -809,7 +809,7 @@ class ReaderActivity :
                 .pages
                 ?.forEachIndexed { _, page ->
                     var shouldQueuePage = false
-                    if (page.status == Page.ERROR) {
+                    if (page.status == Page.State.ERROR) {
                         shouldQueuePage = true
                     } /*else if (page.status == Page.LOAD_PAGE ||
                                 page.status == Page.DOWNLOAD_IMAGE) {
@@ -817,7 +817,7 @@ class ReaderActivity :
                         }*/
 
                     if (shouldQueuePage) {
-                        page.status = Page.QUEUE
+                        page.status = Page.State.QUEUE
                     } else {
                         return@forEachIndexed
                     }
@@ -858,11 +858,11 @@ class ReaderActivity :
                 return@setOnClickListener
             }
 
-            if (curPage.status == Page.ERROR) {
+            if (curPage.status == Page.State.ERROR) {
                 toast(R.string.eh_boost_page_errored)
-            } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
+            } else if (curPage.status == Page.State.LOAD_PAGE || curPage.status == Page.State.DOWNLOAD_IMAGE) {
                 toast(R.string.eh_boost_page_downloading)
-            } else if (curPage.status == Page.READY) {
+            } else if (curPage.status == Page.State.READY) {
                 toast(R.string.eh_boost_page_downloaded)
             } else {
                 val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)

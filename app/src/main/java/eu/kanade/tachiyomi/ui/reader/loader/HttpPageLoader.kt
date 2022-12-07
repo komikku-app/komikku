@@ -60,7 +60,7 @@ class HttpPageLoader(
         repeat(readerPreferences.readerThreads().get()) {
             // EXH <--
             subscriptions += Observable.defer { Observable.just(queue.take().page) }
-                .filter { it.status == Page.QUEUE }
+                .filter { it.status == Page.State.QUEUE }
                 .concatMap { source.fetchImageFromCacheThenNet(it) }
                 .repeat()
                 .subscribeOn(Schedulers.io())
@@ -116,7 +116,7 @@ class HttpPageLoader(
                 }
                 if (readerPreferences.aggressivePageLoading().get()) {
                     rp.forEach {
-                        if (it.status == Page.QUEUE) {
+                        if (it.status == Page.State.QUEUE) {
                             queue.offer(PriorityPage(it, 0))
                         }
                     }
@@ -130,25 +130,25 @@ class HttpPageLoader(
      * Returns an observable that loads a page through the queue and listens to its result to
      * emit new states. It handles re-enqueueing pages if they were evicted from the cache.
      */
-    override fun getPage(page: ReaderPage): Observable<Int> {
+    override fun getPage(page: ReaderPage): Observable<Page.State> {
         return Observable.defer {
             val imageUrl = page.imageUrl
 
             // Check if the image has been deleted
-            if (page.status == Page.READY && imageUrl != null && !chapterCache.isImageInCache(imageUrl)) {
-                page.status = Page.QUEUE
+            if (page.status == Page.State.READY && imageUrl != null && !chapterCache.isImageInCache(imageUrl)) {
+                page.status = Page.State.QUEUE
             }
 
             // Automatically retry failed pages when subscribed to this page
-            if (page.status == Page.ERROR) {
-                page.status = Page.QUEUE
+            if (page.status == Page.State.ERROR) {
+                page.status = Page.State.QUEUE
             }
 
-            val statusSubject = SerializedSubject(PublishSubject.create<Int>())
-            page.setStatusSubject(statusSubject)
+            val statusSubject = SerializedSubject(PublishSubject.create<Page.State>())
+            page.statusSubject = statusSubject
 
             val queuedPages = mutableListOf<PriorityPage>()
-            if (page.status == Page.QUEUE) {
+            if (page.status == Page.State.QUEUE) {
                 queuedPages += PriorityPage(page, 1).also { queue.offer(it) }
             }
             queuedPages += preloadNextPages(page, preloadSize)
@@ -156,7 +156,7 @@ class HttpPageLoader(
             statusSubject.startWith(page.status)
                 .doOnUnsubscribe {
                     queuedPages.forEach {
-                        if (it.page.status == Page.QUEUE) {
+                        if (it.page.status == Page.State.QUEUE) {
                             queue.remove(it)
                         }
                     }
@@ -178,7 +178,7 @@ class HttpPageLoader(
         return pages
             .subList(pageIndex + 1, min(pageIndex + 1 + amount, pages.size))
             .mapNotNull {
-                if (it.status == Page.QUEUE) {
+                if (it.status == Page.State.QUEUE) {
                     PriorityPage(it, 0).apply { queue.offer(this) }
                 } else {
                     null
@@ -190,8 +190,8 @@ class HttpPageLoader(
      * Retries a page. This method is only called from user interaction on the viewer.
      */
     override fun retryPage(page: ReaderPage) {
-        if (page.status == Page.ERROR) {
-            page.status = Page.QUEUE
+        if (page.status == Page.State.ERROR) {
+            page.status = Page.State.QUEUE
         }
         // EXH -->
         // Grab a new image URL on EXH sources
@@ -241,9 +241,9 @@ class HttpPageLoader(
     }
 
     private fun HttpSource.getImageUrl(page: ReaderPage): Observable<ReaderPage> {
-        page.status = Page.LOAD_PAGE
+        page.status = Page.State.LOAD_PAGE
         return fetchImageUrl(page)
-            .doOnError { page.status = Page.ERROR }
+            .doOnError { page.status = Page.State.ERROR }
             .onErrorReturn { null }
             .doOnNext { page.imageUrl = it }
             .map { page }
@@ -268,9 +268,9 @@ class HttpPageLoader(
             }
             .doOnNext {
                 page.stream = { chapterCache.getImageFile(imageUrl).inputStream() }
-                page.status = Page.READY
+                page.status = Page.State.READY
             }
-            .doOnError { page.status = Page.ERROR }
+            .doOnError { page.status = Page.State.ERROR }
             .onErrorReturn { page }
     }
 
@@ -280,7 +280,7 @@ class HttpPageLoader(
      * @param page the page.
      */
     private fun HttpSource.cacheImage(page: ReaderPage): Observable<ReaderPage> {
-        page.status = Page.DOWNLOAD_IMAGE
+        page.status = Page.State.DOWNLOAD_IMAGE
         return fetchImage(page, dataSaver)
             .doOnNext {
                 chapterCache.putImageToCache(page.imageUrl!!, it)
@@ -290,7 +290,7 @@ class HttpPageLoader(
 
     // EXH -->
     fun boostPage(page: ReaderPage) {
-        if (page.status == Page.QUEUE) {
+        if (page.status == Page.State.QUEUE) {
             subscriptions += Observable.just(page)
                 .concatMap { source.fetchImageFromCacheThenNet(it) }
                 .subscribeOn(Schedulers.io())

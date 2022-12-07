@@ -55,7 +55,7 @@ class ReaderPageSheet(
      * Sets the image of this page as the cover of the manga.
      */
     private fun setAsCover(page: ReaderPage) {
-        if (page.status != Page.READY) return
+        if (page.status != Page.State.READY) return
 
         MaterialAlertDialogBuilder(activity)
             .setMessage(R.string.confirm_set_image_as_cover)

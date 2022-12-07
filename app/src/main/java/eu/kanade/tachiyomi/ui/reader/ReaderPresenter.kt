@@ -848,7 +848,7 @@ class ReaderPresenter(
      * There's also a notification to allow sharing the image somewhere else or deleting it.
      */
     fun saveImage(page: ReaderPage) {
-        if (page.status != Page.READY) return
+        if (page.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -883,8 +883,8 @@ class ReaderPresenter(
 
     // SY -->
     fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        if (firstPage.status != Page.READY) return
-        if (secondPage.status != Page.READY) return
+        if (firstPage.status != Page.State.READY) return
+        if (secondPage.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -957,7 +957,7 @@ class ReaderPresenter(
      * image will be kept so it won't be taking lots of internal disk space.
      */
     fun shareImage(page: ReaderPage) {
-        if (page.status != Page.READY) return
+        if (page.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -986,8 +986,8 @@ class ReaderPresenter(
 
     // SY -->
     fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        if (firstPage.status != Page.READY) return
-        if (secondPage.status != Page.READY) return
+        if (firstPage.status != Page.State.READY) return
+        if (secondPage.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -1018,7 +1018,7 @@ class ReaderPresenter(
      * Sets the image of this [page] as cover and notifies the UI of the result.
      */
     fun setAsCover(context: Context, page: ReaderPage) {
-        if (page.status != Page.READY) return
+        if (page.status != Page.State.READY) return
         val manga = manga?.toDomainManga() ?: return
         val stream = page.stream ?: return
 

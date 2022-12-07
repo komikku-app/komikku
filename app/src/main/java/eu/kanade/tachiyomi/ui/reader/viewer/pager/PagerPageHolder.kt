@@ -89,8 +89,8 @@ class PagerPageHolder(
     private var readImageHeaderSubscription: Subscription? = null
 
     // SY -->
-    var status: Int = 0
-    var extraStatus: Int = 0
+    var status: Page.State = Page.State.QUEUE
+    var extraStatus: Page.State = Page.State.QUEUE
     var progress: Int = 0
     var extraProgress: Int = 0
     // SY <--
@@ -172,21 +172,21 @@ class PagerPageHolder(
      *
      * @param status the new status of the page.
      */
-    private fun processStatus(status: Int) {
+    private fun processStatus(status: Page.State) {
         when (status) {
-            Page.QUEUE -> setQueued()
-            Page.LOAD_PAGE -> setLoading()
-            Page.DOWNLOAD_IMAGE -> {
+            Page.State.QUEUE -> setQueued()
+            Page.State.LOAD_PAGE -> setLoading()
+            Page.State.DOWNLOAD_IMAGE -> {
                 observeProgress()
                 setDownloading()
             }
-            Page.READY -> {
-                if (extraStatus == Page.READY || extraPage == null) {
+            Page.State.READY -> {
+                if (extraStatus == Page.State.READY || extraPage == null) {
                     setImage()
                 }
                 unsubscribeProgress(1)
             }
-            Page.ERROR -> {
+            Page.State.ERROR -> {
                 setError()
                 unsubscribeProgress(1)
             }
@@ -198,21 +198,21 @@ class PagerPageHolder(
      *
      * @param status the new status of the page.
      */
-    private fun processStatus2(status: Int) {
+    private fun processStatus2(status: Page.State) {
         when (status) {
-            Page.QUEUE -> setQueued()
-            Page.LOAD_PAGE -> setLoading()
-            Page.DOWNLOAD_IMAGE -> {
+            Page.State.QUEUE -> setQueued()
+            Page.State.LOAD_PAGE -> setLoading()
+            Page.State.DOWNLOAD_IMAGE -> {
                 observeProgress2()
                 setDownloading()
             }
-            Page.READY -> {
-                if (this.status == Page.READY) {
+            Page.State.READY -> {
+                if (this.status == Page.State.READY) {
                     setImage()
                 }
                 unsubscribeProgress(2)
             }
-            Page.ERROR -> {
+            Page.State.ERROR -> {
                 setError()
                 unsubscribeProgress(2)
             }
