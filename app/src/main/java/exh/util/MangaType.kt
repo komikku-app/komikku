@@ -1,14 +1,13 @@
 package exh.util
 
 import android.content.Context
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
-import eu.kanade.domain.manga.model.Manga as DomainManga
 
 fun Manga.mangaType(context: Context): String {
     return context.getString(
@@ -26,30 +25,6 @@ fun Manga.mangaType(context: Context): String {
  * The type of comic the manga is (ie. manga, manhwa, manhua)
  */
 fun Manga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(source)?.name): MangaType {
-    val currentTags = getGenres().orEmpty()
-    return when {
-        currentTags.any { tag -> isMangaTag(tag) } -> {
-            MangaType.TYPE_MANGA
-        }
-        currentTags.any { tag -> isWebtoonTag(tag) } || sourceName?.let { isWebtoonSource(it) } == true -> {
-            MangaType.TYPE_WEBTOON
-        }
-        currentTags.any { tag -> isComicTag(tag) } || sourceName?.let { isComicSource(it) } == true -> {
-            MangaType.TYPE_COMIC
-        }
-        currentTags.any { tag -> isManhuaTag(tag) } || sourceName?.let { isManhuaSource(it) } == true -> {
-            MangaType.TYPE_MANHUA
-        }
-        currentTags.any { tag -> isManhwaTag(tag) } || sourceName?.let { isManhwaSource(it) } == true -> {
-            MangaType.TYPE_MANHWA
-        }
-        else -> {
-            MangaType.TYPE_MANGA
-        }
-    }
-}
-
-fun DomainManga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(source)?.name): MangaType {
     val currentTags = genre.orEmpty()
     return when {
         currentTags.any { tag -> isMangaTag(tag) } -> {

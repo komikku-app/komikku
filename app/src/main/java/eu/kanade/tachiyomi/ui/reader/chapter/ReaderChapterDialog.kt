@@ -7,10 +7,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
+import eu.kanade.tachiyomi.ui.reader.ReaderViewModel
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.launch
@@ -18,7 +17,7 @@ import kotlinx.coroutines.launch
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
     private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater)
 
-    var presenter: ReaderPresenter = activity.presenter
+    var viewModel: ReaderViewModel = activity.viewModel
     var adapter: FlexibleAdapter<ReaderChapterItem>? = null
     var dialog: AlertDialog
 
@@ -35,9 +34,11 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
 
         adapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, position ->
             val item = adapter?.getItem(position)
-            if (item != null && item.chapter.id != presenter.getCurrentChapter()?.chapter?.id) {
+            if (item != null && item.chapter.id != viewModel.getCurrentChapter()?.chapter?.id) {
                 dialog.dismiss()
-                presenter.loadNewChapterFromDialog(item.chapter)
+                activity.lifecycleScope.launch {
+                    viewModel.loadNewChapterFromDialog(item.chapter)
+                }
             }
             true
         }
@@ -51,8 +52,8 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
     }
 
     private fun refreshList(scroll: Boolean = true) {
-        val chapterSort = getChapterSort(presenter.manga!!.toDomainManga()!!)
-        val chapters = presenter.getChapters(activity)
+        val chapterSort = getChapterSort(viewModel.manga!!)
+        val chapters = viewModel.getChapters(activity)
             .sortedWith { a, b ->
                 chapterSort(a.chapter, b.chapter)
             }
@@ -73,7 +74,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
     }
 
     override fun bookmarkChapter(chapter: Chapter) {
-        presenter.toggleBookmark(chapter.id, !chapter.bookmark)
+        viewModel.toggleBookmark(chapter.id, !chapter.bookmark)
         refreshList(scroll = false)
     }
 }

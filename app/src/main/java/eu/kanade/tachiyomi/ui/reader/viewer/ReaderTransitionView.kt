@@ -11,8 +11,8 @@ import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import androidx.core.view.isVisible
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.databinding.ReaderTransitionViewBinding
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
@@ -55,7 +55,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             val isPrevDownloaded = downloadManager.isChapterDownloaded(
                 prevChapter.name,
                 prevChapter.scanlator,
-                /* SY --> */ manga.originalTitle /* SY <-- */,
+                /* SY --> */ manga.ogTitle /* SY <-- */,
                 manga.source,
                 skipCache = true,
             )
@@ -93,7 +93,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             val isNextDownloaded = downloadManager.isChapterDownloaded(
                 nextChapter.name,
                 nextChapter.scanlator,
-                /* SY --> */ manga.originalTitle /* SY <-- */,
+                /* SY --> */ manga.ogTitle /* SY <-- */,
                 manga.source,
                 skipCache = true,
             )

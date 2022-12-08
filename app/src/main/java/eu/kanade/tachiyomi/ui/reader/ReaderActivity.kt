@@ -34,7 +34,9 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
 import androidx.core.transition.doOnEnd
 import androidx.core.view.WindowCompat
@@ -54,9 +56,9 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
@@ -67,9 +69,9 @@ import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegateImpl
 import eu.kanade.tachiyomi.ui.base.delegate.ThemingDelegate
 import eu.kanade.tachiyomi.ui.base.delegate.ThemingDelegateImpl
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Error
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
+import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.AddToLibraryFirst
+import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Error
+import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Success
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterDialog
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
@@ -89,6 +91,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.Constants
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.toggle
 import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
@@ -115,16 +119,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.launch
 import logcat.LogPriority
-import nucleus.factory.RequiresPresenter
-import nucleus.view.NucleusAppCompatActivity
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.max
@@ -134,9 +140,8 @@ import kotlin.time.Duration.Companion.seconds
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
  * viewers, to which calls from the presenter or UI events are delegated.
  */
-@RequiresPresenter(ReaderPresenter::class)
 class ReaderActivity :
-    NucleusAppCompatActivity<ReaderPresenter>(),
+    AppCompatActivity(),
     SecureActivityDelegate by SecureActivityDelegateImpl(),
     ThemingDelegate by ThemingDelegateImpl() {
 
@@ -168,6 +173,8 @@ class ReaderActivity :
     private val preferences: BasePreferences by injectLazy()
 
     lateinit var binding: ReaderActivityBinding
+
+    val viewModel by viewModels<ReaderViewModel>()
 
     val hasCutout by lazy { hasDisplayCutout() }
 
@@ -245,7 +252,7 @@ class ReaderActivity :
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (presenter.needsInit()) {
+        if (viewModel.needsInit()) {
             val manga = intent.extras!!.getLong("manga", -1)
             val chapter = intent.extras!!.getLong("chapter", -1)
             // SY -->
@@ -256,7 +263,16 @@ class ReaderActivity :
                 return
             }
             NotificationReceiver.dismissNotification(this, manga.hashCode(), Notifications.ID_NEW_CHAPTERS)
-            presenter.init(manga, chapter /* SY --> */, page/* SY <-- */)
+
+            lifecycleScope.launchNonCancellable {
+                val initResult = viewModel.init(manga, chapter/* SY --> */, page/* SY <-- */)
+                if (!initResult.getOrDefault(false)) {
+                    val exception = initResult.exceptionOrNull() ?: IllegalStateException("Unknown err")
+                    withUIContext {
+                        setInitialChapterError(exception)
+                    }
+                }
+            }
         }
 
         if (savedInstanceState != null) {
@@ -278,6 +294,48 @@ class ReaderActivity :
         preferences.incognitoMode().changes()
             .drop(1)
             .onEach { if (!it) finish() }
+            .launchIn(lifecycleScope)
+
+        viewModel.state
+            .map { it.isLoadingAdjacentChapter }
+            .distinctUntilChanged()
+            .onEach(::setProgressDialog)
+            .launchIn(lifecycleScope)
+
+        viewModel.state
+            .map { it.manga }
+            .distinctUntilChanged()
+            .filterNotNull()
+            .onEach(::setManga)
+            .launchIn(lifecycleScope)
+
+        viewModel.state
+            .map { it.viewerChapters }
+            .distinctUntilChanged()
+            .filterNotNull()
+            .onEach(::setChapters)
+            .launchIn(lifecycleScope)
+
+        viewModel.eventFlow
+            .onEach { event ->
+                when (event) {
+                    ReaderViewModel.Event.ReloadViewerChapters -> {
+                        viewModel.state.value.viewerChapters?.let(::setChapters)
+                    }
+                    is ReaderViewModel.Event.SetOrientation -> {
+                        setOrientation(event.orientation)
+                    }
+                    is ReaderViewModel.Event.SavedImage -> {
+                        onSaveImageResult(event.result)
+                    }
+                    is ReaderViewModel.Event.ShareImage -> {
+                        onShareImageResult(event.uri, event.page /* SY --> */, event.secondPage /* SY <-- */)
+                    }
+                    is ReaderViewModel.Event.SetCoverResult -> {
+                        onSetAsCoverResult(event.result)
+                    }
+                }
+            }
             .launchIn(lifecycleScope)
     }
 
@@ -329,13 +387,13 @@ class ReaderActivity :
         }
         // SY <--
         if (!isChangingConfigurations) {
-            presenter.onSaveInstanceStateNonConfigurationChange()
+            viewModel.onSaveInstanceStateNonConfigurationChange()
         }
         super.onSaveInstanceState(outState)
     }
 
     override fun onPause() {
-        presenter.saveCurrentChapterReadingProgress()
+        viewModel.saveCurrentChapterReadingProgress()
         super.onPause()
     }
 
@@ -345,7 +403,7 @@ class ReaderActivity :
      */
     override fun onResume() {
         super.onResume()
-        presenter.setReadStartTime()
+        viewModel.setReadStartTime()
         setMenuVisibility(menuVisible, animate = false)
     }
 
@@ -366,7 +424,7 @@ class ReaderActivity :
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.reader, menu)
 
-        /*val isChapterBookmarked = presenter?.getCurrentChapter()?.chapter?.bookmark ?: false
+        /*val isChapterBookmarked = viewModel.getCurrentChapter()?.chapter?.bookmark ?: false
         menu.findItem(R.id.action_bookmark).isVisible = !isChapterBookmarked
         menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked*/
 
@@ -383,11 +441,11 @@ class ReaderActivity :
                 openChapterInWebview()
             }
             R.id.action_bookmark -> {
-                presenter.bookmarkCurrentChapter(true)
+                viewModel.bookmarkCurrentChapter(true)
                 invalidateOptionsMenu()
             }
             R.id.action_remove_bookmark -> {
-                presenter.bookmarkCurrentChapter(false)
+                viewModel.bookmarkCurrentChapter(false)
                 invalidateOptionsMenu()
             }
         }
@@ -398,17 +456,17 @@ class ReaderActivity :
      * Called when the user clicks the back key or the button on the toolbar. The call is
      * delegated to the presenter.
      */
-    override fun onBackPressed() {
-        presenter.onBackPressed()
-        super.onBackPressed()
+    override fun finish() {
+        viewModel.onActivityFinish()
+        super.finish()
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_N) {
-            presenter.loadNextChapter()
+            loadNextChapter()
             return true
         } else if (keyCode == KeyEvent.KEYCODE_P) {
-            presenter.loadPreviousChapter()
+            loadPreviousChapter()
             return true
         }
         return super.onKeyUp(keyCode, event)
@@ -475,7 +533,7 @@ class ReaderActivity :
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         binding.header.applyInsetter {
@@ -490,7 +548,7 @@ class ReaderActivity :
         }
 
         binding.toolbar.setOnClickListener {
-            presenter.manga?.id?.let { id ->
+            viewModel.manga?.id?.let { id ->
                 startActivity(
                     Intent(this, MainActivity::class.java).apply {
                         action = MainActivity.SHORTCUT_MANGA
@@ -612,11 +670,11 @@ class ReaderActivity :
             setOnClickListener {
                 popupMenu(
                     items = ReadingModeType.values().map { it.flagValue to it.stringRes },
-                    selectedItemId = presenter.getMangaReadingMode(resolveDefault = false),
+                    selectedItemId = viewModel.getMangaReadingMode(resolveDefault = false),
                 ) {
                     val newReadingMode = ReadingModeType.fromPreference(itemId)
 
-                    presenter.setMangaReadingMode(newReadingMode.flagValue)
+                    viewModel.setMangaReadingMode(newReadingMode.flagValue)
 
                     menuToggleToast?.cancel()
                     if (!readerPreferences.showReadingMode().get()) {
@@ -634,7 +692,7 @@ class ReaderActivity :
 
             setOnClickListener {
                 // SY -->
-                val mangaViewer = presenter.getMangaReadingMode()
+                val mangaViewer = viewModel.getMangaReadingMode()
                 // SY <--
                 val isPagerType = ReadingModeType.isPagerType(mangaViewer)
                 val enabled = if (isPagerType) {
@@ -674,12 +732,12 @@ class ReaderActivity :
             setOnClickListener {
                 popupMenu(
                     items = OrientationType.values().map { it.flagValue to it.stringRes },
-                    selectedItemId = presenter.manga?.orientationType
+                    selectedItemId = viewModel.manga?.orientationType?.toInt()
                         ?: readerPreferences.defaultOrientationType().get(),
                 ) {
                     val newOrientation = OrientationType.fromPreference(itemId)
 
-                    presenter.setMangaOrientationType(newOrientation.flagValue)
+                    viewModel.setMangaOrientationType(newOrientation.flagValue)
 
                     menuToggleToast?.cancel()
                     menuToggleToast = toast(newOrientation.stringRes)
@@ -804,9 +862,9 @@ class ReaderActivity :
         binding.ehRetryAll.setOnClickListener {
             var retried = 0
 
-            presenter.viewerChaptersRelay.value
-                .currChapter
-                .pages
+            viewModel.state.value.viewerChapters
+                ?.currChapter
+                ?.pages
                 ?.forEachIndexed { _, page ->
                     var shouldQueuePage = false
                     if (page.status == Page.State.ERROR) {
@@ -823,7 +881,7 @@ class ReaderActivity :
                     }
 
                     // If we are using EHentai/ExHentai, get a new image URL
-                    presenter.manga?.let { m ->
+                    viewModel.manga?.let { m ->
                         val src = sourceManager.get(m.source)
                         if (src?.isEhBasedSource() == true) {
                             page.imageUrl = null
@@ -865,7 +923,7 @@ class ReaderActivity :
             } else if (curPage.status == Page.State.READY) {
                 toast(R.string.eh_boost_page_downloaded)
             } else {
-                val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
+                val loader = (viewModel.state.value.viewerChapters?.currChapter?.pageLoader as? HttpPageLoader)
                 if (loader != null) {
                     loader.boostPage(curPage)
                     toast(R.string.eh_boost_boosted)
@@ -886,7 +944,7 @@ class ReaderActivity :
 
     private fun exhCurrentpage(): ReaderPage? {
         val currentPage = (((viewer as? PagerViewer)?.currentPage ?: (viewer as? WebtoonViewer)?.currentPage) as? ReaderPage)?.index
-        return currentPage?.let { presenter.viewerChaptersRelay.value.currChapter.pages?.getOrNull(it) }
+        return currentPage?.let { viewModel.state.value.viewerChapters?.currChapter?.pages?.getOrNull(it) }
     }
 
     fun updateBottomButtons() {
@@ -924,7 +982,7 @@ class ReaderActivity :
         } else {
             pViewer.config.doublePages = doublePages
         }
-        val currentChapter = presenter.getCurrentChapter()
+        val currentChapter = viewModel.getCurrentChapter()
         if (doublePages) {
             // If we're moving from singe to double, we want the current page to be the first page
             pViewer.config.shiftDoublePage = (
@@ -932,7 +990,7 @@ class ReaderActivity :
                     (currentChapter?.pages?.take(binding.pageSlider.value.floor())?.count { it.fullPage || it.isolatedPage } ?: 0)
                 ) % 2 != 0
         }
-        presenter.viewerChaptersRelay.value?.let {
+        viewModel.state.value.viewerChapters?.let {
             pViewer.setChaptersDoubleShift(it)
         }
     }
@@ -945,7 +1003,7 @@ class ReaderActivity :
     private fun shiftDoublePages() {
         (viewer as? PagerViewer)?.config?.let { config ->
             config.shiftDoublePage = !config.shiftDoublePage
-            presenter.viewerChaptersRelay.value?.let {
+            viewModel.state.value.viewerChapters?.let {
                 (viewer as? PagerViewer)?.updateShifting()
                 (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
                 invalidateOptionsMenu()
@@ -960,7 +1018,7 @@ class ReaderActivity :
     }
 
     private fun updateCropBordersShortcut() {
-        val mangaViewer = presenter.getMangaReadingMode()
+        val mangaViewer = viewModel.getMangaReadingMode()
         val isPagerType = ReadingModeType.isPagerType(mangaViewer)
         val enabled = if (isPagerType) {
             readerPreferences.cropBorders().get()
@@ -1070,19 +1128,19 @@ class ReaderActivity :
     fun setManga(manga: Manga) {
         val prevViewer = viewer
 
-        val viewerMode = ReadingModeType.fromPreference(presenter.getMangaReadingMode(resolveDefault = false))
+        val viewerMode = ReadingModeType.fromPreference(viewModel.getMangaReadingMode(resolveDefault = false))
         binding.actionReadingMode.setImageResource(viewerMode.iconRes)
 
-        val newViewer = ReadingModeType.toViewer(presenter.getMangaReadingMode(), this)
+        val newViewer = ReadingModeType.toViewer(viewModel.getMangaReadingMode(), this)
 
         updateCropBordersShortcut()
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
             window.sharedElementEnterTransition.doOnEnd {
-                setOrientation(presenter.getMangaOrientationType())
+                setOrientation(viewModel.getMangaOrientationType())
             }
         } else {
-            setOrientation(presenter.getMangaOrientationType())
+            setOrientation(viewModel.getMangaOrientationType())
         }
 
         // Destroy previous viewer if there was one
@@ -1103,12 +1161,12 @@ class ReaderActivity :
         }
 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
-        if (readerPreferences.useAutoWebtoon().get() && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
+        if (readerPreferences.useAutoWebtoon().get() && manga.readingModeType.toInt() == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
             readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
         } else if (readerPreferences.showReadingMode().get()) {
             // SY <--
-            showReadingModeToast(presenter.getMangaReadingMode())
+            showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
         // SY -->
@@ -1171,9 +1229,9 @@ class ReaderActivity :
     }
 
     private fun openChapterInWebview() {
-        val manga = presenter.manga ?: return
-        val source = presenter.getSource() ?: return
-        val url = presenter.getChapterUrl() ?: return
+        val manga = viewModel.manga ?: return
+        val source = viewModel.getSource() ?: return
+        val url = viewModel.getChapterUrl() ?: return
 
         val intent = WebViewActivity.newIntent(this, url, source.id, manga.title)
         startActivity(intent)
@@ -1194,7 +1252,7 @@ class ReaderActivity :
      * method to the current viewer, but also set the subtitle on the toolbar, and
      * hides or disables the reader prev/next buttons if there's a prev or next chapter
      */
-    fun setChapters(viewerChapters: ViewerChapters) {
+    private fun setChapters(viewerChapters: ViewerChapters) {
         binding.readerContainer.removeView(loadingIndicator)
         // SY -->
         if (indexChapterToShift != null && indexPageToShift != null) {
@@ -1280,7 +1338,7 @@ class ReaderActivity :
      */
     fun moveToPageIndex(index: Int) {
         val viewer = viewer ?: return
-        val currentChapter = presenter.getCurrentChapter() ?: return
+        val currentChapter = viewModel.getCurrentChapter() ?: return
         val page = currentChapter.pages?.getOrNull(index) ?: return
         viewer.moveToPage(page)
     }
@@ -1290,7 +1348,10 @@ class ReaderActivity :
      * should be automatically shown.
      */
     private fun loadNextChapter() {
-        presenter.loadNextChapter()
+        lifecycleScope.launch {
+            viewModel.loadNextChapter()
+            moveToPageIndex(0)
+        }
     }
 
     /**
@@ -1298,7 +1359,10 @@ class ReaderActivity :
      * should be automatically shown.
      */
     private fun loadPreviousChapter() {
-        presenter.loadPreviousChapter()
+        lifecycleScope.launch {
+            viewModel.loadPreviousChapter()
+            moveToPageIndex(0)
+        }
     }
 
     /**
@@ -1307,7 +1371,7 @@ class ReaderActivity :
      */
     @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean = false) {
-        val newChapter = presenter.onPageSelected(page, hasExtraPage)
+        val newChapter = viewModel.onPageSelected(page, hasExtraPage)
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {
@@ -1372,7 +1436,7 @@ class ReaderActivity :
      * the viewer is reaching the beginning or end of a chapter or the transition page is active.
      */
     fun requestPreloadChapter(chapter: ReaderChapter) {
-        presenter.preloadChapter(chapter)
+        lifecycleScope.launch { viewModel.preloadChapter(chapter) }
     }
 
     /**
@@ -1406,12 +1470,12 @@ class ReaderActivity :
      * will call [onShareImageResult] with the path the image was saved on when it's ready.
      */
     fun shareImage(page: ReaderPage) {
-        presenter.shareImage(page)
+        viewModel.shareImage(page)
     }
 
     // SY -->
     fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        presenter.shareImages(firstPage, secondPage, isLTR, bg)
+        viewModel.shareImages(firstPage, secondPage, isLTR, bg)
     }
     // SY <--
 
@@ -1420,7 +1484,7 @@ class ReaderActivity :
      * sharing tool.
      */
     fun onShareImageResult(uri: Uri, page: ReaderPage /* SY --> */, secondPage: ReaderPage? = null /* SY <-- */) {
-        val manga = presenter.manga ?: return
+        val manga = viewModel.manga ?: return
         val chapter = page.chapter.chapter
 
         // SY -->
@@ -1443,12 +1507,12 @@ class ReaderActivity :
      * storage to the presenter.
      */
     fun saveImage(page: ReaderPage) {
-        presenter.saveImage(page)
+        viewModel.saveImage(page)
     }
 
     // SY -->
     fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        presenter.saveImages(firstPage, secondPage, isLTR, bg)
+        viewModel.saveImages(firstPage, secondPage, isLTR, bg)
     }
     // SY <--
 
@@ -1456,12 +1520,12 @@ class ReaderActivity :
      * Called from the presenter when a page is saved or fails. It shows a message or logs the
      * event depending on the [result].
      */
-    fun onSaveImageResult(result: ReaderPresenter.SaveImageResult) {
+    private fun onSaveImageResult(result: ReaderViewModel.SaveImageResult) {
         when (result) {
-            is ReaderPresenter.SaveImageResult.Success -> {
+            is ReaderViewModel.SaveImageResult.Success -> {
                 toast(R.string.picture_saved)
             }
-            is ReaderPresenter.SaveImageResult.Error -> {
+            is ReaderViewModel.SaveImageResult.Error -> {
                 logcat(LogPriority.ERROR, result.error)
             }
         }
@@ -1472,14 +1536,14 @@ class ReaderActivity :
      * cover to the presenter.
      */
     fun setAsCover(page: ReaderPage) {
-        presenter.setAsCover(this, page)
+        viewModel.setAsCover(this, page)
     }
 
     /**
      * Called from the presenter when a page is set as cover or fails. It shows a different message
      * depending on the [result].
      */
-    fun onSetAsCoverResult(result: ReaderPresenter.SetAsCoverResult) {
+    private fun onSetAsCoverResult(result: ReaderViewModel.SetAsCoverResult) {
         toast(
             when (result) {
                 Success -> R.string.cover_updated
@@ -1492,12 +1556,12 @@ class ReaderActivity :
     /**
      * Forces the user preferred [orientation] on the activity.
      */
-    fun setOrientation(orientation: Int) {
+    private fun setOrientation(orientation: Int) {
         val newOrientation = OrientationType.fromPreference(orientation)
         if (newOrientation.flag != requestedOrientation) {
             requestedOrientation = newOrientation.flag
         }
-        updateOrientationShortcut(presenter.getMangaOrientationType(resolveDefault = false))
+        updateOrientationShortcut(viewModel.getMangaOrientationType(resolveDefault = false))
     }
 
     /**
