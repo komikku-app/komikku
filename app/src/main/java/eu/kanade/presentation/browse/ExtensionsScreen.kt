@@ -61,6 +61,7 @@ import exh.source.anyIs
 fun ExtensionScreen(
     state: ExtensionsState,
     contentPadding: PaddingValues,
+    searchQuery: String? = null,
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
@@ -78,10 +79,17 @@ fun ExtensionScreen(
     ) {
         when {
             state.isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
-            state.isEmpty -> EmptyScreen(
-                textResource = R.string.empty_screen,
-                modifier = Modifier.padding(contentPadding),
-            )
+            state.isEmpty -> {
+                val msg = if (!searchQuery.isNullOrEmpty()) {
+                    R.string.no_results_found
+                } else {
+                    R.string.empty_screen
+                }
+                EmptyScreen(
+                    textResource = msg,
+                    modifier = Modifier.padding(contentPadding),
+                )
+            }
             else -> {
                 ExtensionContent(
                     state = state,
