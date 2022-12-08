@@ -140,8 +140,7 @@ class LibraryScreenModel(
     // SY <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
-    // This is active category INDEX NUMBER
-    var activeCategory: Int by libraryPreferences.lastUsedCategory().asState(coroutineScope)
+    var activeCategoryIndex: Int by libraryPreferences.lastUsedCategory().asState(coroutineScope)
 
     val isDownloadOnly: Boolean by preferences.downloadedOnly().asState(coroutineScope)
     val isIncognitoMode: Boolean by preferences.incognitoMode().asState(coroutineScope)
@@ -860,7 +859,7 @@ class LibraryScreenModel(
     suspend fun getRandomLibraryItemForCurrentCategory(): LibraryItem? {
         return withIOContext {
             state.value
-                .getLibraryItemsByCategoryId(activeCategory.toLong())
+                .getLibraryItemsByCategoryId(state.value.categories[activeCategoryIndex].id)
                 ?.randomOrNull()
         }
     }
