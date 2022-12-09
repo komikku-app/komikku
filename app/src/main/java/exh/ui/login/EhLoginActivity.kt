@@ -31,6 +31,7 @@ class EhLoginActivity : BaseActivity() {
     private val preferenceManager: UnsortedPreferences by injectLazy()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        overridePendingTransition(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
         super.onCreate(savedInstanceState)
 
         if (!WebViewUtil.supportsWebView(this)) {
@@ -153,6 +154,11 @@ class EhLoginActivity : BaseActivity() {
                 HttpCookie.parse(it)
             }
         }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
+    }
 
     companion object {
         const val PARAM_SKIP_INJECT = "TEH_SKIP_INJECT"

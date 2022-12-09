@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -45,7 +46,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.NavigationBar
 import eu.kanade.presentation.components.NavigationRail
 import eu.kanade.presentation.components.Scaffold
-import eu.kanade.presentation.util.Transition
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
@@ -59,6 +59,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import soup.compose.material.motion.animation.materialFadeThroughIn
+import soup.compose.material.motion.animation.materialFadeThroughOut
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -67,6 +69,8 @@ object HomeScreen : Screen {
     private val librarySearchEvent = Channel<String>()
     private val openTabEvent = Channel<Tab>()
     private val showBottomNavEvent = Channel<Boolean>()
+
+    private const val TabFadeDuration = 200
 
     private val tabs = listOf(
         LibraryTab,
@@ -134,7 +138,10 @@ object HomeScreen : Screen {
                         ) {
                             AnimatedContent(
                                 targetState = tabNavigator.current,
-                                transitionSpec = { Transition.OneWayFade },
+                                transitionSpec = {
+                                    materialFadeThroughIn(initialScale = 1f, durationMillis = TabFadeDuration) with
+                                        materialFadeThroughOut(durationMillis = TabFadeDuration)
+                                },
                                 content = {
                                     tabNavigator.saveableState(key = "currentTab", it) {
                                         it.Content()
