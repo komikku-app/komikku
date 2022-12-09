@@ -32,8 +32,6 @@ fun LibraryToolbar(
     hasActiveFilters: Boolean,
     selectedCount: Int,
     title: LibraryToolbarTitle,
-    incognitoMode: Boolean,
-    downloadedOnlyMode: Boolean,
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
@@ -49,8 +47,6 @@ fun LibraryToolbar(
 ) = when {
     selectedCount > 0 -> LibrarySelectionToolbar(
         selectedCount = selectedCount,
-        incognitoMode = incognitoMode,
-        downloadedOnlyMode = downloadedOnlyMode,
         onClickUnselectAll = onClickUnselectAll,
         onClickSelectAll = onClickSelectAll,
         onClickInvertSelection = onClickInvertSelection,
@@ -58,8 +54,6 @@ fun LibraryToolbar(
     else -> LibraryRegularToolbar(
         title = title,
         hasFilters = hasActiveFilters,
-        incognitoMode = incognitoMode,
-        downloadedOnlyMode = downloadedOnlyMode,
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         onClickFilter = onClickFilter,
@@ -76,8 +70,6 @@ fun LibraryToolbar(
 fun LibraryRegularToolbar(
     title: LibraryToolbarTitle,
     hasFilters: Boolean,
-    incognitoMode: Boolean,
-    downloadedOnlyMode: Boolean,
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     onClickFilter: () -> Unit,
@@ -143,8 +135,6 @@ fun LibraryRegularToolbar(
                 // SY <--
             }
         },
-        incognitoMode = incognitoMode,
-        downloadedOnlyMode = downloadedOnlyMode,
         scrollBehavior = scrollBehavior,
     )
 }
@@ -152,8 +142,6 @@ fun LibraryRegularToolbar(
 @Composable
 fun LibrarySelectionToolbar(
     selectedCount: Int,
-    incognitoMode: Boolean,
-    downloadedOnlyMode: Boolean,
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
@@ -170,8 +158,6 @@ fun LibrarySelectionToolbar(
         },
         isActionMode = true,
         onCancelActionMode = onClickUnselectAll,
-        incognitoMode = incognitoMode,
-        downloadedOnlyMode = downloadedOnlyMode,
     )
 }
 

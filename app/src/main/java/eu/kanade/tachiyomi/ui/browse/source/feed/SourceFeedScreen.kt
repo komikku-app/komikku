@@ -58,8 +58,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
             onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
             searchQuery = state.searchQuery,
             onSearchQueryChange = screenModel::search,
-            isIncognitoMode = screenModel.isIncognitoMode,
-            isDownloadOnly = screenModel.isDownloadOnly,
             getMangaState = { screenModel.getManga(initialManga = it) },
         )
 

@@ -46,7 +46,6 @@ import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
-import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.DuplicateMangaDialog
@@ -197,8 +196,6 @@ data class BrowseSourceScreen(
                     }
 
                     Divider()
-
-                    AppStateBanners(screenModel.isDownloadOnly, screenModel.isIncognitoMode)
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

@@ -105,8 +105,6 @@ fun SourceFeedScreen(
     onClickSearch: (String) -> Unit,
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
-    isIncognitoMode: Boolean,
-    isDownloadOnly: Boolean,
     getMangaState: @Composable (Manga) -> State<Manga>,
 ) {
     Scaffold(
@@ -116,8 +114,6 @@ fun SourceFeedScreen(
                 searchQuery = searchQuery,
                 onSearchQueryChange = onSearchQueryChange,
                 scrollBehavior = scrollBehavior,
-                incognitoMode = isIncognitoMode,
-                downloadedOnlyMode = isDownloadOnly,
                 onClickSearch = onClickSearch,
             )
         },
@@ -259,8 +255,6 @@ fun SourceFeedToolbar(
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
-    incognitoMode: Boolean,
-    downloadedOnlyMode: Boolean,
     onClickSearch: (String) -> Unit,
 ) {
     SearchToolbar(
@@ -270,8 +264,6 @@ fun SourceFeedToolbar(
         onSearch = onClickSearch,
         onClickCloseSearch = { onSearchQueryChange(null) },
         scrollBehavior = scrollBehavior,
-        incognitoMode = incognitoMode,
-        downloadedOnlyMode = downloadedOnlyMode,
         placeholderText = stringResource(R.string.action_search_hint),
     )
 }

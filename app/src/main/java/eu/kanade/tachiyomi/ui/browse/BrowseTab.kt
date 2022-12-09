@@ -7,15 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import eu.kanade.core.prefs.asState
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.TabbedScreen
 import eu.kanade.presentation.util.Tab
@@ -49,7 +46,11 @@ data class BrowseTab(
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val screenModel = rememberScreenModel { BrowseScreenModel() }
+        // SY -->
+        val feedTabInFront = remember {
+            Injekt.get<UiPreferences>().feedTabInFront().get()
+        }
+        // SY <--
 
         // Hoisted for extensions tab's search bar
         val extensionsScreenModel = rememberScreenModel { ExtensionsScreenModel() }
@@ -58,7 +59,7 @@ data class BrowseTab(
         TabbedScreen(
             titleRes = R.string.browse,
             // SY -->
-            tabs = if (screenModel.feedTabInFront) {
+            tabs = if (feedTabInFront) {
                 listOf(
                     feedTab(),
                     sourcesTab(),
@@ -77,8 +78,6 @@ data class BrowseTab(
             // SY <--
             searchQuery = extensionsQuery,
             onChangeSearchQuery = extensionsScreenModel::search,
-            incognitoMode = screenModel.isIncognitoMode,
-            downloadedOnlyMode = screenModel.isDownloadOnly,
         )
 
         // For local source
@@ -88,18 +87,4 @@ data class BrowseTab(
             (context as? MainActivity)?.ready = true
         }
     }
-}
-
-private class BrowseScreenModel(
-    preferences: BasePreferences = Injekt.get(),
-    // SY -->
-    uiPreferences: UiPreferences = Injekt.get(),
-    // SY <--
-) : ScreenModel {
-    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState(coroutineScope)
-    val isIncognitoMode: Boolean by preferences.incognitoMode().asState(coroutineScope)
-
-    // SY -->
-    val feedTabInFront = uiPreferences.feedTabInFront().get()
-    // SY <--
 }

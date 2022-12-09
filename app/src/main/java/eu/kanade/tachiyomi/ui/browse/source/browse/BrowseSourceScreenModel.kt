@@ -19,7 +19,6 @@ import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.core.prefs.asState
 import eu.kanade.core.prefs.mapAsCheckboxState
 import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
@@ -114,7 +113,6 @@ open class BrowseSourceScreenModel(
     private val savedSearch: Long? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
-    preferences: BasePreferences = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
@@ -142,9 +140,6 @@ open class BrowseSourceScreenModel(
     private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(coroutineScope)
-
-    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState(coroutineScope)
-    val isIncognitoMode: Boolean by preferences.incognitoMode().asState(coroutineScope)
 
     val source = sourceManager.get(sourceId) as CatalogueSource
 

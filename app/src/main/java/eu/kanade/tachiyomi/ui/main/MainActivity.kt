@@ -11,6 +11,12 @@ import android.view.View
 import android.view.Window
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
@@ -33,6 +40,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.transitions.ScreenTransition
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
@@ -40,6 +48,7 @@ import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.more.settings.screen.ConfigureExhDialog
 import eu.kanade.presentation.more.settings.screen.WhatsNewDialog
 import eu.kanade.presentation.util.Transition
@@ -177,61 +186,87 @@ class MainActivity : BaseActivity() {
             .launchIn(lifecycleScope)
 
         setComposeContent {
-            Navigator(
-                screen = HomeScreen,
-                disposeBehavior = NavigatorDisposeBehavior(disposeNestedNavigators = false, disposeSteps = true),
-            ) { navigator ->
-                if (navigator.size == 1) {
-                    ConfirmExit()
+            val incognito by preferences.incognitoMode().collectAsState()
+            val download by preferences.downloadedOnly().collectAsState()
+            Column {
+                AppStateBanners(
+                    downloadedOnlyMode = download,
+                    incognitoMode = incognito,
+                )
+                val systemUiController = rememberSystemUiController()
+                val active = incognito || download
+                val useDarkIcons = if (isSystemInDarkTheme()) active else !active
+                LaunchedEffect(systemUiController, useDarkIcons) {
+                    systemUiController.setStatusBarColor(
+                        color = androidx.compose.ui.graphics.Color.Transparent,
+                        darkIcons = useDarkIcons,
+                    )
                 }
 
-                LaunchedEffect(navigator) {
-                    this@MainActivity.navigator = navigator
-
-                    if (savedInstanceState == null) {
-                        // Set start screen
-                        handleIntentAction(intent)
-
-                        // Reset Incognito Mode on relaunch
-                        preferences.incognitoMode().set(false)
-
-                        // SY -->
-                        initWhenIdle {
-                            // Upload settings
-                            if (unsortedPreferences.enableExhentai().get() &&
-                                unsortedPreferences.exhShowSettingsUploadWarning().get()
-                            ) {
-                                runExhConfigureDialog = true
-                            }
-                            // Scheduler uploader job if required
-
-                            EHentaiUpdateWorker.scheduleBackground(this@MainActivity)
-                        }
-                        // SY <--
+                Navigator(
+                    screen = HomeScreen,
+                    disposeBehavior = NavigatorDisposeBehavior(disposeNestedNavigators = false, disposeSteps = true),
+                ) { navigator ->
+                    if (navigator.size == 1) {
+                        ConfirmExit()
                     }
-                }
 
-                // Shows current screen
-                ScreenTransition(navigator = navigator, transition = { Transition.OneWayFade })
+                    LaunchedEffect(navigator) {
+                        this@MainActivity.navigator = navigator
 
-                // Pop source-related screens when incognito mode is turned off
-                LaunchedEffect(Unit) {
-                    preferences.incognitoMode().changes()
-                        .drop(1)
-                        .onEach {
-                            if (!it) {
-                                val currentScreen = navigator.lastItem
-                                if (currentScreen is BrowseSourceScreen ||
-                                    (currentScreen is MangaScreen && currentScreen.fromSource)
+                        if (savedInstanceState == null) {
+                            // Set start screen
+                            handleIntentAction(intent)
+
+                            // Reset Incognito Mode on relaunch
+                            preferences.incognitoMode().set(false)
+
+                            // SY -->
+                            initWhenIdle {
+                                // Upload settings
+                                if (unsortedPreferences.enableExhentai().get() &&
+                                    unsortedPreferences.exhShowSettingsUploadWarning().get()
                                 ) {
-                                    navigator.popUntilRoot()
+                                    runExhConfigureDialog = true
+                                }
+                                // Scheduler uploader job if required
+
+                                EHentaiUpdateWorker.scheduleBackground(this@MainActivity)
+                            }
+                            // SY <--
+                        }
+                    }
+
+                    // Consume insets already used by app state banners
+                    val boxModifier = if (incognito || download) {
+                        Modifier.consumeWindowInsets(WindowInsets.statusBars)
+                    } else {
+                        Modifier
+                    }
+                    Box(modifier = boxModifier) {
+                        // Shows current screen
+                        ScreenTransition(navigator = navigator, transition = { Transition.OneWayFade })
+                    }
+
+                    // Pop source-related screens when incognito mode is turned off
+                    LaunchedEffect(Unit) {
+                        preferences.incognitoMode().changes()
+                            .drop(1)
+                            .onEach {
+                                if (!it) {
+                                    val currentScreen = navigator.lastItem
+                                    if (currentScreen is BrowseSourceScreen ||
+                                        (currentScreen is MangaScreen && currentScreen.fromSource)
+                                    ) {
+                                        navigator.popUntilRoot()
+                                    }
                                 }
                             }
-                        }
-                        .launchIn(this)
-                }
+                            .launchIn(this)
+                    }
 
-                CheckForUpdate()
+                    CheckForUpdate()
+                }
             }
 
             // SY -->

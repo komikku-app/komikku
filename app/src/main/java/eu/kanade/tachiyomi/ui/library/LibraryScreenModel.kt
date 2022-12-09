@@ -142,9 +142,6 @@ class LibraryScreenModel(
 
     var activeCategoryIndex: Int by libraryPreferences.lastUsedCategory().asState(coroutineScope)
 
-    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState(coroutineScope)
-    val isIncognitoMode: Boolean by preferences.incognitoMode().asState(coroutineScope)
-
     // SY -->
     val favoritesSync = FavoritesSyncHelper(preferences.context)
 
