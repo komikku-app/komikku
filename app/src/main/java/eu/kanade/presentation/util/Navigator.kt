@@ -23,6 +23,10 @@ interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
     // SY <--
 }
 
+interface AssistContentScreen {
+    fun onProvideAssistUrl(): String?
+}
+
 @Composable
 fun DefaultNavigatorScreenTransition(navigator: Navigator) {
     val slideDistance = rememberSlideDistance()

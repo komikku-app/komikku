@@ -50,6 +50,7 @@ import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.DuplicateMangaDialog
 import eu.kanade.presentation.components.Scaffold
+import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -72,9 +73,13 @@ data class BrowseSourceScreen(
     private val savedSearch: Long? = null,
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
     // SY <--
-) : Screen {
+) : Screen, AssistContentScreen {
+
+    private var assistUrl: String? = null
 
     override val key = uniqueScreenKey
+
+    override fun onProvideAssistUrl() = assistUrl
 
     @Composable
     override fun Content() {
@@ -104,6 +109,10 @@ data class BrowseSourceScreen(
             val source = screenModel.source as? HttpSource ?: return@f
             val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
             context.startActivity(intent)
+        }
+
+        LaunchedEffect(screenModel.source) {
+            assistUrl = (screenModel.source as? HttpSource)?.baseUrl
         }
 
         Scaffold(

@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.ProgressDialog
+import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -35,6 +36,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
+import androidx.core.net.toUri
 import androidx.core.transition.doOnEnd
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -382,6 +384,13 @@ class ReaderActivity : BaseActivity() {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
             setMenuVisibility(menuVisible, animate = false)
+        }
+    }
+
+    override fun onProvideAssistContent(outContent: AssistContent) {
+        super.onProvideAssistContent(outContent)
+        viewModel.getChapterUrl()?.let { url ->
+            outContent.webUri = url.toUri()
         }
     }
 
