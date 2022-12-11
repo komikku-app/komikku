@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.chop
+import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.util.dropBlank
@@ -199,9 +200,8 @@ private fun resetTags(manga: Manga, binding: EditMangaDialogBinding, scope: Coro
 }
 
 private fun loadCover(manga: Manga, context: Context, binding: EditMangaDialogBinding) {
-    val radius = context.resources.getDimension(R.dimen.card_radius)
     binding.mangaCover.load(manga) {
-        transformations(RoundedCornersTransformation(radius))
+        transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
     }
 }
 

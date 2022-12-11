@@ -7,6 +7,7 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.merged.sql.models.MergedMangaReference
 import uy.kohesive.injekt.Injekt
@@ -39,9 +40,8 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
     fun bind(item: EditMergedMangaItem) {
         reference = item.mergedMangaReference
         item.mergedManga?.let {
-            val radius = itemView.context.resources.getDimension(R.dimen.card_radius)
             binding.cover.load(it) {
-                transformations(RoundedCornersTransformation(radius))
+                transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
             }
         }
 
