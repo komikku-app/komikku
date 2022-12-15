@@ -466,13 +466,6 @@ class ReaderActivity : BaseActivity() {
         return handled || super.dispatchGenericMotionEvent(event)
     }
 
-    private fun buildContainerTransform(entering: Boolean): MaterialContainerTransform {
-        return MaterialContainerTransform(this, entering).apply {
-            duration = 350 // ms
-            addTarget(android.R.id.content)
-        }
-    }
-
     // SY -->
     fun TextView.textChanges(): Flow<CharSequence> = callbackFlow {
         val listener = object : TextWatcher {
