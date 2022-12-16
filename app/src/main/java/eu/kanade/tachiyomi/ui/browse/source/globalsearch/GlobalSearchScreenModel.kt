@@ -37,7 +37,7 @@ class GlobalSearchScreenModel(
         val shouldSearchPinnedOnly = sourcePreferences.searchPinnedSourcesOnly().get()
         // SY <--
 
-        return sourceManager.getCatalogueSources()
+        return sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in enabledLanguages }
             .filterNot { "${it.id}" in disabledSources }
             .sortedWith(compareBy({ "${it.id}" !in pinnedSources }, { "${it.name.lowercase()} (${it.lang})" }))
