@@ -164,15 +164,21 @@ class LibraryScreenModel(
                 getTracksPerManga.subscribe(),
                 getTrackingFilterFlow(),
                 // SY -->
-                combine(state.map { it.groupType }.distinctUntilChanged(), libraryPreferences.libraryDisplayMode().changes()) { a, b -> a to b },
+                combine(
+                    state.map { it.groupType }.distinctUntilChanged(),
+                    libraryPreferences.libraryDisplayMode().changes(),
+                    libraryPreferences.librarySortingMode().changes()
+                ) { a, b, c ->
+                    Triple(a, b, c)
+                },
                 // SY <--
-            ) { searchQuery, library, tracks, loggedInTrackServices, (groupType, displayMode) ->
+            ) { searchQuery, library, tracks, loggedInTrackServices, (groupType, displayMode, sort) ->
                 library
                     .applyFilters(tracks, loggedInTrackServices)
-                    .applySort(/* SY --> */groupType/* SY <-- */)
                     // SY -->
                     .applyGrouping(groupType, displayMode)
                     // SY <--
+                    .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT }/* SY <-- */)
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
                             // Filter query
@@ -395,7 +401,7 @@ class LibraryScreenModel(
     /**
      * Applies library sorting to the given map of manga.
      */
-    private fun LibraryMap.applySort(/* SY --> */ groupType: Int /* SY <-- */): LibraryMap {
+    private fun LibraryMap.applySort(/* SY --> */ groupSort: LibrarySort? = null /* SY <-- */): LibraryMap {
         // SY -->
         val listOfTags by lazy {
             libraryPreferences.sortTagsForLibrary().get()
@@ -408,7 +414,6 @@ class LibraryScreenModel(
                 .map { it.second }
                 .toList()
         }
-        val groupSort = libraryPreferences.librarySortingMode().get()
         // SY <--
 
         val locale = Locale.getDefault()
@@ -421,10 +426,7 @@ class LibraryScreenModel(
 
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             // SY -->
-            val sort = when (groupType) {
-                LibraryGroup.BY_DEFAULT -> keys.find { it.id == i1.libraryManga.category }!!.sort
-                else -> groupSort
-            }
+            val sort = groupSort ?: keys.find { it.id == i1.libraryManga.category }!!.sort
             // SY <--
             when (sort.type) {
                 LibrarySort.Type.Alphabetical -> {
@@ -467,11 +469,7 @@ class LibraryScreenModel(
 
         return this.mapValues { entry ->
             // SY -->
-            val isAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                keys.find { it.id == entry.key.id }!!.sort.isAscending
-            } else {
-                groupSort.isAscending
-            }
+            val isAscending = groupSort?.isAscending ?: keys.find { it.id == entry.key.id }!!.sort.isAscending
             // SY <--
             val comparator = if ( /* SY --> */ isAscending /* SY <-- */) {
                 Comparator(sortFn)
@@ -1175,7 +1173,11 @@ class LibraryScreenModel(
         return getNextChapters.await(manga.id).firstOrNull()
     }
 
-    private fun getGroupedMangaItems(groupType: Int, libraryManga: List<LibraryItem>, displayMode: LibraryDisplayMode): LibraryMap {
+    private fun getGroupedMangaItems(
+        groupType: Int,
+        libraryManga: List<LibraryItem>,
+        displayMode: LibraryDisplayMode
+    ): LibraryMap {
         val context = preferences.context
         return when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
