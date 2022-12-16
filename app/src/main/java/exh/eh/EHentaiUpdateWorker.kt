@@ -33,7 +33,6 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.util.cancellable
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -165,7 +164,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
                 // Find accepted root and discard others
                 val (acceptedRoot, discardedRoots, hasNew) =
-                    updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters).single()
+                    updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
 
                 if ((new.isNotEmpty() && manga.id == acceptedRoot.manga.id) ||
                     (hasNew && updatedManga.none { it.first.id == acceptedRoot.manga.id })

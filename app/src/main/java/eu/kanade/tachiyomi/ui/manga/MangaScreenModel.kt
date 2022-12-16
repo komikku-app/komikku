@@ -263,8 +263,9 @@ class MangaInfoScreenModel(
                     if (chapters.isNotEmpty() && manga.isEhBasedManga() && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
-                        updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
-                            .onEach { (acceptedChain, _) ->
+                        launchIO {
+                            try {
+                                val (acceptedChain) = updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
                                 // Redirect if we are not the accepted root
                                 if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
                                     // Update if any of our chapters are not in accepted manga's chapters
@@ -273,7 +274,10 @@ class MangaInfoScreenModel(
                                         EXHRedirect(acceptedChain.manga.id),
                                     )
                                 }
-                            }.launchIn(coroutineScope)
+                            } catch (e: Exception) {
+                                logcat(LogPriority.ERROR, e) { "Error loading accepted chapter chain" }
+                            }
+                        }
                     }
                 }
                 .combine(

@@ -20,9 +20,6 @@ import eu.kanade.domain.manga.model.MangaUpdate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 
@@ -50,111 +47,101 @@ class EHentaiUpdateHelper(context: Context) {
      *
      * @return Triple<Accepted, Discarded, HasNew>
      */
-    fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Flow<Triple<ChapterChain, List<ChapterChain>, Boolean>> {
+    suspend fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Triple<ChapterChain, List<ChapterChain>, Boolean> {
         // Find other chains
-        val chainsFlow = flowOf(chapters)
-            .map { chapterList ->
-                chapterList.flatMap { chapter ->
-                    getChapterByUrl.await(chapter.url).map { it.mangaId }
-                }.distinct()
+        val chains = chapters
+            .flatMap { chapter ->
+                getChapterByUrl.await(chapter.url).map { it.mangaId }
             }
-            .map { mangaIds ->
-                mangaIds
-                    .mapNotNull { mangaId ->
-                        coroutineScope {
-                            val manga = async(Dispatchers.IO) {
-                                getManga.await(mangaId)
-                            }
-                            val chapterList = async(Dispatchers.IO) {
-                                getChapterByMangaId.await(mangaId)
-                            }
-                            val history = async(Dispatchers.IO) {
-                                getHistoryByMangaId.await(mangaId)
-                            }
-                            ChapterChain(
-                                manga.await() ?: return@coroutineScope null,
-                                chapterList.await(),
-                                history.await(),
-                            )
-                        }
+            .distinct()
+            .mapNotNull { mangaId ->
+                coroutineScope {
+                    val manga = async(Dispatchers.IO) {
+                        getManga.await(mangaId)
                     }
-                    .filter { it.manga.source == sourceId }
+                    val chapterList = async(Dispatchers.IO) {
+                        getChapterByMangaId.await(mangaId)
+                    }
+                    val history = async(Dispatchers.IO) {
+                        getHistoryByMangaId.await(mangaId)
+                    }
+                    ChapterChain(
+                        manga.await() ?: return@coroutineScope null,
+                        chapterList.await(),
+                        history.await(),
+                    )
+                }
             }
+            .filter { it.manga.source == sourceId }
 
         // Accept oldest chain
-        val chainsWithAccepted = chainsFlow.map { chains ->
-            val acceptedChain = chains.minBy { it.manga.id }
+        val accepted = chains.minBy { it.manga.id }
 
-            acceptedChain to chains
-        }
+        val toDiscard = chains.filter { it.manga.favorite && it.manga.id != accepted.manga.id }
+        val mangaUpdates = mutableListOf<MangaUpdate>()
 
-        return chainsWithAccepted.map { (accepted, chains) ->
-            val toDiscard = chains.filter { it.manga.favorite && it.manga.id != accepted.manga.id }
-            val mangaUpdates = mutableListOf<MangaUpdate>()
+        val chainsAsChapters = chains.flatMap { it.chapters }
+        val chainsAsHistory = chains.flatMap { it.history }
 
-            val chainsAsChapters = chains.flatMap { it.chapters }
-            val chainsAsHistory = chains.flatMap { it.history }
+        return if (toDiscard.isNotEmpty()) {
+            // Copy chain chapters to curChapters
+            val (chapterUpdates, newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
 
-            if (toDiscard.isNotEmpty()) {
-                // Copy chain chapters to curChapters
-                val (chapterUpdates, newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
-
-                toDiscard.forEach {
-                    mangaUpdates += MangaUpdate(
-                        id = it.manga.id,
-                        favorite = false,
-                        dateAdded = 0,
-                    )
-                }
-                if (!accepted.manga.favorite) {
-                    mangaUpdates += MangaUpdate(
-                        id = accepted.manga.id,
-                        favorite = true,
-                        dateAdded = System.currentTimeMillis(),
-                    )
-                }
-
-                val newAccepted = ChapterChain(accepted.manga, newChapters, emptyList())
-                val rootsToMutate = toDiscard + newAccepted
-
-                // Apply changes to all manga
-                updateManga.awaitAll(mangaUpdates)
-                // Insert new chapters for accepted manga
-                chapterRepository.updateAll(chapterUpdates)
-                chapterRepository.addAll(newChapters)
-
-                val (newHistory, deleteHistory) = getHistory(getChapterByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
-
-                // Delete the duplicate history first
-                deleteHistory.forEach {
-                    removeHistory.awaitById(it)
-                }
-
-                // Insert new history
-                newHistory.forEach {
-                    upsertHistory.await(it)
-                }
-
-                // Copy categories from all chains to accepted manga
-
-                val newCategories = rootsToMutate.flatMap { chapterChain ->
-                    getCategories.await(chapterChain.manga.id).map { it.id }
-                }.distinct()
-                rootsToMutate.forEach {
-                    setMangaCategories.await(it.manga.id, newCategories)
-                }
-
-                Triple(newAccepted, toDiscard, new)
-            } else {
-                /*val notNeeded = chains.filter { it.manga.id != accepted.manga.id }
-                val (newChapters, new) = getChapterList(accepted, notNeeded, chainsAsChapters)
-                val newAccepted = ChapterChain(accepted.manga, newChapters)
-
-                // Insert new chapters for accepted manga
-                db.insertChapters(newAccepted.chapters).await()*/
-
-                Triple(accepted, emptyList(), false)
+            toDiscard.forEach {
+                mangaUpdates += MangaUpdate(
+                    id = it.manga.id,
+                    favorite = false,
+                    dateAdded = 0,
+                )
             }
+            if (!accepted.manga.favorite) {
+                mangaUpdates += MangaUpdate(
+                    id = accepted.manga.id,
+                    favorite = true,
+                    dateAdded = System.currentTimeMillis(),
+                )
+            }
+
+            val newAccepted = ChapterChain(accepted.manga, newChapters, emptyList())
+            val rootsToMutate = toDiscard + newAccepted
+
+            // Apply changes to all manga
+            updateManga.awaitAll(mangaUpdates)
+            // Insert new chapters for accepted manga
+            chapterRepository.updateAll(chapterUpdates)
+            chapterRepository.addAll(newChapters)
+
+            val (newHistory, deleteHistory) = getHistory(getChapterByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
+
+            // Delete the duplicate history first
+            deleteHistory.forEach {
+                removeHistory.awaitById(it)
+            }
+
+            // Insert new history
+            newHistory.forEach {
+                upsertHistory.await(it)
+            }
+
+            // Copy categories from all chains to accepted manga
+
+            val newCategories = rootsToMutate.flatMap { chapterChain ->
+                getCategories.await(chapterChain.manga.id).map { it.id }
+            }.distinct()
+            rootsToMutate.forEach {
+                setMangaCategories.await(it.manga.id, newCategories)
+            }
+
+            Triple(newAccepted, toDiscard, new)
+        } else {
+            /*val notNeeded = chains.filter { it.manga.id != accepted.manga.id }
+            val (newChapters, new) = getChapterList(accepted, notNeeded, chainsAsChapters)
+            val newAccepted = ChapterChain(accepted.manga, newChapters)
+
+            // Insert new chapters for accepted manga
+            db.insertChapters(newAccepted.chapters).await()*/
+
+            Triple(accepted, emptyList(), false)
         }
     }
 
