@@ -473,7 +473,7 @@ open class BrowseSourceScreenModel(
             onFilterClicked = { search(filters = state.filters) },
             onResetClicked = {
                 reset()
-                filterSheet?.setFilters(state.filterItems)
+                filterSheet?.setFilters(state.value.filterItems)
             },
             // EXH -->
             onSaveClicked = {
@@ -511,7 +511,7 @@ open class BrowseSourceScreenModel(
             // EXH <--
         )
 
-        filterSheet?.setFilters(state.filterItems)
+        filterSheet?.setFilters(state.value.filterItems)
     }
 
     sealed class Filter(open val query: String?, open val filters: FilterList) {
@@ -556,12 +556,8 @@ open class BrowseSourceScreenModel(
         val savedSearches: List<EXHSavedSearch> = emptyList(),
         // SY <--
     ) {
-        val filterItems = filters.toItems()
-        val isUserQuery = currentFilter is Filter.UserInput && !currentFilter.query.isNullOrEmpty()
-        val searchQuery = when (currentFilter) {
-            is Filter.UserInput -> currentFilter.query
-            Filter.Latest, Filter.Popular -> null
-        }
+        val filterItems get() = filters.toItems()
+        val isUserQuery get() = currentFilter is Filter.UserInput && !currentFilter.query.isNullOrEmpty()
     }
 
     // EXH -->
