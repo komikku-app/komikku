@@ -13,14 +13,18 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +56,8 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
+import eu.kanade.presentation.components.IndexingBannerBackgroundColor
+import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.more.settings.screen.ConfigureExhDialog
 import eu.kanade.presentation.more.settings.screen.WhatsNewDialog
 import eu.kanade.presentation.util.AssistContentScreen
@@ -60,6 +66,7 @@ import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateResult
@@ -110,6 +117,7 @@ class MainActivity : BaseActivity() {
     // SY <--
 
     private val chapterCache: ChapterCache by injectLazy()
+    private val downloadCache: DownloadCache by injectLazy()
 
     // To be checked by splash screen. If true then splash screen will be removed.
     var ready = false
@@ -188,108 +196,116 @@ class MainActivity : BaseActivity() {
         setComposeContent {
             val incognito by preferences.incognitoMode().collectAsState()
             val downloadOnly by preferences.downloadedOnly().collectAsState()
-            Column {
-                AppStateBanners(
-                    downloadedOnlyMode = downloadOnly,
-                    incognitoMode = incognito,
+            val indexing by downloadCache.isRenewing.collectAsState()
+
+            // Set statusbar color considering the top app state banner
+            val systemUiController = rememberSystemUiController()
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+            val statusBarBackgroundColor = when {
+                indexing -> IndexingBannerBackgroundColor
+                downloadOnly -> DownloadedOnlyBannerBackgroundColor
+                incognito -> IncognitoModeBannerBackgroundColor
+                else -> MaterialTheme.colorScheme.surface
+            }
+            LaunchedEffect(systemUiController, statusBarBackgroundColor) {
+                systemUiController.setStatusBarColor(
+                    color = ComposeColor.Transparent,
+                    darkIcons = statusBarBackgroundColor.luminance() > 0.5,
+                    transformColorForLightContent = { ComposeColor.Black },
                 )
+            }
 
-                // Set statusbar color
-                val systemUiController = rememberSystemUiController()
-                val isSystemInDarkTheme = isSystemInDarkTheme()
-                val statusBarBackgroundColor = when {
-                    downloadOnly -> DownloadedOnlyBannerBackgroundColor
-                    incognito -> IncognitoModeBannerBackgroundColor
-                    else -> MaterialTheme.colorScheme.background
-                }
-                LaunchedEffect(systemUiController, statusBarBackgroundColor) {
-                    systemUiController.setStatusBarColor(
-                        color = ComposeColor.Transparent,
-                        darkIcons = statusBarBackgroundColor.luminance() > 0.5,
-                        transformColorForLightContent = { ComposeColor.Black },
-                    )
-                }
-
-                // Set navigation bar color
-                val context = LocalContext.current
-                val navbarScrimColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
-                    systemUiController.setNavigationBarColor(
-                        color = if (context.isNavigationBarNeedsScrim()) {
-                            navbarScrimColor.copy(alpha = 0.7f)
-                        } else {
-                            ComposeColor.Transparent
-                        },
-                        darkIcons = !isSystemInDarkTheme,
-                        navigationBarContrastEnforced = false,
-                        transformColorForLightContent = { ComposeColor.Black },
-                    )
-                }
-
-                Navigator(
-                    screen = HomeScreen,
-                    disposeBehavior = NavigatorDisposeBehavior(disposeNestedNavigators = false, disposeSteps = true),
-                ) { navigator ->
-                    if (navigator.size == 1) {
-                        ConfirmExit()
-                    }
-
-                    LaunchedEffect(navigator) {
-                        this@MainActivity.navigator = navigator
-
-                        if (savedInstanceState == null) {
-                            // Set start screen
-                            handleIntentAction(intent)
-
-                            // Reset Incognito Mode on relaunch
-                            preferences.incognitoMode().set(false)
-
-                            // SY -->
-                            initWhenIdle {
-                                // Upload settings
-                                if (unsortedPreferences.enableExhentai().get() &&
-                                    unsortedPreferences.exhShowSettingsUploadWarning().get()
-                                ) {
-                                    runExhConfigureDialog = true
-                                }
-                                // Scheduler uploader job if required
-
-                                EHentaiUpdateWorker.scheduleBackground(this@MainActivity)
-                            }
-                            // SY <--
-                        }
-                    }
-
-                    // Consume insets already used by app state banners
-                    val boxModifier = if (incognito || downloadOnly) {
-                        Modifier.consumeWindowInsets(WindowInsets.statusBars)
+            // Set navigation bar color
+            val context = LocalContext.current
+            val navbarScrimColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+            LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
+                systemUiController.setNavigationBarColor(
+                    color = if (context.isNavigationBarNeedsScrim()) {
+                        navbarScrimColor.copy(alpha = 0.7f)
                     } else {
-                        Modifier
+                        ComposeColor.Transparent
+                    },
+                    darkIcons = !isSystemInDarkTheme,
+                    navigationBarContrastEnforced = false,
+                    transformColorForLightContent = { ComposeColor.Black },
+                )
+            }
+
+            Navigator(
+                screen = HomeScreen,
+                disposeBehavior = NavigatorDisposeBehavior(disposeNestedNavigators = false, disposeSteps = true),
+            ) { navigator ->
+                if (navigator.size == 1) {
+                    ConfirmExit()
+                }
+
+                LaunchedEffect(navigator) {
+                    this@MainActivity.navigator = navigator
+
+                    if (savedInstanceState == null) {
+                        // Set start screen
+                        handleIntentAction(intent)
+
+                        // Reset Incognito Mode on relaunch
+                        preferences.incognitoMode().set(false)
+
+                        // SY -->
+                        initWhenIdle {
+                            // Upload settings
+                            if (unsortedPreferences.enableExhentai().get() &&
+                                unsortedPreferences.exhShowSettingsUploadWarning().get()
+                            ) {
+                                runExhConfigureDialog = true
+                            }
+                            // Scheduler uploader job if required
+
+                            EHentaiUpdateWorker.scheduleBackground(this@MainActivity)
+                        }
+                        // SY <--
                     }
-                    Box(modifier = boxModifier) {
+                }
+
+                val scaffoldInsets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+                Scaffold(
+                    topBar = {
+                        AppStateBanners(
+                            downloadedOnlyMode = downloadOnly,
+                            incognitoMode = incognito,
+                            indexing = indexing,
+                            modifier = Modifier.windowInsetsPadding(scaffoldInsets),
+                        )
+                    },
+                    contentWindowInsets = scaffoldInsets,
+                ) { contentPadding ->
+                    // Consume insets already used by app state banners
+                    Box(
+                        modifier = Modifier
+                            .padding(contentPadding)
+                            .consumeWindowInsets(contentPadding),
+                    ) {
                         // Shows current screen
                         DefaultNavigatorScreenTransition(navigator = navigator)
                     }
+                }
 
-                    // Pop source-related screens when incognito mode is turned off
-                    LaunchedEffect(Unit) {
-                        preferences.incognitoMode().changes()
-                            .drop(1)
-                            .onEach {
-                                if (!it) {
-                                    val currentScreen = navigator.lastItem
-                                    if (currentScreen is BrowseSourceScreen ||
-                                        (currentScreen is MangaScreen && currentScreen.fromSource)
-                                    ) {
-                                        navigator.popUntilRoot()
-                                    }
+                // Pop source-related screens when incognito mode is turned off
+                LaunchedEffect(Unit) {
+                    preferences.incognitoMode().changes()
+                        .drop(1)
+                        .onEach {
+                            if (!it) {
+                                val currentScreen = navigator.lastItem
+                                if (currentScreen is BrowseSourceScreen ||
+                                    (currentScreen is MangaScreen && currentScreen.fromSource)
+                                ) {
+                                    navigator.popUntilRoot()
                                 }
                             }
-                            .launchIn(this)
-                    }
-
-                    CheckForUpdate()
+                        }
+                        .launchIn(this)
                 }
+
+                CheckForUpdate()
             }
 
             // SY -->
