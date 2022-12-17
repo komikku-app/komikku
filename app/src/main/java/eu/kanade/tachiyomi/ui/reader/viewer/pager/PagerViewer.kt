@@ -110,9 +110,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         )
         pager.tapListener = { event ->
             val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
-            val navigator = config.navigator
-
-            when (navigator.getAction(pos)) {
+            when (config.navigator.getAction(pos)) {
                 NavigationRegion.MENU -> activity.toggleMenu()
                 NavigationRegion.NEXT -> moveToNext()
                 NavigationRegion.PREV -> moveToPrevious()
@@ -286,7 +284,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Sets the active [chapters] on this pager.
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
-        logcat { "setChaptersInternal" }
         val forceTransition = config.alwaysShowChapterTransition || adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
         adapter.setChapters(chapters, forceTransition)
 
@@ -303,7 +300,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Tells this viewer to move to the given [page].
      */
     override fun moveToPage(page: ReaderPage) {
-        logcat { "moveToPage ${page.number}" }
         val position = adapter.joinedItems.indexOfFirst { it.first == page || it.second == page }
         if (position != -1) {
             val currentPosition = pager.currentItem
