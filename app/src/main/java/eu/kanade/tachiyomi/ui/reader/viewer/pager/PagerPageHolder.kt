@@ -17,7 +17,11 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import logcat.LogPriority
 import rx.Observable
 import rx.Subscription
@@ -27,7 +31,6 @@ import tachiyomi.decoder.ImageDecoder
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -62,15 +65,17 @@ class PagerPageHolder(
      */
     private var errorLayout: ReaderErrorBinding? = null
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
     /**
      * Subscription for status changes of the page.
      */
     private var statusSubscription: Subscription? = null
 
     /**
-     * Subscription for progress changes of the page.
+     * Job for progress changes of the page.
      */
-    private var progressSubscription: Subscription? = null
+    private var progressJob: Job? = null
 
     /**
      * Subscription for status changes of the page.
@@ -80,7 +85,7 @@ class PagerPageHolder(
     /**
      * Subscription for progress changes of the page.
      */
-    private var extraProgressSubscription: Subscription? = null
+    private var extraProgressJob: Job? = null
 
     /**
      * Subscription used to read the header of the image. This is needed in order to instantiate
@@ -91,8 +96,6 @@ class PagerPageHolder(
     // SY -->
     var status: Page.State = Page.State.QUEUE
     var extraStatus: Page.State = Page.State.QUEUE
-    var progress: Int = 0
-    var extraProgress: Int = 0
     // SY <--
 
     init {
@@ -106,8 +109,8 @@ class PagerPageHolder(
     @SuppressLint("ClickableViewAccessibility")
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        unsubscribeProgress(1)
-        unsubscribeProgress(2)
+        cancelProgressJob(1)
+        cancelProgressJob(2)
         unsubscribeStatus(1)
         unsubscribeStatus(2)
         unsubscribeReadImageHeader()
@@ -139,32 +142,19 @@ class PagerPageHolder(
             }
     }
 
-    /**
-     * Observes the progress of the page and updates view.
-     */
-    private fun observeProgress() {
-        progressSubscription?.unsubscribe()
-
-        progressSubscription = Observable.interval(100, TimeUnit.MILLISECONDS)
-            .map { page.progress }
-            .distinctUntilChanged()
-            .onBackpressureLatest()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { value -> progressIndicator.setProgress(value) }
+    private fun launchProgressJob() {
+        progressJob?.cancel()
+        progressJob = scope.launchUI {
+            page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
+        }
     }
 
-    private fun observeProgress2() {
-        extraProgressSubscription?.unsubscribe()
+    private fun launchProgressJob2() {
+        extraProgressJob?.cancel()
         val extraPage = extraPage ?: return
-        extraProgressSubscription = Observable.interval(100, TimeUnit.MILLISECONDS)
-            .map { extraPage.progress }
-            .distinctUntilChanged()
-            .onBackpressureLatest()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { value ->
-                extraProgress = value
-                progressIndicator.setProgress(((progress + extraProgress) / 2 * 0.95f).roundToInt())
-            }
+        extraProgressJob = scope.launchUI {
+            extraPage.progressFlow.collectLatest { value -> progressIndicator.setProgress(((page.progressFlow.value + value) / 2 * 0.95f).roundToInt()) }
+        }
     }
 
     /**
@@ -177,18 +167,18 @@ class PagerPageHolder(
             Page.State.QUEUE -> setQueued()
             Page.State.LOAD_PAGE -> setLoading()
             Page.State.DOWNLOAD_IMAGE -> {
-                observeProgress()
+                launchProgressJob()
                 setDownloading()
             }
             Page.State.READY -> {
                 if (extraStatus == Page.State.READY || extraPage == null) {
                     setImage()
                 }
-                unsubscribeProgress(1)
+                cancelProgressJob(1)
             }
             Page.State.ERROR -> {
                 setError()
-                unsubscribeProgress(1)
+                cancelProgressJob(1)
             }
         }
     }
@@ -203,18 +193,18 @@ class PagerPageHolder(
             Page.State.QUEUE -> setQueued()
             Page.State.LOAD_PAGE -> setLoading()
             Page.State.DOWNLOAD_IMAGE -> {
-                observeProgress2()
+                launchProgressJob2()
                 setDownloading()
             }
             Page.State.READY -> {
                 if (this.status == Page.State.READY) {
                     setImage()
                 }
-                unsubscribeProgress(2)
+                cancelProgressJob(2)
             }
             Page.State.ERROR -> {
                 setError()
-                unsubscribeProgress(2)
+                cancelProgressJob(2)
             }
         }
     }
@@ -228,13 +218,10 @@ class PagerPageHolder(
         if (page == 1) statusSubscription = null else extraStatusSubscription = null
     }
 
-    /**
-     * Unsubscribes from the progress subscription.
-     */
-    private fun unsubscribeProgress(page: Int) {
-        val subscription = if (page == 1) progressSubscription else extraProgressSubscription
-        subscription?.unsubscribe()
-        if (page == 1) progressSubscription = null else extraProgressSubscription = null
+    private fun cancelProgressJob(page: Int) {
+        val job = if (page == 1) progressJob else extraProgressJob
+        job?.cancel()
+        if (page == 1) progressJob = null else extraProgressJob = null
     }
 
     /**
