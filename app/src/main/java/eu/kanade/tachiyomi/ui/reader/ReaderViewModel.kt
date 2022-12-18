@@ -21,7 +21,7 @@ import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.GetMergedManga
+import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.model.Manga
@@ -133,7 +133,7 @@ class ReaderViewModel(
     // SY -->
     private val uiPreferences: UiPreferences = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
-    private val getMergedManga: GetMergedManga = Injekt.get(),
+    private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     // SY <--
@@ -310,7 +310,7 @@ class ReaderViewModel(
                         null
                     }
                     val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id) } else emptyList()
-                    val mergedManga = if (source is MergedSource) runBlocking { getMergedManga.await() /* <-- TODO */ }.associateBy { it.id } else emptyMap()
+                    val mergedManga = if (source is MergedSource) runBlocking { getMergedMangaById.await(manga.id) }.associateBy { it.id } else emptyMap()
                     // SY <--
                     mutableState.update { it.copy(manga = manga /* SY --> */, meta = metadata, mergedManga = mergedManga/* SY <-- */) }
                     if (chapterId == -1L) chapterId = initialChapterId
