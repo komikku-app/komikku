@@ -160,6 +160,10 @@ class EhLoginActivity : BaseActivity() {
         overridePendingTransition(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
     }
 
+    init {
+        registerSecureActivity(this)
+    }
+
     companion object {
         const val PARAM_SKIP_INJECT = "TEH_SKIP_INJECT"
 
