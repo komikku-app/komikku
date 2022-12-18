@@ -256,7 +256,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     .setConstraints(constraints)
                     .build()
 
-                WorkManager.getInstance(context).enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.REPLACE, request)
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.UPDATE, request)
                 logger.d("Successfully scheduled background update job!")
             } else {
                 cancelBackground(context)
