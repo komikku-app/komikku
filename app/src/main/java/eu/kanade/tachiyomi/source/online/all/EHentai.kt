@@ -6,8 +6,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
@@ -123,7 +121,7 @@ class EHentai(
     /**
      * Gallery list entry
      */
-    data class ParsedManga(val fav: Int, val manga: Manga, val metadata: EHentaiSearchMetadata)
+    data class ParsedManga(val fav: Int, val manga: SManga, val metadata: EHentaiSearchMetadata)
 
     private fun extendedGenericMangaParse(doc: Document) = with(doc) {
         // Parse mangas (supports compact + extended layout)
@@ -145,9 +143,8 @@ class EHentai(
                 fav = FAVORITES_BORDER_HEX_COLORS.indexOf(
                     favElement?.attr("style")?.substring(14, 17),
                 ),
-                manga = MangaImpl().apply {
+                manga = SManga.create().apply {
                     // Get title
-                    source = this@EHentai.id
                     title = thumbnailElement.attr("title")
                     url = EHentaiSearchMetadata.normalizeUrl(linkElement.attr("href"))
                     // Get image

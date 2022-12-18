@@ -7,10 +7,11 @@ import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.favorites.sql.models.FavoriteEntry
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -36,11 +37,10 @@ class LocalFavoritesStorage {
     suspend fun getChangedRemoteEntries(entries: List<EHentai.ParsedManga>) = entries
         .asFlow()
         .map {
-            it.fav to it.manga.apply {
-                id = -1
-                favorite = true
-                date_added = System.currentTimeMillis()
-            }.toDomainManga()!!
+            it.fav to it.manga.toDomainManga(EXH_SOURCE_ID).copy(
+                favorite = true,
+                dateAdded = System.currentTimeMillis(),
+            )
         }
         .parseToFavoriteEntries()
         .getChangedEntries()
