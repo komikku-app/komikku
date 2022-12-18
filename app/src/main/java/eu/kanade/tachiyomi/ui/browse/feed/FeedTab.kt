@@ -50,6 +50,7 @@ fun Screen.feedTab(): TabContent {
                     navigator.push(
                         BrowseSourceScreen(
                             source.id,
+                            listingQuery = null,
                             savedSearch = savedSearch.id,
                         ),
                     )

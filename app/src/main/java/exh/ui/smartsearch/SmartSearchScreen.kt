@@ -52,7 +52,7 @@ class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfi
                     navigator.push(
                         BrowseSourceScreen(
                             sourceId = screenModel.source.id,
-                            query = smartSearchConfig.origTitle,
+                            listingQuery = smartSearchConfig.origTitle,
                             smartSearchConfig = smartSearchConfig,
                         ),
                     )

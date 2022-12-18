@@ -107,7 +107,7 @@ import eu.kanade.tachiyomi.source.model.Filter as SourceModelFilter
 
 open class BrowseSourceScreenModel(
     private val sourceId: Long,
-    searchQuery: String?,
+    listingQuery: String?,
     // SY -->
     private val filtersJson: String? = null,
     private val savedSearch: Long? = null,
@@ -135,7 +135,7 @@ open class BrowseSourceScreenModel(
     private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
-) : StateScreenModel<BrowseSourceScreenModel.State>(State(Filter.valueOf(searchQuery))) {
+) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
     private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
 
@@ -149,16 +149,16 @@ open class BrowseSourceScreenModel(
     private var filterSheet: SourceFilterSheet? = null
 
     /**
-     * Flow of Pager flow tied to [State.currentFilter]
+     * Flow of Pager flow tied to [State.listing]
      */
-    val mangaPagerFlowFlow = state.map { it.currentFilter }
+    val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
-        .map { currentFilter ->
+        .map { listing ->
             Pager(
                 PagingConfig(pageSize = 25),
             ) {
                 // SY -->
-                createSourcePagingSource(currentFilter.query ?: "", currentFilter.filters)
+                createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
             }.flow
                 .map { pagingData ->
@@ -184,7 +184,19 @@ open class BrowseSourceScreenModel(
     // SY <--
 
     init {
-        mutableState.update { it.copy(filters = source.getFilterList()) }
+        mutableState.update {
+            val initialListing = it.listing
+            val listing = if (initialListing is Listing.Search) {
+                initialListing.copy(filters = source.getFilterList())
+            } else {
+                initialListing
+            }
+
+            it.copy(
+                listing = listing,
+                filters = source.getFilterList(),
+            )
+        }
 
         // SY -->
         val savedSearchFilters = savedSearch
@@ -234,8 +246,12 @@ open class BrowseSourceScreenModel(
     }
     // SY <--
 
-    fun reset() {
+    fun resetFilters() {
         mutableState.update { it.copy(filters = source.getFilterList()) }
+    }
+
+    fun setListing(listing: Listing) {
+        mutableState.update { it.copy(listing = listing) }
     }
 
     fun search(query: String? = null, filters: FilterList? = null) {
@@ -244,21 +260,12 @@ open class BrowseSourceScreenModel(
             mutableState.update { state -> state.copy(filters = filters) }
         }
         // SY <--
-        Filter.valueOf(query).let {
-            if (it !is Filter.UserInput) {
-                mutableState.update { state -> state.copy(currentFilter = it) }
-                return
-            }
-        }
+        val input = state.value.listing as? Listing.Search
+            ?: Listing.Search(query = null, filters = source.getFilterList())
 
-        val input = if (state.value.currentFilter is Filter.UserInput) {
-            state.value.currentFilter as Filter.UserInput
-        } else {
-            Filter.UserInput()
-        }
         mutableState.update {
             it.copy(
-                currentFilter = input.copy(
+                listing = input.copy(
                     query = query ?: input.query,
                     filters = filters ?: input.filters,
                 ),
@@ -297,14 +304,14 @@ open class BrowseSourceScreenModel(
         }
 
         mutableState.update {
-            val filter = if (genreExists) {
-                Filter.UserInput(filters = defaultFilters)
+            val listing = if (genreExists) {
+                Listing.Search(query = null, filters = defaultFilters)
             } else {
-                Filter.UserInput(query = genreName)
+                Listing.Search(query = genreName, filters = defaultFilters)
             }
             it.copy(
                 filters = defaultFilters,
-                currentFilter = filter,
+                listing = listing,
             )
         }
     }
@@ -472,8 +479,8 @@ open class BrowseSourceScreenModel(
             // SY <--
             onFilterClicked = { search(filters = state.filters) },
             onResetClicked = {
-                reset()
-                filterSheet?.setFilters(state.value.filterItems)
+                resetFilters()
+                filterSheet?.setFilters(state.filterItems)
             },
             // EXH -->
             onSaveClicked = {
@@ -511,20 +518,20 @@ open class BrowseSourceScreenModel(
             // EXH <--
         )
 
-        filterSheet?.setFilters(state.value.filterItems)
+        filterSheet?.setFilters(state.filterItems)
     }
 
-    sealed class Filter(open val query: String?, open val filters: FilterList) {
-        object Popular : Filter(query = GetRemoteManga.QUERY_POPULAR, filters = FilterList())
-        object Latest : Filter(query = GetRemoteManga.QUERY_LATEST, filters = FilterList())
-        data class UserInput(override val query: String? = null, override val filters: FilterList = FilterList()) : Filter(query = query, filters = filters)
+    sealed class Listing(open val query: String?, open val filters: FilterList) {
+        object Popular : Listing(query = GetRemoteManga.QUERY_POPULAR, filters = FilterList())
+        object Latest : Listing(query = GetRemoteManga.QUERY_LATEST, filters = FilterList())
+        data class Search(override val query: String?, override val filters: FilterList) : Listing(query = query, filters = filters)
 
         companion object {
-            fun valueOf(query: String?): Filter {
+            fun valueOf(query: String?): Listing {
                 return when (query) {
                     GetRemoteManga.QUERY_POPULAR -> Popular
                     GetRemoteManga.QUERY_LATEST -> Latest
-                    else -> UserInput(query = query)
+                    else -> Search(query = query, filters = FilterList()) // filters are filled in later
                 }
             }
         }
@@ -548,7 +555,7 @@ open class BrowseSourceScreenModel(
 
     @Immutable
     data class State(
-        val currentFilter: Filter,
+        val listing: Listing,
         val filters: FilterList = FilterList(),
         val toolbarQuery: String? = null,
         val dialog: Dialog? = null,
@@ -557,7 +564,7 @@ open class BrowseSourceScreenModel(
         // SY <--
     ) {
         val filterItems get() = filters.toItems()
-        val isUserQuery get() = currentFilter is Filter.UserInput && !currentFilter.query.isNullOrEmpty()
+        val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
 
     // EXH -->
@@ -565,8 +572,8 @@ open class BrowseSourceScreenModel(
         name: String,
     ) {
         coroutineScope.launchNonCancellable {
-            val query = state.value.currentFilter.query
-            val filterList = state.value.currentFilter.filters.ifEmpty { source.getFilterList() }
+            val query = state.value.listing.query
+            val filterList = state.value.listing.filters.ifEmpty { source.getFilterList() }
             insertSavedSearch.await(
                 SavedSearch(
                     id = -1,

@@ -199,7 +199,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
     }
 
     private fun onSavedSearchClick(navigator: Navigator, source: CatalogueSource, savedSearch: SavedSearch) {
-        navigator.replace(BrowseSourceScreen(source.id, savedSearch = savedSearch.id))
+        navigator.replace(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
     }
 
     private fun onSearchClick(navigator: Navigator, source: CatalogueSource, query: String) {

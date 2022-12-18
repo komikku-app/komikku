@@ -30,7 +30,7 @@ import eu.kanade.tachiyomi.util.Constants
 data class SourceSearchScreen(
     private val oldManga: Manga,
     private val sourceId: Long,
-    private val query: String? = null,
+    private val query: String?,
 ) : Screen {
 
     @Composable
@@ -39,7 +39,7 @@ data class SourceSearchScreen(
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
 
-        val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId = sourceId, searchQuery = query) }
+        val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }

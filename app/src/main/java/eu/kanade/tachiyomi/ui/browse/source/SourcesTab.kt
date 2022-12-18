@@ -12,7 +12,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.interactor.GetRemoteManga.Companion.QUERY_POPULAR
 import eu.kanade.presentation.browse.SourceCategoriesDialog
 import eu.kanade.presentation.browse.SourceOptionsDialog
 import eu.kanade.presentation.browse.SourcesScreen
@@ -21,6 +20,7 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen.SmartSearchConfig
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import exh.ui.smartsearch.SmartSearchScreen
@@ -62,12 +62,12 @@ fun Screen.sourcesTab(
             SourcesScreen(
                 state = state,
                 contentPadding = contentPadding,
-                onClickItem = { source, query ->
+                onClickItem = { source, listing ->
                     // SY -->
                     val screen = when {
                         smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
-                        (query.isBlank() || query == QUERY_POPULAR) && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
-                        else -> BrowseSourceScreen(source.id, query)
+                        listing == Listing.Popular && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
+                        else -> BrowseSourceScreen(source.id, listing.query)
                     }
                     screenModel.onOpenSource(source)
                     navigator.push(screen)
