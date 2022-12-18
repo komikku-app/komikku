@@ -29,9 +29,7 @@ class MetadataViewScreenModel(
         coroutineScope.launchIO {
             _manga.value = getManga.await(mangaId)
         }
-    }
 
-    init {
         coroutineScope.launchIO {
             val metadataSource = sourceManager.get(sourceId)?.getMainSource<MetadataSource<*, *>>()
             if (metadataSource == null) {

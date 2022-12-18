@@ -11,6 +11,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -22,7 +23,6 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.concurrent.thread
-import kotlin.coroutines.CoroutineContext
 
 /**
  * In memory Int -> Obj lookup table implementation that
@@ -36,7 +36,7 @@ class MemAutoFlushingLookupTable<T>(
     file: File,
     private val serializer: EntrySerializer<T>,
     private val debounceTimeMs: Long = 3000,
-) : CoroutineScope, Closeable {
+) : CoroutineScope by CoroutineScope(Dispatchers.IO + SupervisorJob()), Closeable {
     /**
      * The context of this scope.
      * Context is encapsulated by the scope and used for implementation of coroutine builders that are extensions on the scope.
@@ -44,8 +44,6 @@ class MemAutoFlushingLookupTable<T>(
      *
      * By convention, should contain an instance of a [job][Job] to enforce structured concurrency.
      */
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + SupervisorJob()
 
     private val table = SparseArray<T>(INITIAL_SIZE)
     private val mutex = Mutex(true)
@@ -202,7 +200,7 @@ class MemAutoFlushingLookupTable<T>(
      * @throws Exception if this resource cannot be closed
      */
     override fun close() {
-        runBlocking { coroutineContext[Job]?.cancelAndJoin() }
+        runBlocking { coroutineContext.job.cancelAndJoin() }
         Runtime.getRuntime().removeShutdownHook(shutdownHook)
     }
 
