@@ -195,7 +195,7 @@ object ImageUtil {
      * to compensate for scaling.
      */
 
-    fun AddHorizontalCenterMargin(imageStream: InputStream, viewHeight: Int, backgroundContext: Context): InputStream {
+    fun addHorizontalCenterMargin(imageStream: InputStream, viewHeight: Int, backgroundContext: Context): InputStream {
         val imageBitmap = ImageDecoder.newInstance(imageStream)?.decode()!!
         val height = imageBitmap.height
         val width = imageBitmap.width
@@ -642,18 +642,18 @@ object ImageUtil {
         canvas.drawColor(background)
         val upperPart = Rect(
             if (isLTR) 0 else width2 + centerMargin,
-            (maxHeight - imageBitmap.height) / 2,
-            (if (isLTR) 0 else width2 + centerMargin) + imageBitmap.width,
-            imageBitmap.height + (maxHeight - imageBitmap.height) / 2,
+            (maxHeight - height) / 2,
+            (if (isLTR) 0 else width2 + centerMargin) + width,
+            height + (maxHeight - height) / 2,
         )
 
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
         progressCallback?.invoke(98)
         val bottomPart = Rect(
             if (!isLTR) 0 else width + centerMargin,
-            (maxHeight - imageBitmap2.height) / 2,
-            (if (!isLTR) 0 else width + centerMargin) + imageBitmap2.width,
-            imageBitmap2.height + (maxHeight - imageBitmap2.height) / 2,
+            (maxHeight - height2) / 2,
+            (if (!isLTR) 0 else width + centerMargin) + width2,
+            height2 + (maxHeight - height2) / 2,
         )
 
         canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)

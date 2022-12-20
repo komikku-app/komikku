@@ -173,7 +173,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     private fun getPageHolder(page: ReaderPage): PagerPageHolder? =
         pager.children
-            .filterIsInstance(PagerPageHolder::class.java)
+            .filterIsInstance<PagerPageHolder>()
             .firstOrNull { it.item.first == page || it.item.second == page }
 
     /**
