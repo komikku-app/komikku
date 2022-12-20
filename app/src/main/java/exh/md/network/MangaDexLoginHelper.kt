@@ -2,88 +2,88 @@ package exh.md.network
 
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.log.xLogE
-import exh.log.xLogI
-import exh.md.dto.LoginRequestDto
-import exh.md.dto.RefreshTokenDto
-import exh.md.service.MangaDexAuthService
+import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
+import eu.kanade.tachiyomi.network.POST
+import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.parseAs
+import eu.kanade.tachiyomi.util.system.logcat
+import exh.md.utils.MdApi
+import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.time.Duration.Companion.seconds
+import logcat.LogPriority
+import okhttp3.FormBody
+import okhttp3.Headers
+import okhttp3.OkHttpClient
 
-class MangaDexLoginHelper(authServiceLazy: Lazy<MangaDexAuthService>, val preferences: TrackPreferences, val mdList: MdList) {
-    private val authService by authServiceLazy
-    suspend fun isAuthenticated(): Boolean {
-        return runCatching { authService.checkToken().isAuthenticated }
-            .getOrElse { e ->
-                xLogE("error authenticating", e)
+class MangaDexLoginHelper(
+    private val client: OkHttpClient,
+    private val preferences: TrackPreferences,
+    private val mdList: MdList,
+    private val mangaDexAuthInterceptor: MangaDexAuthInterceptor,
+) {
+
+    /**
+     *  Login given the generated authorization code
+     */
+    suspend fun login(authorizationCode: String): Boolean {
+        val loginFormBody = FormBody.Builder()
+            .add("client_id", MdConstants.Login.clientId)
+            .add("grant_type", MdConstants.Login.authorizationCode)
+            .add("code", authorizationCode)
+            .add("code_verifier", MdUtil.getPkceChallengeCode())
+            .add("redirect_uri", MdConstants.Login.redirectUri)
+            .build()
+
+        val error = kotlin.runCatching {
+            val data = client.newCall(POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody)).await().parseAs<OAuth>()
+            mangaDexAuthInterceptor.setAuth(data)
+        }.exceptionOrNull()
+
+        return when (error == null) {
+            true -> true
+            false -> {
+                logcat(LogPriority.ERROR, error) { "Error logging in" }
+                mdList.logout()
                 false
             }
+        }
     }
 
-    suspend fun refreshToken(): Boolean {
-        val refreshToken = MdUtil.refreshToken(preferences, mdList)
-        if (refreshToken.isNullOrEmpty()) {
-            return false
+    suspend fun logout(): Boolean {
+        val oauth = MdUtil.loadOAuth(preferences, mdList)
+        val sessionToken = oauth?.access_token
+        val refreshToken = oauth?.refresh_token
+        if (refreshToken.isNullOrEmpty() || sessionToken.isNullOrEmpty()) {
+            mdList.logout()
+            return true
         }
-        val refresh = runCatching {
-            val jsonResponse = authService.refreshToken(RefreshTokenDto(refreshToken))
-            MdUtil.updateLoginToken(jsonResponse.token, preferences, mdList)
-        }
 
-        val e = refresh.exceptionOrNull()
-        if (e is CancellationException) throw e
+        val formBody = FormBody.Builder()
+            .add("client_id", MdConstants.Login.clientId)
+            .add("refresh_token", refreshToken)
+            .add("redirect_uri", MdConstants.Login.redirectUri)
+            .build()
 
-        return refresh.isSuccess
-    }
+        val error = kotlin.runCatching {
+            client.newCall(
+                POST(
+                    url = MdApi.baseAuthUrl + MdApi.logout,
+                    headers = Headers.Builder().add("Authorization", "Bearer $sessionToken")
+                        .build(),
+                    body = formBody,
+                ),
+            ).await()
+            mdList.logout()
+        }.exceptionOrNull()
 
-    suspend fun login(
-        username: String,
-        password: String,
-    ): Boolean {
-        return withIOContext {
-            val loginRequest = LoginRequestDto(username, password)
-            val loginResult = runCatching { authService.login(loginRequest) }
-                .onFailure { this@MangaDexLoginHelper.xLogE("Error logging in", it) }
-
-            val e = loginResult.exceptionOrNull()
-            if (e is CancellationException) throw e
-
-            val loginResponseDto = loginResult.getOrNull()
-            if (loginResponseDto != null) {
-                MdUtil.updateLoginToken(
-                    loginResponseDto.token,
-                    preferences,
-                    mdList,
-                )
+        return when (error == null) {
+            true -> {
+                mangaDexAuthInterceptor.setAuth(null)
                 true
-            } else {
-                false
             }
-        }
-    }
-
-    suspend fun login(): Boolean {
-        val username = preferences.trackUsername(mdList).get()
-        val password = preferences.trackPassword(mdList).get()
-        if (username.isBlank() || password.isBlank()) {
-            xLogI("No username or password stored, can't login")
-            return false
-        }
-        return login(username, password)
-    }
-
-    suspend fun logout() {
-        return withIOContext {
-            withTimeoutOrNull(10.seconds) {
-                runCatching {
-                    authService.logout()
-                }.onFailure {
-                    if (it is CancellationException) throw it
-                    this@MangaDexLoginHelper.xLogE("Error logging out", it)
-                }
+            false -> {
+                logcat(LogPriority.ERROR, error) { "Error logging out" }
+                false
             }
         }
     }

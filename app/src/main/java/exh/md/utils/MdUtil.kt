@@ -4,26 +4,27 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
+import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
-import exh.log.xLogD
-import exh.md.dto.LoginBodyTokenDto
+import eu.kanade.tachiyomi.util.PkceUtil
 import exh.md.dto.MangaAttributesDto
 import exh.md.dto.MangaDataDto
 import exh.md.network.NoSessionException
 import exh.source.getMainSource
 import exh.util.dropBlank
 import exh.util.floor
-import exh.util.nullIfBlank
 import exh.util.nullIfZero
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.jsoup.parser.Parser
@@ -190,31 +191,56 @@ class MdUtil {
             return "$cdnUrl/covers/$dexId/$fileName"
         }
 
-        fun getLoginBody(preferences: TrackPreferences, mdList: MdList) = preferences.trackToken(mdList)
-            .get()
-            .nullIfBlank()
-            ?.let {
-                try {
-                    jsonParser.decodeFromString<LoginBodyTokenDto>(it)
-                } catch (e: SerializationException) {
-                    xLogD("Unable to load login body")
-                    null
-                }
+        fun saveOAuth(preferences: TrackPreferences, mdList: MdList, oAuth: OAuth?) {
+            if (oAuth == null) {
+                preferences.trackToken(mdList).delete()
+            } else {
+                preferences.trackToken(mdList).set(jsonParser.encodeToString(oAuth))
             }
-
-        fun sessionToken(preferences: TrackPreferences, mdList: MdList) = getLoginBody(preferences, mdList)?.session
-
-        fun refreshToken(preferences: TrackPreferences, mdList: MdList) = getLoginBody(preferences, mdList)?.refresh
-
-        fun updateLoginToken(token: LoginBodyTokenDto, preferences: TrackPreferences, mdList: MdList) {
-            preferences.trackToken(mdList).set(jsonParser.encodeToString(token))
         }
+
+        fun loadOAuth(preferences: TrackPreferences, mdList: MdList): OAuth? {
+            return try {
+                jsonParser.decodeFromString<OAuth>(preferences.trackToken(mdList).get())
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        fun sessionToken(preferences: TrackPreferences, mdList: MdList) = loadOAuth(preferences, mdList)?.access_token
+
+        fun refreshToken(preferences: TrackPreferences, mdList: MdList) = loadOAuth(preferences, mdList)?.refresh_token
 
         fun getAuthHeaders(headers: Headers, preferences: TrackPreferences, mdList: MdList) =
             headers.newBuilder().add(
                 "Authorization",
                 "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException()),
             ).build()
+
+        private var codeVerifier: String? = null
+
+        fun refreshTokenRequest(oauth: OAuth): Request {
+            val formBody = FormBody.Builder()
+                .add("client_id", MdConstants.Login.clientId)
+                .add("grant_type", MdConstants.Login.refreshToken)
+                .add("refresh_token", oauth.refresh_token)
+                .add("code_verifier", getPkceChallengeCode())
+                .add("redirect_uri", MdConstants.Login.redirectUri)
+                .build()
+
+            // Add the Authorization header manually as this particular
+            // request is called by the interceptor itself so it doesn't reach
+            // the part where the token is added automatically.
+            val headers = Headers.Builder()
+                .add("Authorization", "Bearer ${oauth.access_token}")
+                .build()
+
+            return POST(MdApi.baseAuthUrl + MdApi.token, body = formBody, headers = headers)
+        }
+
+        fun getPkceChallengeCode(): String {
+            return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
+        }
 
         fun getEnabledMangaDex(preferences: UnsortedPreferences, sourcePreferences: SourcePreferences = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
             return getEnabledMangaDexs(sourcePreferences, sourceManager).let { mangadexs ->

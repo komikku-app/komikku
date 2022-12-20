@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import exh.md.network.MangaDexAuthInterceptor
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import uy.kohesive.injekt.Injekt
@@ -22,6 +23,8 @@ import uy.kohesive.injekt.api.get
 class MdList(private val context: Context, id: Long) : TrackService(id) {
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(Injekt.get()) }
+
+    val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
 
     @StringRes
     override fun nameRes(): Int = R.string.mdlist
@@ -156,6 +159,9 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
         super.logout()
         trackPreferences.trackToken(this).delete()
     }
+
+    override val isLogged: Boolean
+        get() = trackPreferences.trackToken(this).get().isNotEmpty()
 
     class MangaDexNotFoundException : Exception("Mangadex not enabled")
 }

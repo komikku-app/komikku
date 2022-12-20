@@ -510,6 +510,11 @@ object EXHMigrations {
                         }
                     }
                 }
+                if (oldVersion under 45) {
+                    // Force MangaDex log out due to login flow change
+                    val trackManager = Injekt.get<TrackManager>()
+                    trackManager.mdList.logout()
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

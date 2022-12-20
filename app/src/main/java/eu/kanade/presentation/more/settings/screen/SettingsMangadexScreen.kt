@@ -2,25 +2,15 @@ package eu.kanade.presentation.more.settings.screen
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,15 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.util.collectAsState
 import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
@@ -51,8 +37,9 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
-import exh.log.xLogW
+import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
@@ -71,131 +58,14 @@ object SettingsMangadexScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val sourcePreferences: SourcePreferences = remember { Injekt.get() }
         val unsortedPreferences: UnsortedPreferences = remember { Injekt.get() }
+        val trackPreferences: TrackPreferences = remember { Injekt.get() }
         val mdex = remember { MdUtil.getEnabledMangaDex(unsortedPreferences, sourcePreferences) } ?: return emptyList()
 
         return listOf(
-            loginPreference(mdex),
+            loginPreference(mdex, trackPreferences),
             preferredMangaDexId(unsortedPreferences, sourcePreferences),
             syncMangaDexIntoThis(unsortedPreferences),
             syncLibraryToMangaDex(),
-        )
-    }
-
-    @Composable
-    fun LoginDialog(
-        mdex: MangaDex,
-        onDismissRequest: () -> Unit,
-        onLoginSuccess: () -> Unit,
-    ) {
-        val context = LocalContext.current
-        val scope = rememberCoroutineScope()
-
-        var username by remember { mutableStateOf(TextFieldValue(mdex.getUsername())) }
-        var password by remember { mutableStateOf(TextFieldValue(mdex.getPassword())) }
-        var processing by remember { mutableStateOf(false) }
-        var inputError by remember { mutableStateOf(false) }
-
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.login_title, mdex.name),
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = onDismissRequest) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(R.string.action_close),
-                        )
-                    }
-                }
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = username,
-                        onValueChange = { username = it },
-                        label = { Text(text = stringResource(R.string.username)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        singleLine = true,
-                        isError = inputError && username.text.isEmpty(),
-                    )
-
-                    var hidePassword by remember { mutableStateOf(true) }
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text(text = stringResource(R.string.password)) },
-                        trailingIcon = {
-                            IconButton(onClick = { hidePassword = !hidePassword }) {
-                                Icon(
-                                    imageVector = if (hidePassword) {
-                                        Icons.Outlined.Visibility
-                                    } else {
-                                        Icons.Outlined.VisibilityOff
-                                    },
-                                    contentDescription = null,
-                                )
-                            }
-                        },
-                        visualTransformation = if (hidePassword) {
-                            PasswordVisualTransformation()
-                        } else {
-                            VisualTransformation.None
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        singleLine = true,
-                        isError = inputError && password.text.isEmpty(),
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !processing,
-                    onClick = {
-                        if (username.text.isEmpty() || password.text.isEmpty()) {
-                            inputError = true
-                            return@Button
-                        }
-                        scope.launchIO {
-                            try {
-                                inputError = false
-                                processing = true
-                                val result = mdex.login(
-                                    username = username.text,
-                                    password = password.text,
-                                    twoFactorCode = null,
-                                )
-                                if (result) {
-                                    onDismissRequest()
-                                    onLoginSuccess()
-                                    withUIContext {
-                                        context.toast(R.string.login_success)
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                xLogW("Login to Mangadex error", e)
-                                withUIContext {
-                                    e.message?.let { context.toast(it) }
-                                }
-                            } finally {
-                                processing = false
-                            }
-                        }
-                    },
-                ) {
-                    val id = if (processing) R.string.loading else R.string.login
-                    Text(text = stringResource(id))
-                }
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = !processing,
-                dismissOnClickOutside = !processing,
-            ),
         )
     }
 
@@ -223,18 +93,10 @@ object SettingsMangadexScreen : SearchableSettings {
     }
 
     @Composable
-    fun loginPreference(mdex: MangaDex): Preference.PreferenceItem.MangaDexPreference {
+    fun loginPreference(mdex: MangaDex, trackPreferences: TrackPreferences): Preference.PreferenceItem.MangaDexPreference {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        var loggedIn by remember { mutableStateOf(mdex.isLogged()) }
-        var loginDialogOpen by remember { mutableStateOf(false) }
-        if (loginDialogOpen) {
-            LoginDialog(
-                mdex = mdex,
-                onDismissRequest = { loginDialogOpen = false },
-                onLoginSuccess = { loggedIn = true },
-            )
-        }
+        val loggedIn by remember { trackPreferences.trackToken(mdex.mdList) }.collectAsState()
         var logoutDialogOpen by remember { mutableStateOf(false) }
         if (logoutDialogOpen) {
             LogoutDialog(
@@ -244,7 +106,6 @@ object SettingsMangadexScreen : SearchableSettings {
                     scope.launchIO {
                         try {
                             if (mdex.logout()) {
-                                loggedIn = false
                                 withUIContext {
                                     context.toast(R.string.logout_success)
                                 }
@@ -265,9 +126,12 @@ object SettingsMangadexScreen : SearchableSettings {
         }
         return Preference.PreferenceItem.MangaDexPreference(
             title = mdex.name + " Login",
-            loggedIn = loggedIn,
+            loggedIn = loggedIn.isNotEmpty(),
             login = {
-                loginDialogOpen = true
+                context.openInBrowser(
+                    MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()),
+                    forceDefaultBrowser = true,
+                )
             },
             logout = {
                 logoutDialogOpen = true

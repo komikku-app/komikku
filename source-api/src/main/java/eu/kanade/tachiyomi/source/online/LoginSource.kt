@@ -13,7 +13,9 @@ interface LoginSource : Source {
 
     fun getPassword(): String
 
-    suspend fun login(username: String, password: String, twoFactorCode: String?): Boolean
+    suspend fun login(username: String, password: String, twoFactorCode: String?): Boolean = false
+
+    suspend fun login(authCode: String): Boolean = false
 
     suspend fun logout(): Boolean
 

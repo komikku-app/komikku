@@ -34,7 +34,6 @@ import exh.md.handlers.MangaPlusHandler
 import exh.md.handlers.PageHandler
 import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
-import exh.md.network.TokenAuthenticator
 import exh.md.service.MangaDexAuthService
 import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
@@ -76,14 +75,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, trackPreferences, mdList) }
-
-    private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, trackPreferences, mdList)
+    private val loginHelper = MangaDexLoginHelper(network.client, trackPreferences, mdList, mdList.interceptor)
 
     override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
-        .authenticator(
-            TokenAuthenticator(loginHelper),
-        )
+        .addInterceptor(mdList.interceptor)
         .build()
 
     private fun dataSaver() = sourcePreferences.getBoolean(getDataSaverPreferenceKey(mdLang.lang), false)
@@ -94,7 +89,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val mangadexService by lazy {
         MangaDexService(client)
     }
-    private val mangadexAuthService by mangadexAuthServiceLazy
+    private val mangadexAuthService by lazy {
+        MangaDexAuthService(baseHttpClient, headers)
+    }
     private val similarService by lazy {
         SimilarService(client)
     }
@@ -232,24 +229,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mdList.getPassword()
     }
 
-    override suspend fun login(
-        username: String,
-        password: String,
-        twoFactorCode: String?,
-    ): Boolean {
-        val result = loginHelper.login(username, password)
-        return if (result) {
-            mdList.saveCredentials(username, password)
-            true
-        } else {
-            false
-        }
+    override suspend fun login(authCode: String): Boolean {
+        return loginHelper.login(authCode)
     }
 
     override suspend fun logout(): Boolean {
-        loginHelper.logout()
-        mdList.logout()
-        return true
+        return loginHelper.logout()
     }
 
     // FollowsSource methods
