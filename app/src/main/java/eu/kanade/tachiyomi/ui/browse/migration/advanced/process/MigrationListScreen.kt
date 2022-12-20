@@ -62,24 +62,19 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
 
         LaunchedEffect(screenModel) {
             screenModel.navigateOut.collect {
-                if (items.orEmpty().size == 1) {
-                    val hasDetails = navigator.items.any { it is MangaScreen }
-                    if (hasDetails) {
-                        val manga = (items.orEmpty().firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.let {
-                            screenModel.getManga(it.id)
-                        }
-                        withUIContext {
-                            if (manga != null) {
-                                val newStack = navigator.items.filter {
-                                    it !is MangaScreen &&
-                                        it !is MigrationListScreen &&
-                                        it !is PreMigrationScreen
-                                } + MangaScreen(manga.id)
-                                navigator replaceAll newStack.first()
-                                navigator.push(newStack.drop(1))
-                            } else {
-                                navigator.pop()
-                            }
+                if (items.orEmpty().size == 1 && navigator.items.any { it is MangaScreen }) {
+                    val mangaId = (items.orEmpty().firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.id
+                    withUIContext {
+                        if (mangaId != null) {
+                            val newStack = navigator.items.filter {
+                                it !is MangaScreen &&
+                                    it !is MigrationListScreen &&
+                                    it !is PreMigrationScreen
+                            } + MangaScreen(mangaId)
+                            navigator replaceAll newStack.first()
+                            navigator.push(newStack.drop(1))
+                        } else {
+                            navigator.pop()
                         }
                     }
                 } else {
