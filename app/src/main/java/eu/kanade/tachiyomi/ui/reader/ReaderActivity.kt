@@ -1174,7 +1174,7 @@ class ReaderActivity : BaseActivity() {
 
         updateBottomButtons()
         // SY <--
-        binding.toolbar.title = manga.title
+        supportActionBar?.title = manga.title
 
         binding.pageSlider.isRTL = newViewer is R2LPagerViewer
         if (newViewer is R2LPagerViewer) {
