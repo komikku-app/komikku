@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
+import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
@@ -55,7 +56,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Currently active item. It can be a chapter page or a chapter transition.
      */
     /* [EXH] private */
-    var currentPage: Any? = null
+    var currentPage: ReaderItem? = null
 
     /**
      * Viewer chapters to set when the pager enters idle mode. Otherwise, if the view was settling
@@ -83,7 +84,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             }
         }
 
-    private var pagerListener = object : ViewPager.SimpleOnPageChangeListener() {
+    private val pagerListener = object : ViewPager.SimpleOnPageChangeListener() {
         override fun onPageSelected(position: Int) {
             if (activity.isScrollingThroughPages.not()) {
                 activity.hideMenu()

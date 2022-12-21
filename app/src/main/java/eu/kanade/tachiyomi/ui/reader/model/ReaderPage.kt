@@ -15,7 +15,7 @@ open class ReaderPage(
     // SY <--
     var stream: (() -> InputStream)? = null,
 
-) : Page(index, url, imageUrl, null) {
+) : Page(index, url, imageUrl, null), ReaderItem {
 
     open lateinit var chapter: ReaderChapter
 

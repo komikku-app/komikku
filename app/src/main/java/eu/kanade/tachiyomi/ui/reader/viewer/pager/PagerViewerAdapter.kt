@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
+import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.hasMissingChapters
@@ -23,13 +24,13 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     /**
      * Paired list of currently set items.
      */
-    var joinedItems: MutableList<Pair<Any, Any?>> = mutableListOf()
+    var joinedItems: MutableList<Pair<ReaderItem, ReaderItem?>> = mutableListOf()
         private set
 
     /**
      * Single list of items
      */
-    private var subItems: MutableList<Any> = mutableListOf()
+    private var subItems: MutableList<ReaderItem> = mutableListOf()
 
     /**
      * Holds preprocessed items so they don't get removed when changing chapter
@@ -62,7 +63,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
      * has R2L direction.
      */
     fun setChapters(chapters: ViewerChapters, forceTransition: Boolean) {
-        val newItems = mutableListOf<Any>()
+        val newItems = mutableListOf<ReaderItem>()
 
         // Forces chapter transition if there is missing chapters
         val prevHasMissingChapters = hasMissingChapters(chapters.currChapter, chapters.prevChapter)
@@ -233,30 +234,33 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             subItems.forEach {
                 (it as? ReaderPage)?.shiftedPage = false
             }
-            this.joinedItems = subItems.map { Pair<Any, Any?>(it, null) }.toMutableList()
+            this.joinedItems = subItems.map { Pair<ReaderItem, ReaderItem?>(it, null) }.toMutableList()
             if (viewer is R2LPagerViewer) {
                 joinedItems.reverse()
             }
         } else {
             val pagedItems = mutableListOf<MutableList<ReaderPage?>>()
-            val otherItems = mutableListOf<Any>()
+            val otherItems = mutableListOf<ReaderItem>()
             pagedItems.add(mutableListOf())
             // Step 1: segment the pages and transition pages
             subItems.forEach {
-                if (it is ReaderPage) {
-                    if (pagedItems.last().lastOrNull() != null &&
-                        pagedItems.last().last()?.chapter?.chapter?.id != it.chapter.chapter.id
-                    ) {
+                when (it) {
+                    is ReaderPage -> {
+                        if (pagedItems.last().lastOrNull() != null &&
+                            pagedItems.last().last()?.chapter?.chapter?.id != it.chapter.chapter.id
+                        ) {
+                            pagedItems.add(mutableListOf())
+                        }
+                        pagedItems.last().add(it)
+                    }
+                    is ChapterTransition -> {
+                        otherItems.add(it)
                         pagedItems.add(mutableListOf())
                     }
-                    pagedItems.last().add(it)
-                } else {
-                    otherItems.add(it)
-                    pagedItems.add(mutableListOf())
                 }
             }
             var pagedIndex = 0
-            val subJoinedItems = mutableListOf<Pair<Any, Any?>>()
+            val subJoinedItems = mutableListOf<Pair<ReaderItem, ReaderItem?>>()
             // Step 2: run through each set of pages
             pagedItems.forEach { items ->
 
