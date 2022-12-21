@@ -1,8 +1,11 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -91,7 +94,8 @@ fun MigrationListScreen(
                     Modifier
                         .fillMaxWidth()
                         .animateItemPlacement()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp)
+                        .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -100,7 +104,8 @@ fun MigrationListScreen(
                         modifier = Modifier
                             .padding(top = 8.dp)
                             .weight(1f)
-                            .align(Alignment.Top),
+                            .align(Alignment.Top)
+                            .fillMaxHeight(),
                         manga = migrationItem.manga,
                         sourcesString = migrationItem.sourcesString,
                         chapterInfo = migrationItem.chapterInfo,
@@ -117,7 +122,8 @@ fun MigrationListScreen(
                         modifier = Modifier
                             .padding(top = 8.dp)
                             .weight(1f)
-                            .align(Alignment.Top),
+                            .align(Alignment.Top)
+                            .fillMaxHeight(),
                         migrationItem = migrationItem,
                         result = result,
                         getManga = getManga,

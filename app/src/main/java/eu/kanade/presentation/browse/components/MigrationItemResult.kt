@@ -3,11 +3,13 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,21 +39,22 @@ fun MigrationItemResult(
     getSourceName: (Manga) -> String,
     onMigrationItemClick: (Manga) -> Unit,
 ) {
-    Box(modifier) {
+    Box(modifier.height(IntrinsicSize.Min)) {
         when (result) {
             MigratingManga.SearchResult.Searching -> Box(
                 modifier = Modifier
                     .widthIn(max = 150.dp)
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .aspectRatio(MangaCover.Book.ratio),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
             MigratingManga.SearchResult.NotFound -> Column(
-                Modifier.widthIn(max = 150.dp)
-                    .fillMaxWidth()
-                    .padding(4.dp),
+                Modifier
+                    .widthIn(max = 150.dp)
+                    .fillMaxSize()
+                    .padding(top = 4.dp),
             ) {
                 Image(
                     painter = rememberResourceBitmapPainter(id = R.drawable.cover_error),
@@ -59,7 +62,7 @@ fun MigrationItemResult(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(MangaCover.Book.ratio)
-                        .clip(RoundedCornerShape(4.dp)),
+                        .clip(MaterialTheme.shapes.extraSmall),
                     contentScale = ContentScale.Crop,
                 )
                 Text(
@@ -86,7 +89,7 @@ fun MigrationItemResult(
                 if (item != null) {
                     val (manga, chapterInfo, source) = item!!
                     MigrationItem(
-                        modifier = Modifier,
+                        modifier = Modifier.fillMaxSize(),
                         manga = manga,
                         sourcesString = source,
                         chapterInfo = chapterInfo,
