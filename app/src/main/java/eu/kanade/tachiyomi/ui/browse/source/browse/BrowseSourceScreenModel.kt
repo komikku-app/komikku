@@ -143,6 +143,51 @@ open class BrowseSourceScreenModel(
 
     val source = sourceManager.get(sourceId) as CatalogueSource
 
+    init {
+        mutableState.update {
+            var query: String? = null
+            var listing = it.listing
+
+            if (listing is Listing.Search) {
+                query = listing.query
+                listing = Listing.Search(query, source.getFilterList())
+            }
+
+            it.copy(
+                listing = listing,
+                filters = source.getFilterList(),
+                toolbarQuery = query,
+            )
+        }
+
+        // SY -->
+        val savedSearchFilters = savedSearch
+        val jsonFilters = filtersJson
+        val filters = state.value.filters
+        if (savedSearchFilters != null) {
+            val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
+            if (savedSearch != null) {
+                search(query = savedSearch.query.nullIfBlank(), filters = savedSearch.filterList)
+            }
+        } else if (jsonFilters != null) {
+            runCatching {
+                val filtersJson = Json.decodeFromString<JsonArray>(jsonFilters)
+                filterSerializer.deserialize(filters, filtersJson)
+                search(filters = filters)
+            }
+        }
+
+        getExhSavedSearch.subscribe(source.id, source::getFilterList)
+            .onEach { savedSearches ->
+                mutableState.update { it.copy(savedSearches = savedSearches) }
+                withUIContext {
+                    filterSheet?.setSavedSearches(savedSearches)
+                }
+            }
+            .launchIn(coroutineScope)
+        // SY <--
+    }
+
     /**
      * Sheet containing filter items.
      */
@@ -176,55 +221,6 @@ open class BrowseSourceScreenModel(
                 .cachedIn(coroutineScope)
         }
         .stateIn(coroutineScope, SharingStarted.Lazily, emptyFlow())
-
-    // SY -->
-    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
-
-    private val filterSerializer = FilterSerializer()
-    // SY <--
-
-    init {
-        mutableState.update {
-            val initialListing = it.listing
-            val listing = if (initialListing is Listing.Search) {
-                initialListing.copy(filters = source.getFilterList())
-            } else {
-                initialListing
-            }
-
-            it.copy(
-                listing = listing,
-                filters = source.getFilterList(),
-            )
-        }
-
-        // SY -->
-        val savedSearchFilters = savedSearch
-        val jsonFilters = filtersJson
-        val filters = state.value.filters
-        if (savedSearchFilters != null) {
-            val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
-            if (savedSearch != null) {
-                search(query = savedSearch.query.nullIfBlank(), filters = savedSearch.filterList)
-            }
-        } else if (jsonFilters != null) {
-            runCatching {
-                val filtersJson = Json.decodeFromString<JsonArray>(jsonFilters)
-                filterSerializer.deserialize(filters, filtersJson)
-                search(filters = filters)
-            }
-        }
-
-        getExhSavedSearch.subscribe(source.id, source::getFilterList)
-            .onEach { savedSearches ->
-                mutableState.update { it.copy(savedSearches = savedSearches) }
-                withUIContext {
-                    filterSheet?.setSavedSearches(savedSearches)
-                }
-            }
-            .launchIn(coroutineScope)
-        // SY <--
-    }
 
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
