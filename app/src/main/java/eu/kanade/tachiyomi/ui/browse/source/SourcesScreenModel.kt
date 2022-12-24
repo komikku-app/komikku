@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import eu.kanade.core.prefs.asState
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetShowLatest
@@ -51,7 +53,7 @@ class SourcesScreenModel(
     private val _events = Channel<Event>(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
 
-    val useNewSourceNavigation = uiPreferences.useNewSourceNavigation().get()
+    val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(coroutineScope)
 
     init {
         // SY -->
