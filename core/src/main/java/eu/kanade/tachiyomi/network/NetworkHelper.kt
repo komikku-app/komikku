@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.network
 import android.content.Context
 import eu.kanade.tachiyomi.i18n.BuildConfig
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
-import eu.kanade.tachiyomi.network.interceptor.Http103Interceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -24,7 +23,6 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
     open /* SY <-- */val cookieManager = AndroidCookieJar()
 
     private val userAgentInterceptor by lazy { UserAgentInterceptor() }
-    private val http103Interceptor by lazy { Http103Interceptor(context) }
     private val cloudflareInterceptor by lazy { CloudflareInterceptor(context) }
 
     private val baseClientBuilder: OkHttpClient.Builder
@@ -34,9 +32,7 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .callTimeout(2, TimeUnit.MINUTES)
-                .fastFallback(true)
                 .addInterceptor(userAgentInterceptor)
-                .addNetworkInterceptor(http103Interceptor)
 
             if (BuildConfig.DEBUG) {
                 val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
