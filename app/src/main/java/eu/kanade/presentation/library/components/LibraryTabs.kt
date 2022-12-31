@@ -19,11 +19,15 @@ fun LibraryTabs(
     getNumberOfMangaForCategory: (Category) -> Int?,
     onTabItemClick: (Int) -> Unit,
 ) {
+    // SY -->
+    @Suppress("NAME_SHADOWING")
+    val currentPageIndex = currentPageIndex.coerceAtMost(categories.lastIndex)
+    // SY <--
     Column {
         ScrollableTabRow(
             selectedTabIndex = currentPageIndex,
             edgePadding = 0.dp,
-            indicator = { TabIndicator(it[currentPageIndex]) },
+            indicator = { TabIndicator(it[currentPageIndex.coerceAtMost(categories.lastIndex)]) },
             // TODO: use default when width is fixed upstream
             // https://issuetracker.google.com/issues/242879624
             divider = {},
