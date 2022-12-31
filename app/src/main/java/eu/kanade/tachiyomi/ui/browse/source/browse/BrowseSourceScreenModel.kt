@@ -143,6 +143,12 @@ open class BrowseSourceScreenModel(
 
     val source = sourceManager.get(sourceId) as CatalogueSource
 
+    // SY -->
+    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
+
+    private val filterSerializer = FilterSerializer()
+    // SY <--
+
     init {
         mutableState.update {
             var query: String? = null
