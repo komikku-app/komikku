@@ -170,10 +170,10 @@ class LibraryScreenModel(
                 // SY <--
             ) { searchQuery, library, tracks, loggedInTrackServices, (groupType, displayMode, sort) ->
                 library
-                    .applyFilters(tracks, loggedInTrackServices)
                     // SY -->
                     .applyGrouping(groupType, displayMode)
                     // SY <--
+                    .applyFilters(tracks, loggedInTrackServices)
                     .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT } /* SY <-- */)
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
