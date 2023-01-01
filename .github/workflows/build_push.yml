@@ -28,7 +28,7 @@ jobs:
 
       # SY <--
       - name: Write google-services.json
-        uses: DamianReeves/write-file-action@v1.0
+        uses: DamianReeves/write-file-action@v1.2
         with:
           path: app/google-services.json
           contents: ${{ secrets.GOOGLE_SERVICES_TEXT }}
