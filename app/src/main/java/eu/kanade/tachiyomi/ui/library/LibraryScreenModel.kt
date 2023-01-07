@@ -158,7 +158,10 @@ class LibraryScreenModel(
                 state.map { it.searchQuery }.distinctUntilChanged(),
                 getLibraryFlow(),
                 getTracksPerManga.subscribe(),
-                getTrackingFilterFlow(),
+                combine(
+                    getTrackingFilterFlow(),
+                    downloadCache.changes,
+                ) { a, b -> a to b },
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
@@ -168,7 +171,7 @@ class LibraryScreenModel(
                     Triple(a, b, c)
                 },
                 // SY <--
-            ) { searchQuery, library, tracks, loggedInTrackServices, (groupType, displayMode, sort) ->
+            ) { searchQuery, library, tracks, (loggedInTrackServices, _), (groupType, displayMode, sort) ->
                 library
                     // SY -->
                     .applyGrouping(groupType, displayMode)
@@ -284,14 +287,12 @@ class LibraryScreenModel(
         val filterLewd = prefs.filterLewd
         // SY <--
 
-        val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
+        val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{
             if (!downloadedOnly && filterDownloaded == TriStateGroup.State.IGNORE.value) return@downloaded true
-            val isDownloaded = when {
-                item.libraryManga.manga.isLocal() -> true
-                item.downloadCount != -1L -> item.downloadCount > 0
-                else -> downloadManager.getDownloadCount(item.libraryManga.manga) > 0
-            }
 
+            val isDownloaded = it.libraryManga.manga.isLocal() ||
+                it.downloadCount > 0 ||
+                downloadManager.getDownloadCount(it.libraryManga.manga) > 0
             return@downloaded if (downloadedOnly || filterDownloaded == TriStateGroup.State.INCLUDE.value) {
                 isDownloaded
             } else {
@@ -299,10 +300,10 @@ class LibraryScreenModel(
             }
         }
 
-        val filterFnUnread: (LibraryItem) -> Boolean = unread@{ item ->
+        val filterFnUnread: (LibraryItem) -> Boolean = unread@{
             if (filterUnread == TriStateGroup.State.IGNORE.value) return@unread true
-            val isUnread = item.libraryManga.unreadCount > 0
 
+            val isUnread = it.libraryManga.unreadCount > 0
             return@unread if (filterUnread == TriStateGroup.State.INCLUDE.value) {
                 isUnread
             } else {
@@ -310,10 +311,10 @@ class LibraryScreenModel(
             }
         }
 
-        val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
+        val filterFnStarted: (LibraryItem) -> Boolean = started@{
             if (filterStarted == TriStateGroup.State.IGNORE.value) return@started true
-            val hasStarted = item.libraryManga.hasStarted
 
+            val hasStarted = it.libraryManga.hasStarted
             return@started if (filterStarted == TriStateGroup.State.INCLUDE.value) {
                 hasStarted
             } else {
@@ -321,11 +322,10 @@ class LibraryScreenModel(
             }
         }
 
-        val filterFnBookmarked: (LibraryItem) -> Boolean = bookmarked@{ item ->
+        val filterFnBookmarked: (LibraryItem) -> Boolean = bookmarked@{
             if (filterBookmarked == TriStateGroup.State.IGNORE.value) return@bookmarked true
 
-            val hasBookmarks = item.libraryManga.hasBookmarks
-
+            val hasBookmarks = it.libraryManga.hasBookmarks
             return@bookmarked if (filterBookmarked == TriStateGroup.State.INCLUDE.value) {
                 hasBookmarks
             } else {
@@ -333,10 +333,10 @@ class LibraryScreenModel(
             }
         }
 
-        val filterFnCompleted: (LibraryItem) -> Boolean = completed@{ item ->
+        val filterFnCompleted: (LibraryItem) -> Boolean = completed@{
             if (filterCompleted == TriStateGroup.State.IGNORE.value) return@completed true
-            val isCompleted = item.libraryManga.manga.status.toInt() == SManga.COMPLETED
 
+            val isCompleted = it.libraryManga.manga.status.toInt() == SManga.COMPLETED
             return@completed if (filterCompleted == TriStateGroup.State.INCLUDE.value) {
                 isCompleted
             } else {
@@ -365,9 +365,9 @@ class LibraryScreenModel(
         }
 
         // SY -->
-        val filterFnLewd: (LibraryItem) -> Boolean = lewd@{ item ->
+        val filterFnLewd: (LibraryItem) -> Boolean = lewd@{
             if (filterLewd == TriStateGroup.State.IGNORE.value) return@lewd true
-            val isLewd = item.libraryManga.manga.isLewd()
+            val isLewd = it.libraryManga.manga.isLewd()
 
             return@lewd if (filterLewd == TriStateGroup.State.INCLUDE.value) {
                 isLewd
@@ -377,16 +377,16 @@ class LibraryScreenModel(
         }
         // SY <--
 
-        val filterFn: (LibraryItem) -> Boolean = filter@{ item ->
+        val filterFn: (LibraryItem) -> Boolean = filter@{
             return@filter !(
-                !filterFnDownloaded(item) ||
-                    !filterFnUnread(item) ||
-                    !filterFnStarted(item) ||
-                    !filterFnBookmarked(item) ||
-                    !filterFnCompleted(item) ||
-                    !filterFnTracking(item) ||
+                !filterFnDownloaded(it) ||
+                    !filterFnUnread(it) ||
+                    !filterFnStarted(it) ||
+                    !filterFnBookmarked(it) ||
+                    !filterFnCompleted(it) ||
+                    !filterFnTracking(it) ||
                     // SY -->
-                    !filterFnLewd(item)
+                    !filterFnLewd(it)
                 // SY <--
                 )
         }
@@ -515,8 +515,6 @@ class LibraryScreenModel(
 
     /**
      * Get the categories and all its manga from the database.
-     *
-     * @return an observable of the categories and its manga.
      */
     private fun getLibraryFlow(): Flow<LibraryMap> {
         val libraryMangasFlow = combine(
@@ -526,13 +524,9 @@ class LibraryScreenModel(
         ) { libraryMangaList, prefs, _ ->
             libraryMangaList
                 .map { libraryManga ->
-                    val needsDownloadCounts = prefs.downloadBadge ||
-                        prefs.filterDownloaded != TriStateGroup.State.IGNORE.value ||
-                        prefs.globalFilterDownloaded
-
                     // Display mode based on user preference: take it from global library setting or category
                     LibraryItem(libraryManga).apply {
-                        downloadCount = if (needsDownloadCounts) {
+                        downloadCount = if (prefs.downloadBadge) {
                             // SY -->
                             if (libraryManga.manga.source == MERGED_SOURCE_ID) {
                                 runBlocking {
