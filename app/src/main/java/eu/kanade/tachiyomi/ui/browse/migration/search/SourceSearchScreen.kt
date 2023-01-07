@@ -92,7 +92,7 @@ data class SourceSearchScreen(
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) },
                 onMangaClick = openMigrateDialog,
-                onMangaLongClick = openMigrateDialog,
+                onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
             )
         }
 
