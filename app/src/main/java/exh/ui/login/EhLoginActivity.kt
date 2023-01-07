@@ -127,6 +127,10 @@ class EhLoginActivity : BaseActivity() {
             var passHash: String? = null
             var igneous: String? = customIgneous
 
+            if (customIgneous != null) {
+                CookieManager.getInstance().setCookie(url, "$IGNEOUS_COOKIE=$customIgneous")
+            }
+
             parsed.forEach {
                 when (it.name.lowercase(Locale.getDefault())) {
                     MEMBER_ID_COOKIE -> memberId = it.value
