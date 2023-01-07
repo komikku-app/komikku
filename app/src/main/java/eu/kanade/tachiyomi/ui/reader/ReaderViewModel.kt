@@ -79,6 +79,7 @@ import exh.source.getMainSource
 import exh.source.isEhBasedManga
 import exh.util.defaultReaderType
 import exh.util.mangaType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -732,7 +733,7 @@ class ReaderViewModel(
      */
     fun setMangaReadingMode(readingModeType: Int) {
         val manga = manga ?: return
-        viewModelScope.launchIO {
+        runBlocking(Dispatchers.IO) {
             setMangaViewerFlags.awaitSetMangaReadingMode(manga.id, readingModeType.toLong())
             val currChapters = state.value.viewerChapters
             if (currChapters != null) {
