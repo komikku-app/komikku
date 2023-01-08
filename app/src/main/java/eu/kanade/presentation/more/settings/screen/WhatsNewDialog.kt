@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.LazyColumn
+import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
@@ -60,7 +61,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                 }
                 if (changelog != null) {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(changelog.orEmpty()) { changelog ->
@@ -73,7 +74,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                                 )
                                 Divider(Modifier.padding(vertical = 8.dp))
                                 Column(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                                 ) {
                                     changelog.changelog.forEach {
                                         Text(text = it, style = MaterialTheme.typography.bodySmall)

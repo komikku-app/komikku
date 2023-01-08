@@ -38,6 +38,7 @@ import eu.kanade.presentation.components.Badge
 import eu.kanade.presentation.components.BadgeGroup
 import eu.kanade.presentation.components.LazyColumn
 import eu.kanade.presentation.components.MangaCover
+import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.metadata.MetadataUtil
@@ -209,7 +210,7 @@ fun BrowseSourceEHentaiListItem(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     horizontalAlignment = Alignment.Start,
                 ) {
                     RatingBar(
@@ -246,7 +247,7 @@ fun BrowseSourceEHentaiListItem(
                     }
                 }
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     horizontalAlignment = Alignment.End,
                 ) {
                     Text(
