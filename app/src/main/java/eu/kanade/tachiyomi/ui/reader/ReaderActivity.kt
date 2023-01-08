@@ -163,6 +163,7 @@ class ReaderActivity : BaseActivity() {
     lateinit var binding: ReaderActivityBinding
 
     val viewModel by viewModels<ReaderViewModel>()
+    private var assistUrl: String? = null
 
     val hasCutout by lazy { hasDisplayCutout() }
 
@@ -390,9 +391,7 @@ class ReaderActivity : BaseActivity() {
 
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)
-        viewModel.getChapterUrl()?.let { url ->
-            outContent.webUri = url.toUri()
-        }
+        assistUrl?.let { outContent.webUri = it.toUri() }
     }
 
     /**
@@ -1279,6 +1278,12 @@ class ReaderActivity : BaseActivity() {
 
         // Invalidate menu to show proper chapter bookmark state
         invalidateOptionsMenu()
+
+        lifecycleScope.launchIO {
+            viewModel.getChapterUrl()?.let { url ->
+                assistUrl = url
+            }
+        }
     }
 
     /**
@@ -1311,7 +1316,7 @@ class ReaderActivity : BaseActivity() {
      * Moves the viewer to the given page [index]. It does nothing if the viewer is null or the
      * page is not found.
      */
-    fun moveToPageIndex(index: Int) {
+    private fun moveToPageIndex(index: Int) {
         val viewer = viewer ?: return
         val currentChapter = viewModel.getCurrentChapter() ?: return
         val page = currentChapter.pages?.getOrNull(index) ?: return
