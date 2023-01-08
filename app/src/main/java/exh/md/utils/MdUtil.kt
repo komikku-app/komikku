@@ -13,7 +13,6 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.PkceUtil
 import exh.md.dto.MangaAttributesDto
 import exh.md.dto.MangaDataDto
-import exh.md.network.NoSessionException
 import exh.source.getMainSource
 import exh.util.dropBlank
 import exh.util.floor
@@ -206,16 +205,6 @@ class MdUtil {
                 null
             }
         }
-
-        fun sessionToken(preferences: TrackPreferences, mdList: MdList) = loadOAuth(preferences, mdList)?.access_token
-
-        fun refreshToken(preferences: TrackPreferences, mdList: MdList) = loadOAuth(preferences, mdList)?.refresh_token
-
-        fun getAuthHeaders(headers: Headers, preferences: TrackPreferences, mdList: MdList) =
-            headers.newBuilder().add(
-                "Authorization",
-                "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException()),
-            ).build()
 
         private var codeVerifier: String? = null
 

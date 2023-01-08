@@ -31,7 +31,7 @@ class PageHandler(
     private val mdList: MdList,
 ) {
 
-    suspend fun fetchPageList(chapter: SChapter, isLogged: Boolean, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
+    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
@@ -56,12 +56,6 @@ class PageHandler(
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
             } else {
-                val headers = if (isLogged) {
-                    MdUtil.getAuthHeaders(headers, preferences, mdList)
-                } else {
-                    headers
-                }
-
                 val atHomeRequestUrl = if (usePort443Only) {
                     "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}?forcePort443=true"
                 } else {

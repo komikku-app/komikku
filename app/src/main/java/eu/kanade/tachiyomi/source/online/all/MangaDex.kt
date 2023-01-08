@@ -190,7 +190,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return runAsObservable { pageHandler.fetchPageList(chapter, isLogged(), usePort443Only(), dataSaver(), delegate) }
+        return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
