@@ -97,7 +97,6 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
-                    duplicateFrom = screenModel.getSourceOrStub(dialog.duplicate),
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

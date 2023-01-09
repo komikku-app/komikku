@@ -48,7 +48,6 @@ import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -366,10 +365,6 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    fun getSourceOrStub(manga: Manga): Source {
-        return sourceManager.getOrStub(manga.source)
-    }
-
     fun addFavorite(manga: Manga) {
         coroutineScope.launch {
             val categories = getCategories()
@@ -439,7 +434,7 @@ open class BrowseSourceScreenModel(
     }
 
     suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
-        return getDuplicateLibraryManga.await(manga.title, manga.source)
+        return getDuplicateLibraryManga.await(manga.title)
     }
 
     fun moveMangaToCategories(manga: Manga, vararg categories: Category) {
