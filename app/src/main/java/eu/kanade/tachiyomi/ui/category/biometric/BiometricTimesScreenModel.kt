@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.preference.plusAssign
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -21,7 +21,7 @@ class BiometricTimesScreenModel(
 ) : StateScreenModel<BiometricTimesScreenState>(BiometricTimesScreenState.Loading) {
 
     private val _events: Channel<BiometricTimesEvent> = Channel(Int.MAX_VALUE)
-    val events = _events.consumeAsFlow()
+    val events = _events.receiveAsFlow()
 
     init {
         coroutineScope.launchIO {
