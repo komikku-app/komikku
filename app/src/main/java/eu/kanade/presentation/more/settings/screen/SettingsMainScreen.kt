@@ -57,6 +57,7 @@ import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
 
 object SettingsMainScreen : Screen {
+
     @Composable
     override fun Content() {
         Content(twoPane = false)
