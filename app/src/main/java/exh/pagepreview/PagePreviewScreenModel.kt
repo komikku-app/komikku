@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.Manga
@@ -26,7 +26,7 @@ class PagePreviewScreenModel(
     private val mangaId: Long,
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val getNextChapters: GetNextChapters = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<PagePreviewState>(PagePreviewState.Loading) {
 
@@ -37,7 +37,7 @@ class PagePreviewScreenModel(
     init {
         coroutineScope.launchIO {
             val manga = getManga.await(mangaId)!!
-            val chapter = getNextChapters.await(mangaId, onlyUnread = false).lastOrNull()
+            val chapter = getChapterByMangaId.await(mangaId).minByOrNull { it.sourceOrder }
             if (chapter == null) {
                 mutableState.update {
                     PagePreviewState.Error(Exception("No chapters found"))

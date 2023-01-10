@@ -1,6 +1,6 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.history.interactor.GetNextChapters
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
@@ -10,13 +10,13 @@ import exh.source.getMainSource
 
 class GetPagePreviews(
     private val pagePreviewCache: PagePreviewCache,
-    private val getChapters: GetNextChapters,
+    private val getChapters: GetChapterByMangaId,
 ) {
 
     suspend fun await(manga: Manga, source: Source, page: Int): Result {
         @Suppress("NAME_SHADOWING")
         val source = source.getMainSource<PagePreviewSource>() ?: return Result.Unused
-        val chapters = getChapters.await(manga.id, false)
+        val chapters = getChapters.await(manga.id).sortedByDescending { it.sourceOrder }
         val chapterIds = chapters.map { it.id }
         return try {
             val pagePreviews = try {
