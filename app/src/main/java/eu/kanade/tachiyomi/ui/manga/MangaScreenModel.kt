@@ -409,7 +409,8 @@ class MangaInfoScreenModel(
 
             logcat(LogPriority.ERROR, e)
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(message = e.toString())
+                val errorMessage = e.message.orEmpty().ifEmpty { e.toString() }
+                snackbarHostState.showSnackbar(message = errorMessage)
             }
         }
     }
@@ -1028,7 +1029,7 @@ class MangaInfoScreenModel(
                 context.getString(R.string.no_chapters_error)
             } else {
                 logcat(LogPriority.ERROR, e)
-                e.toString()
+                e.message.orEmpty().ifEmpty { e.toString() }
             }
 
             coroutineScope.launch {
