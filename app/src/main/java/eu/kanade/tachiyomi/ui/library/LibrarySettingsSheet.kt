@@ -62,10 +62,14 @@ class LibrarySettingsSheet(
      * @param currentCategory ID of currently shown category
      */
     fun show(currentCategory: Category) {
+        filters.adjustFilterSelection()
+
         sort.currentCategory = currentCategory
         sort.adjustDisplaySelection()
+
         display.currentCategory = currentCategory
         display.adjustDisplaySelection()
+
         super.show()
     }
 
@@ -97,6 +101,12 @@ class LibrarySettingsSheet(
 
         init {
             setGroups(listOf(filterGroup))
+        }
+
+        // Refreshes Filter Setting selections
+        fun adjustFilterSelection() {
+            filterGroup.initModels()
+            filterGroup.items.forEach { adapter.notifyItemChanged(it) }
         }
 
         /**
@@ -147,6 +157,7 @@ class LibrarySettingsSheet(
                     downloaded.enabled = false
                 } else {
                     downloaded.state = libraryPreferences.filterDownloaded().get()
+                    downloaded.enabled = true
                 }
                 unread.state = libraryPreferences.filterUnread().get()
                 started.state = libraryPreferences.filterStarted().get()
