@@ -94,6 +94,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -292,14 +293,13 @@ class MainActivity : BaseActivity() {
                 LaunchedEffect(Unit) {
                     preferences.incognitoMode().changes()
                         .drop(1)
+                        .filter { !it }
                         .onEach {
-                            if (!it) {
-                                val currentScreen = navigator.lastItem
-                                if (currentScreen is BrowseSourceScreen ||
-                                    (currentScreen is MangaScreen && currentScreen.fromSource)
-                                ) {
-                                    navigator.popUntilRoot()
-                                }
+                            val currentScreen = navigator.lastItem
+                            if (currentScreen is BrowseSourceScreen ||
+                                (currentScreen is MangaScreen && currentScreen.fromSource)
+                            ) {
+                                navigator.popUntilRoot()
                             }
                         }
                         .launchIn(this)
