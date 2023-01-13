@@ -3,7 +3,6 @@ package eu.kanade.presentation.manga
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -81,14 +80,9 @@ fun ChapterSettingsDialog(
         ) {
             when (page) {
                 0 -> {
-                    val forceDownloaded = manga?.forceDownloaded() == true
                     FilterPage(
-                        downloadFilter = if (forceDownloaded) {
-                            TriStateFilter.ENABLED_NOT
-                        } else {
-                            manga?.downloadedFilter
-                        } ?: TriStateFilter.DISABLED,
-                        onDownloadFilterChanged = onDownloadFilterChanged.takeUnless { forceDownloaded },
+                        downloadFilter = manga?.downloadedFilter ?: TriStateFilter.DISABLED,
+                        onDownloadFilterChanged = onDownloadFilterChanged.takeUnless { manga?.forceDownloaded() == true },
                         unreadFilter = manga?.unreadFilter ?: TriStateFilter.DISABLED,
                         onUnreadFilterChanged = onUnreadFilterChanged,
                         bookmarkedFilter = manga?.bookmarkedFilter ?: TriStateFilter.DISABLED,
@@ -166,7 +160,7 @@ private fun SetAsDefaultDialog(
 }
 
 @Composable
-private fun ColumnScope.FilterPage(
+private fun FilterPage(
     downloadFilter: TriStateFilter,
     onDownloadFilterChanged: ((TriStateFilter) -> Unit)?,
     unreadFilter: TriStateFilter,
@@ -227,7 +221,7 @@ private fun SetScanlatorsItem(
 // SY <--
 
 @Composable
-private fun ColumnScope.SortPage(
+private fun SortPage(
     sortingMode: Long,
     sortDescending: Boolean,
     onItemSelected: (Long) -> Unit,
@@ -250,7 +244,7 @@ private fun ColumnScope.SortPage(
 }
 
 @Composable
-private fun ColumnScope.DisplayPage(
+private fun DisplayPage(
     displayMode: Long,
     onItemSelected: (Long) -> Unit,
 ) {
