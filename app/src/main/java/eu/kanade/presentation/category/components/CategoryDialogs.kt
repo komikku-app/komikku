@@ -24,20 +24,27 @@ fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
     onCreate: (String) -> Unit,
     // SY -->
+    categories: List<String>,
     title: String,
     extraMessage: String? = null,
+    alreadyExistsError: Int = R.string.error_category_exists,
     // SY <--
 ) {
     var name by remember { mutableStateOf("") }
+
     val focusRequester = remember { FocusRequester() }
+    val nameAlreadyExists = remember(name) { categories.contains(name) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = {
-                onCreate(name)
-                onDismissRequest()
-            },) {
+            TextButton(
+                enabled = name.isNotEmpty() && !nameAlreadyExists,
+                onClick = {
+                    onCreate(name)
+                    onDismissRequest()
+                },
+            ) {
                 Text(text = stringResource(R.string.action_add))
             }
         },
@@ -64,6 +71,11 @@ fun CategoryCreateDialog(
                     label = {
                         Text(text = stringResource(R.string.name))
                     },
+                    supportingText = {
+                        val msgRes = if (name.isNotEmpty() && nameAlreadyExists) alreadyExistsError else R.string.information_required_plain
+                        Text(text = stringResource(msgRes))
+                    },
+                    isError = name.isNotEmpty() && nameAlreadyExists,
                     singleLine = true,
                 )
                 // SY -->
@@ -83,18 +95,27 @@ fun CategoryCreateDialog(
 fun CategoryRenameDialog(
     onDismissRequest: () -> Unit,
     onRename: (String) -> Unit,
+    // SY -->
+    categories: List<String>,
     category: String,
+    alreadyExistsError: Int = R.string.error_category_exists,
+    // SY <--
 ) {
     var name by remember { mutableStateOf(category) }
+    var valueHasChanged by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    val nameAlreadyExists = remember(name) { categories.contains(name) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = {
-                onRename(name)
-                onDismissRequest()
-            },) {
+            TextButton(
+                enabled = valueHasChanged && !nameAlreadyExists,
+                onClick = {
+                    onRename(name)
+                    onDismissRequest()
+                },
+            ) {
                 Text(text = stringResource(android.R.string.ok))
             }
         },
@@ -108,13 +129,18 @@ fun CategoryRenameDialog(
         },
         text = {
             OutlinedTextField(
-                modifier = Modifier
-                    .focusRequester(focusRequester),
+                modifier = Modifier.focusRequester(focusRequester),
                 value = name,
-                onValueChange = { name = it },
-                label = {
-                    Text(text = stringResource(R.string.name))
+                onValueChange = {
+                    valueHasChanged = name != it
+                    name = it
                 },
+                label = { Text(text = stringResource(R.string.name)) },
+                supportingText = {
+                    val msgRes = if (valueHasChanged && nameAlreadyExists) alreadyExistsError else R.string.information_required_plain
+                    Text(text = stringResource(msgRes))
+                },
+                isError = valueHasChanged && nameAlreadyExists,
                 singleLine = true,
             )
         },

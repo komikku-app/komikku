@@ -6,11 +6,6 @@ import eu.kanade.tachiyomi.util.preference.plusAssign
 class CreateSourceRepo(private val preferences: UnsortedPreferences) {
 
     fun await(name: String): Result {
-        // Do not allow duplicate repos.
-        if (repoExists(name)) {
-            return Result.RepoExists
-        }
-
         // Do not allow invalid formats
         if (!name.matches(repoRegex)) {
             return Result.InvalidName
@@ -22,7 +17,6 @@ class CreateSourceRepo(private val preferences: UnsortedPreferences) {
     }
 
     sealed class Result {
-        object RepoExists : Result()
         object InvalidName : Result()
         object Success : Result()
     }

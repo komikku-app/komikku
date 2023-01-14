@@ -10,7 +10,6 @@ class RenameSourceCategory(
 
     fun await(categoryOld: String, categoryNew: String): CreateSourceCategory.Result {
         when (val result = createSourceCategory.await(categoryNew)) {
-            CreateSourceCategory.Result.CategoryExists -> return result
             CreateSourceCategory.Result.InvalidName -> return result
             CreateSourceCategory.Result.Success -> {}
         }

@@ -48,8 +48,10 @@ class RepoScreen : Screen {
                 CategoryCreateDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createRepo(it) },
+                    categories = successState.repos,
                     title = stringResource(R.string.action_add_repo),
                     extraMessage = stringResource(R.string.action_add_repo_message),
+                    alreadyExistsError = R.string.error_repo_exists,
                 )
             }
             is RepoDialog.Delete -> {

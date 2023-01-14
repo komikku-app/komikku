@@ -206,7 +206,6 @@ class FavoritesSyncHelper(val context: Context) {
             val local = localCategories.getOrElse(index) {
                 when (val createCategoryWithNameResult = createCategoryWithName.await(remote)) {
                     is CreateCategoryWithName.Result.InternalError -> throw createCategoryWithNameResult.error
-                    CreateCategoryWithName.Result.NameAlreadyExistsError -> throw IllegalStateException("Category $remote already exists")
                     is CreateCategoryWithName.Result.Success -> createCategoryWithNameResult.category
                 }
             }

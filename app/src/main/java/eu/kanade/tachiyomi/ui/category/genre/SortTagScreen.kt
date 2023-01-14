@@ -49,8 +49,10 @@ class SortTagScreen : Screen {
                 CategoryCreateDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createTag(it) },
+                    categories = successState.tags,
                     title = stringResource(R.string.add_tag),
                     extraMessage = stringResource(R.string.action_add_tags_message),
+                    alreadyExistsError = R.string.error_tag_exists,
                 )
             }
             is SortTagDialog.Delete -> {

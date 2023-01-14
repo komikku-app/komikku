@@ -48,7 +48,6 @@ class SourceCategoryScreenModel(
     fun createCategory(name: String) {
         coroutineScope.launchIO {
             when (createSourceCategory.await(name)) {
-                is CreateSourceCategory.Result.CategoryExists -> _events.send(SourceCategoryEvent.CategoryExists)
                 is CreateSourceCategory.Result.InvalidName -> _events.send(SourceCategoryEvent.InvalidName)
                 else -> {}
             }
@@ -75,7 +74,6 @@ class SourceCategoryScreenModel(
     fun renameCategory(categoryOld: String, categoryNew: String) {
         coroutineScope.launchIO {
             when (renameSourceCategory.await(categoryOld, categoryNew)) {
-                is CreateSourceCategory.Result.CategoryExists -> _events.send(SourceCategoryEvent.CategoryExists)
                 is CreateSourceCategory.Result.InvalidName -> _events.send(SourceCategoryEvent.InvalidName)
                 else -> {}
             }
@@ -103,7 +101,6 @@ class SourceCategoryScreenModel(
 
 sealed class SourceCategoryEvent {
     sealed class LocalizedMessage(@StringRes val stringRes: Int) : SourceCategoryEvent()
-    object CategoryExists : LocalizedMessage(R.string.error_category_exists)
     object InvalidName : LocalizedMessage(R.string.invalid_category_name)
     object InternalError : LocalizedMessage(R.string.internal_error)
 }

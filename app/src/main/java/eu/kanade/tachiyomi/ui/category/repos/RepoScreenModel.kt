@@ -46,7 +46,6 @@ class RepoScreenModel(
     fun createRepo(name: String) {
         coroutineScope.launchIO {
             when (createSourceRepo.await(name)) {
-                is CreateSourceRepo.Result.RepoExists -> _events.send(RepoEvent.RepoExists)
                 is CreateSourceRepo.Result.InvalidName -> _events.send(RepoEvent.InvalidName)
                 else -> {}
             }
@@ -85,7 +84,6 @@ class RepoScreenModel(
 
 sealed class RepoEvent {
     sealed class LocalizedMessage(@StringRes val stringRes: Int) : RepoEvent()
-    object RepoExists : LocalizedMessage(R.string.error_repo_exists)
     object InvalidName : LocalizedMessage(R.string.invalid_repo_name)
     object InternalError : LocalizedMessage(R.string.internal_error)
 }
