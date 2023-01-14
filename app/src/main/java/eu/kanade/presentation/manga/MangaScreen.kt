@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -47,6 +48,7 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.components.ChapterDownloadAction
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.presentation.components.LazyColumn
@@ -82,8 +84,12 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
+import eu.kanade.tachiyomi.ui.manga.chapterDecimalFormat
+import eu.kanade.tachiyomi.util.lang.toRelativeString
+import exh.metadata.MetadataUtil
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.isEhBasedManga
 import exh.ui.metadata.adapters.EHentaiDescription
 import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.HBrowseDescription
@@ -91,11 +97,15 @@ import exh.ui.metadata.adapters.MangaDexDescription
 import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 fun MangaScreen(
     state: MangaScreenState.Success,
     snackbarHostState: SnackbarHostState,
+    dateRelativeTime: Int,
+    dateFormat: DateFormat,
     isTabletUi: Boolean,
     onBackClicked: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
@@ -144,6 +154,8 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
+            dateRelativeTime = dateRelativeTime,
+            dateFormat = dateFormat,
             onBackClicked = onBackClicked,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
@@ -183,6 +195,8 @@ fun MangaScreen(
         MangaScreenLargeImpl(
             state = state,
             snackbarHostState = snackbarHostState,
+            dateRelativeTime = dateRelativeTime,
+            dateFormat = dateFormat,
             onBackClicked = onBackClicked,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
@@ -225,6 +239,8 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenState.Success,
     snackbarHostState: SnackbarHostState,
+    dateRelativeTime: Int,
+    dateFormat: DateFormat,
     onBackClicked: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
@@ -488,7 +504,13 @@ private fun MangaScreenSmallImpl(
                     }
 
                     sharedChapterItems(
+                        manga = state.manga,
                         chapters = chapters,
+                        dateRelativeTime = dateRelativeTime,
+                        dateFormat = dateFormat,
+                        // SY -->
+                        alwaysShowReadingProgress = state.alwaysShowReadingProgress,
+                        // SY <--
                         onChapterClicked = onChapterClicked,
                         onDownloadChapter = onDownloadChapter,
                         onChapterSelected = onChapterSelected,
@@ -503,6 +525,8 @@ private fun MangaScreenSmallImpl(
 fun MangaScreenLargeImpl(
     state: MangaScreenState.Success,
     snackbarHostState: SnackbarHostState,
+    dateRelativeTime: Int,
+    dateFormat: DateFormat,
     onBackClicked: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
@@ -741,7 +765,13 @@ fun MangaScreenLargeImpl(
                             }
 
                             sharedChapterItems(
+                                manga = state.manga,
                                 chapters = chapters,
+                                dateRelativeTime = dateRelativeTime,
+                                dateFormat = dateFormat,
+                                // SY -->
+                                alwaysShowReadingProgress = state.alwaysShowReadingProgress,
+                                // SY <--
                                 onChapterClicked = onChapterClicked,
                                 onDownloadChapter = onDownloadChapter,
                                 onChapterSelected = onChapterSelected,
@@ -797,7 +827,13 @@ private fun SharedMangaBottomActionMenu(
 }
 
 private fun LazyListScope.sharedChapterItems(
+    manga: Manga,
     chapters: List<ChapterItem>,
+    dateRelativeTime: Int,
+    dateFormat: DateFormat,
+    // SY -->
+    alwaysShowReadingProgress: Boolean,
+    // SY <--
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
@@ -808,10 +844,40 @@ private fun LazyListScope.sharedChapterItems(
         contentType = { MangaScreenItem.CHAPTER },
     ) { chapterItem ->
         val haptic = LocalHapticFeedback.current
+        val context = LocalContext.current
+
         MangaChapterListItem(
-            title = chapterItem.chapterTitleString,
-            date = chapterItem.dateUploadString,
-            readProgress = chapterItem.readProgressString,
+            title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
+                stringResource(
+                    R.string.display_mode_chapter,
+                    chapterDecimalFormat.format(chapterItem.chapter.chapterNumber.toDouble()),
+                )
+            } else {
+                chapterItem.chapter.name
+            },
+            date = chapterItem.chapter.dateUpload
+                .takeIf { it > 0L }
+                ?.let {
+                    // SY -->
+                    if (manga.isEhBasedManga()) {
+                        MetadataUtil.EX_DATE_FORMAT.format(Date(it))
+                    } else {
+                        Date(it).toRelativeString(
+                            context,
+                            dateRelativeTime,
+                            dateFormat,
+                        )
+                    }
+                    // SY <--
+                },
+            readProgress = chapterItem.chapter.lastPageRead
+                .takeIf { /* SY --> */(!chapterItem.chapter.read || alwaysShowReadingProgress)/* SY <-- */ && it > 0L }
+                ?.let {
+                    stringResource(
+                        R.string.chapter_progress,
+                        it + 1,
+                    )
+                },
             scanlator = chapterItem.chapter.scanlator.takeIf { !it.isNullOrBlank() /* SY --> */ && chapterItem.showScanlator /* SY <-- */ },
             // SY -->
             sourceName = chapterItem.sourceName,

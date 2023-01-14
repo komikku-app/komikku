@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.prefs.CheckboxState
+import eu.kanade.core.prefs.asState
 import eu.kanade.core.prefs.mapAsCheckboxState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.data.chapter.NoChaptersException
@@ -75,7 +78,6 @@ import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
-import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -88,7 +90,6 @@ import exh.log.xLogD
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.merged.sql.models.MergedMangaReference
-import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.MERGED_SOURCE_ID
@@ -114,10 +115,8 @@ import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.util.Date
 
 class MangaInfoScreenModel(
     val context: Context,
@@ -179,6 +178,9 @@ class MangaInfoScreenModel(
     private val processedChapters: Sequence<ChapterItem>?
         get() = successState?.processedChapters
 
+    val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
+    val dateFormat by mutableStateOf(UiPreferences.dateFormat(uiPreferences.dateFormat().get()))
+
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
 
@@ -213,23 +215,6 @@ class MangaInfoScreenModel(
     }
 
     init {
-        val toChapterItemsParams: List<Chapter>.(manga: Manga /* SY --> */, mergedData: MergedMangaData? /* SY <-- */) -> List<ChapterItem> = { manga, mergedData ->
-            toChapterItems(
-                context = context,
-                manga = manga,
-                // SY -->
-                dateRelativeTime = if (manga.isEhBasedManga()) 0 else uiPreferences.relativeTime().get(),
-                dateFormat = if (manga.isEhBasedManga()) {
-                    MetadataUtil.EX_DATE_FORMAT
-                } else {
-                    UiPreferences.dateFormat(uiPreferences.dateFormat().get())
-                },
-                mergedData = mergedData,
-                alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
-                // SY <--
-            )
-        }
-
         coroutineScope.launchIO {
             getMangaAndChapters.subscribe(mangaId)
                 .distinctUntilChanged()
@@ -295,7 +280,7 @@ class MangaInfoScreenModel(
                 .combine(downloadCache.changes) { state, _ -> state }
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
-                    val chapterItems = chapters.toChapterItemsParams(manga /* SY --> */, mergedData /* SY <-- */)
+                    val chapterItems = chapters.toChapterItems(manga /* SY --> */, mergedData /* SY <-- */)
                     updateSuccessState {
                         it.copy(
                             manga = manga,
@@ -316,7 +301,7 @@ class MangaInfoScreenModel(
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
-                .toChapterItemsParams(manga, null)
+                .toChapterItems(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
                     references,
@@ -358,6 +343,7 @@ class MangaInfoScreenModel(
                         PagePreviewState.Unused
                     },
                     scanlators = getChapterScanlators(manga, chapters.map { it.chapter }),
+                    alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                     // SY <--
                 )
             }
@@ -906,12 +892,8 @@ class MangaInfoScreenModel(
     }
 
     private fun List<Chapter>.toChapterItems(
-        context: Context,
         manga: Manga,
-        dateRelativeTime: Int,
-        dateFormat: DateFormat,
         mergedData: MergedMangaData?,
-        alwaysShowReadingProgress: Boolean,
     ): List<ChapterItem> {
         val isLocal = manga.isLocal()
         // SY -->
@@ -951,29 +933,6 @@ class MangaInfoScreenModel(
                 chapter = chapter,
                 downloadState = downloadState,
                 downloadProgress = activeDownload?.progress ?: 0,
-                chapterTitleString = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
-                    context.getString(
-                        R.string.display_mode_chapter,
-                        chapterDecimalFormat.format(chapter.chapterNumber.toDouble()),
-                    )
-                } else {
-                    chapter.name
-                },
-                dateUploadString = chapter.dateUpload
-                    .takeIf { it > 0 }
-                    ?.let {
-                        Date(it).toRelativeString(
-                            context,
-                            dateRelativeTime,
-                            dateFormat,
-                        )
-                    },
-                readProgressString = chapter.lastPageRead.takeIf { /* SY --> */(!chapter.read || alwaysShowReadingProgress)/* SY <-- */ && it > 0 }?.let {
-                    context.getString(
-                        R.string.chapter_progress,
-                        it + 1,
-                    )
-                },
                 selected = chapter.id in selectedChapterIds,
                 // SY -->
                 sourceName = source?.getNameForMangaInfo(null, enabledLanguages = enabledLanguages),
@@ -1601,6 +1560,7 @@ sealed class MangaScreenState {
         val showMergeWithAnother: Boolean,
         val pagePreviewsState: PagePreviewState,
         val scanlators: List<String>,
+        val alwaysShowReadingProgress: Boolean,
         // SY <--
     ) : MangaScreenState() {
 
@@ -1659,11 +1619,6 @@ data class ChapterItem(
     val chapter: Chapter,
     val downloadState: Download.State,
     val downloadProgress: Int,
-
-    val chapterTitleString: String,
-    val dateUploadString: String?,
-    val readProgressString: String?,
-
     val selected: Boolean = false,
 
     // SY -->

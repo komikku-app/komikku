@@ -45,6 +45,9 @@ fun UpdateScreen(
     snackbarHostState: SnackbarHostState,
     lastUpdated: Long,
     relativeTime: Int,
+    // SY -->
+    preserveReadingPosition: Boolean,
+    // SY <--
     onClickCover: (UpdatesItem) -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
@@ -117,6 +120,9 @@ fun UpdateScreen(
                         updatesUiItems(
                             uiModels = state.getUiModel(context, relativeTime),
                             selectionMode = state.selectionMode,
+                            // SY -->
+                            preserveReadingPosition = preserveReadingPosition,
+                            // SY <--
                             onUpdateSelected = onUpdateSelected,
                             onClickCover = onClickCover,
                             onClickUpdate = onOpenChapter,
@@ -193,7 +199,7 @@ private fun UpdatesBottomBar(
         }.takeIf { selected.fastAny { !it.update.read } },
         onMarkAsUnreadClicked = {
             onMultiMarkAsReadClicked(selected, false)
-        }.takeIf { selected.fastAny { it.update.read } },
+        }.takeIf { selected.fastAny { it.update.read || it.update.lastPageRead > 0L } },
         onDownloadClicked = {
             onDownloadChapter(selected, ChapterDownloadAction.START)
         }.takeIf {

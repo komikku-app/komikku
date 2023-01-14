@@ -31,7 +31,7 @@ android {
         applicationId = "eu.kanade.tachiyomi.sy"
         minSdk = AndroidConfig.minSdk
         targetSdk = AndroidConfig.targetSdk
-        versionCode = 46
+        versionCode = 47
         versionName = "1.9.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")

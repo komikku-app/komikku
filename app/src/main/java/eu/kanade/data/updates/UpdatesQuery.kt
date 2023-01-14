@@ -17,11 +17,12 @@ private val mapper = { cursor: SqlCursor ->
         cursor.getLong(5)!! == 1L,
         cursor.getLong(6)!! == 1L,
         cursor.getLong(7)!!,
-        cursor.getLong(8)!! == 1L,
-        cursor.getString(9),
-        cursor.getLong(10)!!,
+        cursor.getLong(8)!!,
+        cursor.getLong(9)!! == 1L,
+        cursor.getString(10),
         cursor.getLong(11)!!,
         cursor.getLong(12)!!,
+        cursor.getLong(13)!!,
     )
 }
 
@@ -38,6 +39,7 @@ class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesWithRe
                 chapters.scanlator,
                 chapters.read,
                 chapters.bookmark,
+                chapters.last_page_read,
                 mangas.source,
                 mangas.favorite,
                 mangas.thumbnail_url AS thumbnailUrl,
@@ -58,6 +60,7 @@ class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesWithRe
                 chapters.scanlator,
                 chapters.read,
                 chapters.bookmark,
+                chapters.last_page_read,
                 mangas.source,
                 mangas.favorite,
                 mangas.thumbnail_url AS thumbnailUrl,

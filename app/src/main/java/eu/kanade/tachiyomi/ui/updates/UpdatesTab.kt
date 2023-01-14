@@ -74,6 +74,9 @@ object UpdatesTab : Tab {
             snackbarHostState = screenModel.snackbarHostState,
             lastUpdated = screenModel.lastUpdated,
             relativeTime = screenModel.relativeTime,
+            // SY -->
+            preserveReadingPosition = screenModel.preserveReadingPosition,
+            // SY <--
             onClickCover = { item -> navigator.push(MangaScreen(item.update.mangaId)) },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
