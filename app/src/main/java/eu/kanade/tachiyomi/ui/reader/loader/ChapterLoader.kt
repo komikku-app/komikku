@@ -12,13 +12,11 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
+import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.debug.DebugFunctions.readerPrefs
 import exh.merged.sql.models.MergedMangaReference
-import rx.Completable
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 
 /**
  * Loader used to retrieve the [PageLoader] for a given chapter.
@@ -37,35 +35,27 @@ class ChapterLoader(
 ) {
 
     /**
-     * Returns a completable that assigns the page loader and loads the its pages. It just
-     * completes if the chapter is already loaded.
+     * Assigns the chapter's page loader and loads the its pages. Returns immediately if the chapter
+     * is already loaded.
      */
-    fun loadChapter(chapter: ReaderChapter /* SY --> */, page: Int? = null/* SY <-- */): Completable {
+    suspend fun loadChapter(chapter: ReaderChapter /* SY --> */, page: Int? = null/* SY <-- */) {
         if (chapterIsReady(chapter)) {
-            return Completable.complete()
+            return
         }
 
-        return Observable.just(chapter)
-            .doOnNext { chapter.state = ReaderChapter.State.Loading }
-            .observeOn(Schedulers.io())
-            .flatMap { readerChapter ->
-                logcat { "Loading pages for ${chapter.chapter.name}" }
+        chapter.state = ReaderChapter.State.Loading
+        withIOContext {
+            logcat { "Loading pages for ${chapter.chapter.name}" }
+            try {
+                val loader = getPageLoader(chapter)
+                chapter.pageLoader = loader
 
-                val loader = getPageLoader(readerChapter)
+                val pages = loader.getPages().awaitSingle()
+                    .onEach { it.chapter = chapter }
 
-                loader.getPages().take(1).doOnNext { pages ->
-                    pages.forEach { it.chapter = chapter }
-                }.map { pages -> loader to pages }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnError { chapter.state = ReaderChapter.State.Error(it) }
-            .doOnNext { (loader, pages) ->
                 if (pages.isEmpty()) {
                     throw Exception(context.getString(R.string.page_list_empty_error))
                 }
-
-                chapter.pageLoader = loader // Assign here to fix race with unref
-                chapter.state = ReaderChapter.State.Loaded(pages)
 
                 // If the chapter is partially read, set the starting page to the last the user read
                 // otherwise use the requested page.
@@ -75,8 +65,13 @@ class ChapterLoader(
                 ) {
                     chapter.requestedPage = /* SY --> */ page ?: /* SY <-- */ chapter.chapter.last_page_read
                 }
+
+                chapter.state = ReaderChapter.State.Loaded(pages)
+            } catch (e: Throwable) {
+                chapter.state = ReaderChapter.State.Error(e)
+                throw e
             }
-            .toCompletable()
+        }
     }
 
     /**

@@ -7,7 +7,6 @@ import androidx.annotation.ColorInt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import eu.kanade.core.util.asFlow
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
@@ -79,18 +78,16 @@ import exh.source.getMainSource
 import exh.source.isEhBasedManga
 import exh.util.defaultReaderType
 import exh.util.mangaType
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -99,9 +96,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
-import rx.Observable
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
 import tachiyomi.decoder.ImageDecoder
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -170,11 +164,6 @@ class ReaderViewModel(
      * The time the chapter was started reading
      */
     private var chapterReadStartTime: Long? = null
-
-    /**
-     * Subscription to prevent setting chapters as active from multiple threads.
-     */
-    private var activeChapterSubscription: Subscription? = null
 
     private var chapterToDownload: Download? = null
 
@@ -332,15 +321,16 @@ class ReaderViewModel(
                     // val source = sourceManager.getOrStub(manga.source)
                     loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source, /* SY --> */sourceManager, mergedReferences, mergedManga/* SY <-- */)
 
-                    getLoadObservable(loader!!, chapterList.first { chapterId == it.chapter.id } /* SY --> */, page/* SY <-- */)
-                        .asFlow()
-                        .first()
+                    loadChapter(loader!!, chapterList.first { chapterId == it.chapter.id } /* SY --> */, page/* SY <-- */)
                     Result.success(true)
                 } else {
                     // Unlikely but okay
                     Result.success(false)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) {
+                    throw e
+                }
                 Result.failure(e)
             }
         }
@@ -369,42 +359,36 @@ class ReaderViewModel(
     // SY <--
 
     /**
-     * Returns an observable that loads the given [chapter] with this [loader]. This observable
-     * handles main thread synchronization and updating the currently active chapters on
-     * [viewerChaptersRelay], however callers must ensure there won't be more than one
-     * subscription active by unsubscribing any existing [activeChapterSubscription] before.
-     * Callers must also handle the onError event.
+     * Loads the given [chapter] with this [loader] and updates the currently active chapters.
+     * Callers must handle errors.
      */
-    private fun getLoadObservable(
+    private suspend fun loadChapter(
         loader: ChapterLoader,
         chapter: ReaderChapter,
         // SY -->
         page: Int? = null,
         // SY <--
-    ): Observable<ViewerChapters> {
-        return loader.loadChapter(chapter /* SY --> */, page/* SY <-- */)
-            .andThen(
-                Observable.fromCallable {
-                    val chapterPos = chapterList.indexOf(chapter)
+    ): ViewerChapters {
+        loader.loadChapter(chapter /* SY --> */, page/* SY <-- */)
 
-                    ViewerChapters(
-                        chapter,
-                        chapterList.getOrNull(chapterPos - 1),
-                        chapterList.getOrNull(chapterPos + 1),
-                    )
-                },
-            )
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { newChapters ->
-                mutableState.update {
-                    // Add new references first to avoid unnecessary recycling
-                    newChapters.ref()
-                    it.viewerChapters?.unref()
+        val chapterPos = chapterList.indexOf(chapter)
+        val newChapters = ViewerChapters(
+            chapter,
+            chapterList.getOrNull(chapterPos - 1),
+            chapterList.getOrNull(chapterPos + 1),
+        )
 
-                    chapterToDownload = cancelQueuedDownloads(newChapters.currChapter)
-                    it.copy(viewerChapters = newChapters)
-                }
+        withUIContext {
+            mutableState.update {
+                // Add new references first to avoid unnecessary recycling
+                newChapters.ref()
+                it.viewerChapters?.unref()
+
+                chapterToDownload = cancelQueuedDownloads(newChapters.currChapter)
+                it.copy(viewerChapters = newChapters)
             }
+        }
+        return newChapters
     }
 
     /**
@@ -417,10 +401,14 @@ class ReaderViewModel(
         logcat { "Loading ${chapter.chapter.url}" }
 
         withIOContext {
-            getLoadObservable(loader, chapter)
-                .asFlow()
-                .catch { logcat(LogPriority.ERROR, it) }
-                .first()
+            try {
+                loadChapter(loader, chapter)
+            } catch (e: Throwable) {
+                if (e is CancellationException) {
+                    throw e
+                }
+                logcat(LogPriority.ERROR, e)
+            }
         }
     }
 
@@ -430,9 +418,7 @@ class ReaderViewModel(
     }
 
     /**
-     * Called when the user is going to load the prev/next chapter through the menu button. It
-     * sets the [isLoadingAdjacentChapterRelay] that the view uses to prevent any further
-     * interaction until the chapter is loaded.
+     * Called when the user is going to load the prev/next chapter through the menu button.
      */
     private suspend fun loadAdjacent(chapter: ReaderChapter) {
         val loader = loader ?: return
@@ -440,12 +426,18 @@ class ReaderViewModel(
         logcat { "Loading adjacent ${chapter.chapter.url}" }
 
         mutableState.update { it.copy(isLoadingAdjacentChapter = true) }
-        withIOContext {
-            getLoadObservable(loader, chapter)
-                .asFlow()
-                .first()
+        try {
+            withIOContext {
+                loadChapter(loader, chapter)
+            }
+        } catch (e: Throwable) {
+            if (e is CancellationException) {
+                throw e
+            }
+            logcat(LogPriority.ERROR, e)
+        } finally {
+            mutableState.update { it.copy(isLoadingAdjacentChapter = false) }
         }
-        mutableState.update { it.copy(isLoadingAdjacentChapter = false) }
     }
 
     /**
@@ -476,12 +468,15 @@ class ReaderViewModel(
 
         val loader = loader ?: return
         withIOContext {
-            loader.loadChapter(chapter)
-                .doOnCompleted { eventChannel.trySend(Event.ReloadViewerChapters) }
-                .onErrorComplete()
-                .toObservable<Unit>()
-                .asFlow()
-                .firstOrNull()
+            try {
+                loader.loadChapter(chapter)
+            } catch (e: Throwable) {
+                if (e is CancellationException) {
+                    throw e
+                }
+                return@withIOContext
+            }
+            eventChannel.trySend(Event.ReloadViewerChapters)
         }
     }
 
