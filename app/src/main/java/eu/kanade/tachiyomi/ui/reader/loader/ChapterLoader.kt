@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.debug.DebugFunctions.readerPrefs
@@ -50,7 +49,7 @@ class ChapterLoader(
                 val loader = getPageLoader(chapter)
                 chapter.pageLoader = loader
 
-                val pages = loader.getPages().awaitSingle()
+                val pages = loader.getPages()
                     .onEach { it.chapter = chapter }
 
                 if (pages.isEmpty()) {
