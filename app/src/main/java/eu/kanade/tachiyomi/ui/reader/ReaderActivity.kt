@@ -61,6 +61,7 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.AddToLibraryFirst
@@ -402,7 +403,8 @@ class ReaderActivity : BaseActivity() {
 
         /*val isChapterBookmarked = viewModel.getCurrentChapter()?.chapter?.bookmark ?: false
         menu.findItem(R.id.action_bookmark).isVisible = !isChapterBookmarked
-        menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked*/
+        menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked
+        menu.findItem(R.id.action_open_in_web_view).isVisible = viewModel.getSource() is HttpSource*/
 
         return true
     }
@@ -939,7 +941,7 @@ class ReaderActivity : BaseActivity() {
                     }
                 }
             actionWebView.isVisible =
-                ReaderBottomButton.WebView.isIn(enabledButtons)
+                ReaderBottomButton.WebView.isIn(enabledButtons) && viewModel.getSource() is HttpSource
             actionChapterList.isVisible =
                 ReaderBottomButton.ViewChapters.isIn(enabledButtons)
             shiftPageButton.isVisible = (viewer as? PagerViewer)?.config?.doublePages ?: false
