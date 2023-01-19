@@ -38,7 +38,7 @@ jobs:
       - name: Build app and run unit tests
         uses: gradle/gradle-command-action@v2
         with:
-          arguments: assembleStandardRelease testStandardReleaseUnitTest --stacktrace
+          arguments: lintKotlin assembleStandardRelease testStandardReleaseUnitTest --stacktrace
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1

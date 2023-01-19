@@ -1,7 +1,9 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("tachiyomi.lint")
     kotlin("plugin.serialization")
+    id("com.github.ben-manes.versions")
 }
 
 android {

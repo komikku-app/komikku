@@ -1,6 +1,8 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("tachiyomi.lint")
+    id("com.github.ben-manes.versions")
 }
 
 android {

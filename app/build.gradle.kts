@@ -7,9 +7,11 @@ plugins {
     id("com.mikepenz.aboutlibraries.plugin")
     kotlin("android")
     kotlin("plugin.parcelize")
+    id("tachiyomi.lint")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
     id("com.squareup.sqldelight")
+    id("com.github.ben-manes.versions")
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
@@ -357,11 +359,6 @@ tasks {
                     project.buildDir.absolutePath + "/compose_metrics"
             )
         }
-    }
-
-    preBuild {
-        val ktlintTask = if (System.getenv("GITHUB_BASE_REF") == null) formatKotlin else lintKotlin
-        dependsOn(ktlintTask)
     }
 }
 
