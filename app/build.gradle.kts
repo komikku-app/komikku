@@ -8,7 +8,6 @@ plugins {
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
-    id("com.squareup.sqldelight")
     id("com.github.ben-manes.versions")
 }
 
@@ -134,19 +133,13 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = compose.versions.compiler.get()
     }
-
-    sqldelight {
-        database("Database") {
-            packageName = "eu.kanade.tachiyomi"
-            dialect = "sqlite:3.24"
-        }
-    }
 }
 
 dependencies {
     implementation(project(":i18n"))
     implementation(project(":core"))
     implementation(project(":source-api"))
+    implementation(project(":data"))
 
     // Compose
     implementation(platform(compose.bom))
@@ -169,9 +162,6 @@ dependencies {
     implementation(androidx.paging.compose)
 
     implementation(libs.bundles.sqlite)
-    implementation(libs.sqldelight.android.driver)
-    implementation(libs.sqldelight.coroutines)
-    implementation(libs.sqldelight.android.paging)
 
     implementation(kotlinx.reflect)
 

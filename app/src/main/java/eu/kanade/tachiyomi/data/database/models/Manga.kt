@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.data.database.models
 
-import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import exh.util.nullIfEmpty
+import tachiyomi.data.listOfStringsAndAdapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 interface Manga : SManga {

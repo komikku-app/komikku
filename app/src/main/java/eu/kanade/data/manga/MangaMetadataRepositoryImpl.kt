@@ -1,6 +1,5 @@
 package eu.kanade.data.manga
 
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.searchMetadataMapper
 import eu.kanade.data.exh.searchTagMapper
 import eu.kanade.data.exh.searchTitleMapper
@@ -13,6 +12,7 @@ import exh.metadata.sql.models.SearchTitle
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.data.DatabaseHandler
 
 class MangaMetadataRepositoryImpl(
     private val handler: DatabaseHandler,

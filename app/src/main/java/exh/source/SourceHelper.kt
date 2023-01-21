@@ -1,6 +1,6 @@
 package exh.source
 
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -9,21 +9,10 @@ import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
-import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
  * Source helpers
  */
-
-// Lewd source IDs
-const val LEWD_SOURCE_SERIES = 6900L
-const val EH_SOURCE_ID = LEWD_SOURCE_SERIES + 1
-const val EXH_SOURCE_ID = LEWD_SOURCE_SERIES + 2
-const val PURURIN_SOURCE_ID = 2221515250486218861
-const val TSUMINO_SOURCE_ID = 6707338697138388238
-const val EIGHTMUSES_SOURCE_ID = 1802675169972965535
-const val HBROWSE_SOURCE_ID = 1401584337232758222
-const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
 
 private val DELEGATED_METADATA_SOURCES by lazy {
     listOf(
@@ -86,8 +75,6 @@ fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
 fun Source.isMdBasedSource() = id in mangaDexSourceIds
 
 fun Manga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
-
-fun DomainManga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
     this.source()

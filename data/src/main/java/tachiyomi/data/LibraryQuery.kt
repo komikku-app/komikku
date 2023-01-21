@@ -1,40 +1,35 @@
-package eu.kanade.data.manga
+package tachiyomi.data
 
 import com.squareup.sqldelight.Query
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.internal.copyOnWriteList
-import eu.kanade.data.listOfStringsAdapter
-import eu.kanade.data.listOfStringsAndAdapter
-import eu.kanade.data.updateStrategyAdapter
-import eu.kanade.domain.library.model.LibraryManga
 import exh.source.MERGED_SOURCE_ID
+import tachiyomi.view.LibraryView
 
 private val mapper = { cursor: SqlCursor ->
-    LibraryManga(
-        manga = mangaMapper(
-            cursor.getLong(0)!!,
-            cursor.getLong(1)!!,
-            cursor.getString(2)!!,
-            cursor.getString(3),
-            cursor.getString(4),
-            cursor.getString(5),
-            cursor.getString(6)?.let(listOfStringsAdapter::decode),
-            cursor.getString(7)!!,
-            cursor.getLong(8)!!,
-            cursor.getString(9),
-            cursor.getLong(10)!! == 1L,
-            cursor.getLong(11) ?: 0,
-            null,
-            cursor.getLong(13)!! == 1L,
-            cursor.getLong(14)!!,
-            cursor.getLong(15)!!,
-            cursor.getLong(16)!!,
-            cursor.getLong(17)!!,
-            cursor.getString(18)?.let(listOfStringsAndAdapter::decode),
-            updateStrategyAdapter.decode(cursor.getLong(19)!!),
-        ),
-        totalChapters = cursor.getLong(20)!!,
+    LibraryView(
+        _id = cursor.getLong(0)!!,
+        source = cursor.getLong(1)!!,
+        url = cursor.getString(2)!!,
+        artist = cursor.getString(3),
+        author = cursor.getString(4),
+        description = cursor.getString(5),
+        genre = cursor.getString(6)?.let(listOfStringsAdapter::decode),
+        title = cursor.getString(7)!!,
+        status = cursor.getLong(8)!!,
+        thumbnail_url = cursor.getString(9),
+        favorite = cursor.getLong(10)!! == 1L,
+        last_update = cursor.getLong(11) ?: 0,
+        next_update = null,
+        initialized = cursor.getLong(13)!! == 1L,
+        viewer = cursor.getLong(14)!!,
+        chapter_flags = cursor.getLong(15)!!,
+        cover_last_modified = cursor.getLong(16)!!,
+        date_added = cursor.getLong(17)!!,
+        filtered_scanlators = cursor.getString(18)?.let(listOfStringsAndAdapter::decode),
+        update_strategy = updateStrategyAdapter.decode(cursor.getLong(19)!!),
+        totalCount = cursor.getLong(20)!!,
         readCount = cursor.getLong(21)!!,
         latestUpload = cursor.getLong(22)!!,
         chapterFetchedAt = cursor.getLong(23)!!,
@@ -44,7 +39,7 @@ private val mapper = { cursor: SqlCursor ->
     )
 }
 
-class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(), mapper) {
+class LibraryQuery(val driver: SqlDriver) : Query<LibraryView>(copyOnWriteList(), mapper) {
     override fun execute(): SqlCursor {
         return driver.executeQuery(
             null,

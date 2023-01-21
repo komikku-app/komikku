@@ -1,10 +1,5 @@
 package eu.kanade.data.manga
 
-import eu.kanade.data.AndroidDatabaseHandler
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.listOfStringsAdapter
-import eu.kanade.data.listOfStringsAndAdapter
-import eu.kanade.data.updateStrategyAdapter
 import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -14,6 +9,11 @@ import eu.kanade.tachiyomi.util.system.toLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import logcat.LogPriority
+import tachiyomi.data.AndroidDatabaseHandler
+import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.listOfStringsAdapter
+import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.data.updateStrategyAdapter
 
 class MangaRepositoryImpl(
     private val handler: DatabaseHandler,
@@ -40,7 +40,7 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
-        return handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
+        return handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }.map(libraryViewMapper)
         // return handler.awaitList { libraryViewQueries.library(libraryManga) }
     }
 

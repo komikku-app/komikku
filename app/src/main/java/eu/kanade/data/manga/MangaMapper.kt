@@ -3,6 +3,7 @@ package eu.kanade.data.manga
 import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import tachiyomi.view.LibraryView
 
 val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy) -> Manga =
     { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, _, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy ->
@@ -69,3 +70,36 @@ val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?,
             lastRead = lastRead,
         )
     }
+
+val libraryViewMapper: (LibraryView) -> LibraryManga = {
+    LibraryManga(
+        Manga(
+            id = it._id,
+            source = it.source,
+            favorite = it.favorite,
+            lastUpdate = it.last_update ?: 0,
+            dateAdded = it.date_added,
+            viewerFlags = it.viewer,
+            chapterFlags = it.chapter_flags,
+            coverLastModified = it.cover_last_modified,
+            url = it.url,
+            ogTitle = it.title,
+            ogArtist = it.artist,
+            ogAuthor = it.author,
+            ogDescription = it.description,
+            ogGenre = it.genre,
+            ogStatus = it.status,
+            thumbnailUrl = it.thumbnail_url,
+            updateStrategy = it.update_strategy,
+            initialized = it.initialized,
+            filteredScanlators = it.filtered_scanlators,
+        ),
+        it.category,
+        it.totalCount,
+        it.readCount,
+        it.bookmarkCount,
+        it.latestUpload,
+        it.chapterFetchedAt,
+        it.lastRead,
+    )
+}

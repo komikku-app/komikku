@@ -2,7 +2,6 @@ package exh.debug
 
 import android.app.Application
 import androidx.work.WorkManager
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -32,6 +31,7 @@ import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
+import tachiyomi.data.DatabaseHandler
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 

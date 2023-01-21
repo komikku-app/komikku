@@ -1,14 +1,14 @@
-package eu.kanade.data.updates
+package tachiyomi.data
 
 import com.squareup.sqldelight.Query
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.internal.copyOnWriteList
-import eu.kanade.domain.updates.model.UpdatesWithRelations
 import exh.source.MERGED_SOURCE_ID
+import tachiyomi.view.UpdatesView
 
 private val mapper = { cursor: SqlCursor ->
-    updateWithRelationMapper(
+    UpdatesView(
         cursor.getLong(0)!!,
         cursor.getString(1)!!,
         cursor.getLong(2)!!,
@@ -26,7 +26,7 @@ private val mapper = { cursor: SqlCursor ->
     )
 }
 
-class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesWithRelations>(copyOnWriteList(), mapper) {
+class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesView>(copyOnWriteList(), mapper) {
     override fun execute(): SqlCursor {
         return driver.executeQuery(
             null,

@@ -4,13 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
-import data.Manga_sync
-import data.Mangas
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.mergedMangaReferenceMapper
-import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.data.manga.mangaMapper
-import eu.kanade.data.updateStrategyAdapter
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.model.Category
@@ -65,6 +60,11 @@ import logcat.LogPriority
 import okio.buffer
 import okio.gzip
 import okio.sink
+import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.Manga_sync
+import tachiyomi.data.Mangas
+import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.data.updateStrategyAdapter
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.FileOutputStream

@@ -1,9 +1,9 @@
 package eu.kanade.data.manga
 
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.favoriteEntryMapper
 import eu.kanade.domain.manga.repository.FavoritesEntryRepository
 import exh.favorites.sql.models.FavoriteEntry
+import tachiyomi.data.DatabaseHandler
 
 class FavoritesEntryRepositoryImpl(
     private val handler: DatabaseHandler,

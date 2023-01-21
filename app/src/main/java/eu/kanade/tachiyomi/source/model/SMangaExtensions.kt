@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.source.model
 
-import data.Mangas
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import tachiyomi.data.Mangas
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -31,7 +31,7 @@ fun SManga.copyFrom(other: Mangas) {
     }
 
     if (other.genre != null) {
-        genre = other.genre.joinToString(separator = ", ")
+        genre = other.genre!!.joinToString(separator = ", ")
     }
 
     if (other.thumbnail_url != null) {

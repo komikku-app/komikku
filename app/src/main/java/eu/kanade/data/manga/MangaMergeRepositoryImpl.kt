@@ -1,6 +1,5 @@
 package eu.kanade.data.manga
 
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.mergedMangaReferenceMapper
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
@@ -10,6 +9,7 @@ import eu.kanade.tachiyomi.util.system.toLong
 import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
+import tachiyomi.data.DatabaseHandler
 
 class MangaMergeRepositoryImpl(
     private val handler: DatabaseHandler,
