@@ -1,4 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jmailen.gradle.kotlinter.tasks.LintTask
 
@@ -7,7 +6,6 @@ plugins {
     id("com.mikepenz.aboutlibraries.plugin")
     kotlin("android")
     kotlin("plugin.parcelize")
-    id("tachiyomi.lint")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
     id("com.squareup.sqldelight")
@@ -26,13 +24,9 @@ val SUPPORTED_ABIS = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 android {
     namespace = "eu.kanade.tachiyomi"
-    compileSdk = AndroidConfig.compileSdk
-    ndkVersion = AndroidConfig.ndk
 
     defaultConfig {
         applicationId = "eu.kanade.tachiyomi.sy"
-        minSdk = AndroidConfig.minSdk
-        targetSdk = AndroidConfig.targetSdk
         versionCode = 47
         versionName = "1.9.0"
 
@@ -141,17 +135,6 @@ android {
         kotlinCompilerExtensionVersion = compose.versions.compiler.get()
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-
-        isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
-
     sqldelight {
         database("Database") {
             packageName = "eu.kanade.tachiyomi"
@@ -164,8 +147,6 @@ dependencies {
     implementation(project(":i18n"))
     implementation(project(":core"))
     implementation(project(":source-api"))
-
-    coreLibraryDesugaring(libs.desugar)
 
     // Compose
     implementation(platform(compose.bom))
@@ -317,12 +298,6 @@ androidComponents {
 }
 
 tasks {
-    withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-        }
-    }
 
     withType<LintTask>().configureEach {
         exclude { it.file.path.contains("generated[\\\\/]".toRegex()) }
