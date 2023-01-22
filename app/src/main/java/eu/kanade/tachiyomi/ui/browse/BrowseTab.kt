@@ -57,7 +57,7 @@ data class BrowseTab(
 
         // Hoisted for extensions tab's search bar
         val extensionsScreenModel = rememberScreenModel { ExtensionsScreenModel() }
-        val extensionsQuery by extensionsScreenModel.query.collectAsState()
+        val extensionsState by extensionsScreenModel.state.collectAsState()
 
         TabbedScreen(
             titleRes = R.string.browse,
@@ -79,7 +79,7 @@ data class BrowseTab(
             },
             startIndex = 2.takeIf { toExtensions },
             // SY <--
-            searchQuery = extensionsQuery,
+            searchQuery = extensionsState.searchQuery,
             onChangeSearchQuery = extensionsScreenModel::search,
         )
 
