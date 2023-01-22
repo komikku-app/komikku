@@ -358,9 +358,7 @@ class ReaderActivity : BaseActivity() {
             }
         }
         // SY <--
-        if (!isChangingConfigurations) {
-            viewModel.onSaveInstanceStateNonConfigurationChange()
-        }
+        viewModel.onSaveInstanceState()
         super.onSaveInstanceState(outState)
     }
 
