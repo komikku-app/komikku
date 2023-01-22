@@ -17,7 +17,6 @@ import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.history.interactor.UpsertHistory
-import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
@@ -97,6 +96,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.decoder.ImageDecoder
+import tachiyomi.domain.history.model.HistoryUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.DecimalFormat

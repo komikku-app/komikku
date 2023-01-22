@@ -8,11 +8,7 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetDisplayModeForCategory
 import eu.kanade.domain.category.interactor.SetSortModeForCategory
-import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.library.model.LibrarySort
-import eu.kanade.domain.library.model.display
-import eu.kanade.domain.library.model.sort
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -26,6 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.display
+import tachiyomi.domain.library.model.sort
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

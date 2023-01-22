@@ -1,23 +1,20 @@
-package eu.kanade.tachiyomi.data.library
+package tachiyomi.data.manga
 
 import android.content.Context
-import eu.kanade.tachiyomi.data.database.models.Manga
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import tachiyomi.domain.manga.model.CustomMangaInfo
+import tachiyomi.domain.manga.repository.CustomMangaRepository
 import java.io.File
-import eu.kanade.domain.manga.model.Manga as DomainManga
 
-class CustomMangaManager(val context: Context) {
-
+class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
     private val editJson = File(context.getExternalFilesDir(null), "edits.json")
 
     private val customMangaMap = fetchCustomData()
 
-    fun getManga(manga: Manga): CustomMangaInfo? = customMangaMap[manga.id]
-    fun getManga(manga: DomainManga): CustomMangaInfo? = customMangaMap[manga.id]
-    fun getManga(mangaId: Long): CustomMangaInfo? = customMangaMap[mangaId]
+    override fun get(mangaId: Long) = customMangaMap[mangaId]
 
     private fun fetchCustomData(): MutableMap<Long, CustomMangaInfo> {
         if (!editJson.exists() || !editJson.isFile) return mutableMapOf()
@@ -40,18 +37,18 @@ class CustomMangaManager(val context: Context) {
             .toMutableMap()
     }
 
-    fun saveMangaInfo(manga: MangaJson) {
+    override fun set(mangaInfo: CustomMangaInfo) {
         if (
-            manga.title == null &&
-            manga.author == null &&
-            manga.artist == null &&
-            manga.description == null &&
-            manga.genre == null &&
-            manga.status == null
+            mangaInfo.title == null &&
+            mangaInfo.author == null &&
+            mangaInfo.artist == null &&
+            mangaInfo.description == null &&
+            mangaInfo.genre == null &&
+            mangaInfo.status == null
         ) {
-            customMangaMap.remove(manga.id!!)
+            customMangaMap.remove(mangaInfo.id)
         } else {
-            customMangaMap[manga.id!!] = manga.toManga()
+            customMangaMap[mangaInfo.id] = mangaInfo
         }
         saveCustomInfo()
     }
@@ -91,29 +88,15 @@ class CustomMangaManager(val context: Context) {
         )
     }
 
-    data class CustomMangaInfo(
-        val id: Long,
-        val title: String?,
-        val author: String? = null,
-        val artist: String? = null,
-        val description: String? = null,
-        val genre: List<String>? = null,
-        val status: Long? = null,
-    ) {
-        val genreString by lazy {
-            genre?.joinToString()
-        }
-
-        fun toJson(): MangaJson {
-            return MangaJson(
-                id,
-                title,
-                author,
-                artist,
-                description,
-                genre,
-                status,
-            )
-        }
+    fun CustomMangaInfo.toJson(): MangaJson {
+        return MangaJson(
+            id,
+            title,
+            author,
+            artist,
+            description,
+            genre,
+            status,
+        )
     }
 }

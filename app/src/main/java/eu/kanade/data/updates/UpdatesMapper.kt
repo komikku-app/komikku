@@ -1,7 +1,7 @@
 package eu.kanade.data.updates
 
-import eu.kanade.domain.manga.model.MangaCover
-import eu.kanade.domain.updates.model.UpdatesWithRelations
+import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.view.UpdatesView
 
 val updateWithRelationMapper: (Long, String, Long, String, String?, Boolean, Boolean, Long, Long, Boolean, String?, Long, Long, Long) -> UpdatesWithRelations = {

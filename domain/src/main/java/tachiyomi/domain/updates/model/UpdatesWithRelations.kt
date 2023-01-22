@@ -1,7 +1,7 @@
-package eu.kanade.domain.updates.model
+package tachiyomi.domain.updates.model
 
-import eu.kanade.domain.manga.model.MangaCover
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.model.MangaCover
 import uy.kohesive.injekt.injectLazy
 
 data class UpdatesWithRelations(
@@ -20,10 +20,10 @@ data class UpdatesWithRelations(
     val coverData: MangaCover,
 ) {
     // SY -->
-    val mangaTitle: String = customMangaManager.getManga(mangaId)?.title ?: ogMangaTitle
+    val mangaTitle: String = getCustomMangaInfo.get(mangaId)?.title ?: ogMangaTitle
 
     companion object {
-        private val customMangaManager: CustomMangaManager by injectLazy()
+        private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
     }
     // SY <--
 }

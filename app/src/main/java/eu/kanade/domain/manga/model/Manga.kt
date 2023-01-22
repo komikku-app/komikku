@@ -2,13 +2,14 @@ package eu.kanade.domain.manga.model
 
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -42,7 +43,7 @@ data class Manga(
 
     // SY -->
     private val customMangaInfo = if (favorite) {
-        customMangaManager.getManga(this)
+        getCustomMangaInfo.get(id)
     } else {
         null
     }
@@ -225,7 +226,7 @@ data class Manga(
         )
 
         // SY -->
-        private val customMangaManager: CustomMangaManager by injectLazy()
+        private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
         // SY <--
     }
 }

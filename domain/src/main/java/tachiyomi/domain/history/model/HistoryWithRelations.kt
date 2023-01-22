@@ -1,7 +1,7 @@
-package eu.kanade.domain.history.model
+package tachiyomi.domain.history.model
 
-import eu.kanade.domain.manga.model.MangaCover
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.model.MangaCover
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 
@@ -18,10 +18,10 @@ data class HistoryWithRelations(
     val coverData: MangaCover,
 ) {
     // SY -->
-    val title: String = customMangaManager.getManga(mangaId)?.title ?: ogTitle
+    val title: String = customMangaManager.get(mangaId)?.title ?: ogTitle
 
     companion object {
-        private val customMangaManager: CustomMangaManager by injectLazy()
+        private val customMangaManager: GetCustomMangaInfo by injectLazy()
     }
     // SY <--
 }

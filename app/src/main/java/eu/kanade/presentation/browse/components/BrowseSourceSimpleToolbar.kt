@@ -13,11 +13,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
+import tachiyomi.domain.library.model.LibraryDisplayMode
 
 @Composable
 fun BrowseSourceSimpleToolbar(

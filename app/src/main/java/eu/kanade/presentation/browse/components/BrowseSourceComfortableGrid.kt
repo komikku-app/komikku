@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.MangaCover
 import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.components.Badge
 import eu.kanade.presentation.components.CommonMangaItemDefaults
@@ -26,6 +25,7 @@ import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.domain.manga.model.MangaCover
 
 @Composable
 fun BrowseSourceComfortableGrid(

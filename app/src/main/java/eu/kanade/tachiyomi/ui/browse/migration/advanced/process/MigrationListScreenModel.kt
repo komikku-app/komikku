@@ -14,13 +14,11 @@ import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.history.interactor.UpsertHistory
-import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.track.interactor.DeleteTrack
 import eu.kanade.domain.track.interactor.GetTracks
@@ -51,6 +49,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
+import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger

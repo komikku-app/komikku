@@ -4,12 +4,12 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.domain.manga.model.CustomMangaInfo
 
 @Suppress("DEPRECATION")
 @Serializable
@@ -86,7 +86,7 @@ data class BackupManga(
     }
 
     // SY -->
-    fun getCustomMangaInfo(): CustomMangaManager.MangaJson? {
+    fun getCustomMangaInfo(): CustomMangaInfo? {
         if (customTitle != null ||
             customArtist != null ||
             customAuthor != null ||
@@ -94,7 +94,7 @@ data class BackupManga(
             customGenre != null ||
             customStatus != 0
         ) {
-            return CustomMangaManager.MangaJson(
+            return CustomMangaInfo(
                 id = 0L,
                 title = customTitle,
                 author = customAuthor,
@@ -115,7 +115,7 @@ data class BackupManga(
     }
 
     companion object {
-        fun copyFrom(manga: Manga /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
+        fun copyFrom(manga: Manga /* SY --> */, customMangaInfo: CustomMangaInfo?/* SY <-- */): BackupManga {
             return BackupManga(
                 url = manga.url,
                 // SY -->
@@ -137,7 +137,7 @@ data class BackupManga(
                 // SY -->
                 filtered_scanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
             ).also { backupManga ->
-                customMangaManager?.getManga(manga.id)?.let {
+                customMangaInfo?.let {
                     backupManga.customTitle = it.title
                     backupManga.customArtist = it.artist
                     backupManga.customAuthor = it.author

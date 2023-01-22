@@ -8,7 +8,6 @@ import eu.kanade.data.exh.mergedMangaReferenceMapper
 import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.category.interactor.GetCategories
-import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
@@ -44,7 +43,6 @@ import eu.kanade.tachiyomi.data.backup.models.backupTrackMapper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -65,6 +63,10 @@ import tachiyomi.data.Mangas
 import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
+import tachiyomi.domain.manga.model.CustomMangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.FileOutputStream
@@ -85,7 +87,8 @@ class BackupManager(
 
     // SY -->
     private val getMergedManga: GetMergedManga = Injekt.get()
-    private val customMangaManager: CustomMangaManager = Injekt.get()
+    private val getCustomMangaInfo: GetCustomMangaInfo = Injekt.get()
+    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get()
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get()
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get()
     // SY <--
@@ -225,7 +228,11 @@ class BackupManager(
      */
     private suspend fun backupManga(manga: DomainManga, options: Int): BackupManga {
         // Entry for this manga
-        val mangaObject = BackupManga.copyFrom(manga /* SY --> */, if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) customMangaManager else null /* SY <-- */)
+        val mangaObject = BackupManga.copyFrom(
+            manga,
+            // SY -->
+            if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) getCustomMangaInfo.get(manga.id) else null, /* SY <-- */
+        )
 
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
@@ -743,9 +750,9 @@ class BackupManager(
         }
     }
 
-    internal fun restoreEditedInfo(mangaJson: CustomMangaManager.MangaJson?) {
+    internal fun restoreEditedInfo(mangaJson: CustomMangaInfo?) {
         mangaJson ?: return
-        customMangaManager.saveMangaInfo(mangaJson)
+        setCustomMangaInfo.set(mangaJson)
     }
     // SY <--
 }

@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
@@ -56,6 +55,7 @@ import tachiyomi.data.listOfLongsAdapter
 import tachiyomi.data.listOfStringsAdapter
 import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.updateStrategyAdapter
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingleton
@@ -150,8 +150,6 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { ImageSaver(app) }
 
         // SY -->
-        addSingletonFactory { CustomMangaManager(app) }
-
         addSingletonFactory { EHentaiUpdateHelper(app) }
 
         addSingletonFactory { PagePreviewCache(app) }
@@ -168,7 +166,7 @@ class AppModule(val app: Application) : InjektModule {
             get<DownloadManager>()
 
             // SY -->
-            get<CustomMangaManager>()
+            get<GetCustomMangaInfo>()
             // SY <--
         }
     }

@@ -41,7 +41,6 @@ import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.interactor.UpdateMergedSettings
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.TriStateFilter
@@ -59,7 +58,6 @@ import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.download.model.Download
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -112,6 +110,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
+import tachiyomi.domain.manga.model.CustomMangaInfo
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -147,6 +148,7 @@ class MangaInfoScreenModel(
     private val getFlatMetadata: GetFlatMetadataById = Injekt.get(),
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
+    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     // SY <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val setMangaChapterFlags: SetMangaChapterFlags = Injekt.get(),
@@ -189,8 +191,6 @@ class MangaInfoScreenModel(
     private val selectedChapterIds: HashSet<Long> = HashSet()
 
     // EXH -->
-    private val customMangaManager: CustomMangaManager by injectLazy()
-
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
     val redirectFlow: MutableSharedFlow<EXHRedirect> = MutableSharedFlow()
@@ -468,8 +468,8 @@ class MangaInfoScreenModel(
             } else {
                 null
             }
-            customMangaManager.saveMangaInfo(
-                CustomMangaManager.MangaJson(
+            setCustomMangaInfo.set(
+                CustomMangaInfo(
                     state.manga.id,
                     title?.trimOrNull(),
                     author?.trimOrNull(),

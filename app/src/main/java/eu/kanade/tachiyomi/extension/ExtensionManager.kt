@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.extension
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
-import eu.kanade.domain.source.model.SourceData
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
@@ -34,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import rx.Observable
+import tachiyomi.domain.source.model.SourceData
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale

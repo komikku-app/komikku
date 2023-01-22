@@ -26,11 +26,8 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.history.interactor.GetNextChapters
-import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.model.LibraryManga
-import eu.kanade.domain.library.model.LibrarySort
-import eu.kanade.domain.library.model.sort
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetLibraryManga
@@ -39,7 +36,6 @@ import eu.kanade.domain.manga.interactor.GetSearchTags
 import eu.kanade.domain.manga.interactor.GetSearchTitles
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.GetTracks
@@ -51,7 +47,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.LocalSource
@@ -100,6 +95,12 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.library.model.sort
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
+import tachiyomi.domain.manga.model.CustomMangaInfo
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.Collator
@@ -131,12 +132,12 @@ class LibraryScreenModel(
     private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
-    private val customMangaManager: CustomMangaManager = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val getIdsOfFavoriteMangaWithMetadata: GetIdsOfFavoriteMangaWithMetadata = Injekt.get(),
     private val getSearchTags: GetSearchTags = Injekt.get(),
     private val getSearchTitles: GetSearchTitles = Injekt.get(),
     private val searchEngine: SearchEngine = Injekt.get(),
+    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     // SY <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -735,7 +736,7 @@ class LibraryScreenModel(
                 }
             }
             if (manga.title == editedTitle) return@fastForEach
-            val mangaJson = CustomMangaManager.MangaJson(
+            val mangaInfo = CustomMangaInfo(
                 id = manga.id,
                 title = editedTitle.nullIfBlank(),
                 author = manga.author.takeUnless { it == manga.ogAuthor },
@@ -745,7 +746,7 @@ class LibraryScreenModel(
                 status = manga.status.takeUnless { it == manga.ogStatus }?.toLong(),
             )
 
-            customMangaManager.saveMangaInfo(mangaJson)
+            setCustomMangaInfo.set(mangaInfo)
         }
         clearSelection()
     }

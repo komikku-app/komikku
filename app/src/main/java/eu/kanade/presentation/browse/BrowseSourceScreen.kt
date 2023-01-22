@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.data.source.NoResultsException
-import eu.kanade.domain.library.model.LibraryDisplayMode
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.components.BrowseSourceComfortableGrid
 import eu.kanade.presentation.browse.components.BrowseSourceCompactGrid
@@ -30,6 +29,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedSource
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.domain.library.model.LibraryDisplayMode
 
 @Composable
 fun BrowseSourceContent(

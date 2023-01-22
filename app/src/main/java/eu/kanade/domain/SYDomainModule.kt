@@ -1,5 +1,6 @@
 package eu.kanade.domain
 
+import android.app.Application
 import eu.kanade.data.manga.FavoritesEntryRepositoryImpl
 import eu.kanade.data.manga.MangaMergeRepositoryImpl
 import eu.kanade.data.manga.MangaMetadataRepositoryImpl
@@ -67,6 +68,10 @@ import eu.kanade.domain.source.repository.FeedSavedSearchRepository
 import eu.kanade.domain.source.repository.SavedSearchRepository
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import exh.search.SearchEngine
+import tachiyomi.data.manga.CustomMangaRepositoryImpl
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
+import tachiyomi.domain.manga.repository.CustomMangaRepository
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addFactory
@@ -148,5 +153,9 @@ class SYDomainModule : InjektModule {
         addFactory { CountFeedSavedSearchBySourceId(get()) }
         addFactory { GetSavedSearchGlobalFeed(get()) }
         addFactory { GetSavedSearchBySourceIdFeed(get()) }
+
+        addSingletonFactory<CustomMangaRepository> { CustomMangaRepositoryImpl(get<Application>()) }
+        addFactory { GetCustomMangaInfo(get()) }
+        addFactory { SetCustomMangaInfo(get()) }
     }
 }

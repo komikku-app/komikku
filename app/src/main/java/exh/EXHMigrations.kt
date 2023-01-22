@@ -16,7 +16,6 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
@@ -66,6 +65,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

@@ -11,15 +11,15 @@ import eu.kanade.domain.chapter.repository.ChapterRepository
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.history.interactor.RemoveHistory
 import eu.kanade.domain.history.interactor.UpsertHistory
-import eu.kanade.domain.history.model.History
-import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.MangaUpdate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import tachiyomi.domain.history.model.History
+import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 

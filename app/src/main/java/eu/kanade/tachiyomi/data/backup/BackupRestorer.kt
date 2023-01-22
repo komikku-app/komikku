@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.data.backup.models.BackupSource
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
@@ -22,6 +21,7 @@ import kotlinx.coroutines.Job
 import okio.buffer
 import okio.gzip
 import okio.source
+import tachiyomi.domain.manga.model.CustomMangaInfo
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -190,7 +190,7 @@ class BackupRestorer(
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
         flatMetadata: BackupFlatMetadata?,
-        customManga: CustomMangaManager.MangaJson?,
+        customManga: CustomMangaInfo?,
         // SY <--
     ) {
         val fetchedManga = backupManager.restoreNewManga(manga)
@@ -210,7 +210,7 @@ class BackupRestorer(
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
         flatMetadata: BackupFlatMetadata?,
-        customManga: CustomMangaManager.MangaJson?,
+        customManga: CustomMangaInfo?,
         // SY <--
     ) {
         backupManager.restoreChapters(backupManga, chapters)
@@ -226,7 +226,7 @@ class BackupRestorer(
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
         flatMetadata: BackupFlatMetadata?,
-        customManga: CustomMangaManager.MangaJson?,
+        customManga: CustomMangaInfo?,
         // SY <--
     ) {
         backupManager.restoreCategories(manga, categories, backupCategories)
@@ -235,8 +235,7 @@ class BackupRestorer(
         // SY -->
         backupManager.restoreMergedMangaReferencesForManga(manga.id!!, mergedMangaReferences)
         flatMetadata?.let { backupManager.restoreFlatMetadata(manga.id!!, it) }
-        customManga?.id = manga.id!!
-        backupManager.restoreEditedInfo(customManga)
+        backupManager.restoreEditedInfo(customManga?.copy(id = manga.id!!))
         // SY <--
     }
 

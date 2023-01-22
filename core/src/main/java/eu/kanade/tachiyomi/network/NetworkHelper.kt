@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.network
 
 import android.content.Context
-import eu.kanade.tachiyomi.i18n.BuildConfig
+import eu.kanade.tachiyomi.core.BuildConfig
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import okhttp3.Cache

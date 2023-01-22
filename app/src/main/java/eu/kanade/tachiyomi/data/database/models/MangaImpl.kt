@@ -1,9 +1,10 @@
 package eu.kanade.tachiyomi.data.database.models
 
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.manga.model.CustomMangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -17,8 +18,8 @@ open class MangaImpl : Manga {
     override lateinit var url: String
 
     // SY -->
-    private val customManga: CustomMangaManager.CustomMangaInfo?
-        get() = customMangaManager.getManga(this)
+    private val customManga: CustomMangaInfo?
+        get() = getCustomMangaInfo.get(id!!)
 
     override var title: String
         get() = if (favorite) {
@@ -43,7 +44,7 @@ open class MangaImpl : Manga {
         set(value) { ogDesc = value }
 
     override var genre: String?
-        get() = if (favorite) customManga?.genreString ?: ogGenre else ogGenre
+        get() = if (favorite) customManga?.genre?.joinToString() ?: ogGenre else ogGenre
         set(value) { ogGenre = value }
 
     override var status: Int
@@ -126,7 +127,7 @@ open class MangaImpl : Manga {
     }
 
     companion object {
-        private val customMangaManager: CustomMangaManager by injectLazy()
+        private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
     }
     // SY <--
 }
