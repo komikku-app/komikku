@@ -5,7 +5,6 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import eu.kanade.data.category.categoryMapper
 import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
@@ -66,6 +65,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.category.categoryMapper
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

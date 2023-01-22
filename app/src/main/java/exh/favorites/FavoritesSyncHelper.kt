@@ -8,8 +8,6 @@ import eu.kanade.domain.category.interactor.CreateCategoryWithName
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.interactor.UpdateCategory
-import eu.kanade.domain.category.model.Category
-import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -40,6 +38,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.Request
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.CategoryUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

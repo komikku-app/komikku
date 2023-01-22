@@ -17,6 +17,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.delay
+import tachiyomi.domain.category.model.Category
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -184,4 +185,8 @@ fun CategoryDeleteDialog(
             Text(text = text)
         },
     )
+}
+
+internal fun List<Category>.anyWithName(name: String): Boolean {
+    return any { name == it.name }
 }

@@ -29,7 +29,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.library.model.display
@@ -66,6 +65,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import tachiyomi.domain.category.model.Category
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

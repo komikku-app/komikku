@@ -39,7 +39,6 @@ import com.commandiron.wheel_picker_compose.WheelPicker
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.ResetCategoryFlags
-import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.library.model.GroupLibraryMode
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.category.visualName
@@ -60,6 +59,7 @@ import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import tachiyomi.domain.category.model.Category
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
