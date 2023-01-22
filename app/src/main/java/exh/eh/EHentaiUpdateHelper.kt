@@ -5,7 +5,6 @@ import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetChapterByUrl
-import eu.kanade.domain.chapter.repository.ChapterRepository
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.history.interactor.RemoveHistory
 import eu.kanade.domain.history.interactor.UpsertHistory
@@ -16,6 +15,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
+import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.model.Manga

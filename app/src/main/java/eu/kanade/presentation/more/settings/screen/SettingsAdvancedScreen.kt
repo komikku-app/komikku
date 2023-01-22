@@ -43,7 +43,6 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
-import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
@@ -90,6 +89,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.Headers
+import tachiyomi.domain.manga.repository.MangaRepository
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File

@@ -15,7 +15,6 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.library.model.GroupLibraryMode
 import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.GetLibraryManga
@@ -83,6 +82,7 @@ import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import uy.kohesive.injekt.Injekt

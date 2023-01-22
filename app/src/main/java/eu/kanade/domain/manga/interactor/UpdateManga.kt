@@ -2,12 +2,12 @@ package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.isLocal
-import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.model.SManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
+import tachiyomi.domain.manga.repository.MangaRepository
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date

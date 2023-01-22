@@ -1,7 +1,7 @@
 package eu.kanade.domain.history.interactor
 
-import eu.kanade.domain.history.repository.HistoryRepository
 import tachiyomi.domain.history.model.History
+import tachiyomi.domain.history.repository.HistoryRepository
 
 class GetHistoryByMangaId(
     private val repository: HistoryRepository,

@@ -1,6 +1,6 @@
 package eu.kanade.domain.chapter.interactor
 
-import eu.kanade.domain.chapter.repository.ChapterRepository
+import tachiyomi.domain.chapter.repository.ChapterRepository
 
 class DeleteChapters(
     private val chapterRepository: ChapterRepository,

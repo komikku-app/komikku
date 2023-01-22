@@ -1,6 +1,5 @@
 package eu.kanade.data.history
 
-import eu.kanade.domain.history.repository.HistoryRepository
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
@@ -8,6 +7,7 @@ import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.history.model.HistoryWithRelations
+import tachiyomi.domain.history.repository.HistoryRepository
 
 class HistoryRepositoryImpl(
     private val handler: DatabaseHandler,

@@ -1,11 +1,11 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.repository.MangaRepository
 
 class GetManga(
     private val mangaRepository: MangaRepository,

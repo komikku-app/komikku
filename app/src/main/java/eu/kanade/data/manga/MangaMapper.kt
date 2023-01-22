@@ -1,7 +1,7 @@
 package eu.kanade.data.manga
 
-import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.view.LibraryView
 

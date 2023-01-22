@@ -26,7 +26,6 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.library.model.LibraryManga
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetLibraryManga
@@ -95,6 +94,7 @@ import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
