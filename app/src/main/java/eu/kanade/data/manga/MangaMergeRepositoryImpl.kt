@@ -2,10 +2,11 @@ package eu.kanade.data.manga
 
 import eu.kanade.data.exh.mergedMangaReferenceMapper
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.system.toLong
+import eu.kanade.tachiyomi.util.toLong
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.manga.mangaMapper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference

@@ -11,6 +11,7 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.manga.mangaMapper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaMetadataRepository
 

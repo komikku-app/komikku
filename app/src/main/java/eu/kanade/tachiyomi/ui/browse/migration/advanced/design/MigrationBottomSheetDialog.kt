@@ -16,8 +16,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
-import eu.kanade.tachiyomi.util.system.toLong
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.toLong
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import uy.kohesive.injekt.injectLazy
 

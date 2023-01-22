@@ -1,4 +1,4 @@
-package eu.kanade.data.updates
+package tachiyomi.data.updates
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

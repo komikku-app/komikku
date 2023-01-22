@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
 import eu.kanade.data.exh.mergedMangaReferenceMapper
-import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -48,7 +47,7 @@ import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.hasPermission
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.system.toLong
+import eu.kanade.tachiyomi.util.toLong
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.nullIfBlank
@@ -61,6 +60,7 @@ import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
 import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.data.manga.mangaMapper
 import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.history.model.HistoryUpdate
