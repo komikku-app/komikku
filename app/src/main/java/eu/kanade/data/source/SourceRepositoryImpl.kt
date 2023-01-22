@@ -1,8 +1,6 @@
 package eu.kanade.data.source
 
-import eu.kanade.domain.source.model.Source
 import eu.kanade.domain.source.model.SourcePagingSourceType
-import eu.kanade.domain.source.model.SourceWithCount
 import eu.kanade.domain.source.repository.SourceRepository
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
@@ -13,6 +11,8 @@ import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.source.model.Source
+import tachiyomi.domain.source.model.SourceWithCount
 
 class SourceRepositoryImpl(
     private val sourceManager: SourceManager,
