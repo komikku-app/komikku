@@ -5,7 +5,6 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
@@ -61,6 +60,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
+import tachiyomi.data.chapter.chapterMapper
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
