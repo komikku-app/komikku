@@ -3,7 +3,6 @@ package exh.md.similar
 import android.content.Context
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -13,6 +12,7 @@ import exh.source.getMainSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

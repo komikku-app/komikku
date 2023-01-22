@@ -9,7 +9,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -25,6 +24,7 @@ import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import tachiyomi.domain.manga.model.Manga
 
 sealed class SourceFeedUI {
     abstract val id: Long

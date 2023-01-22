@@ -1,12 +1,14 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
-import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.model.PagePreview
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import exh.source.getMainSource
+import tachiyomi.domain.manga.model.Manga
 
 class GetPagePreviews(
     private val pagePreviewCache: PagePreviewCache,

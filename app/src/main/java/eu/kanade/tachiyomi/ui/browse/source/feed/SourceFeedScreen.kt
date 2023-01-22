@@ -13,7 +13,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
@@ -32,6 +31,7 @@ import exh.util.nullIfBlank
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import tachiyomi.domain.manga.model.Manga
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 class SourceFeedScreen(val sourceId: Long) : Screen {

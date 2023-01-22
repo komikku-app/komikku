@@ -1,12 +1,12 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.content.Context
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import tachiyomi.domain.manga.model.Manga
 import java.text.DecimalFormat
 import kotlin.coroutines.CoroutineContext
 

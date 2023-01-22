@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
@@ -46,6 +45,7 @@ import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.delay
+import tachiyomi.domain.manga.model.Manga
 import kotlin.time.Duration.Companion.seconds
 
 data class FeedItemUI(

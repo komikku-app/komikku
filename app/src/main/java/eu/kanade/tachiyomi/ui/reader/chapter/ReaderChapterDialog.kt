@@ -5,7 +5,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -13,6 +12,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderViewModel
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.launch
+import tachiyomi.domain.chapter.model.Chapter
 
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
     private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater)

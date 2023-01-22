@@ -10,7 +10,6 @@ import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.UpdateChapter
-import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaBySource
@@ -65,6 +64,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
+import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -72,7 +72,7 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
-import eu.kanade.domain.manga.model.Manga as DomainManga
+import tachiyomi.domain.manga.model.Manga as DomainManga
 
 object EXHMigrations {
     private val handler: DatabaseHandler by injectLazy()

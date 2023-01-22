@@ -2,7 +2,6 @@ package exh.recs
 
 import eu.kanade.data.source.NoResultsException
 import eu.kanade.data.source.SourcePagingSource
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
@@ -29,6 +28,7 @@ import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

@@ -26,7 +26,6 @@ import coil.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
@@ -38,6 +37,7 @@ import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineScope
+import tachiyomi.domain.manga.model.Manga
 
 @Composable
 fun EditMangaDialog(
@@ -182,7 +182,7 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
             binding.mangaDescription.hint =
                 context.getString(
                     R.string.description_hint,
-                    manga.ogDescription.replace("\n", " ").chop(20),
+                    manga.ogDescription!!.replace("\n", " ").chop(20),
                 )
         }
     }

@@ -3,11 +3,10 @@ package eu.kanade.tachiyomi.data.download
 import android.content.Context
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.PublishRelay
-import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.manga.model.COMIC_INFO_FILE
 import eu.kanade.domain.manga.model.ComicInfo
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.getComicInfo
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
@@ -41,6 +40,8 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
+import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.BufferedOutputStream

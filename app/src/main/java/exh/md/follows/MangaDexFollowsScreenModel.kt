@@ -2,7 +2,6 @@ package exh.md.follows
 
 import android.content.Context
 import cafe.adriel.voyager.navigator.Navigator
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -11,6 +10,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tachiyomi.domain.manga.model.Manga
 
 class MangaDexFollowsScreenModel(sourceId: Long) : BrowseSourceScreenModel(sourceId, null) {
 

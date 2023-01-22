@@ -1,13 +1,15 @@
 package eu.kanade.domain.chapter.model
 
-import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.TriStateFilter
+import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import exh.md.utils.MdUtil
+import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.TriStateFilter
 
 /**
  * Applies the view filters to the list of chapters obtained from the database.
@@ -47,7 +49,7 @@ fun List<Chapter>.applyFilters(manga: Manga, downloadManager: DownloadManager): 
         }
         // SY -->
         .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.scanlator).any { group -> manga.filteredScanlators.contains(group) }
+            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
         }
         // SY <--
         .sortedWith(getChapterSort(manga))
@@ -86,7 +88,7 @@ fun List<ChapterItem>.applyFilters(manga: Manga): Sequence<ChapterItem> {
         }
         // SY -->
         .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators.contains(group) }
+            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
         }
         // SY <--
         .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }

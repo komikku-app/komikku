@@ -1,12 +1,12 @@
 package eu.kanade.domain.manga.repository
 
-import eu.kanade.domain.manga.model.Manga
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.domain.manga.model.Manga
 
 interface MangaMetadataRepository {
     suspend fun getMetadataById(id: Long): SearchMetadata?

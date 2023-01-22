@@ -30,9 +30,9 @@ import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toDomainManga
-import eu.kanade.domain.manga.model.toMangaUpdate
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.DeleteSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetRemoteManga
@@ -98,6 +98,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import logcat.LogPriority
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.toMangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer

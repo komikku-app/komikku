@@ -33,7 +33,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.components.Badge
 import eu.kanade.presentation.components.BadgeGroup
 import eu.kanade.presentation.components.LazyColumn
@@ -48,6 +47,7 @@ import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.domain.manga.model.Manga
 import java.util.Date
 
 @Composable

@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.data.track.mdlist
 import android.content.Context
 import android.graphics.Color
 import androidx.annotation.StringRes
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -17,6 +16,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.network.MangaDexAuthInterceptor
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

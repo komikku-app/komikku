@@ -9,17 +9,16 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
-import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderChapterItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.isEhBasedManga
+import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.manga.model.Manga
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
-import eu.kanade.domain.manga.model.Manga.Companion as DomainManga
 
 class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: Boolean, context: Context, val dateFormat: DateFormat, val decimalFormat: DecimalFormat) :
     AbstractFlexibleItem<ReaderChapterItem.ViewHolder>() {
@@ -68,7 +67,7 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
             val chapter = item.chapter
 
             binding.chapterTitle.text = when (manga.displayMode) {
-                DomainManga.CHAPTER_DISPLAY_NUMBER -> {
+                Manga.CHAPTER_DISPLAY_NUMBER -> {
                     val number = item.decimalFormat.format(chapter.chapterNumber.toDouble())
                     itemView.context.getString(R.string.display_mode_chapter, number)
                 }
@@ -92,7 +91,7 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
                 descriptions.add(item.dateFormat.format(Date(chapter.dateUpload)))
             }
             if (!chapter.scanlator.isNullOrBlank() && !manga.isEhBasedManga()) {
-                descriptions.add(chapter.scanlator)
+                descriptions.add(chapter.scanlator!!)
             }
 
             if (descriptions.isNotEmpty()) {

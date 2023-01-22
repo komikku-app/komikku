@@ -23,13 +23,13 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.util.system.toast
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
+import tachiyomi.domain.manga.model.Manga
 
 @Stable
 class EditMergedSettingsState(

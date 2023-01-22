@@ -2,7 +2,6 @@ package eu.kanade.domain.library.service
 
 import eu.kanade.domain.library.model.GroupLibraryMode
 import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.preference.getEnum
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
@@ -12,6 +11,7 @@ import eu.kanade.tachiyomi.data.preference.MANGA_NON_READ
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibrarySort
+import tachiyomi.domain.manga.model.Manga
 
 class LibraryPreferences(
     private val preferenceStore: PreferenceStore,

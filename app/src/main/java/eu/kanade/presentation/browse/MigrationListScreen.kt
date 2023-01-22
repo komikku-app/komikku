@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.components.MigrationActionIcon
 import eu.kanade.presentation.browse.components.MigrationItem
 import eu.kanade.presentation.browse.components.MigrationItemResult
@@ -36,6 +35,7 @@ import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import tachiyomi.domain.manga.model.Manga
 
 @Composable
 fun MigrationListScreen(

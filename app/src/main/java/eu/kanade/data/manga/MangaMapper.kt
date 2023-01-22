@@ -1,8 +1,8 @@
 package eu.kanade.data.manga
 
 import eu.kanade.domain.library.model.LibraryManga
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.view.LibraryView
 
 val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy) -> Manga =

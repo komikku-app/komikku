@@ -12,10 +12,10 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.DialogProperties
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import exh.favorites.FavoritesSyncStatus
 import kotlinx.coroutines.delay
+import tachiyomi.domain.manga.model.Manga
 import kotlin.time.Duration.Companion.seconds
 
 data class SyncFavoritesProgressProperties(

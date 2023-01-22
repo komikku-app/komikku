@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.chapter
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.kanade.domain.chapter.model.Chapter
+import tachiyomi.domain.chapter.model.Chapter
 
 class ReaderChapterAdapter(
     dialog: OnBookmarkClickListener,

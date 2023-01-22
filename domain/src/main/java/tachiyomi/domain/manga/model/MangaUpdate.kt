@@ -25,3 +25,31 @@ data class MangaUpdate(
     val filteredScanlators: List<String>? = null,
     // SY <--
 )
+
+fun Manga.toMangaUpdate(): MangaUpdate {
+    return MangaUpdate(
+        id = id,
+        source = source,
+        favorite = favorite,
+        lastUpdate = lastUpdate,
+        dateAdded = dateAdded,
+        viewerFlags = viewerFlags,
+        chapterFlags = chapterFlags,
+        coverLastModified = coverLastModified,
+        url = url,
+        // SY -->
+        title = ogTitle,
+        artist = ogArtist,
+        author = ogAuthor,
+        description = ogDescription,
+        genre = ogGenre,
+        status = ogStatus,
+        // SY <--
+        thumbnailUrl = thumbnailUrl,
+        updateStrategy = updateStrategy,
+        initialized = initialized,
+        // SY -->
+        filteredScanlators = filteredScanlators,
+        // SY <--
+    )
+}

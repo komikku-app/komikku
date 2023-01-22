@@ -11,8 +11,6 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
-import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.history.interactor.GetNextChapters
@@ -22,8 +20,9 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.isLocal
+import eu.kanade.domain.manga.model.orientationType
+import eu.kanade.domain.manga.model.readingModeType
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
@@ -96,7 +95,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.decoder.ImageDecoder
+import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.DecimalFormat
@@ -197,7 +199,7 @@ class ReaderViewModel(
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark) ||
                                 // SY -->
-                                (manga.filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> manga.filteredScanlators.contains(group) })
+                                (manga.filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> manga.filteredScanlators!!.contains(group) })
                             // SY <--
                         }
                         else -> false

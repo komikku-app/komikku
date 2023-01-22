@@ -10,8 +10,9 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.NetworkToLocalManga
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toDomainManga
-import eu.kanade.domain.manga.model.toMangaUpdate
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.CountFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
@@ -42,11 +43,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import tachiyomi.domain.manga.model.toMangaUpdate
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.concurrent.Executors
-import eu.kanade.domain.manga.model.Manga as DomainManga
+import tachiyomi.domain.manga.model.Manga as DomainManga
 
 open class SourceFeedScreenModel(
     val sourceId: Long,

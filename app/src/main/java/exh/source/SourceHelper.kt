@@ -1,6 +1,5 @@
 package exh.source
 
-import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -9,6 +8,7 @@ import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
+import tachiyomi.domain.manga.model.Manga
 
 /**
  * Source helpers
