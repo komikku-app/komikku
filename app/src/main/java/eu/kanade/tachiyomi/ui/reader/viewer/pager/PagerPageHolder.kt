@@ -67,9 +67,14 @@ class PagerPageHolder(
     private val scope = MainScope()
 
     /**
-     * Subscription for status changes of the page.
+     * Job for loading the page.
      */
-    private var statusSubscription: Subscription? = null
+    private var loadJob: Job? = null
+
+    /**
+     * Job for status changes of the page.
+     */
+    private var statusJob: Job? = null
 
     /**
      * Job for progress changes of the page.
@@ -77,12 +82,17 @@ class PagerPageHolder(
     private var progressJob: Job? = null
 
     /**
-     * Subscription for status changes of the page.
+     * Job for loading the page.
      */
-    private var extraStatusSubscription: Subscription? = null
+    private var extraLoadJob: Job? = null
 
     /**
-     * Subscription for progress changes of the page.
+     * Job for status changes of the page.
+     */
+    private var extraStatusJob: Job? = null
+
+    /**
+     * Job for progress changes of the page.
      */
     private var extraProgressJob: Job? = null
 
@@ -92,14 +102,9 @@ class PagerPageHolder(
      */
     private var readImageHeaderSubscription: Subscription? = null
 
-    // SY -->
-    var status: Page.State = Page.State.QUEUE
-    var extraStatus: Page.State = Page.State.QUEUE
-    // SY <--
-
     init {
         addView(progressIndicator)
-        observeStatus()
+        launchLoadJob()
     }
 
     /**
@@ -110,35 +115,38 @@ class PagerPageHolder(
         super.onDetachedFromWindow()
         cancelProgressJob(1)
         cancelProgressJob(2)
-        unsubscribeStatus(1)
-        unsubscribeStatus(2)
+        cancelLoadJob(1)
+        cancelLoadJob(2)
         unsubscribeReadImageHeader()
     }
 
     /**
-     * Observes the status of the page and notify the changes.
+     * Starts loading the page and processing changes to the page's status.
      *
      * @see processStatus
      */
-    private fun observeStatus() {
-        statusSubscription?.unsubscribe()
+    private fun launchLoadJob() {
+        loadJob?.cancel()
+        statusJob?.cancel()
 
         val loader = page.chapter.pageLoader ?: return
-        statusSubscription = loader.getPage(page)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                status = it
-                processStatus(it)
-            }
+        loadJob = scope.launch {
+            loader.loadPage(page)
+        }
+        statusJob = scope.launch {
+            page.statusFlow.collectLatest { processStatus(it) }
+        }
 
+        // SY -->
         val extraPage = extraPage ?: return
         val loader2 = extraPage.chapter.pageLoader ?: return
-        extraStatusSubscription = loader2.getPage(extraPage)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                extraStatus = it
-                processStatus2(it)
-            }
+        extraLoadJob = scope.launch {
+            loader2.loadPage(extraPage)
+        }
+        extraStatusJob = scope.launch {
+            extraPage.statusFlow.collectLatest { processStatus2(it) }
+        }
+        // SY <--
     }
 
     private fun launchProgressJob() {
@@ -170,7 +178,7 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                if (extraStatus == Page.State.READY || extraPage == null) {
+                if (extraPage?.status == Page.State.READY || extraPage == null) {
                     setImage()
                 }
                 cancelProgressJob(1)
@@ -196,7 +204,7 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                if (this.status == Page.State.READY) {
+                if (page.status == Page.State.READY) {
                     setImage()
                 }
                 cancelProgressJob(2)
@@ -209,12 +217,20 @@ class PagerPageHolder(
     }
 
     /**
-     * Unsubscribes from the status subscription.
+     * Cancels loading the page and processing changes to the page's status.
      */
-    private fun unsubscribeStatus(page: Int) {
-        val subscription = if (page == 1) statusSubscription else extraStatusSubscription
-        subscription?.unsubscribe()
-        if (page == 1) statusSubscription = null else extraStatusSubscription = null
+    private fun cancelLoadJob(page: Int) {
+        if (page == 1) {
+            loadJob?.cancel()
+            loadJob = null
+            statusJob?.cancel()
+            statusJob = null
+        } else if (page == 2) {
+            extraLoadJob?.cancel()
+            extraLoadJob = null
+            extraStatusJob?.cancel()
+            extraStatusJob = null
+        }
     }
 
     private fun cancelProgressJob(page: Int) {
