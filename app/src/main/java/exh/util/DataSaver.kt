@@ -27,6 +27,16 @@ interface DataSaver {
                     page.imageUrl = imageUrl
                 }
         }
+
+        suspend fun HttpSource.getImage(page: Page, dataSaver: DataSaver): Response {
+            val imageUrl = page.imageUrl ?: return getImage(page)
+            page.imageUrl = dataSaver.compress(imageUrl)
+            return try {
+                getImage(page)
+            } finally {
+                page.imageUrl = imageUrl
+            }
+        }
     }
 }
 
