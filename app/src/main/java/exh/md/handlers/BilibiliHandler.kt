@@ -2,7 +2,7 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
@@ -92,7 +92,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
     }
 
     suspend fun getChapterList(mangaUrl: String): List<SChapter> {
-        val response = client.newCall(mangaDetailsApiRequest(mangaUrl)).await()
+        val response = client.newCall(mangaDetailsApiRequest(mangaUrl)).awaitSuccess()
         return chapterListParse(response)
     }
 
@@ -115,7 +115,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
     )
 
     private suspend fun fetchPageList(chapterUrl: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterUrl)).await()
+        val response = client.newCall(pageListRequest(chapterUrl)).awaitSuccess()
         return pageListParse(response)
     }
 

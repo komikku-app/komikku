@@ -4,7 +4,7 @@ import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.md.utils.MdApi
@@ -35,7 +35,7 @@ class MangaDexLoginHelper(
             .build()
 
         val error = kotlin.runCatching {
-            val data = client.newCall(POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody)).await().parseAs<OAuth>()
+            val data = client.newCall(POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody)).awaitSuccess().parseAs<OAuth>()
             mangaDexAuthInterceptor.setAuth(data)
         }.exceptionOrNull()
 
@@ -72,7 +72,7 @@ class MangaDexLoginHelper(
                         .build(),
                     body = formBody,
                 ),
-            ).await()
+            ).awaitSuccess()
             mdList.logout()
         }.exceptionOrNull()
 

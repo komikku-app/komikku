@@ -1,7 +1,7 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
 import kotlinx.serialization.json.Json
@@ -29,13 +29,13 @@ class ComikeyHandler(cloudflareClient: OkHttpClient, userAgent: String) {
     suspend fun fetchPageList(externalUrl: String): List<Page> {
         val httpUrl = externalUrl.toHttpUrl()
         val mangaId = getMangaId(httpUrl.pathSegments[1])
-        val response = client.newCall(pageListRequest(mangaId, httpUrl.pathSegments[2])).await()
+        val response = client.newCall(pageListRequest(mangaId, httpUrl.pathSegments[2])).awaitSuccess()
         val request = getActualPageList(response) ?: return listOf(Page(0, urlForbidden, urlForbidden))
-        return pageListParse(client.newCall(request).await())
+        return pageListParse(client.newCall(request).awaitSuccess())
     }
 
     suspend fun getMangaId(mangaUrl: String): Int {
-        val response = client.newCall(GET("$baseUrl/read/$mangaUrl")).await()
+        val response = client.newCall(GET("$baseUrl/read/$mangaUrl")).awaitSuccess()
         val url = response.asJsoup().selectFirst("meta[property=og:url]")!!.attr("content")
         return url.trimEnd('/').substringAfterLast('/').toInt()
     }

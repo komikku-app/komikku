@@ -2,7 +2,7 @@ package exh.md.service
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.md.dto.AggregateDto
 import exh.md.dto.AtHomeDto
@@ -45,7 +45,7 @@ class MangaDexService(
                     .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun viewManga(
@@ -64,7 +64,7 @@ class MangaDexService(
                     .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun mangasRating(
@@ -82,7 +82,7 @@ class MangaDexService(
                     .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun aggregateChapters(
@@ -101,7 +101,7 @@ class MangaDexService(
                     .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     private fun String.splitString() = replace("\n", "").split(',').trimAll().dropEmpty()
@@ -142,18 +142,18 @@ class MangaDexService(
                 url,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun viewChapter(id: String): ChapterDto {
         return client.newCall(GET("${MdApi.chapter}/$id", cache = CacheControl.FORCE_NETWORK))
-            .await()
+            .awaitSuccess()
             .parseAs(MdUtil.jsonParser)
     }
 
     suspend fun randomManga(): MangaDto {
         return client.newCall(GET("${MdApi.manga}/random", cache = CacheControl.FORCE_NETWORK))
-            .await()
+            .awaitSuccess()
             .parseAs(MdUtil.jsonParser)
     }
 
@@ -164,7 +164,7 @@ class MangaDexService(
                 body = MdUtil.encodeToBody(atHomeImageReportDto),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun getAtHomeServer(
@@ -172,7 +172,7 @@ class MangaDexService(
         headers: Headers,
     ): AtHomeDto {
         return client.newCall(GET(atHomeRequestUrl, headers, CacheControl.FORCE_NETWORK))
-            .await()
+            .awaitSuccess()
             .parseAs(MdUtil.jsonParser)
     }
 
@@ -187,6 +187,6 @@ class MangaDexService(
                     .build(),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 }

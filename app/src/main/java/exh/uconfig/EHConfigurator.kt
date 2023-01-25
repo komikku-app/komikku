@@ -3,7 +3,7 @@ package exh.uconfig
 import android.content.Context
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.asJsoup
@@ -46,7 +46,7 @@ class EHConfigurator(val context: Context) {
                 )
                 .build(),
         )
-            .await()
+            .awaitSuccess()
 
     private val EHentai.uconfigUrl get() = baseUrl + UCONFIG_URL
 
@@ -60,7 +60,7 @@ class EHConfigurator(val context: Context) {
                 .url(HATH_PERKS_URL)
                 .build(),
         )
-            .await().asJsoup()
+            .awaitSuccess().asJsoup()
 
         val hathPerks = EHHathPerksResponse()
 
@@ -90,7 +90,7 @@ class EHConfigurator(val context: Context) {
     private suspend fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
         // Delete old app profiles
         val scanReq = source.requestWithCreds().url(source.uconfigUrl).build()
-        val resp = configuratorClient.newCall(scanReq).await().asJsoup()
+        val resp = configuratorClient.newCall(scanReq).awaitSuccess().asJsoup()
         var lastDoc = resp
         resp.select(PROFILE_SELECTOR).forEach {
             if (it.text() == PROFILE_NAME) {
@@ -129,7 +129,7 @@ class EHConfigurator(val context: Context) {
                 .url(source.uconfigUrl)
                 .post(form)
                 .build(),
-        ).await()
+        ).awaitSuccess()
 
         // Persist slot + sk
         source.spPref().set(slot)

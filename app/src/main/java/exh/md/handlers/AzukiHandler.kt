@@ -1,7 +1,7 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.Page
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -24,7 +24,7 @@ class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
     suspend fun fetchPageList(externalUrl: String): List<Page> {
         val chapterId = externalUrl.substringAfterLast("/").substringBefore("?")
         val request = pageListRequest(chapterId)
-        return pageListParse(client.newCall(request).await())
+        return pageListParse(client.newCall(request).awaitSuccess())
     }
 
     private fun pageListRequest(chapterId: String): Request {

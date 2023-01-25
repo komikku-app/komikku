@@ -1,7 +1,7 @@
 package exh.md.service
 
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.md.dto.SimilarMangaDto
 import exh.md.utils.MdUtil
@@ -15,6 +15,6 @@ class SimilarService(
             GET(
                 "${MdUtil.similarBaseApi}$mangaId.json",
             ),
-        ).await().parseAs()
+        ).awaitSuccess().parseAs()
     }
 }

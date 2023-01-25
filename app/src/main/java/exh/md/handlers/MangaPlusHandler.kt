@@ -1,7 +1,7 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.MangaPlusResponse
 import kotlinx.serialization.decodeFromByteArray
@@ -28,7 +28,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .build()
 
     suspend fun fetchPageList(chapterId: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"))).await()
+        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"))).awaitSuccess()
         return pageListParse(response)
     }
 

@@ -2,7 +2,7 @@ package exh.md.service
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.md.dto.MangaListDto
 import exh.md.dto.RatingDto
@@ -32,7 +32,7 @@ class MangaDexAuthService(
                 headers,
                 CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun readingStatusForManga(mangaId: String): ReadingStatusDto {
@@ -42,7 +42,7 @@ class MangaDexAuthService(
                 headers,
                 CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun readChaptersForManga(mangaId: String): ReadChapterDto {
@@ -52,7 +52,7 @@ class MangaDexAuthService(
                 headers,
                 CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun updateReadingStatusForManga(
@@ -66,7 +66,7 @@ class MangaDexAuthService(
                 body = MdUtil.encodeToBody(readingStatusDto),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun readingStatusAllManga(): ReadingStatusMapDto {
@@ -76,7 +76,7 @@ class MangaDexAuthService(
                 headers,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun readingStatusByType(status: String): ReadingStatusMapDto {
@@ -86,7 +86,7 @@ class MangaDexAuthService(
                 headers,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun markChapterRead(chapterId: String): ResultDto {
@@ -96,7 +96,7 @@ class MangaDexAuthService(
                 headers,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun markChapterUnRead(chapterId: String): ResultDto {
@@ -107,7 +107,7 @@ class MangaDexAuthService(
                 .headers(headers)
                 .cacheControl(CacheControl.FORCE_NETWORK)
                 .build(),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun followManga(mangaId: String): ResultDto {
@@ -117,7 +117,7 @@ class MangaDexAuthService(
                 headers,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun unfollowManga(mangaId: String): ResultDto {
@@ -128,7 +128,7 @@ class MangaDexAuthService(
                 .headers(headers)
                 .cacheControl(CacheControl.FORCE_NETWORK)
                 .build(),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun updateMangaRating(mangaId: String, rating: Int): ResultDto {
@@ -139,7 +139,7 @@ class MangaDexAuthService(
                 body = MdUtil.encodeToBody(RatingDto(rating)),
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun deleteMangaRating(mangaId: String): ResultDto {
@@ -150,7 +150,7 @@ class MangaDexAuthService(
                 .headers(headers)
                 .cacheControl(CacheControl.FORCE_NETWORK)
                 .build(),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 
     suspend fun mangasRating(vararg mangaIds: String): RatingResponseDto {
@@ -167,6 +167,6 @@ class MangaDexAuthService(
                 headers,
                 cache = CacheControl.FORCE_NETWORK,
             ),
-        ).await().parseAs(MdUtil.jsonParser)
+        ).awaitSuccess().parseAs(MdUtil.jsonParser)
     }
 }

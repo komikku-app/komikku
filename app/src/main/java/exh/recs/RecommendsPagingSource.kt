@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -52,7 +52,7 @@ class MyAnimeList : API("https://api.jikan.moe/v4/") {
             .addPathSegment("recommendations")
             .build()
 
-        val data = client.newCall(GET(apiUrl)).await().parseAs<JsonObject>()
+        val data = client.newCall(GET(apiUrl)).awaitSuccess().parseAs<JsonObject>()
         return data["data"]!!.jsonArray
             .map { it.jsonObject["entry"]!!.jsonObject }
             .map { rec ->
@@ -88,7 +88,7 @@ class MyAnimeList : API("https://api.jikan.moe/v4/") {
             .addQueryParameter("q", search)
             .build()
 
-        val data = client.newCall(GET(url)).await()
+        val data = client.newCall(GET(url)).awaitSuccess()
             .parseAs<JsonObject>()
         return getRecsById(data["data"]!!.jsonArray.first().jsonObject["mal_id"]!!.jsonPrimitive.content)
     }
@@ -137,7 +137,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         }
         val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
 
-        val data = client.newCall(POST(endpoint, body = payloadBody)).await()
+        val data = client.newCall(POST(endpoint, body = payloadBody)).awaitSuccess()
             .parseAs<JsonObject>()
 
         val media = data["data"]!!
