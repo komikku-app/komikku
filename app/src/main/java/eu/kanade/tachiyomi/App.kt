@@ -14,7 +14,6 @@ import android.os.Looper
 import android.webkit.WebView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -50,7 +49,6 @@ import eu.kanade.tachiyomi.data.coil.PagePreviewFetcher
 import eu.kanade.tachiyomi.data.coil.PagePreviewKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.glance.UpdatesGridGlanceWidget
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
@@ -66,14 +64,12 @@ import exh.log.XLogLogcatLogger
 import exh.log.xLogD
 import exh.syDebugVersion
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
-import tachiyomi.data.DatabaseHandler
+import tachiyomi.presentation.widget.TachiyomiWidgetManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -154,17 +150,9 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         setAppCompatDelegateThemeMode(Injekt.get<UiPreferences>().themeMode().get())
 
         // Updates widget update
-        Injekt.get<DatabaseHandler>()
-            .subscribeToList { updatesViewQueries.updates(after = UpdatesGridGlanceWidget.DateLimit.timeInMillis) }
-            .drop(1)
-            .distinctUntilChanged()
-            .onEach {
-                val manager = GlanceAppWidgetManager(this)
-                if (manager.getGlanceIds(UpdatesGridGlanceWidget::class.java).isNotEmpty()) {
-                    UpdatesGridGlanceWidget().loadData(it)
-                }
-            }
-            .launchIn(ProcessLifecycleOwner.get().lifecycleScope)
+        with(TachiyomiWidgetManager) {
+            init(ProcessLifecycleOwner.get().lifecycleScope, Injekt.get())
+        }
 
         /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
             LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
