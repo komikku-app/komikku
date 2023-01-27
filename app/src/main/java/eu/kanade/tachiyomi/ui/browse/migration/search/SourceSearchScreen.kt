@@ -25,7 +25,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScr
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
-import eu.kanade.tachiyomi.util.Constants
+import tachiyomi.core.Constants
 import tachiyomi.domain.manga.model.Manga
 
 data class SourceSearchScreen(

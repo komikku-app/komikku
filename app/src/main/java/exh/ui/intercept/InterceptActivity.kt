@@ -25,7 +25,6 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.util.Constants
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.GalleryAddEvent
 import exh.GalleryAdder
@@ -35,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import tachiyomi.core.Constants
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 
@@ -112,7 +112,7 @@ class InterceptActivity : BaseActivity() {
                                 ReaderActivity.newIntent(this, it.manga.id, it.chapter.id)
                             } else {
                                 Intent(this, MainActivity::class.java)
-                                    .setAction(MainActivity.SHORTCUT_MANGA)
+                                    .setAction(Constants.SHORTCUT_MANGA)
                                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                     .putExtra(Constants.MANGA_EXTRA, it.mangaId)
                             },
