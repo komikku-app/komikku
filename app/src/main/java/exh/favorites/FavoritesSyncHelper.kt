@@ -5,7 +5,6 @@ import android.net.wifi.WifiManager
 import android.os.PowerManager
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.CreateCategoryWithName
-import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.interactor.UpdateCategory
 import eu.kanade.domain.manga.interactor.GetLibraryManga
@@ -36,6 +35,7 @@ import okhttp3.FormBody
 import okhttp3.Request
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.CategoryUpdate
 import tachiyomi.domain.manga.model.FavoriteEntry

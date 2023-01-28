@@ -1,6 +1,5 @@
 package exh.favorites
 
-import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavorites
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga

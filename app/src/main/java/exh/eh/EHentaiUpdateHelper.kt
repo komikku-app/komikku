@@ -1,21 +1,21 @@
 package exh.eh
 
 import android.content.Context
-import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetChapterByUrl
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
-import eu.kanade.domain.history.interactor.RemoveHistory
-import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
+import tachiyomi.domain.history.interactor.RemoveHistory
+import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.model.Manga

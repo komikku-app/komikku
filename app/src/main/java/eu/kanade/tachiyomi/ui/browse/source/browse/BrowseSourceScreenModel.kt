@@ -19,7 +19,6 @@ import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.core.prefs.asState
 import eu.kanade.core.prefs.mapAsCheckboxState
 import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
@@ -95,6 +94,7 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate

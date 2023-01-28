@@ -14,7 +14,6 @@ import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.download.service.DownloadPreferences
 import eu.kanade.domain.history.interactor.GetNextChapters
-import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
@@ -97,6 +96,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
+import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt

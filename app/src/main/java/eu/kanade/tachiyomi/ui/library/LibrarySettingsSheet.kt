@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetDisplayModeForCategory
 import eu.kanade.domain.category.interactor.SetSortModeForCategory
 import eu.kanade.domain.library.model.LibraryGroup
@@ -21,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibrarySort
