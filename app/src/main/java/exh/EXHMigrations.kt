@@ -19,7 +19,6 @@ import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -38,7 +37,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.source.BlacklistedSources
@@ -58,6 +56,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
 import tachiyomi.data.chapter.chapterMapper

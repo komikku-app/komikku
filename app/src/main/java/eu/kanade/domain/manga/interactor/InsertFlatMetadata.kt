@@ -1,10 +1,10 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import logcat.LogPriority
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.repository.MangaMetadataRepository
 
 class InsertFlatMetadata(

@@ -19,8 +19,8 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaScreen
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.withUIContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

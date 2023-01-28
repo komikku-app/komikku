@@ -54,7 +54,6 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
@@ -62,6 +61,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.display

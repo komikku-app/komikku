@@ -9,11 +9,11 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.hasMissingChapters
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.delay
+import tachiyomi.core.util.lang.launchUI
+import tachiyomi.core.util.system.logcat
 import kotlin.math.max
 
 /**

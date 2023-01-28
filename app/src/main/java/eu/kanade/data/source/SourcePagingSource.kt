@@ -7,9 +7,9 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.awaitSingle
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.util.lang.withIOContext
 
 abstract class SourcePagingSource(
     protected open val source: CatalogueSource,
@@ -83,3 +83,5 @@ class SourceLatestPagingSource(source: CatalogueSource) : SourcePagingSource(sou
         return source.fetchLatestUpdates(currentPage).awaitSingle()
     }
 }
+
+class NoResultsException : Exception()

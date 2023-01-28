@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -26,6 +25,7 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream

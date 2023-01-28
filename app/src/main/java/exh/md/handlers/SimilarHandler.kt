@@ -2,7 +2,6 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.RelationListDto
 import exh.md.dto.SimilarMangaDto
 import exh.md.service.MangaDexService
@@ -10,6 +9,7 @@ import exh.md.service.SimilarService
 import exh.md.utils.MangaDexRelation
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
+import tachiyomi.core.util.lang.withIOContext
 
 class SimilarHandler(
     private val lang: String,

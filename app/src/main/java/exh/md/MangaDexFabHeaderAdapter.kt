@@ -9,9 +9,9 @@ import eu.kanade.tachiyomi.databinding.SourceFilterMangadexHeaderBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
-import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.follows.MangaDexFollowsScreen
+import tachiyomi.core.util.lang.launchUI
+import tachiyomi.core.util.lang.withIOContext
 
 class MangaDexFabHeaderAdapter(val navigator: Navigator, val source: CatalogueSource, val onClick: () -> Unit) :
     RecyclerView.Adapter<MangaDexFabHeaderAdapter.SavedSearchesViewHolder>() {

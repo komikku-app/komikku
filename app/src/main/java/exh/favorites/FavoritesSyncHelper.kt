@@ -16,8 +16,6 @@ import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
@@ -36,6 +34,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.Request
+import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.CategoryUpdate
 import tachiyomi.domain.manga.model.FavoriteEntry

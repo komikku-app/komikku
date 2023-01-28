@@ -2,12 +2,12 @@ package eu.kanade.tachiyomi.source.online
 
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.awaitSingle
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import rx.Completable
 import rx.Single
+import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.util.lang.runAsObservable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.reflect.KClass

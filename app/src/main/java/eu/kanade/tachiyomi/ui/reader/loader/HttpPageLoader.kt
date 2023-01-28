@@ -8,9 +8,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import eu.kanade.tachiyomi.util.lang.awaitSingle
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.source.isEhBasedSource
 import exh.util.DataSaver
 import exh.util.DataSaver.Companion.getImage
@@ -23,6 +20,9 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
+import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.withIOContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.PriorityBlockingQueue

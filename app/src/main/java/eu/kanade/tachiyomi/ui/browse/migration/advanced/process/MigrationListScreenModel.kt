@@ -29,9 +29,6 @@ import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
@@ -47,6 +44,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.history.model.HistoryUpdate

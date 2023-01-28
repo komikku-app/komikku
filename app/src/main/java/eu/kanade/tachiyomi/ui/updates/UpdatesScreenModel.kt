@@ -27,11 +27,8 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.toDateKey
 import eu.kanade.tachiyomi.util.lang.toRelativeString
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.channels.Channel
@@ -45,6 +42,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import uy.kohesive.injekt.Injekt

@@ -31,7 +31,7 @@ import eu.kanade.presentation.components.BadgeGroup
 import eu.kanade.presentation.components.MangaCover
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
-import eu.kanade.tachiyomi.util.lang.withIOContext
+import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 
 @Composable

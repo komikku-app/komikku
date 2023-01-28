@@ -5,7 +5,6 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.log.xLogE
@@ -15,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tachiyomi.core.util.lang.withIOContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

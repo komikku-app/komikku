@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.xLogD
 import exh.md.dto.AtHomeDto
 import exh.md.service.MangaDexService
@@ -15,6 +14,7 @@ import exh.md.utils.MdUtil
 import okhttp3.Call
 import okhttp3.Headers
 import rx.Observable
+import tachiyomi.core.util.lang.withIOContext
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 

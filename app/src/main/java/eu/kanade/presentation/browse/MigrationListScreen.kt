@@ -34,7 +34,7 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
-import eu.kanade.tachiyomi.util.lang.withIOContext
+import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 
 @Composable

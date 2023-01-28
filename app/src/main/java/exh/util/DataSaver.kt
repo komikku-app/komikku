@@ -1,12 +1,12 @@
 package exh.util
 
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.core.preference.Preference
 
 interface DataSaver {
 

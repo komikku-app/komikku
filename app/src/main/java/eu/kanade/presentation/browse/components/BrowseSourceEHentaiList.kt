@@ -39,7 +39,6 @@ import eu.kanade.presentation.components.LazyColumn
 import eu.kanade.presentation.components.MangaCover
 import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -47,6 +46,7 @@ import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import java.util.Date
 

@@ -9,11 +9,11 @@ import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import tachiyomi.core.util.lang.launchIO
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

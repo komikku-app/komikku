@@ -45,8 +45,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.hasPermission
-import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.toLong
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.nullIfBlank
@@ -55,6 +53,8 @@ import logcat.LogPriority
 import okio.buffer
 import okio.gzip
 import okio.sink
+import tachiyomi.core.util.lang.toLong
+import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas

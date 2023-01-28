@@ -70,11 +70,8 @@ import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.CrashLogUtil
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
@@ -89,6 +86,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.Headers
+import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.repository.MangaRepository
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

@@ -58,11 +58,7 @@ import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
 import eu.kanade.tachiyomi.ui.manga.track.TrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
-import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.similar.MangaDexSimilarScreen
@@ -78,6 +74,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchUI
+import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.util.lang.withNonCancellableContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt

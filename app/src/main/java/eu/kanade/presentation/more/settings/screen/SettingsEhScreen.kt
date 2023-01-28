@@ -57,10 +57,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
@@ -71,6 +67,10 @@ import exh.util.nullIfBlank
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration

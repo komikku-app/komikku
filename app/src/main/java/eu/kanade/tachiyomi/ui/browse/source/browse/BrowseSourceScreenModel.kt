@@ -65,13 +65,7 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TextItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TextSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
@@ -95,6 +89,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.util.lang.withNonCancellableContext
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate

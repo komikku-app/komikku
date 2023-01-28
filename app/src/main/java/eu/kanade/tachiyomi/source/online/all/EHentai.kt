@@ -27,8 +27,6 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.util.asJsoup
-import eu.kanade.tachiyomi.util.lang.runAsObservable
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.debug.DebugToggles
 import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
@@ -85,6 +83,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import rx.Observable
+import tachiyomi.core.util.lang.runAsObservable
+import tachiyomi.core.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream
 import java.io.IOException

@@ -1,7 +1,6 @@
 package eu.kanade.domain.source.interactor
 
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.xLogE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer

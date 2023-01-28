@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.dto.MangaDto
 import exh.md.dto.StatisticsMangaDto
 import exh.md.handlers.ApiMangaParser
@@ -47,6 +46,7 @@ import exh.source.DelegatedHttpSource
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.core.util.lang.runAsObservable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

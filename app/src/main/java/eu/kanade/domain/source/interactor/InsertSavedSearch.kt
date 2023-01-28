@@ -1,8 +1,8 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.tachiyomi.util.system.logcat
 import logcat.LogPriority
 import logcat.asLog
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.repository.SavedSearchRepository
 

@@ -1,8 +1,8 @@
 package exh.debug
 
 import eu.kanade.core.prefs.PreferenceMutableState
-import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import kotlinx.coroutines.CoroutineScope
+import tachiyomi.core.preference.PreferenceStore
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 

@@ -8,11 +8,11 @@ import eu.kanade.domain.source.interactor.CreateSourceRepo
 import eu.kanade.domain.source.interactor.DeleteSourceRepos
 import eu.kanade.domain.source.interactor.GetSourceRepos
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import tachiyomi.core.util.lang.launchIO
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

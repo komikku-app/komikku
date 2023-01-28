@@ -3,8 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.runAsObservable
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.ChapterDataDto
 import exh.md.service.MangaDexService
 import exh.md.utils.MdConstants
@@ -16,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import rx.Observable
+import tachiyomi.core.util.lang.runAsObservable
+import tachiyomi.core.util.lang.withIOContext
 
 class MangaHandler(
     private val lang: String,

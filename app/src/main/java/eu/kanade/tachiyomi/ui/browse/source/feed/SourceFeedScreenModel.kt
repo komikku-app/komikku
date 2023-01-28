@@ -24,11 +24,6 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.browse.source.browse.toItems
-import eu.kanade.tachiyomi.util.lang.awaitSingle
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -41,6 +36,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.util.lang.withNonCancellableContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch

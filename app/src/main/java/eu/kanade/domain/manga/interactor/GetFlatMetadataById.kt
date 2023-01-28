@@ -1,11 +1,11 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.FlatMetadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import logcat.LogPriority
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.repository.MangaMetadataRepository
 
 class GetFlatMetadataById(

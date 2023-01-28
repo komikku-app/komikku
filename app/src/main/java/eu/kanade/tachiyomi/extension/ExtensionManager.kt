@@ -13,10 +13,7 @@ import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
-import eu.kanade.tachiyomi.util.lang.launchNow
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.plusAssign
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogD
 import exh.source.BlacklistedSources
@@ -33,6 +30,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import rx.Observable
+import tachiyomi.core.util.lang.launchNow
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.source.model.SourceData
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

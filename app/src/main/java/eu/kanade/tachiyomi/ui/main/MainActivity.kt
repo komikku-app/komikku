@@ -79,7 +79,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.EXHMigrations
@@ -98,6 +97,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.Constants
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.category.model.Category
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

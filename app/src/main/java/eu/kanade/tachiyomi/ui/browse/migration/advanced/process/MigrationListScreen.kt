@@ -20,8 +20,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
+import tachiyomi.core.util.lang.withUIContext
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen {
 

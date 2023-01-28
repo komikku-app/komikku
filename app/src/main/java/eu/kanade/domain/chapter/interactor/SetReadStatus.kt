@@ -2,10 +2,10 @@ package eu.kanade.domain.chapter.interactor
 
 import eu.kanade.domain.download.interactor.DeleteDownload
 import eu.kanade.domain.download.service.DownloadPreferences
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.MERGED_SOURCE_ID
 import logcat.LogPriority
+import tachiyomi.core.util.lang.withNonCancellableContext
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository

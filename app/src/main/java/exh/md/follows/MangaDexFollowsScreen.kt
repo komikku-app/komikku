@@ -26,7 +26,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import eu.kanade.tachiyomi.util.lang.launchIO
+import tachiyomi.core.util.lang.launchIO
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
 

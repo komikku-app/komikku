@@ -55,7 +55,6 @@ import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.notification
 import exh.log.CrashlyticsPrinter
 import exh.log.EHLogLevel
@@ -69,6 +68,7 @@ import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
+import tachiyomi.core.util.system.logcat
 import tachiyomi.presentation.widget.TachiyomiWidgetManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

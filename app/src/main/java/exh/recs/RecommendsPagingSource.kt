@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.serialization.json.JsonArray
@@ -28,6 +27,7 @@ import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

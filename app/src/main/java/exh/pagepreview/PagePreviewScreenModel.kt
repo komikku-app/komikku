@@ -11,12 +11,12 @@ import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt

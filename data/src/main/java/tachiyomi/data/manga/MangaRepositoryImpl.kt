@@ -1,10 +1,10 @@
 package tachiyomi.data.manga
 
-import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.toLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import logcat.LogPriority
+import tachiyomi.core.util.lang.toLong
+import tachiyomi.core.util.system.logcat
 import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.listOfStringsAdapter

@@ -1,12 +1,12 @@
 package eu.kanade.domain.chapter.interactor
 
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import logcat.LogPriority
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.manga.model.MergedMangaReference

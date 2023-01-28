@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.md.utils.MdApi
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
@@ -14,6 +13,7 @@ import logcat.LogPriority
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
+import tachiyomi.core.util.system.logcat
 
 class MangaDexLoginHelper(
     private val client: OkHttpClient,

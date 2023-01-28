@@ -34,14 +34,14 @@ import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.source.online.all.MangaDex
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import logcat.LogPriority
+import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
