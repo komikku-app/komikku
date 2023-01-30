@@ -219,8 +219,6 @@ class LibraryUpdateService(
      * the wake lock.
      */
     override fun onCreate() {
-        super.onCreate()
-
         notifier = LibraryUpdateNotifier(this)
         wakeLock = acquireWakeLock(javaClass.name)
 
@@ -240,7 +238,6 @@ class LibraryUpdateService(
         if (instance == this) {
             instance = null
         }
-        super.onDestroy()
     }
 
     /**
