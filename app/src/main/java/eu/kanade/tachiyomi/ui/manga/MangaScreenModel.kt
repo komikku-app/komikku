@@ -402,8 +402,7 @@ class MangaInfoScreenModel(
 
             logcat(LogPriority.ERROR, e)
             coroutineScope.launch {
-                val errorMessage = e.message.orEmpty().ifEmpty { e.toString() }
-                snackbarHostState.showSnackbar(message = errorMessage)
+                snackbarHostState.showSnackbar(message = e.snackbarMessage)
             }
         }
     }
@@ -995,7 +994,7 @@ class MangaInfoScreenModel(
                 context.getString(R.string.no_chapters_error)
             } else {
                 logcat(LogPriority.ERROR, e)
-                e.message.orEmpty().ifEmpty { e.toString() }
+                e.snackbarMessage
             }
 
             coroutineScope.launch {
@@ -1646,6 +1645,13 @@ val chapterDecimalFormat = DecimalFormat(
     DecimalFormatSymbols()
         .apply { decimalSeparator = '.' },
 )
+
+private val Throwable.snackbarMessage: String
+    get() = when (val className = this::class.simpleName) {
+        null -> message ?: ""
+        "Exception", "HttpException", "IOException" -> message ?: className
+        else -> "$className: $message"
+    }
 
 // SY -->
 sealed class PagePreviewState {
