@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.9.0" changeDate="Jan 7,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.3(from 0.13.6)[/b]</changelogtext>
+        <changelogtext>Support new E-H/EXH search engine</changelogtext>
+        <changelogtext>[b]New[/b] Add custom igneous cookie option</changelogtext>
+        <changelogtext>[b]New[/b] Add page previews</changelogtext>
+        <changelogtext>[b]New[/b] Deduplication for chapters</changelogtext>
+        <changelogtext>Update Autofill E-Hentai tags</changelogtext>
+        <changelogtext>Support external extension repos better</changelogtext>
+        <changelogtext>Improve E-H/Exh toplist support</changelogtext>
+        <changelogtext>Remove links from MangaDex manga</changelogtext>
+        <changelogtext>Use new MangaDex OAuth Login</changelogtext>
+        <changelogtext>Removed AutoCaptcha solver</changelogtext>
+        <changelogtext>Removed Drag &amp; Drop</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.8.5" changeDate="Aug 14,2022">
         <changelogtext>[b]Based on Tachiyomi stable 0.13.6(from 0.13.5)[/b]</changelogtext>
         <changelogtext>Update EH tags for auto-complete filter</changelogtext>
