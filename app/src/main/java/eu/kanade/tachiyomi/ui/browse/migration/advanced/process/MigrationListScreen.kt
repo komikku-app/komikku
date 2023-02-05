@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.MigrationListScreen
@@ -26,6 +27,8 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
 
     @delegate:Transient
     var newSelectedItem by mutableStateOf<Pair<Long, Long>?>(null)
+
+    override val key = uniqueScreenKey
 
     @Composable
     override fun Content() {
