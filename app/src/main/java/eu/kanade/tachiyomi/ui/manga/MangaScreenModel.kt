@@ -1649,7 +1649,7 @@ val chapterDecimalFormat = DecimalFormat(
 private val Throwable.snackbarMessage: String
     get() = when (val className = this::class.simpleName) {
         null -> message ?: ""
-        "Exception", "HttpException", "IOException" -> message ?: className
+        "Exception", "HttpException", "IOException", "SourceNotInstalledException" -> message ?: className
         else -> "$className: $message"
     }
 
