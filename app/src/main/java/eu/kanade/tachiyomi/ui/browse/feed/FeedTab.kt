@@ -30,6 +30,10 @@ fun Screen.feedTab(): TabContent {
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
 
+    LaunchedEffect(Unit) {
+        screenModel.init()
+    }
+
     return TabContent(
         titleRes = R.string.feed,
         actions = listOf(
@@ -68,6 +72,7 @@ fun Screen.feedTab(): TabContent {
                 onClickManga = { manga ->
                     navigator.push(MangaScreen(manga.id, true))
                 },
+                onRefresh = screenModel::refresh,
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )
 

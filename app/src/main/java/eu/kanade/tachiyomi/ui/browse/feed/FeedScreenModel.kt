@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.feed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.manga.interactor.GetManga
@@ -48,6 +49,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.concurrent.Executors
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
@@ -71,6 +74,7 @@ open class FeedScreenModel(
     val events = _events.receiveAsFlow()
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+    var lastRefresh = System.currentTimeMillis().milliseconds
 
     init {
         getFeedSavedSearchGlobal.subscribe()
@@ -93,6 +97,24 @@ open class FeedScreenModel(
             }
             .catch { _events.send(Event.FailedFetchingSources) }
             .launchIn(coroutineScope)
+    }
+
+    fun init() {
+        if (lastRefresh - System.currentTimeMillis().milliseconds > 30.seconds) return
+        refresh()
+    }
+
+    fun refresh() {
+        lastRefresh = System.currentTimeMillis().milliseconds
+        coroutineScope.launchIO {
+            val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
+            mutableState.update { state ->
+                state.copy(
+                    items = newItems,
+                )
+            }
+            getFeed(newItems)
+        }
     }
 
     fun openAddDialog() {
@@ -321,4 +343,7 @@ data class FeedScreenState(
 
     val isEmpty
         get() = items.isNullOrEmpty()
+
+    val isLoadingItems
+        get() = items?.fastAny { it.results == null } != false
 }

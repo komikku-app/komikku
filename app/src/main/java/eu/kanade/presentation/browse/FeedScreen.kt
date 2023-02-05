@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +51,7 @@ import eu.kanade.presentation.components.BadgeGroup
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.MangaCover
+import eu.kanade.presentation.components.PullRefresh
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
@@ -57,6 +60,8 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import eu.kanade.domain.manga.model.MangaCover as MangaCoverData
 
 data class FeedItemUI(
@@ -76,6 +81,7 @@ fun FeedScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    onRefresh: () -> Unit,
     getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
 ) {
     when {
@@ -85,22 +91,39 @@ fun FeedScreen(
             modifier = Modifier.padding(contentPadding),
         )
         else -> {
-            ScrollbarLazyColumn(
-                contentPadding = contentPadding + topSmallPaddingValues,
+            var refreshing by remember { mutableStateOf(false) }
+            LaunchedEffect(refreshing) {
+                if (refreshing) {
+                    delay(1.seconds)
+                    refreshing = false
+                }
+            }
+            PullRefresh(
+                refreshing = refreshing && state.isLoadingItems,
+                onRefresh = {
+                    refreshing = true
+                    onRefresh()
+                },
+                enabled = !state.isLoadingItems,
             ) {
-                items(
-                    state.items.orEmpty(),
-                    key = { it.feed.id },
-                ) { item ->
-                    FeedItem(
-                        modifier = Modifier.animateItemPlacement(),
-                        item = item,
-                        getMangaState = { getMangaState(it, item.source) },
-                        onClickSavedSearch = onClickSavedSearch,
-                        onClickSource = onClickSource,
-                        onClickDelete = onClickDelete,
-                        onClickManga = onClickManga,
-                    )
+                ScrollbarLazyColumn(
+                    contentPadding = contentPadding + topSmallPaddingValues,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    items(
+                        state.items.orEmpty(),
+                        key = { it.feed.id },
+                    ) { item ->
+                        FeedItem(
+                            modifier = Modifier.animateItemPlacement(),
+                            item = item,
+                            getMangaState = { getMangaState(it, item.source) },
+                            onClickSavedSearch = onClickSavedSearch,
+                            onClickSource = onClickSource,
+                            onClickDelete = onClickDelete,
+                            onClickManga = onClickManga,
+                        )
+                    }
                 }
             }
         }
