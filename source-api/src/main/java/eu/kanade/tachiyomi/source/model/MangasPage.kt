@@ -36,13 +36,13 @@ class MetadataMangasPage(
     override val mangas: List<SManga>,
     override val hasNextPage: Boolean,
     val mangasMetadata: List<RaisedSearchMetadata>,
-    val nextKey: Long? = null
+    val nextKey: Long? = null,
 ) : MangasPage(mangas, hasNextPage) {
     fun copy(
         mangas: List<SManga> = this.mangas,
         hasNextPage: Boolean = this.hasNextPage,
         mangasMetadata: List<RaisedSearchMetadata> = this.mangasMetadata,
-        nextKey: Long? = this.nextKey
+        nextKey: Long? = this.nextKey,
     ): MangasPage {
         return MetadataMangasPage(mangas, hasNextPage, mangasMetadata, nextKey)
     }

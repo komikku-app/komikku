@@ -14,7 +14,7 @@ import uy.kohesive.injekt.api.get
 @Suppress("OverridingDeprecatedMember", "DEPRECATION")
 class EnhancedHttpSource(
     val originalSource: HttpSource,
-    val enhancedSource: HttpSource
+    val enhancedSource: HttpSource,
 ) : HttpSource() {
 
     /**

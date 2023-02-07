@@ -9,6 +9,7 @@ extensions.configure<KotlinterExtension>("kotlinter") {
     disabledRules = arrayOf(
         "experimental:argument-list-wrapping", // Doesn't play well with Android Studio
         "filename", // Often broken to give a more general name
+        "experimental:comment-wrapping" // Doesn't play nice with SY specifiers
     )
 }
 
