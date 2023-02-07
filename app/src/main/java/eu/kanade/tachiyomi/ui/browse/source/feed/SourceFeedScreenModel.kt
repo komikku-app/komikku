@@ -31,6 +31,8 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -127,35 +129,37 @@ open class SourceFeedScreenModel(
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
         coroutineScope.launch {
-            feedSavedSearch.forEach { sourceFeed ->
-                val page = try {
-                    withContext(coroutineDispatcher) {
-                        when (sourceFeed) {
-                            is SourceFeedUI.Browse -> source.fetchPopularManga(1)
-                            is SourceFeedUI.Latest -> source.fetchLatestUpdates(1)
-                            is SourceFeedUI.SourceSavedSearch -> source.fetchSearchManga(
-                                page = 1,
-                                query = sourceFeed.savedSearch.query.orEmpty(),
-                                filters = getFilterList(sourceFeed.savedSearch, source),
-                            )
-                        }.awaitSingle()
-                    }.mangas
-                } catch (e: Exception) {
-                    emptyList()
-                }
+            feedSavedSearch.map { sourceFeed ->
+                async {
+                    val page = try {
+                        withContext(coroutineDispatcher) {
+                            when (sourceFeed) {
+                                is SourceFeedUI.Browse -> source.fetchPopularManga(1)
+                                is SourceFeedUI.Latest -> source.fetchLatestUpdates(1)
+                                is SourceFeedUI.SourceSavedSearch -> source.fetchSearchManga(
+                                    page = 1,
+                                    query = sourceFeed.savedSearch.query.orEmpty(),
+                                    filters = getFilterList(sourceFeed.savedSearch, source),
+                                )
+                            }.awaitSingle()
+                        }.mangas
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
 
-                val titles = page.map {
-                    withIOContext {
-                        networkToLocalManga.await(it.toDomainManga(source.id))
+                    val titles = withIOContext {
+                        page.map {
+                            networkToLocalManga.await(it.toDomainManga(source.id))
+                        }
+                    }
+
+                    mutableState.update { state ->
+                        state.copy(
+                            items = state.items.map { item -> if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item },
+                        )
                     }
                 }
-
-                mutableState.update { state ->
-                    state.copy(
-                        items = state.items.map { item -> if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item },
-                    )
-                }
-            }
+            }.awaitAll()
         }
     }
 
