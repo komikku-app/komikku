@@ -15,7 +15,7 @@ plugins {
     alias(androidx.plugins.test) apply false
     alias(kotlinx.plugins.android) apply false
     alias(libs.plugins.kotlinter)
-    alias(libs.plugins.versionsx)
+    alias(sylibs.plugins.versionsx)
 }
 
 subprojects {
