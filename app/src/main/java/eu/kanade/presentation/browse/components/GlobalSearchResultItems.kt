@@ -1,6 +1,7 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,12 +30,20 @@ import eu.kanade.tachiyomi.R
 
 @Composable
 fun GlobalSearchResultItem(
+    // SY -->
+    modifier: Modifier = Modifier,
+    // SY <--
     title: String,
-    subtitle: String,
+    // SY -->
+    subtitle: String?,
+    // SY <--
     onClick: () -> Unit,
+    // SY -->
+    onLongClick: (() -> Unit)? = null,
+    // SY <--
     content: @Composable () -> Unit,
 ) {
-    Column {
+    Column(modifier) {
         Row(
             modifier = Modifier
                 .padding(
@@ -42,7 +51,15 @@ fun GlobalSearchResultItem(
                     end = MaterialTheme.padding.tiny,
                 )
                 .fillMaxWidth()
-                .clickable(onClick = onClick),
+                // SY -->
+                .let {
+                    if (onLongClick == null) {
+                        it.clickable(onClick = onClick)
+                    } else {
+                        it.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+                    }
+                },
+            // SY <--
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -51,7 +68,9 @@ fun GlobalSearchResultItem(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Text(text = subtitle)
+                if (subtitle != null) {
+                    Text(text = subtitle)
+                }
             }
             IconButton(onClick = onClick) {
                 Icon(imageVector = Icons.Outlined.ArrowForward, contentDescription = null)
