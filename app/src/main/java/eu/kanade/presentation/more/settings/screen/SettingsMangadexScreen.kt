@@ -32,7 +32,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.library.LibraryUpdateService
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
@@ -227,9 +227,9 @@ object SettingsMangadexScreen : SearchableSettings {
                     unsortedPreferences.mangadexSyncToLibraryIndexes().set(
                         List(items.size) { index -> (index + 1).toString() }.toSet(),
                     )
-                    LibraryUpdateService.start(
+                    LibraryUpdateJob.startNow(
                         context,
-                        target = LibraryUpdateService.Target.SYNC_FOLLOWS,
+                        target = LibraryUpdateJob.Target.SYNC_FOLLOWS,
                     )
                 },
             )
@@ -248,9 +248,9 @@ object SettingsMangadexScreen : SearchableSettings {
             title = stringResource(R.string.mangadex_push_favorites_to_mangadex),
             subtitle = stringResource(R.string.mangadex_push_favorites_to_mangadex_summary),
             onClick = {
-                LibraryUpdateService.start(
+                LibraryUpdateJob.startNow(
                     context,
-                    target = LibraryUpdateService.Target.PUSH_FAVORITES,
+                    target = LibraryUpdateJob.Target.PUSH_FAVORITES,
                 )
             },
         )

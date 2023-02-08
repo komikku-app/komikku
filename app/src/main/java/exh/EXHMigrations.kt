@@ -515,6 +515,10 @@ object EXHMigrations {
                     val trackManager = Injekt.get<TrackManager>()
                     trackManager.mdList.logout()
                 }
+                if (oldVersion under 48) {
+                    LibraryUpdateJob.cancelAllWorks(context)
+                    LibraryUpdateJob.setupTask(context)
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

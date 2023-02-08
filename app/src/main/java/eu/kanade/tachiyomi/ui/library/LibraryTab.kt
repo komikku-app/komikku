@@ -46,7 +46,7 @@ import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.manga.components.DownloadCustomAmountDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.library.LibraryUpdateService
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -101,7 +101,7 @@ object LibraryTab : Tab {
 
         val onClickRefresh: (Category?) -> Boolean = {
             // SY -->
-            val started = LibraryUpdateService.start(
+            val started = LibraryUpdateJob.startNow(
                 context = context,
                 category = if (state.groupType == LibraryGroup.BY_DEFAULT) it else null,
                 group = state.groupType,
