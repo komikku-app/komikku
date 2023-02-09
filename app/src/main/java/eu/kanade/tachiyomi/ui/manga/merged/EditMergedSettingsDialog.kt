@@ -71,10 +71,12 @@ class EditMergedSettingsState(
 
     override fun onItemReleased(position: Int) {
         val mergedMangaAdapter = mergedMangaAdapter ?: return
-        mergedMangas.onEach { mergedManga ->
-            mergedManga.second.chapterPriority = mergedMangaAdapter.currentItems.indexOfFirst {
-                mergedManga.second.id == it.mergedMangaReference.id
-            }
+        mergedMangas = mergedMangas.map { (manga, reference) ->
+            manga to reference.copy(
+                chapterPriority = mergedMangaAdapter.currentItems.indexOfFirst {
+                    reference.id == it.mergedMangaReference.id
+                },
+            )
         }
     }
 
@@ -106,15 +108,19 @@ class EditMergedSettingsState(
 
     private fun toggleChapterUpdates(position: Int) {
         val adapterReference = mergedMangaAdapter?.currentItems?.getOrNull(position)?.mergedMangaReference
-        mergedMangas.firstOrNull { it.second.id != null && it.second.id == adapterReference?.id }?.apply {
-            second.getChapterUpdates = !second.getChapterUpdates
+            ?: return
+        mergedMangas = mergedMangas.map { pair ->
+            val (manga, reference) = pair
+            if (reference.id != adapterReference.id) return@map pair
 
-            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == second.id }?.let {
+            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == reference.id }?.let {
                 if (it is EditMergedMangaHolder) {
-                    it.updateChapterUpdatesIcon(second.getChapterUpdates)
+                    it.updateChapterUpdatesIcon(!reference.getChapterUpdates)
                 }
             } ?: context.toast(R.string.merged_chapter_updates_error)
-        } ?: context.toast(R.string.merged_toggle_chapter_updates_find_error)
+
+            manga to reference.copy(getChapterUpdates = !reference.getChapterUpdates)
+        }
     }
 
     override fun onToggleChapterDownloadsClicked(position: Int) {
@@ -130,15 +136,19 @@ class EditMergedSettingsState(
 
     private fun toggleChapterDownloads(position: Int) {
         val adapterReference = mergedMangaAdapter?.currentItems?.getOrNull(position)?.mergedMangaReference
-        mergedMangas.firstOrNull { it.second.id != null && it.second.id == adapterReference?.id }?.apply {
-            second.downloadChapters = !second.downloadChapters
+            ?: return
+        mergedMangas = mergedMangas.map { pair ->
+            val (manga, reference) = pair
+            if (reference.id != adapterReference.id) return@map pair
 
-            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == second.id }?.let {
+            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == reference.id }?.let {
                 if (it is EditMergedMangaHolder) {
-                    it.updateDownloadChaptersIcon(second.downloadChapters)
+                    it.updateDownloadChaptersIcon(!reference.downloadChapters)
                 }
             } ?: context.toast(R.string.merged_toggle_download_chapters_error)
-        } ?: context.toast(R.string.merged_toggle_download_chapters_find_error)
+
+            manga to reference.copy(downloadChapters = !reference.downloadChapters)
+        }
     }
 
     fun onPositiveButtonClick() {

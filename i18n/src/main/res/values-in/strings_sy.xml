@@ -586,9 +586,7 @@
     <string name="download_merged_entry_desc">Mengalihkan ini akan menonaktifkan atau mengaktifkan unduhan bab untuk manga gabungan ini</string>
     <string name="merged_references_invalid">Referensi penggabungan tidak valid</string>
     <string name="merged_chapter_updates_error">Tombol kesalahan pembaruan bab</string>
-    <string name="merged_toggle_chapter_updates_find_error">Tidak dapat menemukan manga untuk pembaruan bab</string>
     <string name="merged_toggle_download_chapters_error">Tombol kesalahan unduhan bab</string>
-    <string name="merged_toggle_download_chapters_find_error">Tidak dapat menemukan manga untuk unduhan bab</string>
     <string name="allow_deduplication">Izinkan deduplikasi:</string>
     <string name="deduplication_mode">Mode deduplikasi:</string>
     <string name="deduplication_entry_info">Info manga:</string>

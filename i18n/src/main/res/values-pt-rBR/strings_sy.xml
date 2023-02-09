@@ -556,9 +556,7 @@
     <string name="download_merged_entry_desc">Mudar isto (des)ativará downloads de capítulo a este mangá juntado</string>
     <string name="merged_references_invalid">Referências juntadas inválidas</string>
     <string name="merged_chapter_updates_error">Alternar erro de atualizações de capítulo</string>
-    <string name="merged_toggle_chapter_updates_find_error">Mangá não pôde ser encontrado para alternar atualizações de capítulo</string>
     <string name="merged_toggle_download_chapters_error">Erro ao alternar downloads de capítulo</string>
-    <string name="merged_toggle_download_chapters_find_error">Mangá não pôde ser encontrado para alternar downloads de capítulo</string>
     <string name="allow_deduplication">Permitir desduplicação:</string>
     <string name="deduplication_mode">Modo da desduplicação:</string>
     <string name="deduplication_entry_info">Informações do mangá:</string>

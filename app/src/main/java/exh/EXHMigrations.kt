@@ -153,7 +153,7 @@ object EXHMigrations {
                                     mergedManga.first.copy(url = it)
                                 } ?: mergedManga.first
                                 mergedMangaReferences += MergedMangaReference(
-                                    id = null,
+                                    id = -1,
                                     isInfoManga = false,
                                     getChapterUpdates = false,
                                     chapterSortMode = 0,
@@ -168,7 +168,7 @@ object EXHMigrations {
                                 mergedManga.second.children.distinct().forEachIndexed { index, mangaSource ->
                                     val load = mangaSource.load() ?: return@forEachIndexed
                                     mergedMangaReferences += MergedMangaReference(
-                                        id = null,
+                                        id = -1,
                                         isInfoManga = index == 0,
                                         getChapterUpdates = true,
                                         chapterSortMode = 0,

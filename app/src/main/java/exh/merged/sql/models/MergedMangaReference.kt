@@ -2,31 +2,31 @@ package exh.merged.sql.models
 
 data class MergedMangaReference(
     // Tag identifier, unique
-    var id: Long?,
+    val id: Long,
 
     // The manga where it grabs the updated manga info
-    var isInfoManga: Boolean,
+    val isInfoManga: Boolean,
 
     // If false the manga will not grab chapter updates
-    var getChapterUpdates: Boolean,
+    val getChapterUpdates: Boolean,
 
     // The mode in which the chapters are handeled, only set in the main merge reference
-    var chapterSortMode: Int,
+    val chapterSortMode: Int,
 
     // chapter priority the deduplication uses
-    var chapterPriority: Int,
+    val chapterPriority: Int,
 
     // Set if you want it to download new chapters
-    var downloadChapters: Boolean,
+    val downloadChapters: Boolean,
 
     // merged manga this reference is attached to
-    var mergeId: Long?,
+    val mergeId: Long?,
 
     // merged manga url this reference is attached to
     val mergeUrl: String,
 
     // manga id included in the merge this reference is attached to
-    var mangaId: Long?,
+    val mangaId: Long?,
 
     // manga url included in the merge this reference is attached to
     val mangaUrl: String,

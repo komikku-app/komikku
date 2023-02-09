@@ -501,7 +501,7 @@ class MangaInfoScreenModel(
 
             val mangaReferences = mutableListOf(
                 MergedMangaReference(
-                    id = null,
+                    id = -1,
                     isInfoManga = false,
                     getChapterUpdates = true,
                     chapterSortMode = 0,
@@ -517,7 +517,7 @@ class MangaInfoScreenModel(
 
             if (children.isEmpty() || children.all { it.mangaSourceId != MERGED_SOURCE_ID }) {
                 mangaReferences += MergedMangaReference(
-                    id = null,
+                    id = -1,
                     isInfoManga = false,
                     getChapterUpdates = false,
                     chapterSortMode = 0,
@@ -574,7 +574,7 @@ class MangaInfoScreenModel(
                 }
 
             val originalMangaReference = MergedMangaReference(
-                id = null,
+                id = -1,
                 isInfoManga = true,
                 getChapterUpdates = true,
                 chapterSortMode = 0,
@@ -588,7 +588,7 @@ class MangaInfoScreenModel(
             )
 
             val newMangaReference = MergedMangaReference(
-                id = null,
+                id = -1,
                 isInfoManga = false,
                 getChapterUpdates = true,
                 chapterSortMode = 0,
@@ -602,7 +602,7 @@ class MangaInfoScreenModel(
             )
 
             val mergedMangaReference = MergedMangaReference(
-                id = null,
+                id = -1,
                 isInfoManga = false,
                 getChapterUpdates = false,
                 chapterSortMode = 0,

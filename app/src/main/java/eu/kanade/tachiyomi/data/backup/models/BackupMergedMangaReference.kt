@@ -30,7 +30,7 @@ data class BackupMergedMangaReference(
             mangaSourceId = mangaSourceId,
             mergeId = null,
             mangaId = null,
-            id = null,
+            id = -1,
         )
     }
 }

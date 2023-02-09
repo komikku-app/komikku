@@ -638,9 +638,7 @@
     <string name="download_merged_entry_desc">Переключение этого параметра отключит/включит загрузку глав для этой объеденённой серии</string>
     <string name="merged_references_invalid">Недействительные объеденённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
-    <string name="merged_toggle_chapter_updates_find_error">Не удалось найти серию для переключения обновлений глав</string>
     <string name="merged_toggle_download_chapters_error">Ошибка переключения загрузки глав</string>
-    <string name="merged_toggle_download_chapters_find_error">Не удалось найти серию для переключения загрузки глав</string>
     <string name="allow_deduplication">Разрешить дедупликацию:</string>
     <string name="deduplication_mode">Режим дедупликации:</string>
     <string name="deduplication_entry_info">Сведенья серии:</string>

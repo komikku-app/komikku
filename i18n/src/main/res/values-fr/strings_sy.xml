@@ -474,9 +474,7 @@
     <string name="download_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour ce manga</string>
     <string name="merged_references_invalid">Références de fusion non valides</string>
     <string name="merged_chapter_updates_error">Erreur de basculement des mises à jour de chapitre</string>
-    <string name="merged_toggle_chapter_updates_find_error">Impossible de trouver le manga pour basculer les mises à jour de chapitre</string>
     <string name="merged_toggle_download_chapters_error">Erreur de basculement des chapitres de téléchargement</string>
-    <string name="merged_toggle_download_chapters_find_error">Impossible de trouver le manga pour basculer le téléchargements des chapitres</string>
     <string name="allow_deduplication">Autoriser la déduplication:</string>
     <string name="deduplication_mode">Mode de déduplication:</string>
     <string name="deduplication_entry_info">Info manga:</string>

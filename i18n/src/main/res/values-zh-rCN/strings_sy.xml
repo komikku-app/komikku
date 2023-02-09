@@ -593,9 +593,7 @@
     <string name="download_merged_entry_desc">更改此项将禁用或启用此合并漫画的章节下载</string>
     <string name="merged_references_invalid">合并后的引用无效</string>
     <string name="merged_chapter_updates_error">切换章节更新错误</string>
-    <string name="merged_toggle_chapter_updates_find_error">找不到漫画，无法切换章节更新</string>
     <string name="merged_toggle_download_chapters_error">切换下载章节错误</string>
-    <string name="merged_toggle_download_chapters_find_error">找不到漫画来切换章节下载</string>
     <string name="allow_deduplication">允许删除重复数据：</string>
     <string name="deduplication_mode">去重模式：</string>
     <string name="deduplication_entry_info">漫画信息：</string>

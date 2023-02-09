@@ -630,9 +630,7 @@
     <string name="download_merged_entry_desc">Toggling this will disable or enable chapter downloads for this merged entry</string>
     <string name="merged_references_invalid">Merged references invalid</string>
     <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
-    <string name="merged_toggle_chapter_updates_find_error">Could not find entry to toggle chapter updates</string>
     <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
-    <string name="merged_toggle_download_chapters_find_error">Could not find entry to toggle chapter downloads</string>
     <string name="allow_deduplication">Allow deduplication:</string>
     <string name="deduplication_mode">Dedupe mode:</string>
     <string name="deduplication_entry_info">Info entry:</string>

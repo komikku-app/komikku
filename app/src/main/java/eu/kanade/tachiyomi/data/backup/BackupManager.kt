@@ -723,8 +723,6 @@ class BackupManager(
                 // Let the db assign the id
                 val mergedManga = handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(backupMergedMangaReference.mangaUrl, backupMergedMangaReference.mangaSourceId, mangaMapper) } ?: return@forEach
                 backupMergedMangaReference.getMergedMangaReference().run {
-                    mergeId = mergeMangaId
-                    mangaId = mergedManga.id
                     handler.await {
                         mergedQueries.insert(
                             infoManga = isInfoManga,
@@ -732,9 +730,9 @@ class BackupManager(
                             chapterSortMode = chapterSortMode.toLong(),
                             chapterPriority = chapterPriority.toLong(),
                             downloadChapters = downloadChapters,
-                            mergeId = mergeId!!,
+                            mergeId = mergeMangaId,
                             mergeUrl = mergeUrl,
-                            mangaId = mangaId,
+                            mangaId = mergedManga.id,
                             mangaUrl = mangaUrl,
                             mangaSource = mangaSourceId,
                         )
