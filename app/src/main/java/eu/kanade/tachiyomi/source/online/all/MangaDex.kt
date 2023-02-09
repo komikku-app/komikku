@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -194,9 +195,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
-        return pageHandler.fetchImage(page) {
-            super.fetchImage(it)
-        }
+        val call = pageHandler.getImageCall(page)
+        return call?.asObservableSuccess() ?: super.fetchImage(page)
+    }
+
+    override suspend fun getImage(page: Page): Response {
+        val call = pageHandler.getImageCall(page)
+        return call?.awaitSuccess() ?: super.getImage(page)
     }
 
     override fun fetchImageUrl(page: Page): Observable<String> {

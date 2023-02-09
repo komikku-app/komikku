@@ -267,6 +267,16 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     }
 
     /**
+     * Returns the response of the source image.
+     *
+     * @param page the page whose source image has to be downloaded.
+     */
+    override suspend fun getImage(page: Page): Response {
+        ensureDelegateCompatible()
+        return delegate.getImage(page)
+    }
+
+    /**
      * Called before inserting a new chapter into database. Use it if you need to override chapter
      * fields, like the title or the chapter number. Do not change anything to [manga].
      *
