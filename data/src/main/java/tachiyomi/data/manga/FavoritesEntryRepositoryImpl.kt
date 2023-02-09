@@ -1,6 +1,5 @@
-package eu.kanade.data.manga
+package tachiyomi.data.manga
 
-import eu.kanade.data.exh.favoriteEntryMapper
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.repository.FavoritesEntryRepository

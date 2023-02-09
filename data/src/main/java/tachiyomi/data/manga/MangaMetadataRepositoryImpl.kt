@@ -1,8 +1,5 @@
-package eu.kanade.data.manga
+package tachiyomi.data.manga
 
-import eu.kanade.data.exh.searchMetadataMapper
-import eu.kanade.data.exh.searchTagMapper
-import eu.kanade.data.exh.searchTitleMapper
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
@@ -11,7 +8,6 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.manga.mangaMapper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaMetadataRepository
 

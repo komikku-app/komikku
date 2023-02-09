@@ -1,4 +1,4 @@
-package eu.kanade.data.exh
+package tachiyomi.data.source
 
 import tachiyomi.domain.source.model.FeedSavedSearch
 

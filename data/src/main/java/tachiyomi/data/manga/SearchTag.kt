@@ -1,4 +1,4 @@
-package eu.kanade.data.exh
+package tachiyomi.data.manga
 
 import exh.metadata.sql.models.SearchTag
 

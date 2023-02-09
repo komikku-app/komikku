@@ -1,6 +1,5 @@
-package eu.kanade.data.source
+package tachiyomi.data.source
 
-import eu.kanade.data.exh.savedSearchMapper
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.source.model.SavedSearch

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
-import eu.kanade.data.exh.mergedMangaReferenceMapper
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -61,6 +60,7 @@ import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
 import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.manga.mangaMapper
+import tachiyomi.data.manga.mergedMangaReferenceMapper
 import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.history.model.HistoryUpdate

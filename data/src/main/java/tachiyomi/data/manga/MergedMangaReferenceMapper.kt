@@ -1,4 +1,4 @@
-package eu.kanade.data.exh
+package tachiyomi.data.manga
 
 import tachiyomi.domain.manga.model.MergedMangaReference
 
