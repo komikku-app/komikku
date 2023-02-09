@@ -42,10 +42,10 @@ import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
-import exh.savedsearches.models.FeedSavedSearch
-import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.delay
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.SavedSearch
 import kotlin.time.Duration.Companion.seconds
 
 data class FeedItemUI(

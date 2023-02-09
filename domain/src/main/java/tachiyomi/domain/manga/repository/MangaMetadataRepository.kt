@@ -1,4 +1,4 @@
-package eu.kanade.domain.manga.repository
+package tachiyomi.domain.manga.repository
 
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata

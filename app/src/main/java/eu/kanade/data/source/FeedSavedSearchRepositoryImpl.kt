@@ -2,11 +2,11 @@ package eu.kanade.data.source
 
 import eu.kanade.data.exh.feedSavedSearchMapper
 import eu.kanade.data.exh.savedSearchMapper
-import eu.kanade.domain.source.repository.FeedSavedSearchRepository
-import exh.savedsearches.models.FeedSavedSearch
-import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
 class FeedSavedSearchRepositoryImpl(
     private val handler: DatabaseHandler,

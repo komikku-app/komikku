@@ -1,6 +1,6 @@
 package eu.kanade.data.exh
 
-import exh.savedsearches.models.FeedSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearch
 
 val feedSavedSearchMapper: (Long, Long, Long?, Boolean) -> FeedSavedSearch =
     { id, source, savedSearch, global ->

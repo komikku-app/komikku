@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.log.xLogD
-import exh.merged.sql.models.MergedMangaReference
+import tachiyomi.domain.manga.model.MergedMangaReference
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {

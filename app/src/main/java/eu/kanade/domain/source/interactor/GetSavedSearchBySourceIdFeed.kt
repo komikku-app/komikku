@@ -1,7 +1,7 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.FeedSavedSearchRepository
-import exh.savedsearches.models.SavedSearch
+import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
 class GetSavedSearchBySourceIdFeed(
     private val feedSavedSearchRepository: FeedSavedSearchRepository,

@@ -17,8 +17,8 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.md.MangaDexFabHeaderAdapter
-import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
+import tachiyomi.domain.source.model.EXHSavedSearch
 
 class SourceFilterSheet(
     context: Context,

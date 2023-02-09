@@ -14,8 +14,8 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.debug.DebugFunctions.readerPrefs
-import exh.merged.sql.models.MergedMangaReference
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MergedMangaReference
 
 /**
  * Loader used to retrieve the [PageLoader] for a given chapter.

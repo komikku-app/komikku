@@ -1,4 +1,4 @@
-package exh.merged.sql.models
+package tachiyomi.domain.manga.model
 
 data class MergedMangaReference(
     // Tag identifier, unique

@@ -1,7 +1,7 @@
-package eu.kanade.domain.source.repository
+package tachiyomi.domain.source.repository
 
-import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.domain.source.model.SavedSearch
 
 interface SavedSearchRepository {
 

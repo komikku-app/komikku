@@ -1,10 +1,10 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.FeedSavedSearchRepository
 import eu.kanade.tachiyomi.util.system.logcat
-import exh.savedsearches.models.FeedSavedSearch
 import logcat.LogPriority
 import logcat.asLog
+import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
 class InsertFeedSavedSearch(
     private val feedSavedSearchRepository: FeedSavedSearchRepository,

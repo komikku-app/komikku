@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.source.model.copy
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
-import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -30,6 +29,7 @@ import kotlinx.coroutines.sync.withPermit
 import okhttp3.Response
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MergedMangaReference
 import uy.kohesive.injekt.injectLazy
 
 class MergedSource : HttpSource() {

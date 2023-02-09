@@ -1,6 +1,6 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.FeedSavedSearchRepository
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
 class CountFeedSavedSearchGlobal(
     private val feedSavedSearchRepository: FeedSavedSearchRepository,

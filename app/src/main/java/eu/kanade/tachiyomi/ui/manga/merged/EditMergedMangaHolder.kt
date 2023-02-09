@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import exh.merged.sql.models.MergedMangaReference
+import tachiyomi.domain.manga.model.MergedMangaReference
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

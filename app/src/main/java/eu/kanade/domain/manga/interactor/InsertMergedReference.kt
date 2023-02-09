@@ -1,7 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.MangaMergeRepository
-import exh.merged.sql.models.MergedMangaReference
+import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.manga.repository.MangaMergeRepository
 
 class InsertMergedReference(
     private val mangaMergedRepository: MangaMergeRepository,

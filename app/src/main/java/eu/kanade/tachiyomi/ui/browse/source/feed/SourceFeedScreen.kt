@@ -26,12 +26,12 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
-import exh.savedsearches.models.SavedSearch
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.SavedSearch
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 class SourceFeedScreen(val sourceId: Long) : Screen {
@@ -150,7 +150,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen {
                     }
 
                     if (search.filterList != null) {
-                        screenModel.setFilters(FilterList(search.filterList))
+                        screenModel.setFilters(FilterList(search.filterList!!))
                         filterSheet?.setFilters(state.filterItems)
                     }
                     val allDefault = search.filterList != null && state.filters == screenModel.source.getFilterList()

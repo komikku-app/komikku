@@ -1,6 +1,6 @@
 package eu.kanade.data.exh
 
-import exh.merged.sql.models.MergedMangaReference
+import tachiyomi.domain.manga.model.MergedMangaReference
 
 val mergedMangaReferenceMapper =
     { id: Long, isInfoManga: Boolean, getChapterUpdates: Boolean, chapterSortMode: Long, chapterPriority: Long, downloadChapters: Boolean, mergeId: Long, mergeUrl: String, mangaId: Long?, mangaUrl: String, mangaSourceId: Long ->

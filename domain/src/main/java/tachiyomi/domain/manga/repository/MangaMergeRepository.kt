@@ -1,9 +1,9 @@
-package eu.kanade.domain.manga.repository
+package tachiyomi.domain.manga.repository
 
-import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
-import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
+import tachiyomi.domain.manga.model.MergedMangaReference
 
 interface MangaMergeRepository {
     suspend fun getMergedManga(): List<Manga>

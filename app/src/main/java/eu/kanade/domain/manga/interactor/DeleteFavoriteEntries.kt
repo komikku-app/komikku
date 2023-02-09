@@ -1,6 +1,6 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.FavoritesEntryRepository
+import tachiyomi.domain.manga.repository.FavoritesEntryRepository
 
 class DeleteFavoriteEntries(
     private val favoriteEntryRepository: FavoritesEntryRepository,

@@ -1,6 +1,6 @@
-package eu.kanade.domain.manga.repository
+package tachiyomi.domain.manga.repository
 
-import exh.favorites.sql.models.FavoriteEntry
+import tachiyomi.domain.manga.model.FavoriteEntry
 
 interface FavoritesEntryRepository {
     suspend fun deleteAll()

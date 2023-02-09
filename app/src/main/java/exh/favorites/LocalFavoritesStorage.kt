@@ -7,7 +7,6 @@ import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import exh.favorites.sql.models.FavoriteEntry
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.injectLazy
 

@@ -1,7 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.FavoritesEntryRepository
-import exh.favorites.sql.models.FavoriteEntry
+import tachiyomi.domain.manga.model.FavoriteEntry
+import tachiyomi.domain.manga.repository.FavoritesEntryRepository
 
 class GetFavoriteEntries(
     private val favoriteEntryRepository: FavoritesEntryRepository,

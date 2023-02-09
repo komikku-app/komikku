@@ -1,4 +1,4 @@
-package exh.favorites.sql.models
+package tachiyomi.domain.manga.model
 
 import exh.metadata.metadata.EHentaiSearchMetadata
 

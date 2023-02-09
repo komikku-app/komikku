@@ -3,7 +3,6 @@ package eu.kanade.data.manga
 import eu.kanade.data.exh.searchMetadataMapper
 import eu.kanade.data.exh.searchTagMapper
 import eu.kanade.data.exh.searchTitleMapper
-import eu.kanade.domain.manga.repository.MangaMetadataRepository
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
@@ -13,6 +12,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.repository.MangaMetadataRepository
 
 class MangaMetadataRepositoryImpl(
     private val handler: DatabaseHandler,

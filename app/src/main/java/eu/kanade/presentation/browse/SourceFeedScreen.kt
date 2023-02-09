@@ -22,9 +22,9 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
-import exh.savedsearches.models.FeedSavedSearch
-import exh.savedsearches.models.SavedSearch
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.SavedSearch
 
 sealed class SourceFeedUI {
     abstract val id: Long

@@ -1,8 +1,8 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.SavedSearchRepository
-import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.SavedSearchRepository
 
 class GetSavedSearchBySourceId(
     private val savedSearchRepository: SavedSearchRepository,

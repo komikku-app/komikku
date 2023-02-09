@@ -1,10 +1,10 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.SavedSearchRepository
 import eu.kanade.tachiyomi.util.system.logcat
-import exh.savedsearches.models.SavedSearch
 import logcat.LogPriority
 import logcat.asLog
+import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.SavedSearchRepository
 
 class InsertSavedSearch(
     private val savedSearchRepository: SavedSearchRepository,

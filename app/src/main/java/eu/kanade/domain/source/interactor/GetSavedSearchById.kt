@@ -1,7 +1,7 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.SavedSearchRepository
-import exh.savedsearches.models.SavedSearch
+import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.SavedSearchRepository
 
 class GetSavedSearchById(
     private val savedSearchRepository: SavedSearchRepository,

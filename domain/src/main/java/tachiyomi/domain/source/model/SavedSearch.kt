@@ -1,4 +1,4 @@
-package exh.savedsearches.models
+package tachiyomi.domain.source.model
 
 data class SavedSearch(
     // Tag identifier, unique

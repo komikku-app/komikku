@@ -74,8 +74,6 @@ import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.savedsearches.EXHSavedSearch
-import exh.savedsearches.models.SavedSearch
 import exh.source.getMainSource
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.Flow
@@ -100,6 +98,8 @@ import logcat.LogPriority
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
+import tachiyomi.domain.source.model.EXHSavedSearch
+import tachiyomi.domain.source.model.SavedSearch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer

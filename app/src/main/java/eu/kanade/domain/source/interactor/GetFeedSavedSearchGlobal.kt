@@ -1,8 +1,8 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.domain.source.repository.FeedSavedSearchRepository
-import exh.savedsearches.models.FeedSavedSearch
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
 class GetFeedSavedSearchGlobal(
     private val feedSavedSearchRepository: FeedSavedSearchRepository,

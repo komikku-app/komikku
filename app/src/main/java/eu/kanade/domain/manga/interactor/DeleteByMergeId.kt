@@ -1,6 +1,6 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.MangaMergeRepository
+import tachiyomi.domain.manga.repository.MangaMergeRepository
 
 class DeleteByMergeId(
     private val mangaMergeRepository: MangaMergeRepository,

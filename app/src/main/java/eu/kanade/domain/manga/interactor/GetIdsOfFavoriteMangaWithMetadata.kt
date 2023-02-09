@@ -1,6 +1,6 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.MangaMetadataRepository
+import tachiyomi.domain.manga.repository.MangaMetadataRepository
 
 class GetIdsOfFavoriteMangaWithMetadata(
     private val mangaMetadataRepository: MangaMetadataRepository,

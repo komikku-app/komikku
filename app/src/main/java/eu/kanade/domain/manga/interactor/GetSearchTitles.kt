@@ -1,7 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.manga.repository.MangaMetadataRepository
 import exh.metadata.sql.models.SearchTitle
+import tachiyomi.domain.manga.repository.MangaMetadataRepository
 
 class GetSearchTitles(
     private val mangaMetadataRepository: MangaMetadataRepository,

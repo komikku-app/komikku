@@ -1,6 +1,6 @@
 package eu.kanade.data.exh
 
-import exh.favorites.sql.models.FavoriteEntry
+import tachiyomi.domain.manga.model.FavoriteEntry
 
 val favoriteEntryMapper: (Long, String, String, String, Long) -> FavoriteEntry =
     { id, title, gid, token, category ->
