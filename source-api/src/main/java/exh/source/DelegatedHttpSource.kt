@@ -277,6 +277,30 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     }
 
     /**
+     * Returns the url of the provided manga
+     *
+     * @since extensions-lib 1.4
+     * @param manga the manga
+     * @return url of the manga
+     */
+    override fun getMangaUrl(manga: SManga): String {
+        ensureDelegateCompatible()
+        return delegate.getMangaUrl(manga)
+    }
+
+    /**
+     * Returns the url of the provided chapter
+     *
+     * @since extensions-lib 1.4
+     * @param chapter the chapter
+     * @return url of the chapter
+     */
+    override fun getChapterUrl(chapter: SChapter): String {
+        ensureDelegateCompatible()
+        return delegate.getChapterUrl(chapter)
+    }
+
+    /**
      * Called before inserting a new chapter into database. Use it if you need to override chapter
      * fields, like the title or the chapter number. Do not change anything to [manga].
      *

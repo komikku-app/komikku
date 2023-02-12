@@ -241,6 +241,24 @@ class EnhancedHttpSource(
     override suspend fun getImage(page: Page) = source().getImage(page)
 
     /**
+     * Returns the url of the provided manga
+     *
+     * @since extensions-lib 1.4
+     * @param manga the manga
+     * @return url of the manga
+     */
+    override fun getMangaUrl(manga: SManga) = source().getMangaUrl(manga)
+
+    /**
+     * Returns the url of the provided chapter
+     *
+     * @since extensions-lib 1.4
+     * @param chapter the chapter
+     * @return url of the chapter
+     */
+    override fun getChapterUrl(chapter: SChapter) = source().getChapterUrl(chapter)
+
+    /**
      * Called before inserting a new chapter into database. Use it if you need to override chapter
      * fields, like the title or the chapter number. Do not change anything to [manga].
      *
