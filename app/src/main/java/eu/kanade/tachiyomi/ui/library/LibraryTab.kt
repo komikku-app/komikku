@@ -43,7 +43,6 @@ import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
 import eu.kanade.presentation.library.components.SyncFavoritesProgressDialog
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
-import eu.kanade.presentation.manga.components.DownloadCustomAmountDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
@@ -267,16 +266,6 @@ object LibraryTab : Tab {
                     onDismissRequest = onDismissRequest,
                     onConfirm = { deleteManga, deleteChapter ->
                         screenModel.removeMangas(dialog.manga, deleteManga, deleteChapter)
-                        screenModel.clearSelection()
-                    },
-                )
-            }
-            is LibraryScreenModel.Dialog.DownloadCustomAmount -> {
-                DownloadCustomAmountDialog(
-                    maxAmount = dialog.max,
-                    onDismissRequest = onDismissRequest,
-                    onConfirm = { amount ->
-                        screenModel.downloadUnreadChapters(dialog.manga, amount)
                         screenModel.clearSelection()
                     },
                 )
