@@ -5,6 +5,7 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import androidx.work.WorkManager
 import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
@@ -109,9 +110,6 @@ object EXHMigrations {
             if (oldVersion < BuildConfig.VERSION_CODE) {
                 lastVersionCode.set(BuildConfig.VERSION_CODE)
 
-                if (BuildConfig.INCLUDE_UPDATER) {
-                    AppUpdateJob.setupTask(context)
-                }
                 ExtensionUpdateJob.setupTask(context)
                 LibraryUpdateJob.setupTask(context)
                 BackupCreatorJob.setupTask(context)
@@ -518,6 +516,7 @@ object EXHMigrations {
                 if (oldVersion under 48) {
                     LibraryUpdateJob.cancelAllWorks(context)
                     LibraryUpdateJob.setupTask(context)
+                    WorkManager.getInstance(context).cancelAllWorkByTag("UpdateChecker")
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
