@@ -27,8 +27,6 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.data.updater.AppUpdateJob
-import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
@@ -110,7 +108,6 @@ object EXHMigrations {
             if (oldVersion < BuildConfig.VERSION_CODE) {
                 lastVersionCode.set(BuildConfig.VERSION_CODE)
 
-                ExtensionUpdateJob.setupTask(context)
                 LibraryUpdateJob.setupTask(context)
                 BackupCreatorJob.setupTask(context)
                 EHentaiUpdateWorker.scheduleBackground(context)
@@ -516,7 +513,12 @@ object EXHMigrations {
                 if (oldVersion under 48) {
                     LibraryUpdateJob.cancelAllWorks(context)
                     LibraryUpdateJob.setupTask(context)
+                    // Removed background jobs
                     WorkManager.getInstance(context).cancelAllWorkByTag("UpdateChecker")
+                    WorkManager.getInstance(context).cancelAllWorkByTag("ExtensionUpdate")
+                    prefs.edit {
+                        remove("automatic_ext_updates")
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

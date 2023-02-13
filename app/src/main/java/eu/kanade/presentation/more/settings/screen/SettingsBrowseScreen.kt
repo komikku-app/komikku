@@ -18,7 +18,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.category.repos.RepoScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
@@ -84,19 +83,9 @@ object SettingsBrowseScreen : SearchableSettings {
                     ),
                 ),
             ),
-            // SY <--
             Preference.PreferenceGroup(
                 title = stringResource(R.string.label_extensions),
                 preferenceItems = listOf(
-                    Preference.PreferenceItem.SwitchPreference(
-                        pref = preferences.automaticExtUpdates(),
-                        title = stringResource(R.string.pref_enable_automatic_extension_updates),
-                        onValueChanged = {
-                            ExtensionUpdateJob.setupTask(context, it)
-                            true
-                        },
-                    ),
-                    // SY -->
                     kotlin.run {
                         val navigator = LocalNavigator.currentOrThrow
                         val count by unsortedPreferences.extensionRepos().collectAsState()
@@ -108,9 +97,9 @@ object SettingsBrowseScreen : SearchableSettings {
                             },
                         )
                     },
-                    // SY <--
                 ),
             ),
+            // SY <--
             Preference.PreferenceGroup(
                 title = stringResource(R.string.label_sources),
                 preferenceItems = listOf(
