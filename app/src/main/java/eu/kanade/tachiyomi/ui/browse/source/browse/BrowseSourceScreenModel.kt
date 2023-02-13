@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -212,19 +213,20 @@ open class BrowseSourceScreenModel(
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
-            }.flow
-                .map { pagingData ->
-                    pagingData.map { (sManga, metadata) ->
-                        val dbManga = withIOContext { networkToLocalManga.await(sManga.toDomainManga(sourceId)) }
+            }.flow.map { pagingData ->
+                pagingData
+                    .map { (it, metadata) -> withIOContext { networkToLocalManga.await(it.toDomainManga(sourceId)) } to metadata }
+                    .filter { (it) -> !sourcePreferences.hideInLibraryItems().get() || !it.favorite }
+                    .map { (dbManga, metadata) ->
                         getManga.subscribe(dbManga.url, dbManga.source)
                             .filterNotNull()
-                            .onEach { initializeManga(it) }
+                            .onEach(::initializeManga)
                             // SY -->
                             .combineMetadata(dbManga, metadata)
                             // SY <--
                             .stateIn(coroutineScope)
-                    }
                 }
+            }
                 .cachedIn(coroutineScope)
         }
         .stateIn(coroutineScope, SharingStarted.Lazily, emptyFlow())
