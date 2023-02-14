@@ -225,7 +225,7 @@ open class BrowseSourceScreenModel(
                             .combineMetadata(dbManga, metadata)
                             // SY <--
                             .stateIn(coroutineScope)
-                }
+                    }
             }
                 .cachedIn(coroutineScope)
         }

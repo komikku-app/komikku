@@ -98,7 +98,6 @@ value class SearchMetadataChips(
 fun NamespaceTags(
     tags: SearchMetadataChips,
     onClick: (item: String) -> Unit,
-    onLongClick: (item: String) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         tags.tags.forEach { (namespace, tags) ->
@@ -116,7 +115,6 @@ fun NamespaceTags(
                         TagsChip(
                             text = text,
                             onClick = { onClick(search) },
-                            onLongClick = { onLongClick(search) },
                             border = borderDp?.let {
                                 SuggestionChipDefaults.suggestionChipBorder(borderWidth = it)
                             },
@@ -135,7 +133,7 @@ fun NamespaceTags(
 fun TagsChip(
     text: String,
     onClick: (() -> Unit)?,
-    onLongClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)? = null,
     border: ChipBorder? = null,
     borderM3: ChipBorderM3? = null,
 ) {
@@ -243,7 +241,6 @@ fun NamespaceTagsPreview() {
                     }.let { SearchMetadataChips(it, EHentai(EXH_SOURCE_ID, true, context), emptyList()) }!!
                 },
                 onClick = {},
-                onLongClick = {},
             )
         }
     }

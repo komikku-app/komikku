@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.accompanist.flowlayout.FlowRow
+import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.MangaCover
 import eu.kanade.presentation.components.TextButton
 import eu.kanade.presentation.util.clickableNoIndication
@@ -221,7 +223,8 @@ fun ExpandableMangaDescription(
     defaultExpandState: Boolean,
     description: String?,
     tagsProvider: () -> List<String>?,
-    onTagClicked: (String) -> Unit,
+    onTagSearch: (String) -> Unit,
+    onCopyTagToClipboard: (tag: String) -> Unit,
     // SY -->
     searchMetadataChips: SearchMetadataChips?,
     doSearch: (query: String, global: Boolean) -> Unit,
@@ -255,13 +258,45 @@ fun ExpandableMangaDescription(
                     .padding(vertical = 12.dp)
                     .animateContentSize(),
             ) {
+                var showMenu by remember { mutableStateOf(false) }
+                var tagSelected by remember { mutableStateOf("") }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.action_search)) },
+                        onClick = {
+                            onTagSearch(tagSelected)
+                            showMenu = false
+                        },
+                    )
+                    // SY -->
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.action_global_search)) },
+                        onClick = {
+                            doSearch(tagSelected, true)
+                            showMenu = false
+                        },
+                    )
+                    // SY <--
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.action_copy_to_clipboard)) },
+                        onClick = {
+                            onCopyTagToClipboard(tagSelected)
+                            showMenu = false
+                        },
+                    )
+                }
                 if (expanded) {
                     // SY -->
                     if (searchMetadataChips != null) {
                         NamespaceTags(
                             tags = searchMetadataChips,
-                            onClick = onTagClicked,
-                            onLongClick = { doSearch(it, true) },
+                            onClick = {
+                                tagSelected = it
+                                showMenu = true
+                            },
                         )
                     } else {
                         // SY <--
@@ -273,10 +308,10 @@ fun ExpandableMangaDescription(
                             tags.forEach {
                                 TagsChip(
                                     text = it,
-                                    onClick = { onTagClicked(it) },
-                                    // SY -->
-                                    onLongClick = { doSearch(it, true) },
-                                    // SY <--
+                                    onClick = {
+                                        tagSelected = it
+                                        showMenu = true
+                                    },
                                 )
                             }
                         }
@@ -289,10 +324,10 @@ fun ExpandableMangaDescription(
                         items(items = tags) {
                             TagsChip(
                                 text = it,
-                                onClick = { onTagClicked(it) },
-                                // SY -->
-                                onLongClick = { doSearch(it, true) },
-                                // SY <--
+                                onClick = {
+                                    tagSelected = it
+                                    showMenu = true
+                                },
                             )
                         }
                     }
