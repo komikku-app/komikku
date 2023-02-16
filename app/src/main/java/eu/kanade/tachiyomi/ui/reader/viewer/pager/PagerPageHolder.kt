@@ -20,18 +20,19 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 /**
  * View of the ViewPager that contains a page of a chapter.
@@ -67,34 +68,14 @@ class PagerPageHolder(
     private val scope = MainScope()
 
     /**
-     * Job for loading the page.
+     * Job for loading the page and processing changes to the page's status.
      */
     private var loadJob: Job? = null
-
-    /**
-     * Job for status changes of the page.
-     */
-    private var statusJob: Job? = null
-
-    /**
-     * Job for progress changes of the page.
-     */
-    private var progressJob: Job? = null
 
     /**
      * Job for loading the page.
      */
     private var extraLoadJob: Job? = null
-
-    /**
-     * Job for status changes of the page.
-     */
-    private var extraStatusJob: Job? = null
-
-    /**
-     * Job for progress changes of the page.
-     */
-    private var extraProgressJob: Job? = null
 
     /**
      * Subscription used to read the header of the image. This is needed in order to instantiate
@@ -104,7 +85,8 @@ class PagerPageHolder(
 
     init {
         addView(progressIndicator)
-        launchLoadJob()
+        loadJob = scope.launch { loadPageAndProcessStatus(1) }
+        extraLoadJob = scope.launch { loadPageAndProcessStatus(2) }
     }
 
     /**
@@ -113,130 +95,45 @@ class PagerPageHolder(
     @SuppressLint("ClickableViewAccessibility")
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        cancelProgressJob(1)
-        cancelProgressJob(2)
-        cancelLoadJob(1)
-        cancelLoadJob(2)
+        loadJob?.cancel()
+        loadJob = null
+        extraLoadJob?.cancel()
+        extraLoadJob = null
         unsubscribeReadImageHeader()
     }
 
     /**
-     * Starts loading the page and processing changes to the page's status.
+     * Loads the page and processes changes to the page's status.
      *
-     * @see processStatus
+     * Returns immediately if the page has no PageLoader.
+     * Otherwise, this function does not return. It will continue to process status changes until
+     * the Job is cancelled.
      */
-    private fun launchLoadJob() {
-        loadJob?.cancel()
-        statusJob?.cancel()
-
-        val loader = page.chapter.pageLoader ?: return
-        loadJob = scope.launch {
-            loader.loadPage(page)
-        }
-        statusJob = scope.launch {
-            page.statusFlow.collectLatest { processStatus(it) }
-        }
-
+    private suspend fun loadPageAndProcessStatus(pageIndex: Int) {
         // SY -->
-        val extraPage = extraPage ?: return
-        val loader2 = extraPage.chapter.pageLoader ?: return
-        extraLoadJob = scope.launch {
-            loader2.loadPage(extraPage)
-        }
-        extraStatusJob = scope.launch {
-            extraPage.statusFlow.collectLatest { processStatus2(it) }
-        }
+        val page = if (pageIndex == 1) page else extraPage
+        page ?: return
         // SY <--
-    }
-
-    private fun launchProgressJob() {
-        progressJob?.cancel()
-        progressJob = scope.launch {
-            page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
-        }
-    }
-
-    private fun launchProgressJob2() {
-        extraProgressJob?.cancel()
-        val extraPage = extraPage ?: return
-        extraProgressJob = scope.launch {
-            extraPage.progressFlow.collectLatest { value -> progressIndicator.setProgress(((page.progressFlow.value + value) / 2 * 0.95f).roundToInt()) }
-        }
-    }
-
-    /**
-     * Called when the status of the page changes.
-     *
-     * @param status the new status of the page.
-     */
-    private fun processStatus(status: Page.State) {
-        when (status) {
-            Page.State.QUEUE -> setQueued()
-            Page.State.LOAD_PAGE -> setLoading()
-            Page.State.DOWNLOAD_IMAGE -> {
-                launchProgressJob()
-                setDownloading()
+        val loader = page.chapter.pageLoader ?: return
+        supervisorScope {
+            launchIO {
+                loader.loadPage(page)
             }
-            Page.State.READY -> {
-                if (extraPage?.status == Page.State.READY || extraPage == null) {
-                    setImage()
+            page.statusFlow.collectLatest { state ->
+                when (state) {
+                    Page.State.QUEUE -> setQueued()
+                    Page.State.LOAD_PAGE -> setLoading()
+                    Page.State.DOWNLOAD_IMAGE -> {
+                        setDownloading()
+                        page.progressFlow.collectLatest { value ->
+                            progressIndicator.setProgress(value)
+                        }
+                    }
+                    Page.State.READY -> setImage()
+                    Page.State.ERROR -> setError()
                 }
-                cancelProgressJob(1)
-            }
-            Page.State.ERROR -> {
-                setError()
-                cancelProgressJob(1)
             }
         }
-    }
-
-    /**
-     * Called when the status of the page changes.
-     *
-     * @param status the new status of the page.
-     */
-    private fun processStatus2(status: Page.State) {
-        when (status) {
-            Page.State.QUEUE -> setQueued()
-            Page.State.LOAD_PAGE -> setLoading()
-            Page.State.DOWNLOAD_IMAGE -> {
-                launchProgressJob2()
-                setDownloading()
-            }
-            Page.State.READY -> {
-                if (page.status == Page.State.READY) {
-                    setImage()
-                }
-                cancelProgressJob(2)
-            }
-            Page.State.ERROR -> {
-                setError()
-                cancelProgressJob(2)
-            }
-        }
-    }
-
-    /**
-     * Cancels loading the page and processing changes to the page's status.
-     */
-    private fun cancelLoadJob(page: Int) {
-        if (page == 1) {
-            loadJob?.cancel()
-            loadJob = null
-            statusJob?.cancel()
-            statusJob = null
-        } else if (page == 2) {
-            extraLoadJob?.cancel()
-            extraLoadJob = null
-            extraStatusJob?.cancel()
-            extraStatusJob = null
-        }
-    }
-
-    private fun cancelProgressJob(page: Int) {
-        val job = if (page == 1) progressJob else extraProgressJob
-        job?.cancel()
-        if (page == 1) progressJob = null else extraProgressJob = null
     }
 
     /**
