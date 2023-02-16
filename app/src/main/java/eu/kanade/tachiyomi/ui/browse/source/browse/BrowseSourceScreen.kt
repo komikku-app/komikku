@@ -39,6 +39,7 @@ import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
+import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
 import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
@@ -51,7 +52,9 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
@@ -83,12 +86,6 @@ data class BrowseSourceScreen(
 
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        val haptic = LocalHapticFeedback.current
-        val uriHandler = LocalUriHandler.current
-
         val screenModel = rememberScreenModel {
             BrowseSourceScreenModel(
                 sourceId = sourceId,
@@ -101,8 +98,7 @@ data class BrowseSourceScreen(
         }
         val state by screenModel.state.collectAsState()
 
-        val snackbarHostState = remember { SnackbarHostState() }
-
+        val navigator = LocalNavigator.currentOrThrow
         val navigateUp: () -> Unit = {
             when {
                 !state.isUserQuery && state.toolbarQuery != null -> screenModel.setToolbarQuery(null)
@@ -110,8 +106,21 @@ data class BrowseSourceScreen(
             }
         }
 
-        val onHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) }
+        if (screenModel.source is SourceManager.StubSource) {
+            MissingSourceScreen(
+                source = screenModel.source,
+                navigateUp = navigateUp,
+            )
+            return
+        }
 
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
+        val haptic = LocalHapticFeedback.current
+        val uriHandler = LocalUriHandler.current
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        val onHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) }
         val onWebViewClick = f@{
             val source = screenModel.source as? HttpSource ?: return@f
             navigator.push(
@@ -169,7 +178,7 @@ data class BrowseSourceScreen(
                                 Text(text = stringResource(R.string.popular))
                             },
                         )
-                        if (screenModel.source.supportsLatest) {
+                        if ((screenModel.source as CatalogueSource).supportsLatest) {
                             FilterChip(
                                 selected = state.listing == Listing.Latest,
                                 onClick = {

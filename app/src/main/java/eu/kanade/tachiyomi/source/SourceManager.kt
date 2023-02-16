@@ -248,7 +248,7 @@ class SourceManager(
         }
     }
 
-    inner class SourceNotInstalledException(val sourceString: String) :
+    inner class SourceNotInstalledException(sourceString: String) :
         Exception(context.getString(R.string.source_not_installed, sourceString))
 
     // SY -->

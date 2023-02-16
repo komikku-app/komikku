@@ -20,9 +20,9 @@ import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.source.Source
 import exh.source.anyIs
 import tachiyomi.domain.library.model.LibraryDisplayMode
 
@@ -30,7 +30,7 @@ import tachiyomi.domain.library.model.LibraryDisplayMode
 fun BrowseSourceToolbar(
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
-    source: CatalogueSource?,
+    source: Source?,
     displayMode: LibraryDisplayMode?,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     navigateUp: () -> Unit,
