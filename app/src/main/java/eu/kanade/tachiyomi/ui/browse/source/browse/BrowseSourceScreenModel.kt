@@ -142,7 +142,7 @@ open class BrowseSourceScreenModel(
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(coroutineScope)
 
-    val source = sourceManager.get(sourceId) as CatalogueSource
+    val source = sourceManager.getOrStub(sourceId)
 
     // SY -->
     val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
@@ -151,20 +151,22 @@ open class BrowseSourceScreenModel(
     // SY <--
 
     init {
-        mutableState.update {
-            var query: String? = null
-            var listing = it.listing
+        if (source is CatalogueSource) {
+            mutableState.update {
+                var query: String? = null
+                var listing = it.listing
 
-            if (listing is Listing.Search) {
-                query = listing.query
-                listing = Listing.Search(query, source.getFilterList())
+                if (listing is Listing.Search) {
+                    query = listing.query
+                    listing = Listing.Search(query, source.getFilterList())
+                }
+
+                it.copy(
+                    listing = listing,
+                    filters = source.getFilterList(),
+                    toolbarQuery = query,
+                )
             }
-
-            it.copy(
-                listing = listing,
-                filters = source.getFilterList(),
-                toolbarQuery = query,
-            )
         }
 
         // SY -->
@@ -184,14 +186,16 @@ open class BrowseSourceScreenModel(
             }
         }
 
-        getExhSavedSearch.subscribe(source.id, source::getFilterList)
-            .onEach { savedSearches ->
-                mutableState.update { it.copy(savedSearches = savedSearches) }
-                withUIContext {
-                    filterSheet?.setSavedSearches(savedSearches)
+        if (source is CatalogueSource) {
+            getExhSavedSearch.subscribe(source.id, source::getFilterList)
+                .onEach { savedSearches ->
+                    mutableState.update { it.copy(savedSearches = savedSearches) }
+                    withUIContext {
+                        filterSheet?.setSavedSearches(savedSearches)
+                    }
                 }
-            }
-            .launchIn(coroutineScope)
+                .launchIn(coroutineScope)
+        }
         // SY <--
     }
 
@@ -250,6 +254,8 @@ open class BrowseSourceScreenModel(
     // SY <--
 
     fun resetFilters() {
+        if (source !is CatalogueSource) return
+
         mutableState.update { it.copy(filters = source.getFilterList()) }
     }
 
@@ -258,6 +264,7 @@ open class BrowseSourceScreenModel(
     }
 
     fun search(query: String? = null, filters: FilterList? = null) {
+        if (source !is CatalogueSource) return
         // SY -->
         if (filters != null && filters !== state.value.filters) {
             mutableState.update { state -> state.copy(filters = filters) }
@@ -278,6 +285,8 @@ open class BrowseSourceScreenModel(
     }
 
     fun searchGenre(genreName: String) {
+        if (source !is CatalogueSource) return
+
         val defaultFilters = source.getFilterList()
         var genreExists = false
 
@@ -465,6 +474,7 @@ open class BrowseSourceScreenModel(
     }
 
     open fun initFilterSheet(context: Context, navigator: Navigator) {
+        source as? CatalogueSource ?: return
         val state = state.value
         /*if (state.filters.isEmpty()) {
             return
@@ -573,6 +583,7 @@ open class BrowseSourceScreenModel(
     fun saveSearch(
         name: String,
     ) {
+        if (source !is CatalogueSource) return
         coroutineScope.launchNonCancellable {
             val query = state.value.listing.query
             val filterList = state.value.listing.filters.ifEmpty { source.getFilterList() }
@@ -594,11 +605,15 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    suspend fun loadSearch(searchId: Long) =
-        getExhSavedSearch.awaitOne(searchId, source::getFilterList)
+    suspend fun loadSearch(searchId: Long): EXHSavedSearch? {
+        if (source !is CatalogueSource) return null
+        return getExhSavedSearch.awaitOne(searchId, source::getFilterList)
+    }
 
-    suspend fun loadSearches() =
-        getExhSavedSearch.await(source.id, source::getFilterList)
+    suspend fun loadSearches(): List<EXHSavedSearch> {
+        if (source !is CatalogueSource) return emptyList()
+        return getExhSavedSearch.await(source.id, source::getFilterList)
+    }
     // EXH <--
 }
 
