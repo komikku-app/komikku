@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.main
 import android.animation.ValueAnimator
 import android.app.SearchManager
 import android.app.assist.AssistContent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -10,6 +11,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -38,6 +40,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -90,7 +93,10 @@ import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -129,8 +135,7 @@ class MainActivity : BaseActivity() {
      */
     private var settingsSheet: LibrarySettingsSheet? = null
 
-    private var isHandlingShortcut: Boolean = false
-    private lateinit var navigator: Navigator
+    private var navigator: Navigator? = null
 
     // SY -->
     // Idle-until-urgent
@@ -246,7 +251,7 @@ class MainActivity : BaseActivity() {
 
                     if (savedInstanceState == null) {
                         // Set start screen
-                        handleIntentAction(intent)
+                        handleIntentAction(intent, navigator)
 
                         // Reset Incognito Mode on relaunch
                         preferences.incognitoMode().set(false)
@@ -306,6 +311,8 @@ class MainActivity : BaseActivity() {
                         .launchIn(this)
                 }
 
+                HandleOnNewIntent(context = context, navigator = navigator)
+
                 CheckForUpdates()
             }
 
@@ -349,7 +356,7 @@ class MainActivity : BaseActivity() {
 
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)
-        when (val screen = navigator.lastItem) {
+        when (val screen = navigator?.lastItem) {
             is AssistContentScreen -> {
                 screen.onProvideAssistUrl()?.let { outContent.webUri = it.toUri() }
             }
@@ -377,6 +384,18 @@ class MainActivity : BaseActivity() {
                 toast.cancel()
                 waitingConfirmation = false
             }
+        }
+    }
+
+    @Composable
+    fun HandleOnNewIntent(context: Context, navigator: Navigator) {
+        LaunchedEffect(Unit) {
+            callbackFlow<Intent> {
+                val componentActivity = context as ComponentActivity
+                val consumer = Consumer<Intent> { trySend(it) }
+                componentActivity.addOnNewIntentListener(consumer)
+                awaitClose { componentActivity.removeOnNewIntentListener(consumer) }
+            }.collectLatest { handleIntentAction(it, navigator) }
         }
     }
 
@@ -458,37 +477,26 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        lifecycleScope.launch {
-            val handle = handleIntentAction(intent)
-            if (!handle) {
-                super.onNewIntent(intent)
-            }
-        }
-    }
-
-    private suspend fun handleIntentAction(intent: Intent): Boolean {
+    private fun handleIntentAction(intent: Intent, navigator: Navigator): Boolean {
         val notificationId = intent.getIntExtra("notificationId", -1)
         if (notificationId > -1) {
             NotificationReceiver.dismissNotification(applicationContext, notificationId, intent.getIntExtra("groupId", 0))
         }
 
-        isHandlingShortcut = true
-
-        when (intent.action) {
-            Constants.SHORTCUT_LIBRARY -> HomeScreen.openTab(HomeScreen.Tab.Library())
+        val tabToOpen = when (intent.action) {
+            Constants.SHORTCUT_LIBRARY -> HomeScreen.Tab.Library()
             Constants.SHORTCUT_MANGA -> {
                 val idToOpen = intent.extras?.getLong(Constants.MANGA_EXTRA) ?: return false
                 navigator.popUntilRoot()
-                HomeScreen.openTab(HomeScreen.Tab.Library(idToOpen))
+                HomeScreen.Tab.Library(idToOpen)
             }
-            Constants.SHORTCUT_UPDATES -> HomeScreen.openTab(HomeScreen.Tab.Updates)
-            Constants.SHORTCUT_HISTORY -> HomeScreen.openTab(HomeScreen.Tab.History)
-            Constants.SHORTCUT_SOURCES -> HomeScreen.openTab(HomeScreen.Tab.Browse(false))
-            Constants.SHORTCUT_EXTENSIONS -> HomeScreen.openTab(HomeScreen.Tab.Browse(true))
+            Constants.SHORTCUT_UPDATES -> HomeScreen.Tab.Updates
+            Constants.SHORTCUT_HISTORY -> HomeScreen.Tab.History
+            Constants.SHORTCUT_SOURCES -> HomeScreen.Tab.Browse(false)
+            Constants.SHORTCUT_EXTENSIONS -> HomeScreen.Tab.Browse(true)
             Constants.SHORTCUT_DOWNLOADS -> {
                 navigator.popUntilRoot()
-                HomeScreen.openTab(HomeScreen.Tab.More(toDownloads = true))
+                HomeScreen.Tab.More(toDownloads = true)
             }
             Intent.ACTION_SEARCH, Intent.ACTION_SEND, "com.google.android.gms.actions.SEARCH_ACTION" -> {
                 // If the intent match the "standard" Android search intent
@@ -500,6 +508,7 @@ class MainActivity : BaseActivity() {
                     navigator.popUntilRoot()
                     navigator.push(GlobalSearchScreen(query))
                 }
+                null
             }
             INTENT_SEARCH -> {
                 val query = intent.getStringExtra(INTENT_SEARCH_QUERY)
@@ -508,15 +517,16 @@ class MainActivity : BaseActivity() {
                     navigator.popUntilRoot()
                     navigator.push(GlobalSearchScreen(query, filter))
                 }
+                null
             }
-            else -> {
-                isHandlingShortcut = false
-                return false
-            }
+            else -> return false
+        }
+
+        if (tabToOpen != null) {
+            lifecycleScope.launch { HomeScreen.openTab(tabToOpen) }
         }
 
         ready = true
-        isHandlingShortcut = false
         return true
     }
 
@@ -527,7 +537,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (navigator.size == 1 &&
+        if (navigator?.size == 1 &&
             !onBackPressedDispatcher.hasEnabledCallbacks() &&
             libraryPreferences.autoClearChapterCache().get()
         ) {
