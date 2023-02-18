@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.Button
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.material.Button
 
 @Composable
 fun MangaInfoButtons(

@@ -31,12 +31,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.Button
-import eu.kanade.presentation.components.LazyColumn
-import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.LazyColumn
+import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.plus
 
 class BatchAddScreen : Screen {
 

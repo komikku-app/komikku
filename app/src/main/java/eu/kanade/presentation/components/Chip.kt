@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.util.animateElevation
+import tachiyomi.presentation.core.util.animateElevation
 import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
 @ExperimentalMaterial3Api
@@ -182,7 +182,7 @@ private fun Chip(
     border: BorderStroke?,
     interactionSource: MutableInteractionSource,
 ) {
-    Surface(
+    tachiyomi.presentation.core.components.material.Surface(
         onClick = onClick,
         modifier = modifier,
         onLongClick = onLongClick,

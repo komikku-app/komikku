@@ -31,9 +31,9 @@ import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
 import eu.kanade.presentation.util.collectAsState
-import eu.kanade.presentation.util.secondaryItemAlpha
 import kotlinx.coroutines.launch
 import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

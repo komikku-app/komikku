@@ -15,16 +15,16 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.components.AppBarTitle
-import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.presentation.core.components.LoadingScreen
+import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.util.plus
 
 sealed class SourceFeedUI {
     abstract val id: Long

@@ -33,8 +33,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
-import eu.kanade.presentation.components.LazyColumn
-import eu.kanade.presentation.components.MangaCover
+import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
@@ -47,6 +46,7 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
+import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.padding
 import java.util.Date
 

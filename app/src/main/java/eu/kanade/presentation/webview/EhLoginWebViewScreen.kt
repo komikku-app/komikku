@@ -38,10 +38,10 @@ import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.Button
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable

@@ -28,9 +28,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.presentation.components.ChangeCategoryDialog
-import eu.kanade.presentation.components.DuplicateMangaDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
+import eu.kanade.presentation.components.dialogs.ChangeCategoryDialog
+import eu.kanade.presentation.components.dialogs.DuplicateMangaDialog
 import eu.kanade.presentation.manga.ChapterSettingsDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
