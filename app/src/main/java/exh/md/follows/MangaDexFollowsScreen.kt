@@ -19,8 +19,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
-import eu.kanade.presentation.components.dialogs.ChangeCategoryDialog
-import eu.kanade.presentation.components.dialogs.DuplicateMangaDialog
+import eu.kanade.presentation.category.ChangeCategoryDialog
+import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
