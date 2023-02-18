@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import eu.kanade.domain.manga.model.PagePreview
-import eu.kanade.presentation.util.padding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.util.floor
+import tachiyomi.presentation.core.components.material.padding
 
 @Composable
 fun PagePreviews(
