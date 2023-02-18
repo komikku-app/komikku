@@ -58,7 +58,6 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -102,6 +101,7 @@ import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
+import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMangaWithChapters
@@ -628,7 +628,7 @@ class MangaInfoScreenModel(
                 updateMergedSettings.awaitAll(
                     mergedMangaReferences.map {
                         MergeMangaSettingsUpdate(
-                            id = it.id!!,
+                            id = it.id,
                             isInfoManga = it.isInfoManga,
                             getChapterUpdates = it.getChapterUpdates,
                             chapterPriority = it.chapterPriority,
@@ -643,12 +643,8 @@ class MangaInfoScreenModel(
 
     fun deleteMerge(reference: MergedMangaReference) {
         coroutineScope.launchNonCancellable {
-            deleteMergeById.await(reference.id ?: return@launchNonCancellable)
+            deleteMergeById.await(reference.id)
         }
-    }
-
-    fun toggleDedupe() {
-        // I cant find any way to call the chapter list subscription to get the chapters again
     }
     // SY <--
 
