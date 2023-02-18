@@ -17,6 +17,7 @@ dependencies {
     implementation(kotlinx.bundles.coroutines)
 
     implementation(project(":source-api"))
+    implementation(project(":core"))
 
     // SY -->
     implementation(libs.injekt.core)

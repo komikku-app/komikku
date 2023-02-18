@@ -5,10 +5,6 @@ import android.net.wifi.WifiManager
 import android.os.PowerManager
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.category.interactor.CreateCategoryWithName
-import eu.kanade.domain.category.interactor.SetMangaCategories
-import eu.kanade.domain.category.interactor.UpdateCategory
-import eu.kanade.domain.manga.interactor.GetLibraryManga
-import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.POST
@@ -36,8 +32,12 @@ import okhttp3.Request
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.SetMangaCategories
+import tachiyomi.domain.category.interactor.UpdateCategory
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.CategoryUpdate
+import tachiyomi.domain.manga.interactor.GetLibraryManga
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt

@@ -1,4 +1,4 @@
-package eu.kanade.domain.manga.interactor
+package tachiyomi.domain.manga.interactor
 
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import kotlinx.coroutines.flow.Flow

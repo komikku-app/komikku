@@ -7,7 +7,6 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
-import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
@@ -33,6 +32,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.manga.interactor.GetFavorites
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 

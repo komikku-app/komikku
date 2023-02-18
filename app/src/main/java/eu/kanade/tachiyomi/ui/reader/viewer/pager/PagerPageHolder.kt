@@ -165,7 +165,6 @@ class PagerPageHolder(
         val streamFn = page.stream ?: return
         val streamFn2 = extraPage?.stream
 
-
         val (bais, isAnimated, background) = withIOContext {
             streamFn().buffered(16).use { stream ->
                 // SY -->
