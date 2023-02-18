@@ -7,8 +7,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 
 @Composable
 fun BrowseSourceFloatingActionButton(

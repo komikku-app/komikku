@@ -16,7 +16,6 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.plus
@@ -25,6 +24,7 @@ import eu.kanade.tachiyomi.R
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.presentation.core.components.material.Scaffold
 
 sealed class SourceFeedUI {
     abstract val id: Long

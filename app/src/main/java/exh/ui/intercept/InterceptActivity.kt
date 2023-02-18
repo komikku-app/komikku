@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -37,6 +36,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.core.Constants
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 
 class InterceptActivity : BaseActivity() {
     private var statusJob: Job? = null

@@ -17,7 +17,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -27,6 +26,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import tachiyomi.core.Constants
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 
 data class SourceSearchScreen(
     private val oldManga: Manga,

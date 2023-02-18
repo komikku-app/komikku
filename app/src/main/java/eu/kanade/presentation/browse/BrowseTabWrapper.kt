@@ -7,8 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.TabContent
+import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun BrowseTabWrapper(tab: TabContent) {

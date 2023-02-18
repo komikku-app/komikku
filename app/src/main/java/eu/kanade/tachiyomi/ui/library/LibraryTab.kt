@@ -37,7 +37,6 @@ import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.EmptyScreenAction
 import eu.kanade.presentation.components.LibraryBottomActionMenu
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
@@ -65,6 +64,7 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.display
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

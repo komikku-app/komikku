@@ -21,12 +21,12 @@ import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.DuplicateMangaDialog
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.presentation.core.components.material.Scaffold
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen {
 

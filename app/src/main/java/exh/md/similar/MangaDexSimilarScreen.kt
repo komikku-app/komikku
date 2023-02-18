@@ -15,10 +15,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 
 class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen {
 

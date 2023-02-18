@@ -11,12 +11,12 @@ import eu.kanade.presentation.category.components.CategoryFloatingActionButton
 import eu.kanade.presentation.category.components.genre.SortTagContent
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.EmptyScreen
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.util.padding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreenState
+import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun SortTagScreen(

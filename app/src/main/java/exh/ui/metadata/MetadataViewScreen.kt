@@ -25,13 +25,13 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.clickableNoIndication
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import tachiyomi.presentation.core.components.material.Scaffold
 
 class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) : Screen {
 

@@ -48,9 +48,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.LoadingScreen
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
@@ -61,6 +59,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.components.material.Scaffold
 import java.util.Locale
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility

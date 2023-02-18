@@ -28,7 +28,6 @@ import eu.kanade.presentation.browse.components.MigrationActionIcon
 import eu.kanade.presentation.browse.components.MigrationItem
 import eu.kanade.presentation.browse.components.MigrationItemResult
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topSmallPaddingValues
@@ -36,6 +35,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun MigrationListScreen(

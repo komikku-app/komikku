@@ -15,9 +15,9 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
-import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.presentation.core.components.material.Scaffold
 
 class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen {
 
