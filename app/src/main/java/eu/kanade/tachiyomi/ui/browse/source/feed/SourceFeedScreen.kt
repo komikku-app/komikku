@@ -9,10 +9,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
-import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.core.navigation.Screen
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
@@ -34,11 +34,10 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.SavedSearch
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
-class SourceFeedScreen(val sourceId: Long) : Screen {
+class SourceFeedScreen(val sourceId: Long) : Screen() {
 
     @Transient
     private var filterSheet: SourceFilterSheet? = null
-
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { SourceFeedScreenModel(sourceId) }

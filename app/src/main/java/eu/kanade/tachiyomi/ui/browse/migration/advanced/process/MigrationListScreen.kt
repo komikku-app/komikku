@@ -9,10 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.core.navigation.Screen
 import eu.kanade.presentation.browse.MigrationListScreen
 import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
@@ -23,13 +22,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.core.util.lang.withUIContext
 
-class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen {
+class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
 
     @delegate:Transient
     var newSelectedItem by mutableStateOf<Pair<Long, Long>?>(null)
-
-    override val key = uniqueScreenKey
-
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { MigrationListScreenModel(config) }
