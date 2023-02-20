@@ -32,16 +32,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AroundLayout
-import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.tachiyomi.R
 import exh.pagepreview.PagePreviewState
 import exh.util.floor
 import kotlinx.coroutines.launch
-import tachiyomi.presentation.core.components.LoadingScreen
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
 import kotlin.math.roundToInt
 

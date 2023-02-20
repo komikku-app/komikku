@@ -11,10 +11,10 @@ import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.core.navigation.Screen
 import eu.kanade.presentation.browse.MigrationListScreen
 import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
+import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
@@ -26,6 +26,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
 
     @delegate:Transient
     var newSelectedItem by mutableStateOf<Pair<Long, Long>?>(null)
+
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { MigrationListScreenModel(config) }

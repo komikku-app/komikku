@@ -32,8 +32,6 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
-import eu.kanade.presentation.components.EmptyScreen
-import eu.kanade.presentation.components.EmptyScreenAction
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.components.LibraryContent
@@ -64,8 +62,10 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.display
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.presentation.core.components.LoadingScreen
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
+import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
