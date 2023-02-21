@@ -10,6 +10,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
@@ -20,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.tachiyomi.R
-import tachiyomi.presentation.core.util.minimumTouchTargetSize
 
 @Composable
 fun DeleteChaptersDialog(
@@ -86,7 +86,7 @@ fun SelectScanlatorsDialog(
                                     selected = isSelected,
                                     onClick = { onSelectionChanged() },
                                 )
-                                .minimumTouchTargetSize()
+                                .minimumInteractiveComponentSize()
                                 .fillMaxWidth(),
                         ) {
                             Checkbox(
