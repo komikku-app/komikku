@@ -38,7 +38,7 @@ abstract class HttpSource : CatalogueSource {
     // SY -->
     protected val network: NetworkHelper by lazy {
         val network = Injekt.get<NetworkHelper>()
-        object : NetworkHelper(Injekt.get<Application>()) {
+        object : NetworkHelper(Injekt.get<Application>(), Injekt.get()) {
             override val client: OkHttpClient
                 get() = delegate?.networkHttpClient ?: network.client
                     .newBuilder()
@@ -51,8 +51,8 @@ abstract class HttpSource : CatalogueSource {
                     .maybeInjectEHLogger()
                     .build()
 
-            override val cookieManager: AndroidCookieJar
-                get() = network.cookieManager
+            override val cookieJar: AndroidCookieJar
+                get() = network.cookieJar
         }
     }
     // SY <--
@@ -97,7 +97,7 @@ abstract class HttpSource : CatalogueSource {
      * Headers builder for requests. Implementations can override this method for custom headers.
      */
     protected open fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", network.defaultUserAgent)
+        add("User-Agent", network.defaultUserAgentProvider())
     }
 
     /**

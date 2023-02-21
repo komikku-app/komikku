@@ -26,147 +26,173 @@ class MangaDexAuthService(
 ) {
 
     suspend fun userFollowList(offset: Int): MangaListDto {
-        return client.newCall(
-            GET(
-                "${MdApi.userFollows}?limit=100&offset=$offset&includes[]=${MdConstants.Types.coverArt}",
-                headers,
-                CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    "${MdApi.userFollows}?limit=100&offset=$offset&includes[]=${MdConstants.Types.coverArt}",
+                    headers,
+                    CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun readingStatusForManga(mangaId: String): ReadingStatusDto {
-        return client.newCall(
-            GET(
-                "${MdApi.manga}/$mangaId/status",
-                headers,
-                CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    "${MdApi.manga}/$mangaId/status",
+                    headers,
+                    CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun readChaptersForManga(mangaId: String): ReadChapterDto {
-        return client.newCall(
-            GET(
-                "${MdApi.manga}/$mangaId/read",
-                headers,
-                CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    "${MdApi.manga}/$mangaId/read",
+                    headers,
+                    CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun updateReadingStatusForManga(
         mangaId: String,
         readingStatusDto: ReadingStatusDto,
     ): ResultDto {
-        return client.newCall(
-            POST(
-                "${MdApi.manga}/$mangaId/status",
-                headers,
-                body = MdUtil.encodeToBody(readingStatusDto),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                POST(
+                    "${MdApi.manga}/$mangaId/status",
+                    headers,
+                    body = MdUtil.encodeToBody(readingStatusDto),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun readingStatusAllManga(): ReadingStatusMapDto {
-        return client.newCall(
-            GET(
-                MdApi.readingStatusForAllManga,
-                headers,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.readingStatusForAllManga,
+                    headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun readingStatusByType(status: String): ReadingStatusMapDto {
-        return client.newCall(
-            GET(
-                "${MdApi.readingStatusForAllManga}?status=$status",
-                headers,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    "${MdApi.readingStatusForAllManga}?status=$status",
+                    headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun markChapterRead(chapterId: String): ResultDto {
-        return client.newCall(
-            POST(
-                "${MdApi.chapter}/$chapterId/read",
-                headers,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                POST(
+                    "${MdApi.chapter}/$chapterId/read",
+                    headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun markChapterUnRead(chapterId: String): ResultDto {
-        return client.newCall(
-            Request.Builder()
-                .url("${MdApi.chapter}/$chapterId/read")
-                .delete()
-                .headers(headers)
-                .cacheControl(CacheControl.FORCE_NETWORK)
-                .build(),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                Request.Builder()
+                    .url("${MdApi.chapter}/$chapterId/read")
+                    .delete()
+                    .headers(headers)
+                    .cacheControl(CacheControl.FORCE_NETWORK)
+                    .build(),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun followManga(mangaId: String): ResultDto {
-        return client.newCall(
-            POST(
-                "${MdApi.manga}/$mangaId/follow",
-                headers,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                POST(
+                    "${MdApi.manga}/$mangaId/follow",
+                    headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun unfollowManga(mangaId: String): ResultDto {
-        return client.newCall(
-            Request.Builder()
-                .url("${MdApi.manga}/$mangaId/follow")
-                .delete()
-                .headers(headers)
-                .cacheControl(CacheControl.FORCE_NETWORK)
-                .build(),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                Request.Builder()
+                    .url("${MdApi.manga}/$mangaId/follow")
+                    .delete()
+                    .headers(headers)
+                    .cacheControl(CacheControl.FORCE_NETWORK)
+                    .build(),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun updateMangaRating(mangaId: String, rating: Int): ResultDto {
-        return client.newCall(
-            POST(
-                "${MdApi.rating}/$mangaId",
-                headers,
-                body = MdUtil.encodeToBody(RatingDto(rating)),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                POST(
+                    "${MdApi.rating}/$mangaId",
+                    headers,
+                    body = MdUtil.encodeToBody(RatingDto(rating)),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun deleteMangaRating(mangaId: String): ResultDto {
-        return client.newCall(
-            Request.Builder()
-                .delete()
-                .url("${MdApi.rating}/$mangaId")
-                .headers(headers)
-                .cacheControl(CacheControl.FORCE_NETWORK)
-                .build(),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                Request.Builder()
+                    .delete()
+                    .url("${MdApi.rating}/$mangaId")
+                    .headers(headers)
+                    .cacheControl(CacheControl.FORCE_NETWORK)
+                    .build(),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun mangasRating(vararg mangaIds: String): RatingResponseDto {
-        return client.newCall(
-            GET(
-                MdApi.rating.toHttpUrl()
-                    .newBuilder()
-                    .apply {
-                        mangaIds.forEach {
-                            addQueryParameter("manga[]", it)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.rating.toHttpUrl()
+                        .newBuilder()
+                        .apply {
+                            mangaIds.forEach {
+                                addQueryParameter("manga[]", it)
+                            }
                         }
-                    }
-                    .build(),
-                headers,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+                        .build(),
+                    headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 }

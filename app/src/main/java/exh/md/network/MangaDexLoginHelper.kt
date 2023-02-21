@@ -35,7 +35,11 @@ class MangaDexLoginHelper(
             .build()
 
         val error = kotlin.runCatching {
-            val data = client.newCall(POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody)).awaitSuccess().parseAs<OAuth>()
+            val data = with(MdUtil.jsonParser) {
+                client.newCall(
+                    POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody),
+                ).awaitSuccess().parseAs<OAuth>()
+            }
             mangaDexAuthInterceptor.setAuth(data)
         }.exceptionOrNull()
 

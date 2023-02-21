@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.source.BlacklistedSources
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
@@ -27,10 +28,12 @@ internal class ExtensionGithubApi {
 
     private val networkService: NetworkHelper by injectLazy()
     private val preferenceStore: PreferenceStore by injectLazy()
+    private val extensionManager: ExtensionManager by injectLazy()
+    private val json: Json by injectLazy()
+
     private val lastExtCheck: Preference<Long> by lazy {
         preferenceStore.getLong("last_ext_check", 0)
     }
-    private val extensionManager: ExtensionManager by injectLazy()
 
     // SY -->
     private val sourcePreferences: SourcePreferences by injectLazy()
@@ -61,23 +64,25 @@ internal class ExtensionGithubApi {
                     .awaitSuccess()
             }
 
-            val extensions = response
-                .parseAs<List<ExtensionJsonObject>>()
-                .toExtensions() /* SY --> */ + unsortedPreferences.extensionRepos()
-                .get()
-                .flatMap { repoPath ->
-                    val url = if (requiresFallbackSource) {
-                        "$FALLBACK_BASE_URL$repoPath@repo/"
-                    } else {
-                        "$BASE_URL$repoPath/repo/"
+            val extensions = with(json) {
+                response
+                    .parseAs<List<ExtensionJsonObject>>()
+                    .toExtensions() /* SY --> */ + unsortedPreferences.extensionRepos()
+                    .get()
+                    .flatMap { repoPath ->
+                        val url = if (requiresFallbackSource) {
+                            "$FALLBACK_BASE_URL$repoPath@repo/"
+                        } else {
+                            "$BASE_URL$repoPath/repo/"
+                        }
+                        networkService.client
+                            .newCall(GET("${url}index.min.json"))
+                            .awaitSuccess()
+                            .parseAs<List<ExtensionJsonObject>>()
+                            .toExtensions(url, repoSource = true)
                     }
-                    networkService.client
-                        .newCall(GET("${url}index.min.json"))
-                        .awaitSuccess()
-                        .parseAs<List<ExtensionJsonObject>>()
-                        .toExtensions(url, repoSource = true)
-                }
-            // SY <--
+                // SY <--
+            }
 
             // Sanity check - a small number of extensions probably means something broke
             // with the repo generator

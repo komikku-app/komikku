@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.util.MangaType
 import exh.util.mangaType
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -37,6 +38,7 @@ abstract class API(val endpoint: String) {
     val client by lazy {
         Injekt.get<NetworkHelper>().client
     }
+    val json by injectLazy<Json>()
 
     abstract suspend fun getRecsBySearch(search: String): List<SManga>
 
@@ -52,7 +54,7 @@ class MyAnimeList : API("https://api.jikan.moe/v4/") {
             .addPathSegment("recommendations")
             .build()
 
-        val data = client.newCall(GET(apiUrl)).awaitSuccess().parseAs<JsonObject>()
+        val data = with(json) { client.newCall(GET(apiUrl)).awaitSuccess().parseAs<JsonObject>() }
         return data["data"]!!.jsonArray
             .map { it.jsonObject["entry"]!!.jsonObject }
             .map { rec ->
@@ -88,8 +90,10 @@ class MyAnimeList : API("https://api.jikan.moe/v4/") {
             .addQueryParameter("q", search)
             .build()
 
-        val data = client.newCall(GET(url)).awaitSuccess()
-            .parseAs<JsonObject>()
+        val data = with(json) {
+            client.newCall(GET(url)).awaitSuccess()
+                .parseAs<JsonObject>()
+        }
         return getRecsById(data["data"]!!.jsonArray.first().jsonObject["mal_id"]!!.jsonPrimitive.content)
     }
 }
@@ -137,8 +141,10 @@ class Anilist : API("https://graphql.anilist.co/") {
         }
         val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
 
-        val data = client.newCall(POST(endpoint, body = payloadBody)).awaitSuccess()
-            .parseAs<JsonObject>()
+        val data = with(json) {
+            client.newCall(POST(endpoint, body = payloadBody)).awaitSuccess()
+                .parseAs<JsonObject>()
+        }
 
         val media = data["data"]!!
             .jsonObject["Page"]!!

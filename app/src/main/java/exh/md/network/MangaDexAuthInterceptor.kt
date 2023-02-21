@@ -80,7 +80,7 @@ class MangaDexAuthInterceptor(
             val oauthResponse = chain.proceed(MdUtil.refreshTokenRequest(oauth!!))
 
             if (oauthResponse.isSuccessful) {
-                oauthResponse.parseAs<OAuth>()
+                with(MdUtil.jsonParser) { oauthResponse.parseAs<OAuth>() }
             } else {
                 oauthResponse.close()
                 null

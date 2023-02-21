@@ -31,77 +31,85 @@ class MangaDexService(
     suspend fun viewMangas(
         ids: List<String>,
     ): MangaListDto {
-        return client.newCall(
-            GET(
-                MdApi.manga.toHttpUrl()
-                    .newBuilder()
-                    .apply {
-                        addQueryParameter("includes[]", MdConstants.Types.coverArt)
-                        addQueryParameter("limit", ids.size.toString())
-                        ids.forEach {
-                            addQueryParameter("ids[]", it)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.manga.toHttpUrl()
+                        .newBuilder()
+                        .apply {
+                            addQueryParameter("includes[]", MdConstants.Types.coverArt)
+                            addQueryParameter("limit", ids.size.toString())
+                            ids.forEach {
+                                addQueryParameter("ids[]", it)
+                            }
                         }
-                    }
-                    .build(),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+                        .build(),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun viewManga(
         id: String,
     ): MangaDto {
-        return client.newCall(
-            GET(
-                MdApi.manga.toHttpUrl()
-                    .newBuilder()
-                    .apply {
-                        addPathSegment(id)
-                        addQueryParameter("includes[]", MdConstants.Types.coverArt)
-                        addQueryParameter("includes[]", MdConstants.Types.author)
-                        addQueryParameter("includes[]", MdConstants.Types.artist)
-                    }
-                    .build(),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.manga.toHttpUrl()
+                        .newBuilder()
+                        .apply {
+                            addPathSegment(id)
+                            addQueryParameter("includes[]", MdConstants.Types.coverArt)
+                            addQueryParameter("includes[]", MdConstants.Types.author)
+                            addQueryParameter("includes[]", MdConstants.Types.artist)
+                        }
+                        .build(),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun mangasRating(
         vararg ids: String,
     ): StatisticsDto {
-        return client.newCall(
-            GET(
-                MdApi.statistics.toHttpUrl()
-                    .newBuilder()
-                    .apply {
-                        ids.forEach { id ->
-                            addQueryParameter("manga[]", id)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.statistics.toHttpUrl()
+                        .newBuilder()
+                        .apply {
+                            ids.forEach { id ->
+                                addQueryParameter("manga[]", id)
+                            }
                         }
-                    }
-                    .build(),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+                        .build(),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun aggregateChapters(
         id: String,
         translatedLanguage: String,
     ): AggregateDto {
-        return client.newCall(
-            GET(
-                MdApi.manga.toHttpUrl()
-                    .newBuilder()
-                    .apply {
-                        addPathSegment(id)
-                        addPathSegment("aggregate")
-                        addQueryParameter("translatedLanguage[]", translatedLanguage)
-                    }
-                    .build(),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.manga.toHttpUrl()
+                        .newBuilder()
+                        .apply {
+                            addPathSegment(id)
+                            addPathSegment("aggregate")
+                            addQueryParameter("translatedLanguage[]", translatedLanguage)
+                        }
+                        .build(),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     private fun String.splitString() = replace("\n", "").split(',').trimAll().dropEmpty()
@@ -137,56 +145,68 @@ class MangaDexService(
             }
             .build()
 
-        return client.newCall(
-            GET(
-                url,
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    url,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun viewChapter(id: String): ChapterDto {
-        return client.newCall(GET("${MdApi.chapter}/$id", cache = CacheControl.FORCE_NETWORK))
-            .awaitSuccess()
-            .parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(GET("${MdApi.chapter}/$id", cache = CacheControl.FORCE_NETWORK))
+                .awaitSuccess()
+                .parseAs()
+        }
     }
 
     suspend fun randomManga(): MangaDto {
-        return client.newCall(GET("${MdApi.manga}/random", cache = CacheControl.FORCE_NETWORK))
-            .awaitSuccess()
-            .parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(GET("${MdApi.manga}/random", cache = CacheControl.FORCE_NETWORK))
+                .awaitSuccess()
+                .parseAs()
+        }
     }
 
     suspend fun atHomeImageReport(atHomeImageReportDto: AtHomeImageReportDto): ResultDto {
-        return client.newCall(
-            POST(
-                MdConstants.atHomeReportUrl,
-                body = MdUtil.encodeToBody(atHomeImageReportDto),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                POST(
+                    MdConstants.atHomeReportUrl,
+                    body = MdUtil.encodeToBody(atHomeImageReportDto),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 
     suspend fun getAtHomeServer(
         atHomeRequestUrl: String,
         headers: Headers,
     ): AtHomeDto {
-        return client.newCall(GET(atHomeRequestUrl, headers, CacheControl.FORCE_NETWORK))
-            .awaitSuccess()
-            .parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(GET(atHomeRequestUrl, headers, CacheControl.FORCE_NETWORK))
+                .awaitSuccess()
+                .parseAs()
+        }
     }
 
     suspend fun relatedManga(id: String): RelationListDto {
-        return client.newCall(
-            GET(
-                MdApi.manga.toHttpUrl().newBuilder()
-                    .apply {
-                        addPathSegment(id)
-                        addPathSegment("relation")
-                    }
-                    .build(),
-                cache = CacheControl.FORCE_NETWORK,
-            ),
-        ).awaitSuccess().parseAs(MdUtil.jsonParser)
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    MdApi.manga.toHttpUrl().newBuilder()
+                        .apply {
+                            addPathSegment(id)
+                            addPathSegment("relation")
+                        }
+                        .build(),
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 }

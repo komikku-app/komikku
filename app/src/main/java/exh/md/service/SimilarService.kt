@@ -11,10 +11,12 @@ class SimilarService(
     private val client: OkHttpClient,
 ) {
     suspend fun getSimilarManga(mangaId: String): SimilarMangaDto {
-        return client.newCall(
-            GET(
-                "${MdUtil.similarBaseApi}$mangaId.json",
-            ),
-        ).awaitSuccess().parseAs()
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    "${MdUtil.similarBaseApi}$mangaId.json",
+                ),
+            ).awaitSuccess().parseAs()
+        }
     }
 }
