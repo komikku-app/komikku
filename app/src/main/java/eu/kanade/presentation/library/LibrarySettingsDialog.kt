@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -40,13 +39,11 @@ import tachiyomi.domain.manga.model.TriStateFilter
 fun LibrarySettingsDialog(
     onDismissRequest: () -> Unit,
     screenModel: LibrarySettingsScreenModel,
-    activeCategoryIndex: Int,
+    category: Category,
+    // SY -->
+    hasCategories: Boolean,
+    // SY <--
 ) {
-    val state by screenModel.state.collectAsState()
-    val category by remember(activeCategoryIndex) {
-        derivedStateOf { state.categories[activeCategoryIndex] }
-    }
-
     TabbedDialog(
         onDismissRequest = onDismissRequest,
         tabTitles = listOf(
@@ -79,7 +76,7 @@ fun LibrarySettingsDialog(
                 // SY -->
                 3 -> GroupPage(
                     screenModel = screenModel,
-                    categories = state.categories,
+                    hasCategories = hasCategories,
                 )
                 // SY <--
             }
@@ -308,10 +305,9 @@ data class GroupMode(
 @Composable
 private fun ColumnScope.GroupPage(
     screenModel: LibrarySettingsScreenModel,
-    categories: List<Category>,
+    hasCategories: Boolean,
 ) {
-    val realCategories = categories.filterNot { it.isSystemCategory }
-    val groups = remember(realCategories.isNotEmpty(), screenModel.trackServices) {
+    val groups = remember(hasCategories, screenModel.trackServices) {
         buildList {
             add(LibraryGroup.BY_DEFAULT)
             add(LibraryGroup.BY_SOURCE)
@@ -319,13 +315,13 @@ private fun ColumnScope.GroupPage(
             if (screenModel.trackServices.isNotEmpty()) {
                 add(LibraryGroup.BY_TRACK_STATUS)
             }
-            if (realCategories.isNotEmpty()) {
+            if (hasCategories) {
                 add(LibraryGroup.UNGROUPED)
             }
         }.map {
             GroupMode(
                 it,
-                LibraryGroup.groupTypeStringRes(it, realCategories.isNotEmpty()),
+                LibraryGroup.groupTypeStringRes(it, hasCategories),
                 LibraryGroup.groupTypeDrawableRes(it),
             )
         }

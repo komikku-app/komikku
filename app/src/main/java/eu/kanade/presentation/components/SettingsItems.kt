@@ -33,8 +33,15 @@ import tachiyomi.presentation.core.theme.header
 fun HeadingItem(
     @StringRes labelRes: Int,
 ) {
+    HeadingItem(stringResource(labelRes))
+}
+
+@Composable
+fun HeadingItem(
+    text: String,
+) {
     Text(
-        text = stringResource(labelRes),
+        text = text,
         style = MaterialTheme.typography.header,
         modifier = Modifier
             .fillMaxWidth()
