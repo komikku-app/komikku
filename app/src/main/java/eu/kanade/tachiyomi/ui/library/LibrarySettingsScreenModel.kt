@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.library
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope

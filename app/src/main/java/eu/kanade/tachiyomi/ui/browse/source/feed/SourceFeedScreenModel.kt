@@ -3,10 +3,11 @@ package eu.kanade.tachiyomi.ui.browse.source.feed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.core.prefs.asState
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toDomainManga
@@ -17,11 +18,16 @@ import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.ui.browse.source.browse.toItems
+import eu.kanade.tachiyomi.source.online.all.MangaDex
+import exh.source.getMainSource
+import exh.source.mangaDexSourceIds
+import exh.util.nullIfBlank
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -32,16 +38,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withNonCancellableContext
+import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.toMangaUpdate
+import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import uy.kohesive.injekt.Injekt
@@ -52,6 +62,7 @@ import tachiyomi.domain.manga.model.Manga as DomainManga
 
 open class SourceFeedScreenModel(
     val sourceId: Long,
+    uiPreferences: UiPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -66,10 +77,19 @@ open class SourceFeedScreenModel(
 
     val source = sourceManager.getOrStub(sourceId) as CatalogueSource
 
+    val sourceIsMangaDex = sourceId in mangaDexSourceIds
+
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
+
+    val startExpanded by uiPreferences.expandFilters().asState(coroutineScope)
 
     init {
         setFilters(source.getFilterList())
+
+        coroutineScope.launchIO {
+            val searches = loadSearches()
+            mutableState.update { it.copy(savedSearches = searches) }
+        }
 
         getFeedSavedSearchBySourceId.subscribe(source.id)
             .onEach {
@@ -88,7 +108,7 @@ open class SourceFeedScreenModel(
         mutableState.update { it.copy(filters = filters) }
     }
 
-    suspend fun hasTooManyFeeds(): Boolean {
+    private suspend fun hasTooManyFeeds(): Boolean {
         return countFeedSavedSearchBySourceId.await(source.id) > 10
     }
 
@@ -213,14 +233,82 @@ open class SourceFeedScreenModel(
         }
     }
 
-    suspend fun loadSearch(searchId: Long) =
-        getExhSavedSearch.awaitOne(searchId, source::getFilterList)
-
-    suspend fun loadSearches() =
+    private suspend fun loadSearches() =
         getExhSavedSearch.await(source.id, source::getFilterList)
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
+
+    fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
+        coroutineScope.launchIO {
+            val allDefault = state.value.filters == source.getFilterList()
+            dismissDialog()
+            if (allDefault) {
+                onBrowseClick(
+                    state.value.searchQuery?.nullIfBlank(),
+                    null,
+                )
+            } else {
+                onBrowseClick(
+                    state.value.searchQuery?.nullIfBlank(),
+                    Json.encodeToString(filterSerializer.serialize(state.value.filters)),
+                )
+            }
+        }
+    }
+
+    fun onSavedSearch(
+        search: EXHSavedSearch,
+        onBrowseClick: (query: String?, searchId: Long) -> Unit,
+        onToast: (Int) -> Unit,
+    ) {
+        coroutineScope.launchIO {
+            if (search.filterList == null && state.value.filters.isNotEmpty()) {
+                withUIContext {
+                    onToast(R.string.save_search_invalid)
+                }
+                return@launchIO
+            }
+
+            val allDefault = search.filterList != null && search.filterList == source.getFilterList()
+            dismissDialog()
+
+            if (!allDefault) {
+                onBrowseClick(
+                    state.value.searchQuery?.nullIfBlank(),
+                    search.id,
+                )
+            }
+        }
+    }
+
+    fun onSavedSearchAddToFeed(
+        search: EXHSavedSearch,
+        onToast: (Int) -> Unit,
+    ) {
+        coroutineScope.launchIO {
+            if (hasTooManyFeeds()) {
+                withUIContext {
+                    onToast(R.string.too_many_in_feed)
+                }
+                return@launchIO
+            }
+            openAddFeed(search.id, search.name)
+        }
+    }
+
+    fun onMangaDexRandom(onRandomFound: (String) -> Unit) {
+        coroutineScope.launchIO {
+            val random = source.getMainSource<MangaDex>()?.fetchRandomMangaUrl()
+                ?: return@launchIO
+            onRandomFound(random)
+        }
+    }
 
     fun search(query: String?) {
         mutableState.update { it.copy(searchQuery = query) }
+    }
+
+    fun openFilterSheet() {
+        mutableState.update { it.copy(dialog = Dialog.Filter) }
     }
 
     fun openDeleteFeed(feed: FeedSavedSearch) {
@@ -231,18 +319,14 @@ open class SourceFeedScreenModel(
         mutableState.update { it.copy(dialog = Dialog.AddFeed(feedId, name)) }
     }
 
-    fun openFailedToLoadSavedSearch() {
-        mutableState.update { it.copy(dialog = Dialog.FailedToLoadSavedSearch) }
-    }
-
     fun dismissDialog() {
         mutableState.update { it.copy(dialog = null) }
     }
 
     sealed class Dialog {
+        object Filter : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
         data class AddFeed(val feedId: Long, val name: String) : Dialog()
-        object FailedToLoadSavedSearch : Dialog()
     }
 
     override fun onDispose() {
@@ -256,10 +340,9 @@ data class SourceFeedState(
     val searchQuery: String? = null,
     val items: List<SourceFeedUI> = emptyList(),
     val filters: FilterList = FilterList(),
+    val savedSearches: List<EXHSavedSearch> = emptyList(),
     val dialog: SourceFeedScreenModel.Dialog? = null,
 ) {
-    val filterItems: List<IFlexible<*>> by lazy { filters.toItems() }
-
     val isLoading
         get() = items.isEmpty()
 }

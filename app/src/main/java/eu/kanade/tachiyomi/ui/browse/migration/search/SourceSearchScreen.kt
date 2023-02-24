@@ -3,12 +3,10 @@ package eu.kanade.tachiyomi.ui.browse.migration.search
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -36,7 +34,6 @@ data class SourceSearchScreen(
 
     @Composable
     override fun Content() {
-        val context = LocalContext.current
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
 
@@ -100,10 +97,6 @@ data class SourceSearchScreen(
                 onMangaClick = openMigrateDialog,
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
             )
-        }
-
-        LaunchedEffect(state.filters) {
-            screenModel.initFilterSheet(context, navigator)
         }
     }
 }

@@ -39,7 +39,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
-import eu.kanade.presentation.browse.components.FailedToLoadSavedSearchDialog
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
@@ -58,6 +57,8 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listi
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
+import eu.kanade.tachiyomi.util.system.toast
+import exh.md.follows.MangaDexFollowsScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -103,6 +104,10 @@ data class BrowseSourceScreen(
             }
         }
 
+        // SY -->
+        val context = LocalContext.current
+        // SY <--
+
         if (screenModel.source is SourceManager.StubSource) {
             MissingSourceScreen(
                 source = screenModel.source,
@@ -112,7 +117,6 @@ data class BrowseSourceScreen(
         }
 
         val scope = rememberCoroutineScope()
-        val context = LocalContext.current
         val haptic = LocalHapticFeedback.current
         val uriHandler = LocalUriHandler.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -195,7 +199,7 @@ data class BrowseSourceScreen(
                                 },
                             )
                         }
-                        /* SY --> if (state.filters.isNotEmpty())*/ run /* SY <-- */ {
+                        if (/* SY --> */ state.filterable /* SY <-- */) {
                             FilterChip(
                                 selected = state.listing is Listing.Search,
                                 onClick = screenModel::openFilterSheet,
@@ -264,7 +268,58 @@ data class BrowseSourceScreen(
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is BrowseSourceScreenModel.Dialog.Migrate -> {}
+            is BrowseSourceScreenModel.Dialog.Filter -> {
+                SourceFilterDialog(
+                    onDismissRequest = onDismissRequest,
+                    filters = state.filters,
+                    onReset = {
+                        screenModel.resetFilters()
+                    },
+                    onFilter = {
+                        screenModel.search(filters = state.filters)
+                        onDismissRequest()
+                    },
+                    onUpdate = {
+                        screenModel.setFilters(it)
+                    },
+                    // SY -->
+                    startExpanded = screenModel.startExpanded,
+                    onSave = {
+                        screenModel.onSaveSearch()
+                    },
+                    savedSearches = state.savedSearches,
+                    onSavedSearch = { search ->
+                        screenModel.onSavedSearch(search) {
+                            context.toast(it)
+                        }
+                    },
+                    onSavedSearchPress = {
+                        screenModel.onSavedSearchPress(it)
+                    },
+                    openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
+                        {
+                            screenModel.onMangaDexRandom {
+                                navigator.replace(
+                                    BrowseSourceScreen(
+                                        sourceId,
+                                        "id:$it",
+                                    ),
+                                )
+                            }
+                        }
+                    } else {
+                        null
+                    },
+                    openMangaDexFollows = if (screenModel.sourceIsMangaDex) {
+                        {
+                            navigator.replace(MangaDexFollowsScreen(sourceId))
+                        }
+                    } else {
+                        null
+                    },
+                    // SY <--
+                )
+            }
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
@@ -304,12 +359,7 @@ data class BrowseSourceScreen(
                     screenModel.deleteSearch(dialog.idToDelete)
                 },
             )
-            BrowseSourceScreenModel.Dialog.FailedToLoadSavedSearch -> FailedToLoadSavedSearchDialog(onDismissRequest)
             else -> {}
-        }
-
-        LaunchedEffect(state.filters) {
-            screenModel.initFilterSheet(context, navigator)
         }
 
         LaunchedEffect(Unit) {

@@ -84,7 +84,8 @@ fun SourceFeedScreen(
     name: String,
     isLoading: Boolean,
     items: List<SourceFeedUI>,
-    onFabClick: (() -> Unit)?,
+    hasFilters: Boolean,
+    onFabClick: () -> Unit,
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
@@ -107,8 +108,8 @@ fun SourceFeedScreen(
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(
-                isVisible = onFabClick != null,
-                onFabClick = onFabClick ?: {},
+                isVisible = hasFilters,
+                onFabClick = onFabClick,
             )
         },
     ) { paddingValues ->

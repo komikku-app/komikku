@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
-import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.runtime.Immutable
@@ -14,8 +13,6 @@ import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import cafe.adriel.voyager.navigator.Navigator
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.core.prefs.asState
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
@@ -33,6 +30,7 @@ import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
@@ -42,25 +40,11 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.ui.browse.source.filter.AutoComplete
-import eu.kanade.tachiyomi.ui.browse.source.filter.AutoCompleteSectionItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxSectionItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.GroupItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.HeaderItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.SelectItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.SelectSectionItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.SeparatorItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.SortGroup
-import eu.kanade.tachiyomi.ui.browse.source.filter.SortItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.TextItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.TextSectionItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.removeCovers
-import eu.kanade.tachiyomi.util.system.toast
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
+import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -132,6 +116,7 @@ open class BrowseSourceScreenModel(
 
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
+    uiPreferences: UiPreferences = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
     private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
@@ -148,7 +133,11 @@ open class BrowseSourceScreenModel(
     // SY -->
     val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
 
+    val startExpanded by uiPreferences.expandFilters().asState(coroutineScope)
+
     private val filterSerializer = FilterSerializer()
+
+    val sourceIsMangaDex = sourceId in mangaDexSourceIds
     // SY <--
 
     init {
@@ -189,21 +178,17 @@ open class BrowseSourceScreenModel(
 
         if (source is CatalogueSource) {
             getExhSavedSearch.subscribe(source.id, source::getFilterList)
+                .map { it.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name)) }
                 .onEach { savedSearches ->
                     mutableState.update { it.copy(savedSearches = savedSearches) }
-                    withUIContext {
+                    /*withUIContext {
                         filterSheet?.setSavedSearches(savedSearches)
-                    }
+                    }*/
                 }
                 .launchIn(coroutineScope)
         }
         // SY <--
     }
-
-    /**
-     * Sheet containing filter items.
-     */
-    private var filterSheet: SourceFilterSheet? = null
 
     /**
      * Flow of Pager flow tied to [State.listing]
@@ -263,6 +248,16 @@ open class BrowseSourceScreenModel(
 
     fun setListing(listing: Listing) {
         mutableState.update { it.copy(listing = listing) }
+    }
+
+    fun setFilters(filters: FilterList) {
+        if (source !is CatalogueSource) return
+
+        mutableState.update {
+            it.copy(
+                filters = filters,
+            )
+        }
     }
 
     fun search(query: String? = null, filters: FilterList? = null) {
@@ -450,7 +445,7 @@ open class BrowseSourceScreenModel(
         return getDuplicateLibraryManga.await(manga.title)
     }
 
-    fun moveMangaToCategories(manga: Manga, vararg categories: Category) {
+    private fun moveMangaToCategories(manga: Manga, vararg categories: Category) {
         moveMangaToCategories(manga, categories.filter { it.id != 0L }.map { it.id })
     }
 
@@ -464,7 +459,7 @@ open class BrowseSourceScreenModel(
     }
 
     fun openFilterSheet() {
-        filterSheet?.show()
+        setDialog(Dialog.Filter)
     }
 
     fun setDialog(dialog: Dialog?) {
@@ -473,66 +468,6 @@ open class BrowseSourceScreenModel(
 
     fun setToolbarQuery(query: String?) {
         mutableState.update { it.copy(toolbarQuery = query) }
-    }
-
-    open fun initFilterSheet(context: Context, navigator: Navigator) {
-        source as? CatalogueSource ?: return
-        val state = state.value
-        /*if (state.filters.isEmpty()) {
-            return
-        }*/
-
-        filterSheet = SourceFilterSheet(
-            context = context,
-            // SY -->
-            navigator = navigator,
-            source = source,
-            searches = state.savedSearches,
-            // SY <--
-            onFilterClicked = { search(filters = state.filters) },
-            onResetClicked = {
-                resetFilters()
-                filterSheet?.setFilters(state.filterItems)
-            },
-            // EXH -->
-            onSaveClicked = {
-                coroutineScope.launchIO {
-                    val names = loadSearches().map { it.name }
-                    mutableState.update { it.copy(dialog = Dialog.CreateSavedSearch(names)) }
-                }
-            },
-            onSavedSearchClicked = { idOfSearch ->
-                coroutineScope.launchIO {
-                    val search = loadSearch(idOfSearch)
-
-                    if (search == null) {
-                        mutableState.update { it.copy(dialog = Dialog.FailedToLoadSavedSearch) }
-                        return@launchIO
-                    }
-
-                    if (search.filterList == null && state.filters.isNotEmpty()) {
-                        withUIContext {
-                            context.toast(R.string.save_search_invalid)
-                        }
-                        return@launchIO
-                    }
-
-                    val allDefault = search.filterList != null && state.filters == source.getFilterList()
-                    filterSheet?.dismiss()
-
-                    search(
-                        query = search.query,
-                        filters = if (allDefault) null else search.filterList,
-                    )
-                }
-            },
-            onSavedSearchDeleteClicked = { idToDelete, name ->
-                mutableState.update { it.copy(dialog = Dialog.DeleteSavedSearch(idToDelete, name)) }
-            },
-            // EXH <--
-        )
-
-        filterSheet?.setFilters(state.filterItems)
     }
 
     sealed class Listing(open val query: String?, open val filters: FilterList) {
@@ -552,6 +487,7 @@ open class BrowseSourceScreenModel(
     }
 
     sealed class Dialog {
+        object Filter : Dialog()
         data class RemoveManga(val manga: Manga) : Dialog()
         data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
         data class ChangeMangaCategory(
@@ -561,7 +497,6 @@ open class BrowseSourceScreenModel(
         data class Migrate(val newManga: Manga) : Dialog()
 
         // SY -->
-        object FailedToLoadSavedSearch : Dialog()
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog()
         data class CreateSavedSearch(val currentSavedSearches: List<String>) : Dialog()
         // SY <--
@@ -575,13 +510,46 @@ open class BrowseSourceScreenModel(
         val dialog: Dialog? = null,
         // SY -->
         val savedSearches: List<EXHSavedSearch> = emptyList(),
+        val filterable: Boolean = true,
         // SY <--
     ) {
-        val filterItems get() = filters.toItems()
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
 
     // EXH -->
+    fun onSaveSearch() {
+        coroutineScope.launchIO {
+            val names = state.value.savedSearches.map { it.name }
+            mutableState.update { it.copy(dialog = Dialog.CreateSavedSearch(names)) }
+        }
+    }
+
+    fun onSavedSearch(
+        search: EXHSavedSearch,
+        onToast: (Int) -> Unit,
+    ) {
+        coroutineScope.launchIO {
+            if (search.filterList == null && state.value.filters.isNotEmpty()) {
+                withUIContext {
+                    onToast(R.string.save_search_invalid)
+                }
+                return@launchIO
+            }
+
+            val allDefault = search.filterList != null && search.filterList == (source as? CatalogueSource)?.getFilterList()
+            setDialog(null)
+
+            search(
+                query = search.query,
+                filters = if (allDefault) null else search.filterList,
+            )
+        }
+    }
+
+    fun onSavedSearchPress(search: EXHSavedSearch) {
+        mutableState.update { it.copy(dialog = Dialog.DeleteSavedSearch(search.id, search.name)) }
+    }
+
     fun saveSearch(
         name: String,
     ) {
@@ -607,56 +575,12 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    suspend fun loadSearch(searchId: Long): EXHSavedSearch? {
-        if (source !is CatalogueSource) return null
-        return getExhSavedSearch.awaitOne(searchId, source::getFilterList)
-    }
-
-    suspend fun loadSearches(): List<EXHSavedSearch> {
-        if (source !is CatalogueSource) return emptyList()
-        return getExhSavedSearch.await(source.id, source::getFilterList)
-    }
-    // EXH <--
-}
-
-fun FilterList.toItems(): List<IFlexible<*>> {
-    return mapNotNull { filter ->
-        when (filter) {
-            // --> EXH
-            is SourceModelFilter.AutoComplete -> AutoComplete(filter)
-            // <-- EXH
-            is SourceModelFilter.Header -> HeaderItem(filter)
-            is SourceModelFilter.Separator -> SeparatorItem(filter)
-            is SourceModelFilter.CheckBox -> CheckboxItem(filter)
-            is SourceModelFilter.TriState -> TriStateItem(filter)
-            is SourceModelFilter.Text -> TextItem(filter)
-            is SourceModelFilter.Select<*> -> SelectItem(filter)
-            is SourceModelFilter.Group<*> -> {
-                val group = GroupItem(filter)
-                val subItems = filter.state.mapNotNull {
-                    when (it) {
-                        is SourceModelFilter.CheckBox -> CheckboxSectionItem(it)
-                        is SourceModelFilter.TriState -> TriStateSectionItem(it)
-                        is SourceModelFilter.Text -> TextSectionItem(it)
-                        is SourceModelFilter.Select<*> -> SelectSectionItem(it)
-                        // SY -->
-                        is SourceModelFilter.AutoComplete -> AutoCompleteSectionItem(it)
-                        // SY <--
-                        else -> null
-                    }
-                }
-                subItems.forEach { it.header = group }
-                group.subItems = subItems
-                group
-            }
-            is SourceModelFilter.Sort -> {
-                val group = SortGroup(filter)
-                val subItems = filter.values.map {
-                    SortItem(it, group)
-                }
-                group.subItems = subItems
-                group
-            }
+    fun onMangaDexRandom(onRandomFound: (String) -> Unit) {
+        coroutineScope.launchIO {
+            val random = source.getMainSource<MangaDex>()?.fetchRandomMangaUrl()
+                ?: return@launchIO
+            onRandomFound(random)
         }
     }
+    // EXH <--
 }

@@ -52,26 +52,6 @@ fun RemoveMangaDialog(
 }
 
 @Composable
-fun FailedToLoadSavedSearchDialog(
-    onDismissRequest: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(android.R.string.ok))
-            }
-        },
-        title = {
-            Text(text = stringResource(R.string.save_search_failed_to_load))
-        },
-        text = {
-            Text(text = stringResource(R.string.save_search_failed_to_load_message))
-        },
-    )
-}
-
-@Composable
 fun SavedSearchDeleteDialog(
     onDismissRequest: () -> Unit,
     name: String,
