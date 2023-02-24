@@ -54,6 +54,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.core.preference.getEnum
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
@@ -63,6 +64,7 @@ import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import uy.kohesive.injekt.Injekt
@@ -101,6 +103,7 @@ object EXHMigrations {
         libraryPreferences: LibraryPreferences,
         readerPreferences: ReaderPreferences,
         backupPreferences: BackupPreferences,
+        trackManager: TrackManager,
     ): Boolean {
         val lastVersionCode = preferenceStore.getInt("eh_last_version_code", 0)
         val oldVersion = lastVersionCode.get()
@@ -518,6 +521,29 @@ object EXHMigrations {
                     WorkManager.getInstance(context).cancelAllWorkByTag("ExtensionUpdate")
                     prefs.edit {
                         remove("automatic_ext_updates")
+                    }
+                    val prefKeys = listOf(
+                        "pref_filter_library_downloaded",
+                        "pref_filter_library_unread",
+                        "pref_filter_library_started",
+                        "pref_filter_library_bookmarked",
+                        "pref_filter_library_completed",
+                        "pref_filter_library_lewd",
+                    ) + trackManager.services.map { "pref_filter_library_tracked_${it.id}" }
+
+                    prefKeys.forEach { key ->
+                        val pref = preferenceStore.getInt(key, 0)
+                        prefs.edit {
+                            remove(key)
+
+                            val newValue = when (pref.get()) {
+                                1 -> TriStateFilter.ENABLED_IS
+                                2 -> TriStateFilter.ENABLED_NOT
+                                else -> TriStateFilter.DISABLED
+                            }
+
+                            preferenceStore.getEnum("${key}_v2", TriStateFilter.DISABLED).set(newValue)
+                        }
                     }
                 }
 
