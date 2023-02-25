@@ -51,22 +51,18 @@ class DownloadManager(
     val queue: DownloadQueue
         get() = downloader.queue
 
-    /**
-     * Tells the downloader to begin downloads.
-     *
-     * @return true if it's started, false otherwise (empty queue).
-     */
-    fun startDownloads(): Boolean {
-        return downloader.start()
-    }
+    // For use by DownloadService only
+    fun downloaderStart() = downloader.start()
+    fun downloaderStop(reason: String? = null) = downloader.stop(reason)
+
+    val isDownloaderRunning
+        get() = DownloadService.isRunning
 
     /**
-     * Tells the downloader to stop downloads.
-     *
-     * @param reason an optional reason for being stopped, used to notify the user.
+     * Tells the downloader to begin downloads.
      */
-    fun stopDownloads(reason: String? = null) {
-        downloader.stop(reason)
+    fun startDownloads() {
+        DownloadService.start(context)
     }
 
     /**
@@ -74,6 +70,7 @@ class DownloadManager(
      */
     fun pauseDownloads() {
         downloader.pause()
+        DownloadService.stop(context)
     }
 
     /**
@@ -81,6 +78,7 @@ class DownloadManager(
      */
     fun clearQueue() {
         downloader.clearQueue()
+        DownloadService.stop(context)
     }
 
     /**
