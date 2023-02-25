@@ -113,6 +113,7 @@ import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.TriStateFilter
+import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import uy.kohesive.injekt.Injekt
@@ -1575,27 +1576,9 @@ sealed class MangaScreenState {
             val downloadedFilter = manga.downloadedFilter
             val bookmarkedFilter = manga.bookmarkedFilter
             return asSequence()
-                .filter { (chapter) ->
-                    when (unreadFilter) {
-                        TriStateFilter.DISABLED -> true
-                        TriStateFilter.ENABLED_IS -> !chapter.read
-                        TriStateFilter.ENABLED_NOT -> chapter.read
-                    }
-                }
-                .filter { (chapter) ->
-                    when (bookmarkedFilter) {
-                        TriStateFilter.DISABLED -> true
-                        TriStateFilter.ENABLED_IS -> chapter.bookmark
-                        TriStateFilter.ENABLED_NOT -> !chapter.bookmark
-                    }
-                }
-                .filter {
-                    when (downloadedFilter) {
-                        TriStateFilter.DISABLED -> true
-                        TriStateFilter.ENABLED_IS -> it.isDownloaded || isLocalManga
-                        TriStateFilter.ENABLED_NOT -> !it.isDownloaded && !isLocalManga
-                    }
-                }
+                .filter { (chapter) -> applyFilter(unreadFilter) { !chapter.read } }
+                .filter { (chapter) -> applyFilter(bookmarkedFilter) { chapter.bookmark } }
+                .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
                 // SY -->
                 .filter { chapter ->
                     manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
