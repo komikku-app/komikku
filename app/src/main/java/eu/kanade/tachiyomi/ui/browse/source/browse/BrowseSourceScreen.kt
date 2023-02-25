@@ -277,7 +277,6 @@ data class BrowseSourceScreen(
                     },
                     onFilter = {
                         screenModel.search(filters = state.filters)
-                        onDismissRequest()
                     },
                     onUpdate = {
                         screenModel.setFilters(it)

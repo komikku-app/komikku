@@ -86,7 +86,10 @@ fun SourceFilterDialog(
                         )
                     }
                     // SY <--
-                    Button(onClick = onFilter) {
+                    Button(onClick = {
+                        onFilter()
+                        onDismissRequest()
+                    },) {
                         Text(stringResource(R.string.action_filter))
                     }
                 }
