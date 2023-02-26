@@ -51,7 +51,7 @@ fun List<ChapterItem>.applyFilters(manga: Manga): Sequence<ChapterItem> {
         .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
         // SY -->
         .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
+            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
         }
         // SY <--
         .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }

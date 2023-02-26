@@ -56,6 +56,10 @@ import tachiyomi.data.listOfStringsAdapter
 import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.source.local.image.AndroidLocalCoverManager
+import tachiyomi.source.local.image.LocalCoverManager
+import tachiyomi.source.local.io.AndroidLocalSourceFileSystem
+import tachiyomi.source.local.io.LocalSourceFileSystem
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingleton
@@ -148,6 +152,9 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { DelayedTrackingStore(app) }
 
         addSingletonFactory { ImageSaver(app) }
+
+        addSingletonFactory<LocalSourceFileSystem> { AndroidLocalSourceFileSystem(app) }
+        addSingletonFactory<LocalCoverManager> { AndroidLocalCoverManager(app, get()) }
 
         // SY -->
         addSingletonFactory { EHentaiUpdateHelper(app) }

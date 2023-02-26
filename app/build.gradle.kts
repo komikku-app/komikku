@@ -138,7 +138,9 @@ android {
 dependencies {
     implementation(project(":i18n"))
     implementation(project(":core"))
+    implementation(project(":core-metadata"))
     implementation(project(":source-api"))
+    implementation(project(":source-local"))
     implementation(project(":data"))
     implementation(project(":domain"))
     implementation(project(":presentation-core"))
@@ -198,7 +200,7 @@ dependencies {
     // TLS 1.3 support for Android < 10
     implementation(libs.conscrypt.android)
 
-    // Data serialization (JSON, protobuf)
+    // Data serialization (JSON, protobuf, xml)
     implementation(kotlinx.bundles.serialization)
 
     // HTML parser
@@ -221,9 +223,6 @@ dependencies {
         exclude(module = "image-decoder")
     }
     implementation(libs.image.decoder)
-
-    // Sort
-    implementation(libs.natural.comparator)
 
     // UI libraries
     implementation(libs.material)

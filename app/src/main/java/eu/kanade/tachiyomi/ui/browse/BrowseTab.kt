@@ -18,6 +18,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.core.prefs.asState
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.TabbedScreen
+import eu.kanade.presentation.extensions.RequestStoragePermission
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel

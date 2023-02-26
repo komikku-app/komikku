@@ -54,7 +54,6 @@ import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
-import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.isOnline
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
@@ -86,6 +85,7 @@ import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
@@ -989,7 +989,7 @@ class ReaderViewModel(
 
         viewModelScope.launchNonCancellable {
             val result = try {
-                manga.editCover(context, stream())
+                manga.editCover(Injekt.get(), stream())
                 if (manga.isLocal() || manga.favorite) {
                     SetAsCoverResult.Success
                 } else {

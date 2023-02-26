@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesState
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -43,6 +42,7 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.plus
+import tachiyomi.source.local.LocalSource
 
 @Composable
 fun SourcesScreen(

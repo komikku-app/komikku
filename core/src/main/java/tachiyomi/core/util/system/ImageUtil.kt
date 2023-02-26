@@ -1,6 +1,8 @@
-package eu.kanade.tachiyomi.util.system
+package tachiyomi.core.util.system
+
 import android.content.Context
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
@@ -22,7 +24,6 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hippo.unifile.UniFile
 import logcat.LogPriority
-import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.Format
 import tachiyomi.decoder.ImageDecoder
 import java.io.BufferedInputStream
@@ -669,3 +670,6 @@ object ImageUtil {
     private val Bitmap.rect: Rect
         get() = Rect(0, 0, width, height)
 }
+
+val getDisplayMaxHeightInPx: Int
+    get() = Resources.getSystem().displayMetrics.let { max(it.heightPixels, it.widthPixels) }
