@@ -36,15 +36,16 @@ fun BrowseSourceToolbar(
     navigateUp: () -> Unit,
     onWebViewClick: () -> Unit,
     onHelpClick: () -> Unit,
-    onSearch: (String) -> Unit,
-    // SY -->
     onSettingsClick: () -> Unit,
-    // SY <--
+    onSearch: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     // Avoid capturing unstable source in actions lambda
     val title = source?.name
     val isLocalSource = source is LocalSource
+    val isConfigurableSource = source?.anyIs<ConfigurableSource>() == true
+
+    var selectingDisplayMode by remember { mutableStateOf(false) }
 
     SearchToolbar(
         navigateUp = navigateUp,
@@ -54,9 +55,6 @@ fun BrowseSourceToolbar(
         onSearch = onSearch,
         onClickCloseSearch = navigateUp,
         actions = {
-            var selectingDisplayMode by remember { mutableStateOf(false) }
-            // SY -->
-            val isConfigurableSource = source?.anyIs<ConfigurableSource>() == true
             AppBarActions(
                 actions = listOfNotNull(
                     AppBar.Action(
@@ -91,17 +89,14 @@ fun BrowseSourceToolbar(
                             )
                         }
                     },
-                    if (isConfigurableSource) {
-                        AppBar.OverflowAction(
-                            title = stringResource(R.string.action_settings),
-                            onClick = onSettingsClick,
-                        )
-                    } else {
-                        null
-                    },
                     // SY <--
+                    AppBar.OverflowAction(
+                        title = stringResource(R.string.action_settings),
+                        onClick = onSettingsClick,
+                    ).takeIf { isConfigurableSource },
                 ),
             )
+
             DropdownMenu(
                 expanded = selectingDisplayMode,
                 onDismissRequest = { selectingDisplayMode = false },

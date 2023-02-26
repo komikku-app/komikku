@@ -149,10 +149,8 @@ data class BrowseSourceScreen(
                         navigateUp = navigateUp,
                         onWebViewClick = onWebViewClick,
                         onHelpClick = onHelpClick,
-                        onSearch = { screenModel.search(it) },
-                        // SY -->
                         onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
-                        // SY <--
+                        onSearch = { screenModel.search(it) },
                     )
 
                     Row(
