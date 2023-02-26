@@ -1,13 +1,13 @@
 package exh.md.similar
 
-import eu.kanade.data.source.NoResultsException
-import eu.kanade.data.source.SourcePagingSource
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import tachiyomi.data.source.NoResultsException
+import tachiyomi.data.source.SourcePagingSource
 import tachiyomi.domain.manga.model.Manga
 
 /**

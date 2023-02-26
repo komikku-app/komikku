@@ -1,6 +1,5 @@
 package exh.md.similar
 
-import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
@@ -10,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt

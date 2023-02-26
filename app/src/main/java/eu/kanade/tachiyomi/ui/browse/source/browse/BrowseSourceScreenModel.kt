@@ -13,7 +13,7 @@ import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import eu.kanade.core.prefs.asState
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -27,7 +27,6 @@ import eu.kanade.domain.source.interactor.DeleteSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.domain.source.interactor.InsertSavedSearch
-import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
@@ -73,6 +72,7 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
+import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category

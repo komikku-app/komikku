@@ -1,7 +1,7 @@
-package eu.kanade.data.source
+package tachiyomi.data.source
 
+import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.withIOContext
+
+typealias SourcePagingSourceType = PagingSource<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */>
 
 abstract class SourcePagingSource(
     protected open val source: CatalogueSource,

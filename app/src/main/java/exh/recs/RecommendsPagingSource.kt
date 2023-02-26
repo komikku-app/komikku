@@ -1,7 +1,5 @@
 package exh.recs
 
-import eu.kanade.data.source.NoResultsException
-import eu.kanade.data.source.SourcePagingSource
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -28,6 +26,8 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.util.system.logcat
+import tachiyomi.data.source.NoResultsException
+import tachiyomi.data.source.SourcePagingSource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.GetTracks
 import uy.kohesive.injekt.Injekt

@@ -1,10 +1,10 @@
 package exh.recs
 
-import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import kotlinx.coroutines.runBlocking
+import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.domain.manga.interactor.GetManga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

@@ -10,8 +10,8 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import eu.kanade.core.prefs.PreferenceMutableState
-import eu.kanade.core.prefs.asState
+import eu.kanade.core.preference.PreferenceMutableState
+import eu.kanade.core.preference.asState
 import eu.kanade.core.util.fastDistinctBy
 import eu.kanade.core.util.fastFilter
 import eu.kanade.core.util.fastFilterNot

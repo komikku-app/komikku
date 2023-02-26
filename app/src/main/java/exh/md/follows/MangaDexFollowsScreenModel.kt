@@ -1,6 +1,5 @@
 package exh.md.follows
 
-import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
@@ -9,6 +8,7 @@ import exh.source.getMainSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.domain.manga.model.Manga
 
 class MangaDexFollowsScreenModel(sourceId: Long) : BrowseSourceScreenModel(sourceId, null) {
