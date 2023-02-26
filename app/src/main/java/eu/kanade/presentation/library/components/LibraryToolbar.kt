@@ -37,6 +37,7 @@ fun LibraryToolbar(
     onClickInvertSelection: () -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
+    onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     // SY -->
     onClickSyncExh: (() -> Unit)?,
@@ -58,6 +59,7 @@ fun LibraryToolbar(
         onSearchQueryChange = onSearchQueryChange,
         onClickFilter = onClickFilter,
         onClickRefresh = onClickRefresh,
+        onClickGlobalUpdate = onClickGlobalUpdate,
         onClickOpenRandomManga = onClickOpenRandomManga,
         // SY -->
         onClickSyncExh = onClickSyncExh,
@@ -74,6 +76,7 @@ fun LibraryRegularToolbar(
     onSearchQueryChange: (String?) -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
+    onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     // SY -->
     onClickSyncExh: (() -> Unit)?,
@@ -110,6 +113,13 @@ fun LibraryRegularToolbar(
             OverflowMenu { closeMenu ->
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.pref_category_library_update)) },
+                    onClick = {
+                        onClickGlobalUpdate()
+                        closeMenu()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.action_update_category)) },
                     onClick = {
                         onClickRefresh()
                         closeMenu()

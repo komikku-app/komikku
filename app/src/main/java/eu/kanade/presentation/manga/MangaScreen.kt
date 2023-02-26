@@ -342,6 +342,7 @@ private fun MangaScreenSmallImpl(
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
                 onClickEditCategory = onEditCategoryClicked,
+                onClickRefresh = onRefresh,
                 onClickMigrate = onMigrateClicked,
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
@@ -638,6 +639,7 @@ fun MangaScreenLargeImpl(
                     onClickShare = onShareClicked,
                     onClickDownload = onDownloadActionClicked,
                     onClickEditCategory = onEditCategoryClicked,
+                    onClickRefresh = onRefresh,
                     onClickMigrate = onMigrateClicked,
                     // SY -->
                     onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },

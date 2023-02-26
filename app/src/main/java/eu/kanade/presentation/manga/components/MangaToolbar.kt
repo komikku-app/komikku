@@ -44,6 +44,7 @@ fun MangaToolbar(
     onClickShare: (() -> Unit)?,
     onClickDownload: ((DownloadAction) -> Unit)?,
     onClickEditCategory: (() -> Unit)?,
+    onClickRefresh: () -> Unit,
     onClickMigrate: (() -> Unit)?,
     // SY -->
     onClickEditInfo: (() -> Unit)?,
@@ -115,74 +116,79 @@ fun MangaToolbar(
                         Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
                     }
 
-                    if (listOfNotNull(onClickShare, onClickEditCategory, onClickMigrate, onClickEditInfo, onClickRecommend, onClickMergedSettings).isNotEmpty()) {
-                        OverflowMenu { closeMenu ->
-                            if (onClickEditCategory != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.action_edit_categories)) },
-                                    onClick = {
-                                        onClickEditCategory()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            if (onClickMigrate != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.action_migrate)) },
-                                    onClick = {
-                                        onClickMigrate()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            if (onClickShare != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.action_share)) },
-                                    onClick = {
-                                        onClickShare()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            // SY -->
-                            if (onClickMerge != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.merge)) },
-                                    onClick = {
-                                        onClickMerge()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            if (onClickEditInfo != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.action_edit_info)) },
-                                    onClick = {
-                                        onClickEditInfo()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            if (onClickRecommend != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.az_recommends)) },
-                                    onClick = {
-                                        onClickRecommend()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            if (onClickMergedSettings != null) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(R.string.merge_settings)) },
-                                    onClick = {
-                                        onClickMergedSettings()
-                                        closeMenu()
-                                    },
-                                )
-                            }
-                            // SY <--
+                    OverflowMenu { closeMenu ->
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(R.string.action_webview_refresh)) },
+                            onClick = {
+                                onClickRefresh()
+                                closeMenu()
+                            },
+                        )
+                        if (onClickEditCategory != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.action_edit_categories)) },
+                                onClick = {
+                                    onClickEditCategory()
+                                    closeMenu()
+                                },
+                            )
                         }
+                        if (onClickMigrate != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.action_migrate)) },
+                                onClick = {
+                                    onClickMigrate()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        if (onClickShare != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.action_share)) },
+                                onClick = {
+                                    onClickShare()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        // SY -->
+                        if (onClickMerge != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.merge)) },
+                                onClick = {
+                                    onClickMerge()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        if (onClickEditInfo != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.action_edit_info)) },
+                                onClick = {
+                                    onClickEditInfo()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        if (onClickRecommend != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.az_recommends)) },
+                                onClick = {
+                                    onClickRecommend()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        if (onClickMergedSettings != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.merge_settings)) },
+                                onClick = {
+                                    onClickMergedSettings()
+                                    closeMenu()
+                                },
+                            )
+                        }
+                        // SY <--
                     }
                 }
             },
