@@ -857,7 +857,7 @@ class MangaInfoScreenModel(
         val mergedIds = if (isMergedSource) successState?.mergedData?.manga?.keys.orEmpty() else emptySet()
         // SY <--
         coroutineScope.launchIO {
-            downloadManager.queue.statusFlow()
+            downloadManager.statusFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
@@ -868,7 +868,7 @@ class MangaInfoScreenModel(
         }
 
         coroutineScope.launchIO {
-            downloadManager.queue.progressFlow()
+            downloadManager.progressFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {

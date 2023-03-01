@@ -12,7 +12,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.download.model.Download
-import eu.kanade.tachiyomi.data.download.model.DownloadQueue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.source.SourceManager
@@ -28,12 +27,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import nl.adaptivity.xmlutil.serialization.XML
@@ -62,7 +64,7 @@ import java.util.zip.ZipOutputStream
 /**
  * This class is the one in charge of downloading chapters.
  *
- * Its [queue] contains the list of chapters to download. In order to download them, the downloader
+ * Its queue contains the list of chapters to download. In order to download them, the downloader
  * subscription must be running and the list of chapters must be sent to them by [downloadsRelay].
  *
  * The queue manipulation must be done in one thread (currently the main thread) to avoid unexpected
@@ -94,7 +96,8 @@ class Downloader(
     /**
      * Queue where active downloads are kept.
      */
-    val queue = DownloadQueue(store)
+    val _queueState = MutableStateFlow<List<Download>>(emptyList())
+    val queueState = _queueState.asStateFlow()
 
     /**
      * Notifier for the downloader state and progress.
@@ -126,7 +129,7 @@ class Downloader(
     init {
         launchNow {
             val chapters = async { store.restore() }
-            queue.addAll(chapters.await())
+            addAllToQueue(chapters.await())
         }
     }
 
@@ -137,13 +140,13 @@ class Downloader(
      * @return true if the downloader is started, false otherwise.
      */
     fun start(): Boolean {
-        if (subscription != null || queue.isEmpty()) {
+        if (subscription != null || queueState.value.isEmpty()) {
             return false
         }
 
         initializeSubscription()
 
-        val pending = queue.filter { it.status != Download.State.DOWNLOADED }
+        val pending = queueState.value.filter { it: Download -> it.status != Download.State.DOWNLOADED }
         pending.forEach { if (it.status != Download.State.QUEUE) it.status = Download.State.QUEUE }
 
         isPaused = false
@@ -157,7 +160,7 @@ class Downloader(
      */
     fun stop(reason: String? = null) {
         destroySubscription()
-        queue
+        queueState.value
             .filter { it.status == Download.State.DOWNLOADING }
             .forEach { it.status = Download.State.ERROR }
 
@@ -166,7 +169,7 @@ class Downloader(
             return
         }
 
-        if (isPaused && queue.isNotEmpty()) {
+        if (isPaused && queueState.value.isNotEmpty()) {
             notifier.onPaused()
         } else {
             notifier.onComplete()
@@ -185,7 +188,7 @@ class Downloader(
      */
     fun pause() {
         destroySubscription()
-        queue
+        queueState.value
             .filter { it.status == Download.State.DOWNLOADING }
             .forEach { it.status = Download.State.QUEUE }
         isPaused = true
@@ -197,7 +200,7 @@ class Downloader(
     fun clearQueue() {
         destroySubscription()
 
-        queue.clear()
+        _clearQueue()
         notifier.dismissProgress()
     }
 
@@ -256,7 +259,7 @@ class Downloader(
         }
 
         val source = sourceManager.get(manga.source) as? HttpSource ?: return@launchIO
-        val wasEmpty = queue.isEmpty()
+        val wasEmpty = queueState.value.isEmpty()
         // Called in background thread, the operation can be slow with SAF.
         val chaptersWithoutDir = async {
             chapters
@@ -269,12 +272,12 @@ class Downloader(
         // Runs in main thread (synchronization needed).
         val chaptersToQueue = chaptersWithoutDir.await()
             // Filter out those already enqueued.
-            .filter { chapter -> queue.none { it.chapter.id == chapter.id } }
+            .filter { chapter -> queueState.value.none { it: Download -> it.chapter.id == chapter.id } }
             // Create a download for each one.
             .map { Download(source, manga, it) }
 
         if (chaptersToQueue.isNotEmpty()) {
-            queue.addAll(chaptersToQueue)
+            addAllToQueue(chaptersToQueue)
 
             if (isRunning) {
                 // Send the list of downloads to the downloader.
@@ -283,8 +286,8 @@ class Downloader(
 
             // Start downloader if needed
             if (autoStart && wasEmpty) {
-                val queuedDownloads = queue.count { it.source !is UnmeteredSource }
-                val maxDownloadsFromSource = queue
+                val queuedDownloads = queueState.value.count { it: Download -> it.source !is UnmeteredSource }
+                val maxDownloadsFromSource = queueState.value
                     .groupBy { it.source }
                     .filterKeys { it !is UnmeteredSource }
                     .maxOfOrNull { it.value.size }
@@ -648,7 +651,7 @@ class Downloader(
         // Delete successful downloads from queue
         if (download.status == Download.State.DOWNLOADED) {
             // Remove downloaded chapter from queue
-            queue.remove(download)
+            removeFromQueue(download)
         }
         if (areAllDownloadsFinished()) {
             stop()
@@ -659,7 +662,67 @@ class Downloader(
      * Returns true if all the queued downloads are in DOWNLOADED or ERROR state.
      */
     private fun areAllDownloadsFinished(): Boolean {
-        return queue.none { it.status.value <= Download.State.DOWNLOADING.value }
+        return queueState.value.none { it: Download -> it.status.value <= Download.State.DOWNLOADING.value }
+    }
+
+    fun addAllToQueue(downloads: List<Download>) {
+        _queueState.update {
+            downloads.forEach { download ->
+                download.status = Download.State.QUEUE
+            }
+            store.addAll(downloads)
+            it + downloads
+        }
+    }
+
+    fun removeFromQueue(download: Download) {
+        _queueState.update {
+            store.remove(download)
+            if (download.status == Download.State.DOWNLOADING || download.status == Download.State.QUEUE) {
+                download.status = Download.State.NOT_DOWNLOADED
+            }
+            it - download
+        }
+    }
+
+    fun removeFromQueue(chapters: List<Chapter>) {
+        chapters.forEach { chapter ->
+            queueState.value.find { it.chapter.id == chapter.id }?.let { removeFromQueue(it) }
+        }
+    }
+
+    fun removeFromQueue(manga: Manga) {
+        queueState.value.filter { it.manga.id == manga.id }.forEach { removeFromQueue(it) }
+    }
+
+    fun _clearQueue() {
+        _queueState.update {
+            it.forEach { download ->
+                if (download.status == Download.State.DOWNLOADING || download.status == Download.State.QUEUE) {
+                    download.status = Download.State.NOT_DOWNLOADED
+                }
+            }
+            store.clear()
+            emptyList()
+        }
+    }
+
+    fun updateQueue(downloads: List<Download>) {
+        val wasRunning = isRunning
+
+        if (downloads.isEmpty()) {
+            clearQueue()
+            stop()
+            return
+        }
+
+        pause()
+        _clearQueue()
+        addAllToQueue(downloads)
+
+        if (wasRunning) {
+            start()
+        }
     }
 
     companion object {
