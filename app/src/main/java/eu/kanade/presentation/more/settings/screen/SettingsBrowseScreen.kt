@@ -12,7 +12,6 @@ import androidx.fragment.app.FragmentActivity
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
@@ -35,7 +34,6 @@ object SettingsBrowseScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
-        val preferences = remember { Injekt.get<BasePreferences>() }
         // SY -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }

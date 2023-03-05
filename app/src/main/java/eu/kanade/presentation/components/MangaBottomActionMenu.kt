@@ -260,7 +260,7 @@ fun LibraryBottomActionMenu(
             // SY -->
             val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null
             val configuration = LocalConfiguration.current
-            val moveMarkPrev = onDeleteClicked != null && remember { !configuration.isTabletUi() }
+            val moveMarkPrev = remember { !configuration.isTabletUi() }
             var overFlowOpen by remember { mutableStateOf(false) }
             // SY <--
             Row(
@@ -304,17 +304,15 @@ fun LibraryBottomActionMenu(
                     onClick = onDeleteClicked,
                 )
                 // SY -->
-                if (onMarkAsReadClicked != null) {
-                    Button(
-                        title = stringResource(R.string.action_mark_as_read),
-                        icon = Icons.Outlined.DoneAll,
-                        toConfirm = confirm[1],
-                        onLongClick = { onLongClickItem(1) },
-                        onClick = onMarkAsReadClicked,
-                    )
-                }
+                Button(
+                    title = stringResource(R.string.action_mark_as_read),
+                    icon = Icons.Outlined.DoneAll,
+                    toConfirm = confirm[1],
+                    onLongClick = { onLongClickItem(1) },
+                    onClick = onMarkAsReadClicked,
+                )
                 if (showOverflow) {
-                    if (!moveMarkPrev && onMarkAsUnreadClicked != null) {
+                    if (!moveMarkPrev) {
                         Button(
                             title = stringResource(R.string.action_mark_as_unread),
                             icon = Icons.Outlined.RemoveDone,
@@ -334,7 +332,7 @@ fun LibraryBottomActionMenu(
                         expanded = overFlowOpen,
                         onDismissRequest = { overFlowOpen = false },
                     ) {
-                        if (onMarkAsUnreadClicked != null && moveMarkPrev) {
+                        if (moveMarkPrev) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_mark_as_unread)) },
                                 onClick = onMarkAsUnreadClicked,
@@ -360,15 +358,13 @@ fun LibraryBottomActionMenu(
                         }
                     }
                 } else {
-                    if (onMarkAsUnreadClicked != null) {
-                        Button(
-                            title = stringResource(R.string.action_mark_as_unread),
-                            icon = Icons.Outlined.RemoveDone,
-                            toConfirm = confirm[2],
-                            onLongClick = { onLongClickItem(2) },
-                            onClick = onMarkAsUnreadClicked,
-                        )
-                    }
+                    Button(
+                        title = stringResource(R.string.action_mark_as_unread),
+                        icon = Icons.Outlined.RemoveDone,
+                        toConfirm = confirm[2],
+                        onLongClick = { onLongClickItem(2) },
+                        onClick = onMarkAsUnreadClicked,
+                    )
                     if (onClickMigrate != null) {
                         Button(
                             title = stringResource(R.string.migrate),

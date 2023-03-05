@@ -1,6 +1,5 @@
 package exh.metadata.sql.models
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,8 +18,4 @@ data class SearchMetadata(
 
     // The version of this metadata's extra. Used to track changes to the 'extra' field's schema
     val extraVersion: Int,
-) {
-    // Transient information attached to this piece of metadata, useful for caching
-
-    var transientCache: Map<String, @Contextual Any>? = null
-}
+)
