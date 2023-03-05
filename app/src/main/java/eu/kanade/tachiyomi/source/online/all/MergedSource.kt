@@ -6,7 +6,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -30,6 +29,7 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 
 class MergedSource : HttpSource() {

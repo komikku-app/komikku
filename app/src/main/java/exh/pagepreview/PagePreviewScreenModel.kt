@@ -8,7 +8,6 @@ import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -19,6 +18,7 @@ import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

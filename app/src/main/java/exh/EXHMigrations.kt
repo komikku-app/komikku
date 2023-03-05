@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -58,15 +57,16 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.category.categoryMapper
 import tachiyomi.data.chapter.chapterMapper
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.TriStateFilter
-import tachiyomi.domain.service.BackupPreferences
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

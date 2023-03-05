@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
-import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import exh.EXHMigrations
@@ -32,8 +32,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
-import tachiyomi.domain.service.BackupPreferences
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 
@@ -84,7 +85,7 @@ object DebugFunctions {
     }
     private val throttleManager = EHentaiThrottleManager()
 
-    fun getDelegatedSourceList(): String = SourceManager.currentDelegatedSources.map { it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory }.joinToString(separator = "\n")
+    fun getDelegatedSourceList(): String = AndroidSourceManager.currentDelegatedSources.map { it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory }.joinToString(separator = "\n")
 
     fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()

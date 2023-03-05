@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.source.SourceManager
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceAdapter(

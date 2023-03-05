@@ -3,7 +3,6 @@ package exh.ui.metadata
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

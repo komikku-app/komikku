@@ -22,7 +22,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.source.getMainSource
@@ -54,6 +53,7 @@ import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer

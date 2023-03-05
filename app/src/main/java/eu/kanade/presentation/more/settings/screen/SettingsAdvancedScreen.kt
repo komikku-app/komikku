@@ -67,7 +67,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_NJALLA
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
-import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
@@ -90,6 +90,7 @@ import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.manga.repository.MangaRepository
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -693,7 +694,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(
                         R.string.toggle_delegated_sources_summary,
                         stringResource(R.string.app_name),
-                        SourceManager.DELEGATED_SOURCES.values.map { it.sourceName }.distinct()
+                        AndroidSourceManager.DELEGATED_SOURCES.values.map { it.sourceName }.distinct()
                             .joinToString(),
                     ),
                 ),

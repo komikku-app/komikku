@@ -19,7 +19,6 @@ import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -49,6 +48,7 @@ import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer

@@ -6,10 +6,10 @@ import coil.transform.RoundedCornersTransformation
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
@@ -15,6 +14,8 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.source.model.StubSource
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.io.Format
 
@@ -127,7 +128,7 @@ class ChapterLoader(
                     is Format.Epub -> EpubPageLoader(format.file)
                 }
             }
-            source is SourceManager.StubSource -> throw source.getSourceNotInstalledException()
+            source is StubSource -> error(context.getString(R.string.source_not_installed, source.toString()))
             else -> error(context.getString(R.string.loader_not_implemented_error))
         }
     }

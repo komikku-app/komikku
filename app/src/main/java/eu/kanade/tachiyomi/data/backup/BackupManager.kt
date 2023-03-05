@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.data.backup.models.backupTrackMapper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.hasPermission
@@ -59,6 +58,7 @@ import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.manga.mangaMapper
 import tachiyomi.data.manga.mergedMangaReferenceMapper
 import tachiyomi.data.updateStrategyAdapter
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.history.model.HistoryUpdate
@@ -66,7 +66,7 @@ import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.model.CustomMangaInfo
-import tachiyomi.domain.service.BackupPreferences
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.FileOutputStream

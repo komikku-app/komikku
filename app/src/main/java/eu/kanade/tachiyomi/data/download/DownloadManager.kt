@@ -5,7 +5,6 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import exh.log.xLogE
@@ -25,6 +24,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

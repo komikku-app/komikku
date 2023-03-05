@@ -60,7 +60,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -128,6 +127,7 @@ import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.max

@@ -6,7 +6,6 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

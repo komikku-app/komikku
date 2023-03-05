@@ -8,9 +8,9 @@ import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
-import eu.kanade.tachiyomi.source.SourceManager
 import exh.log.xLogD
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {

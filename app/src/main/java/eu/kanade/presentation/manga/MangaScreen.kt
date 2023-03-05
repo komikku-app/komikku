@@ -62,7 +62,6 @@ import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -91,6 +90,7 @@ import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
@@ -423,7 +423,7 @@ private fun MangaScreenSmallImpl(
                             author = state.manga.author,
                             artist = state.manga.artist,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
-                            isStubSource = remember { state.source is SourceManager.StubSource },
+                            isStubSource = remember { state.source is StubSource },
                             coverDataProvider = { state.manga },
                             status = state.manga.status,
                             onCoverClick = onCoverClicked,
@@ -709,7 +709,7 @@ fun MangaScreenLargeImpl(
                             author = state.manga.author,
                             artist = state.manga.artist,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
-                            isStubSource = remember { state.source is SourceManager.StubSource },
+                            isStubSource = remember { state.source is StubSource },
                             coverDataProvider = { state.manga },
                             status = state.manga.status,
                             onCoverClick = onCoverClicked,

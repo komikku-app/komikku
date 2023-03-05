@@ -1,7 +1,7 @@
 package exh.source
 
+import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -38,21 +38,21 @@ var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
 )
 
 fun handleSourceLibrary() {
-    metadataDelegatedSourceIds = SourceManager.currentDelegatedSources
+    metadataDelegatedSourceIds = AndroidSourceManager.currentDelegatedSources
         .filter {
             it.value.newSourceClass in DELEGATED_METADATA_SOURCES
         }
         .map { it.value.sourceId }
         .sorted()
 
-    nHentaiSourceIds = SourceManager.currentDelegatedSources
+    nHentaiSourceIds = AndroidSourceManager.currentDelegatedSources
         .filter {
             it.value.newSourceClass == NHentai::class
         }
         .map { it.value.sourceId }
         .sorted()
 
-    mangaDexSourceIds = SourceManager.currentDelegatedSources
+    mangaDexSourceIds = AndroidSourceManager.currentDelegatedSources
         .filter {
             it.value.newSourceClass == MangaDex::class
         }

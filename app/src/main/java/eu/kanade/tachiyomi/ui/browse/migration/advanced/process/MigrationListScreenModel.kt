@@ -14,7 +14,6 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
@@ -49,6 +48,7 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack

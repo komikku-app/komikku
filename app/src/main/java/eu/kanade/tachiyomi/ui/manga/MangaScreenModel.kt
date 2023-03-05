@@ -47,7 +47,6 @@ import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -113,6 +112,7 @@ import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.domain.manga.model.applyFilter
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.source.local.LocalSource

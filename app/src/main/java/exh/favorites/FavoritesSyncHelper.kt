@@ -9,7 +9,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
@@ -40,6 +39,7 @@ import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy

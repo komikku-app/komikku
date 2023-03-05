@@ -36,7 +36,6 @@ import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -84,6 +83,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.InsertTrack
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

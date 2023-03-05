@@ -2,9 +2,9 @@ package exh.util
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale

@@ -14,7 +14,6 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.PagePreviewSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import logcat.LogPriority
 import okhttp3.CacheControl
@@ -27,6 +26,7 @@ import okio.Source
 import okio.buffer
 import okio.sink
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 

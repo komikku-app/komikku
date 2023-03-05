@@ -41,7 +41,6 @@ import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
@@ -77,6 +76,7 @@ import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
