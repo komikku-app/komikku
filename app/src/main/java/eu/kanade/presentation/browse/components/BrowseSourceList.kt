@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
-import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaListItem
 import eu.kanade.tachiyomi.R
@@ -68,7 +67,7 @@ fun BrowseSourceList(
 }
 
 @Composable
-fun BrowseSourceListItem(
+private fun BrowseSourceListItem(
     manga: Manga,
     // SY -->
     metadata: RaisedSearchMetadata?,

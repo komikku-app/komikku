@@ -32,7 +32,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.library.model.LibraryGroup
 import eu.kanade.domain.manga.model.isLocal
-import eu.kanade.presentation.category.ChangeCategoryDialog
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.components.LibraryContent
