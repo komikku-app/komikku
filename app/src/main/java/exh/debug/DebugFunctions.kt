@@ -2,7 +2,6 @@ package exh.debug
 
 import android.app.Application
 import androidx.work.WorkManager
-import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
@@ -34,6 +33,7 @@ import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.interactor.GetFavorites
+import tachiyomi.domain.service.BackupPreferences
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 

@@ -6,7 +6,6 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
-import eu.kanade.domain.backup.service.BackupPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -65,6 +64,7 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.TriStateFilter
+import tachiyomi.domain.service.BackupPreferences
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import uy.kohesive.injekt.Injekt
