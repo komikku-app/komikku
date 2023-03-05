@@ -4,6 +4,7 @@ import eu.kanade.domain.source.repository.SourceRepository
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,7 @@ import tachiyomi.data.source.SourceLatestPagingSource
 import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.data.source.SourcePopularPagingSource
 import tachiyomi.data.source.SourceSearchPagingSource
+import tachiyomi.data.source.sourceMapper
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
 import tachiyomi.source.local.LocalSource
@@ -24,13 +26,19 @@ class SourceRepositoryImpl(
 
     override fun getSources(): Flow<List<Source>> {
         return sourceManager.catalogueSources.map { sources ->
-            sources.map(catalogueSourceMapper)
+            sources.map {
+                sourceMapper(it).copy(
+                    supportsLatest = it.supportsLatest,
+                )
+            }
         }
     }
 
     override fun getOnlineSources(): Flow<List<Source>> {
-        return sourceManager.onlineSources.map { sources ->
-            sources.map(sourceMapper)
+        return sourceManager.catalogueSources.map { sources ->
+            sources
+                .filterIsInstance<HttpSource>()
+                .map(sourceMapper)
         }
     }
 
@@ -40,8 +48,11 @@ class SourceRepositoryImpl(
             sourceIdsWithCount
                 .filterNot { it.source == LocalSource.ID /* SY --> */ || it.source == MERGED_SOURCE_ID /* SY <-- */ }
                 .map { (sourceId, count) ->
-                    val source = sourceMapper(sourceManager.getOrStub(sourceId))
-                    source to count
+                    val source = sourceManager.getOrStub(sourceId)
+                    val domainSource = sourceMapper(source).copy(
+                        isStub = source is SourceManager.StubSource,
+                    )
+                    domainSource to count
                 }
         }
     }
@@ -51,7 +62,10 @@ class SourceRepositoryImpl(
         return sourceIdWithNonLibraryManga.map { sourceId ->
             sourceId.map { (sourceId, count) ->
                 val source = sourceManager.getOrStub(sourceId)
-                SourceWithCount(sourceMapper(source), count)
+                val domainSource = sourceMapper(source).copy(
+                    isStub = source is SourceManager.StubSource,
+                )
+                SourceWithCount(domainSource, count)
             }
         }
     }
