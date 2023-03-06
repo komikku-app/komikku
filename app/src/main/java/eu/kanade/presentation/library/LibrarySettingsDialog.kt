@@ -310,7 +310,8 @@ private fun ColumnScope.GroupPage(
     screenModel: LibrarySettingsScreenModel,
     categories: List<Category>,
 ) {
-    val groups = remember(categories.isNotEmpty(), screenModel.trackServices) {
+    val realCategories = categories.filterNot { it.isSystemCategory }
+    val groups = remember(realCategories.isNotEmpty(), screenModel.trackServices) {
         buildList {
             add(LibraryGroup.BY_DEFAULT)
             add(LibraryGroup.BY_SOURCE)
@@ -318,13 +319,13 @@ private fun ColumnScope.GroupPage(
             if (screenModel.trackServices.isNotEmpty()) {
                 add(LibraryGroup.BY_TRACK_STATUS)
             }
-            if (categories.isNotEmpty()) {
+            if (realCategories.isNotEmpty()) {
                 add(LibraryGroup.UNGROUPED)
             }
         }.map {
             GroupMode(
                 it,
-                LibraryGroup.groupTypeStringRes(it, categories.isNotEmpty()),
+                LibraryGroup.groupTypeStringRes(it, realCategories.isNotEmpty()),
                 LibraryGroup.groupTypeDrawableRes(it),
             )
         }
