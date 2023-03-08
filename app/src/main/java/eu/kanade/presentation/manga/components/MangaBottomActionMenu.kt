@@ -294,7 +294,6 @@ fun LibraryBottomActionMenu(
                             expanded = downloadExpanded,
                             onDismissRequest = onDismissRequest,
                             onDownloadClicked = onDownloadClicked,
-                            includeDownloadAllOption = false,
                         )
                     }
                 }
