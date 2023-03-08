@@ -9,7 +9,6 @@ import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.track.store.DelayedTrackingStore
@@ -55,6 +54,7 @@ import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.image.LocalCoverManager

@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastForEach
-import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.components.TriStateItem
@@ -24,9 +22,11 @@ import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import kotlinx.coroutines.flow.map
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.display
 import tachiyomi.domain.library.model.sort
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
@@ -301,6 +301,16 @@ data class GroupMode(
     val drawableRes: Int,
 )
 
+private fun groupTypeDrawableRes(type: Int): Int {
+    return when (type) {
+        LibraryGroup.BY_STATUS -> R.drawable.ic_progress_clock_24dp
+        LibraryGroup.BY_TRACK_STATUS -> R.drawable.ic_sync_24dp
+        LibraryGroup.BY_SOURCE -> R.drawable.ic_browse_filled_24dp
+        LibraryGroup.UNGROUPED -> R.drawable.ic_ungroup_24dp
+        else -> R.drawable.ic_label_24dp
+    }
+}
+
 @Composable
 private fun ColumnScope.GroupPage(
     screenModel: LibrarySettingsScreenModel,
@@ -321,7 +331,7 @@ private fun ColumnScope.GroupPage(
             GroupMode(
                 it,
                 LibraryGroup.groupTypeStringRes(it, hasCategories),
-                LibraryGroup.groupTypeDrawableRes(it),
+                groupTypeDrawableRes(it),
             )
         }
     }

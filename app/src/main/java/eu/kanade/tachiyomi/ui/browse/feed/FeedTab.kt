@@ -11,7 +11,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
@@ -23,6 +22,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tachiyomi.domain.source.interactor.GetRemoteManga
 
 @Composable
 fun Screen.feedTab(): TabContent {

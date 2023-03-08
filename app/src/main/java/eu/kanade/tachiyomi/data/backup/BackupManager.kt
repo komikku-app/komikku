@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
@@ -62,6 +61,7 @@ import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo

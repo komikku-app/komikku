@@ -1,8 +1,8 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.library.service.LibraryPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tachiyomi.domain.library.service.LibraryPreferences
 
 class GetSortTag(private val preferences: LibraryPreferences) {
 

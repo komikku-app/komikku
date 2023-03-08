@@ -1,14 +1,10 @@
-package eu.kanade.domain.library.service
+package tachiyomi.domain.library.service
 
-import eu.kanade.domain.library.model.GroupLibraryMode
-import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
-import eu.kanade.tachiyomi.data.preference.MANGA_HAS_UNREAD
-import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
-import eu.kanade.tachiyomi.data.preference.MANGA_NON_READ
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.preference.getEnum
+import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.TriStateFilter
@@ -28,8 +24,20 @@ class LibraryPreferences(
     fun libraryUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 24)
     fun libraryUpdateLastTimestamp() = preferenceStore.getLong("library_update_last_timestamp", 0L)
 
-    fun libraryUpdateDeviceRestriction() = preferenceStore.getStringSet("library_update_restriction", setOf(DEVICE_ONLY_ON_WIFI))
-    fun libraryUpdateMangaRestriction() = preferenceStore.getStringSet("library_update_manga_restriction", setOf(MANGA_HAS_UNREAD, MANGA_NON_COMPLETED, MANGA_NON_READ))
+    fun libraryUpdateDeviceRestriction() = preferenceStore.getStringSet(
+        "library_update_restriction",
+        setOf(
+            DEVICE_ONLY_ON_WIFI,
+        ),
+    )
+    fun libraryUpdateMangaRestriction() = preferenceStore.getStringSet(
+        "library_update_manga_restriction",
+        setOf(
+            MANGA_HAS_UNREAD,
+            MANGA_NON_COMPLETED,
+            MANGA_NON_READ,
+        ),
+    )
 
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
 
@@ -125,4 +133,15 @@ class LibraryPreferences(
     fun groupLibraryBy() = preferenceStore.getInt("group_library_by", LibraryGroup.BY_DEFAULT)
 
     // SY <--
+
+    companion object {
+        const val DEVICE_ONLY_ON_WIFI = "wifi"
+        const val DEVICE_NETWORK_NOT_METERED = "network_not_metered"
+        const val DEVICE_CHARGING = "ac"
+        const val DEVICE_BATTERY_NOT_LOW = "battery_not_low"
+
+        const val MANGA_NON_COMPLETED = "manga_ongoing"
+        const val MANGA_HAS_UNREAD = "manga_fully_read"
+        const val MANGA_NON_READ = "manga_started"
+    }
 }

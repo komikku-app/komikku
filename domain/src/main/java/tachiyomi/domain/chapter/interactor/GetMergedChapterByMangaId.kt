@@ -1,6 +1,5 @@
-package eu.kanade.domain.chapter.interactor
+package tachiyomi.domain.chapter.interactor
 
-import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -9,6 +8,7 @@ import logcat.LogPriority
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.model.MergedMangaReference
 
 class GetMergedChapterByMangaId(

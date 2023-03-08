@@ -40,7 +40,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.Preference
@@ -89,6 +88,7 @@ import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt

@@ -6,8 +6,6 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
-import eu.kanade.domain.history.interactor.GetHistoryByMangaId
-import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
@@ -42,9 +40,11 @@ import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
+import tachiyomi.domain.history.interactor.GetHistoryByMangaId
 import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate

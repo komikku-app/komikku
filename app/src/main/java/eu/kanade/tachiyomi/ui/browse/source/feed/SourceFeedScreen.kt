@@ -9,7 +9,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
@@ -22,6 +21,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
 import exh.util.nullIfBlank
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {

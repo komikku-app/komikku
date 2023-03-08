@@ -20,9 +20,6 @@ import eu.kanade.core.util.fastPartition
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.SetReadStatus
-import eu.kanade.domain.history.interactor.GetNextChapters
-import eu.kanade.domain.library.model.LibraryGroup
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetSearchTags
@@ -88,10 +85,13 @@ import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.model.CustomMangaInfo

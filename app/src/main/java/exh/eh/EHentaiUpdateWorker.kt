@@ -19,8 +19,6 @@ import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
-import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
-import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import exh.debug.DebugToggles
@@ -35,6 +33,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt

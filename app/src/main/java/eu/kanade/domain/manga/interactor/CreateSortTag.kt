@@ -1,7 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.tachiyomi.util.preference.plusAssign
+import tachiyomi.domain.library.service.LibraryPreferences
 
 class CreateSortTag(
     private val preferences: LibraryPreferences,

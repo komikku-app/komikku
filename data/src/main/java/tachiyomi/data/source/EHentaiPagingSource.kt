@@ -1,15 +1,14 @@
-package eu.kanade.data.source
+package tachiyomi.data.source
 
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import tachiyomi.core.util.lang.awaitSingle
-import tachiyomi.data.source.SourcePagingSource
 
-abstract class EHentaiPagingSource(override val source: EHentai) : SourcePagingSource(source) {
+abstract class EHentaiPagingSource(override val source: CatalogueSource) : SourcePagingSource(source) {
 
     override fun getPageLoadResult(
         params: LoadParams<Long>,
@@ -27,19 +26,19 @@ abstract class EHentaiPagingSource(override val source: EHentai) : SourcePagingS
     }
 }
 
-class EHentaiSearchPagingSource(source: EHentai, val query: String, val filters: FilterList) : EHentaiPagingSource(source) {
+class EHentaiSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         return source.fetchSearchManga(currentPage, query, filters).awaitSingle()
     }
 }
 
-class EHentaiPopularPagingSource(source: EHentai) : EHentaiPagingSource(source) {
+class EHentaiPopularPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         return source.fetchPopularManga(currentPage).awaitSingle()
     }
 }
 
-class EHentaiLatestPagingSource(source: EHentai) : EHentaiPagingSource(source) {
+class EHentaiLatestPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         return source.fetchLatestUpdates(currentPage).awaitSingle()
     }

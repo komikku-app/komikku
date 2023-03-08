@@ -1,4 +1,4 @@
-package eu.kanade.domain.library.model
+package tachiyomi.domain.library.model
 
 enum class GroupLibraryMode {
     GLOBAL,

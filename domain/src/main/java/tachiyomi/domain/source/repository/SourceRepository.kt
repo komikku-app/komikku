@@ -1,10 +1,14 @@
-package eu.kanade.domain.source.repository
+package tachiyomi.domain.source.repository
 
+import androidx.paging.PagingSource
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.SManga
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.coroutines.flow.Flow
-import tachiyomi.data.source.SourcePagingSourceType
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
+
+typealias SourcePagingSourceType = PagingSource<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */>
 
 interface SourceRepository {
 

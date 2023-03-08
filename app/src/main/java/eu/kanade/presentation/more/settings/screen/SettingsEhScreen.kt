@@ -54,8 +54,6 @@ import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
-import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiUpdateWorker
@@ -71,6 +69,8 @@ import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration

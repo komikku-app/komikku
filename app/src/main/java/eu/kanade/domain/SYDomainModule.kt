@@ -3,8 +3,6 @@ package eu.kanade.domain
 import android.app.Application
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.GetChapterByUrl
-import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
-import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.manga.interactor.CreateSortTag
 import eu.kanade.domain.manga.interactor.DeleteByMergeId
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
@@ -20,7 +18,6 @@ import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedMangaForDownloading
-import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.GetSearchTags
@@ -63,8 +60,11 @@ import tachiyomi.data.manga.MangaMergeRepositoryImpl
 import tachiyomi.data.manga.MangaMetadataRepositoryImpl
 import tachiyomi.data.source.FeedSavedSearchRepositoryImpl
 import tachiyomi.data.source.SavedSearchRepositoryImpl
+import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.history.interactor.GetHistoryByMangaId
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.repository.CustomMangaRepository
 import tachiyomi.domain.manga.repository.FavoritesEntryRepository

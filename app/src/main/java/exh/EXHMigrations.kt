@@ -8,7 +8,6 @@ import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.DeleteChapters
-import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -21,7 +20,6 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
@@ -60,6 +58,8 @@ import tachiyomi.data.chapter.chapterMapper
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
+import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
