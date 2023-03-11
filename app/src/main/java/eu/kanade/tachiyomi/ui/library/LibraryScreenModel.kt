@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.library
 
+import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -903,6 +904,7 @@ class LibraryScreenModel(
         val manga = libraryManga.manga
         val sourceIdString = manga.source.takeUnless { it == LocalSource.ID }?.toString()
         val genre = if (checkGenre) manga.genre.orEmpty() else emptyList()
+        val context = Injekt.get<Application>()
         return queries.all { queryComponent ->
             when (queryComponent.excluded) {
                 false -> when (queryComponent) {
@@ -914,7 +916,7 @@ class LibraryScreenModel(
                             (manga.description?.contains(query, true) == true) ||
                             (source?.name?.contains(query, true) == true) ||
                             (sourceIdString != null && sourceIdString == query) ||
-                            (loggedInTrackServices.isNotEmpty() && tracks != null && filterTracks(query, tracks)) ||
+                            (loggedInTrackServices.isNotEmpty() && tracks != null && filterTracks(query, tracks, context)) ||
                             (genre.fastAny { it.contains(query, true) }) ||
                             (searchTags?.fastAny { it.name.contains(query, true) } == true) ||
                             (searchTitles?.fastAny { it.title.contains(query, true) } == true)
@@ -938,7 +940,7 @@ class LibraryScreenModel(
                                 (manga.description?.contains(query, true) != true) &&
                                 (source?.name?.contains(query, true) != true) &&
                                 (sourceIdString != null && sourceIdString != query) &&
-                                (loggedInTrackServices.isEmpty() || tracks == null || !filterTracks(query, tracks)) &&
+                                (loggedInTrackServices.isEmpty() || tracks == null || !filterTracks(query, tracks, context)) &&
                                 (!genre.fastAny { it.contains(query, true) }) &&
                                 (searchTags?.fastAny { it.name.contains(query, true) } != true) &&
                                 (searchTitles?.fastAny { it.title.contains(query, true) } != true)
@@ -964,13 +966,15 @@ class LibraryScreenModel(
         }
     }
 
-    private fun filterTracks(constraint: String, tracks: List<Track>): Boolean {
-        return tracks.fastAny {
-            val trackService = trackManager.getService(it.syncId)
+    private fun filterTracks(constraint: String, tracks: List<Track>, context: Context): Boolean {
+        return tracks.fastAny { track ->
+            val trackService = trackManager.getService(track.syncId)
             if (trackService != null) {
-                val status = trackService.getStatus(it.status.toInt())
-                val name = services[it.syncId]
-                status.contains(constraint, true) || name?.contains(constraint, true) == true
+                val status = trackService.getStatus(track.status.toInt())?.let {
+                    context.getString(it)
+                }
+                val name = services[track.syncId]
+                status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
             } else {
                 false
             }
