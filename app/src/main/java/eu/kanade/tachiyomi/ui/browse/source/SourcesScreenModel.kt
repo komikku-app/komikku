@@ -72,8 +72,12 @@ class SourcesScreenModel(
             .launchIn(coroutineScope)
 
         sourcePreferences.dataSaver().changes()
-            .onEach { enabled ->
-                mutableState.update { it.copy(dataSaverEnabled = enabled) }
+            .onEach {
+                mutableState.update {
+                    it.copy(
+                        dataSaverEnabled = (sourcePreferences.dataSaver().get()),
+                    )
+                }
             }
             .launchIn(coroutineScope)
         // SY <--
@@ -191,7 +195,7 @@ data class SourcesState(
     val categories: List<String> = emptyList(),
     val showPin: Boolean = true,
     val showLatest: Boolean = false,
-    val dataSaverEnabled: Boolean = false,
+    val dataSaverEnabled: Int = 0,
     // SY <--
 ) {
     val isEmpty = items.isEmpty()
