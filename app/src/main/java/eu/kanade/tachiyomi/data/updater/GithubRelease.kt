@@ -29,7 +29,7 @@ data class GithubRelease(
         }
 
         // SY <--
-        return assets.find { it.downloadLink.contains("TachiyomiSY$apkVariant-") }?.downloadLink
+        return assets.find { it.downloadLink.contains("TachiyomiSY$apkVariant") }?.downloadLink
             // SY -->
             ?: assets[0].downloadLink
     }
