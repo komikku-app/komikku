@@ -23,6 +23,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     NamespaceSource {
     override val metaClass = HBrowseSearchMetadata::class
+    override fun newMetaInstance() = HBrowseSearchMetadata()
     override val lang = "en"
 
     // Support direct URL importing

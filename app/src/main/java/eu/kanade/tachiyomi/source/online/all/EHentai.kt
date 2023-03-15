@@ -642,6 +642,8 @@ class EHentai(
      */
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
+    override fun newMetaInstance() = EHentaiSearchMetadata()
+
     override suspend fun parseIntoMetadata(metadata: EHentaiSearchMetadata, input: Document) {
         with(metadata) {
             with(input) {

@@ -33,10 +33,7 @@ class ApiMangaParser(
     /**
      * Use reflection to create a new instance of metadata
      */
-    private fun newMetaInstance() = metaClass.constructors.find {
-        it.parameters.isEmpty()
-    }?.call()
-        ?: error("Could not find no-args constructor for meta class: ${metaClass.qualifiedName}!")
+    private fun newMetaInstance() = MangaDexSearchMetadata()
 
     suspend fun parseToManga(
         manga: SManga,

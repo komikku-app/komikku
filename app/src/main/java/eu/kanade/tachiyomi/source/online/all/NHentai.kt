@@ -36,6 +36,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     NamespaceSource,
     PagePreviewSource {
     override val metaClass = NHentaiSearchMetadata::class
+    override fun newMetaInstance() = NHentaiSearchMetadata()
     override val lang = delegate.lang
 
     private val sourcePreferences: SharedPreferences by lazy {

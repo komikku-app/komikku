@@ -24,6 +24,7 @@ class EightMuses(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     NamespaceSource {
     override val metaClass = EightMusesSearchMetadata::class
+    override fun newMetaInstance() = EightMusesSearchMetadata()
     override val lang = "en"
 
     // Support direct URL importing

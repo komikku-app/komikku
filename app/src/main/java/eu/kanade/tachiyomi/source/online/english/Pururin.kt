@@ -36,6 +36,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
      * The class of the metadata used by this source
      */
     override val metaClass = PururinSearchMetadata::class
+    override fun newMetaInstance() = PururinSearchMetadata()
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {

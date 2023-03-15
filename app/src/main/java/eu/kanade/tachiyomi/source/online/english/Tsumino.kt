@@ -30,6 +30,7 @@ class Tsumino(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     NamespaceSource {
     override val metaClass = TsuminoSearchMetadata::class
+    override fun newMetaInstance() = TsuminoSearchMetadata()
     override val lang = "en"
 
     // Support direct URL importing

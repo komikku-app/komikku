@@ -213,6 +213,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     // MetadataSource methods
     override val metaClass: KClass<MangaDexSearchMetadata> = MangaDexSearchMetadata::class
 
+    override fun newMetaInstance() = MangaDexSearchMetadata()
+
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {
         apiMangaParser.parseIntoMetadata(metadata, input.first, input.second, input.third)
     }
