@@ -109,8 +109,8 @@ object LibraryTab : Tab {
                 group = state.groupType,
                 groupExtra = when (state.groupType) {
                     LibraryGroup.BY_DEFAULT -> null
-                    LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> it?.id?.toString()
-                    LibraryGroup.BY_STATUS -> it?.id?.minus(1)?.toString()
+                    LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
+                    LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
                     else -> null
                 },
             )
