@@ -615,6 +615,9 @@ class ReaderViewModel(
      * If incognito mode isn't on or has at least 1 tracker
      */
     private suspend fun saveChapterProgress(readerChapter: ReaderChapter) {
+        // SY -->
+        readerChapter.requestedPage = readerChapter.chapter.last_page_read
+        // SY <--
         if (!incognitoMode || hasTrackers) {
             val chapter = readerChapter.chapter
             getCurrentChapter()?.requestedPage = chapter.last_page_read
