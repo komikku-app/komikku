@@ -134,6 +134,7 @@ class ReaderReadingModeSettings @JvmOverloads constructor(context: Context, attr
         // SY -->
         binding.webtoonPrefsGroup.zoomOutWebtoon.bindToPreference(readerPreferences.webtoonEnableZoomOut())
         binding.webtoonPrefsGroup.cropBordersContinuousVertical.bindToPreference(readerPreferences.cropBordersContinuousVertical())
+        binding.webtoonPrefsGroup.smoothScrollWebtoon.bindToPreference(readerPreferences.smoothAutoScroll())
         binding.webtoonPrefsGroup.pageTransitionsWebtoon.bindToPreference(readerPreferences.pageTransitionsWebtoon())
         // SY <--
     }
