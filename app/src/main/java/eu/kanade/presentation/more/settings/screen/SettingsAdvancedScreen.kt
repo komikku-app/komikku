@@ -42,6 +42,7 @@ import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
@@ -604,31 +605,31 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(R.string.data_saver),
                     subtitle = stringResource(R.string.data_saver_summary),
                     entries = mapOf(
-                        0 to stringResource(R.string.disabled),
-                        1 to stringResource(R.string.bandwidth_hero),
-                        2 to stringResource(R.string.wsrv),
+                        DataSaver.NONE to stringResource(R.string.disabled),
+                        DataSaver.BANDWIDTH_HERO to stringResource(R.string.bandwidth_hero),
+                        DataSaver.WSRV_NL to stringResource(R.string.wsrv),
                     ),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = sourcePreferences.dataSaverServer(),
                     title = stringResource(R.string.bandwidth_data_saver_server),
                     subtitle = stringResource(R.string.data_saver_server_summary),
-                    enabled = (dataSaver == 1),
+                    enabled = dataSaver == DataSaver.BANDWIDTH_HERO,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverDownloader(),
                     title = stringResource(R.string.data_saver_downloader),
-                    enabled = (dataSaver != 0),
+                    enabled = dataSaver != DataSaver.NONE,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverIgnoreJpeg(),
                     title = stringResource(R.string.data_saver_ignore_jpeg),
-                    enabled = (dataSaver != 0),
+                    enabled = dataSaver != DataSaver.NONE,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverIgnoreGif(),
                     title = stringResource(R.string.data_saver_ignore_gif),
-                    enabled = (dataSaver != 0),
+                    enabled = dataSaver != DataSaver.NONE,
                 ),
                 Preference.PreferenceItem.ListPreference(
                     pref = sourcePreferences.dataSaverImageQuality(),
@@ -644,7 +645,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         "90%",
                         "95%",
                     ).associateBy { it.trimEnd('%').toInt() },
-                    enabled = (dataSaver != 0),
+                    enabled = dataSaver != DataSaver.NONE,
                 ),
                 kotlin.run {
                     val dataSaverImageFormatJpeg by sourcePreferences.dataSaverImageFormatJpeg().collectAsState()
@@ -656,13 +657,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                         } else {
                             stringResource(R.string.data_saver_image_format_summary_off)
                         },
-                        enabled = (dataSaver != 0),
+                        enabled = dataSaver != DataSaver.NONE,
                     )
                 },
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverColorBW(),
                     title = stringResource(R.string.data_saver_color_bw),
-                    enabled = (dataSaver == 1),
+                    enabled = dataSaver == DataSaver.BANDWIDTH_HERO,
                 ),
             ),
         )

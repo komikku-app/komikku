@@ -14,6 +14,7 @@ import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceUiModel
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +76,7 @@ class SourcesScreenModel(
             .onEach {
                 mutableState.update {
                     it.copy(
-                        dataSaverEnabled = (sourcePreferences.dataSaver().get()),
+                        dataSaverEnabled = sourcePreferences.dataSaver().get() != DataSaver.NONE,
                     )
                 }
             }
@@ -195,7 +196,7 @@ data class SourcesState(
     val categories: List<String> = emptyList(),
     val showPin: Boolean = true,
     val showLatest: Boolean = false,
-    val dataSaverEnabled: Int = 0,
+    val dataSaverEnabled: Boolean = false,
     // SY <--
 ) {
     val isEmpty = items.isEmpty()
