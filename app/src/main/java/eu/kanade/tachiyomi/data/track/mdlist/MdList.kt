@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.track.mdlist
 
-import android.content.Context
 import android.graphics.Color
 import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
