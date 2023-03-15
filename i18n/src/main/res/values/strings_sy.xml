@@ -253,6 +253,7 @@
     <string name="pref_left_handed_vertical_seekbar_summary">Switches which side the seekbar is on</string>
     <string name="pref_force_horz_seekbar">Force horizontal seekbar</string>
     <string name="pref_force_horz_seekbar_summary">Removes vertical seekbar entirely in favour of horizontal</string>
+    <string name="pref_smooth_scroll">Smooth Auto Scroll</string>
 
     <!-- Reader -->
     <!-- Reader Actions -->

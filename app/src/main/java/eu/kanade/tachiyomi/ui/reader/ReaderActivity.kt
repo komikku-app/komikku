@@ -807,12 +807,22 @@ class ReaderActivity : BaseActivity() {
                         repeatOnLifecycle(Lifecycle.State.STARTED) {
                             val interval = parsed.seconds
                             while (true) {
-                                delay(interval)
-                                viewer.let { v ->
-                                    when (v) {
-                                        is PagerViewer -> v.moveToNext()
-                                        is WebtoonViewer -> v.scrollDown()
+                                if (!binding.readerMenu.isVisible) {
+                                    viewer.let { v ->
+                                        when (v) {
+                                            is PagerViewer -> v.moveToNext()
+                                            is WebtoonViewer -> {
+                                                if (readerPreferences.smoothAutoScroll().get()) {
+                                                    v.linearScroll(interval)
+                                                } else {
+                                                    v.scrollDown()
+                                                }
+                                            }
+                                        }
                                     }
+                                    delay(interval)
+                                } else {
+                                    delay(100)
                                 }
                             }
                         }
