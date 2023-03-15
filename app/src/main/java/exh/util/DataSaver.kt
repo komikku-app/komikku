@@ -1,6 +1,9 @@
 package exh.util
 
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.source.service.SourcePreferences.DataSaver.BANDWIDTH_HERO
+import eu.kanade.domain.source.service.SourcePreferences.DataSaver.NONE
+import eu.kanade.domain.source.service.SourcePreferences.DataSaver.WSRV_NL
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -41,15 +44,18 @@ interface DataSaver {
 }
 
 fun DataSaver(source: Source, preferences: SourcePreferences): DataSaver {
-    return if (preferences.dataSaver().get() != 0 && source.id.toString() !in preferences.dataSaverExcludedSources().get()) {
-        return DataSaverImpl(preferences)
-    } else {
-        DataSaver.NoOp
+    val dataSaver = preferences.dataSaver().get()
+    if (dataSaver != NONE && source.id.toString() in preferences.dataSaverExcludedSources().get()) {
+        return DataSaver.NoOp
+    }
+    return when (dataSaver) {
+        NONE -> DataSaver.NoOp
+        BANDWIDTH_HERO -> BandwidthHeroDataSaver(preferences)
+        WSRV_NL -> WsrvNlDataSaver(preferences)
     }
 }
 
-private class DataSaverImpl(preferences: SourcePreferences) : DataSaver {
-    private val dataSaver = preferences.dataSaver().get()
+private class BandwidthHeroDataSaver(preferences: SourcePreferences) : DataSaver {
     private val dataSavedServer = preferences.dataSaverServer().get().trimEnd('/')
 
     private val ignoreJpg = preferences.dataSaverIgnoreJpeg().get()
@@ -60,7 +66,7 @@ private class DataSaverImpl(preferences: SourcePreferences) : DataSaver {
     private val colorBW = preferences.dataSaverColorBW().toIntRepresentation()
 
     override fun compress(imageUrl: String): String {
-        return if (dataSaver == 2 || (dataSaver == 1 && dataSavedServer.isNotBlank() && !imageUrl.contains(dataSavedServer))) {
+        return if (dataSavedServer.isNotBlank() && !imageUrl.contains(dataSavedServer)) {
             when {
                 imageUrl.contains(".jpeg", true) || imageUrl.contains(".jpg", true) -> if (ignoreJpg) imageUrl else getUrl(imageUrl)
                 imageUrl.contains(".gif", true) -> if (ignoreGif) imageUrl else getUrl(imageUrl)
@@ -72,28 +78,44 @@ private class DataSaverImpl(preferences: SourcePreferences) : DataSaver {
     }
 
     private fun getUrl(imageUrl: String): String {
-        if (dataSaver == 1) {
-            // Network Request sent for the Bandwidth Hero Proxy server
-            return "$dataSavedServer/?jpg=$format&l=$quality&bw=$colorBW&url=$imageUrl"
-        } else {
-            // Network Request sent to wsrv
-            if (imageUrl.contains(".webp", true) || imageUrl.contains(".gif", true)) {
-                if (format.toInt() == 0) {
-                    // Preserve output image extension for animated images(.webp and .gif)
-                    return "https://wsrv.nl/?url=$imageUrl&q=$quality&n=-1"
-                } else {
-                    // Do not preserve output Extension if User asked to convert into Jpeg
-                    return "https://wsrv.nl/?url=$imageUrl&output=jpg&q=$quality&n=-1"
-                }
-            } else {
-                if (format.toInt() == 1) {
-                    return "https://wsrv.nl/?url=$imageUrl&output=jpg&q=$quality"
-                } else {
-                    return "https://wsrv.nl/?url=$imageUrl&output=webp&q=$quality"
-                }
-            }
-        }
+        // Network Request sent for the Bandwidth Hero Proxy server
+        return "$dataSavedServer/?jpg=$format&l=$quality&bw=$colorBW&url=$imageUrl"
     }
 
     private fun Preference<Boolean>.toIntRepresentation() = if (get()) "1" else "0"
+}
+
+private class WsrvNlDataSaver(preferences: SourcePreferences) : DataSaver {
+    private val ignoreJpg = preferences.dataSaverIgnoreJpeg().get()
+    private val ignoreGif = preferences.dataSaverIgnoreGif().get()
+
+    private val format = preferences.dataSaverImageFormatJpeg().get()
+    private val quality = preferences.dataSaverImageQuality().get()
+
+    override fun compress(imageUrl: String): String {
+        return when {
+            imageUrl.contains(".jpeg", true) || imageUrl.contains(".jpg", true) -> if (ignoreJpg) imageUrl else getUrl(imageUrl)
+            imageUrl.contains(".gif", true) -> if (ignoreGif) imageUrl else getUrl(imageUrl)
+            else -> getUrl(imageUrl)
+        }
+    }
+
+    private fun getUrl(imageUrl: String): String {
+        // Network Request sent to wsrv
+        return "https://wsrv.nl/?url=$imageUrl" + if (imageUrl.contains(".webp", true) || imageUrl.contains(".gif", true)) {
+            if (!format) {
+                // Preserve output image extension for animated images(.webp and .gif)
+                "&q=$quality&n=-1"
+            } else {
+                // Do not preserve output Extension if User asked to convert into Jpeg
+                "&output=jpg&q=$quality&n=-1"
+            }
+        } else {
+            if (format) {
+                "&output=jpg&q=$quality"
+            } else {
+                "&output=webp&q=$quality"
+            }
+        }
+    }
 }

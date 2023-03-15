@@ -41,7 +41,7 @@ class SourcePreferences(
 
     fun sourcesTabSourcesInCategories() = preferenceStore.getStringSet("sources_tab_source_categories", mutableSetOf())
 
-    fun dataSaver() = preferenceStore.getInt("data_saver", 0)
+    fun dataSaver() = preferenceStore.getEnum("data_saver", DataSaver.NONE)
 
     fun dataSaverIgnoreJpeg() = preferenceStore.getBoolean("ignore_jpeg", false)
 
@@ -58,5 +58,11 @@ class SourcePreferences(
     fun dataSaverExcludedSources() = preferenceStore.getStringSet("data_saver_excluded", emptySet())
 
     fun dataSaverDownloader() = preferenceStore.getBoolean("data_saver_downloader", true)
+
+    enum class DataSaver {
+        NONE,
+        BANDWIDTH_HERO,
+        WSRV_NL,
+    }
     // SY <--
 }
