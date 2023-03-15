@@ -97,7 +97,7 @@ fun Screen.sourcesTab(
                         onClickToggleDataSaver = {
                             screenModel.toggleExcludeFromDataSaver(source)
                             screenModel.closeDialog()
-                        }.takeIf { state.dataSaverEnabled },
+                        }.takeIf { state.dataSaverEnabled != 0 },
                         onDismiss = screenModel::closeDialog,
                     )
                 }

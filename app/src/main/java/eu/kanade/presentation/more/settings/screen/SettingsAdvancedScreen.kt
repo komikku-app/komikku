@@ -599,31 +599,36 @@ object SettingsAdvancedScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = stringResource(R.string.data_saver),
             preferenceItems = listOf(
-                Preference.PreferenceItem.SwitchPreference(
+                Preference.PreferenceItem.ListPreference(
                     pref = sourcePreferences.dataSaver(),
                     title = stringResource(R.string.data_saver),
                     subtitle = stringResource(R.string.data_saver_summary),
+                    entries = mapOf(
+                        0 to stringResource(R.string.disabled),
+                        1 to stringResource(R.string.bandwidth_hero),
+                        2 to stringResource(R.string.wsrv),
+                    ),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = sourcePreferences.dataSaverServer(),
-                    title = stringResource(R.string.data_saver_server),
+                    title = stringResource(R.string.bandwidth_data_saver_server),
                     subtitle = stringResource(R.string.data_saver_server_summary),
-                    enabled = dataSaver,
+                    enabled = (dataSaver == 1),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverDownloader(),
                     title = stringResource(R.string.data_saver_downloader),
-                    enabled = dataSaver,
+                    enabled = (dataSaver != 0),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverIgnoreJpeg(),
                     title = stringResource(R.string.data_saver_ignore_jpeg),
-                    enabled = dataSaver,
+                    enabled = (dataSaver != 0),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverIgnoreGif(),
                     title = stringResource(R.string.data_saver_ignore_gif),
-                    enabled = dataSaver,
+                    enabled = (dataSaver != 0),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     pref = sourcePreferences.dataSaverImageQuality(),
@@ -639,7 +644,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         "90%",
                         "95%",
                     ).associateBy { it.trimEnd('%').toInt() },
-                    enabled = dataSaver,
+                    enabled = (dataSaver != 0),
                 ),
                 kotlin.run {
                     val dataSaverImageFormatJpeg by sourcePreferences.dataSaverImageFormatJpeg().collectAsState()
@@ -651,13 +656,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                         } else {
                             stringResource(R.string.data_saver_image_format_summary_off)
                         },
-                        enabled = dataSaver,
+                        enabled = (dataSaver != 0),
                     )
                 },
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.dataSaverColorBW(),
                     title = stringResource(R.string.data_saver_color_bw),
-                    enabled = dataSaver,
+                    enabled = (dataSaver == 1),
                 ),
             ),
         )

@@ -43,7 +43,7 @@ class SourcePreferences(
 
     fun sourcesTabSourcesInCategories() = preferenceStore.getStringSet("sources_tab_source_categories", mutableSetOf())
 
-    fun dataSaver() = preferenceStore.getBoolean("data_saver", false)
+    fun dataSaver() = preferenceStore.getInt("data_saver", 0)
 
     fun dataSaverIgnoreJpeg() = preferenceStore.getBoolean("ignore_jpeg", false)
 
