@@ -62,6 +62,14 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+-keep,includedescriptorclasses class tachiyomi.**$$serializer { *; }
+-keepclassmembers class tachiyomi.** {
+    *** Companion;
+}
+-keepclasseswithmembers class tachiyomi.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
 -keep,includedescriptorclasses class exh.**$$serializer { *; }
 -keepclassmembers class exh.** {
     *** Companion;
