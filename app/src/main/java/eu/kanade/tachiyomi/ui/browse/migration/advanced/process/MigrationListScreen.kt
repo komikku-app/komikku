@@ -73,6 +73,10 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                             } + MangaScreen(mangaId)
                             navigator replaceAll newStack.first()
                             navigator.push(newStack.drop(1))
+
+                            // need to set the navigator in a pop state to dispose of everything properly
+                            navigator.push(this@MigrationListScreen)
+                            navigator.pop()
                         } else {
                             navigator.pop()
                         }
