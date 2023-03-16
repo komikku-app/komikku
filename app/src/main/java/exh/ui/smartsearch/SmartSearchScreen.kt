@@ -49,7 +49,7 @@ class SmartSearchScreen(private val sourceId: Long, private val smartSearchConfi
                     } else {
                         context.toast(R.string.automatic_search_error)
                     }
-                    navigator.push(
+                    navigator.replace(
                         BrowseSourceScreen(
                             sourceId = screenModel.source.id,
                             listingQuery = smartSearchConfig.origTitle,
