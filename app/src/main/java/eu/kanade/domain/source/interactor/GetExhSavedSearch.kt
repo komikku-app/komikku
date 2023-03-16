@@ -2,6 +2,7 @@ package eu.kanade.domain.source.interactor
 
 import eu.kanade.tachiyomi.source.model.FilterList
 import exh.log.xLogE
+import exh.util.nullIfBlank
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -45,7 +46,7 @@ class GetExhSavedSearch(
         return EXHSavedSearch(
             id = search.id,
             name = search.name,
-            query = search.query.orEmpty(),
+            query = search.query?.nullIfBlank(),
             filterList = filters?.let { deserializeFilters(it, getFilterList) },
         )
     }

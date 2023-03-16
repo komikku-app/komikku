@@ -40,7 +40,6 @@ import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
-import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -166,7 +165,7 @@ open class BrowseSourceScreenModel(
         if (savedSearchFilters != null) {
             val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
             if (savedSearch != null) {
-                search(query = savedSearch.query.nullIfBlank(), filters = savedSearch.filterList)
+                search(query = savedSearch.query, filters = savedSearch.filterList)
             }
         } else if (jsonFilters != null) {
             runCatching {
@@ -181,9 +180,6 @@ open class BrowseSourceScreenModel(
                 .map { it.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name)) }
                 .onEach { savedSearches ->
                     mutableState.update { it.copy(savedSearches = savedSearches) }
-                    /*withUIContext {
-                        filterSheet?.setSavedSearches(savedSearches)
-                    }*/
                 }
                 .launchIn(coroutineScope)
         }
@@ -529,6 +525,8 @@ open class BrowseSourceScreenModel(
         onToast: (Int) -> Unit,
     ) {
         coroutineScope.launchIO {
+            if (source !is CatalogueSource) return@launchIO
+
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
                     onToast(R.string.save_search_invalid)
@@ -536,13 +534,20 @@ open class BrowseSourceScreenModel(
                 return@launchIO
             }
 
-            val allDefault = search.filterList != null && search.filterList == (source as? CatalogueSource)?.getFilterList()
+            val allDefault = search.filterList != null && search.filterList == source.getFilterList()
             setDialog(null)
 
-            search(
-                query = search.query,
-                filters = if (allDefault) null else search.filterList,
-            )
+            mutableState.update {
+                it.copy(
+                    listing = Listing.Search(
+                        query = search.query,
+                        filters = search.filterList
+                            ?.takeUnless { allDefault }
+                            ?: source.getFilterList(),
+                    ),
+                    toolbarQuery = search.query,
+                )
+            }
         }
     }
 
