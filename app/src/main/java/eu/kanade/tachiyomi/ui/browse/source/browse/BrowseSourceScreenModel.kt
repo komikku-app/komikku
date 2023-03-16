@@ -585,14 +585,16 @@ open class BrowseSourceScreenModel(
     ) {
         if (source !is CatalogueSource) return
         coroutineScope.launchNonCancellable {
-            val query = state.value.listing.query
+            val query = state.value.listing.query?.takeUnless {
+                it.isBlank() || it == GetRemoteManga.QUERY_POPULAR || it == GetRemoteManga.QUERY_LATEST
+            }?.trim()
             val filterList = state.value.listing.filters.ifEmpty { source.getFilterList() }
             insertSavedSearch.await(
                 SavedSearch(
                     id = -1,
                     source = source.id,
                     name = name.trim(),
-                    query = query?.nullIfBlank(),
+                    query = query,
                     filtersJson = runCatching { filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) } }.getOrNull(),
                 ),
             )
