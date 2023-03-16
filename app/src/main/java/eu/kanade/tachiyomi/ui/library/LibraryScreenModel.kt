@@ -1073,7 +1073,9 @@ class LibraryScreenModel(
             val mangaList = state.value.selection.map { it.manga }
 
             // Hide the default category because it has a different behavior than the ones from db.
-            val categories = state.value.categories.filter { it.id != 0L }
+            // SY -->
+            val categories = state.value.ogCategories.filter { it.id != 0L }
+            // SY <--
 
             // Get indexes of the common categories to preselect.
             val common = getCommonCategories(mangaList)
