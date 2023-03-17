@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.presentation.webview.EhLoginWebViewScreen
 import eu.kanade.presentation.webview.components.IgneousDialog
 import eu.kanade.tachiyomi.R
@@ -20,6 +19,7 @@ import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.log.xLogD
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
 import java.util.Locale

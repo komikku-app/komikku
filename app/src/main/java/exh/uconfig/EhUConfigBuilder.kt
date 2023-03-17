@@ -1,7 +1,7 @@
 package exh.uconfig
 
-import eu.kanade.domain.UnsortedPreferences
 import okhttp3.FormBody
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 

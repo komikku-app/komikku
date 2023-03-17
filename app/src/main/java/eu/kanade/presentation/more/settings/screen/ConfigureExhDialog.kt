@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogE
@@ -22,6 +21,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import tachiyomi.core.util.lang.launchUI
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.seconds

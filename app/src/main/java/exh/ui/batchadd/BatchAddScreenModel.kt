@@ -3,7 +3,6 @@ package exh.ui.batchadd
 import android.content.Context
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import exh.GalleryAddEvent
 import exh.GalleryAdder
@@ -15,6 +14,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

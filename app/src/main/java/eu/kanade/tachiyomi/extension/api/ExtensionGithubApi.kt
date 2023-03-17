@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.AvailableSources
@@ -20,6 +19,7 @@ import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 import kotlin.time.Duration.Companion.days

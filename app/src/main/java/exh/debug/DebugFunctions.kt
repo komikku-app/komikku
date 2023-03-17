@@ -3,11 +3,6 @@ package exh.debug
 import android.app.Application
 import androidx.work.WorkManager
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.manga.interactor.GetAllManga
-import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
-import eu.kanade.domain.manga.interactor.GetFlatMetadataById
-import eu.kanade.domain.manga.interactor.GetSearchMetadata
-import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
@@ -33,7 +28,12 @@ import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetAllManga
+import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFavorites
+import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.domain.manga.interactor.GetSearchMetadata
+import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID

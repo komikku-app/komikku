@@ -46,10 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.startActivity
-import eu.kanade.domain.UnsortedPreferences
-import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
-import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
-import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
@@ -69,8 +65,12 @@ import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
+import tachiyomi.domain.manga.interactor.DeleteFavoriteEntries
+import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
+import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration

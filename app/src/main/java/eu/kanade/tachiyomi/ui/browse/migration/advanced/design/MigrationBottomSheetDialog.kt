@@ -11,7 +11,6 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
@@ -19,6 +18,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.util.lang.toLong
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 
 class MigrationBottomSheetDialog(private val baseContext: Context, private val listener: StartMigrationListener) : BaseBottomSheetDialog(baseContext) {

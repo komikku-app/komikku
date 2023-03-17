@@ -1,7 +1,6 @@
 package exh.eh
 
 import android.content.Context
-import eu.kanade.domain.chapter.interactor.GetChapterByUrl
 import eu.kanade.domain.manga.interactor.UpdateManga
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -9,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChapterByUrl
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository

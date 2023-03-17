@@ -10,12 +10,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.domain.source.interactor.CountFeedSavedSearchGlobal
-import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
-import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
-import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
-import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
-import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -46,6 +40,12 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.toMangaUpdate
+import tachiyomi.domain.source.interactor.CountFeedSavedSearchGlobal
+import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
+import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
+import tachiyomi.domain.source.interactor.GetSavedSearchBySourceId
+import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
+import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager

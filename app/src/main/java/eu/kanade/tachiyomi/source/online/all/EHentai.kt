@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
@@ -85,6 +84,7 @@ import org.jsoup.nodes.TextNode
 import rx.Observable
 import tachiyomi.core.util.lang.runAsObservable
 import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream
 import java.io.IOException

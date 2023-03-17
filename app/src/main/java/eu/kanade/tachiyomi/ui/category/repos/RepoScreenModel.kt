@@ -5,14 +5,14 @@ import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.domain.source.interactor.CreateSourceRepo
-import eu.kanade.domain.source.interactor.DeleteSourceRepos
-import eu.kanade.domain.source.interactor.GetSourceRepos
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.domain.source.interactor.DeleteSourceRepos
+import tachiyomi.domain.source.interactor.GetSourceRepos
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

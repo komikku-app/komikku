@@ -1,7 +1,6 @@
 package exh.uconfig
 
 import android.content.Context
-import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -13,6 +12,7 @@ import exh.source.EXH_SOURCE_ID
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
