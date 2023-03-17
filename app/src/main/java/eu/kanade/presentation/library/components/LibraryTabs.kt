@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.category.visualName
 import tachiyomi.domain.category.model.Category
+import tachiyomi.presentation.core.components.PagerState
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.TabIndicator
 import tachiyomi.presentation.core.components.material.TabText
@@ -15,19 +16,18 @@ import tachiyomi.presentation.core.components.material.TabText
 @Composable
 internal fun LibraryTabs(
     categories: List<Category>,
-    currentPageIndex: Int,
+    pagerState: PagerState,
     getNumberOfMangaForCategory: (Category) -> Int?,
     onTabItemClick: (Int) -> Unit,
 ) {
     // SY -->
-    @Suppress("NAME_SHADOWING")
-    val currentPageIndex = currentPageIndex.coerceAtMost(categories.lastIndex)
+    val currentPageIndex = pagerState.currentPage.coerceAtMost(categories.lastIndex)
     // SY <--
     Column {
         ScrollableTabRow(
             selectedTabIndex = currentPageIndex,
             edgePadding = 0.dp,
-            indicator = { TabIndicator(it[currentPageIndex.coerceAtMost(categories.lastIndex)]) },
+            indicator = { TabIndicator(it[currentPageIndex], pagerState.currentPageOffsetFraction) },
             // TODO: use default when width is fixed upstream
             // https://issuetracker.google.com/issues/242879624
             divider = {},
