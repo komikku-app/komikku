@@ -24,6 +24,9 @@
     <string name="pref_ehentai_summary">Вход в E/ExHentai, синхронизация галерей</string>
     <string name="pref_mangadex_summary">Вход в MangaDex, синхронизация отслеживаемого</string>
 
+    <!-- About -->
+    <string name="changelog_version">Версия %1$s</string>
+
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Настройки учетной записи (E-Hentai)</string>
     <string name="enable_exhentai">Включить ExHentai</string>
@@ -143,7 +146,8 @@
     <string name="data_saver_image_format_summary_on">Размер файла JPEG значительно меньше, чем WebP(Это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ текущий момент сжимается в JPEG</string>
     <string name="data_saver_image_format_summary_off">Размер файла JPEG значительно меньше, чем WebP(Это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ текущий момент сжимается в WebP</string>
     <string name="data_saver_color_bw">Преобразование в чернобелое</string>
-    <string name="data_saver_server">Прокси-сервер Bandwidth Hero</string>
+    <string name="bandwidth_hero">Bandwidth Hero (Требуется прокси-сервер Bandwidth Hero)</string>
+    <string name="bandwidth_data_saver_server">Прокси-сервер Bandwidth Hero</string>
     <string name="data_saver_server_summary">Поместите в эту область URL-адрес прокси-сервера Bandwidth Hero</string>
     <string name="clear_db_exclude_read">Оставлять серии с прочитанными главами</string>
 
@@ -247,6 +251,7 @@
     <string name="pref_left_handed_vertical_seekbar_summary">Переключает положение полосы прокрутки</string>
     <string name="pref_force_horz_seekbar">Принудительная горизонтальная полоса прокрутки</string>
     <string name="pref_force_horz_seekbar_summary">Полностью убирает вертикальную полосу прокрутки в пользу горизонтальной</string>
+    <string name="pref_smooth_scroll">Плавная автопрокрутка</string>
 
     <!-- Reader -->
     <!-- Reader Actions -->
@@ -667,7 +672,7 @@
     <!-- Similar -->
     <string name="similar">Похожее на %1$s</string>
 
-    <!-- Mangadex relations-->
+    <!-- MangaDex relations-->
     <string name="relation_similar">Похожее</string>
     <string name="relation_monochrome">Монохром</string>
     <string name="relation_main_story">Главная история</string>
