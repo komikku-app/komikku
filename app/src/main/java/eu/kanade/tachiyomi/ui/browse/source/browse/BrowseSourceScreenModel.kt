@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -38,11 +37,14 @@ import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -72,7 +74,6 @@ import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
-import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
@@ -102,7 +103,6 @@ open class BrowseSourceScreenModel(
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getRemoteManga: GetRemoteManga = Injekt.get(),
-    private val getManga: GetManga = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
@@ -200,14 +200,18 @@ open class BrowseSourceScreenModel(
                 // SY <--
             }.flow.map { pagingData ->
                 pagingData
-                    .map { (it, metadata) -> withIOContext { networkToLocalManga.await(it.toDomainManga(sourceId)) } to metadata }
-                    .filter { (it) -> !sourcePreferences.hideInLibraryItems().get() || !it.favorite }
-                    .map { (dbManga, metadata) ->
-                        getManga.subscribe(dbManga.url, dbManga.source)
+                    .map { (it, metadata) ->
+                        flow {
+                            val localManga = withIOContext { networkToLocalManga.await(it.toDomainManga(sourceId)) }
+                            emit(localManga)
+                        }
                             .filterNotNull()
+                            .filter {
+                                !sourcePreferences.hideInLibraryItems().get() || !it.favorite
+                            }
                             .onEach(::initializeManga)
                             // SY -->
-                            .combineMetadata(dbManga, metadata)
+                            .combineMetadata(metadata)
                             // SY <--
                             .stateIn(coroutineScope)
                     }
@@ -227,11 +231,17 @@ open class BrowseSourceScreenModel(
     }
 
     // SY -->
-    open fun Flow<Manga>.combineMetadata(dbManga: Manga, metadata: RaisedSearchMetadata?): Flow<Pair<Manga, RaisedSearchMetadata?>> {
+    open fun Flow<Manga>.combineMetadata(metadata: RaisedSearchMetadata?): Flow<Pair<Manga, RaisedSearchMetadata?>> {
         val metadataSource = source.getMainSource<MetadataSource<*, *>>()
-        return combine(getFlatMetadataById.subscribe(dbManga.id)) { manga, flatMetadata ->
-            metadataSource ?: return@combine manga to metadata
-            manga to (flatMetadata?.raise(metadataSource.metaClass) ?: metadata)
+        return flatMapLatest { manga ->
+            if (metadataSource != null) {
+                getFlatMetadataById.subscribe(manga.id)
+                    .map { flatMetadata ->
+                        manga to (flatMetadata?.raise(metadataSource.metaClass) ?: metadata)
+                    }
+            } else {
+                flowOf(manga to null)
+            }
         }
     }
     // SY <--
