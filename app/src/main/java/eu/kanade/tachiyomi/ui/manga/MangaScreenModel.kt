@@ -20,7 +20,6 @@ import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
@@ -1381,10 +1380,9 @@ class MangaInfoScreenModel(
             getTracks.subscribe(manga.id)
                 .catch { logcat(LogPriority.ERROR, it) }
                 .map { tracks ->
-                    val dbTracks = tracks.map { it.toDbTrack() }
                     loggedServices
                         // Map to TrackItem
-                        .map { service -> TrackItem(dbTracks.find { it.sync_id.toLong() == service.id }, service) }
+                        .map { service -> TrackItem(tracks.find { it.syncId == service.id }, service) }
                         // Show only if the service supports this manga's source
                         .filter { (it.service as? EnhancedTrackService)?.accept(source!!) ?: true }
                 }
@@ -1422,7 +1420,7 @@ class MangaInfoScreenModel(
         val track = trackManager.mdList.createInitialTracker(state.manga, mdManga)
             .toDomainTrack(false)!!
         insertTrack.await(track)
-        return TrackItem(getTracks.await(mangaId).first { it.syncId == TrackManager.MDLIST }.toDbTrack(), trackManager.mdList)
+        return TrackItem(getTracks.await(mangaId).first { it.syncId == TrackManager.MDLIST }, trackManager.mdList)
     }
     // SY <--
 
@@ -1557,7 +1555,7 @@ sealed class MangaScreenState {
             get() = trackItems.isNotEmpty()
 
         val trackingCount: Int
-            get() = trackItems.count { it.track != null && ((it.service.id == TrackManager.MDLIST && it.track.status != FollowStatus.UNFOLLOWED.int) || it.service.id != TrackManager.MDLIST) }
+            get() = trackItems.count { it.track != null && ((it.service.id == TrackManager.MDLIST && it.track.status != FollowStatus.UNFOLLOWED.int.toLong()) || it.service.id != TrackManager.MDLIST) }
 
         /**
          * Applies the view filters to the list of chapters obtained from the database.

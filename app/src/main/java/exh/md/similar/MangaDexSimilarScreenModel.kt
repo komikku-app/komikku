@@ -27,7 +27,7 @@ class MangaDexSimilarScreenModel(
         return MangaDexSimilarPagingSource(manga, source.getMainSource() as MangaDex)
     }
 
-    override fun Flow<Manga>.combineMetadata(dbManga: Manga, metadata: RaisedSearchMetadata?): Flow<Pair<Manga, RaisedSearchMetadata?>> {
+    override fun Flow<Manga>.combineMetadata(metadata: RaisedSearchMetadata?): Flow<Pair<Manga, RaisedSearchMetadata?>> {
         return map { it to metadata }
     }
 

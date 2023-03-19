@@ -34,7 +34,6 @@ import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.getUriCompat
@@ -631,11 +630,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 val dbTracks = getTracks.await(manga.id)
 
                 // find the mdlist entry if its unfollowed the follow it
-                val tracker = TrackItem(dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }?.toDbTrack() ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)
+                var tracker = dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }
+                    ?: trackManager.mdList.createInitialTracker(manga).toDomainTrack(idRequired = false)
 
-                if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
-                    tracker.track.status = FollowStatus.READING.int
-                    val updatedTrack = tracker.service.update(tracker.track)
+                if (tracker?.status == FollowStatus.UNFOLLOWED.int.toLong()) {
+                    tracker = tracker.copy(
+                        status = FollowStatus.READING.int.toLong(),
+                    )
+                    val updatedTrack = trackManager.mdList.update(tracker.toDbTrack())
                     insertTrack.await(updatedTrack.toDomainTrack(false)!!)
                 }
             }

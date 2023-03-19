@@ -13,7 +13,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -59,6 +58,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_C
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMangaBySource
 import tachiyomi.domain.manga.interactor.InsertMergedReference
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.TriStateFilter
@@ -73,7 +73,6 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
-import tachiyomi.domain.manga.model.Manga as DomainManga
 
 object EXHMigrations {
     private val handler: DatabaseHandler by injectLazy()
@@ -558,28 +557,39 @@ object EXHMigrations {
         return false
     }
 
-    fun migrateBackupEntry(manga: Manga) {
-        if (manga.source == 6907L) {
-            // Migrate the old source to the delegated one
-            manga.source = NHentai.otherId
-            // Migrate nhentai URLs
-            manga.url = getUrlWithoutDomain(manga.url)
+    fun migrateBackupEntry(manga: Manga): Manga {
+        var newManga = manga
+        if (newManga.source == 6907L) {
+            newManga = newManga.copy(
+                // Migrate the old source to the delegated one
+                source = NHentai.otherId,
+                // Migrate nhentai URLs
+                url = getUrlWithoutDomain(newManga.url),
+            )
         }
 
         // Migrate Tsumino source IDs
-        if (manga.source == 6909L) {
-            manga.source = TSUMINO_SOURCE_ID
+        if (newManga.source == 6909L) {
+            newManga = newManga.copy(
+                source = TSUMINO_SOURCE_ID,
+            )
         }
 
-        if (manga.source == 6912L) {
-            manga.source = HBROWSE_SOURCE_ID
-            manga.url = manga.url + "/c00001/"
+        if (newManga.source == 6912L) {
+            newManga = newManga.copy(
+                source = HBROWSE_SOURCE_ID,
+                url = newManga.url + "/c00001/",
+            )
         }
 
         // Allow importing of EHentai extension backups
-        if (manga.source in BlacklistedSources.EHENTAI_EXT_SOURCES) {
-            manga.source = EH_SOURCE_ID
+        if (newManga.source in BlacklistedSources.EHENTAI_EXT_SOURCES) {
+            newManga = newManga.copy(
+                source = EH_SOURCE_ID,
+            )
         }
+
+        return newManga
     }
 
     private fun getUrlWithoutDomain(orig: String): String {
@@ -624,7 +634,7 @@ object EXHMigrations {
         }
     }
 
-    private fun readMangaConfig(manga: DomainManga): MangaConfig? {
+    private fun readMangaConfig(manga: Manga): MangaConfig? {
         return MangaConfig.readFromUrl(manga.url)
     }
 
@@ -650,7 +660,7 @@ object EXHMigrations {
         }
     }
 
-    private data class LoadedMangaSource(val source: Source, val manga: DomainManga)
+    private data class LoadedMangaSource(val source: Source, val manga: Manga)
 
     private fun updateSourceId(newId: Long, oldId: Long) {
         runBlocking {
