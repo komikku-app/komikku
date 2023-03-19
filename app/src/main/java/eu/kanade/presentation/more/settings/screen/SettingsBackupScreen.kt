@@ -41,9 +41,9 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupConst
-import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
+import eu.kanade.tachiyomi.data.backup.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
-import eu.kanade.tachiyomi.data.backup.BackupRestoreService
+import eu.kanade.tachiyomi.data.backup.BackupRestoreJob
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
@@ -93,7 +93,7 @@ object SettingsBackupScreen : SearchableSettings {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
                 )
-                BackupCreatorJob.startNow(context, it, flag)
+                BackupCreateJob.startNow(context, it, flag)
             }
             flag = 0
         }
@@ -119,7 +119,7 @@ object SettingsBackupScreen : SearchableSettings {
             subtitle = stringResource(R.string.pref_create_backup_summ),
             onClick = {
                 scope.launch {
-                    if (!BackupCreatorJob.isManualJobRunning(context)) {
+                    if (!BackupCreateJob.isManualJobRunning(context)) {
                         if (DeviceUtil.isMiui && DeviceUtil.isMiuiOptimizationDisabled()) {
                             context.toast(R.string.restore_miui_warning, Toast.LENGTH_LONG)
                         }
@@ -275,7 +275,7 @@ object SettingsBackupScreen : SearchableSettings {
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    BackupRestoreService.start(context, err.uri)
+                                    BackupRestoreJob.start(context, err.uri)
                                     onDismissRequest()
                                 },
                             ) {
@@ -305,7 +305,7 @@ object SettingsBackupScreen : SearchableSettings {
                 }
 
                 if (results.missingSources.isEmpty() && results.missingTrackers.isEmpty()) {
-                    BackupRestoreService.start(context, it)
+                    BackupRestoreJob.start(context, it)
                     return@rememberLauncherForActivityResult
                 }
 
@@ -317,7 +317,7 @@ object SettingsBackupScreen : SearchableSettings {
             title = stringResource(R.string.pref_restore_backup),
             subtitle = stringResource(R.string.pref_restore_backup_summ),
             onClick = {
-                if (!BackupRestoreService.isRunning(context)) {
+                if (!BackupRestoreJob.isRunning(context)) {
                     if (DeviceUtil.isMiui && DeviceUtil.isMiuiOptimizationDisabled()) {
                         context.toast(R.string.restore_miui_warning, Toast.LENGTH_LONG)
                     }
@@ -368,7 +368,7 @@ object SettingsBackupScreen : SearchableSettings {
                         168 to stringResource(R.string.update_weekly),
                     ),
                     onValueChanged = {
-                        BackupCreatorJob.setupTask(context, it)
+                        BackupCreateJob.setupTask(context, it)
                         true
                     },
                 ),

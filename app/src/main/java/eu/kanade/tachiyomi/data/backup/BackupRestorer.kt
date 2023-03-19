@@ -14,7 +14,8 @@ import eu.kanade.tachiyomi.util.BackupUtil
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
@@ -28,8 +29,6 @@ class BackupRestorer(
     private val context: Context,
     private val notifier: BackupNotifier,
 ) {
-
-    var job: Job? = null
 
     private var backupManager = BackupManager(context)
 
@@ -61,7 +60,7 @@ class BackupRestorer(
         return true
     }
 
-    fun writeErrorLog(): File {
+    private fun writeErrorLog(): File {
         try {
             if (errors.isNotEmpty()) {
                 val file = context.createFileInCacheDir("tachiyomi_restore.txt")
@@ -101,18 +100,19 @@ class BackupRestorer(
         val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
 
-        // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
-        backup.backupManga /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
-            if (job?.isActive != true) {
-                return false
+        return coroutineScope {
+            // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
+            backup.backupManga /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
+                if (!isActive) {
+                    return@coroutineScope false
+                }
+
+                restoreManga(it, backup.backupCategories)
             }
 
-            restoreManga(it, backup.backupCategories)
+            // TODO: optionally trigger online library + tracker update
+            true
         }
-
-        // TODO: optionally trigger online library + tracker update
-
-        return true
     }
 
     private suspend fun restoreCategories(backupCategories: List<BackupCategory>) {

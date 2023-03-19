@@ -12,7 +12,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
+import eu.kanade.tachiyomi.data.backup.BackupCreateJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -111,7 +111,7 @@ object EXHMigrations {
                 lastVersionCode.set(BuildConfig.VERSION_CODE)
 
                 LibraryUpdateJob.setupTask(context)
-                BackupCreatorJob.setupTask(context)
+                BackupCreateJob.setupTask(context)
                 EHentaiUpdateWorker.scheduleBackground(context)
 
                 // Fresh install
@@ -374,7 +374,7 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 30) {
-                    BackupCreatorJob.setupTask(context)
+                    BackupCreateJob.setupTask(context)
                 }
                 if (oldVersion under 31) {
                     runBlocking {
@@ -460,7 +460,7 @@ object EXHMigrations {
                     }
                     if (backupPreferences.backupInterval().get() == 0) {
                         backupPreferences.backupInterval().set(12)
-                        BackupCreatorJob.setupTask(context)
+                        BackupCreateJob.setupTask(context)
                     }
                 }
                 if (oldVersion under 41) {
