@@ -1,7 +1,6 @@
 package exh.debug
 
 import android.app.Application
-import androidx.work.WorkManager
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
@@ -14,6 +13,7 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.system.workManager
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
@@ -183,7 +183,7 @@ object DebugFunctions {
 
     fun listScheduledJobs() = app.jobScheduler.allPendingJobs.joinToString(",\n") { j ->
         val info = j.extras.getString("EXTRA_WORK_SPEC_ID")?.let {
-            WorkManager.getInstance(app).getWorkInfoById(UUID.fromString(it)).get()
+            app.workManager.getWorkInfoById(UUID.fromString(it)).get()
         }
 
         if (info != null) {

@@ -5,7 +5,6 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import androidx.work.WorkManager
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
@@ -24,6 +23,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
+import eu.kanade.tachiyomi.util.system.workManager
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.source.BlacklistedSources
@@ -516,8 +516,8 @@ object EXHMigrations {
                     LibraryUpdateJob.cancelAllWorks(context)
                     LibraryUpdateJob.setupTask(context)
                     // Removed background jobs
-                    WorkManager.getInstance(context).cancelAllWorkByTag("UpdateChecker")
-                    WorkManager.getInstance(context).cancelAllWorkByTag("ExtensionUpdate")
+                    context.workManager.cancelAllWorkByTag("UpdateChecker")
+                    context.workManager.cancelAllWorkByTag("ExtensionUpdate")
                     prefs.edit {
                         remove("automatic_ext_updates")
                     }

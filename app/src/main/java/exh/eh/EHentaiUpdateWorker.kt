@@ -7,7 +7,6 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
@@ -17,6 +16,7 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
+import eu.kanade.tachiyomi.util.system.workManager
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
@@ -232,7 +232,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         private val logger by lazy { XLog.tag("EHUpdaterScheduler") }
 
         fun launchBackgroundTest(context: Context) {
-            WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<EHentaiUpdateWorker>().build())
+            context.workManager.enqueue(OneTimeWorkRequestBuilder<EHentaiUpdateWorker>().build())
         }
 
         fun scheduleBackground(context: Context, prefInterval: Int? = null, prefRestrictions: Set<String>? = null) {
@@ -257,7 +257,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     .setConstraints(constraints)
                     .build()
 
-                WorkManager.getInstance(context).enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.UPDATE, request)
+                context.workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.UPDATE, request)
                 logger.d("Successfully scheduled background update job!")
             } else {
                 cancelBackground(context)
@@ -265,7 +265,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
 
         fun cancelBackground(context: Context) {
-            WorkManager.getInstance(context).cancelAllWorkByTag(TAG)
+            context.workManager.cancelAllWorkByTag(TAG)
         }
     }
 
