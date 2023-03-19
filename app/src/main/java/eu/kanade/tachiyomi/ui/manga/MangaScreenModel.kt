@@ -1517,6 +1517,14 @@ class MangaInfoScreenModel(
         }
     }
 
+    private val Throwable.snackbarMessage: String
+        get() = when (val className = this::class.simpleName) {
+            null -> message ?: ""
+            "SourceNotInstalledException" -> context.getString(R.string.loader_not_implemented_error)
+            "Exception", "HttpException", "IOException" -> message ?: className
+            else -> "$className: $message"
+        }
+
     // SY -->
     fun showEditMangaInfoDialog() {
         mutableState.update { state ->
@@ -1645,13 +1653,6 @@ val chapterDecimalFormat = DecimalFormat(
     DecimalFormatSymbols()
         .apply { decimalSeparator = '.' },
 )
-
-private val Throwable.snackbarMessage: String
-    get() = when (val className = this::class.simpleName) {
-        null -> message ?: ""
-        "Exception", "HttpException", "IOException", "SourceNotInstalledException" -> message ?: className
-        else -> "$className: $message"
-    }
 
 // SY -->
 sealed class PagePreviewState {
