@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package exh
 
 import android.content.Context
@@ -66,8 +64,6 @@ import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
@@ -208,7 +204,6 @@ object EXHMigrations {
                 }
                 if (oldVersion under 12) {
                     // Force MAL log out due to login flow change
-                    val trackManager = Injekt.get<TrackManager>()
                     trackManager.myAnimeList.logout()
                 }
                 if (oldVersion under 14) {
@@ -508,7 +503,6 @@ object EXHMigrations {
                 }
                 if (oldVersion under 45) {
                     // Force MangaDex log out due to login flow change
-                    val trackManager = Injekt.get<TrackManager>()
                     trackManager.mdList.logout()
                 }
                 if (oldVersion under 48) {

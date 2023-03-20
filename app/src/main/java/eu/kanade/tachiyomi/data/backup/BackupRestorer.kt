@@ -227,9 +227,9 @@ class BackupRestorer(
         backupManager.restoreHistory(history)
         backupManager.restoreTracking(manga, tracks)
         // SY -->
-        backupManager.restoreMergedMangaReferencesForManga(manga.id!!, mergedMangaReferences)
-        flatMetadata?.let { backupManager.restoreFlatMetadata(manga.id!!, it) }
-        backupManager.restoreEditedInfo(customManga?.copy(id = manga.id!!))
+        backupManager.restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
+        flatMetadata?.let { backupManager.restoreFlatMetadata(manga.id, it) }
+        backupManager.restoreEditedInfo(customManga?.copy(id = manga.id))
         // SY <--
     }
 
