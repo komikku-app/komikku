@@ -92,7 +92,7 @@ class DownloadManager(
      * @param chapterId the chapter to check.
      */
     fun getQueuedDownloadOrNull(chapterId: Long): Download? {
-        return queueState.value.find { it: Download -> it.chapter.id == chapterId }
+        return queueState.value.find { it.chapter.id == chapterId }
     }
 
     fun startDownloadNow(chapterId: Long?) {

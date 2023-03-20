@@ -5,7 +5,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import tachiyomi.domain.source.model.SourceData
 import tachiyomi.domain.source.model.StubSource
-import tachiyomi.source.local.LocalSource
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -59,7 +59,5 @@ private fun getMergedSourcesString(
     }
 }
 // SY <--
-
-fun Source.isLocal(): Boolean = id == LocalSource.ID
 
 fun Source.isLocalOrStub(): Boolean = isLocal() || this is StubSource

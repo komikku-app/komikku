@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import tachiyomi.core.preference.PreferenceStore
@@ -57,7 +56,7 @@ class ReaderPreferences(
 
     fun webtoonSidePadding() = preferenceStore.getInt("webtoon_side_padding", 0)
 
-    fun readerHideThreshold() = preferenceStore.getEnum("reader_hide_threshold", PreferenceValues.ReaderHideThreshold.LOW)
+    fun readerHideThreshold() = preferenceStore.getEnum("reader_hide_threshold", ReaderHideThreshold.LOW)
 
     fun folderPerManga() = preferenceStore.getBoolean("create_folder_per_manga", false)
 
@@ -111,9 +110,9 @@ class ReaderPreferences(
 
     fun navigationModeWebtoon() = preferenceStore.getInt("reader_navigation_mode_webtoon", 0)
 
-    fun pagerNavInverted() = preferenceStore.getEnum("reader_tapping_inverted", PreferenceValues.TappingInvertMode.NONE)
+    fun pagerNavInverted() = preferenceStore.getEnum("reader_tapping_inverted", TappingInvertMode.NONE)
 
-    fun webtoonNavInverted() = preferenceStore.getEnum("reader_tapping_inverted_webtoon", PreferenceValues.TappingInvertMode.NONE)
+    fun webtoonNavInverted() = preferenceStore.getEnum("reader_tapping_inverted_webtoon", TappingInvertMode.NONE)
 
     fun showNavigationOverlayNewUser() = preferenceStore.getBoolean("reader_navigation_overlay_new_user", true)
 
@@ -161,4 +160,18 @@ class ReaderPreferences(
 
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
     // SY <--
+
+    enum class TappingInvertMode(val shouldInvertHorizontal: Boolean = false, val shouldInvertVertical: Boolean = false) {
+        NONE,
+        HORIZONTAL(shouldInvertHorizontal = true),
+        VERTICAL(shouldInvertVertical = true),
+        BOTH(shouldInvertHorizontal = true, shouldInvertVertical = true),
+    }
+
+    enum class ReaderHideThreshold(val threshold: Int) {
+        HIGHEST(5),
+        HIGH(13),
+        LOW(31),
+        LOWEST(47),
+    }
 }
