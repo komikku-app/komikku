@@ -537,14 +537,17 @@ open class BrowseSourceScreenModel(
             val allDefault = search.filterList != null && search.filterList == source.getFilterList()
             setDialog(null)
 
+            val filters = search.filterList
+                ?.takeUnless { allDefault }
+                ?: source.getFilterList()
+
             mutableState.update {
                 it.copy(
                     listing = Listing.Search(
                         query = search.query,
-                        filters = search.filterList
-                            ?.takeUnless { allDefault }
-                            ?: source.getFilterList(),
+                        filters = filters,
                     ),
+                    filters = filters,
                     toolbarQuery = search.query,
                 )
             }

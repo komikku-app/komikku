@@ -20,13 +20,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
@@ -50,11 +48,6 @@ fun AutoCompleteItem(
     validPrefixes: List<String>,
     onChange: (List<String>) -> Unit,
 ) {
-    val newState = remember { state.toMutableStateList() }
-    DisposableEffect(newState) {
-        onChange(newState)
-        onDispose {}
-    }
     Column(
         Modifier.fillMaxWidth()
             .padding(
@@ -74,12 +67,12 @@ fun AutoCompleteItem(
                     tag
                 }
 
-                { it.contains(tagNoPrefix, true) }
+                Pair({ it.contains(tagNoPrefix, true) }, prefix)
             },
             onSubmit = { tag ->
                 val tagNoPrefix = validPrefixes.find { tag.startsWith(it) }?.let { tag.removePrefix(it).trim() } ?: tag
                 if (tagNoPrefix !in skipAutoFillTags) {
-                    newState += tag
+                    onChange(state + tag)
                     true
                 } else {
                     false
@@ -90,11 +83,11 @@ fun AutoCompleteItem(
             modifier = Modifier.padding(end = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            newState.forEach {
+            state.forEach {
                 InputChip(
                     selected = false,
                     onClick = {
-                        newState -= it
+                        onChange(state - it)
                     },
                     label = {
                         Text(
@@ -122,7 +115,7 @@ fun AutoCompleteTextField(
     label: String? = null,
     placeholder: String? = null,
     values: List<String>,
-    onValueFilter: ((String) -> ((String) -> Boolean)),
+    onValueFilter: ((String) -> (Pair<(String) -> Boolean, String?>)),
     onSubmit: (String) -> Boolean,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -173,8 +166,20 @@ fun AutoCompleteTextField(
 
         val filteredValues by produceState(emptyList(), value) {
             withContext(Dispatchers.Default) {
-                val filter = onValueFilter(value.text)
-                this@produceState.value = values.asSequence().filter(filter).take(100).toList()
+                val (filter, prefix) = onValueFilter(value.text)
+                this@produceState.value = values.asSequence()
+                    .filter(filter)
+                    .take(100)
+                    .let {
+                        if (prefix != null) {
+                            it.map { tag ->
+                                prefix + tag
+                            }
+                        } else {
+                            it
+                        }
+                    }
+                    .toList()
             }
         }
         if (value.text.length > 2 && filteredValues.isNotEmpty()) {
