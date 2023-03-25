@@ -78,6 +78,10 @@ class ReaderPreferences(
 
     fun dualPageInvertWebtoon() = preferenceStore.getBoolean("pref_dual_page_invert_webtoon", false)
 
+    fun dualPageRotateToFit() = preferenceStore.getBoolean("pref_dual_page_rotate", false)
+
+    fun dualPageRotateToFitInvert() = preferenceStore.getBoolean("pref_dual_page_rotate_invert", false)
+
     // endregion
 
     // region Color filter
