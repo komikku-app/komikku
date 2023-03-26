@@ -86,9 +86,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                             )
                         }
                     },
-                    onUpdate = {
-                        screenModel.setFilters(it)
-                    },
+                    onUpdate = screenModel::setFilters,
                     startExpanded = screenModel.startExpanded,
                     onSave = {},
                     savedSearches = state.savedSearches,

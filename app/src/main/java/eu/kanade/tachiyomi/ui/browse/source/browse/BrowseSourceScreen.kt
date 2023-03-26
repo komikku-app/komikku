@@ -150,7 +150,7 @@ data class BrowseSourceScreen(
                         onWebViewClick = onWebViewClick,
                         onHelpClick = onHelpClick,
                         onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
-                        onSearch = { screenModel.search(it) },
+                        onSearch = screenModel::search,
                     )
 
                     Row(
@@ -270,29 +270,19 @@ data class BrowseSourceScreen(
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
                     filters = state.filters,
-                    onReset = {
-                        screenModel.resetFilters()
-                    },
-                    onFilter = {
-                        screenModel.search(filters = state.filters)
-                    },
-                    onUpdate = {
-                        screenModel.setFilters(it)
-                    },
+                    onReset = screenModel::resetFilters,
+                    onFilter = { screenModel.search(filters = state.filters) },
+                    onUpdate = screenModel::setFilters,
                     // SY -->
                     startExpanded = screenModel.startExpanded,
-                    onSave = {
-                        screenModel.onSaveSearch()
-                    },
+                    onSave = screenModel::onSaveSearch,
                     savedSearches = state.savedSearches,
                     onSavedSearch = { search ->
                         screenModel.onSavedSearch(search) {
                             context.toast(it)
                         }
                     },
-                    onSavedSearchPress = {
-                        screenModel.onSavedSearchPress(it)
-                    },
+                    onSavedSearchPress = screenModel::onSavedSearchPress,
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {
                             screenModel.onMangaDexRandom {
