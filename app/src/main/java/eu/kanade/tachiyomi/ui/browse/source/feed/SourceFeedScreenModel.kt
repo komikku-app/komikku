@@ -9,9 +9,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toDomainManga
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
@@ -34,17 +32,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import logcat.LogPriority
 import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.lang.withUIContext
-import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
-import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchBySourceId
@@ -205,34 +199,10 @@ open class SourceFeedScreenModel(
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
                     if (manga == null) return@collectLatest
-                    withIOContext {
-                        initializeManga(manga)
-                    }
                     value = manga
                 }
         }
     }
-
-    /**
-     * Initialize a manga.
-     *
-     * @param manga to initialize.
-     */
-    private suspend fun initializeManga(manga: DomainManga) {
-        if (manga.thumbnailUrl != null || manga.initialized) return
-        withNonCancellableContext {
-            try {
-                val networkManga = source.getMangaDetails(manga.toSManga())
-                val updatedManga = manga.copyFrom(networkManga)
-                    .copy(initialized = true)
-
-                updateManga.await(updatedManga.toMangaUpdate())
-            } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e)
-            }
-        }
-    }
-
     private suspend fun loadSearches() =
         getExhSavedSearch.await(source.id, source::getFilterList)
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
