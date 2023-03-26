@@ -8,8 +8,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
-import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.notify
 import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
@@ -45,7 +45,7 @@ class CrashLogUtil(private val context: Context) {
     }
 
     private fun showNotification(uri: Uri) {
-        context.notificationManager.cancel(Notifications.ID_CRASH_LOGS)
+        context.cancelNotification(Notifications.ID_CRASH_LOGS)
 
         context.notify(
             Notifications.ID_CRASH_LOGS,
