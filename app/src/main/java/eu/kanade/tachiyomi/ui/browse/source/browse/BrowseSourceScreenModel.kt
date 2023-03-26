@@ -74,6 +74,7 @@ import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
@@ -108,6 +109,7 @@ open class BrowseSourceScreenModel(
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
@@ -199,15 +201,15 @@ open class BrowseSourceScreenModel(
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
             }.flow.map { pagingData ->
-                pagingData
-                    .map { (it, metadata) ->
-                        flow {
-                            val localManga = withIOContext { networkToLocalManga.await(it.toDomainManga(sourceId)) }
-                            emit(localManga)
-                        }
+                pagingData.map { (it, metadata) ->
+                    withIOContext {
+                        networkToLocalManga.await(it.toDomainManga(sourceId))
+                            .let { localManga ->
+                                getManga.subscribe(localManga.url, localManga.source)
+                            }
                             .filterNotNull()
-                            .filter {
-                                !sourcePreferences.hideInLibraryItems().get() || !it.favorite
+                            .filter { localManga ->
+                                !sourcePreferences.hideInLibraryItems().get() || !localManga.favorite
                             }
                             .onEach(::initializeManga)
                             // SY -->
@@ -215,6 +217,7 @@ open class BrowseSourceScreenModel(
                             // SY <--
                             .stateIn(coroutineScope)
                     }
+                }
             }
                 .cachedIn(coroutineScope)
         }
