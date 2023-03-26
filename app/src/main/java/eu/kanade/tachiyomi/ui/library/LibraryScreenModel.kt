@@ -36,7 +36,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
-import eu.kanade.tachiyomi.util.preference.asHotFlow
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
@@ -259,11 +258,13 @@ class LibraryScreenModel(
             }
             .launchIn(coroutineScope)
 
-        libraryPreferences.groupLibraryBy().asHotFlow {
-            mutableState.update { state ->
-                state.copy(groupType = it)
+        libraryPreferences.groupLibraryBy().changes()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(groupType = it)
+                }
             }
-        }.launchIn(coroutineScope)
+            .launchIn(coroutineScope)
         // SY <--
     }
 
