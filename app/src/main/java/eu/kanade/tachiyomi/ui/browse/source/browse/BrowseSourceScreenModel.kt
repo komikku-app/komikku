@@ -58,7 +58,6 @@ import tachiyomi.core.preference.CheckboxState
 import tachiyomi.core.preference.mapAsCheckboxState
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
-import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
@@ -198,20 +197,18 @@ open class BrowseSourceScreenModel(
                 // SY <--
             }.flow.map { pagingData ->
                 pagingData.map { (it, metadata) ->
-                    withIOContext {
-                        networkToLocalManga.await(it.toDomainManga(sourceId))
-                            .let { localManga ->
-                                getManga.subscribe(localManga.url, localManga.source)
-                            }
-                            .filterNotNull()
-                            .filter { localManga ->
-                                !sourcePreferences.hideInLibraryItems().get() || !localManga.favorite
-                            }
-                            // SY -->
-                            .combineMetadata(metadata)
-                            // SY <--
-                            .stateIn(coroutineScope)
-                    }
+                    networkToLocalManga.await(it.toDomainManga(sourceId))
+                        .let { localManga ->
+                            getManga.subscribe(localManga.url, localManga.source)
+                        }
+                        .filterNotNull()
+                        .filter { localManga ->
+                            !sourcePreferences.hideInLibraryItems().get() || !localManga.favorite
+                        }
+                        // SY -->
+                        .combineMetadata(metadata)
+                        // SY <--
+                        .stateIn(coroutineScope)
                 }
             }
                 .cachedIn(coroutineScope)
