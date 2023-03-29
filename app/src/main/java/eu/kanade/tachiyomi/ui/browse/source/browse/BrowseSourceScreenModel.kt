@@ -20,6 +20,7 @@ import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
@@ -208,12 +209,12 @@ open class BrowseSourceScreenModel(
                         // SY -->
                         .combineMetadata(metadata)
                         // SY <--
-                        .stateIn(coroutineScope)
+                        .stateIn(ioCoroutineScope)
                 }
             }
-                .cachedIn(coroutineScope)
+                .cachedIn(ioCoroutineScope)
         }
-        .stateIn(coroutineScope, SharingStarted.Lazily, emptyFlow())
+        .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
