@@ -86,6 +86,7 @@ fun BrowseSourceContent(
 
     if (mangaList.itemCount <= 0 && errorState != null && errorState is LoadState.Error) {
         EmptyScreen(
+            modifier = Modifier.padding(contentPadding),
             message = getErrorMessage(errorState),
             actions = if (source is LocalSource /* SY --> */ && onLocalSourceHelpClick != null /* SY <-- */) {
                 listOf(
@@ -130,7 +131,9 @@ fun BrowseSourceContent(
     }
 
     if (mangaList.itemCount == 0 && mangaList.loadState.refresh is LoadState.Loading) {
-        LoadingScreen()
+        LoadingScreen(
+            modifier = Modifier.padding(contentPadding),
+        )
         return
     }
 
