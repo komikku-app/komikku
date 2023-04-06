@@ -48,7 +48,6 @@ fun BrowseSourceToolbar(
     var selectingDisplayMode by remember { mutableStateOf(false) }
 
     SearchToolbar(
-        initialShowKeyboard = searchQuery.isNullOrEmpty(),
         navigateUp = navigateUp,
         titleContent = { AppBarTitle(title) },
         searchQuery = searchQuery,
