@@ -538,6 +538,9 @@ object EXHMigrations {
                         }
                     }
                 }
+                if (oldVersion under 49) {
+                    BackupCreateJob.setupTask(context)
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
