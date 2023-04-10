@@ -194,6 +194,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
     }
 
+    override suspend fun getPageList(chapter: SChapter): List<Page> {
+        return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate)
+    }
+
     override fun fetchImage(page: Page): Observable<Response> {
         val call = pageHandler.getImageCall(page)
         return call?.asObservableSuccess() ?: super.fetchImage(page)
