@@ -13,7 +13,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
@@ -30,7 +29,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun Screen.feedTab(): TabContent {
     val navigator = LocalNavigator.currentOrThrow
-    val tabNavigator = LocalTabNavigator.current
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
 
