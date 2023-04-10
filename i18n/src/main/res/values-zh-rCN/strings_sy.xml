@@ -21,7 +21,7 @@
     <string name="pref_category_all_sources">所有来源</string>
     <string name="pref_category_fork">分支特色设置</string>
     <string name="pref_ehentai_summary">E-Hentai、ExHentai 登录、画廊同步</string>
-    <string name="pref_mangadex_summary">MangaDex 登录、关注同步</string>
+    <string name="pref_mangadex_summary">MangaDex 登录、收藏同步</string>
 
     <!-- About -->
     <string name="changelog_version">版本 %1$s</string>
@@ -41,14 +41,14 @@
     <string name="use_original_images_on">目前使用的是原图</string>
     <string name="use_original_images_off">目前使用的是重采样图像</string>
     <string name="watched_tags">查看标签</string>
-    <string name="watched_tags_summary">在网页视图中查看 E/ExHentai 关注的标签</string>
-    <string name="watched_tags_exh">ExHentai 关注的标签</string>
+    <string name="watched_tags_summary">在网页视图中查看 E/ExHentai 收藏的标签</string>
+    <string name="watched_tags_exh">ExHentai 收藏的标签</string>
     <string name="tag_filtering_threshold">标签过滤阈值</string>
     <string name="tag_filtering_threshhold_error">必须介于 -9999 和 0！</string>
     <string name="tag_filtering_threshhold_summary">你可以通过在 \"我的 Tags E/ExHentai\" 页面添加负的权重来软过滤标签。如果一个画廊的标签加起来的权重低于这个值，它就会被过滤掉。这个阈值可以在 -9999 和 0 之间设置。 目前：%1$d</string>
-    <string name="tag_watching_threshhold">标签关注阈值</string>
+    <string name="tag_watching_threshhold">标签收藏阈值</string>
     <string name="tag_watching_threshhold_error">必须介于 0 和 9999！</string>
-    <string name="tag_watching_threshhold_summary">如果最近上传的画廊至少有一个权重为正的被关注标签，并且其被关注标签的权重之和达到这个值或更高，就会被列入被关注的屏幕。这个阈值可以在 0 到 9999 之间设置。目前：%1$d</string>
+    <string name="tag_watching_threshhold_summary">如果最近上传的画廊至少有一个权重为正的已收藏标签，并且其已收藏标签的权重之和达到这个值或更高，就会被列入已收藏页面。这个阈值可以在 0 到 9999 之间设置。目前：%1$d</string>
     <string name="language_filtering">语言过滤</string>
     <string name="language_filtering_summary">如果您想在画廊列表和搜索中隐藏某些语言的画廊，请在弹出的对话框中选择它们。\n请注意，无论您的搜索条件如何，匹配的画廊都不会出现。\n勾选 = 排除</string>
     <string name="frong_page_categories">首页类别</string>
@@ -62,7 +62,7 @@
     <string name="pref_enhanced_e_hentai_view_summary">启用或禁用为 E/ExHentai 制作的增强型浏览菜单。</string>
     <string name="favorites_sync">E-Hentai 收藏同步</string>
     <string name="disable_favorites_uploading">禁用收藏上传</string>
-    <string name="disable_favorites_uploading_summary">仅从 ExHentai 下载收藏夹。应用中对收藏夹的任何变更都不会被上传。防止 ExHentai 上的收藏夹意外丢失。请注意，删除的内容仍会被下载（如果您在 ExHentai 上删除了一个收藏夹，它也会在应用程序中被删除）。</string>
+    <string name="disable_favorites_uploading_summary">仅从 ExHentai 下载收藏夹。应用中对收藏夹的任何变更都不会被上传。防止 ExHentai 上的收藏夹意外丢失。请注意，删除的变更仍会被应用（如果您在 ExHentai 上删除了一个收藏夹，它也会在本应用中删除）。</string>
     <string name="show_favorite_sync_notes">显示收藏夹同步注意事项</string>
     <string name="show_favorite_sync_notes_summary">显示一些关于收藏夹同步功能的注意事项</string>
     <string name="please_login">请登录！</string>
@@ -573,7 +573,7 @@
     <string name="parodies">Parodies</string>
     <string name="author">作者</string>
     <string name="last_chapter_number">最后一章编号</string>
-    <string name="follow_status">关注状态</string>
+    <string name="follow_status">收藏状态</string>
     <string name="manga_updates_id">Manga 更新 id</string>
     <string name="translated">已翻译</string>
 
@@ -610,13 +610,13 @@
     <string name="dedupe_highest_chapter">显示章数最多的来源</string>
 
     <!-- MangaDex -->
-    <string name="md_follows_unfollowed">取消关注</string>
+    <string name="md_follows_unfollowed">取消收藏</string>
     <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的作品到书架</string>
     <string name="mangadex_sync_follows_to_library_summary">从 MangaDex 拉取未添加的作品到你的书架</string>
     <string name="mangadex_preffered_source">首选 MangaDex 来源</string>
-    <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 来源，这将用于关注和应用中一系列其他功能。</string>
-    <string name="mangadex_add_to_follows">添加到 MangaDex 关注</string>
-    <string name="mangadex_follows">MangaDex 关注</string>
+    <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 来源，这将用于收藏和应用中一系列其他功能。</string>
+    <string name="mangadex_add_to_follows">添加到 MangaDex 收藏</string>
+    <string name="mangadex_follows">MangaDex 收藏</string>
     <string name="random">随机</string>
     <string name="mangadex_push_favorites_to_mangadex">同步书架中的作品到 MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">将未在 MdList 上跟踪的作品同步到 MangaDex 并标记为阅读中。</string>
