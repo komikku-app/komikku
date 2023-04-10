@@ -3,14 +3,17 @@ package eu.kanade.tachiyomi.ui.browse.feed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
@@ -27,11 +30,22 @@ import tachiyomi.domain.source.interactor.GetRemoteManga
 @Composable
 fun Screen.feedTab(): TabContent {
     val navigator = LocalNavigator.currentOrThrow
+    val tabNavigator = LocalTabNavigator.current
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
-        screenModel.init()
+    DisposableEffect(navigator.lastEvent) {
+        if (navigator.lastEvent == StackEvent.Push) {
+            screenModel.pushed = true
+        } else if (!screenModel.pushed) {
+            screenModel.init()
+        }
+
+        onDispose {
+            if (navigator.lastEvent == StackEvent.Idle && screenModel.pushed) {
+                screenModel.pushed = false
+            }
+        }
     }
 
     return TabContent(
@@ -72,7 +86,7 @@ fun Screen.feedTab(): TabContent {
                 onClickManga = { manga ->
                     navigator.push(MangaScreen(manga.id, true))
                 },
-                onRefresh = screenModel::refresh,
+                onRefresh = screenModel::init,
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )
 
