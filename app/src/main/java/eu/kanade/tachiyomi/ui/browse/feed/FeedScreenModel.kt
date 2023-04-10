@@ -53,8 +53,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.concurrent.Executors
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import tachiyomi.domain.manga.model.Manga as DomainManga
 
 /**
@@ -78,7 +76,7 @@ open class FeedScreenModel(
     val events = _events.receiveAsFlow()
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
-    var lastRefresh = System.currentTimeMillis().milliseconds
+    var pushed: Boolean = false
 
     init {
         getFeedSavedSearchGlobal.subscribe()
@@ -104,12 +102,7 @@ open class FeedScreenModel(
     }
 
     fun init() {
-        if (lastRefresh - System.currentTimeMillis().milliseconds > 30.seconds) return
-        refresh()
-    }
-
-    fun refresh() {
-        lastRefresh = System.currentTimeMillis().milliseconds
+        pushed = false
         coroutineScope.launchIO {
             val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
             mutableState.update { state ->
