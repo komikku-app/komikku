@@ -25,5 +25,5 @@ dependencies {
     implementation(libs.injekt.core)
     // SY <--
 
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.test)
 }
