@@ -8,7 +8,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,6 +31,7 @@ import tachiyomi.domain.library.model.display
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.TriStateFilter
+import tachiyomi.presentation.core.components.BasicItem
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.IconItem
@@ -217,9 +221,26 @@ private fun ColumnScope.DisplayPage(
     category: Category,
     screenModel: LibrarySettingsScreenModel,
 ) {
+    val portraitColumns by screenModel.libraryPreferences.portraitColumns().collectAsState()
+    val landscapeColumns by screenModel.libraryPreferences.landscapeColumns().collectAsState()
+
+    var showColumnsDialog by rememberSaveable { mutableStateOf(false) }
+    if (showColumnsDialog) {
+        LibraryColumnsDialog(
+            initialPortrait = portraitColumns,
+            initialLandscape = landscapeColumns,
+            onDismissRequest = { showColumnsDialog = false },
+            onValueChanged = { portrait, landscape ->
+                screenModel.libraryPreferences.portraitColumns().set(portrait)
+                screenModel.libraryPreferences.landscapeColumns().set(landscape)
+                showColumnsDialog = false
+            },
+        )
+    }
     // SY -->
     val globalDisplayMode by screenModel.libraryPreferences.libraryDisplayMode().collectAsState()
     // SY <--
+
     HeadingItem(R.string.action_display_mode)
     listOf(
         R.string.action_display_grid to LibraryDisplayMode.CompactGrid,
@@ -237,6 +258,13 @@ private fun ColumnScope.DisplayPage(
             } == mode,
             // SY <--
             onClick = { screenModel.setDisplayMode(category, mode) },
+        )
+    }
+
+    if (category.display != LibraryDisplayMode.List) {
+        BasicItem(
+            label = stringResource(R.string.pref_library_columns),
+            onClick = { showColumnsDialog = true },
         )
     }
 
