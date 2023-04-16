@@ -142,7 +142,7 @@ object LibraryTab : Tab {
                     onClickSelectAll = { screenModel.selectAll(screenModel.activeCategoryIndex) },
                     onClickInvertSelection = { screenModel.invertSelection(screenModel.activeCategoryIndex) },
                     onClickFilter = screenModel::showSettingsDialog,
-                    onClickRefresh = { onClickRefresh(state.categories[screenModel.activeCategoryIndex]) },
+                    onClickRefresh = { onClickRefresh(state.categories[screenModel.activeCategoryIndex.coerceAtMost(state.categories.lastIndex)]) },
                     onClickGlobalUpdate = { onClickRefresh(null) },
                     onClickOpenRandomManga = {
                         scope.launch {
@@ -242,7 +242,7 @@ object LibraryTab : Tab {
                             navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
                         },
                         getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
-                        getDisplayModeForPage = { state.categories[it].display },
+                        getDisplayModeForPage = { state.categories[it.coerceAtMost(state.categories.lastIndex)].display },
                         getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
                     ) { state.getLibraryItemsByPage(it) }
                 }
@@ -254,7 +254,7 @@ object LibraryTab : Tab {
             is LibraryScreenModel.Dialog.SettingsSheet -> LibrarySettingsDialog(
                 onDismissRequest = onDismissRequest,
                 screenModel = settingsScreenModel,
-                category = state.categories[screenModel.activeCategoryIndex],
+                category = state.categories[screenModel.activeCategoryIndex.coerceAtMost(state.categories.lastIndex)],
                 // SY -->
                 hasCategories = state.categories.fastAny { !it.isSystemCategory },
                 // SY <--
