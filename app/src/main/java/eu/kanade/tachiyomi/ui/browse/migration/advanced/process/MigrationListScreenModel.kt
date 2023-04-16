@@ -344,9 +344,7 @@ class MigrationListScreenModel(
             }
 
             updateChapter.awaitAll(chapterUpdates)
-            historyUpdates.forEach {
-                upsertHistory.await(it)
-            }
+            upsertHistory.awaitAll(historyUpdates)
         }
         // Update categories
         if (MigrationFlags.hasCategories(flags)) {
