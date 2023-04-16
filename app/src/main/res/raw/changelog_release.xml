@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.9.1" changeDate="Apr 16,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.6(from 0.14.3)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add support for wsrv.nl data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add MangaDex Data Saver support to MangaPlus Chapters</changelogtext>
+        <changelogtext>[b]New[/b] Add Smooth Scrolling for auto-scroll in Webtoon format</changelogtext>
+        <changelogtext>Handle refreshing Feed properly and allow manual refresh</changelogtext>
+        <changelogtext>Fix open in webview for some sources</changelogtext>
+        <changelogtext>Fix common crashes</changelogtext>
+        <changelogtext>Fix library tag sorting</changelogtext>
+        <changelogtext>Fix library category selection</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.9.0" changeDate="Jan 7,2023">
         <changelogtext>[b]Based on Tachiyomi stable 0.14.3(from 0.13.6)[/b]</changelogtext>
         <changelogtext>Support new E-H/EXH search engine</changelogtext>
