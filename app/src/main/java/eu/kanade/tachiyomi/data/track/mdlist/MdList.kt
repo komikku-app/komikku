@@ -139,7 +139,7 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
                     runAsObservable {
                         page.mangas.map {
                             toTrackSearch(mdex.getMangaDetails(it))
-                        }
+                        }.distinct()
                     }
                 }
                 .awaitSingle()
