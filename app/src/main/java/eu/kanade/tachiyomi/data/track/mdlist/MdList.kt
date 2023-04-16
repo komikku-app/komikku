@@ -147,7 +147,7 @@ class MdList(id: Long) : TrackService(id) {
                     runAsObservable {
                         page.mangas.map {
                             toTrackSearch(mdex.getMangaDetails(it))
-                        }
+                        }.distinct()
                     }
                 }
                 .awaitSingle()
