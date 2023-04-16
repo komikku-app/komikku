@@ -31,8 +31,6 @@ import com.elvishew.xlog.printer.Printer
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
 import eu.kanade.domain.base.BasePreferences
@@ -53,7 +51,6 @@ import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
-import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import exh.log.CrashlyticsPrinter
 import exh.log.EHLogLevel
@@ -91,7 +88,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         // if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         setupExhLogging() // EXH logging
         LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
-        if (!BuildConfig.DEBUG) addAnalytics()
 
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
 
@@ -194,12 +190,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
     override fun onStart(owner: LifecycleOwner) {
         SecureActivityDelegate.onApplicationStart()
-    }
-
-    private fun addAnalytics() {
-        if (isPreviewBuildType) {
-            Firebase.analytics.setUserProperty("preview_version", syDebugVersion)
-        }
     }
 
     override fun onStop(owner: LifecycleOwner) {

@@ -7,7 +7,7 @@ plugins {
     kotlin("android")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
-    id("com.github.zellius.shortcut-helper")
+    //id("com.github.zellius.shortcut-helper")
     id("com.github.ben-manes.versions")
 }
 
@@ -17,7 +17,7 @@ if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
     apply(plugin = "com.google.firebase.crashlytics")
 }
 
-shortcutHelper.setFilePath("./shortcuts.xml")
+//shortcutHelper.setFilePath("./shortcuts.xml")
 
 val SUPPORTED_ABIS = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
