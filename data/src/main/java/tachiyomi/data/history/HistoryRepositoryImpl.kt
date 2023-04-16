@@ -70,6 +70,22 @@ class HistoryRepositoryImpl(
     }
 
     // SY -->
+    override suspend fun upsertHistory(historyUpdates: List<HistoryUpdate>) {
+        try {
+            handler.await(true) {
+                historyUpdates.forEach { historyUpdate ->
+                    historyQueries.upsert(
+                        historyUpdate.chapterId,
+                        historyUpdate.readAt,
+                        historyUpdate.sessionReadDuration,
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, throwable = e)
+        }
+    }
+
     override suspend fun getByMangaId(mangaId: Long): List<History> {
         return handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, historyMapper) }
     }
