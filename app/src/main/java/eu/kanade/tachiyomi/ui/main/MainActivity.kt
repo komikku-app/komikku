@@ -50,6 +50,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.UnsortedPreferences
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -82,6 +84,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.EXHMigrations
@@ -91,6 +94,7 @@ import exh.log.DebugModeOverlay
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.syDebugVersion
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -164,6 +168,7 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         val didMigration = if (savedInstanceState == null) {
+            addAnalytics()
             EXHMigrations.upgrade(
                 context = applicationContext,
                 basePreferences = preferences,
@@ -538,6 +543,14 @@ class MainActivity : BaseActivity() {
     init {
         registerSecureActivity(this)
     }
+
+    // SY -->
+    private fun addAnalytics() {
+        if (!BuildConfig.DEBUG && isPreviewBuildType) {
+            Firebase.analytics.setUserProperty("preview_version", syDebugVersion)
+        }
+    }
+    // SY <--
 
     companion object {
         // Splash screen
