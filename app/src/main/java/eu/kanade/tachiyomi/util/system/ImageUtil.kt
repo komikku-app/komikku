@@ -201,7 +201,7 @@ object ImageUtil {
         val height = imageBitmap.height
         val width = imageBitmap.width
 
-        val centerPadding = 96 / (max(1, viewHeight) / height)
+        val centerPadding = 96 / (max(1, viewHeight) / height).coerceAtLeast(1)
 
         val leftSourcePart = Rect(0, 0, width / 2, height)
         val rightSourcePart = Rect(width / 2, 0, width, height)
