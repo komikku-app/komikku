@@ -34,12 +34,12 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .rateLimitHost(WEB_URL.toHttpUrl(), 2)
         .build()
 
-    suspend fun fetchPageList(chapterId: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"))).awaitSuccess()
+    suspend fun fetchPageList(chapterId: String, dataSaver: Boolean): List<Page> {
+        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"), dataSaver)).awaitSuccess()
         return pageListParse(response)
     }
 
-    private fun pageListRequest(chapterId: String): Request {
+    private fun pageListRequest(chapterId: String, dataSaver: Boolean): Request {
         val newHeaders = headers.newBuilder()
             .set("Referer", "$WEB_URL/viewer/$chapterId")
             .build()
@@ -47,7 +47,14 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         val url = "$API_URL/manga_viewer".toHttpUrl().newBuilder()
             .addQueryParameter("chapter_id", chapterId)
             .addQueryParameter("split", "yes")
-            .addQueryParameter("img_quality", "super_high")
+            .addQueryParameter(
+                "img_quality",
+                if (dataSaver) {
+                    "low"
+                } else {
+                    "super_high"
+                },
+            )
             .addQueryParameter("format", "json")
             .toString()
 
