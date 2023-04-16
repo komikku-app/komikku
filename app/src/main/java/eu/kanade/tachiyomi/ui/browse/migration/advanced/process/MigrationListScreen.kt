@@ -16,11 +16,14 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.MigrationListScreen
 import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
+import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
+import exh.util.overEq
+import exh.util.underEq
 import tachiyomi.core.util.lang.withUIContext
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen {
@@ -37,6 +40,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         val migrationDone by screenModel.migrationDone.collectAsState()
         val unfinishedCount by screenModel.unfinishedCount.collectAsState()
         val dialog by screenModel.dialog.collectAsState()
+        val migrateProgress by screenModel.migratingProgress.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         LaunchedEffect(items) {
@@ -136,6 +140,13 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 )
             }
             null -> Unit
+        }
+
+        if (!migrateProgress.isNaN() && migrateProgress overEq 0f && migrateProgress underEq 1f) {
+            MigrationProgressDialog(
+                progress = migrateProgress,
+                exitMigration = screenModel::cancelMigrate,
+            )
         }
 
         BackHandler(true) {

@@ -32,10 +32,12 @@ import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
@@ -91,6 +93,10 @@ class MigrationListScreenModel(
     val navigateOut = MutableSharedFlow<Unit>()
 
     val dialog = MutableStateFlow<Dialog?>(null)
+
+    val migratingProgress = MutableStateFlow(Float.MAX_VALUE)
+
+    private var migrateJob: Job? = null
 
     init {
         coroutineScope.launchIO {
@@ -425,38 +431,54 @@ class MigrationListScreenModel(
     }
 
     fun migrateMangas() {
-        coroutineScope.launchIO {
-            migratingItems.value.orEmpty().forEach { manga ->
-                val searchResult = manga.searchResult.value
-                if (searchResult is SearchResult.Result) {
-                    val toMangaObj = getManga.await(searchResult.id) ?: return@forEach
-                    migrateMangaInternal(
-                        manga.manga,
-                        toMangaObj,
-                        true,
-                    )
-                }
-            }
-
-            navigateOut()
-        }
+        migrateMangas(true)
     }
 
     fun copyMangas() {
-        coroutineScope.launchIO {
-            migratingItems.value.orEmpty().forEach { manga ->
-                val searchResult = manga.searchResult.value
-                if (searchResult is SearchResult.Result) {
-                    val toMangaObj = getManga.await(searchResult.id) ?: return@forEach
-                    migrateMangaInternal(
-                        manga.manga,
-                        toMangaObj,
-                        false,
-                    )
+        migrateMangas(false)
+    }
+
+    private fun migrateMangas(replace: Boolean) {
+        dialog.value = null
+        migrateJob = coroutineScope.launchIO {
+            migratingProgress.value = 0f
+            val items = migratingItems.value.orEmpty()
+            try {
+                items.forEachIndexed { index, manga ->
+                    try {
+                        ensureActive()
+                        val toMangaObj = manga.searchResult.value.let {
+                            if (it is SearchResult.Result) {
+                                getManga.await(it.id)
+                            } else {
+                                null
+                            }
+                        }
+                        if (toMangaObj != null) {
+                            migrateMangaInternal(
+                                manga.manga,
+                                toMangaObj,
+                                replace,
+                            )
+                        }
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        logcat(LogPriority.WARN, throwable = e)
+                    }
+                    migratingProgress.value = index.toFloat() / items.size
                 }
+
+                navigateOut()
+            } finally {
+                migratingProgress.value = Float.MAX_VALUE
+                migrateJob = null
             }
-            navigateOut()
         }
+    }
+
+    fun cancelMigrate() {
+        migrateJob?.cancel()
+        migrateJob = null
     }
 
     private suspend fun navigateOut() {
