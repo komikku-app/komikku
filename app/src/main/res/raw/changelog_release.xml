@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.9.3" changeDate="Apr 18,2023">
+        <changelogtext>Hotfix for 1.9.2, fix backup restore</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.9.2" changeDate="Apr 17,2023">
-        <changelogtext>Hotfix for 1.9.1</changelogtext>
+        <changelogtext>Hotfix for 1.9.1, fix tag editing</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.9.1" changeDate="Apr 16,2023">
         <changelogtext>[b]Based on Tachiyomi stable 0.14.6(from 0.14.3)[/b]</changelogtext>
