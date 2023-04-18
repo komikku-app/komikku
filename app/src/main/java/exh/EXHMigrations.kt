@@ -505,7 +505,7 @@ object EXHMigrations {
                     // Force MangaDex log out due to login flow change
                     trackManager.mdList.logout()
                 }
-                if (oldVersion under 50) {
+                if (oldVersion under 51) {
                     LibraryUpdateJob.cancelAllWorks(context)
                     LibraryUpdateJob.setupTask(context)
                     // Removed background jobs
@@ -538,7 +538,7 @@ object EXHMigrations {
                         }
                     }
                 }
-                if (oldVersion under 51) {
+                if (oldVersion under 52) {
                     BackupCreateJob.setupTask(context)
                 }
 
