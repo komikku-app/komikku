@@ -19,7 +19,7 @@ open class MangaImpl : Manga {
 
     // SY -->
     private val customManga: CustomMangaInfo?
-        get() = getCustomMangaInfo.get(id!!)
+        get() = id?.let { getCustomMangaInfo.get(it) }
 
     override var title: String
         get() = if (favorite) {
