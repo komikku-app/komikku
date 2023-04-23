@@ -32,7 +32,7 @@ import kotlin.math.min
 /**
  * Loader used to load chapters from an online source.
  */
-class HttpPageLoader(
+internal class HttpPageLoader(
     private val chapter: ReaderChapter,
     private val source: HttpSource,
     private val chapterCache: ChapterCache = Injekt.get(),
@@ -75,30 +75,7 @@ class HttpPageLoader(
         // EXH <--
     }
 
-    /**
-     * Recycles this loader and the active subscriptions and queue.
-     */
-    override fun recycle() {
-        super.recycle()
-        scope.cancel()
-        queue.clear()
-
-        // Cache current page list progress for online chapters to allow a faster reopen
-        val pages = chapter.pages
-        if (pages != null) {
-            launchIO {
-                try {
-                    // Convert to pages without reader information
-                    val pagesToSave = pages.map { Page(it.index, it.url, it.imageUrl) }
-                    chapterCache.putPageListToCache(chapter.chapter.toDomainChapter()!!, pagesToSave)
-                } catch (e: Throwable) {
-                    if (e is CancellationException) {
-                        throw e
-                    }
-                }
-            }
-        }
-    }
+    override var isLocal: Boolean = false
 
     /**
      * Returns the page list for a chapter. It tries to return the page list from the local cache,
@@ -165,26 +142,6 @@ class HttpPageLoader(
     }
 
     /**
-     * Preloads the given [amount] of pages after the [currentPage] with a lower priority.
-     * @return a list of [PriorityPage] that were added to the [queue]
-     */
-    private fun preloadNextPages(currentPage: ReaderPage, amount: Int): List<PriorityPage> {
-        val pageIndex = currentPage.index
-        val pages = currentPage.chapter.pages ?: return emptyList()
-        if (pageIndex == pages.lastIndex) return emptyList()
-
-        return pages
-            .subList(pageIndex + 1, min(pageIndex + 1 + amount, pages.size))
-            .mapNotNull {
-                if (it.status == Page.State.QUEUE) {
-                    PriorityPage(it, 0).apply { queue.offer(this) }
-                } else {
-                    null
-                }
-            }
-    }
-
-    /**
      * Retries a page. This method is only called from user interaction on the viewer.
      */
     override fun retryPage(page: ReaderPage) {
@@ -206,23 +163,47 @@ class HttpPageLoader(
         }
     }
 
+    override fun recycle() {
+        super.recycle()
+        scope.cancel()
+        queue.clear()
+
+        // Cache current page list progress for online chapters to allow a faster reopen
+        val pages = chapter.pages
+        if (pages != null) {
+            launchIO {
+                try {
+                    // Convert to pages without reader information
+                    val pagesToSave = pages.map { Page(it.index, it.url, it.imageUrl) }
+                    chapterCache.putPageListToCache(chapter.chapter.toDomainChapter()!!, pagesToSave)
+                } catch (e: Throwable) {
+                    if (e is CancellationException) {
+                        throw e
+                    }
+                }
+            }
+        }
+    }
+
     /**
-     * Data class used to keep ordering of pages in order to maintain priority.
+     * Preloads the given [amount] of pages after the [currentPage] with a lower priority.
+     *
+     * @return a list of [PriorityPage] that were added to the [queue]
      */
-    private class PriorityPage(
-        val page: ReaderPage,
-        val priority: Int,
-    ) : Comparable<PriorityPage> {
-        companion object {
-            private val idGenerator = AtomicInteger()
-        }
+    private fun preloadNextPages(currentPage: ReaderPage, amount: Int): List<PriorityPage> {
+        val pageIndex = currentPage.index
+        val pages = currentPage.chapter.pages ?: return emptyList()
+        if (pageIndex == pages.lastIndex) return emptyList()
 
-        private val identifier = idGenerator.incrementAndGet()
-
-        override fun compareTo(other: PriorityPage): Int {
-            val p = other.priority.compareTo(priority)
-            return if (p != 0) p else identifier.compareTo(other.identifier)
-        }
+        return pages
+            .subList(pageIndex + 1, min(pageIndex + 1 + amount, pages.size))
+            .mapNotNull {
+                if (it.status == Page.State.QUEUE) {
+                    PriorityPage(it, 0).apply { queue.offer(this) }
+                } else {
+                    null
+                }
+            }
     }
 
     /**
@@ -264,4 +245,23 @@ class HttpPageLoader(
         }
     }
     // EXH <--
+}
+
+/**
+ * Data class used to keep ordering of pages in order to maintain priority.
+ */
+private class PriorityPage(
+    val page: ReaderPage,
+    val priority: Int,
+) : Comparable<PriorityPage> {
+    companion object {
+        private val idGenerator = AtomicInteger()
+    }
+
+    private val identifier = idGenerator.incrementAndGet()
+
+    override fun compareTo(other: PriorityPage): Int {
+        val p = other.priority.compareTo(priority)
+        return if (p != 0) p else identifier.compareTo(other.identifier)
+    }
 }

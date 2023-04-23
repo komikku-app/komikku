@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Loader used to load a chapter from a .zip or .cbz file.
  */
-class ZipPageLoader(
+internal class ZipPageLoader(
     file: File,
     // SY -->
     context: Context,
@@ -58,7 +58,7 @@ class ZipPageLoader(
 
     /**
      * Returns the pages found on this zip archive ordered with a natural comparator.
-     */
+
     override suspend fun getPages(): List<ReaderPage> {
         // SY -->
         // Part can be removed after testing that there are no bugs with zip4j on some users devices
@@ -95,10 +95,12 @@ class ZipPageLoader(
         // SY <--
     }
 
-    /**
-     * No additional action required to load the page
-     */
     override suspend fun loadPage(page: ReaderPage) {
         check(!isRecycled)
+    }
+
+    override fun recycle() {
+        super.recycle()
+        zip.close()
     }
 }
