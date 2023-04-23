@@ -124,7 +124,7 @@ data class BackupManga(
                 artist = manga.ogArtist,
                 author = manga.ogAuthor,
                 description = manga.ogDescription,
-                genre = manga.ogGenre ?: emptyList(),
+                genre = manga.ogGenre.orEmpty(),
                 status = manga.ogStatus.toInt(),
                 // SY <--
                 thumbnailUrl = manga.thumbnailUrl,
