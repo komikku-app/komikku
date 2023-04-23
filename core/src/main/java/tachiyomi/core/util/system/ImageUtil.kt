@@ -26,8 +26,6 @@ import androidx.core.graphics.red
 import androidx.exifinterface.media.ExifInterface
 import com.hippo.unifile.UniFile
 import logcat.LogPriority
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.FileHeader
 import tachiyomi.decoder.Format
 import tachiyomi.decoder.ImageDecoder
 import java.io.BufferedInputStream
@@ -127,17 +125,9 @@ object ImageUtil {
      *
      * @return true if the width is greater than the height
      */
-    fun isWideImage(
-        imageStream: BufferedInputStream,
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-    ): Boolean {
+    fun isWideImage(imageStream: BufferedInputStream): Boolean {
         val options = extractImageOptions(
             imageStream,
-            // SY -->
-            zip4jFile,
-            zip4jEntry,
-            // SY <--
         )
         return options.outWidth > options.outHeight
     }
@@ -263,19 +253,9 @@ object ImageUtil {
      *
      * @return true if the height:width ratio is greater than 3.
      */
-    private fun isTallImage(
-        imageStream: InputStream,
-        // SY -->
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-        // SY <--
-    ): Boolean {
+    private fun isTallImage(imageStream: InputStream): Boolean {
         val options = extractImageOptions(
             imageStream,
-            // SY -->
-            zip4jFile,
-            zip4jEntry,
-            // SY <--
             resetAfterExtraction = false,
         )
 
@@ -285,23 +265,8 @@ object ImageUtil {
     /**
      * Splits tall images to improve performance of reader
      */
-    fun splitTallImage(
-        tmpDir: UniFile,
-        imageFile: UniFile,
-        filenamePrefix: String,
-        // SY -->
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-        // SY <--
-    ): Boolean {
-        if (isAnimatedAndSupported(imageFile.openInputStream()) || !isTallImage(
-                imageFile.openInputStream(),
-                // SY -->
-                zip4jFile,
-                zip4jEntry,
-                // SY <--
-            )
-        ) {
+    fun splitTallImage(tmpDir: UniFile, imageFile: UniFile, filenamePrefix: String, ): Boolean {
+        if (isAnimatedAndSupported(imageFile.openInputStream()) || !isTallImage(imageFile.openInputStream())) {
             return true
         }
 
@@ -311,14 +276,7 @@ object ImageUtil {
             return false
         }
 
-        val options = extractImageOptions(
-            imageFile.openInputStream(),
-            // SY -->
-            zip4jFile,
-            zip4jEntry,
-            // SY <--
-            resetAfterExtraction = false,
-        ).apply {
+        val options = extractImageOptions(imageFile.openInputStream(), resetAfterExtraction = false).apply {
             inJustDecodeBounds = false
         }
 
@@ -364,22 +322,10 @@ object ImageUtil {
      * Check whether the image is a long Strip that needs splitting
      * @return true if the image is not animated and it's height is greater than image width and screen height
      */
-    fun isStripSplitNeeded(
-        imageStream: BufferedInputStream,
-        // SY -->
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-        // SY <--
-    ): Boolean {
+    fun isStripSplitNeeded(imageStream: BufferedInputStream): Boolean {
         if (isAnimatedAndSupported(imageStream)) return false
 
-        val options = extractImageOptions(
-            imageStream,
-            // SY -->
-            zip4jFile,
-            zip4jEntry,
-            // SY <--
-        )
+        val options = extractImageOptions(imageStream)
         val imageHeightIsBiggerThanWidth = options.outHeight > options.outWidth
         val imageHeightBiggerThanScreenHeight = options.outHeight > optimalImageHeight
         return imageHeightIsBiggerThanWidth && imageHeightBiggerThanScreenHeight
@@ -411,21 +357,8 @@ object ImageUtil {
         }
     }
 
-    fun getSplitDataForStream(
-        imageStream: InputStream,
-        // SY -->
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-        // SY <--
-
-    ): List<SplitData> {
-        // SY -->
-        return extractImageOptions(
-            imageStream,
-            zip4jFile,
-            zip4jEntry,
-        ).splitData
-        // <--
+    fun getSplitDataForStream(imageStream: InputStream): List<SplitData> {
+        return extractImageOptions(imageStream).splitData
     }
 
     private val BitmapFactory.Options.splitData
@@ -690,17 +623,8 @@ object ImageUtil {
      */
     private fun extractImageOptions(
         imageStream: InputStream,
-        // SY -->
-        zip4jFile: ZipFile? = null,
-        zip4jEntry: FileHeader? = null,
-        // SY <--
         resetAfterExtraction: Boolean = true,
-
     ): BitmapFactory.Options {
-        // SY -->
-        // zip4j does currently not support mark() and reset()
-        if (zip4jFile != null && zip4jEntry != null) return extractImageOptionsZip4j(zip4jFile, zip4jEntry)
-        // SY <--
         imageStream.mark(imageStream.available() + 1)
 
         val imageBytes = imageStream.readBytes()
@@ -711,15 +635,6 @@ object ImageUtil {
     }
 
     // SY -->
-    private fun extractImageOptionsZip4j(zip4jFile: ZipFile?, zip4jEntry: FileHeader?): BitmapFactory.Options {
-        zip4jFile?.getInputStream(zip4jEntry).use { imageStream ->
-            val imageBytes = imageStream?.readBytes()
-            val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            imageBytes?.size?.let { BitmapFactory.decodeByteArray(imageBytes, 0, it, options) }
-            return options
-        }
-    }
-
     /**
      * Creates random exif metadata used as padding to make
      * the size of files inside  CBZ archives unique

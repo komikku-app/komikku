@@ -213,13 +213,7 @@ class WebtoonPageHolder(
 
     private fun process(imageStream: BufferedInputStream): InputStream {
         if (viewer.config.dualPageSplit) {
-            val isDoublePage = ImageUtil.isWideImage(
-                imageStream,
-                // SY -->
-                page?.zip4jFile,
-                page?.zip4jEntry,
-                // SY <--
-            )
+            val isDoublePage = ImageUtil.isWideImage(imageStream)
             if (isDoublePage) {
                 val upperSide = if (viewer.config.dualPageInvert) ImageUtil.Side.LEFT else ImageUtil.Side.RIGHT
                 return ImageUtil.splitAndMerge(imageStream, upperSide)
@@ -230,13 +224,7 @@ class WebtoonPageHolder(
             if (page is StencilPage) {
                 return imageStream
             }
-            val isStripSplitNeeded = ImageUtil.isStripSplitNeeded(
-                imageStream,
-                // SY -->
-                page?.zip4jFile,
-                page?.zip4jEntry,
-                // SY <--
-            )
+            val isStripSplitNeeded = ImageUtil.isStripSplitNeeded(imageStream)
             if (isStripSplitNeeded) {
                 return onStripSplit(imageStream)
             }
@@ -249,14 +237,7 @@ class WebtoonPageHolder(
         // If we have reached this point [page] and its stream shouldn't be null
         val page = page!!
         val stream = page.stream!!
-        val splitData = ImageUtil.getSplitDataForStream(
-            imageStream,
-            // SY -->
-            page.zip4jFile,
-            page.zip4jEntry,
-            // SY <--
-
-        ).toMutableList()
+        val splitData = ImageUtil.getSplitDataForStream(imageStream).toMutableList()
         val currentSplitData = splitData.removeFirst()
         val newPages = splitData.map {
             StencilPage(page) { ImageUtil.splitStrip(it, stream) }
