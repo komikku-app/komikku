@@ -265,7 +265,7 @@ object ImageUtil {
     /**
      * Splits tall images to improve performance of reader
      */
-    fun splitTallImage(tmpDir: UniFile, imageFile: UniFile, filenamePrefix: String, ): Boolean {
+    fun splitTallImage(tmpDir: UniFile, imageFile: UniFile, filenamePrefix: String): Boolean {
         if (isAnimatedAndSupported(imageFile.openInputStream()) || !isTallImage(imageFile.openInputStream())) {
             return true
         }
