@@ -61,7 +61,7 @@ object SettingsLibraryScreen : SearchableSettings {
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         // SY <--
 
-        return mutableListOf(
+        return listOf(
             getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
             getGlobalUpdateGroup(allCategories, libraryPreferences),
             getChapterSwipeActionsGroup(libraryPreferences),
@@ -243,27 +243,24 @@ object SettingsLibraryScreen : SearchableSettings {
     private fun getChapterSwipeActionsGroup(
         libraryPreferences: LibraryPreferences,
     ): Preference.PreferenceGroup {
-        val chapterSwipeEndActionPref = libraryPreferences.swipeEndAction()
-        val chapterSwipeStartActionPref = libraryPreferences.swipeStartAction()
-
         return Preference.PreferenceGroup(
             title = stringResource(R.string.pref_chapter_swipe),
             preferenceItems = listOf(
                 Preference.PreferenceItem.ListPreference(
-                    pref = chapterSwipeEndActionPref,
+                    pref = libraryPreferences.swipeEndAction(),
                     title = stringResource(R.string.pref_chapter_swipe_end),
                     entries = mapOf(
-                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(R.string.action_disable),
+                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(R.string.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to stringResource(R.string.action_bookmark),
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to stringResource(R.string.action_mark_as_read),
                         LibraryPreferences.ChapterSwipeAction.Download to stringResource(R.string.action_download),
                     ),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = chapterSwipeStartActionPref,
+                    pref = libraryPreferences.swipeStartAction(),
                     title = stringResource(R.string.pref_chapter_swipe_start),
                     entries = mapOf(
-                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(R.string.action_disable),
+                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(R.string.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to stringResource(R.string.action_bookmark),
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to stringResource(R.string.action_mark_as_read),
                         LibraryPreferences.ChapterSwipeAction.Download to stringResource(R.string.action_download),
