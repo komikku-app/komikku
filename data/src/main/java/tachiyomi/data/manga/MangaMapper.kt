@@ -5,13 +5,15 @@ import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.view.LibraryView
 
-val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy) -> Manga =
-    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, _, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy ->
+val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long) -> Manga =
+    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, _, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, calculateInterval ->
         Manga(
             id = id,
             source = source,
             favorite = favorite,
             lastUpdate = lastUpdate ?: 0,
+            nextUpdate = nextUpdate ?: 0,
+            calculateInterval = calculateInterval.toInt(),
             dateAdded = dateAdded,
             viewerFlags = viewerFlags,
             chapterFlags = chapterFlags,
@@ -34,8 +36,8 @@ val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, 
         )
     }
 
-val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long, Long, Long, Long, Long, Long, Long) -> LibraryManga =
-    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, nextUpdate, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, totalCount, readCount, latestUpload, chapterFetchedAt, lastRead, bookmarkCount, category ->
+val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long, Long, Long, Long, Long, Long, Long, Long) -> LibraryManga =
+    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, nextUpdate, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, calculateInterval, totalCount, readCount, latestUpload, chapterFetchedAt, lastRead, bookmarkCount, category ->
         LibraryManga(
             manga = mangaMapper(
                 id,
@@ -51,6 +53,7 @@ val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?,
                 favorite,
                 lastUpdate,
                 nextUpdate,
+                calculateInterval,
                 initialized,
                 viewerFlags,
                 chapterFlags,
