@@ -123,7 +123,7 @@ UPDATE mangas SET
     date_added = coalesce(:dateAdded, date_added),
     filtered_scanlators = coalesce(:filteredScanlators, filtered_scanlators),
     update_strategy = coalesce(:updateStrategy, update_strategy),
-    calculate_interval = coalesce(:calculateInterval, calculate_interval),
+    calculate_interval = coalesce(:calculateInterval, calculate_interval)
 WHERE _id = :mangaId;
 
 selectLastInsertedRowId:
