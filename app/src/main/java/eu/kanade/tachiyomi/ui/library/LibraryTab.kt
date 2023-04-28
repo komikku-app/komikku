@@ -251,14 +251,21 @@ object LibraryTab : Tab {
 
         val onDismissRequest = screenModel::closeDialog
         when (val dialog = state.dialog) {
-            is LibraryScreenModel.Dialog.SettingsSheet -> LibrarySettingsDialog(
-                onDismissRequest = onDismissRequest,
-                screenModel = settingsScreenModel,
-                category = state.categories[screenModel.activeCategoryIndex.coerceAtMost(state.categories.lastIndex)],
-                // SY -->
-                hasCategories = state.categories.fastAny { !it.isSystemCategory },
-                // SY <--
-            )
+            is LibraryScreenModel.Dialog.SettingsSheet -> run {
+                val category = state.categories.getOrNull(screenModel.activeCategoryIndex)
+                if (category == null) {
+                    onDismissRequest()
+                    return@run
+                }
+                LibrarySettingsDialog(
+                    onDismissRequest = onDismissRequest,
+                    screenModel = settingsScreenModel,
+                    category = category,
+                    // SY -->
+                    hasCategories = state.categories.fastAny { !it.isSystemCategory },
+                    // SY <--
+                )
+            }
             is LibraryScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
