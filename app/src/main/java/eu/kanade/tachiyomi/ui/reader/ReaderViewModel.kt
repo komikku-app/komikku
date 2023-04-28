@@ -212,16 +212,17 @@ class ReaderViewModel(
                 }
             }
             else -> chapters
-        }.run {
-            if (readerPreferences.skipDupe().get()) {
-                removeDuplicates(selectedChapter)
-            } else {
-                this
-            }
         }
 
         chaptersForReader
             .sortedWith(getChapterSort(manga, sortDescending = false))
+            .run {
+                if (readerPreferences.skipDupe().get()) {
+                    removeDuplicates(selectedChapter)
+                } else {
+                    this
+                }
+            }
             .map { it.toDbChapter() }
             .map(::ReaderChapter)
     }
