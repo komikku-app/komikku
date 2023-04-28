@@ -211,11 +211,6 @@ object SettingsReaderScreen : SearchableSettings {
                     ),
                     enabled = navMode != 5,
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = readerPreferences.navigateToPan(),
-                    title = stringResource(R.string.pref_navigate_pan),
-                    enabled = navMode != 5,
-                ),
                 Preference.PreferenceItem.ListPreference(
                     pref = imageScaleTypePref,
                     title = stringResource(R.string.pref_image_scale_type),
@@ -254,6 +249,11 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(R.string.pref_page_transitions),
                 ),
                 // SY <--
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = readerPreferences.navigateToPan(),
+                    title = stringResource(R.string.pref_navigate_pan),
+                    enabled = navMode != 5,
+                ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = dualPageSplitPref,
                     title = stringResource(R.string.pref_dual_page_split),
