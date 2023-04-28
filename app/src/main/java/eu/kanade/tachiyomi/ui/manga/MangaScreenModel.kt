@@ -23,6 +23,7 @@ import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
+import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -404,7 +405,7 @@ class MangaInfoScreenModel(
 
             logcat(LogPriority.ERROR, e)
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(message = e.snackbarMessage)
+                snackbarHostState.showSnackbar(message = with(context) { e.formattedMessage })
             }
         }
     }
@@ -992,7 +993,7 @@ class MangaInfoScreenModel(
                 context.getString(R.string.no_chapters_error)
             } else {
                 logcat(LogPriority.ERROR, e)
-                e.snackbarMessage
+                with(context) { e.formattedMessage }
             }
 
             coroutineScope.launch {
@@ -1535,14 +1536,6 @@ class MangaInfoScreenModel(
             }
         }
     }
-
-    private val Throwable.snackbarMessage: String
-        get() = when (val className = this::class.simpleName) {
-            null -> message ?: ""
-            "SourceNotInstalledException" -> context.getString(R.string.loader_not_implemented_error)
-            "Exception", "HttpException", "IOException" -> message ?: className
-            else -> "$className: $message"
-        }
 
     // SY -->
     fun showEditMangaInfoDialog() {
