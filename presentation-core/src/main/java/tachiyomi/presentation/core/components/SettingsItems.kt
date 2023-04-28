@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.theme.header
@@ -51,13 +53,20 @@ fun HeadingItem(
 }
 
 @Composable
-fun BasicItem(
+fun IconItem(
     label: String,
+    icon: ImageVector,
     onClick: () -> Unit,
 ) {
-    SortItem(
+    BaseSettingsItem(
         label = label,
-        sortDescending = null,
+        widget = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        },
         onClick = onClick,
     )
 }
@@ -74,28 +83,21 @@ fun SortItem(
         null -> null
     }
 
-    Row(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        if (arrowIcon != null) {
-            Icon(
-                imageVector = arrowIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        } else {
-            Spacer(modifier = Modifier.size(24.dp))
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
+    BaseSettingsItem(
+        label = label,
+        widget = {
+            if (arrowIcon != null) {
+                Icon(
+                    imageVector = arrowIcon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                Spacer(modifier = Modifier.size(24.dp))
+            }
+        },
+        onClick = onClick,
+    )
 }
 
 @Composable
@@ -104,29 +106,40 @@ fun CheckboxItem(
     checked: Boolean,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = null,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
+    BaseSettingsItem(
+        label = label,
+        widget = {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = null,
+            )
+        },
+        onClick = onClick,
+    )
 }
 
 @Composable
 fun RadioItem(
     label: String,
     selected: Boolean,
+    onClick: () -> Unit,
+) {
+    BaseSettingsItem(
+        label = label,
+        widget = {
+            RadioButton(
+                selected = selected,
+                onClick = null,
+            )
+        },
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun BaseSettingsItem(
+    label: String,
+    widget: @Composable RowScope.() -> Unit,
     onClick: () -> Unit,
 ) {
     Row(
@@ -137,10 +150,7 @@ fun RadioItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        RadioButton(
-            selected = selected,
-            onClick = null,
-        )
+        widget(this)
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,

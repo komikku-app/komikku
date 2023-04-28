@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import tachiyomi.domain.library.model.display
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.TriStateFilter
-import tachiyomi.presentation.core.components.BasicItem
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.IconItem
@@ -262,8 +263,9 @@ private fun ColumnScope.DisplayPage(
     }
 
     if (category.display != LibraryDisplayMode.List) {
-        BasicItem(
+        IconItem(
             label = stringResource(R.string.pref_library_columns),
+            icon = Icons.Outlined.Apps,
             onClick = { showColumnsDialog = true },
         )
     }
