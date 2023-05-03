@@ -210,6 +210,7 @@ dependencies {
     // Disk
     implementation(libs.disklrucache)
     implementation(libs.unifile)
+    implementation(libs.compress)
     implementation(libs.junrar)
     // SY -->
     implementation(libs.zip4j)

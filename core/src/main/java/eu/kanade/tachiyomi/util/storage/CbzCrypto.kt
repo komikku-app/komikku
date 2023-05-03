@@ -146,10 +146,12 @@ object CbzCrypto {
         return decrypt(securityPreferences.sqlPassword().get(), ALIAS_SQL).toByteArray()
     }
 
-    /** Function that returns true when the supplied password
-     * can Successfully decrypt the supplied zip archive */
-    // not very elegant but this is the solution recommended by the maintainer for checking passwords
-    // a real password check will likely be implemented in the future though
+    /**
+     * Function that returns true when the supplied password
+     * can Successfully decrypt the supplied zip archive
+     * not very elegant but this is the solution recommended by the maintainer for checking passwords
+     * a real password check will likely be implemented in the future though
+     */
     fun checkCbzPassword(zip4j: ZipFile, password: CharArray): Boolean {
         try {
             zip4j.setPassword(password)
