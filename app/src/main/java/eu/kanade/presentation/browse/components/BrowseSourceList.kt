@@ -11,7 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemKey
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaListItem
 import eu.kanade.tachiyomi.R
@@ -40,10 +40,14 @@ fun BrowseSourceList(
             }
         }
 
-        items(mangaList) { mangaflow ->
-            mangaflow ?: return@items
+        items(
+            count = mangaList.itemCount,
             // SY -->
-            val pair by mangaflow.collectAsState()
+            key = mangaList.itemKey { it.value.first.id },
+            // SY <--
+        ) { index ->
+            // SY -->
+            val pair by mangaList[index]?.collectAsState() ?: return@items
             val manga = pair.first
             val metadata = pair.second
             // SY <--

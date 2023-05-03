@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaComfortableGridItem
 import eu.kanade.tachiyomi.R
@@ -46,12 +47,18 @@ fun BrowseSourceComfortableGrid(
             }
         }
 
-        items(mangaList.itemCount) { index ->
+        items(
+            count = mangaList.itemCount,
+            // SY -->
+            key = mangaList.itemKey { it.value.first.id },
+            // SY <--
+        ) { index ->
             // SY -->
             val pair by mangaList[index]?.collectAsState() ?: return@items
             val manga = pair.first
             val metadata = pair.second
             // SY <--
+
             BrowseSourceComfortableGridItem(
                 manga = manga,
                 // SY -->
