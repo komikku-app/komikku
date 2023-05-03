@@ -39,6 +39,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.util.chapter.removeDuplicates
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.lang.byteSize
@@ -480,6 +481,14 @@ class ReaderViewModel(
         eventChannel.trySend(Event.ReloadViewerChapters)
     }
 
+    fun onViewerLoaded(viewer: Viewer?) {
+        mutableState.update {
+            it.copy(
+                viewer = viewer,
+            )
+        }
+    }
+
     /**
      * Called every time a page changes on the reader. Used to mark the flag of chapters being
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
@@ -498,8 +507,9 @@ class ReaderViewModel(
         // Save last page read and mark as read if needed
         mutableState.update {
             it.copy(
+                currentPage = page.number,
                 // SY -->
-                currentPage = currentPage,
+                currentPageText = currentPage,
                 // SY <--
             )
         }
@@ -1108,12 +1118,21 @@ class ReaderViewModel(
         val manga: Manga? = null,
         val viewerChapters: ViewerChapters? = null,
         val isLoadingAdjacentChapter: Boolean = false,
+        val currentPage: Int = -1,
+        /**
+         * Viewer used to display the pages (pager, webtoon, ...).
+         */
+        val viewer: Viewer? = null,
+
         // SY -->
-        val currentPage: String = "",
+        val currentPageText: String = "",
         val meta: RaisedSearchMetadata? = null,
         val mergedManga: Map<Long, Manga>? = null,
         // SY <--
-    )
+    ) {
+        val totalPages: Int
+            get() = viewerChapters?.currChapter?.pages?.size ?: -1
+    }
 
     sealed class Event {
         object ReloadViewerChapters : Event()
