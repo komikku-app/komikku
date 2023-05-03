@@ -74,7 +74,7 @@ private fun SourcesFilterContent(
         state.items.forEach { (language, sources) ->
             val enabled = language in state.enabledLanguages
             item(
-                key = language.hashCode(),
+                key = language,
                 contentType = "source-filter-header",
             ) {
                 SourcesFilterHeader(
@@ -84,35 +84,36 @@ private fun SourcesFilterContent(
                     onClickItem = onClickLanguage,
                 )
             }
-            if (!enabled) return@forEach
-            // SY -->
-            item(
-                key = "toggle-$language",
-                contentType = "source-filter-toggle",
-            ) {
-                val toggleEnabled = remember(state.disabledSources) {
-                    sources.none { it.id.toString() in state.disabledSources }
+            if (enabled) {
+                // SY -->
+                item(
+                    key = "toggle-$language",
+                    contentType = "source-filter-toggle",
+                ) {
+                    val toggleEnabled = remember(state.disabledSources) {
+                        sources.none { it.id.toString() in state.disabledSources }
+                    }
+                    SourcesFilterToggle(
+                        modifier = Modifier.animateItemPlacement(),
+                        isEnabled = toggleEnabled,
+                        onClickItem = {
+                            onClickSources(!toggleEnabled, sources)
+                        },
+                    )
                 }
-                SourcesFilterToggle(
-                    modifier = Modifier.animateItemPlacement(),
-                    isEnabled = toggleEnabled,
-                    onClickItem = {
-                        onClickSources(!toggleEnabled, sources)
-                    },
-                )
-            }
-            // SY <--
-            items(
-                items = sources,
-                key = { "source-filter-${it.key()}" },
-                contentType = { "source-filter-item" },
-            ) { source ->
-                SourcesFilterItem(
-                    modifier = Modifier.animateItemPlacement(),
-                    source = source,
-                    enabled = "${source.id}" !in state.disabledSources,
-                    onClickItem = onClickSource,
-                )
+                // SY <--
+                items(
+                    items = sources,
+                    key = { "source-filter-${it.key()}" },
+                    contentType = { "source-filter-item" },
+                ) { source ->
+                    SourcesFilterItem(
+                        modifier = Modifier.animateItemPlacement(),
+                        source = source,
+                        enabled = "${source.id}" !in state.disabledSources,
+                        onClickItem = onClickSource,
+                    )
+                }
             }
         }
     }
