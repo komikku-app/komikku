@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.extension.model
 
 import android.graphics.drawable.Drawable
 import eu.kanade.tachiyomi.source.Source
-import tachiyomi.domain.source.model.SourceData
+import tachiyomi.domain.source.model.StubSource
 
 sealed class Extension {
 
@@ -49,14 +49,30 @@ sealed class Extension {
         override val isNsfw: Boolean,
         override val hasReadme: Boolean,
         override val hasChangelog: Boolean,
-        val sources: List<AvailableSources>,
+        val sources: List<Source>,
         val apkName: String,
         val iconUrl: String,
         // SY -->
         val repoUrl: String,
         val isRepoSource: Boolean,
         // SY <--
-    ) : Extension()
+    ) : Extension() {
+
+        data class Source(
+            val id: Long,
+            val lang: String,
+            val name: String,
+            val baseUrl: String,
+        ) {
+            fun toStubSource(): StubSource {
+                return StubSource(
+                    id = this.id,
+                    lang = this.lang,
+                    name = this.name,
+                )
+            }
+        }
+    }
 
     data class Untrusted(
         override val name: String,
@@ -70,19 +86,4 @@ sealed class Extension {
         override val hasReadme: Boolean = false,
         override val hasChangelog: Boolean = false,
     ) : Extension()
-}
-
-data class AvailableSources(
-    val id: Long,
-    val lang: String,
-    val name: String,
-    val baseUrl: String,
-) {
-    fun toSourceData(): SourceData {
-        return SourceData(
-            id = this.id,
-            lang = this.lang,
-            name = this.name,
-        )
-    }
 }
