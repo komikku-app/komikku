@@ -143,12 +143,13 @@ private fun ColumnScope.FilterPage(
     )
     // SY <--
 
-    when (screenModel.trackServices.size) {
+    val trackServices = remember { screenModel.trackServices }
+    when (trackServices.size) {
         0 -> {
             // No trackers
         }
         1 -> {
-            val service = screenModel.trackServices[0]
+            val service = trackServices[0]
             val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsState()
             TriStateItem(
                 label = stringResource(R.string.action_filter_tracked),
@@ -158,7 +159,7 @@ private fun ColumnScope.FilterPage(
         }
         else -> {
             HeadingItem(R.string.action_filter_tracked)
-            screenModel.trackServices.map { service ->
+            trackServices.map { service ->
                 val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsState()
                 TriStateItem(
                     label = stringResource(service.nameRes()),

@@ -25,10 +25,11 @@ class LibrarySettingsScreenModel(
     val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val setDisplayModeForCategory: SetDisplayModeForCategory = Injekt.get(),
     private val setSortModeForCategory: SetSortModeForCategory = Injekt.get(),
-    trackManager: TrackManager = Injekt.get(),
+    private val trackManager: TrackManager = Injekt.get(),
 ) : ScreenModel {
 
-    val trackServices = trackManager.services.filter { service -> service.isLogged }
+    val trackServices
+        get() = trackManager.services.filter { it.isLogged }
 
     // SY -->
     val grouping by libraryPreferences.groupLibraryBy().asState(coroutineScope)
