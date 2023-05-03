@@ -339,6 +339,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                                         else -> {
                                             try {
+                                                val loggedServices = trackManager.services.filter { it.isLogged }
                                                 val newChapters = updateManga(manga, loggedServices)
                                                     .sortedByDescending { it.sourceOrder }
 

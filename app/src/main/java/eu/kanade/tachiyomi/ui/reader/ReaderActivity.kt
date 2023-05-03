@@ -35,6 +35,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.ColorInt
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.graphics.ColorUtils
 import androidx.core.net.toUri
 import androidx.core.transition.doOnEnd
@@ -56,6 +58,7 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.orientationType
 import eu.kanade.domain.manga.model.readingModeType
+import eu.kanade.presentation.reader.PageIndicatorText
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -96,6 +99,7 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.copy
 import eu.kanade.tachiyomi.util.view.popupMenu
+import eu.kanade.tachiyomi.util.view.setComposeContent
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import exh.log.xLogE
@@ -525,6 +529,15 @@ class ReaderActivity : BaseActivity() {
                     },
                 )
             }
+        }
+
+        binding.pageNumber.setComposeContent {
+            val state by viewModel.state.collectAsState()
+
+            PageIndicatorText(
+                currentPage = state.currentPage,
+                totalPages = state.viewerChapters?.currChapter?.pages?.size ?: -1,
+            )
         }
 
         // SY -->
@@ -1311,7 +1324,7 @@ class ReaderActivity : BaseActivity() {
      * other cases are handled with chapter transitions on the viewers and chapter preloading.
      */
     @Suppress("DEPRECATION")
-    fun setProgressDialog(show: Boolean) {
+    private fun setProgressDialog(show: Boolean) {
         progressDialog?.dismiss()
         progressDialog = if (show) {
             ProgressDialog.show(this, null, getString(R.string.loading), true)
@@ -1359,19 +1372,16 @@ class ReaderActivity : BaseActivity() {
      */
     @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean = false) {
-        val newChapter = viewModel.onPageSelected(page, hasExtraPage)
-        val pages = page.chapter.pages ?: return
-
+        // SY -->
         val currentPage = if (hasExtraPage) {
             val invertDoublePage = (viewer as? PagerViewer)?.config?.invertDoublePages ?: false
             if (resources.isLTR xor invertDoublePage) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
         } else {
             "${page.number}"
         }
-
-        // Set bottom page number
-        binding.pageNumber.text = "$currentPage/${pages.size}"
-        // binding.pageText.text = "${page.number}/${pages.size}"
+        viewModel.onPageSelected(page, hasExtraPage, currentPage)
+        // SY <--
+        val pages = page.chapter.pages ?: return
 
         // Set page numbers
         if (viewer !is R2LPagerViewer) {

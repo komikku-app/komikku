@@ -485,7 +485,7 @@ class ReaderViewModel(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean, currentPage: String) {
         val currentChapters = state.value.viewerChapters ?: return
 
         val selectedChapter = page.chapter
@@ -496,6 +496,13 @@ class ReaderViewModel(
         }
 
         // Save last page read and mark as read if needed
+        mutableState.update {
+            it.copy(
+                // SY -->
+                currentPage = currentPage,
+                // SY <--
+            )
+        }
         selectedChapter.chapter.last_page_read = page.index
         val shouldTrack = !incognitoMode || hasTrackers
         if (
@@ -1102,6 +1109,7 @@ class ReaderViewModel(
         val viewerChapters: ViewerChapters? = null,
         val isLoadingAdjacentChapter: Boolean = false,
         // SY -->
+        val currentPage: String = "",
         val meta: RaisedSearchMetadata? = null,
         val mergedManga: Map<Long, Manga>? = null,
         // SY <--
