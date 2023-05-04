@@ -1,6 +1,7 @@
 package eu.kanade.presentation.reader
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -69,8 +71,6 @@ fun ChapterNavigator(
     val isTabletUi = isTabletUi()
     val horizontalPadding = if (isTabletUi) 24.dp else 16.dp
     val layoutDirection = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
-
-    val backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
     val haptic = LocalHapticFeedback.current
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
@@ -81,6 +81,11 @@ fun ChapterNavigator(
                 .padding(horizontal = horizontalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Match with toolbar background color set in ReaderActivity
+            val backgroundColor = MaterialTheme.colorScheme
+                .surfaceColorAtElevation(3.dp)
+                .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+
             val isLeftEnabled = if (isRtl) enabledNext else enabledPrevious
             if (isLeftEnabled) {
                 FilledIconButton(
@@ -164,7 +169,6 @@ fun ChapterNavigatorVert(
     val isTabletUi = isTabletUi()
     val verticalPadding = if (isTabletUi) 24.dp else 16.dp
 
-    val backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
     val haptic = LocalHapticFeedback.current
 
     Column(
@@ -173,6 +177,11 @@ fun ChapterNavigatorVert(
             .padding(vertical = verticalPadding, horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Match with toolbar background color set in ReaderActivity
+        val backgroundColor = MaterialTheme.colorScheme
+            .surfaceColorAtElevation(3.dp)
+            .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+
         if (enabledPrevious) {
             FilledIconButton(
                 onClick = onPreviousChapter,
