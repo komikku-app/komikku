@@ -69,7 +69,7 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
-    val source = sourceManager.getOrStub(sourceId) as CatalogueSource
+    val source = sourceManager.getOrStub(sourceId)
 
     val sourceIsMangaDex = sourceId in mangaDexSourceIds
 
@@ -78,24 +78,26 @@ open class SourceFeedScreenModel(
     val startExpanded by uiPreferences.expandFilters().asState(coroutineScope)
 
     init {
-        setFilters(source.getFilterList())
+        if (source is CatalogueSource) {
+            setFilters(source.getFilterList())
 
-        coroutineScope.launchIO {
-            val searches = loadSearches()
-            mutableState.update { it.copy(savedSearches = searches) }
-        }
-
-        getFeedSavedSearchBySourceId.subscribe(source.id)
-            .onEach {
-                val items = getSourcesToGetFeed(it)
-                mutableState.update { state ->
-                    state.copy(
-                        items = items,
-                    )
-                }
-                getFeed(items)
+            coroutineScope.launchIO {
+                val searches = loadSearches()
+                mutableState.update { it.copy(savedSearches = searches) }
             }
-            .launchIn(coroutineScope)
+
+            getFeedSavedSearchBySourceId.subscribe(source.id)
+                .onEach {
+                    val items = getSourcesToGetFeed(it)
+                    mutableState.update { state ->
+                        state.copy(
+                            items = items,
+                        )
+                    }
+                    getFeed(items)
+                }
+                .launchIn(coroutineScope)
+        }
     }
 
     fun setFilters(filters: FilterList) {
@@ -126,6 +128,7 @@ open class SourceFeedScreenModel(
     }
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<SourceFeedUI> {
+        if (source !is CatalogueSource) return emptyList()
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
             .associateBy { it.id }
 
@@ -144,6 +147,7 @@ open class SourceFeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
+        if (source !is CatalogueSource) return
         coroutineScope.launch {
             feedSavedSearch.map { sourceFeed ->
                 async {
@@ -204,10 +208,11 @@ open class SourceFeedScreenModel(
         }
     }
     private suspend fun loadSearches() =
-        getExhSavedSearch.await(source.id, source::getFilterList)
+        getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
 
     fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
+        if (source !is CatalogueSource) return
         coroutineScope.launchIO {
             val allDefault = state.value.filters == source.getFilterList()
             dismissDialog()
@@ -230,6 +235,7 @@ open class SourceFeedScreenModel(
         onBrowseClick: (query: String?, searchId: Long) -> Unit,
         onToast: (Int) -> Unit,
     ) {
+        if (source !is CatalogueSource) return
         coroutineScope.launchIO {
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {

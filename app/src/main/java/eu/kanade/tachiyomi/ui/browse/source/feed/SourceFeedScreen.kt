@@ -13,7 +13,7 @@ import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -150,19 +150,19 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         navigator.replace(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
     }
 
-    private fun onLatestClick(navigator: Navigator, source: CatalogueSource) {
+    private fun onLatestClick(navigator: Navigator, source: Source) {
         navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
     }
 
-    fun onBrowseClick(navigator: Navigator, source: CatalogueSource) {
+    fun onBrowseClick(navigator: Navigator, source: Source) {
         navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
     }
 
-    private fun onSavedSearchClick(navigator: Navigator, source: CatalogueSource, savedSearch: SavedSearch) {
+    private fun onSavedSearchClick(navigator: Navigator, source: Source, savedSearch: SavedSearch) {
         navigator.replace(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
     }
 
-    private fun onSearchClick(navigator: Navigator, source: CatalogueSource, query: String) {
+    private fun onSearchClick(navigator: Navigator, source: Source, query: String) {
         onBrowseClick(navigator, source.id, query.nullIfBlank())
     }
 }
