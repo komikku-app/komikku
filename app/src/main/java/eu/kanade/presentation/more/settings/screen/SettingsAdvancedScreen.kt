@@ -45,6 +45,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.debug.DebugInfoScreen
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
@@ -677,6 +678,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         val delegateSourcePreferences = remember { Injekt.get<DelegateSourcePreferences>() }
+        val securityPreferences = remember { Injekt.get<SecurityPreferences>() }
         return Preference.PreferenceGroup(
             title = stringResource(R.string.developer_tools),
             preferenceItems = listOf(
@@ -723,6 +725,53 @@ object SettingsAdvancedScreen : SearchableSettings {
                         stringResource(R.string.app_name),
                     ),
                 ),
+                kotlin.run {
+                    var enableEncryptDatabase by rememberSaveable { mutableStateOf(false) }
+
+                    if (enableEncryptDatabase) {
+                        val dismiss = { enableEncryptDatabase = false }
+                        AlertDialog(
+                            onDismissRequest = dismiss,
+                            title = { Text(text = stringResource(R.string.encrypt_database)) },
+                            text = {
+                                Text(
+                                    text = remember {
+                                        HtmlCompat.fromHtml(context.getString(R.string.encrypt_database_message), HtmlCompat.FROM_HTML_MODE_COMPACT)
+                                            .toAnnotatedString()
+                                    },
+                                )
+                            },
+                            dismissButton = {
+                                TextButton(onClick = dismiss) {
+                                    Text(text = stringResource(R.string.action_cancel))
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        dismiss()
+                                        securityPreferences.encryptDatabase().set(true)
+                                    },
+                                ) {
+                                    Text(text = stringResource(android.R.string.ok))
+                                }
+                            },
+                        )
+                    }
+                    Preference.PreferenceItem.SwitchPreference(
+                        title = stringResource(R.string.encrypt_database),
+                        pref = securityPreferences.encryptDatabase(),
+                        subtitle = stringResource(R.string.encrypt_database_subtitle),
+                        onValueChanged = {
+                            if (it) {
+                                enableEncryptDatabase = true
+                                false
+                            } else {
+                                true
+                            }
+                        },
+                    )
+                },
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.open_debug_menu),
                     subtitle = remember {

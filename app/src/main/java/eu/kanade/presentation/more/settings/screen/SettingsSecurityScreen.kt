@@ -127,11 +127,6 @@ object SettingsSecurityScreen : SearchableSettings {
             ),
             // SY -->
             Preference.PreferenceItem.SwitchPreference(
-                title = stringResource(R.string.encrypt_database),
-                pref = securityPreferences.encryptDatabase(),
-                subtitle = stringResource(R.string.encrypt_database_subtitle),
-            ),
-            Preference.PreferenceItem.SwitchPreference(
                 pref = securityPreferences.passwordProtectDownloads(),
                 title = stringResource(R.string.password_protect_downloads),
                 subtitle = stringResource(R.string.password_protect_downloads_summary),
