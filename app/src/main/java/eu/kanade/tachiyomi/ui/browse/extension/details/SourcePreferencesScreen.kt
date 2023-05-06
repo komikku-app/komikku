@@ -141,17 +141,20 @@ class SourcePreferencesFragment : PreferenceFragmentCompat() {
     private fun populateScreen(): PreferenceScreen {
         val sourceId = requireArguments().getLong(SOURCE_ID)
         // SY -->
-        val source = Injekt.get<SourceManager>().get(sourceId)!!.let { source ->
-            if (source is EnhancedHttpSource) {
-                if (source.enhancedSource is ConfigurableSource) {
-                    source.source()
+        val source = Injekt.get<SourceManager>()
+            .get(sourceId)
+            ?.let { source ->
+                if (source is EnhancedHttpSource) {
+                    if (source.enhancedSource is ConfigurableSource) {
+                        source.source()
+                    } else {
+                        source.originalSource
+                    }
                 } else {
-                    source.originalSource
+                    source
                 }
-            } else {
-                source
             }
-        }
+            ?: throw NullPointerException("source = null, SOURCE_ID = $SOURCE_ID")
         // SY <--
 
         check(source is ConfigurableSource)
