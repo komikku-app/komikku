@@ -118,6 +118,15 @@
 # XmlUtil
 -keep public enum nl.adaptivity.xmlutil.EventType { *; }
 
+# SY -->
+# SqlCipher
+-keepclassmembers class net.zetetic.database.sqlcipher.SQLiteCustomFunction { *; }
+-keepclassmembers class net.zetetic.database.sqlcipher.SQLiteConnection { *; }
+-keepclassmembers class net.zetetic.database.sqlcipher.SQLiteGlobal { *; }
+-keepclassmembers class net.zetetic.database.sqlcipher.SQLiteDebug { *; }
+-keepclassmembers class net.zetetic.database.sqlcipher.SQLiteDebug$* { *; }
+# SY <--
+
 # Design library
 -dontwarn com.google.android.material.**
 -keep class com.google.android.material.** { *; }

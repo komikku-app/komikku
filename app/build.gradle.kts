@@ -166,6 +166,9 @@ dependencies {
     implementation(androidx.paging.compose)
 
     implementation(libs.bundles.sqlite)
+    // SY -->
+    implementation(libs.sqlcipher)
+    // SY <--
 
     implementation(kotlinx.reflect)
 
@@ -208,6 +211,9 @@ dependencies {
     implementation(libs.disklrucache)
     implementation(libs.unifile)
     implementation(libs.junrar)
+    // SY -->
+    implementation(libs.zip4j)
+    // SY <--
 
     // Preferences
     implementation(libs.preferencektx)

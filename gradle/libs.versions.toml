@@ -33,10 +33,12 @@ jsoup = "org.jsoup:jsoup:1.15.4"
 disklrucache = "com.jakewharton:disklrucache:2.0.2"
 unifile = "com.github.tachiyomiorg:unifile:17bec43"
 junrar = "com.github.junrar:junrar:7.5.4"
+zip4j = "net.lingala.zip4j:zip4j:2.11.5"
 
 sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqlite" }
 sqlite-ktx = { module = "androidx.sqlite:sqlite-ktx", version.ref = "sqlite" }
 sqlite-android = "com.github.requery:sqlite-android:3.41.1"
+sqlcipher = "net.zetetic:sqlcipher-android:4.5.4"
 
 preferencektx = "androidx.preference:preference-ktx:1.2.0"
 
@@ -48,6 +50,7 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil_version
 
 subsamplingscaleimageview = "com.github.tachiyomiorg:subsampling-scale-image-view:c8e2650"
 image-decoder = "com.github.tachiyomiorg:image-decoder:7879b45"
+exifinterface = "androidx.exifinterface:exifinterface:1.3.6"
 
 natural-comparator = "com.github.gpanther:java-nat-sort:natural-comparator-1.1"
 

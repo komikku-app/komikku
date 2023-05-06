@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import tachiyomi.core.metadata.comicinfo.ComicInfo
 import tachiyomi.core.metadata.comicinfo.ComicInfoPublishingStatus
 import tachiyomi.domain.chapter.model.Chapter
@@ -115,6 +116,9 @@ fun getComicInfo(manga: Manga, chapter: Chapter, chapterUrl: String) = ComicInfo
     publishingStatus = ComicInfo.PublishingStatusTachiyomi(
         ComicInfoPublishingStatus.toComicInfoValue(manga.status),
     ),
+    // SY -->
+    padding = CbzCrypto.createComicInfoPadding()?.let { ComicInfo.PaddingTachiyomiSY(it) },
+    // SY <--
     inker = null,
     colorist = null,
     letterer = null,

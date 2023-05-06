@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.NOMEDIA_FILE
 import eu.kanade.tachiyomi.util.storage.saveTo
@@ -34,6 +35,8 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.ZipParameters
 import nl.adaptivity.xmlutil.serialization.XML
 import okhttp3.Response
 import rx.Observable
@@ -55,11 +58,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.BufferedOutputStream
 import java.io.File
-import java.util.zip.CRC32
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 /**
  * This class is the one in charge of downloading chapters.
@@ -585,31 +584,41 @@ class Downloader(
         dirname: String,
         tmpDir: UniFile,
     ) {
-        val zip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")
-        ZipOutputStream(BufferedOutputStream(zip.openOutputStream())).use { zipOut ->
-            zipOut.setMethod(ZipEntry.STORED)
+        // SY -->
+        val zip = ZipFile("${mangaDir.filePath}/$dirname.cbz$TMP_DIR_SUFFIX")
+        val zipParameters = ZipParameters()
 
-            tmpDir.listFiles()?.forEach { img ->
-                img.openInputStream().use { input ->
-                    val data = input.readBytes()
-                    val size = img.length()
-                    val entry = ZipEntry(img.name).apply {
-                        val crc = CRC32().apply {
-                            update(data)
-                        }
-                        setCrc(crc.value)
+        if (CbzCrypto.getPasswordProtectDlPref() &&
+            CbzCrypto.isPasswordSet()
+        ) {
+            CbzCrypto.setZipParametersEncrypted(zipParameters)
+            zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
 
-                        compressedSize = size
-                        setSize(size)
-                    }
-                    zipOut.putNextEntry(entry)
-                    zipOut.write(data)
-                }
-            }
+            tmpDir.filePath?.let { addPaddingToImage(File(it)) }
         }
-        zip.renameTo("$dirname.cbz")
+        zip.addFiles(
+            tmpDir.listFiles()?.map { img -> img.filePath?.let { File(it) } },
+            zipParameters,
+        )
+        mangaDir.findFile("$dirname.cbz$TMP_DIR_SUFFIX")?.renameTo("$dirname.cbz")
+        // SY <--
         tmpDir.delete()
     }
+
+    // SY -->
+    private fun addPaddingToImage(imageDir: File) {
+        imageDir.listFiles()
+            // using ImageUtils isImage and findImageType functions causes IO errors when deleting files to set Exif Metadata
+            // it should be safe to assume that all files with image extensions are actual images at this point
+            ?.filter {
+                it.extension.equals("jpg", true) ||
+                    it.extension.equals("jpeg", true) ||
+                    it.extension.equals("png", true) ||
+                    it.extension.equals("webp", true)
+            }
+            ?.forEach { ImageUtil.addPaddingToImageExif(it) }
+    }
+    // SY <--
 
     /**
      * Creates a ComicInfo.xml file inside the given directory.

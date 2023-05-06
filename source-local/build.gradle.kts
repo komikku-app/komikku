@@ -11,6 +11,9 @@ kotlin {
                 implementation(project(":source-api"))
                 implementation(libs.unifile)
                 implementation(libs.junrar)
+                // SY -->
+                implementation(libs.zip4j)
+                // SY <--
             }
         }
         val androidMain by getting {

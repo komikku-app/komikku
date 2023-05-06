@@ -56,6 +56,9 @@ data class ComicInfo(
     val tags: Tags?,
     val web: Web?,
     val publishingStatus: PublishingStatusTachiyomi?,
+    // SY -->
+    val padding: PaddingTachiyomiSY?,
+    // SY <--
 ) {
     @Suppress("UNUSED")
     @XmlElement(false)
@@ -123,6 +126,12 @@ data class ComicInfo(
     @Serializable
     @XmlSerialName("PublishingStatusTachiyomi", "http://www.w3.org/2001/XMLSchema", "ty")
     data class PublishingStatusTachiyomi(@XmlValue(true) val value: String = "")
+
+    // SY -->
+    @Serializable
+    @XmlSerialName("PaddingTachiyomiSY", "http://www.w3.org/2001/XMLSchema", "tysy")
+    data class PaddingTachiyomiSY(@XmlValue(true) val value: String = "")
+    // SY <--
 }
 
 enum class ComicInfoPublishingStatus(

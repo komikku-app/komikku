@@ -101,7 +101,13 @@ class ChapterLoader(
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {
                             is Format.Directory -> DirectoryPageLoader(format.file)
-                            is Format.Zip -> ZipPageLoader(format.file)
+                            // SY -->
+                            is Format.Zip -> try {
+                                ZipPageLoader(format.file, context)
+                            } catch (e: Throwable) {
+                                error(context.getString(R.string.wrong_cbz_archive_password))
+                            }
+                            // SY <--
                             is Format.Rar -> try {
                                 RarPageLoader(format.file)
                             } catch (e: UnsupportedRarV5Exception) {
@@ -119,7 +125,13 @@ class ChapterLoader(
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {
                     is Format.Directory -> DirectoryPageLoader(format.file)
-                    is Format.Zip -> ZipPageLoader(format.file)
+                    // SY -->
+                    is Format.Zip -> try {
+                        ZipPageLoader(format.file, context)
+                    } catch (e: Throwable) {
+                        error(context.getString(R.string.wrong_cbz_archive_password))
+                    }
+                    // SY <--
                     is Format.Rar -> try {
                         RarPageLoader(format.file)
                     } catch (e: UnsupportedRarV5Exception) {

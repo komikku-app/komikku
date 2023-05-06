@@ -27,11 +27,13 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
 import exh.pref.DelegateSourcePreferences
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.UnknownChildHandler
@@ -64,23 +66,42 @@ import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
+
+// SY -->
+private const val LEGACY_DATABASE_NAME = "tachiyomi.db"
+// SY <--
 
 class AppModule(val app: Application) : InjektModule {
+    // SY -->
+    private val securityPreferences: SecurityPreferences by injectLazy()
+    // SY <--
 
     override fun InjektRegistrar.registerInjectables() {
         addSingleton(app)
 
         addSingletonFactory<SqlDriver> {
+            // SY -->
+            System.loadLibrary("sqlcipher")
+            // SY <--
             AndroidSqliteDriver(
                 schema = Database.Schema,
                 context = app,
-                name = "tachiyomi.db",
-                factory = if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // SY -->
+                name = if (securityPreferences.encryptDatabase().get()) {
+                    CbzCrypto.DATABASE_NAME
+                } else {
+                    LEGACY_DATABASE_NAME
+                },
+                factory = if (securityPreferences.encryptDatabase().get()) {
+                    SupportOpenHelperFactory(CbzCrypto.getDecryptedPasswordSql())
+                } else if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     // Support database inspector in Android Studio
                     FrameworkSQLiteOpenHelperFactory()
                 } else {
                     RequerySQLiteOpenHelperFactory()
                 },
+                // SY <--
                 callback = object : AndroidSqliteDriver.Callback(Database.Schema) {
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         super.onOpen(db)
@@ -193,7 +214,7 @@ class PreferenceModule(val application: Application) : InjektModule {
             SourcePreferences(get())
         }
         addSingletonFactory {
-            SecurityPreferences(get())
+            SecurityPreferences(get(), application.applicationContext)
         }
         addSingletonFactory {
             LibraryPreferences(get())
