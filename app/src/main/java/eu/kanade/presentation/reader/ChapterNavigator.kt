@@ -90,20 +90,19 @@ fun ChapterNavigator(
             val backgroundColor = MaterialTheme.colorScheme
                 .surfaceColorAtElevation(3.dp)
                 .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
-
-            val isLeftEnabled = if (isRtl) enabledNext else enabledPrevious
-            if (isLeftEnabled) {
-                FilledIconButton(
-                    onClick = if (isRtl) onNextChapter else onPreviousChapter,
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = backgroundColor,
-                    ),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.SkipPrevious,
-                        contentDescription = stringResource(if (isRtl) R.string.action_next_chapter else R.string.action_previous_chapter),
-                    )
-                }
+            val buttonColor = IconButtonDefaults.filledIconButtonColors(
+                containerColor = backgroundColor,
+                disabledContainerColor = backgroundColor,
+            )
+            FilledIconButton(
+                enabled = if (isRtl) enabledNext else enabledPrevious,
+                onClick = if (isRtl) onNextChapter else onPreviousChapter,
+                colors = buttonColor,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.SkipPrevious,
+                    contentDescription = stringResource(if (isRtl) R.string.action_next_chapter else R.string.action_previous_chapter),
+                )
             }
 
             if (totalPages > 1) {
@@ -133,7 +132,7 @@ fun ChapterNavigator(
                                 .padding(horizontal = 8.dp),
                             value = currentPage.toFloat(),
                             valueRange = 1f..totalPages.toFloat(),
-                            steps = totalPages,
+                            steps = totalPages - 2,
                             onValueChange = {
                                 onSliderValueChange(it.toInt() - 1)
                             },
@@ -147,19 +146,15 @@ fun ChapterNavigator(
                 Spacer(Modifier.weight(1f))
             }
 
-            val isRightEnabled = if (isRtl) enabledPrevious else enabledNext
-            if (isRightEnabled) {
-                FilledIconButton(
-                    onClick = if (isRtl) onPreviousChapter else onNextChapter,
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = backgroundColor,
-                    ),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.SkipNext,
-                        contentDescription = stringResource(if (isRtl) R.string.action_previous_chapter else R.string.action_next_chapter),
-                    )
-                }
+            FilledIconButton(
+                enabled = if (isRtl) enabledPrevious else enabledNext,
+                onClick = if (isRtl) onPreviousChapter else onNextChapter,
+                colors = buttonColor,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.SkipNext,
+                    contentDescription = stringResource(if (isRtl) R.string.action_previous_chapter else R.string.action_next_chapter),
+                )
             }
         }
     }
@@ -194,19 +189,20 @@ fun ChapterNavigatorVert(
             .surfaceColorAtElevation(3.dp)
             .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
-        if (enabledPrevious) {
-            FilledIconButton(
-                onClick = onPreviousChapter,
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = backgroundColor,
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SkipPrevious,
-                    contentDescription = stringResource(R.string.action_previous_chapter),
-                    modifier = Modifier.rotate(90f),
-                )
-            }
+        val buttonColor = IconButtonDefaults.filledIconButtonColors(
+            containerColor = backgroundColor,
+            disabledContainerColor = backgroundColor,
+        )
+        FilledIconButton(
+            enabled = enabledPrevious,
+            onClick = onPreviousChapter,
+            colors = buttonColor,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SkipPrevious,
+                contentDescription = stringResource(R.string.action_previous_chapter),
+                modifier = Modifier.rotate(90f),
+            )
         }
 
         if (totalPages > 1) {
@@ -265,19 +261,16 @@ fun ChapterNavigatorVert(
             Spacer(Modifier.weight(1f))
         }
 
-        if (enabledNext) {
-            FilledIconButton(
-                onClick = onNextChapter,
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = backgroundColor,
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SkipNext,
-                    contentDescription = stringResource(R.string.action_next_chapter),
-                    modifier = Modifier.rotate(90f),
-                )
-            }
+        FilledIconButton(
+            enabled = enabledNext,
+            onClick = onNextChapter,
+            colors = buttonColor,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SkipNext,
+                contentDescription = stringResource(R.string.action_next_chapter),
+                modifier = Modifier.rotate(90f),
+            )
         }
     }
 }
