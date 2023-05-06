@@ -19,6 +19,7 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import tachiyomi.core.Constants
@@ -97,6 +98,29 @@ data class SourceSearchScreen(
                 onMangaClick = openMigrateDialog,
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
             )
+        }
+
+        val onDismissRequest = { screenModel.setDialog(null) }
+        when (val dialog = state.dialog) {
+            is BrowseSourceScreenModel.Dialog.Filter -> {
+                SourceFilterDialog(
+                    onDismissRequest = onDismissRequest,
+                    filters = state.filters,
+                    onReset = screenModel::resetFilters,
+                    onFilter = { screenModel.search(filters = state.filters) },
+                    onUpdate = screenModel::setFilters,
+                    // SY -->
+                    startExpanded = screenModel.startExpanded,
+                    onSave = {},
+                    savedSearches = emptyList(),
+                    onSavedSearch = {},
+                    onSavedSearchPress = {},
+                    openMangaDexRandom = null,
+                    openMangaDexFollows = null,
+                    // SY <--
+                )
+            }
+            else -> {}
         }
     }
 }
