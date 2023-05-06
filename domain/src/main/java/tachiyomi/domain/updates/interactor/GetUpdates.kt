@@ -1,11 +1,12 @@
 package tachiyomi.domain.updates.interactor
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retry
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.domain.updates.repository.UpdatesRepository
 import java.util.Calendar
+import kotlin.time.Duration.Companion.seconds
 
 class GetUpdates(
     private val repository: UpdatesRepository,
@@ -20,12 +21,12 @@ class GetUpdates(
     fun subscribe(after: Long): Flow<List<UpdatesWithRelations>> {
         return repository.subscribeAll(after)
             // SY -->
-            .let {
-                var retries = 0
-                it.retry {
-                    (retries++ < 3) && it is NullPointerException
-                }.onEach {
-                    retries = 0
+            .retry {
+                if (it is NullPointerException) {
+                    delay(5.seconds)
+                    true
+                } else {
+                    false
                 }
             }
         // SY <--
