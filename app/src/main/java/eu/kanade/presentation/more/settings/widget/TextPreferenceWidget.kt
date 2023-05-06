@@ -16,7 +16,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import eu.kanade.presentation.theme.TachiyomiTheme
 import tachiyomi.presentation.core.util.ThemePreviews
 import tachiyomi.presentation.core.util.secondaryItemAlpha
@@ -25,7 +24,7 @@ import tachiyomi.presentation.core.util.secondaryItemAlpha
 fun TextPreferenceWidget(
     modifier: Modifier = Modifier,
     title: String? = null,
-    subtitle: String? = null,
+    subtitle: CharSequence? = null,
     icon: ImageVector? = null,
     iconTint: Color = MaterialTheme.colorScheme.primary,
     widget: @Composable (() -> Unit)? = null,
@@ -36,14 +35,27 @@ fun TextPreferenceWidget(
         title = title,
         subcomponent = if (!subtitle.isNullOrBlank()) {
             {
-                Text(
-                    text = subtitle,
-                    modifier = Modifier
-                        .padding(horizontal = PrefsHorizontalPadding)
-                        .secondaryItemAlpha(),
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 10,
-                )
+                // SY -->
+                if (subtitle is AnnotatedString) {
+                    Text(
+                        text = subtitle,
+                        modifier = Modifier
+                            .padding(horizontal = PrefsHorizontalPadding)
+                            .secondaryItemAlpha(),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 10,
+                    )
+                } else {
+                    // SY <--
+                    Text(
+                        text = subtitle.toString(),
+                        modifier = Modifier
+                            .padding(horizontal = PrefsHorizontalPadding)
+                            .secondaryItemAlpha(),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 10,
+                    )
+                }
             }
         } else {
             null
@@ -63,51 +75,6 @@ fun TextPreferenceWidget(
         widget = widget,
     )
 }
-
-// SY -->
-@Composable
-fun TextPreferenceWidget(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    subtitle: AnnotatedString?,
-    icon: ImageVector? = null,
-    iconTint: Color = MaterialTheme.colorScheme.primary,
-    widget: @Composable (() -> Unit)? = null,
-    onPreferenceClick: (() -> Unit)? = null,
-) {
-    BasePreferenceWidget(
-        modifier = modifier,
-        title = title,
-        subcomponent = if (!subtitle.isNullOrBlank()) {
-            {
-                Text(
-                    text = subtitle,
-                    modifier = Modifier
-                        .padding(horizontal = PrefsHorizontalPadding)
-                        .secondaryItemAlpha(),
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 10,
-                )
-            }
-        } else {
-            null
-        },
-        icon = if (icon != null) {
-            {
-                Icon(
-                    imageVector = icon,
-                    tint = iconTint,
-                    contentDescription = null,
-                )
-            }
-        } else {
-            null
-        },
-        onClick = onPreferenceClick,
-        widget = widget,
-    )
-}
-// SY <--
 
 @ThemePreviews
 @Composable

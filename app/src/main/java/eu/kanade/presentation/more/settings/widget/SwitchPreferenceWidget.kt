@@ -16,7 +16,7 @@ import tachiyomi.presentation.core.util.ThemePreviews
 fun SwitchPreferenceWidget(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String? = null,
+    subtitle: CharSequence? = null,
     icon: ImageVector? = null,
     checked: Boolean = false,
     onCheckedChanged: (Boolean) -> Unit,

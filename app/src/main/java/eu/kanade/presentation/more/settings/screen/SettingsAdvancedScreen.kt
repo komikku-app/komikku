@@ -723,9 +723,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                         stringResource(R.string.app_name),
                     ),
                 ),
-                Preference.PreferenceItem.AnnotatedTextPreference(
+                Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.open_debug_menu),
-                    annotatedSubtitle = remember {
+                    subtitle = remember {
                         HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_COMPACT)
                             .toAnnotatedString()
                     },

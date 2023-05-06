@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -15,7 +14,10 @@ sealed class Preference {
     abstract val enabled: Boolean
 
     sealed class PreferenceItem<T> : Preference() {
-        abstract val subtitle: String?
+        // SY -->
+        abstract val subtitle: CharSequence?
+
+        // SY <--
         abstract val icon: ImageVector?
         abstract val onValueChanged: suspend (newValue: T) -> Boolean
 
@@ -24,7 +26,7 @@ sealed class Preference {
          */
         data class TextPreference(
             override val title: String,
-            override val subtitle: String? = null,
+            override val subtitle: CharSequence? = null,
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true },
@@ -38,7 +40,7 @@ sealed class Preference {
         data class SwitchPreference(
             val pref: PreferenceData<Boolean>,
             override val title: String,
-            override val subtitle: String? = null,
+            override val subtitle: CharSequence? = null,
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: Boolean) -> Boolean = { true },
@@ -170,21 +172,6 @@ sealed class Preference {
             override val subtitle: String? = null
             override val icon: ImageVector? = null
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true }
-        }
-
-        /**
-         * A basic [PreferenceItem] that only displays texts.
-         */
-        data class AnnotatedTextPreference(
-            override val title: String,
-            val annotatedSubtitle: AnnotatedString,
-            override val icon: ImageVector? = null,
-            override val enabled: Boolean = true,
-            override val onValueChanged: suspend (newValue: String) -> Boolean = { true },
-
-            val onClick: (() -> Unit)? = null,
-        ) : PreferenceItem<String>() {
-            override val subtitle: String = annotatedSubtitle.text
         }
         // SY <--
     }

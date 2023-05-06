@@ -201,14 +201,6 @@ internal fun PreferenceItem(
                     },
                 )
             }
-            is Preference.PreferenceItem.AnnotatedTextPreference -> {
-                TextPreferenceWidget(
-                    title = item.title,
-                    subtitle = item.annotatedSubtitle,
-                    icon = item.icon,
-                    onPreferenceClick = item.onClick,
-                )
-            }
             // SY <--
         }
     }
