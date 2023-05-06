@@ -6,7 +6,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.view.LibraryView
 
 val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long) -> Manga =
-    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, _, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, calculateInterval ->
+    { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, nextUpdate, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, calculateInterval ->
         Manga(
             id = id,
             source = source,
@@ -81,6 +81,7 @@ val libraryViewMapper: (LibraryView) -> LibraryManga = {
             source = it.source,
             favorite = it.favorite,
             lastUpdate = it.last_update ?: 0,
+            nextUpdate = it.next_update ?: 0,
             dateAdded = it.date_added,
             viewerFlags = it.viewer,
             chapterFlags = it.chapter_flags,
@@ -96,6 +97,7 @@ val libraryViewMapper: (LibraryView) -> LibraryManga = {
             updateStrategy = it.update_strategy,
             initialized = it.initialized,
             filteredScanlators = it.filtered_scanlators,
+            calculateInterval = it.calculate_interval.toInt(),
         ),
         it.category,
         it.totalCount,
