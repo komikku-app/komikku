@@ -223,7 +223,7 @@
     <string name="encrypt_database">Encrypt database</string>
     <string name="encrypt_database_subtitle">Requires app restart to take effect</string>
     <string name="encrypt_database_message">
-        <![CDATA[<font color=\'red\'>ENABLING THIS WILL CREATE A NEW DATABASE. USE THESE STEPS TO KEEP YOUR DATA<br>1. SETTINGS -> BACKUP -> CREATE<br>2. SYSTEM SETTINGS -> CLEAR APP DATA<br>3. SYSTEM SETTINGS -> FORCE RESTART<br>4. SETTINGS -> BACKUP -> RESTORE</font>]]>
+        <![CDATA[<font color=\'red\'>ENABLING THIS WILL CREATE A NEW DATABASE. USE THESE STEPS TO KEEP YOUR DATA<br>1. SETTINGS -> BACKUP -> CREATE<br>2. SYSTEM SETTINGS -> CLEAR APP DATA<br>3. OPEN APP AND ENABLE THIS<br>4. SYSTEM SETTINGS -> FORCE RESTART<br>5. SETTINGS -> BACKUP -> RESTORE</font>]]>
     </string>
     <string name="set_cbz_zip_password">Set CBZ archive password</string>
     <string name="password_protect_downloads">Password protect downloads</string>
