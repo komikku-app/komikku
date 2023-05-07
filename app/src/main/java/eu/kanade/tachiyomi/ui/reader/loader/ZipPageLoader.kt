@@ -66,7 +66,7 @@ internal class ZipPageLoader(file: File) : PageLoader() {
         zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
 
         zip.fileHeaders.asSequence()
-            .filterNot { !it.isDirectory }
+            .filterNot { it.isDirectory }
             .forEach { entry ->
                 zip.extractFile(entry, tmpDir.absolutePath)
             }
