@@ -259,3 +259,14 @@
 -keep class com.google.apphosting.api.ApiProxy {
   static *** getCurrentEnvironment (...);
 }
+
+# Suggested rules
+-dontwarn com.oracle.svm.core.annotate.AutomaticFeature
+-dontwarn com.oracle.svm.core.annotate.Delete
+-dontwarn com.oracle.svm.core.annotate.Substitute
+-dontwarn com.oracle.svm.core.annotate.TargetClass
+-dontwarn com.oracle.svm.core.configure.ResourcesRegistry
+-dontwarn org.graalvm.nativeimage.ImageSingletons
+-dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature
+-dontwarn org.slf4j.impl.StaticLoggerBinder
