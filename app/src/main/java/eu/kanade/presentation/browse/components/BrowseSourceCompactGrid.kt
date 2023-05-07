@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaCompactGridItem
 import eu.kanade.tachiyomi.R
@@ -47,12 +46,7 @@ fun BrowseSourceCompactGrid(
             }
         }
 
-        items(
-            count = mangaList.itemCount,
-            // SY -->
-            key = mangaList.itemKey { it.value.first.id },
-            // SY <--
-        ) { index ->
+        items(count = mangaList.itemCount) { index ->
             // SY -->
             val pair by mangaList[index]?.collectAsState() ?: return@items
             val manga = pair.first

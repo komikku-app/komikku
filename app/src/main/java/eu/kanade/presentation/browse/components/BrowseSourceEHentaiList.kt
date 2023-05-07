@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
 import eu.kanade.presentation.manga.components.MangaCover
@@ -66,10 +65,7 @@ fun BrowseSourceEHentaiList(
             }
         }
 
-        items(
-            count = mangaList.itemCount,
-            key = mangaList.itemKey { it.value.first.id },
-        ) { index ->
+        items(count = mangaList.itemCount) { index ->
             val pair by mangaList[index]?.collectAsState() ?: return@items
             val manga = pair.first
             val metadata = pair.second
