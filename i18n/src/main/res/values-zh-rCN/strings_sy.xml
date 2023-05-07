@@ -72,6 +72,7 @@
     <string name="force_sync_state_reset_summary">在下次同步时执行完全的重新同步。删除的内容将不会被同步。应用中所有收藏夹将被重新上传到 ExHentai，ExHentai 上的所有收藏夹将被重新下载。有助于在同步被中断后修复同步。</string>
     <string name="sync_state_reset">同步状态重置</string>
     <string name="gallery_update_checker">画廊更新检查器</string>
+    <string name="auto_update_restrictions">自动更新限制</string>
     <string name="time_between_batches">更新批次之间的间隔时间</string>
     <string name="time_between_batches_never">从不更新画廊</string>
     <string name="time_between_batches_1_hour">1 小时</string>

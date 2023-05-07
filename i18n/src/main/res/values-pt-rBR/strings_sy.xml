@@ -73,6 +73,7 @@
     <string name="force_sync_state_reset_summary">Realiza uma ressincronização total na próxima sincronização. Remoções não serão sincronizadas. Todos os favoritos no app serão reenviados ao ExHentai e os no ExHentai serão re-baixados. Útil no reparo da sincronização após ser interrompida.</string>
     <string name="sync_state_reset">Reinício do estado de sincronização</string>
     <string name="gallery_update_checker">Verificador de atualização da galeria</string>
+    <string name="auto_update_restrictions">Restrições da atualização automática</string>
     <string name="time_between_batches">Tempo entre lotes de atualização</string>
     <string name="time_between_batches_never">Nunca atualizar galerias</string>
     <string name="time_between_batches_1_hour">1 hora</string>

@@ -73,6 +73,7 @@
     <string name="force_sync_state_reset_summary">Выполнять полную ресинхронизацию при следующей синхронизации. Удалённый материал не будет синхронизирован. Всё избранное в приложении будет перезагружено на ExHentai, а всё избранное на ExHentai будет перезагружено в приложение. Полезно для восстановления синхронизации после того, как она была прервана.</string>
     <string name="sync_state_reset">Сброс состояния синхронизации</string>
     <string name="gallery_update_checker">Проверка обновлений для галерей</string>
+    <string name="auto_update_restrictions">Ограничения автоматического обновления</string>
     <string name="time_between_batches">Время между обновлениями</string>
     <string name="time_between_batches_never">Никогда не обновлять</string>
     <string name="time_between_batches_1_hour">1 час</string>

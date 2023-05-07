@@ -74,6 +74,7 @@
     <string name="force_sync_state_reset_summary">Effectue une resynchronisation complète à la prochaine synchronisation. Les suppressions ne seront pas synchronisées. Tous les favoris de l\'application seront de nouveau téléchargés sur ExHentai et tous les favoris sur ExHentai seront de nouveau téléchargés dans l\'application. Utile pour réparer la synchronisation après que la synchronisation est été interrompue.</string>
     <string name="sync_state_reset">Réinitialisation de l\'état de synchronisation</string>
     <string name="gallery_update_checker">Vérificateur de mise à jour de la galerie</string>
+    <string name="auto_update_restrictions">Restrictions de mise à jour automatique</string>
     <string name="time_between_batches">Temps entre les lots de mise à jour</string>
     <string name="time_between_batches_never">Ne jamais mettre à jour les galeries</string>
     <string name="time_between_batches_1_hour">1 heure</string>

@@ -80,6 +80,7 @@
     <string name="force_sync_state_reset_summary">Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted.</string>
     <string name="sync_state_reset">Sync state reset</string>
     <string name="gallery_update_checker">Gallery update checker</string>
+    <string name="auto_update_restrictions">Auto update restrictions</string>
     <string name="time_between_batches">Time between update batches</string>
     <string name="time_between_batches_never">Never update galleries</string>
     <string name="time_between_batches_1_hour">1 hour</string>

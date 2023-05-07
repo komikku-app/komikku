@@ -967,7 +967,7 @@ object SettingsEhScreen : SearchableSettings {
         val context = LocalContext.current
         return Preference.PreferenceItem.MultiSelectListPreference(
             pref = unsortedPreferences.exhAutoUpdateRequirements(),
-            title = stringResource(R.string.time_between_batches),
+            title = stringResource(R.string.auto_update_restrictions),
             subtitle = remember(value) {
                 context.getString(
                     R.string.restrictions,
