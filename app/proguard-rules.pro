@@ -265,7 +265,6 @@
  -keep,allowoptimization class kotlin.coroutines.Continuation
  -keep,allowoptimization class * extends uy.kohesive.injekt.api.TypeReference
  -keep,allowoptimization public class io.requery.android.database.sqlite.SQLiteConnection { *; }
- -keep,allowoptimization class org.apache.commons.compress.archivers.zip.**
 
 # Suggested rules
 -dontwarn com.oracle.svm.core.annotate.AutomaticFeature
