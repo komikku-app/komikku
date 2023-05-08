@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.R
+import kotlin.math.roundToInt
 
 @Composable
 fun ChapterNavigator(
@@ -134,7 +135,7 @@ fun ChapterNavigator(
                             valueRange = 1f..totalPages.toFloat(),
                             steps = totalPages - 2,
                             onValueChange = {
-                                onSliderValueChange(it.toInt() - 1)
+                                onSliderValueChange(it.roundToInt() - 1)
                             },
                             interactionSource = interactionSource,
                         )
@@ -250,7 +251,7 @@ fun ChapterNavigatorVert(
                     valueRange = 1f..totalPages.toFloat(),
                     steps = totalPages,
                     onValueChange = {
-                        onSliderValueChange(it.toInt() - 1)
+                        onSliderValueChange(it.roundToInt() - 1)
                     },
                     interactionSource = interactionSource,
                 )
