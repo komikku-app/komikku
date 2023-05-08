@@ -246,7 +246,7 @@ class FavoritesSyncHelper(val context: Context) {
                 errorList += errorString
             } else {
                 status.value = FavoritesSyncStatus.Error(errorString)
-                throw IgnoredException()
+                throw IgnoredException(errorString)
             }
         }
     }
@@ -296,7 +296,7 @@ class FavoritesSyncHelper(val context: Context) {
                     errorList += errorString
                 } else {
                     status.value = FavoritesSyncStatus.Error(errorString)
-                    throw IgnoredException()
+                    throw IgnoredException(errorString)
                 }
             }
         }
@@ -361,11 +361,12 @@ class FavoritesSyncHelper(val context: Context) {
 
             // Import using gallery adder
             val result = galleryAdder.addGallery(
-                context,
-                "${exh.baseUrl}${it.getUrl()}",
-                true,
-                exh,
-                throttleManager::throttle,
+                context = context,
+                url = "${exh.baseUrl}${it.getUrl()}",
+                fav = true,
+                forceSource = exh,
+                throttleFunc = throttleManager::throttle,
+                retry = 3
             )
 
             if (result is GalleryAddEvent.Fail) {
@@ -385,7 +386,7 @@ class FavoritesSyncHelper(val context: Context) {
                     errorList += errorString
                 } else {
                     status.value = FavoritesSyncStatus.Error(errorString)
-                    throw IgnoredException()
+                    throw IgnoredException(errorString)
                 }
             } else if (result is GalleryAddEvent.Success) {
                 insertedMangaCategories += categories[it.category].id to result.manga
@@ -401,7 +402,7 @@ class FavoritesSyncHelper(val context: Context) {
     private fun needWarnThrottle() =
         throttleManager.throttleTime >= THROTTLE_WARN
 
-    class IgnoredException : RuntimeException()
+    class IgnoredException(message: String) : RuntimeException(message)
 
     companion object {
         private val THROTTLE_WARN = 1.seconds

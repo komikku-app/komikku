@@ -59,6 +59,7 @@ class GalleryAdder(
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
         throttleFunc: suspend () -> Unit = {},
+        retry: Int = 1
     ): GalleryAddEvent {
         logger.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
         try {
@@ -138,7 +139,7 @@ class GalleryAdder(
                 )
 
             // Fetch and copy details
-            val newManga = source.getMangaDetails(manga.toSManga())
+            val newManga = retry(retry) { source.getMangaDetails(manga.toSManga()) }
             updateManga.awaitUpdateFromSource(manga, newManga, false)
             manga = getManga.await(manga.id)!!
 
@@ -149,10 +150,12 @@ class GalleryAdder(
 
             // Fetch and copy chapters
             try {
-                val chapterList = if (source is EHentai) {
-                    source.getChapterList(manga.toSManga(), throttleFunc)
-                } else {
-                    source.getChapterList(manga.toSManga())
+                val chapterList = retry(retry) {
+                    if (source is EHentai) {
+                        source.getChapterList(manga.toSManga(), throttleFunc)
+                    } else {
+                        source.getChapterList(manga.toSManga())
+                    }
                 }
 
                 if (chapterList.isNotEmpty()) {
@@ -185,6 +188,28 @@ class GalleryAdder(
                 ((e.message ?: "Unknown error!") + " (Gallery: $url)").trim(),
             )
         }
+    }
+
+    private inline fun <T : Any> retry(retryCount: Int, block: () -> T): T {
+        var result: T? = null
+        var lastError: Exception? = null
+
+        for (i in 1..retryCount) {
+            try {
+                result = block()
+            } catch (e: Exception) {
+                if (e is EHentai.GalleryNotFoundException) {
+                    throw e
+                }
+                lastError = e
+            }
+        }
+
+        if (lastError != null) {
+            throw lastError
+        }
+
+        return result!!
     }
 }
 

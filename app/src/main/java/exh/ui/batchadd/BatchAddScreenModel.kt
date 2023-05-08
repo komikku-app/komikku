@@ -68,7 +68,14 @@ class BatchAddScreenModel(
 
             splitGalleries.forEachIndexed { i, s ->
                 ensureActive()
-                val result = withIOContext { galleryAdder.addGallery(context, s, true) }
+                val result = withIOContext {
+                    galleryAdder.addGallery(
+                        context = context,
+                        url = s,
+                        fav = true,
+                        retry = 2
+                    )
+                }
                 if (result is GalleryAddEvent.Success) {
                     succeeded.add(s)
                 } else {
