@@ -366,7 +366,7 @@ class FavoritesSyncHelper(val context: Context) {
                 fav = true,
                 forceSource = exh,
                 throttleFunc = throttleManager::throttle,
-                retry = 3
+                retry = 3,
             )
 
             if (result is GalleryAddEvent.Fail) {

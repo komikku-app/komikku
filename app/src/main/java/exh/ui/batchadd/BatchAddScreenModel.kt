@@ -73,7 +73,7 @@ class BatchAddScreenModel(
                         context = context,
                         url = s,
                         fav = true,
-                        retry = 2
+                        retry = 2,
                     )
                 }
                 if (result is GalleryAddEvent.Success) {

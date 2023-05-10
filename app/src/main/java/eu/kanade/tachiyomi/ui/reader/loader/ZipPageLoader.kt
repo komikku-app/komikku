@@ -46,7 +46,7 @@ internal class ZipPageLoader(file: File) : PageLoader() {
         }
 
         zip.fileHeaders.asSequence()
-            .filter { !it.isDirectory && ImageUtil.isImage(it.fileName) { zip.getInputStream(it) }  }
+            .filter { !it.isDirectory && ImageUtil.isImage(it.fileName) { zip.getInputStream(it) } }
             .forEach { entry ->
                 zip.extractFile(entry, tmpDir.absolutePath)
             }
