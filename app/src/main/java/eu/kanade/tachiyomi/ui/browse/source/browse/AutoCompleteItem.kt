@@ -138,7 +138,10 @@ fun AutoCompleteTextField(
     ) {
         OutlinedTextField(
             value = value,
-            onValueChange = { value = it },
+            onValueChange = {
+                value = it
+                expanded = true // todo remove if focus bug is fixed
+            },
             label = if (label != null) {
                 { Text(label) }
             } else {
