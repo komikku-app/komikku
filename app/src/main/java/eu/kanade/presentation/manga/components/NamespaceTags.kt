@@ -103,7 +103,12 @@ fun NamespaceTags(
         tags.tags.forEach { (namespace, tags) ->
             Row(Modifier.padding(start = 16.dp)) {
                 if (namespace.isNotEmpty()) {
-                    TagsChip(text = namespace, onClick = null, onLongClick = null)
+                    TagsChip(
+                        modifier = Modifier.padding(top = 4.dp),
+                        text = namespace,
+                        onClick = null,
+                        onLongClick = null,
+                    )
                 }
                 FlowRow(
                     modifier = Modifier.padding(start = 8.dp, end = 16.dp),
