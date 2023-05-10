@@ -59,7 +59,7 @@ class GalleryAdder(
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
         throttleFunc: suspend () -> Unit = {},
-        retry: Int = 1
+        retry: Int = 1,
     ): GalleryAddEvent {
         logger.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
         try {
@@ -197,6 +197,7 @@ class GalleryAdder(
         for (i in 1..retryCount) {
             try {
                 result = block()
+                break
             } catch (e: Exception) {
                 if (e is EHentai.GalleryNotFoundException) {
                     throw e
