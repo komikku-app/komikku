@@ -709,6 +709,10 @@
     <string name="relation_serialization">Serialization</string>
     <string name="relation_alternate_version">Alternate version</string>
 
+    <!-- Stats page -->
+    <string name="include_all_read_entries">Include all read entries</string>
+    <string name="ignore_non_library_entries">Ignore non-library entries</string>
+
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="one">%1$d year ago</item>

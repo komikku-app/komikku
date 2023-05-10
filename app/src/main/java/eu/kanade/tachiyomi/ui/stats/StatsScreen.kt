@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.more.stats.StatsScreenContent
 import eu.kanade.presentation.more.stats.StatsScreenState
 import eu.kanade.presentation.util.Screen
@@ -35,11 +36,28 @@ class StatsScreen : Screen() {
                     title = stringResource(R.string.label_stats),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
+                    // SY -->
+                    actions = {
+                        val allRead by screenModel.allRead.collectAsState()
+                        AppBarActions(
+                            listOf(
+                                AppBar.OverflowAction(
+                                    title = if (allRead) {
+                                        stringResource(R.string.ignore_non_library_entries)
+                                    } else {
+                                        stringResource(R.string.include_all_read_entries)
+                                    },
+                                    onClick = screenModel::toggleReadManga,
+                                ),
+                            ),
+                        )
+                    },
+                    // SY <--
                 )
             },
         ) { paddingValues ->
             StatsScreenContent(
-                state = state as StatsScreenState.Success,
+                state = state as? StatsScreenState.Success ?: return@Scaffold,
                 paddingValues = paddingValues,
             )
         }

@@ -179,5 +179,11 @@ class MangaRepositoryImpl(
     override suspend fun deleteManga(mangaId: Long) {
         handler.await { mangasQueries.deleteById(mangaId) }
     }
+
+    override suspend fun getReadMangaNotInLibrary(): List<LibraryManga> {
+        return handler.awaitList {
+            (handler as AndroidDatabaseHandler).getLibraryQuery("M.favorite = 0 AND C.readCount != 0")
+        }.map(libraryViewMapper)
+    }
     // SY <--
 }

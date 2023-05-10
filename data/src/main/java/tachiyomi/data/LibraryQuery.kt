@@ -40,7 +40,10 @@ private val mapper = { cursor: SqlCursor ->
     )
 }
 
-class LibraryQuery(val driver: SqlDriver) : Query<LibraryView>(copyOnWriteList(), mapper) {
+class LibraryQuery(
+    val driver: SqlDriver,
+    val condition: String = "M.favorite = 1",
+) : Query<LibraryView>(copyOnWriteList(), mapper) {
     override fun execute(): SqlCursor {
         return driver.executeQuery(
             null,
@@ -72,7 +75,7 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryView>(copyOnWriteList()
             ON M._id = C.manga_id
             LEFT JOIN mangas_categories AS MC
             ON MC.manga_id = M._id
-            WHERE M.favorite = 1 AND M.source <> $MERGED_SOURCE_ID
+            WHERE $condition AND M.source <> $MERGED_SOURCE_ID
             UNION
             SELECT
                 M.*,
@@ -109,7 +112,7 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryView>(copyOnWriteList()
             ON ME.merge_id = C.merge_id
             LEFT JOIN mangas_categories AS MC
             ON MC.manga_id = M._id
-            WHERE M.favorite = 1 AND M.source = $MERGED_SOURCE_ID;
+            WHERE $condition AND M.source = $MERGED_SOURCE_ID;
             """.trimIndent(),
             1,
         )

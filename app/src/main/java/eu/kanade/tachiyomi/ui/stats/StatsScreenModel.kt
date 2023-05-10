@@ -12,8 +12,11 @@ import eu.kanade.presentation.more.stats.data.StatsData
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.model.SManga
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.history.interactor.GetTotalReadDuration
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -21,6 +24,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.manga.interactor.GetLibraryManga
+import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibrary
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.source.local.isLocal
@@ -34,13 +38,28 @@ class StatsScreenModel(
     private val getTracks: GetTracks = Injekt.get(),
     private val preferences: LibraryPreferences = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
+    // SY -->
+    private val getReadMangaNotInLibrary: GetReadMangaNotInLibrary = Injekt.get(),
+    // SY <--
 ) : StateScreenModel<StatsScreenState>(StatsScreenState.Loading) {
 
     private val loggedServices by lazy { trackManager.services.fastFilter { it.isLogged } }
 
+    // SY -->
+    private val _allRead = MutableStateFlow(false)
+    val allRead = _allRead.asStateFlow()
+    // SY <--
+
     init {
-        coroutineScope.launchIO {
-            val libraryManga = getLibraryManga.await()
+        // SY -->
+        _allRead.onEach { allRead ->
+            mutableState.update { StatsScreenState.Loading }
+            val libraryManga = getLibraryManga.await() + if (allRead) {
+                getReadMangaNotInLibrary.await()
+            } else {
+                emptyList()
+            }
+            // SY <--
 
             val distinctLibraryManga = libraryManga.fastDistinctBy { it.id }
 
@@ -83,7 +102,9 @@ class StatsScreenModel(
                     trackers = trackersStatData,
                 )
             }
-        }
+            // SY -->
+        }.launchIn(coroutineScope)
+        // SY <--
     }
 
     private fun getGlobalUpdateItemCount(libraryManga: List<LibraryManga>): Int {
@@ -148,5 +169,9 @@ class StatsScreenModel(
     private fun get10PointScore(track: Track): Float {
         val service = trackManager.getService(track.syncId)!!
         return service.get10PointScore(track)
+    }
+
+    fun toggleReadManga() {
+        _allRead.value = !_allRead.value
     }
 }
