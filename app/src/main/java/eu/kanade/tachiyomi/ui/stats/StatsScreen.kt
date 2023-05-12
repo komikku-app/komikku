@@ -25,11 +25,6 @@ class StatsScreen : Screen() {
         val screenModel = rememberScreenModel { StatsScreenModel() }
         val state by screenModel.state.collectAsState()
 
-        if (state is StatsScreenState.Loading) {
-            LoadingScreen()
-            return
-        }
-
         Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
@@ -56,6 +51,11 @@ class StatsScreen : Screen() {
                 )
             },
         ) { paddingValues ->
+            if (state is StatsScreenState.Loading) {
+                LoadingScreen()
+                return@Scaffold
+            }
+
             StatsScreenContent(
                 state = state as? StatsScreenState.Success ?: return@Scaffold,
                 paddingValues = paddingValues,
