@@ -12,7 +12,7 @@ CREATE TABLE eh_favorites_alternatives (
     token TEXT NOT NULL,
     otherGid TEXT NOT NULL,
     otherToken TEXT NOT NULL,
-    FOREIGN KEY (gid, token) REFERENCES eh_favorites(gid, token)
+    UNIQUE (gid, token, otherGid, otherToken)
 );
 
 CREATE INDEX eh_favorites_alternatives_gid_token_index ON eh_favorites_alternatives(gid, token);

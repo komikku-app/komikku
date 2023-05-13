@@ -1,5 +1,7 @@
 package tachiyomi.data.manga
 
+import logcat.LogPriority
+import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.FavoriteEntryAlternative
@@ -30,13 +32,18 @@ class FavoritesEntryRepositoryImpl(
     }
 
     override suspend fun addAlternative(favoriteEntryAlternative: FavoriteEntryAlternative) {
-        handler.await {
-            eh_favoritesQueries.addAlternative(
-                otherGid = favoriteEntryAlternative.otherGid,
-                otherToken = favoriteEntryAlternative.otherToken,
-                gid = favoriteEntryAlternative.gid,
-                token = favoriteEntryAlternative.token,
-            )
+        try {
+            handler.await {
+                eh_favoritesQueries.addAlternative(
+                    otherGid = favoriteEntryAlternative.otherGid,
+                    otherToken = favoriteEntryAlternative.otherToken,
+                    gid = favoriteEntryAlternative.gid,
+                    token = favoriteEntryAlternative.token,
+                )
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.INFO, e)
         }
+
     }
 }

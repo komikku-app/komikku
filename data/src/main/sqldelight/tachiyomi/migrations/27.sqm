@@ -1,0 +1,16 @@
+DROP INDEX IF EXISTS eh_favorites_alternatives_gid_token_index;
+DROP INDEX IF EXISTS eh_favorites_alternatives_other_gid_token_index;
+
+DROP TABLE IF EXISTS eh_favorites_alternatives;
+
+CREATE TABLE eh_favorites_alternatives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gid TEXT NOT NULL,
+    token TEXT NOT NULL,
+    otherGid TEXT NOT NULL,
+    otherToken TEXT NOT NULL,
+    UNIQUE (gid, token, otherGid, otherToken)
+);
+
+CREATE INDEX eh_favorites_alternatives_gid_token_index ON eh_favorites_alternatives(gid, token);
+CREATE INDEX eh_favorites_alternatives_other_gid_token_index ON eh_favorites_alternatives(otherGid, otherToken);
