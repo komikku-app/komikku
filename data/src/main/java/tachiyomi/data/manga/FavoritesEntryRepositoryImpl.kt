@@ -44,6 +44,5 @@ class FavoritesEntryRepositoryImpl(
         } catch (e: Exception) {
             logcat(LogPriority.INFO, e)
         }
-
     }
 }

@@ -19,9 +19,9 @@ CREATE INDEX eh_favorites_alternatives_gid_token_index ON eh_favorites_alternati
 CREATE INDEX eh_favorites_alternatives_other_gid_token_index ON eh_favorites_alternatives(otherGid, otherToken);
 
 selectAll:
-SELECT f.gid, f.token, f.title, f.category, a.otherGid, a.otherToken
+SELECT coalesce(a.gid, f.gid), coalesce(a.token, f.token), f.title, f.category, a.otherGid, a.otherToken
 FROM eh_favorites AS f
-LEFT JOIN eh_favorites_alternatives AS a ON f.gid = a.gid AND f.token = a.token;
+LEFT JOIN eh_favorites_alternatives AS a ON (f.gid = a.gid AND f.token = a.token) OR (f.gid = a.otherGid AND f.token = a.otherToken);
 
 insertEhFavorites:
 INSERT INTO eh_favorites (title, gid, token, category) VALUES (?, ?, ?, ?);
