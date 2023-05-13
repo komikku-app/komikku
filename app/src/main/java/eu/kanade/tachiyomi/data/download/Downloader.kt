@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
+import android.os.Build
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.domain.chapter.model.toSChapter
@@ -58,7 +59,12 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.BufferedOutputStream
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.util.zip.CRC32
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * This class is the one in charge of downloading chapters.
@@ -591,27 +597,63 @@ class Downloader(
         tmpDir: UniFile,
     ) {
         // SY -->
-        val zip = ZipFile("${mangaDir.filePath}/$dirname.cbz$TMP_DIR_SUFFIX")
-        val zipParameters = ZipParameters()
-
-        if (CbzCrypto.getPasswordProtectDlPref() &&
-            CbzCrypto.isPasswordSet()
-        ) {
-            CbzCrypto.setZipParametersEncrypted(zipParameters)
-            zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
-
-            tmpDir.filePath?.let { addPaddingToImage(File(it)) }
+        if (CbzCrypto.getPasswordProtectDlPref() && CbzCrypto.isPasswordSet()) {
+            archiveEncryptedChapter(mangaDir, dirname, tmpDir)
+            return
         }
-        zip.addFiles(
-            tmpDir.listFiles()?.map { img -> img.filePath?.let { File(it) } },
-            zipParameters,
-        )
-        mangaDir.findFile("$dirname.cbz$TMP_DIR_SUFFIX")?.renameTo("$dirname.cbz")
         // SY <--
+
+        val zip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")
+        ZipOutputStream(BufferedOutputStream(zip.openOutputStream())).use { zipOut ->
+            zipOut.setMethod(ZipEntry.STORED)
+
+            tmpDir.listFiles()?.forEach { img ->
+                img.openInputStream().use { input ->
+                    val data = input.readBytes()
+                    val size = img.length()
+                    val entry = ZipEntry(img.name).apply {
+                        val crc = CRC32().apply {
+                            update(data)
+                        }
+                        setCrc(crc.value)
+
+                        compressedSize = size
+                        setSize(size)
+                    }
+                    zipOut.putNextEntry(entry)
+                    zipOut.write(data)
+                }
+            }
+        }
+        zip.renameTo("$dirname.cbz")
         tmpDir.delete()
     }
 
     // SY -->
+
+    private fun archiveEncryptedChapter(
+        mangaDir: UniFile,
+        dirname: String,
+        tmpDir: UniFile,
+    ) {
+        val zip = ZipFile("${mangaDir.filePath}/$dirname.cbz$TMP_DIR_SUFFIX")
+        val zipParameters = ZipParameters()
+
+        CbzCrypto.setZipParametersEncrypted(zipParameters)
+        zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) zip.charset = StandardCharsets.ISO_8859_1
+
+        tmpDir.filePath?.let { addPaddingToImage(File(it)) }
+
+        zip.addFiles(
+            tmpDir.listFiles()?.map { img -> img.filePath?.let { File(it) } },
+            zipParameters,
+        )
+
+        mangaDir.findFile("$dirname.cbz$TMP_DIR_SUFFIX")?.renameTo("$dirname.cbz")
+        tmpDir.delete()
+    }
+
     private fun addPaddingToImage(imageDir: File) {
         imageDir.listFiles()
             // using ImageUtils isImage and findImageType functions causes IO errors when deleting files to set Exif Metadata
