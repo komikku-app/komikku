@@ -217,6 +217,27 @@
     <string name="thursday">Четверг</string>
     <string name="friday">Пятница</string>
     <string name="saturday">Суббота</string>
+    <string name="encrypt_database">Зашифровать базу данных</string>
+    <string name="encrypt_database_subtitle">Требуется перезагрузка приложения для применения изменений</string>
+    <string name="encrypt_database_message">
+        <![CDATA[<font color=\'red\'>ВКЛЮЧЕНИЯ ЭТОГО ПАРАМЕТРА СОЗДАСТ НОВУЮ БАЗУ ДАННЫХ. СЛЕДУЙТЕ СЛЕДУЮЩИМ ДЕЙСТВИЯМ ДЛЯ СОХРАНЕНИЯ ВАШИХ ДАННЫХ<br>1. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ<br>2. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ОЧИСТИТЬ ДАННЫЕ ПРИЛОЖЕНИЯ<br>3. ЗАНОВО ОТКРОЙТЕ ПРИЛОЖЕНИЕ И АКТИВИРУЙТЕ ЭТОТ ПАРАМЕТР<br>4. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ПРИНУДИТЕЛЬНО ПЕРЕЗАПУСТИТЕ ПРИЛОЖЕНИЕ<br>5. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → ВОССТАНОВИТЬ ИЗ РЕЗЕРВНОЙ КОПИИ</font>]]>
+    </string>
+    <string name="set_cbz_zip_password">Установить пароль для архива CBZ</string>
+    <string name="password_protect_downloads">Пароль защищает загрузки</string>
+    <string name="password_protect_downloads_summary">Шифрует загрузки в архиве CBZ при помощи заданного пароля.\nВНИМАНИЕ: ДАННЫЕ ВНУТРИ АРХИВОВ БУДУТ НАВСЕГДА УТЕРЯНЫ, ЕСЛИ ВЫ ЗАБУДЕТЕ ПАРОЛЬ</string>
+    <string name="delete_cbz_archive_password">Удалить пароль архива CBZ</string>
+    <string name="save_in_manga_directory">В папке серии</string>
+    <string name="save_internally">Внутри приложения</string>
+    <string name="save_never">Никогда (источник пользователя не будет иметь обложек)</string>
+    <string name="save_local_manga_covers">Сохранять обложки серий пользователя</string>
+    <string name="delete_cached_local_source_covers">Удалить кэшированные обложки из источника пользователя</string>
+    <string name="delete_cached_local_source_covers_subtitle">Источник пользователя внутри приложения НЕ удаляет автоматически обложки серий\nПожалуйста, производите удаление здесь, затем откройте источник пользователя, чтобы сгенерировать их снова</string>
+    <string name="successfully_deleted_all_locally_cached_covers">Все кэшированные обложки были успешно удалены</string>
+    <string name="something_went_wrong_deleting_your_cover_images">Что-то пошло не так при удалении ваших обложек:</string>
+    <string name="cbz_archive_password">Пароль архива CBZ</string>
+    <string name="wrong_cbz_archive_password">Неверный пароль архива CBZ</string>
+    <string name="encryption_type">Тип шифрования</string>
+    <string name="standard_zip_encryption">Обычное ZIP шифрование (быстрое, но небезопасное)</string>
 
     <!-- Reader Settings -->
     <string name="page_downloading">Загрузка страниц</string>
@@ -427,6 +448,7 @@
     <string name="no_chapters_found_for_migration">Глав не найдено. Эта серия не может быть использована для переноса</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
+    <string name="action_stop">Остановить</string>
     <plurals name="migrate_entry">
         <item quantity="one">Перенести %1$d%2$s серию?</item>
         <item quantity="few">Перенести %1$d%2$s серии?</item>
