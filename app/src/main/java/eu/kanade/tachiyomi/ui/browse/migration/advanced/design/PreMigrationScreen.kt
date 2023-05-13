@@ -8,7 +8,6 @@ import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -40,7 +39,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.OverflowMenu
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
@@ -98,34 +97,28 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                     actions = {
-                        IconButton(onClick = { screenModel.massSelect(false) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Deselect,
-                                contentDescription = stringResource(R.string.select_none),
-                            )
-                        }
-                        IconButton(onClick = { screenModel.massSelect(true) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.SelectAll,
-                                contentDescription = stringResource(R.string.action_select_all),
-                            )
-                        }
-                        OverflowMenu { closeMenu ->
-                            androidx.compose.material3.DropdownMenuItem(
-                                text = { Text(stringResource(R.string.match_enabled_sources)) },
-                                onClick = {
-                                    screenModel.matchSelection(true)
-                                    closeMenu()
-                                },
-                            )
-                            androidx.compose.material3.DropdownMenuItem(
-                                text = { Text(stringResource(R.string.match_pinned_sources)) },
-                                onClick = {
-                                    screenModel.matchSelection(false)
-                                    closeMenu()
-                                },
-                            )
-                        }
+                        AppBarActions(
+                            listOf(
+                                AppBar.Action(
+                                    title = stringResource(R.string.select_none),
+                                    icon = Icons.Outlined.Deselect,
+                                    onClick = { screenModel.massSelect(false) },
+                                ),
+                                AppBar.Action(
+                                    title = stringResource(R.string.action_select_all),
+                                    icon = Icons.Outlined.SelectAll,
+                                    onClick = { screenModel.massSelect(true) },
+                                ),
+                                AppBar.OverflowAction(
+                                    title = stringResource(R.string.match_enabled_sources),
+                                    onClick = { screenModel.matchSelection(true) },
+                                ),
+                                AppBar.OverflowAction(
+                                    title = stringResource(R.string.match_pinned_sources),
+                                    onClick = { screenModel.matchSelection(false) },
+                                ),
+                            ),
+                        )
                     },
                 )
             },

@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.UTurnRight
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AroundLayout
 import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.tachiyomi.R
@@ -89,7 +88,9 @@ fun PagePreviewScreen(
                     ) {
                         items(items) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
@@ -183,14 +184,15 @@ fun PagePreviewTopAppBar(
     AppBar(
         title = title,
         actions = {
-            if (showOpenPageDialog) {
-                IconButton(onClick = onOpenPageDialog) {
-                    Icon(
-                        imageVector = Icons.Outlined.UTurnRight,
-                        contentDescription = stringResource(R.string.page_preview_page_go_to),
-                    )
-                }
-            }
+            AppBarActions(
+                listOfNotNull(
+                    AppBar.Action(
+                        title = stringResource(R.string.page_preview_page_go_to),
+                        icon = Icons.Outlined.UTurnRight,
+                        onClick = onOpenPageDialog,
+                    ).takeIf { showOpenPageDialog },
+                ),
+            )
         },
         navigateUp = navigateUp,
         scrollBehavior = scrollBehavior,
