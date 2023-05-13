@@ -1,16 +1,34 @@
 CREATE TABLE eh_favorites (
-    _id INTEGER NOT NULL PRIMARY KEY,
-    title TEXT NOT NULL,
     gid TEXT NOT NULL,
     token TEXT NOT NULL,
-    category INTEGER NOT NULL
+    title TEXT NOT NULL,
+    category INTEGER NOT NULL,
+    PRIMARY KEY (gid, token)
 );
 
+CREATE TABLE eh_favorites_alternatives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gid TEXT NOT NULL,
+    token TEXT NOT NULL,
+    otherGid TEXT NOT NULL,
+    otherToken TEXT NOT NULL,
+    FOREIGN KEY (gid, token) REFERENCES eh_favorites(gid, token)
+);
+
+CREATE INDEX eh_favorites_alternatives_gid_token_index ON eh_favorites_alternatives(gid, token);
+CREATE INDEX eh_favorites_alternatives_other_gid_token_index ON eh_favorites_alternatives(otherGid, otherToken);
+
 selectAll:
-SELECT * FROM eh_favorites;
+SELECT f.gid, f.token, f.title, f.category, a.otherGid, a.otherToken
+FROM eh_favorites AS f
+LEFT JOIN eh_favorites_alternatives AS a ON f.gid = a.gid AND f.token = a.token;
 
 insertEhFavorites:
-INSERT INTO eh_favorites (_id, title, gid, token, category) VALUES (?, ?, ?, ?, ?);
+INSERT INTO eh_favorites (title, gid, token, category) VALUES (?, ?, ?, ?);
 
 deleteAll:
 DELETE FROM eh_favorites;
+
+addAlternative:
+INSERT INTO eh_favorites_alternatives (gid, token, otherGid, otherToken)
+VALUES (:gid, :token, :otherGid, :otherToken);

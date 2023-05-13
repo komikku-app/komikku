@@ -52,6 +52,7 @@ import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.InsertMergedReference
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.SetMangaFilteredScanlators
+import tachiyomi.domain.manga.interactor.InsertFavoriteEntryAlternative
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
 import tachiyomi.domain.manga.repository.CustomMangaRepository
 import tachiyomi.domain.manga.repository.FavoritesEntryRepository
@@ -140,6 +141,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetFavoriteEntries(get()) }
         addFactory { InsertFavoriteEntries(get()) }
         addFactory { DeleteFavoriteEntries(get()) }
+        addFactory { InsertFavoriteEntryAlternative(get()) }
 
         addSingletonFactory<SavedSearchRepository> { SavedSearchRepositoryImpl(get()) }
         addFactory { GetSavedSearchById(get()) }

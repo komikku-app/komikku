@@ -2,6 +2,7 @@ package exh.eh
 
 import android.content.Context
 import eu.kanade.domain.manga.interactor.UpdateManga
+import exh.metadata.metadata.EHentaiSearchMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -18,6 +19,8 @@ import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.InsertFavoriteEntryAlternative
+import tachiyomi.domain.manga.model.FavoriteEntryAlternative
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import uy.kohesive.injekt.injectLazy
@@ -41,6 +44,7 @@ class EHentaiUpdateHelper(context: Context) {
     private val upsertHistory: UpsertHistory by injectLazy()
     private val removeHistory: RemoveHistory by injectLazy()
     private val getHistoryByMangaId: GetHistoryByMangaId by injectLazy()
+    private val insertFavoriteEntryAlternative: InsertFavoriteEntryAlternative by injectLazy()
 
     /**
      * @param chapters Cannot be an empty list!
@@ -123,6 +127,12 @@ class EHentaiUpdateHelper(context: Context) {
                 upsertHistory.await(it)
             }
 
+            // Update favorites entry database
+            val favoriteEntryUpdate = getFavoriteEntryAlternative(accepted, toDiscard)
+            if (favoriteEntryUpdate != null) {
+                insertFavoriteEntryAlternative.await(favoriteEntryUpdate)
+            }
+
             // Copy categories from all chains to accepted manga
 
             val newCategories = rootsToMutate.flatMap { chapterChain ->
@@ -145,7 +155,24 @@ class EHentaiUpdateHelper(context: Context) {
         }
     }
 
-    fun getHistory(
+    private fun getFavoriteEntryAlternative(
+        accepted: ChapterChain,
+        toDiscard: List<ChapterChain>,
+    ): FavoriteEntryAlternative? {
+        val favorite = toDiscard.find { it.manga.favorite } ?: return null
+
+        val gid = EHentaiSearchMetadata.galleryId(accepted.manga.url)
+        val token = EHentaiSearchMetadata.galleryToken(accepted.manga.url)
+
+        return FavoriteEntryAlternative(
+            otherGid = gid,
+            otherToken = token,
+            gid = EHentaiSearchMetadata.galleryId(favorite.manga.url),
+            token = EHentaiSearchMetadata.galleryToken(favorite.manga.url),
+        )
+    }
+
+    private fun getHistory(
         currentChapters: List<Chapter>,
         chainsAsChapters: List<Chapter>,
         chainsAsHistory: List<History>,

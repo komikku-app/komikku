@@ -19,14 +19,16 @@ import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.InsertFavoriteEntries
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
-class LocalFavoritesStorage {
-    private val getFavorites: GetFavorites by injectLazy()
-    private val getCategories: GetCategories by injectLazy()
-    private val deleteFavoriteEntries: DeleteFavoriteEntries by injectLazy()
-    private val getFavoriteEntries: GetFavoriteEntries by injectLazy()
-    private val insertFavoriteEntries: InsertFavoriteEntries by injectLazy()
+class LocalFavoritesStorage(
+    private val getFavorites: GetFavorites = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
+    private val deleteFavoriteEntries: DeleteFavoriteEntries = Injekt.get(),
+    private val getFavoriteEntries: GetFavoriteEntries = Injekt.get(),
+    private val insertFavoriteEntries: InsertFavoriteEntries = Injekt.get(),
+) {
 
     suspend fun getChangedDbEntries() = getFavorites.await()
         .asFlow()
@@ -67,27 +69,29 @@ class LocalFavoritesStorage {
 
         val databaseEntries = getFavoriteEntries.await()
 
-        val added = terminated.filter {
-            queryListForEntry(databaseEntries, it) == null
-        }
+        val added = terminated.groupBy { it.gid to it.token }
+            .filter { (_, values) ->
+                values.all { queryListForEntry(databaseEntries, it) == null }
+            }
+            .map { it.value.first() }
 
         val removed = databaseEntries
-            .filter {
-                queryListForEntry(terminated, it) == null
-            } /*.map {
-                todo see what this does
-                realm.copyFromRealm(it)
-            }*/
+            .groupBy { it.gid to it.token }
+            .filter { (_, values) ->
+                values.all { queryListForEntry(terminated, it) == null }
+            }
+            .map { it.value.first() }
 
         return ChangeSet(added, removed)
     }
 
+    private fun FavoriteEntry.urlEquals(other: FavoriteEntry) = (gid == other.gid && token == other.token) ||
+        (otherGid != null && otherToken != null && (otherGid == other.gid && otherToken == other.token)) ||
+        (other.otherGid != null && other.otherToken != null && (gid == other.otherGid && token == other.otherToken)) ||
+        (otherGid != null && otherToken != null && other.otherGid != null && other.otherToken != null && otherGid == other.otherGid && otherToken == other.otherToken)
+
     private fun queryListForEntry(list: List<FavoriteEntry>, entry: FavoriteEntry) =
-        list.find {
-            it.gid == entry.gid &&
-                it.token == entry.token &&
-                it.category == entry.category
-        }
+        list.find { it.urlEquals(entry) && it.category == entry.category }
 
     private suspend fun Flow<Manga>.loadDbCategories(): Flow<Pair<Int, Manga>> {
         val dbCategories = getCategories.await()

@@ -1,0 +1,25 @@
+ALTER TABLE eh_favorites RENAME TO eh_favorites_temp;
+CREATE TABLE eh_favorites (
+    gid TEXT NOT NULL,
+    token TEXT NOT NULL,
+    title TEXT NOT NULL,
+    category INTEGER NOT NULL,
+    PRIMARY KEY (gid, token)
+);
+INSERT INTO eh_favorites
+SELECT gid, token, title, category
+FROM eh_favorites_temp;
+
+DROP TABLE IF EXISTS eh_favorites_temp;
+
+CREATE TABLE eh_favorites_alternatives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gid TEXT NOT NULL,
+    token TEXT NOT NULL,
+    otherGid TEXT NOT NULL,
+    otherToken TEXT NOT NULL,
+    FOREIGN KEY (gid, token) REFERENCES eh_favorites(gid, token)
+);
+
+CREATE INDEX eh_favorites_alternatives_gid_token_index ON eh_favorites_alternatives(gid, token);
+CREATE INDEX eh_favorites_alternatives_other_gid_token_index ON eh_favorites_alternatives(otherGid, otherToken);

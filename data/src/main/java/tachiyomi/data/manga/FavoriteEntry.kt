@@ -2,13 +2,14 @@ package tachiyomi.data.manga
 
 import tachiyomi.domain.manga.model.FavoriteEntry
 
-val favoriteEntryMapper: (Long, String, String, String, Long) -> FavoriteEntry =
-    { id, title, gid, token, category ->
+val favoriteEntryMapper: (String, String, String, Long, String?, String?) -> FavoriteEntry =
+    { gid, token, title, category, otherGid, otherToken ->
         FavoriteEntry(
-            id = id,
-            title = title,
             gid = gid,
             token = token,
+            title = title,
             category = category.toInt(),
+            otherGid = otherGid,
+            otherToken = otherToken,
         )
     }
