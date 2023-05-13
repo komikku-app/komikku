@@ -42,6 +42,10 @@ import kotlin.math.min
 object ImageUtil {
 
     fun isImage(name: String, openStream: (() -> InputStream)? = null): Boolean {
+        // SY -->
+        if (File(name).extension.equals("cbi", ignoreCase = true)) return true
+        // SY <--
+
         val contentType = try {
             URLConnection.guessContentTypeFromName(name)
         } catch (e: Exception) {

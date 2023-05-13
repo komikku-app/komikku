@@ -390,13 +390,16 @@ actual class LocalSource(
                 is Format.Zip -> {
                     ZipFile(format.file).use { zip ->
                         // SY -->
-                        if (zip.isEncrypted) zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
+                        var encrypted = false
+                        if (zip.isEncrypted) {
+                            zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
+                            encrypted = true
+                        }
                         val entry = zip.fileHeaders.toList()
                             .sortedWith { f1, f2 -> f1.fileName.compareToCaseInsensitiveNaturalOrder(f2.fileName) }
                             .find { !it.isDirectory && ImageUtil.isImage(it.fileName) { zip.getInputStream(it) } }
+                        entry?.let { coverManager.update(manga, zip.getInputStream(it), encrypted) }
                         // SY <--
-
-                        entry?.let { coverManager.update(manga, zip.getInputStream(it)) }
                     }
                 }
                 is Format.Rar -> {

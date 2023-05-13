@@ -230,14 +230,6 @@
     <string name="password_protect_downloads">Password protect downloads</string>
     <string name="password_protect_downloads_summary">Encrypts CBZ archive downloads with the given password.\nWARNING: DATA INSIDE THE ARCHIVES WILL BE LOST FOREVER IF YOU FORGET THE PASSWORD</string>
     <string name="delete_cbz_archive_password">Delete CBZ archive password</string>
-    <string name="save_in_manga_directory">In manga directory</string>
-    <string name="save_internally">Internally</string>
-    <string name="save_never">Never (local source manga won\'t have covers)</string>
-    <string name="save_local_manga_covers">Save local manga covers</string>
-    <string name="delete_cached_local_source_covers">Delete cached local source covers</string>
-    <string name="delete_cached_local_source_covers_subtitle">Internally cached local source manga covers are NOT deleted automatically   Please delete them here then open the local source extension to generate them again</string>
-    <string name="successfully_deleted_all_locally_cached_covers">Successfully deleted all locally cached covers</string>
-    <string name="something_went_wrong_deleting_your_cover_images">Something went wrong deleting your cover images: </string>
     <string name="cbz_archive_password">CBZ archive password</string>
     <string name="wrong_cbz_archive_password">Wrong CBZ archive password</string>
     <string name="encryption_type">Encryption type</string>

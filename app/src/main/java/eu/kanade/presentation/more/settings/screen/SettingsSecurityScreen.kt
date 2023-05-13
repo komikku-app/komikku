@@ -1,6 +1,5 @@
 package eu.kanade.presentation.more.settings.screen
 
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -57,13 +55,8 @@ import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesScreen
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
-import eu.kanade.tachiyomi.util.system.toast
-import logcat.LogPriority
-import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.core.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
 
 object SettingsSecurityScreen : SearchableSettings {
 
@@ -167,45 +160,6 @@ object SettingsSecurityScreen : SearchableSettings {
                     securityPreferences.cbzPassword().set("")
                 },
                 enabled = isCbzPasswordSet,
-            ),
-            Preference.PreferenceItem.ListPreference(
-                pref = securityPreferences.localCoverLocation(),
-                title = stringResource(R.string.save_local_manga_covers),
-                entries = SecurityPreferences.CoverCacheLocation.values()
-                    .associateWith { stringResource(it.titleResId) },
-                enabled = passwordProtectDownloads,
-                onValueChanged = {
-                    try {
-                        withIOContext {
-                            CbzCrypto.deleteLocalCoverCache(context)
-                            CbzCrypto.deleteLocalCoverSystemFiles(context)
-                        }
-                        true
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        context.toast(e.toString(), Toast.LENGTH_SHORT).show()
-                        false
-                    }
-                },
-            ),
-            Preference.PreferenceItem.TextPreference(
-                title = stringResource(R.string.delete_cached_local_source_covers),
-                subtitle = stringResource(R.string.delete_cached_local_source_covers_subtitle),
-                onClick = {
-                    try {
-                        CbzCrypto.deleteLocalCoverCache(context)
-                        CbzCrypto.deleteLocalCoverSystemFiles(context)
-                        context.toast(R.string.successfully_deleted_all_locally_cached_covers, Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        context.toast(R.string.something_went_wrong_deleting_your_cover_images, Toast.LENGTH_LONG).show()
-                    }
-                },
-                enabled = produceState(false) {
-                    withIOContext {
-                        value = context.getExternalFilesDir("covers/local")?.absolutePath?.let { File(it).listFiles()?.isNotEmpty() } == true
-                    }
-                }.value,
             ),
             kotlin.run {
                 val navigator = LocalNavigator.currentOrThrow

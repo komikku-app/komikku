@@ -1,10 +1,8 @@
 package eu.kanade.tachiyomi.util.storage
 
-import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import eu.kanade.tachiyomi.core.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +18,7 @@ import tachiyomi.core.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
+import java.io.InputStream
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -36,6 +34,7 @@ import javax.crypto.spec.IvParameterSpec
  */
 object CbzCrypto {
     const val DATABASE_NAME = "tachiyomiEncrypted.db"
+    const val DEFAULT_COVER_NAME = "cover.jpg"
     private val securityPreferences: SecurityPreferences by injectLazy()
     private val keyStore = KeyStore.getInstance(KEYSTORE).apply {
         load(null)
@@ -210,23 +209,15 @@ object CbzCrypto {
         }
     }
 
-    fun deleteLocalCoverCache(context: Context) {
-        if (context.getExternalFilesDir(LOCAL_CACHE_DIR)?.exists() == true) {
-            context.getExternalFilesDir(LOCAL_CACHE_DIR)?.deleteRecursively()
+    fun detectCoverImageArchive(stream: InputStream): Boolean {
+        val bytes = ByteArray(128)
+        if (stream.markSupported()) {
+            stream.mark(bytes.size)
+            stream.read(bytes, 0, bytes.size).also { stream.reset() }
+        } else {
+            stream.read(bytes, 0, bytes.size)
         }
-    }
-
-    fun deleteLocalCoverSystemFiles(context: Context) {
-        val baseFolderLocation = "${context.getString(R.string.app_name)}${File.separator}local"
-
-        DiskUtil.getExternalStorages(context)
-            .map { File(it.absolutePath, baseFolderLocation) }
-            .asSequence()
-            .flatMap { it.listFiles().orEmpty().toList() }
-            .filter { it.isDirectory }
-            .flatMap { it.listFiles().orEmpty().toList() }
-            .filter { it.name == ".cacheCoverInternal" || it.name == ".nocover" }
-            .forEach { it.delete() }
+        return String(bytes).contains(DEFAULT_COVER_NAME, ignoreCase = true)
     }
 }
 
@@ -242,7 +233,4 @@ private const val CRYPTO_SETTINGS = "$ALGORITHM/$BLOCK_MODE/$PADDING"
 private const val KEYSTORE = "AndroidKeyStore"
 private const val ALIAS_CBZ = "cbzPw"
 private const val ALIAS_SQL = "sqlPw"
-
-private const val LOCAL_CACHE_DIR = "covers/local"
-
 // SY <--

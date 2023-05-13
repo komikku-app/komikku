@@ -214,7 +214,7 @@ class PreferenceModule(val application: Application) : InjektModule {
             SourcePreferences(get())
         }
         addSingletonFactory {
-            SecurityPreferences(get(), application.applicationContext)
+            SecurityPreferences(get())
         }
         addSingletonFactory {
             LibraryPreferences(get())

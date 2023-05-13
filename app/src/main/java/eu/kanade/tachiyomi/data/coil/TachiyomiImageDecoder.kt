@@ -9,6 +9,9 @@ import coil.decode.ImageDecoderDecoder
 import coil.decode.ImageSource
 import coil.fetch.SourceResult
 import coil.request.Options
+import eu.kanade.tachiyomi.util.storage.CbzCrypto
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.FileHeader
 import okio.BufferedSource
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.decoder.ImageDecoder
@@ -19,9 +22,24 @@ import tachiyomi.decoder.ImageDecoder
 class TachiyomiImageDecoder(private val resources: ImageSource, private val options: Options) : Decoder {
 
     override suspend fun decode(): DecodeResult {
-        val decoder = resources.sourceOrNull()?.use {
-            ImageDecoder.newInstance(it.inputStream())
+        // SY -->
+        var zip4j: ZipFile? = null
+        var entry: FileHeader? = null
+
+        if (resources.sourceOrNull()?.peek()?.use { CbzCrypto.detectCoverImageArchive(it.inputStream()) } == true) {
+            if (resources.source().peek().use { ImageUtil.findImageType(it.inputStream()) == null }) {
+                zip4j = ZipFile(resources.file().toFile().absolutePath)
+                entry = zip4j.fileHeaders.firstOrNull { it.fileName.equals(CbzCrypto.DEFAULT_COVER_NAME, ignoreCase = true) }
+
+                if (zip4j.isEncrypted) zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
+            }
         }
+        val decoder = resources.sourceOrNull()?.use {
+            zip4j.use { zipFile ->
+                ImageDecoder.newInstance(zipFile?.getInputStream(entry) ?: it.inputStream())
+            }
+        }
+        // SY <--
 
         check(decoder != null && decoder.width > 0 && decoder.height > 0) { "Failed to initialize decoder" }
 
@@ -45,6 +63,9 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
 
         private fun isApplicable(source: BufferedSource): Boolean {
             val type = source.peek().inputStream().use {
+                // SY -->
+                if (CbzCrypto.detectCoverImageArchive(it)) return true
+                // SY <--
                 ImageUtil.findImageType(it)
             }
             return when (type) {
