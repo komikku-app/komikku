@@ -166,6 +166,8 @@ class ReaderPreferences(
     fun invertDoublePages() = preferenceStore.getBoolean("invert_double_pages", false)
 
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
+
+    fun cacheArchiveMangaOnDisk() = preferenceStore.getBoolean("cache_archive_manga_on_disk", false)
     // SY <--
 
     enum class TappingInvertMode(val shouldInvertHorizontal: Boolean = false, val shouldInvertVertical: Boolean = false) {

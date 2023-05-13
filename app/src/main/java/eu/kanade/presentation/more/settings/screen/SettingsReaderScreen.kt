@@ -545,6 +545,11 @@ object SettingsReaderScreen : SearchableSettings {
                         3 to stringResource(R.string.center_margin_double_and_wide_page),
                     ),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = readerPreferences.cacheArchiveMangaOnDisk(),
+                    title = stringResource(R.string.cache_archived_manga_to_disk),
+                    subtitle = stringResource(R.string.cache_archived_manga_to_disk_subtitle),
+                ),
             ),
         )
     }

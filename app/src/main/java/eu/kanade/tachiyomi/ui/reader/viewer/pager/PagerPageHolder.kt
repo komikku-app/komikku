@@ -229,7 +229,13 @@ class PagerPageHolder(
             return splitInHalf(imageStream)
         }
 
-        val isDoublePage = ImageUtil.isWideImage(imageStream)
+        val isDoublePage = ImageUtil.isWideImage(
+            imageStream,
+            // SY -->
+            page.zip4jFile,
+            page.zip4jEntry,
+            // SY <--
+        )
         if (!isDoublePage) {
             return imageStream
         }
@@ -240,7 +246,13 @@ class PagerPageHolder(
     }
 
     private fun rotateDualPage(imageStream: BufferedInputStream): InputStream {
-        val isDoublePage = ImageUtil.isWideImage(imageStream)
+        val isDoublePage = ImageUtil.isWideImage(
+            imageStream,
+            // SY -->
+            page.zip4jFile,
+            page.zip4jEntry,
+            // SY <--
+        )
         return if (isDoublePage) {
             val rotation = if (viewer.config.dualPageRotateToFitInvert) -90f else 90f
             ImageUtil.rotateImage(imageStream, rotation)
@@ -254,7 +266,13 @@ class PagerPageHolder(
         if (imageStream2 == null) {
             return if (imageStream is BufferedInputStream &&
                 !ImageUtil.isAnimatedAndSupported(imageStream) &&
-                ImageUtil.isWideImage(imageStream) &&
+                ImageUtil.isWideImage(
+                        imageStream,
+                        // SY -->
+                        page.zip4jFile,
+                        page.zip4jEntry,
+                        // SY <--
+                    ) &&
                 viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
                 !viewer.config.imageCropBorders
             ) {
