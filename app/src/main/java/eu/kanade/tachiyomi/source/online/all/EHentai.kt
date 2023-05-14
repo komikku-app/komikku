@@ -415,13 +415,6 @@ class EHentai(
                 Page(i, s)
             }
         }!!
-        .doOnNext { pages ->
-            if (pages.any { it.url == "https://$domain/img/509.gif" }) {
-                throw Exception(
-                    "Hit page limit",
-                )
-            }
-        }
 
     private fun fetchChapterPage(
         chapter: SChapter,
@@ -768,6 +761,9 @@ class EHentai(
             // Each press of the retry button will choose another server
             select("#loadfail").attr("onclick").nullIfBlank()?.let {
                 page.url = addParam(page.url, "nl", it.substring(it.indexOf('\'') + 1 until it.lastIndexOf('\'')))
+            }
+            if (currentImage == "https://ehgt.org/g/509.gif") {
+                throw Exception("Exceeded page quota")
             }
             return currentImage
         }
