@@ -358,9 +358,11 @@ class DownloadManager(
         val oldFolder = provider.findSourceDir(oldSource) ?: return
         val newName = provider.getSourceDirName(newSource)
 
+        if (oldFolder.name == newName) return
+
         val capitalizationChanged = oldFolder.name.equals(newName, ignoreCase = true)
         if (capitalizationChanged) {
-            val tempName = newName + "_tmp"
+            val tempName = newName + Downloader.TMP_DIR_SUFFIX
             if (oldFolder.renameTo(tempName).not()) {
                 logcat(LogPriority.ERROR) { "Failed to rename source download folder: ${oldFolder.name}" }
                 return
@@ -393,6 +395,8 @@ class DownloadManager(
         if (oldDownload.isFile && oldDownload.name?.endsWith(".cbz") == true) {
             newName += ".cbz"
         }
+
+        if (oldDownload.name == newName) return
 
         if (oldDownload.renameTo(newName)) {
             cache.removeChapter(oldChapter, manga)
