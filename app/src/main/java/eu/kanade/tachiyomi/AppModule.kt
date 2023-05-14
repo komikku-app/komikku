@@ -82,7 +82,10 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory<SqlDriver> {
             // SY -->
-            System.loadLibrary("sqlcipher")
+            if (securityPreferences.encryptDatabase().get()) {
+                System.loadLibrary("sqlcipher")
+            }
+
             // SY <--
             AndroidSqliteDriver(
                 schema = Database.Schema,
@@ -94,7 +97,7 @@ class AppModule(val app: Application) : InjektModule {
                     LEGACY_DATABASE_NAME
                 },
                 factory = if (securityPreferences.encryptDatabase().get()) {
-                    SupportOpenHelperFactory(CbzCrypto.getDecryptedPasswordSql())
+                    SupportOpenHelperFactory(CbzCrypto.getDecryptedPasswordSql(), null, false, 25)
                 } else if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     // Support database inspector in Android Studio
                     FrameworkSQLiteOpenHelperFactory()
