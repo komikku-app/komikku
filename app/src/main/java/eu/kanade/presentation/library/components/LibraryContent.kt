@@ -9,7 +9,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,7 +55,7 @@ fun LibraryContent(
     ) {
         // SY -->
         val coercedCurrentPage = remember(categories) { currentPage().coerceIn(0, categories.lastIndex) }
-        val pagerState = key(categories) { rememberPagerState(coercedCurrentPage) }
+        val pagerState = rememberPagerState(coercedCurrentPage) { categories.size }
         // SY <--
 
         val scope = rememberCoroutineScope()
@@ -101,7 +100,6 @@ fun LibraryContent(
             LibraryPager(
                 state = pagerState,
                 contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
-                pageCount = categories.size,
                 hasActiveFilters = hasActiveFilters,
                 selectedManga = selection,
                 searchQuery = searchQuery,
