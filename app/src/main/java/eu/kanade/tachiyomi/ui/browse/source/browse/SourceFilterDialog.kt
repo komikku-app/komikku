@@ -56,10 +56,8 @@ fun SourceFilterDialog(
 
     AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-    ) { contentPadding ->
-        LazyColumn(
-            contentPadding = contentPadding,
-        ) {
+    ) {
+        LazyColumn {
             stickyHeader {
                 Row(
                     modifier = Modifier
