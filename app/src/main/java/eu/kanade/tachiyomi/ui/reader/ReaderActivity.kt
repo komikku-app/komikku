@@ -17,6 +17,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.KeyEvent
@@ -49,6 +50,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.internal.ToolbarUtils
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.chrisbanes.insetter.applyInsetter
@@ -1193,6 +1195,7 @@ class ReaderActivity : BaseActivity() {
      * method to the current viewer, but also set the subtitle on the toolbar, and
      * hides or disables the reader prev/next buttons if there's a prev or next chapter
      */
+    @SuppressLint("RestrictedApi")
     private fun setChapters(viewerChapters: ViewerChapters) {
         binding.readerContainer.removeView(loadingIndicator)
         // SY -->
@@ -1215,7 +1218,12 @@ class ReaderActivity : BaseActivity() {
         // SY <--
 
         viewModel.state.value.viewer?.setChapters(viewerChapters)
+
         binding.toolbar.subtitle = viewerChapters.currChapter.chapter.name
+        ToolbarUtils.getSubtitleTextView(binding.toolbar)?.let {
+            it.ellipsize = TextUtils.TruncateAt.MARQUEE
+            it.isSelected = true
+        }
 
         // Invalidate menu to show proper chapter bookmark state
         invalidateOptionsMenu()
