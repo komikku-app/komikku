@@ -26,7 +26,7 @@ private val mapper = { cursor: SqlCursor ->
     )
 }
 
-class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesView>(copyOnWriteList(), mapper) {
+class UpdatesQuery(val driver: SqlDriver, val after: Long, val limit: Long) : Query<UpdatesView>(copyOnWriteList(), mapper) {
     override fun execute(): SqlCursor {
         return driver.executeQuery(
             null,
@@ -79,11 +79,13 @@ class UpdatesQuery(val driver: SqlDriver, val after: Long) : Query<UpdatesView>(
             WHERE favorite = 1 AND source = $MERGED_SOURCE_ID
             AND date_fetch > date_added
             AND dateUpload > :after
-            ORDER BY datefetch DESC;
+            ORDER BY datefetch DESC
+            LIMIT :limit;
             """.trimIndent(),
-            1,
+            2,
             binders = {
                 bindLong(1, after)
+                bindLong(2, limit)
             },
         )
     }

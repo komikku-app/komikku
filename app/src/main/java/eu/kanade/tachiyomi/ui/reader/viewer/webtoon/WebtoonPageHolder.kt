@@ -248,7 +248,6 @@ class WebtoonPageHolder(
     }
 
     private fun onStripSplit(imageStream: BufferedInputStream): InputStream {
-    
         try {
             // If we have reached this point [page] and its stream shouldn't be null
             val page = page!!
