@@ -156,9 +156,9 @@ class BackupRestorer(
             } else {
                 // Manga in database
                 // Copy information from manga already in database
-                val manga = backupManager.restoreExistingManga(manga, dbManga)
+                val updatedManga = backupManager.restoreExistingManga(manga, dbManga)
                 // Fetch rest of manga information
-                restoreNewManga(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
+                restoreNewManga(updatedManga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
             }
         } catch (e: Exception) {
             val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
