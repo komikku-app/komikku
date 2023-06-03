@@ -19,7 +19,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
@@ -28,7 +27,6 @@ import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.CompoundButton
-import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -44,7 +42,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -89,7 +86,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.preference.toggle
 import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
-import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isNightMode
@@ -1158,12 +1154,7 @@ class ReaderActivity : BaseActivity() {
         // SY <--
         supportActionBar?.title = manga.title
 
-        val loadingIndicatorContext = createReaderThemeContext()
-        loadingIndicator = ReaderProgressIndicator(loadingIndicatorContext).apply {
-            updateLayoutParams<FrameLayout.LayoutParams> {
-                gravity = Gravity.CENTER
-            }
-        }
+        loadingIndicator = ReaderProgressIndicator(this)
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
