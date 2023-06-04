@@ -34,7 +34,6 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibrarySort
-import tachiyomi.domain.library.model.display
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.TriStateFilter
@@ -49,7 +48,7 @@ import tachiyomi.presentation.core.components.SortItem
 fun LibrarySettingsDialog(
     onDismissRequest: () -> Unit,
     screenModel: LibrarySettingsScreenModel,
-    category: Category,
+    category: Category?,
     // SY -->
     hasCategories: Boolean,
     // SY <--
@@ -79,7 +78,6 @@ fun LibrarySettingsDialog(
                     screenModel = screenModel,
                 )
                 2 -> DisplayPage(
-                    category = category,
                     screenModel = screenModel,
                 )
                 // SY -->
@@ -172,7 +170,7 @@ private fun ColumnScope.FilterPage(
 
 @Composable
 private fun ColumnScope.SortPage(
-    category: Category,
+    category: Category?,
     screenModel: LibrarySettingsScreenModel,
 ) {
     // SY -->
@@ -225,7 +223,6 @@ private fun ColumnScope.SortPage(
 
 @Composable
 private fun ColumnScope.DisplayPage(
-    category: Category,
     screenModel: LibrarySettingsScreenModel,
 ) {
     // SY -->
@@ -233,6 +230,7 @@ private fun ColumnScope.DisplayPage(
     // SY <--
 
     HeadingItem(R.string.action_display_mode)
+    val displayMode by screenModel.libraryPreferences.libraryDisplayMode().collectAsState()
     listOf(
         R.string.action_display_grid to LibraryDisplayMode.CompactGrid,
         R.string.action_display_comfortable_grid to LibraryDisplayMode.ComfortableGrid,
@@ -241,18 +239,12 @@ private fun ColumnScope.DisplayPage(
     ).map { (titleRes, mode) ->
         RadioItem(
             label = stringResource(titleRes),
-            // SY -->
-            selected = if (screenModel.grouping == LibraryGroup.BY_DEFAULT) {
-                category.display
-            } else {
-                globalDisplayMode
-            } == mode,
-            // SY <--
-            onClick = { screenModel.setDisplayMode(category, mode) },
+            selected = displayMode == mode,
+            onClick = { screenModel.setDisplayMode(mode) },
         )
     }
 
-    if (category.display != LibraryDisplayMode.List) {
+    if (displayMode != LibraryDisplayMode.List) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

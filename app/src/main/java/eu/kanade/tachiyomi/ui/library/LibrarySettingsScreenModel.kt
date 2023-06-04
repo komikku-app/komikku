@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.util.preference.toggle
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.getAndSet
 import tachiyomi.core.util.lang.launchIO
-import tachiyomi.domain.category.interactor.SetDisplayModeForCategory
+import tachiyomi.domain.category.interactor.SetDisplayMode
 import tachiyomi.domain.category.interactor.SetSortModeForCategory
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -23,7 +23,7 @@ import uy.kohesive.injekt.api.get
 class LibrarySettingsScreenModel(
     val preferences: BasePreferences = Injekt.get(),
     val libraryPreferences: LibraryPreferences = Injekt.get(),
-    private val setDisplayModeForCategory: SetDisplayModeForCategory = Injekt.get(),
+    private val setDisplayMode: SetDisplayMode = Injekt.get(),
     private val setSortModeForCategory: SetSortModeForCategory = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
 ) : ScreenModel {
@@ -49,13 +49,11 @@ class LibrarySettingsScreenModel(
         toggleFilter { libraryPreferences.filterTracking(id) }
     }
 
-    fun setDisplayMode(category: Category, mode: LibraryDisplayMode) {
-        coroutineScope.launchIO {
-            setDisplayModeForCategory.await(category, mode)
-        }
+    fun setDisplayMode(mode: LibraryDisplayMode) {
+        setDisplayMode.await(mode)
     }
 
-    fun setSort(category: Category, mode: LibrarySort.Type, direction: LibrarySort.Direction) {
+    fun setSort(category: Category?, mode: LibrarySort.Type, direction: LibrarySort.Direction) {
         coroutineScope.launchIO {
             setSortModeForCategory.await(category, mode, direction)
         }

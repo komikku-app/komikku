@@ -165,20 +165,19 @@ class LibraryScreenModel(
                 combine(
                     getTrackingFilterFlow(),
                     downloadCache.changes,
-                ) { a, b -> a to b },
+                    ::Pair,
+                ),
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
-                    libraryPreferences.libraryDisplayMode().changes(),
                     libraryPreferences.librarySortingMode().changes(),
-                ) { a, b, c ->
-                    Triple(a, b, c)
-                },
+                    ::Pair,
+                ),
                 // SY <--
-            ) { searchQuery, library, tracks, (loggedInTrackServices, _), (groupType, displayMode, sort) ->
+            ) { searchQuery, library, tracks, (loggedInTrackServices, _), (groupType, sort) ->
                 library
                     // SY -->
-                    .applyGrouping(groupType, displayMode)
+                    .applyGrouping(groupType)
                     // SY <--
                     .applyFilters(tracks, loggedInTrackServices)
                     .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT } /* SY <-- */)
@@ -523,7 +522,7 @@ class LibraryScreenModel(
     }
 
     // SY -->
-    private fun LibraryMap.applyGrouping(groupType: Int, displayMode: LibraryDisplayMode): LibraryMap {
+    private fun LibraryMap.applyGrouping(groupType: Int): LibraryMap {
         val items = when (groupType) {
             LibraryGroup.BY_DEFAULT -> this
             LibraryGroup.UNGROUPED -> {
@@ -532,7 +531,7 @@ class LibraryScreenModel(
                         0,
                         preferences.context.getString(R.string.ungrouped),
                         0,
-                        displayMode.flag,
+                        0,
                     ) to
                         values.flatten().distinctBy { it.libraryManga.manga.id },
                 )
@@ -541,7 +540,6 @@ class LibraryScreenModel(
                 getGroupedMangaItems(
                     groupType = groupType,
                     libraryManga = this.values.flatten().distinctBy { it.libraryManga.manga.id },
-                    displayMode = displayMode,
                 )
             }
         }
@@ -785,6 +783,10 @@ class LibraryScreenModel(
                 setMangaCategories.await(manga.id, categoryIds)
             }
         }
+    }
+
+    fun getDisplayMode(): PreferenceMutableState<LibraryDisplayMode> {
+        return libraryPreferences.libraryDisplayMode().asState(coroutineScope)
     }
 
     fun getColumnsPreferenceForCurrentOrientation(isLandscape: Boolean): PreferenceMutableState<Int> {
@@ -1118,7 +1120,6 @@ class LibraryScreenModel(
     private fun getGroupedMangaItems(
         groupType: Int,
         libraryManga: List<LibraryItem>,
-        displayMode: LibraryDisplayMode,
     ): LibraryMap {
         val context = preferences.context
         return when (groupType) {
@@ -1138,7 +1139,7 @@ class LibraryScreenModel(
                             .let { it ?: TrackStatus.OTHER }
                             .let { context.getString(it.res) },
                         order = TrackStatus.values().indexOfFirst { it.int == id }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
-                        flags = displayMode.flag,
+                        flags = 0,
                     )
                 }
             }
@@ -1163,7 +1164,7 @@ class LibraryScreenModel(
                             source.name.ifBlank { source.id.toString() }
                         },
                         order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
-                        flags = displayMode.flag,
+                        flags = 0,
                     )
                 }
             }
@@ -1191,7 +1192,7 @@ class LibraryScreenModel(
                             SManga.COMPLETED.toLong() -> 6
                             else -> 7
                         },
-                        flags = displayMode.flag,
+                        flags = 0,
                     )
                 }
             }

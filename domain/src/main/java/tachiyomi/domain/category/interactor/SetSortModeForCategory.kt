@@ -13,16 +13,16 @@ class SetSortModeForCategory(
     private val categoryRepository: CategoryRepository,
 ) {
 
-    suspend fun await(categoryId: Long, type: LibrarySort.Type, direction: LibrarySort.Direction) {
+    suspend fun await(categoryId: Long?, type: LibrarySort.Type, direction: LibrarySort.Direction) {
         // SY -->
         if (preferences.groupLibraryBy().get() != LibraryGroup.BY_DEFAULT) {
             preferences.librarySortingMode().set(LibrarySort(type, direction))
             return
         }
         // SY <--
-        val category = categoryRepository.get(categoryId) ?: return
-        val flags = category.flags + type + direction
-        if (preferences.categorizedDisplaySettings().get()) {
+        val category = categoryId?.let { categoryRepository.get(it) }
+        val flags = (category?.flags ?: 0) + type + direction
+        if (category != null && preferences.categorizedDisplaySettings().get()) {
             categoryRepository.updatePartial(
                 CategoryUpdate(
                     id = category.id,
@@ -35,7 +35,7 @@ class SetSortModeForCategory(
         }
     }
 
-    suspend fun await(category: Category, type: LibrarySort.Type, direction: LibrarySort.Direction) {
-        await(category.id, type, direction)
+    suspend fun await(category: Category?, type: LibrarySort.Type, direction: LibrarySort.Direction) {
+        await(category?.id, type, direction)
     }
 }
