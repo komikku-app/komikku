@@ -72,7 +72,6 @@ object SettingsSecurityScreen : SearchableSettings {
         val authSupported = remember { context.isAuthenticationSupported() }
 
         val useAuthPref = securityPreferences.useAuthenticator()
-
         val useAuth by useAuthPref.collectAsState()
 
         val scope = rememberCoroutineScope()
