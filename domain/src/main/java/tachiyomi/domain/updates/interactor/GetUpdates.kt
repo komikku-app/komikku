@@ -25,7 +25,7 @@ class GetUpdates(
     }
 
     fun subscribe(calendar: Calendar): Flow<List<UpdatesWithRelations>> {
-        return repository.subscribeAll(calendar.time.time, limit = 250)
+        return repository.subscribeAll(calendar.time.time, limit = 500)
             // SY -->
             .catchNPE()
         // SY <--
