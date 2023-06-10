@@ -229,7 +229,7 @@
                 android:layout_marginBottom="16dp"
                 android:layoutDirection="ltr" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:id="@+id/toolbar_bottom"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
@@ -241,13 +241,10 @@
                     android:id="@+id/action_chapter_list"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/custom_filter"
+                    android:contentDescription="@string/chapters"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@+id/action_web_view"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_format_list_numbered_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -256,13 +253,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/custom_filter"
+                    android:contentDescription="@string/action_open_in_web_view"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_reading_mode"
-                    app:layout_constraintStart_toEndOf="@+id/action_chapter_list"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_webview_24dp"
+                    app:tint="?attr/colorOnSurface" />
+
+                <ImageButton
+                    android:id="@+id/action_share"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/action_share"
+                    android:padding="@dimen/screen_edge_margin"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_share_24dp"
                     app:tint="?attr/colorOnSurface" />
 
                 <ImageButton
@@ -272,10 +277,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/viewer"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_crop_borders"
-                    app:layout_constraintStart_toEndOf="@+id/action_web_view"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_reader_default_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -286,10 +288,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/pref_crop_borders"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_rotation"
-                    app:layout_constraintStart_toEndOf="@+id/action_reading_mode"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_crop_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -300,10 +299,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/pref_rotation_type"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/double_page"
-                    app:layout_constraintStart_toEndOf="@+id/action_crop_borders"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_screen_rotation_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -314,10 +310,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/page_layout"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/shift_page_button"
-                    app:layout_constraintStart_toEndOf="@+id/action_rotation"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_book_open_variant_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -328,10 +321,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/shift_double_pages"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_settings"
-                    app:layout_constraintStart_toEndOf="@+id/double_page"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_page_next_outline_24dp"
                     app:tint="?attr/colorOnSurface" />
 
@@ -342,14 +332,11 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/action_settings"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/shift_page_button"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintHorizontal_chainStyle="spread"
+                    android:layout_weight="1"
                     app:srcCompat="@drawable/ic_settings_24dp"
                     app:tint="?attr/colorOnSurface" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
 
         </LinearLayout>
 
