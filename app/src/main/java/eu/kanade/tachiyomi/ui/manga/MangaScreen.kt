@@ -195,7 +195,7 @@ class MangaScreen(
         // SY <--
 
         val onDismissRequest = { screenModel.dismissDialog() }
-        when (val dialog = (state as? MangaScreenState.Success)?.dialog) {
+        when (val dialog = successState.dialog) {
             null -> {}
             is MangaInfoScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
