@@ -537,10 +537,9 @@ class ReaderViewModel(
             )
         }
         selectedChapter.chapter.last_page_read = page.index
-        val shouldTrack = !incognitoMode || hasTrackers
         if (
-            (selectedChapter.pages?.lastIndex == page.index && shouldTrack) ||
-            (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && shouldTrack)
+            (selectedChapter.pages?.lastIndex == page.index && !incognitoMode) ||
+            (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && !incognitoMode)
         ) {
             selectedChapter.chapter.read = true
             // SY -->
@@ -623,16 +622,17 @@ class ReaderViewModel(
      * @param currentChapter current chapter, which is going to be marked as read.
      */
     private fun deleteChapterIfNeeded(currentChapter: ReaderChapter) {
+        val removeAfterReadSlots = downloadPreferences.removeAfterReadSlots().get()
+        if (removeAfterReadSlots == -1) return
+
         // Determine which chapter should be deleted and enqueue
         val currentChapterPosition = chapterList.indexOf(currentChapter)
-        val removeAfterReadSlots = downloadPreferences.removeAfterReadSlots().get()
         val chapterToDelete = chapterList.getOrNull(currentChapterPosition - removeAfterReadSlots)
 
-        // If chapter is completely read no need to download it
+        // If chapter is completely read, no need to download it
         chapterToDownload = null
 
-        // Check if deleting option is enabled and chapter exists
-        if (removeAfterReadSlots != -1 && chapterToDelete != null) {
+        if (chapterToDelete != null) {
             enqueueDeleteReadChapters(chapterToDelete)
         }
     }
@@ -652,25 +652,25 @@ class ReaderViewModel(
     }
 
     /**
-     * Saves this [readerChapter] progress (last read page and whether it's read).
-     * If incognito mode isn't on or has at least 1 tracker
+     * Saves this [readerChapter] progress (last read page and whether it's read)
+     * if incognito mode isn't on.
      */
     private suspend fun saveChapterProgress(readerChapter: ReaderChapter) {
         // SY -->
         readerChapter.requestedPage = readerChapter.chapter.last_page_read
         // SY <--
-        if (!incognitoMode || hasTrackers) {
-            val chapter = readerChapter.chapter
-            getCurrentChapter()?.requestedPage = chapter.last_page_read
-            updateChapter.await(
-                ChapterUpdate(
-                    id = chapter.id!!,
-                    read = chapter.read,
-                    bookmark = chapter.bookmark,
-                    lastPageRead = chapter.last_page_read.toLong(),
-                ),
-            )
-        }
+		if (incognitoMode) return
+
+        val chapter = readerChapter.chapter
+        getCurrentChapter()?.requestedPage = chapter.last_page_read
+        updateChapter.await(
+            ChapterUpdate(
+                id = chapter.id!!,
+                read = chapter.read,
+                bookmark = chapter.bookmark,
+                lastPageRead = chapter.last_page_read.toLong(),
+            ),
+        )
     }
 
     /**
@@ -856,7 +856,7 @@ class ReaderViewModel(
         val chapter = page.chapter.chapter
         val filenameSuffix = " - ${page.number}"
         return DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
+            "${manga.title} - ${chapter.name}".takeBytes(DiskUtil.MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
         ) + filenameSuffix
     }
 
@@ -1067,7 +1067,7 @@ class ReaderViewModel(
      * will run in a background thread and errors are ignored.
      */
     private fun updateTrackChapterRead(readerChapter: ReaderChapter) {
-        if (basePreferences.incognitoMode().get()) return
+        if (incognitoMode || !hasTrackers) return
         if (!trackPreferences.autoUpdateTrack().get()) return
 
         val manga = manga ?: return
@@ -1165,10 +1165,5 @@ class ReaderViewModel(
 
         data class SavedImage(val result: SaveImageResult) : Event()
         data class ShareImage(val uri: Uri, val page: ReaderPage, val secondPage: ReaderPage? = null) : Event()
-    }
-
-    companion object {
-        // Safe theoretical max filename size is 255 bytes and 1 char = 2-4 bytes (UTF-8)
-        private const val MAX_FILE_NAME_BYTES = 250
     }
 }
