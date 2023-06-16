@@ -794,6 +794,8 @@ class LibraryScreenModel(
     }
 
     suspend fun getRandomLibraryItemForCurrentCategory(): LibraryItem? {
+        if (state.value.categories.isEmpty()) return null
+
         return withIOContext {
             state.value
                 .getLibraryItemsByCategoryId(state.value.categories[activeCategoryIndex].id)
