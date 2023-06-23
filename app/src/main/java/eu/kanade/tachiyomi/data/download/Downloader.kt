@@ -57,6 +57,7 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.model.Manga
@@ -83,6 +84,7 @@ class Downloader(
     private val chapterCache: ChapterCache = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val xml: XML = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
     // SY -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     // SY <--
@@ -692,14 +694,15 @@ class Downloader(
     /**
      * Creates a ComicInfo.xml file inside the given directory.
      */
-    private fun createComicInfoFile(
+    private suspend fun createComicInfoFile(
         dir: UniFile,
         manga: Manga,
         chapter: Chapter,
         source: HttpSource,
     ) {
         val chapterUrl = source.getChapterUrl(chapter.toSChapter())
-        val comicInfo = getComicInfo(manga, chapter, chapterUrl)
+        val categories = getCategories.await(manga.id).map { it.name.trim() }.takeUnless { it.isEmpty() }
+        val comicInfo = getComicInfo(manga, chapter, chapterUrl, categories)
         // Remove the old file
         dir.findFile(COMIC_INFO_FILE)?.delete()
         dir.createFile(COMIC_INFO_FILE).openOutputStream().use {
