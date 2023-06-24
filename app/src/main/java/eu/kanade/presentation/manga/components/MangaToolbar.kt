@@ -161,7 +161,7 @@ fun MangaToolbar(
                                 add(
                                     AppBar.OverflowAction(
                                         title = stringResource(R.string.merge),
-                                        onClick = onClickMerge
+                                        onClick = onClickMerge,
                                     ),
                                 )
                             }
@@ -170,14 +170,14 @@ fun MangaToolbar(
                                     AppBar.OverflowAction(
                                         title = stringResource(R.string.action_edit_info),
                                         onClick = onClickEditInfo,
-                                    )
+                                    ),
                                 )
                             }
                             if (onClickRecommend != null) {
                                 add(
                                     AppBar.OverflowAction(
                                         title = stringResource(R.string.az_recommends),
-                                        onClick = onClickRecommend
+                                        onClick = onClickRecommend,
                                     ),
                                 )
                             }
@@ -185,7 +185,7 @@ fun MangaToolbar(
                                 add(
                                     AppBar.OverflowAction(
                                         title = stringResource(R.string.merge_settings),
-                                        onClick = onClickMergedSettings
+                                        onClick = onClickMergedSettings,
                                     ),
                                 )
                             }

@@ -127,11 +127,11 @@ private fun LibraryRegularToolbar(
                     if (onClickSyncExh != null) {
                         AppBar.OverflowAction(
                             title = stringResource(R.string.sync_favorites),
-                            onClick = onClickSyncExh
+                            onClick = onClickSyncExh,
                         )
                     } else {
                         null
-                    }
+                    },
                     // SY <--
                 ),
             )

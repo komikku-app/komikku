@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -18,7 +20,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
-import me.saket.cascade.CascadeDropdownMenu
 
 @Composable
 fun MigrationActionIcon(
@@ -47,19 +48,19 @@ fun MigrationActionIcon(
                     contentDescription = stringResource(R.string.abc_action_menu_overflow_description),
                 )
             }
-            CascadeDropdownMenu(
+            DropdownMenu(
                 expanded = moreExpanded,
                 onDismissRequest = closeMenu,
                 offset = DpOffset(8.dp, (-56).dp),
             ) {
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text(stringResource(R.string.action_search_manually)) },
                     onClick = {
                         searchManually()
                         closeMenu()
                     },
                 )
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text(stringResource(R.string.action_skip_entry)) },
                     onClick = {
                         skipManga()
@@ -67,14 +68,14 @@ fun MigrationActionIcon(
                     },
                 )
                 if (result is MigratingManga.SearchResult.Result) {
-                    androidx.compose.material3.DropdownMenuItem(
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_migrate_now)) },
                         onClick = {
                             migrateNow()
                             closeMenu()
                         },
                     )
-                    androidx.compose.material3.DropdownMenuItem(
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_copy_now)) },
                         onClick = {
                             copyNow()
