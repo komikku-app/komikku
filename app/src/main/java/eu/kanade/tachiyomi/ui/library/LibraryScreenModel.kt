@@ -1151,7 +1151,7 @@ class LibraryScreenModel(
                         .map {
                             sourceManager.getOrStub(it)
                         }
-                        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
+                        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
                         .map { it.id }
                 }.mapKeys {
                     Category(
@@ -1159,7 +1159,8 @@ class LibraryScreenModel(
                         name = if (it.key == LocalSource.ID) {
                             context.getString(R.string.local_source)
                         } else {
-                            sourceManager.getOrStub(it.key).name
+                            val source = sourceManager.getOrStub(it.key)
+                            source.name.ifBlank { source.id.toString() }
                         },
                         order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
                         flags = displayMode.flag,
