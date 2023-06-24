@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.util.storage.saveTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.decodeFromString
@@ -30,20 +31,8 @@ import java.io.IOException
  * The files are in format *md5key*.0
  *
  * @param context the application context.
- * @constructor creates an instance of the chapter cache.
  */
 class ChapterCache(private val context: Context) {
-
-    companion object {
-        /** Name of cache directory.  */
-        const val PARAMETER_CACHE_DIRECTORY = "chapter_disk_cache"
-
-        /** Application cache version.  */
-        const val PARAMETER_APP_VERSION = 1
-
-        /** The number of values per cache entry. Must be positive.  */
-        const val PARAMETER_VALUE_COUNT = 1
-    }
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
@@ -58,6 +47,7 @@ class ChapterCache(private val context: Context) {
 
     init {
         readerPreferences.cacheSize().changes()
+            .drop(1)
             .onEach {
                 // Save old cache for destruction later
                 val oldCache = diskCache
@@ -71,8 +61,7 @@ class ChapterCache(private val context: Context) {
     /**
      * Returns directory of cache.
      */
-    private val cacheDir: File
-        get() = diskCache.directory
+    private val cacheDir: File = diskCache.directory
 
     /**
      * Returns real size of directory.
@@ -90,7 +79,7 @@ class ChapterCache(private val context: Context) {
     // Cache size is in MB
     private fun setupDiskCache(cacheSize: Long): DiskLruCache {
         return DiskLruCache.open(
-            File(context.cacheDir, PARAMETER_CACHE_DIRECTORY),
+            File(context.cacheDir, "chapter_disk_cache"),
             PARAMETER_APP_VERSION,
             PARAMETER_VALUE_COUNT,
             cacheSize * 1024 * 1024,
@@ -238,3 +227,12 @@ class ChapterCache(private val context: Context) {
         return "${chapter.mangaId}${chapter.url}"
     }
 }
+
+/** Application cache version.  */
+private const val PARAMETER_APP_VERSION = 1
+
+/** The number of values per cache entry. Must be positive.  */
+private const val PARAMETER_VALUE_COUNT = 1
+
+/** The maximum number of bytes this cache should use to store.  */
+private const val PARAMETER_CACHE_SIZE = 100L * 1024 * 1024
