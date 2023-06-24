@@ -115,9 +115,9 @@
     <string name="toggle_delegated_sources">启用代理来源</string>
     <string name="toggle_delegated_sources_summary">下列来源如果已安装则应用 %1$s 代理: %2$s</string>
     <string name="log_level">日志级别</string>
-    <string name="log_level_summary">更改此选项会影响应用性能。变更在完全重启应用后生效。现在的值：%s</string>
+    <string name="log_level_summary">更改此选项会影响应用性能。变更需要完全重启应用才能生效。现在的值：%s</string>
     <string name="enable_source_blacklist">启用来源黑名单</string>
-    <string name="enable_source_blacklist_summary">如果与 %1$s 不兼容则隐藏插件或来源。变更在完全重启应用后生效。</string>
+    <string name="enable_source_blacklist_summary">如果与 %1$s 不兼容则隐藏插件或来源。变更需要完全重启应用才能生效。</string>
     <string name="open_debug_menu">打开 Debug 菜单</string>
     <string name="open_debug_menu_summary"><![CDATA[如果你不知道你在干什么不要点击此菜单！<font color=\'red\'>这会污染你的书架！</font>]]></string>
     <string name="starting_cleanup">开始清理</string>
@@ -209,6 +209,19 @@
     <string name="thursday">周四</string>
     <string name="friday">周五</string>
     <string name="saturday">周六</string>
+    <string name="encrypt_database">加密数据库</string>
+    <string name="encrypt_database_subtitle">变更需要重启应用才能生效</string>
+    <string name="encrypt_database_message">
+        <![CDATA[<font color=\'red\'>启用此选项会创建一个新数据库。使用以下步骤以保留你的数据<br>1、设置 -> 备份和还原 -> 创建备份<br>2、系统设置 -> 清除应用数据<br>3、打开应用然后启用此选项<br>4、系统设置 -> 强行停止应用<br>5、设置 -> 备份和还原 -> 还原备份</font>]]>
+    </string>
+    <string name="set_cbz_zip_password">设置 CBZ 档案密码</string>
+    <string name="password_protect_downloads">使用密码保护下载的文件</string>
+    <string name="password_protect_downloads_summary">使用提供的密码加密 CBZ 档案。\n警告：如果你忘记密码，档案中的数据将会丢失</string>
+    <string name="delete_cbz_archive_password">移除 CBZ 档案密码</string>
+    <string name="cbz_archive_password">CBZ 档案密码</string>
+    <string name="wrong_cbz_archive_password">CBZ 档案密码错误</string>
+    <string name="encryption_type">加密类型</string>
+    <string name="standard_zip_encryption">标准 zip 加密（快速但是不安全）</string>
 
     <!-- Reader Settings -->
     <string name="page_downloading">页面下载</string>
@@ -238,7 +251,6 @@
     <string name="tap_scroll_page_summary">启用此选项后，点击将按页面而不是屏幕大小滚动</string>
     <string name="reader_bottom_buttons">阅读器底部按钮</string>
     <string name="reader_bottom_buttons_summary">自定义显示在阅读器底部的按钮</string>
-
     <string name="pref_show_vert_seekbar_landscape">横屏时显示垂直进度条</string>
     <string name="pref_show_vert_seekbar_landscape_summary">在横屏时启用垂直进度条</string>
     <string name="pref_left_handed_vertical_seekbar">将垂直进度条放在左侧</string>
@@ -303,6 +315,10 @@
     <string name="center_margin_double_and_wide_page">两个都添加</string>
     <string name="pref_center_margin">中间空白类型</string>
     <string name="pref_center_margin_summary">插入空白以适应可折叠设备的屏幕盲区。</string>
+
+    <!-- Cache archived manga to disk -->
+    <string name="cache_archived_manga_to_disk">缓存 CBZ/CBR 档案中的图片</string>
+    <string name="cache_archived_manga_to_disk_subtitle">阅读时临时复制压缩包中的图片到缓存\n可以改善阅读器的性能</string>
 
     <!-- Entry Page -->
     <!-- Entry Info -->
@@ -409,6 +425,7 @@
     <string name="no_chapters_found_for_migration">未找到章节，此作品无法用于迁移</string>
     <string name="no_alternatives_found">未找到替代方案</string>
     <string name="stop_migrating">停止迁移？</string>
+    <string name="action_stop">停止</string>
     <plurals name="migrate_entry">
         <item quantity="other">迁移 %1$d%2$s 作品？</item>
     </plurals>
@@ -525,7 +542,6 @@
     <string name="rating1">无法忍受</string>
     <string name="rating0">灾难</string>
     <string name="no_rating">没有评分</string>
-
 
     <!-- Gallery types -->
     <string name="doujinshi">同人志</string>
@@ -650,6 +666,10 @@
     <string name="relation_serialization">系列</string>
     <string name="relation_alternate_version">不同演绎</string>
 
+    <!-- Stats page -->
+    <string name="include_all_read_entries">包含所有已读的作品</string>
+    <string name="ignore_non_library_entries">忽略不在书架的作品</string>
+
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="other">%1$d 年前</item>
@@ -673,5 +693,4 @@
         <item quantity="other">%1$d 秒前</item>
     </plurals>
     <string name="humanize_fallback">前不久</string>
-
 </resources>
