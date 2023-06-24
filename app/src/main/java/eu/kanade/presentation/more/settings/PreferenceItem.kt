@@ -33,11 +33,13 @@ import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
 import eu.kanade.presentation.util.collectAsState
 import kotlinx.coroutines.launch
 import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 val LocalPreferenceHighlighted = compositionLocalOf(structuralEqualityPolicy()) { false }
+val LocalPreferenceMinHeight = compositionLocalOf(structuralEqualityPolicy()) { 56.dp }
 
 @Composable
 fun StatusWrapper(
@@ -83,6 +85,21 @@ internal fun PreferenceItem(
                             if (item.onValueChanged(newValue)) {
                                 item.pref.set(newValue)
                             }
+                        }
+                    },
+                )
+            }
+            is Preference.PreferenceItem.SliderPreference -> {
+                // TODO: use different composable?
+                SliderItem(
+                    label = item.title,
+                    min = item.min,
+                    max = item.max,
+                    value = item.value,
+                    valueText = item.value.toString(),
+                    onChange = {
+                        scope.launch {
+                            item.onValueChanged(it)
                         }
                     },
                 )

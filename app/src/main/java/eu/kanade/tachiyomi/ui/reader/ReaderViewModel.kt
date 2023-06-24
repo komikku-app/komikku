@@ -119,9 +119,9 @@ class ReaderViewModel(
     private val downloadProvider: DownloadProvider = Injekt.get(),
     private val imageSaver: ImageSaver = Injekt.get(),
     preferences: BasePreferences = Injekt.get(),
+    val readerPreferences: ReaderPreferences = Injekt.get(),
     private val basePreferences: BasePreferences = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
-    private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val trackPreferences: TrackPreferences = Injekt.get(),
     private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -867,6 +867,10 @@ class ReaderViewModel(
         mutableState.update { it.copy(dialog = Dialog.Page(page, extraPage)) }
     }
 
+    fun openColorFilterDialog() {
+        mutableState.update { it.copy(dialog = Dialog.ColorFilter) }
+    }
+
     fun closeDialog() {
         mutableState.update { it.copy(dialog = null) }
     }
@@ -1204,6 +1208,7 @@ class ReaderViewModel(
     }
 
     sealed class Dialog {
+        object ColorFilter : Dialog()
         data class Page(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
     }
 
