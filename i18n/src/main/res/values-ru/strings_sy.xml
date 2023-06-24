@@ -220,20 +220,12 @@
     <string name="encrypt_database">Зашифровать базу данных</string>
     <string name="encrypt_database_subtitle">Требуется перезагрузка приложения для применения изменений</string>
     <string name="encrypt_database_message">
-        <![CDATA[<font color=\'red\'>ВКЛЮЧЕНИЯ ЭТОГО ПАРАМЕТРА СОЗДАСТ НОВУЮ БАЗУ ДАННЫХ. СЛЕДУЙТЕ СЛЕДУЮЩИМ ДЕЙСТВИЯМ ДЛЯ СОХРАНЕНИЯ ВАШИХ ДАННЫХ<br>1. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ<br>2. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ОЧИСТИТЬ ДАННЫЕ ПРИЛОЖЕНИЯ<br>3. ЗАНОВО ОТКРОЙТЕ ПРИЛОЖЕНИЕ И АКТИВИРУЙТЕ ЭТОТ ПАРАМЕТР<br>4. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ПРИНУДИТЕЛЬНО ПЕРЕЗАПУСТИТЕ ПРИЛОЖЕНИЕ<br>5. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → ВОССТАНОВИТЬ ИЗ РЕЗЕРВНОЙ КОПИИ</font>]]>
+        <![CDATA[<font color=\'red\'>ВКЛЮЧЕНИЕ ЭТОГО ПАРАМЕТРА СОЗДАСТ НОВУЮ БАЗУ ДАННЫХ. СЛЕДУЙТЕ СЛЕДУЮЩИМ УКАЗАНИЯМ ДЛЯ СОХРАНЕНИЯ ВАШИХ ДАННЫХ<br>1. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → СОЗДАТЬ РЕЗЕРВНУЮ КОПИЮ<br>2. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ОЧИСТИТЬ ДАННЫЕ ПРИЛОЖЕНИЯ<br>3. ЗАНОВО ОТКРОЙТЕ ПРИЛОЖЕНИЕ И АКТИВИРУЙТЕ ЭТОТ ПАРАМЕТР<br>4. СИСТЕМНЫЕ НАСТРОЙКИ ПРИЛОЖЕНИЯ → ПРИНУДИТЕЛЬНО ПЕРЕЗАПУСТИТЕ ПРИЛОЖЕНИЕ<br>5. НАСТРОЙКИ ПРИЛОЖЕНИЯ → РЕЗЕРВНАЯ КОПИЯ → ВОССТАНОВИТЬ ИЗ РЕЗЕРВНОЙ КОПИИ</font>]]>
     </string>
     <string name="set_cbz_zip_password">Установить пароль для архива CBZ</string>
     <string name="password_protect_downloads">Пароль защищает загрузки</string>
     <string name="password_protect_downloads_summary">Шифрует загрузки в архиве CBZ при помощи заданного пароля.\nВНИМАНИЕ: ДАННЫЕ ВНУТРИ АРХИВОВ БУДУТ НАВСЕГДА УТЕРЯНЫ, ЕСЛИ ВЫ ЗАБУДЕТЕ ПАРОЛЬ</string>
     <string name="delete_cbz_archive_password">Удалить пароль архива CBZ</string>
-    <string name="save_in_manga_directory">В папке серии</string>
-    <string name="save_internally">Внутри приложения</string>
-    <string name="save_never">Никогда (источник пользователя не будет иметь обложек)</string>
-    <string name="save_local_manga_covers">Сохранять обложки серий пользователя</string>
-    <string name="delete_cached_local_source_covers">Удалить кэшированные обложки из источника пользователя</string>
-    <string name="delete_cached_local_source_covers_subtitle">Источник пользователя внутри приложения НЕ удаляет автоматически обложки серий\nПожалуйста, производите удаление здесь, затем откройте источник пользователя, чтобы сгенерировать их снова</string>
-    <string name="successfully_deleted_all_locally_cached_covers">Все кэшированные обложки были успешно удалены</string>
-    <string name="something_went_wrong_deleting_your_cover_images">Что-то пошло не так при удалении ваших обложек:</string>
     <string name="cbz_archive_password">Пароль архива CBZ</string>
     <string name="wrong_cbz_archive_password">Неверный пароль архива CBZ</string>
     <string name="encryption_type">Тип шифрования</string>
@@ -334,6 +326,10 @@
     <string name="center_margin_double_and_wide_page">Оба варианта</string>
     <string name="pref_center_margin">Отступ по центру</string>
     <string name="pref_center_margin_summary">Вставить проставку для устранения зазоров на складных устройствах.</string>
+
+    <!-- Cache archived manga to disk -->
+    <string name="cache_archived_manga_to_disk">Кэшировать изображения внутри архивов CBZ/CBR</string>
+    <string name="cache_archived_manga_to_disk_subtitle">Во время чтения временно копирует изображения в архив серий \nМожет улучшить производительность читалки</string>
 
     <!-- Entry Page -->
     <!-- Entry Info -->
@@ -713,6 +709,10 @@
     <string name="relation_colored">Цветное</string>
     <string name="relation_serialization">Сериализация</string>
     <string name="relation_alternate_version">Альт. версия</string>
+
+    <!-- Stats page -->
+    <string name="include_all_read_entries">Включать все прочитанные серии</string>
+    <string name="ignore_non_library_entries">Игнорировать не-библиотечные серии</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
