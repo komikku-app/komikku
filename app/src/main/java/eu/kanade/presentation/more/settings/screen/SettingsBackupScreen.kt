@@ -200,7 +200,7 @@ object SettingsBackupScreen : SearchableSettings {
                         onConfirm(flag)
                     },
                 ) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
         )
@@ -253,7 +253,7 @@ object SettingsBackupScreen : SearchableSettings {
                         },
                         confirmButton = {
                             TextButton(onClick = onDismissRequest) {
-                                Text(text = stringResource(android.R.string.ok))
+                                Text(text = stringResource(R.string.action_ok))
                             }
                         },
                     )

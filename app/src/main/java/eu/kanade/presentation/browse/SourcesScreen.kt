@@ -302,7 +302,7 @@ fun SourceCategoriesDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = { onClickCategories(newCategories.toList()) }) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(R.string.action_ok))
             }
         },
     )

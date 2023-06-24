@@ -157,7 +157,7 @@ class BatchAddScreen : Screen() {
                 onDismissRequest = onDismissRequest,
                 confirmButton = {
                     TextButton(onClick = onDismissRequest) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(R.string.action_ok))
                     }
                 },
                 title = {

@@ -136,7 +136,7 @@ fun PagePreviewPageDialog(
                 onPageSelected(page.roundToInt())
                 onDismissPageDialog()
             },) {
-                Text(stringResource(android.R.string.ok))
+                Text(stringResource(R.string.action_ok))
             }
         },
         dismissButton = {

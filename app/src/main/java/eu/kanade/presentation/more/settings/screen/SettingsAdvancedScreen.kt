@@ -449,7 +449,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                             uriHandler.openUri("https://shizuku.rikka.app/download")
                         },
                     ) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(R.string.action_ok))
                     }
                 },
             )
@@ -533,7 +533,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         onCleanupDownloads(removeRead, removeNonFavorite)
                     },
                 ) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
@@ -777,7 +777,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                                         securityPreferences.encryptDatabase().set(true)
                                     },
                                 ) {
-                                    Text(text = stringResource(android.R.string.ok))
+                                    Text(text = stringResource(R.string.action_ok))
                                 }
                             },
                         )

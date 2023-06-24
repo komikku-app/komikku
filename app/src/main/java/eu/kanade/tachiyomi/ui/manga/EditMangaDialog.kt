@@ -237,7 +237,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
                 .setTextInput {
                     newTag = it.trimOrNull()
                 }
-                .setPositiveButton(android.R.string.ok) { _, _ ->
+                .setPositiveButton(R.string.action_ok) { _, _ ->
                     if (newTag != null) setChips(items + listOfNotNull(newTag), scope)
                 }
                 .setNegativeButton(android.R.string.cancel, null)

@@ -71,7 +71,7 @@ fun SavedSearchDeleteDialog(
                     onDismissRequest()
                 },
             ) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(R.string.action_ok))
             }
         },
         title = {
@@ -122,7 +122,7 @@ fun SavedSearchCreateDialog(
                     }
                 },
             ) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(R.string.action_ok))
             }
         },
         dismissButton = {

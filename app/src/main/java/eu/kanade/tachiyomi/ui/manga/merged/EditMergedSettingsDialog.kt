@@ -87,7 +87,7 @@ class EditMergedSettingsState(
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.delete_merged_entry)
             .setMessage(R.string.delete_merged_entry_desc)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.action_ok) { _, _ ->
                 onDeleteClick(mergeMangaReference)
                 onDismissRequest()
             }
@@ -99,7 +99,7 @@ class EditMergedSettingsState(
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.chapter_updates_merged_entry)
             .setMessage(R.string.chapter_updates_merged_entry_desc)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.action_ok) { _, _ ->
                 toggleChapterUpdates(position)
             }
             .setNegativeButton(android.R.string.cancel, null)
@@ -127,7 +127,7 @@ class EditMergedSettingsState(
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.download_merged_entry)
             .setMessage(R.string.download_merged_entry_desc)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.action_ok) { _, _ ->
                 toggleChapterDownloads(position)
             }
             .setNegativeButton(android.R.string.cancel, null)

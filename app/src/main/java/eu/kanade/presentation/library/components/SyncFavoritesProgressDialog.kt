@@ -46,21 +46,21 @@ fun SyncFavoritesProgressDialog(
                     openManga(status.manga)
                     setStatusIdle()
                 },
-                negativeButtonText = context.getString(android.R.string.ok),
+                negativeButtonText = context.getString(R.string.action_ok),
                 negativeButton = setStatusIdle,
             )
             is FavoritesSyncStatus.CompleteWithErrors -> value = SyncFavoritesProgressProperties(
                 title = context.getString(R.string.favorites_sync_done_errors),
                 text = context.getString(R.string.favorites_sync_done_errors_message, status.message),
                 canDismiss = false,
-                positiveButtonText = context.getString(android.R.string.ok),
+                positiveButtonText = context.getString(R.string.action_ok),
                 positiveButton = setStatusIdle,
             )
             is FavoritesSyncStatus.Error -> value = SyncFavoritesProgressProperties(
                 title = context.getString(R.string.favorites_sync_error),
                 text = context.getString(R.string.favorites_sync_error_string, status.message),
                 canDismiss = false,
-                positiveButtonText = context.getString(android.R.string.ok),
+                positiveButtonText = context.getString(R.string.action_ok),
                 positiveButton = setStatusIdle,
             )
             is FavoritesSyncStatus.Idle -> value = null

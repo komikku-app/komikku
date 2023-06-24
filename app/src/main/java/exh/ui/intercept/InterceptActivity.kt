@@ -122,7 +122,7 @@ class InterceptActivity : BaseActivity() {
                         MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.chapter_error)
                             .setMessage(getString(R.string.could_not_open_entry, it.reason))
-                            .setPositiveButton(android.R.string.ok, null)
+                            .setPositiveButton(R.string.action_ok, null)
                             .setOnCancelListener { onBackPressed() }
                             .setOnDismissListener { onBackPressed() }
                             .show()

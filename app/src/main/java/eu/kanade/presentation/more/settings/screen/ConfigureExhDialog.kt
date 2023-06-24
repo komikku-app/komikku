@@ -61,7 +61,7 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
                         warnDialogOpen = false
                     },
                 ) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             title = {
@@ -110,7 +110,7 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
             onDismissRequest = { configureFailedDialogOpen = null },
             confirmButton = {
                 TextButton(onClick = { configureFailedDialogOpen = null }) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             title = {

@@ -169,7 +169,7 @@ fun FeedAddDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = { onClickAdd(selected?.let { sources[it] }) }) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(R.string.action_ok))
             }
         },
     )
@@ -205,7 +205,7 @@ fun FeedAddSearchDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) }) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(R.string.action_ok))
             }
         },
     )

@@ -304,7 +304,7 @@ object SettingsEhScreen : SearchableSettings {
                     onClick = { onValueChange(value.toIntOrNull() ?: return@TextButton) },
                     enabled = isValid,
                 ) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
@@ -589,7 +589,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onValueChange(state.toPreference()) }) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
@@ -755,7 +755,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onValueChange(state.toPreference()) }) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
@@ -885,7 +885,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = onStartReset) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
@@ -1033,7 +1033,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
         )

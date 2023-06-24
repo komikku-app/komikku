@@ -832,7 +832,7 @@ class ReaderActivity : BaseActivity() {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.eh_autoscroll_help)
                 .setMessage(R.string.eh_autoscroll_help_message)
-                .setPositiveButton(android.R.string.ok, null)
+                .setPositiveButton(R.string.action_ok, null)
                 .show()
         }
 
@@ -882,7 +882,7 @@ class ReaderActivity : BaseActivity() {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.eh_retry_all_help)
                 .setMessage(R.string.eh_retry_all_help_message)
-                .setPositiveButton(android.R.string.ok, null)
+                .setPositiveButton(R.string.action_ok, null)
                 .show()
         }
 
@@ -914,7 +914,7 @@ class ReaderActivity : BaseActivity() {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.eh_boost_page_help)
                 .setMessage(R.string.eh_boost_page_help_message)
-                .setPositiveButton(android.R.string.ok, null)
+                .setPositiveButton(R.string.action_ok, null)
                 .show()
         }
     }

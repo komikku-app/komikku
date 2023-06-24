@@ -204,7 +204,7 @@ object SettingsMangadexScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onSelectionConfirmed(items.filterIndexed { index, _ -> selection[index] }) }) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
