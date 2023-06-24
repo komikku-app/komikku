@@ -177,13 +177,25 @@ class ReaderViewModel(
      */
     private val chapterList by lazy {
         val manga = manga!!
-        val chapters = runBlocking {
-            /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
-                getMergedChapterByMangaId.await(manga.id)
+        // SY -->
+        val (chapters, mangaMap) = runBlocking {
+            if (manga.source == MERGED_SOURCE_ID) {
+                getMergedChapterByMangaId.await(manga.id) to getMergedMangaById.await(manga.id)
+                    .associateBy { it.id }
             } else {
-                /* SY <-- */ getChapterByMangaId.await(manga.id)
+               getChapterByMangaId.await(manga.id) to null
             }
         }
+        fun isChapterDownloaded(chapter: Chapter): Boolean {
+            val chapterManga = mangaMap?.get(chapter.mangaId) ?: manga
+            return downloadManager.isChapterDownloaded(
+                chapterName = chapter.name,
+                chapterScanlator = chapter.scanlator,
+                mangaTitle = chapterManga.ogTitle,
+                sourceId = chapterManga.source
+            )
+        }
+        // SY <--
 
         val selectedChapter = chapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")
@@ -196,8 +208,10 @@ class ReaderViewModel(
                         readerPreferences.skipFiltered().get() -> {
                             (manga.unreadFilterRaw == Manga.CHAPTER_SHOW_READ && !it.read) ||
                                 (manga.unreadFilterRaw == Manga.CHAPTER_SHOW_UNREAD && it.read) ||
-                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_DOWNLOADED && !downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)) ||
-                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_NOT_DOWNLOADED && downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)) ||
+                                // SY -->
+                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_DOWNLOADED && !isChapterDownloaded(it)) ||
+                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_NOT_DOWNLOADED && isChapterDownloaded(it)) ||
+                                // SY <--
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark) ||
                                 // SY -->
@@ -228,7 +242,7 @@ class ReaderViewModel(
             }
             .run {
                 if (basePreferences.downloadedOnly().get()) {
-                    filterDownloaded(manga)
+                    filterDownloaded(manga, mangaMap)
                 } else {
                     this
                 }
