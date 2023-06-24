@@ -31,7 +31,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.annotation.ColorInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,7 +95,6 @@ import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
-import exh.log.xLogE
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
@@ -528,6 +526,23 @@ class ReaderActivity : BaseActivity() {
                 // SY <--
                 totalPages = state.totalPages,
             )
+        }
+
+        binding.dialogRoot.setComposeContent {
+            val state by viewModel.state.collectAsState()
+
+            when (state.dialog) {
+                is ReaderViewModel.Dialog.Page -> ReaderPageDialog(
+                    onDismissRequest = viewModel::closeDialog,
+                    onSetAsCover = viewModel::setAsCover,
+                    onShare = viewModel::shareImage,
+                    onSave = viewModel::saveImage,
+                    onShareCombined = viewModel::shareImages,
+                    onSaveCombined = viewModel::saveImages,
+                    hasExtraPage = (state.dialog as? ReaderViewModel.Dialog.Page)?.extraPage != null,
+                )
+                null -> {}
+            }
         }
 
         // SY -->
@@ -1325,18 +1340,7 @@ class ReaderActivity : BaseActivity() {
      */
     fun onPageLongTap(page: ReaderPage, extraPage: ReaderPage? = null) {
         // SY -->
-        try {
-            val viewer = viewModel.state.value.viewer as? PagerViewer
-            ReaderPageSheet(
-                this,
-                page,
-                extraPage,
-                (viewer !is R2LPagerViewer) xor (viewer?.config?.invertDoublePages ?: false),
-                viewer?.config?.pageCanvasColor,
-            ).show()
-        } catch (e: WindowManager.BadTokenException) {
-            xLogE("Caught and ignoring reader page sheet launch exception!", e)
-        }
+        viewModel.openPageDialog(page, extraPage)
         // SY <--
     }
 
@@ -1375,20 +1379,6 @@ class ReaderActivity : BaseActivity() {
     }
 
     /**
-     * Called from the page sheet. It delegates the call to the presenter to do some IO, which
-     * will call [onShareImageResult] with the path the image was saved on when it's ready.
-     */
-    fun shareImage(page: ReaderPage) {
-        viewModel.shareImage(page)
-    }
-
-    // SY -->
-    fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        viewModel.shareImages(firstPage, secondPage, isLTR, bg)
-    }
-    // SY <--
-
-    /**
      * Called from the presenter when a page is ready to be shared. It shows Android's default
      * sharing tool.
      */
@@ -1412,20 +1402,6 @@ class ReaderActivity : BaseActivity() {
     }
 
     /**
-     * Called from the page sheet. It delegates saving the image of the given [page] on external
-     * storage to the presenter.
-     */
-    fun saveImage(page: ReaderPage) {
-        viewModel.saveImage(page)
-    }
-
-    // SY -->
-    fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
-        viewModel.saveImages(firstPage, secondPage, isLTR, bg)
-    }
-    // SY <--
-
-    /**
      * Called from the presenter when a page is saved or fails. It shows a message or logs the
      * event depending on the [result].
      */
@@ -1438,14 +1414,6 @@ class ReaderActivity : BaseActivity() {
                 logcat(LogPriority.ERROR, result.error)
             }
         }
-    }
-
-    /**
-     * Called from the page sheet. It delegates setting the image of the given [page] as the
-     * cover to the presenter.
-     */
-    fun setAsCover(page: ReaderPage) {
-        viewModel.setAsCover(page)
     }
 
     /**

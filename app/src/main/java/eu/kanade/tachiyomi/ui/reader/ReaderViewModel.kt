@@ -40,12 +40,15 @@ import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.chapter.filterDownloaded
 import eu.kanade.tachiyomi.util.chapter.removeDuplicates
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.storage.DiskUtil.MAX_FILE_NAME_BYTES
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.isOnline
 import exh.md.utils.FollowStatus
@@ -183,7 +186,7 @@ class ReaderViewModel(
                 getMergedChapterByMangaId.await(manga.id) to getMergedMangaById.await(manga.id)
                     .associateBy { it.id }
             } else {
-               getChapterByMangaId.await(manga.id) to null
+                getChapterByMangaId.await(manga.id) to null
             }
         }
         fun isChapterDownloaded(chapter: Chapter): Boolean {
@@ -192,7 +195,7 @@ class ReaderViewModel(
                 chapterName = chapter.name,
                 chapterScanlator = chapter.scanlator,
                 mangaTitle = chapterManga.ogTitle,
-                sourceId = chapterManga.source
+                sourceId = chapterManga.source,
             )
         }
         // SY <--
@@ -659,7 +662,7 @@ class ReaderViewModel(
         // SY -->
         readerChapter.requestedPage = readerChapter.chapter.last_page_read
         // SY <--
-		if (incognitoMode) return
+        if (incognitoMode) return
 
         val chapter = readerChapter.chapter
         getCurrentChapter()?.requestedPage = chapter.last_page_read
@@ -860,12 +863,27 @@ class ReaderViewModel(
         ) + filenameSuffix
     }
 
+    fun openPageDialog(page: ReaderPage/* SY --> */, extraPage: ReaderPage? = null/* SY <-- */) {
+        mutableState.update { it.copy(dialog = Dialog.Page(page, extraPage)) }
+    }
+
+    fun closeDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
     /**
-     * Saves the image of this [page] on the pictures directory and notifies the UI of the result.
+     * Saves the image of the selected page on the pictures directory and notifies the UI of the result.
      * There's also a notification to allow sharing the image somewhere else or deleting it.
      */
-    fun saveImage(page: ReaderPage) {
-        if (page.status != Page.State.READY) return
+    fun saveImage(useExtraPage: Boolean) {
+        // SY -->
+        val page = if (useExtraPage) {
+            (state.value.dialog as? Dialog.Page)?.extraPage
+        } else {
+            (state.value.dialog as? Dialog.Page)?.page
+        }
+        // SY <--
+        if (page?.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -899,9 +917,15 @@ class ReaderViewModel(
     }
 
     // SY -->
-    fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+    fun saveImages() {
+        val (firstPage, secondPage) = (state.value.dialog as? Dialog.Page ?: return)
+        val viewer = state.value.viewer as? PagerViewer ?: return
+        val isLTR = (viewer !is R2LPagerViewer) xor (viewer.config.invertDoublePages)
+        val bg = viewer.config.pageCanvasColor
+
         if (firstPage.status != Page.State.READY) return
-        if (secondPage.status != Page.State.READY) return
+        if (secondPage?.status != Page.State.READY) return
+
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -964,14 +988,21 @@ class ReaderViewModel(
     // SY <--
 
     /**
-     * Shares the image of this [page] and notifies the UI with the path of the file to share.
+     * Shares the image of the selected page and notifies the UI with the path of the file to share.
      * The image must be first copied to the internal partition because there are many possible
      * formats it can come from, like a zipped chapter, in which case it's not possible to directly
      * get a path to the file and it has to be decompressed somewhere first. Only the last shared
      * image will be kept so it won't be taking lots of internal disk space.
      */
-    fun shareImage(page: ReaderPage) {
-        if (page.status != Page.State.READY) return
+    fun shareImage(useExtraPage: Boolean) {
+        // SY -->
+        val page = if (useExtraPage) {
+            (state.value.dialog as? Dialog.Page)?.extraPage
+        } else {
+            (state.value.dialog as? Dialog.Page)?.page
+        }
+        // SY <--
+        if (page?.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -997,9 +1028,14 @@ class ReaderViewModel(
     }
 
     // SY -->
-    fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+    fun shareImages() {
+        val (firstPage, secondPage) = (state.value.dialog as? Dialog.Page ?: return)
+        val viewer = state.value.viewer as? PagerViewer ?: return
+        val isLTR = (viewer !is R2LPagerViewer) xor (viewer.config.invertDoublePages)
+        val bg = viewer.config.pageCanvasColor
+
         if (firstPage.status != Page.State.READY) return
-        if (secondPage.status != Page.State.READY) return
+        if (secondPage?.status != Page.State.READY) return
         val manga = manga ?: return
 
         val context = Injekt.get<Application>()
@@ -1025,10 +1061,17 @@ class ReaderViewModel(
     // SY <--
 
     /**
-     * Sets the image of this [page] as cover and notifies the UI of the result.
+     * Sets the image of the selected page as cover and notifies the UI of the result.
      */
-    fun setAsCover(page: ReaderPage) {
-        if (page.status != Page.State.READY) return
+    fun setAsCover(useExtraPage: Boolean) {
+        // SY -->
+        val page = if (useExtraPage) {
+            (state.value.dialog as? Dialog.Page)?.extraPage
+        } else {
+            (state.value.dialog as? Dialog.Page)?.page
+        }
+        // SY <--
+        if (page?.status != Page.State.READY) return
         val manga = manga ?: return
         val stream = page.stream ?: return
 
@@ -1143,10 +1186,12 @@ class ReaderViewModel(
         val viewerChapters: ViewerChapters? = null,
         val isLoadingAdjacentChapter: Boolean = false,
         val currentPage: Int = -1,
+
         /**
          * Viewer used to display the pages (pager, webtoon, ...).
          */
         val viewer: Viewer? = null,
+        val dialog: Dialog? = null,
 
         // SY -->
         val currentPageText: String = "",
@@ -1156,6 +1201,10 @@ class ReaderViewModel(
     ) {
         val totalPages: Int
             get() = viewerChapters?.currChapter?.pages?.size ?: -1
+    }
+
+    sealed class Dialog {
+        data class Page(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
     }
 
     sealed class Event {
