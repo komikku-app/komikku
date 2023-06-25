@@ -333,7 +333,7 @@ class BackupManager(
             }
             if (!found) {
                 // Let the db assign the id
-                val id = handler.awaitOne {
+                val id = handler.awaitOneExecutable {
                     categoriesQueries.insert(category.name, category.order, category.flags)
                     categoriesQueries.selectLastInsertedRowId()
                 }
@@ -557,7 +557,7 @@ class BackupManager(
      * @return id of [Manga], null if not found
      */
     private suspend fun insertManga(manga: Manga): Long {
-        return handler.awaitOne(true) {
+        return handler.awaitOneExecutable(true) {
             mangasQueries.insert(
                 source = manga.source,
                 url = manga.url,
@@ -598,11 +598,11 @@ class BackupManager(
                 title = manga.title,
                 status = manga.status,
                 thumbnailUrl = manga.thumbnailUrl,
-                favorite = manga.favorite.toLong(),
+                favorite = manga.favorite,
                 lastUpdate = manga.lastUpdate,
                 nextUpdate = null,
                 calculateInterval = null,
-                initialized = manga.initialized.toLong(),
+                initialized = manga.initialized,
                 viewer = manga.viewerFlags,
                 chapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
@@ -651,8 +651,8 @@ class BackupManager(
                     url = null,
                     name = null,
                     scanlator = null,
-                    read = chapter.read.toLong(),
-                    bookmark = chapter.bookmark.toLong(),
+                    read = chapter.read,
+                    bookmark = chapter.bookmark,
                     lastPageRead = chapter.lastPageRead,
                     chapterNumber = null,
                     sourceOrder = null,

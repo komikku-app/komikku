@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 CREATE TABLE merged(
     _id INTEGER NOT NULL PRIMARY KEY,
     info_manga INTEGER AS Boolean NOT NULL,

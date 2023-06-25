@@ -1,3 +1,4 @@
+import kotlin.Long;
 import kotlin.collections.List;
 
 CREATE TABLE categories(

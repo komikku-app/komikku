@@ -47,7 +47,7 @@ class FeedSavedSearchRepositoryImpl(
     }
 
     override suspend fun insert(feedSavedSearch: FeedSavedSearch): Long {
-        return handler.awaitOne(true) {
+        return handler.awaitOneExecutable(true) {
             feed_saved_searchQueries.insert(
                 feedSavedSearch.source,
                 feedSavedSearch.savedSearch,

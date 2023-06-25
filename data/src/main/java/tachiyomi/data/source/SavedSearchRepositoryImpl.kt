@@ -26,7 +26,7 @@ class SavedSearchRepositoryImpl(
     }
 
     override suspend fun insert(savedSearch: SavedSearch): Long {
-        return handler.awaitOne(true) {
+        return handler.awaitOneExecutable(true) {
             saved_searchQueries.insert(
                 savedSearch.source,
                 savedSearch.name,

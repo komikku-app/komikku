@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 CREATE TABLE feed_saved_search (
     _id INTEGER NOT NULL PRIMARY KEY,
     source INTEGER NOT NULL,

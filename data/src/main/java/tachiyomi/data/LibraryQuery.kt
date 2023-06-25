@@ -1,9 +1,9 @@
 package tachiyomi.data
 
-import com.squareup.sqldelight.Query
-import com.squareup.sqldelight.db.SqlCursor
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.internal.copyOnWriteList
+import app.cash.sqldelight.ExecutableQuery
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlCursor
+import app.cash.sqldelight.db.SqlDriver
 import exh.source.MERGED_SOURCE_ID
 import tachiyomi.view.LibraryView
 
@@ -33,11 +33,11 @@ private val mapper = { cursor: SqlCursor ->
         last_modified_at = cursor.getLong(21)!!,
         favorite_modified_at = cursor.getLong(22),
         totalCount = cursor.getLong(23)!!,
-        readCount = cursor.getLong(24)!!,
+        readCount = cursor.getDouble(24)!!,
         latestUpload = cursor.getLong(25)!!,
         chapterFetchedAt = cursor.getLong(26)!!,
         lastRead = cursor.getLong(27)!!,
-        bookmarkCount = cursor.getLong(28)!!,
+        bookmarkCount = cursor.getDouble(28)!!,
         category = cursor.getLong(29)!!,
     )
 }
@@ -45,8 +45,9 @@ private val mapper = { cursor: SqlCursor ->
 class LibraryQuery(
     val driver: SqlDriver,
     val condition: String = "M.favorite = 1",
-) : Query<LibraryView>(copyOnWriteList(), mapper) {
-    override fun execute(): SqlCursor {
+) : ExecutableQuery<LibraryView>(mapper) {
+
+    override fun <R> execute(mapper: (SqlCursor) -> QueryResult<R>): QueryResult<R> {
         return driver.executeQuery(
             null,
             """
@@ -116,7 +117,8 @@ class LibraryQuery(
             ON MC.manga_id = M._id
             WHERE $condition AND M.source = $MERGED_SOURCE_ID;
             """.trimIndent(),
-            1,
+            mapper,
+            parameters = 0,
         )
     }
 

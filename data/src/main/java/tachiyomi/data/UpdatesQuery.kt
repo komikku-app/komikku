@@ -1,9 +1,9 @@
 package tachiyomi.data
 
-import com.squareup.sqldelight.Query
-import com.squareup.sqldelight.db.SqlCursor
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.internal.copyOnWriteList
+import app.cash.sqldelight.ExecutableQuery
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlCursor
+import app.cash.sqldelight.db.SqlDriver
 import exh.source.MERGED_SOURCE_ID
 import tachiyomi.view.UpdatesView
 
@@ -26,8 +26,8 @@ private val mapper = { cursor: SqlCursor ->
     )
 }
 
-class UpdatesQuery(val driver: SqlDriver, val after: Long, val limit: Long) : Query<UpdatesView>(copyOnWriteList(), mapper) {
-    override fun execute(): SqlCursor {
+class UpdatesQuery(val driver: SqlDriver, val after: Long, val limit: Long) : ExecutableQuery<UpdatesView>(mapper) {
+    override fun <R> execute(mapper: (SqlCursor) -> QueryResult<R>): QueryResult<R> {
         return driver.executeQuery(
             null,
             """
@@ -82,6 +82,7 @@ class UpdatesQuery(val driver: SqlDriver, val after: Long, val limit: Long) : Qu
             ORDER BY datefetch DESC
             LIMIT :limit;
             """.trimIndent(),
+            mapper,
             2,
             binders = {
                 bindLong(1, after)

@@ -1,12 +1,13 @@
 package tachiyomi.data
 
 import androidx.paging.PagingSource
-import com.squareup.sqldelight.Query
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
-import com.squareup.sqldelight.runtime.coroutines.mapToOne
-import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import app.cash.sqldelight.ExecutableQuery
+import app.cash.sqldelight.Query
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +33,15 @@ class AndroidDatabaseHandler(
         return dispatch(inTransaction) { block(db).executeAsList() }
     }
 
+    // SY -->
+    override suspend fun <T : Any> awaitListExecutable(
+        inTransaction: Boolean,
+        block: suspend Database.() -> ExecutableQuery<T>,
+    ): List<T> {
+        return dispatch(inTransaction) { block(db).executeAsList() }
+    }
+    // SY <--
+
     override suspend fun <T : Any> awaitOne(
         inTransaction: Boolean,
         block: suspend Database.() -> Query<T>,
@@ -39,9 +49,23 @@ class AndroidDatabaseHandler(
         return dispatch(inTransaction) { block(db).executeAsOne() }
     }
 
+    override suspend fun <T : Any> awaitOneExecutable(
+        inTransaction: Boolean,
+        block: suspend Database.() -> ExecutableQuery<T>,
+    ): T {
+        return dispatch(inTransaction) { block(db).executeAsOne() }
+    }
+
     override suspend fun <T : Any> awaitOneOrNull(
         inTransaction: Boolean,
         block: suspend Database.() -> Query<T>,
+    ): T? {
+        return dispatch(inTransaction) { block(db).executeAsOneOrNull() }
+    }
+
+    override suspend fun <T : Any> awaitOneOrNullExecutable(
+        inTransaction: Boolean,
+        block: suspend Database.() -> ExecutableQuery<T>,
     ): T? {
         return dispatch(inTransaction) { block(db).executeAsOneOrNull() }
     }

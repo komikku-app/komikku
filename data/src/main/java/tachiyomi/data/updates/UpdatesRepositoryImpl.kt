@@ -25,7 +25,7 @@ class UpdatesRepositoryImpl(
         return databaseHandler.subscribeToList {
             updatesViewQueries.getRecentUpdates(after, limit, updateWithRelationMapper)
         }.map {
-            databaseHandler.awaitList { (databaseHandler as AndroidDatabaseHandler).getUpdatesQuery(after, limit) }
+            databaseHandler.awaitListExecutable { (databaseHandler as AndroidDatabaseHandler).getUpdatesQuery(after, limit) }
                 .map(updatesViewMapper)
         }
     }

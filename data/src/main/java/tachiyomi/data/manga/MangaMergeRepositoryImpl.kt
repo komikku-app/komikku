@@ -2,7 +2,6 @@ package tachiyomi.data.manga
 
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
-import tachiyomi.core.util.lang.toLong
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.Manga
@@ -63,9 +62,9 @@ class MangaMergeRepositoryImpl(
             values.forEach { value ->
                 mergedQueries.updateSettingsById(
                     id = value.id,
-                    getChapterUpdates = value.getChapterUpdates?.toLong(),
-                    downloadChapters = value.downloadChapters?.toLong(),
-                    infoManga = value.isInfoManga?.toLong(),
+                    getChapterUpdates = value.getChapterUpdates,
+                    downloadChapters = value.downloadChapters,
+                    infoManga = value.isInfoManga,
                     chapterPriority = value.chapterPriority?.toLong(),
                     chapterSortMode = value.chapterSortMode?.toLong(),
                 )
@@ -74,7 +73,7 @@ class MangaMergeRepositoryImpl(
     }
 
     override suspend fun insert(reference: MergedMangaReference): Long? {
-        return handler.awaitOneOrNull {
+        return handler.awaitOneOrNullExecutable {
             mergedQueries.insert(
                 infoManga = reference.isInfoManga,
                 getChapterUpdates = reference.getChapterUpdates,

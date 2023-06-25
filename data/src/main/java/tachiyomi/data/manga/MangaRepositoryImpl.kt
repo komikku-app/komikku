@@ -3,7 +3,6 @@ package tachiyomi.data.manga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import logcat.LogPriority
-import tachiyomi.core.util.lang.toLong
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.DatabaseHandler
@@ -40,7 +39,7 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
-        return handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }.map(libraryViewMapper)
+        return handler.awaitListExecutable { (handler as AndroidDatabaseHandler).getLibraryQuery() }.map(libraryViewMapper)
         // return handler.awaitList { libraryViewQueries.library(libraryManga) }
     }
 
@@ -81,10 +80,10 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun insert(manga: Manga): Long? {
-        return handler.awaitOneOrNull(inTransaction = true) {
+        return handler.awaitOneOrNullExecutable(inTransaction = true) {
             // SY -->
             if (mangasQueries.getIdByUrlAndSource(manga.url, manga.source).executeAsOneOrNull() != null) {
-                return@awaitOneOrNull mangasQueries.getIdByUrlAndSource(manga.url, manga.source)
+                return@awaitOneOrNullExecutable mangasQueries.getIdByUrlAndSource(manga.url, manga.source)
             }
             // SY <--
             mangasQueries.insert(
@@ -148,11 +147,11 @@ class MangaRepositoryImpl(
                     title = value.title,
                     status = value.status,
                     thumbnailUrl = value.thumbnailUrl,
-                    favorite = value.favorite?.toLong(),
+                    favorite = value.favorite,
                     lastUpdate = value.lastUpdate,
                     nextUpdate = value.nextUpdate,
                     calculateInterval = value.fetchInterval?.toLong(),
-                    initialized = value.initialized?.toLong(),
+                    initialized = value.initialized,
                     viewer = value.viewerFlags,
                     chapterFlags = value.chapterFlags,
                     coverLastModified = value.coverLastModified,
@@ -181,7 +180,7 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getReadMangaNotInLibrary(): List<LibraryManga> {
-        return handler.awaitList {
+        return handler.awaitListExecutable {
             (handler as AndroidDatabaseHandler).getLibraryQuery("M.favorite = 0 AND C.readCount != 0")
         }.map(libraryViewMapper)
     }

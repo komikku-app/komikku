@@ -37,7 +37,7 @@ class CategoryRepositoryImpl(
 
     // SY -->
     override suspend fun insert(category: Category): Long {
-        return handler.awaitOne(true) {
+        return handler.awaitOneExecutable(true) {
             categoriesQueries.insert(
                 name = category.name,
                 order = category.order,

@@ -5,8 +5,10 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import com.squareup.sqldelight.android.AndroidSqliteDriver
-import com.squareup.sqldelight.db.SqlDriver
+import app.cash.sqldelight.adapter.primitive.FloatColumnAdapter
+import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
@@ -42,13 +44,16 @@ import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.provider.AndroidBackupFolderProvider
 import tachiyomi.core.provider.AndroidDownloadFolderProvider
 import tachiyomi.data.AndroidDatabaseHandler
-import tachiyomi.data.Categories
+import tachiyomi.data.Chapters
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.History
+import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
+import tachiyomi.data.Search_metadata
+import tachiyomi.data.Search_tags
+import tachiyomi.data.Search_titles
 import tachiyomi.data.dateAdapter
-import tachiyomi.data.listOfLongsAdapter
 import tachiyomi.data.listOfStringsAdapter
 import tachiyomi.data.listOfStringsAndAdapter
 import tachiyomi.data.updateStrategyAdapter
@@ -122,8 +127,14 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory {
             Database(
                 driver = get(),
+                chaptersAdapter = Chapters.Adapter(
+                    chapter_numberAdapter = FloatColumnAdapter,
+                ),
                 historyAdapter = History.Adapter(
                     last_readAdapter = dateAdapter,
+                ),
+                manga_syncAdapter = Manga_sync.Adapter(
+                    scoreAdapter = FloatColumnAdapter,
                 ),
                 mangasAdapter = Mangas.Adapter(
                     genreAdapter = listOfStringsAdapter,
@@ -132,11 +143,15 @@ class AppModule(val app: Application) : InjektModule {
                     filtered_scanlatorsAdapter = listOfStringsAndAdapter,
                     // SY <--
                 ),
-                // SY -->
-                categoriesAdapter = Categories.Adapter(
-                    manga_orderAdapter = listOfLongsAdapter,
+                search_metadataAdapter = Search_metadata.Adapter(
+                    extra_versionAdapter = IntColumnAdapter,
                 ),
-                // SY <--
+                search_tagsAdapter = Search_tags.Adapter(
+                    typeAdapter = IntColumnAdapter,
+                ),
+                search_titlesAdapter = Search_titles.Adapter(
+                    typeAdapter = IntColumnAdapter,
+                ),
             )
         }
         addSingletonFactory<DatabaseHandler> { AndroidDatabaseHandler(get(), get()) }

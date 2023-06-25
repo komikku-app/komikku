@@ -38,7 +38,7 @@ val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, 
         )
     }
 
-val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long, Long, Long?, Long, Long, Long, Long, Long, Long, Long) -> LibraryManga =
+val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?, UpdateStrategy, Long, Long, Long?, Long, Double, Long, Long, Long, Double, Long) -> LibraryManga =
     { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, nextUpdate, initialized, viewerFlags, chapterFlags, coverLastModified, dateAdded, filteredScanlators, updateStrategy, calculateInterval, lastModifiedAt, favoriteModifiedAt, totalCount, readCount, latestUpload, chapterFetchedAt, lastRead, bookmarkCount, category ->
         LibraryManga(
             manga = mangaMapper(
@@ -70,8 +70,8 @@ val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?,
             ),
             category = category,
             totalChapters = totalCount,
-            readCount = readCount,
-            bookmarkCount = bookmarkCount,
+            readCount = readCount.toLong(),
+            bookmarkCount = bookmarkCount.toLong(),
             latestUpload = latestUpload,
             chapterFetchedAt = chapterFetchedAt,
             lastRead = lastRead,
@@ -101,14 +101,14 @@ val libraryViewMapper: (LibraryView) -> LibraryManga = {
             updateStrategy = it.update_strategy,
             initialized = it.initialized,
             filteredScanlators = it.filtered_scanlators,
-            calculateInterval = it.calculate_interval.toInt(),
+            fetchInterval = it.calculate_interval.toInt(),
             lastModifiedAt = it.last_modified_at,
             favoriteModifiedAt = it.favorite_modified_at,
         ),
         category = it.category,
         totalChapters = it.totalCount,
-        readCount = it.readCount,
-        bookmarkCount = it.bookmarkCount,
+        readCount = it.readCount.toLong(),
+        bookmarkCount = it.bookmarkCount.toLong(),
         latestUpload = it.latestUpload,
         chapterFetchedAt = it.chapterFetchedAt,
         lastRead = it.lastRead,
