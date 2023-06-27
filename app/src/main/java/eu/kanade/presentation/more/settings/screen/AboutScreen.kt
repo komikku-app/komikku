@@ -140,7 +140,7 @@ object AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(R.string.licenses),
-                        onPreferenceClick = { navigator.push(LicensesScreen()) },
+                        onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
                     )
                 }
 
