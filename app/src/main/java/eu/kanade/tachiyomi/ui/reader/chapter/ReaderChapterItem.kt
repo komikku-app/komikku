@@ -4,6 +4,10 @@ import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.AttrRes
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
@@ -12,7 +16,6 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderChapterItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.isEhBasedManga
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
@@ -118,4 +121,13 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
             }
         }
     }
+}
+
+fun ImageView.setVectorCompat(@DrawableRes drawable: Int, @AttrRes tint: Int? = null) {
+    val vector = AppCompatResources.getDrawable(context, drawable)
+    if (tint != null) {
+        vector?.mutate()
+        vector?.setTint(context.getResourceColor(tint))
+    }
+    setImageDrawable(vector)
 }
