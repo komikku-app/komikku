@@ -862,8 +862,12 @@ class ReaderViewModel(
         ) + filenameSuffix
     }
 
+    fun showLoadingDialog() {
+        mutableState.update { it.copy(dialog = Dialog.Loading) }
+    }
+
     fun openPageDialog(page: ReaderPage/* SY --> */, extraPage: ReaderPage? = null/* SY <-- */) {
-        mutableState.update { it.copy(dialog = Dialog.Page(page, extraPage)) }
+        mutableState.update { it.copy(dialog = Dialog.PageActions(page, extraPage)) }
     }
 
     fun openColorFilterDialog() {
@@ -881,9 +885,9 @@ class ReaderViewModel(
     fun saveImage(useExtraPage: Boolean) {
         // SY -->
         val page = if (useExtraPage) {
-            (state.value.dialog as? Dialog.Page)?.extraPage
+            (state.value.dialog as? Dialog.PageActions)?.extraPage
         } else {
-            (state.value.dialog as? Dialog.Page)?.page
+            (state.value.dialog as? Dialog.PageActions)?.page
         }
         // SY <--
         if (page?.status != Page.State.READY) return
@@ -921,7 +925,7 @@ class ReaderViewModel(
 
     // SY -->
     fun saveImages() {
-        val (firstPage, secondPage) = (state.value.dialog as? Dialog.Page ?: return)
+        val (firstPage, secondPage) = (state.value.dialog as? Dialog.PageActions ?: return)
         val viewer = state.value.viewer as? PagerViewer ?: return
         val isLTR = (viewer !is R2LPagerViewer) xor (viewer.config.invertDoublePages)
         val bg = viewer.config.pageCanvasColor
@@ -1000,9 +1004,9 @@ class ReaderViewModel(
     fun shareImage(useExtraPage: Boolean) {
         // SY -->
         val page = if (useExtraPage) {
-            (state.value.dialog as? Dialog.Page)?.extraPage
+            (state.value.dialog as? Dialog.PageActions)?.extraPage
         } else {
-            (state.value.dialog as? Dialog.Page)?.page
+            (state.value.dialog as? Dialog.PageActions)?.page
         }
         // SY <--
         if (page?.status != Page.State.READY) return
@@ -1032,7 +1036,7 @@ class ReaderViewModel(
 
     // SY -->
     fun shareImages() {
-        val (firstPage, secondPage) = (state.value.dialog as? Dialog.Page ?: return)
+        val (firstPage, secondPage) = (state.value.dialog as? Dialog.PageActions ?: return)
         val viewer = state.value.viewer as? PagerViewer ?: return
         val isLTR = (viewer !is R2LPagerViewer) xor (viewer.config.invertDoublePages)
         val bg = viewer.config.pageCanvasColor
@@ -1069,9 +1073,9 @@ class ReaderViewModel(
     fun setAsCover(useExtraPage: Boolean) {
         // SY -->
         val page = if (useExtraPage) {
-            (state.value.dialog as? Dialog.Page)?.extraPage
+            (state.value.dialog as? Dialog.PageActions)?.extraPage
         } else {
-            (state.value.dialog as? Dialog.Page)?.page
+            (state.value.dialog as? Dialog.PageActions)?.page
         }
         // SY <--
         if (page?.status != Page.State.READY) return
@@ -1207,8 +1211,9 @@ class ReaderViewModel(
     }
 
     sealed class Dialog {
+        object Loading : Dialog()
         object ColorFilter : Dialog()
-        data class Page(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
+        data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
     }
 
     sealed class Event {
