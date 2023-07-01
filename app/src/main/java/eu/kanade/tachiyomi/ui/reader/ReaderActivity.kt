@@ -131,7 +131,8 @@ import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.seconds
 
@@ -155,8 +156,8 @@ class ReaderActivity : BaseActivity() {
         const val SHIFTED_CHAP_INDEX = "shiftedChapterIndex"
     }
 
-    private val readerPreferences: ReaderPreferences by injectLazy()
-    private val preferences: BasePreferences by injectLazy()
+    private val readerPreferences = Injekt.get<ReaderPreferences>()
+    private val preferences = Injekt.get<BasePreferences>()
 
     lateinit var binding: ReaderActivityBinding
 
@@ -165,20 +166,8 @@ class ReaderActivity : BaseActivity() {
 
     val hasCutout by lazy { hasDisplayCutout() }
 
-    /**
-     * Whether the menu is currently visible.
-     */
-    var menuVisible = false
-        private set
-
     // SY -->
-    private var ehUtilsVisible = false
-
-    private val sourceManager: SourceManager by injectLazy()
-
-    private var lastShiftDoubleState: Boolean? = null
-    private var indexPageToShift: Int? = null
-    private var indexChapterToShift: Long? = null
+    private val sourceManager = Injekt.get<SourceManager>()
     // SY <--
 
     /**
@@ -187,7 +176,6 @@ class ReaderActivity : BaseActivity() {
     private var config: ReaderConfig? = null
 
     private var menuToggleToast: Toast? = null
-
     private var readingModeToast: Toast? = null
 
     private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, binding.root) }
@@ -210,10 +198,10 @@ class ReaderActivity : BaseActivity() {
         setContentView(binding.root)
 
         if (viewModel.needsInit()) {
-            val manga = intent.extras!!.getLong("manga", -1)
-            val chapter = intent.extras!!.getLong("chapter", -1)
+            val manga = intent.extras?.getLong("manga", -1) ?: -1L
+            val chapter = intent.extras?.getLong("chapter", -1) ?: -1L
             // SY -->
-            val page = intent.extras!!.getInt("page", -1).takeUnless { it == -1 }
+            val page = intent.extras?.getInt("page", -1).takeUnless { it == -1 }
             // SY <--
             if (manga == -1L || chapter == -1L) {
                 finish()
@@ -230,18 +218,6 @@ class ReaderActivity : BaseActivity() {
                     }
                 }
             }
-        }
-
-        if (savedInstanceState != null) {
-            menuVisible = savedInstanceState.getBoolean(::menuVisible.name)
-            // --> EH
-            ehUtilsVisible = savedInstanceState.getBoolean(::ehUtilsVisible.name)
-            // <-- EH
-            // SY -->
-            lastShiftDoubleState = savedInstanceState.get(SHIFT_DOUBLE_PAGES) as? Boolean
-            indexPageToShift = savedInstanceState.get(SHIFTED_PAGE_INDEX) as? Int
-            indexChapterToShift = savedInstanceState.get(SHIFTED_CHAP_INDEX) as? Long
-            // SY <--
         }
 
         config = ReaderConfig()
@@ -298,6 +274,7 @@ class ReaderActivity : BaseActivity() {
 
     // SY -->
     private fun setEhUtilsVisibility(visible: Boolean) {
+        viewModel.showEhUtils(visible)
         if (visible) {
             binding.ehUtils.isVisible = true
             binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_up_white_32dp)
@@ -324,22 +301,6 @@ class ReaderActivity : BaseActivity() {
      * activity isn't changing configurations.
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(::menuVisible.name, menuVisible)
-        // EXH -->
-        outState.putBoolean(::ehUtilsVisible.name, ehUtilsVisible)
-        // EXH <--
-        // SY -->
-        (viewModel.state.value.viewer as? PagerViewer)?.let { pViewer ->
-            val config = pViewer.config
-            outState.putBoolean(SHIFT_DOUBLE_PAGES, config.shiftDoublePage)
-            if (config.shiftDoublePage && config.doublePages) {
-                pViewer.getShiftedPage()?.let {
-                    outState.putInt(SHIFTED_PAGE_INDEX, it.index)
-                    outState.putLong(SHIFTED_CHAP_INDEX, it.chapter.chapter.id ?: 0L)
-                }
-            }
-        }
-        // SY <--
         viewModel.onSaveInstanceState()
         super.onSaveInstanceState(outState)
     }
@@ -356,7 +317,7 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.setReadStartTime()
-        setMenuVisibility(menuVisible, animate = false)
+        setMenuVisibility(viewModel.state.value.menuVisible, animate = false)
     }
 
     /**
@@ -366,7 +327,7 @@ class ReaderActivity : BaseActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            setMenuVisibility(menuVisible, animate = false)
+            setMenuVisibility(viewModel.state.value.menuVisible, animate = false)
         }
     }
 
@@ -534,7 +495,7 @@ class ReaderActivity : BaseActivity() {
             when (state.dialog) {
                 is ReaderViewModel.Dialog.Loading -> {
                     AlertDialog(
-                        onDismissRequest = { /* Non dismissible */ },
+                        onDismissRequest = {},
                         confirmButton = {},
                         text = {
                             Row(
@@ -635,10 +596,10 @@ class ReaderActivity : BaseActivity() {
         // SY <--
 
         // Set initial visibility
-        setMenuVisibility(menuVisible)
+        setMenuVisibility(viewModel.state.value.menuVisible)
 
         // --> EH
-        setEhUtilsVisibility(ehUtilsVisible)
+        setEhUtilsVisibility(viewModel.state.value.ehUtilsVisible)
         // <-- EH
     }
 
@@ -801,8 +762,9 @@ class ReaderActivity : BaseActivity() {
 
     fun initDropdownMenu() {
         binding.expandEhButton.setOnClickListener {
-            ehUtilsVisible = !ehUtilsVisible
-            setEhUtilsVisibility(ehUtilsVisible)
+            val newValue = !viewModel.state.value.ehUtilsVisible
+            viewModel.showEhUtils(newValue)
+            setEhUtilsVisibility(newValue)
         }
 
         binding.ehAutoscrollFreq.setText(
@@ -1058,7 +1020,7 @@ class ReaderActivity : BaseActivity() {
      * [animate] the views.
      */
     fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
-        menuVisible = visible
+        viewModel.showMenus(visible)
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             binding.readerMenu.isVisible = true
@@ -1169,7 +1131,7 @@ class ReaderActivity : BaseActivity() {
             if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
                 setDoublePageMode(newViewer)
             }
-            lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
+            viewModel.state.value.lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
         }
 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
@@ -1252,13 +1214,14 @@ class ReaderActivity : BaseActivity() {
     private fun setChapters(viewerChapters: ViewerChapters) {
         binding.readerContainer.removeView(loadingIndicator)
         // SY -->
-        if (indexChapterToShift != null && indexPageToShift != null) {
-            viewerChapters.currChapter.pages?.find { it.index == indexPageToShift && it.chapter.chapter.id == indexChapterToShift }?.let {
+        val state = viewModel.state.value
+        if (state.indexChapterToShift != null && state.indexPageToShift != null) {
+            viewerChapters.currChapter.pages?.find { it.index == state.indexPageToShift && it.chapter.chapter.id == state.indexChapterToShift }?.let {
                 (viewModel.state.value.viewer as? PagerViewer)?.updateShifting(it)
             }
-            indexChapterToShift = null
-            indexPageToShift = null
-        } else if (lastShiftDoubleState != null) {
+            viewModel.setIndexChapterToShift(null)
+            viewModel.setIndexPageToShift(null)
+        } else if (state.lastShiftDoubleState != null) {
             val currentChapter = viewerChapters.currChapter
             (viewModel.state.value.viewer as? PagerViewer)?.config?.shiftDoublePage = (
                 currentChapter.requestedPage +
@@ -1385,14 +1348,14 @@ class ReaderActivity : BaseActivity() {
      * viewer because each one implements its own touch and key events.
      */
     fun toggleMenu() {
-        setMenuVisibility(!menuVisible)
+        setMenuVisibility(!viewModel.state.value.menuVisible)
     }
 
     /**
      * Called from the viewer to show the menu.
      */
     fun showMenu() {
-        if (!menuVisible) {
+        if (!viewModel.state.value.menuVisible) {
             setMenuVisibility(true)
         }
     }
@@ -1401,7 +1364,7 @@ class ReaderActivity : BaseActivity() {
      * Called from the viewer to hide the menu.
      */
     fun hideMenu() {
-        if (menuVisible) {
+        if (viewModel.state.value.menuVisible) {
             setMenuVisibility(false)
         }
     }
@@ -1630,7 +1593,7 @@ class ReaderActivity : BaseActivity() {
             }
 
             // Trigger relayout
-            setMenuVisibility(menuVisible)
+            setMenuVisibility(viewModel.state.value.menuVisible)
         }
 
         /**

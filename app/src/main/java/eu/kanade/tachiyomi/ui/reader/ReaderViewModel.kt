@@ -862,6 +862,24 @@ class ReaderViewModel(
         ) + filenameSuffix
     }
 
+    fun showMenus(visible: Boolean) {
+        mutableState.update { it.copy(menuVisible = visible) }
+    }
+
+    // SY -->
+    fun showEhUtils(visible: Boolean) {
+        mutableState.update { it.copy(ehUtilsVisible = visible) }
+    }
+
+    fun setIndexChapterToShift(index: Long?) {
+        mutableState.update { it.copy(indexChapterToShift = index) }
+    }
+
+    fun setIndexPageToShift(index: Int?) {
+        mutableState.update { it.copy(indexPageToShift = index) }
+    }
+    // SY <--
+
     fun showLoadingDialog() {
         mutableState.update { it.copy(dialog = Dialog.Loading) }
     }
@@ -1199,11 +1217,16 @@ class ReaderViewModel(
          */
         val viewer: Viewer? = null,
         val dialog: Dialog? = null,
+        val menuVisible: Boolean = false,
 
         // SY -->
         val currentPageText: String = "",
         val meta: RaisedSearchMetadata? = null,
         val mergedManga: Map<Long, Manga>? = null,
+        val ehUtilsVisible: Boolean = false,
+        val lastShiftDoubleState: Boolean? = null,
+        val indexPageToShift: Int? = null,
+        val indexChapterToShift: Long? = null,
         // SY <--
     ) {
         val totalPages: Int
