@@ -82,7 +82,6 @@ object MoreTab : Tab {
             onClickDownloadQueue = { navigator.push(DownloadQueueScreen) },
             onClickCategories = { navigator.push(CategoryScreen()) },
             onClickStats = { navigator.push(StatsScreen()) },
-            onClickLibraryUpdateErrors = { navigator.push(LibraryUpdateErrorScreen()) },
             onClickDataAndStorage = { navigator.push(SettingsScreen(SettingsScreen.Destination.DataAndStorage)) },
             onClickSettings = { navigator.push(SettingsScreen()) },
             onClickAbout = { navigator.push(SettingsScreen(SettingsScreen.Destination.About)) },
@@ -91,6 +90,9 @@ object MoreTab : Tab {
             onClickUpdates = { navigator.push(UpdatesTab) },
             onClickHistory = { navigator.push(HistoryTab) },
             // SY <--
+            // KMK -->
+            onClickLibraryUpdateErrors = { navigator.push(LibraryUpdateErrorScreen()) },
+            // KMK <--
         )
     }
 }

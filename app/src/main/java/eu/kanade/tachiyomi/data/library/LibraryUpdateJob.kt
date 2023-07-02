@@ -120,10 +120,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getManga: GetManga = Injekt.get()
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
-    private val deleteLibraryUpdateErrorMessages: DeleteLibraryUpdateErrorMessages = Injekt.get()
-    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
-    private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
-    private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
 
@@ -143,6 +139,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val notifier = LibraryUpdateNotifier(context)
 
     // KMK -->
+    private val deleteLibraryUpdateErrorMessages: DeleteLibraryUpdateErrorMessages = Injekt.get()
+    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
     private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
     // KMK <--
 
@@ -494,7 +494,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         }
 
         if (failedUpdates.isNotEmpty()) {
+            // KMK -->
             writeErrorsToDB(failedUpdates)
+            // KMK <--
             val errorFile = writeErrorFile(failedUpdates)
             notifier.showUpdateErrorNotification(
                 failedUpdates.size,
@@ -745,6 +747,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         return File("")
     }
 
+    // KMK -->
     private suspend fun writeErrorsToDB(errors: List<Pair<Manga, String?>>) {
         deleteLibraryUpdateErrorMessages.await()
         deleteLibraryUpdateErrors.await()
@@ -762,6 +765,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         }
         insertLibraryUpdateErrors.insertAll(errorList)
     }
+    // KMK <--
 
     /**
      * Defines what should be updated within a service execution.
