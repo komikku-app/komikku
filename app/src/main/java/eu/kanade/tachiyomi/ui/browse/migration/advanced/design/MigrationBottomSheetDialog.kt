@@ -100,6 +100,7 @@ class MigrationBottomSheetDialog(private val baseContext: Context, private val l
         if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
         if (binding.migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
         if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
+        if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_CHAPTERS
         preferences.migrateFlags().set(flags)
     }
 

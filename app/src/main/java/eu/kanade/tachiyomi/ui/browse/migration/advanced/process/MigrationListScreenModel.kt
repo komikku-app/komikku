@@ -10,6 +10,7 @@ import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -62,6 +63,7 @@ class MigrationListScreenModel(
     private val config: MigrationProcedureConfig,
     private val preferences: UnsortedPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -374,6 +376,13 @@ class MigrationListScreenModel(
                 chapterFlags = prevManga.chapterFlags,
                 viewerFlags = prevManga.viewerFlags,
             )
+        }
+        // Delete downloaded
+        if (MigrationFlags.hasDeleteChapters(flags)) {
+            val oldSource = sourceManager.get(prevManga.source)
+            if (oldSource != null) {
+                downloadManager.deleteManga(prevManga, oldSource)
+            }
         }
         // Update favorite status
         if (replace) {
