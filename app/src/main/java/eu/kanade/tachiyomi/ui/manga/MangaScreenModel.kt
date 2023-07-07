@@ -183,7 +183,7 @@ class MangaInfoScreenModel(
     private val allChapters: List<ChapterItem>?
         get() = successState?.chapters
 
-    private val filteredChapters: Sequence<ChapterItem>?
+    private val filteredChapters: List<ChapterItem>?
         get() = successState?.processedChapters
 
     val chapterSwipeEndAction = libraryPreferences.swipeEndAction().get()
@@ -1051,7 +1051,7 @@ class MangaInfoScreenModel(
     }
 
     private fun getUnreadChapters(): List<Chapter> {
-        val chapterItems = if (skipFiltered) filteredChapters.orEmpty().toList() else allChapters.orEmpty()
+        val chapterItems = if (skipFiltered) filteredChapters.orEmpty() else allChapters.orEmpty()
         return chapterItems
             .filter { (chapter, dlStatus) -> !chapter.read && dlStatus == Download.State.NOT_DOWNLOADED }
             .map { it.chapter }
@@ -1144,7 +1144,7 @@ class MangaInfoScreenModel(
 
     fun markPreviousChapterRead(pointer: Chapter) {
         val successState = successState ?: return
-        val chapters = filteredChapters.orEmpty().map { it.chapter }.toList()
+        val chapters = filteredChapters.orEmpty().map { it.chapter }
         val prevChapters = if (successState.manga.sortDescending()) chapters.asReversed() else chapters
         val pointerPos = prevChapters.indexOf(pointer)
         if (pointerPos != -1) markChaptersRead(prevChapters.take(pointerPos), true)
@@ -1563,8 +1563,9 @@ sealed class MangaScreenState {
         // SY <--
     ) : MangaScreenState() {
 
-        val processedChapters: Sequence<ChapterItem>
-            get() = chapters.applyFilters(manga)
+        val processedChapters by lazy {
+            chapters.applyFilters(manga).toList()
+        }
 
         val trackingAvailable: Boolean
             get() = trackItems.isNotEmpty()

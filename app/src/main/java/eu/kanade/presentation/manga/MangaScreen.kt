@@ -322,7 +322,7 @@ private fun MangaScreenSmallImpl(
 ) {
     val chapterListState = rememberLazyListState()
 
-    val chapters = remember(state) { state.processedChapters.toList() }
+    val chapters = remember(state) { state.processedChapters }
     // SY -->
     val metadataDescription = metadataDescription(state.source)
     // SY <--
@@ -393,7 +393,7 @@ private fun MangaScreenSmallImpl(
             ) {
                 ExtendedFloatingActionButton(
                     text = {
-                        val id = if (chapters.fastAny { it.chapter.read }) {
+                        val id = if (state.chapters.fastAny { it.chapter.read }) {
                             R.string.action_resume
                         } else {
                             R.string.action_start
@@ -624,7 +624,7 @@ fun MangaScreenLargeImpl(
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
 
-    val chapters = remember(state) { state.processedChapters.toList() }
+    val chapters = remember(state) { state.processedChapters }
 
     // SY -->
     val metadataDescription = metadataDescription(state.source)
@@ -704,7 +704,7 @@ fun MangaScreenLargeImpl(
                 ) {
                     ExtendedFloatingActionButton(
                         text = {
-                            val id = if (chapters.fastAny { it.chapter.read }) {
+                            val id = if (state.chapters.fastAny { it.chapter.read }) {
                                 R.string.action_resume
                             } else {
                                 R.string.action_start
