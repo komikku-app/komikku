@@ -75,7 +75,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.util.lang.launchIO
@@ -410,12 +409,15 @@ class ReaderViewModel(
      * Called when the user changed to the given [chapter] when changing pages from the viewer.
      * It's used only to set this chapter as active.
      */
-    private suspend fun loadNewChapter(chapter: ReaderChapter) {
+    private fun loadNewChapter(chapter: ReaderChapter) {
         val loader = loader ?: return
 
-        logcat { "Loading ${chapter.chapter.url}" }
+        viewModelScope.launchIO {
+            logcat { "Loading ${chapter.chapter.url}" }
 
-        withIOContext {
+            flushReadTimer()
+            restartReadTimer()
+
             try {
                 loadChapter(loader, chapter)
             } catch (e: Throwable) {
@@ -459,7 +461,7 @@ class ReaderViewModel(
      * Called when the viewers decide it's a good time to preload a [chapter] and improve the UX so
      * that the user doesn't have to wait too long to continue reading.
      */
-    private suspend fun preload(chapter: ReaderChapter) {
+    suspend fun preload(chapter: ReaderChapter) {
         if (chapter.state is ReaderChapter.State.Loaded || chapter.state == ReaderChapter.State.Loading) {
             return
         }
@@ -498,9 +500,7 @@ class ReaderViewModel(
 
     fun onViewerLoaded(viewer: Viewer?) {
         mutableState.update {
-            it.copy(
-                viewer = viewer,
-            )
+            it.copy(viewer = viewer)
         }
     }
 
@@ -509,53 +509,29 @@ class ReaderViewModel(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean, currentPage: String) {
+    fun onPageSelected(page: ReaderPage, currentPageText: String) {
         // InsertPage and StencilPage doesn't change page progress
         if (page is InsertPage || page is StencilPage) {
             return
         }
 
-        val currentChapters = state.value.viewerChapters ?: return
-        val pages = page.chapter.pages ?: return
+        // SY -->
+        mutableState.update { it.copy(currentPageText = currentPageText) }
+        // SY <--
+
         val selectedChapter = page.chapter
+        val pages = selectedChapter.pages ?: return
 
         // Save last page read and mark as read if needed
-        saveReadingProgress()
-        mutableState.update {
-            it.copy(
-                currentPage = page.number,
-                // SY -->
-                currentPageText = currentPage,
-                // SY <--
-            )
-        }
-        selectedChapter.chapter.last_page_read = page.index
-        if (
-            (selectedChapter.pages?.lastIndex == page.index && !incognitoMode) ||
-            (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && !incognitoMode)
-        ) {
-            selectedChapter.chapter.read = true
-            // SY -->
-            if (manga?.isEhBasedManga() == true) {
-                viewModelScope.launchNonCancellable {
-                    chapterList
-                        .filter { it.chapter.source_order > selectedChapter.chapter.source_order }
-                        .onEach {
-                            it.chapter.read = true
-                            saveChapterProgress(it)
-                        }
-                }
-            }
-            // SY <--
-            updateTrackChapterRead(selectedChapter)
-            deleteChapterIfNeeded(selectedChapter)
+        viewModelScope.launchNonCancellable {
+            updateChapterProgress(page.index)
         }
 
-        if (selectedChapter != currentChapters.currChapter) {
+        if (selectedChapter != getCurrentChapter()) {
             logcat { "Setting ${selectedChapter.chapter.url} as active" }
-            setReadStartTime()
-            viewModelScope.launch { loadNewChapter(selectedChapter) }
+            loadNewChapter(selectedChapter)
         }
+
         val inDownloadRange = page.number.toDouble() / pages.size > 0.25
         if (inDownloadRange) {
             downloadNextChapters()
@@ -627,62 +603,75 @@ class ReaderViewModel(
     }
 
     /**
-     * Called when reader chapter is changed in reader or when activity is paused.
+     * Saves the chapter progress (last read page and whether it's read)
+     * if incognito mode isn't on.
      */
-    private fun saveReadingProgress() {
-        getCurrentChapter()?.let {
-            viewModelScope.launchNonCancellable {
-                saveChapterProgress(it)
-                saveChapterHistory(it)
+    private suspend fun updateChapterProgress(pageIndex: Int) {
+        val readerChapter = getCurrentChapter() ?: return
+
+        mutableState.update {
+            it.copy(currentPage = pageIndex + 1)
+        }
+
+        if (!incognitoMode) {
+            readerChapter.requestedPage = pageIndex
+            readerChapter.chapter.last_page_read = pageIndex
+
+            updateChapter.await(
+                ChapterUpdate(
+                    id = readerChapter.chapter.id!!,
+                    read = readerChapter.chapter.read,
+                    bookmark = readerChapter.chapter.bookmark,
+                    lastPageRead = readerChapter.chapter.last_page_read.toLong(),
+                ),
+            )
+
+            if (readerChapter.pages?.lastIndex == pageIndex) {
+                readerChapter.chapter.read = true
+                // SY -->
+                if (manga?.isEhBasedManga() == true) {
+                    viewModelScope.launchNonCancellable {
+                        val chapterUpdates = chapterList
+                            .filter { it.chapter.source_order > readerChapter.chapter.source_order }
+                            .map { chapter ->
+                                ChapterUpdate(
+                                    id = chapter.chapter.id!!,
+                                    read = true,
+                                )
+                            }
+                        updateChapter.awaitAll(chapterUpdates)
+                    }
+                }
+                // SY <--
+                updateTrackChapterRead(readerChapter)
+                deleteChapterIfNeeded(readerChapter)
             }
         }
     }
 
-    /**
-     * Saves this [readerChapter] progress (last read page and whether it's read)
-     * if incognito mode isn't on.
-     */
-    private suspend fun saveChapterProgress(readerChapter: ReaderChapter) {
-        // SY -->
-        readerChapter.requestedPage = readerChapter.chapter.last_page_read
-        // SY <--
-        if (incognitoMode) return
+    fun restartReadTimer() {
+        chapterReadStartTime = Date().time
+    }
 
-        val chapter = readerChapter.chapter
-        readerChapter.requestedPage = chapter.last_page_read
-        updateChapter.await(
-            ChapterUpdate(
-                id = chapter.id!!,
-                read = chapter.read,
-                bookmark = chapter.bookmark,
-                lastPageRead = chapter.last_page_read.toLong(),
-            ),
-        )
+    fun flushReadTimer() {
+        viewModelScope.launchNonCancellable {
+            updateHistory()
+        }
     }
 
     /**
-     * Saves this [readerChapter] last read history if incognito mode isn't on.
+     * Saves the chapter last read history if incognito mode isn't on.
      */
-    private suspend fun saveChapterHistory(readerChapter: ReaderChapter) {
+    private suspend fun updateHistory() {
         if (incognitoMode) return
 
+        val readerChapter = getCurrentChapter() ?: return
         val chapterId = readerChapter.chapter.id!!
         val endTime = Date()
         val sessionReadDuration = chapterReadStartTime?.let { endTime.time - it } ?: 0
 
         upsertHistory.await(HistoryUpdate(chapterId, endTime, sessionReadDuration))
         chapterReadStartTime = null
-    }
-
-    fun setReadStartTime() {
-        chapterReadStartTime = Date().time
-    }
-
-    /**
-     * Called from the activity to preload the given [chapter].
-     */
-    suspend fun preloadChapter(chapter: ReaderChapter) {
-        preload(chapter)
     }
 
     /**
