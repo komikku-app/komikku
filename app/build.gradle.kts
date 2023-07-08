@@ -26,6 +26,7 @@ android {
 
     defaultConfig {
         applicationId = "eu.kanade.tachiyomi.sy"
+
         versionCode = 54
         versionName = "1.9.3"
 
@@ -242,6 +243,7 @@ dependencies {
     implementation(libs.bundles.voyager)
     implementation(libs.compose.materialmotion)
     implementation(libs.compose.simpleicons)
+    implementation(libs.swipe)
 
     // Logging
     implementation(libs.logcat)
