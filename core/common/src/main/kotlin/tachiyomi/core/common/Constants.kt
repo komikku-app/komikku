@@ -16,4 +16,8 @@ object Constants {
     const val SHORTCUT_SOURCES = "eu.kanade.tachiyomi.SHOW_CATALOGUES"
     const val SHORTCUT_EXTENSIONS = "eu.kanade.tachiyomi.EXTENSIONS"
     const val SHORTCUT_DOWNLOADS = "eu.kanade.tachiyomi.SHOW_DOWNLOADS"
+
+    // KMK -->
+    const val SHORTCUT_LIBRARY_UPDATE_ERRORS = "eu.kanade.tachiyomi.SHOW_LIBRARY_UPDATE_ERRORS"
+    // KMK <--
 }

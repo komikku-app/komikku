@@ -35,7 +35,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
-import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import eu.kanade.tachiyomi.util.system.isRunning
@@ -496,11 +495,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         if (failedUpdates.isNotEmpty()) {
             // KMK -->
             writeErrorsToDB(failedUpdates)
+            // val errorFile = writeErrorFile(failedUpdates)
             // KMK <--
-            val errorFile = writeErrorFile(failedUpdates)
             notifier.showUpdateErrorNotification(
                 failedUpdates.size,
-                errorFile.getUriCompat(context),
+                // KMK -->
+                // errorFile.getUriCompat(context),
+                // KMK <--
             )
         }
     }
