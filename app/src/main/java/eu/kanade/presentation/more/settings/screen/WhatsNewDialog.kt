@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,6 @@ import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.padding
 

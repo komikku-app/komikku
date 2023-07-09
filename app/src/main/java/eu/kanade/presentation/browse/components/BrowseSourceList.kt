@@ -1,6 +1,7 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.presentation.core.components.Badge
-import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.util.plus
 
 @Composable

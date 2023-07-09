@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,6 @@ import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
-import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.padding
 import java.util.Date
 

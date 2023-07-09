@@ -62,7 +62,6 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.Migrations
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
