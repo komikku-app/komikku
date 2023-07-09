@@ -617,15 +617,6 @@ class ReaderViewModel(
             readerChapter.requestedPage = pageIndex
             readerChapter.chapter.last_page_read = pageIndex
 
-            updateChapter.await(
-                ChapterUpdate(
-                    id = readerChapter.chapter.id!!,
-                    read = readerChapter.chapter.read,
-                    bookmark = readerChapter.chapter.bookmark,
-                    lastPageRead = readerChapter.chapter.last_page_read.toLong(),
-                ),
-            )
-
             if (readerChapter.pages?.lastIndex == pageIndex) {
                 readerChapter.chapter.read = true
                 // SY -->
@@ -646,6 +637,15 @@ class ReaderViewModel(
                 updateTrackChapterRead(readerChapter)
                 deleteChapterIfNeeded(readerChapter)
             }
+
+            updateChapter.await(
+                ChapterUpdate(
+                    id = readerChapter.chapter.id!!,
+                    read = readerChapter.chapter.read,
+                    bookmark = readerChapter.chapter.bookmark,
+                    lastPageRead = readerChapter.chapter.last_page_read.toLong(),
+                ),
+            )
         }
     }
 
