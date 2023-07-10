@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,6 +63,7 @@ import eu.kanade.domain.manga.model.orientationType
 import eu.kanade.domain.manga.model.readingModeType
 import eu.kanade.presentation.reader.ChapterNavigator
 import eu.kanade.presentation.reader.PageIndicatorText
+import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -80,8 +82,8 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderColorFilterDialog
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
@@ -482,6 +484,8 @@ class ReaderActivity : BaseActivity() {
 
         binding.dialogRoot.setComposeContent {
             val state by viewModel.state.collectAsState()
+            val settingsScreenModel = remember { ReaderSettingsScreenModel() }
+
             val onDismissRequest = viewModel::closeDialog
             when (state.dialog) {
                 is ReaderViewModel.Dialog.Loading -> {
@@ -499,14 +503,12 @@ class ReaderActivity : BaseActivity() {
                         },
                     )
                 }
-                is ReaderViewModel.Dialog.ColorFilter -> {
-                    setMenuVisibility(false)
-                    ReaderColorFilterDialog(
-                        onDismissRequest = {
-                            onDismissRequest()
-                            setMenuVisibility(true)
-                        },
-                        readerPreferences = viewModel.readerPreferences,
+                is ReaderViewModel.Dialog.Settings -> {
+                    ReaderSettingsDialog(
+                        onDismissRequest = onDismissRequest,
+                        onShowMenus = { setMenuVisibility(true) },
+                        onHideMenus = { setMenuVisibility(false) },
+                        screenModel = settingsScreenModel,
                     )
                 }
                 is ReaderViewModel.Dialog.PageActions -> {
@@ -679,7 +681,7 @@ class ReaderActivity : BaseActivity() {
         }
 
         // Settings sheet
-        with(binding.actionSettings) {
+        with(binding.actionSettingsLegacy) {
             setTooltip(R.string.action_settings)
 
             var readerSettingSheet: ReaderSettingsSheet? = null
@@ -689,13 +691,11 @@ class ReaderActivity : BaseActivity() {
                 readerSettingSheet = ReaderSettingsSheet(this@ReaderActivity).apply { show() }
             }
         }
-
-        // Color filter sheet
-        with(binding.actionColorSettings) {
-            setTooltip(R.string.custom_filter)
+        with(binding.actionSettings) {
+            setTooltip(R.string.action_settings)
 
             setOnClickListener {
-                viewModel.openColorFilterDialog()
+                viewModel.openSettingsDialog()
             }
         }
 

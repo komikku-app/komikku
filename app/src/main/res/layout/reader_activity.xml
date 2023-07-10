@@ -332,7 +332,7 @@
                     app:tint="?attr/colorOnSurface" />
 
                 <ImageButton
-                    android:id="@+id/action_settings"
+                    android:id="@+id/action_settings_legacy"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -341,16 +341,15 @@
                     android:layout_weight="1"
                     app:srcCompat="@drawable/ic_settings_24dp"
                     app:tint="?attr/colorOnSurface" />
-
                 <ImageButton
-                    android:id="@+id/action_color_settings"
+                    android:id="@+id/action_settings"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/custom_filter"
+                    android:contentDescription="@string/action_settings"
                     android:padding="@dimen/screen_edge_margin"
                     android:layout_weight="1"
-                    app:srcCompat="@drawable/ic_brightness_5_24dp"
+                    app:srcCompat="@drawable/ic_settings_24dp"
                     app:tint="?attr/colorOnSurface" />
 
             </LinearLayout>
