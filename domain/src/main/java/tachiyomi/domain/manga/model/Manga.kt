@@ -1,6 +1,7 @@
 package tachiyomi.domain.manga.model
 
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import tachiyomi.core.preference.TriState
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
@@ -76,18 +77,18 @@ data class Manga(
     val bookmarkedFilterRaw: Long
         get() = chapterFlags and CHAPTER_BOOKMARKED_MASK
 
-    val unreadFilter: TriStateFilter
+    val unreadFilter: TriState
         get() = when (unreadFilterRaw) {
-            CHAPTER_SHOW_UNREAD -> TriStateFilter.ENABLED_IS
-            CHAPTER_SHOW_READ -> TriStateFilter.ENABLED_NOT
-            else -> TriStateFilter.DISABLED
+            CHAPTER_SHOW_UNREAD -> TriState.ENABLED_IS
+            CHAPTER_SHOW_READ -> TriState.ENABLED_NOT
+            else -> TriState.DISABLED
         }
 
-    val bookmarkedFilter: TriStateFilter
+    val bookmarkedFilter: TriState
         get() = when (bookmarkedFilterRaw) {
-            CHAPTER_SHOW_BOOKMARKED -> TriStateFilter.ENABLED_IS
-            CHAPTER_SHOW_NOT_BOOKMARKED -> TriStateFilter.ENABLED_NOT
-            else -> TriStateFilter.DISABLED
+            CHAPTER_SHOW_BOOKMARKED -> TriState.ENABLED_IS
+            CHAPTER_SHOW_NOT_BOOKMARKED -> TriState.ENABLED_NOT
+            else -> TriState.DISABLED
         }
 
     fun sortDescending(): Boolean {

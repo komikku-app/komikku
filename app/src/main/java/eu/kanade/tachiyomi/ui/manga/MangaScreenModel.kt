@@ -70,6 +70,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.preference.CheckboxState
+import tachiyomi.core.preference.TriState
 import tachiyomi.core.preference.mapAsCheckboxState
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
@@ -109,7 +110,6 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
-import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
@@ -1231,13 +1231,13 @@ class MangaInfoScreenModel(
      * Sets the read filter and requests an UI update.
      * @param state whether to display only unread chapters or all chapters.
      */
-    fun setUnreadFilter(state: TriStateFilter) {
+    fun setUnreadFilter(state: TriState) {
         val manga = successState?.manga ?: return
 
         val flag = when (state) {
-            TriStateFilter.DISABLED -> Manga.SHOW_ALL
-            TriStateFilter.ENABLED_IS -> Manga.CHAPTER_SHOW_UNREAD
-            TriStateFilter.ENABLED_NOT -> Manga.CHAPTER_SHOW_READ
+            TriState.DISABLED -> Manga.SHOW_ALL
+            TriState.ENABLED_IS -> Manga.CHAPTER_SHOW_UNREAD
+            TriState.ENABLED_NOT -> Manga.CHAPTER_SHOW_READ
         }
         coroutineScope.launchNonCancellable {
             setMangaChapterFlags.awaitSetUnreadFilter(manga, flag)
@@ -1248,13 +1248,13 @@ class MangaInfoScreenModel(
      * Sets the download filter and requests an UI update.
      * @param state whether to display only downloaded chapters or all chapters.
      */
-    fun setDownloadedFilter(state: TriStateFilter) {
+    fun setDownloadedFilter(state: TriState) {
         val manga = successState?.manga ?: return
 
         val flag = when (state) {
-            TriStateFilter.DISABLED -> Manga.SHOW_ALL
-            TriStateFilter.ENABLED_IS -> Manga.CHAPTER_SHOW_DOWNLOADED
-            TriStateFilter.ENABLED_NOT -> Manga.CHAPTER_SHOW_NOT_DOWNLOADED
+            TriState.DISABLED -> Manga.SHOW_ALL
+            TriState.ENABLED_IS -> Manga.CHAPTER_SHOW_DOWNLOADED
+            TriState.ENABLED_NOT -> Manga.CHAPTER_SHOW_NOT_DOWNLOADED
         }
 
         coroutineScope.launchNonCancellable {
@@ -1266,13 +1266,13 @@ class MangaInfoScreenModel(
      * Sets the bookmark filter and requests an UI update.
      * @param state whether to display only bookmarked chapters or all chapters.
      */
-    fun setBookmarkedFilter(state: TriStateFilter) {
+    fun setBookmarkedFilter(state: TriState) {
         val manga = successState?.manga ?: return
 
         val flag = when (state) {
-            TriStateFilter.DISABLED -> Manga.SHOW_ALL
-            TriStateFilter.ENABLED_IS -> Manga.CHAPTER_SHOW_BOOKMARKED
-            TriStateFilter.ENABLED_NOT -> Manga.CHAPTER_SHOW_NOT_BOOKMARKED
+            TriState.DISABLED -> Manga.SHOW_ALL
+            TriState.ENABLED_IS -> Manga.CHAPTER_SHOW_BOOKMARKED
+            TriState.ENABLED_NOT -> Manga.CHAPTER_SHOW_NOT_BOOKMARKED
         }
 
         coroutineScope.launchNonCancellable {
