@@ -30,13 +30,15 @@ private val mapper = { cursor: SqlCursor ->
         filtered_scanlators = cursor.getString(18)?.let(listOfStringsAndAdapter::decode),
         update_strategy = updateStrategyAdapter.decode(cursor.getLong(19)!!),
         calculate_interval = cursor.getLong(20)!!,
-        totalCount = cursor.getLong(21)!!,
-        readCount = cursor.getLong(22)!!,
-        latestUpload = cursor.getLong(23)!!,
-        chapterFetchedAt = cursor.getLong(24)!!,
-        lastRead = cursor.getLong(25)!!,
-        bookmarkCount = cursor.getLong(26)!!,
-        category = cursor.getLong(27)!!,
+        last_modified_at = cursor.getLong(21)!!,
+        favorite_modified_at = cursor.getLong(22)!!,
+        totalCount = cursor.getLong(23)!!,
+        readCount = cursor.getLong(24)!!,
+        latestUpload = cursor.getLong(25)!!,
+        chapterFetchedAt = cursor.getLong(26)!!,
+        lastRead = cursor.getLong(27)!!,
+        bookmarkCount = cursor.getLong(28)!!,
+        category = cursor.getLong(29)!!,
     )
 }
 

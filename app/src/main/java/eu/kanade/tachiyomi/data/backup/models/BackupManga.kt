@@ -41,6 +41,8 @@ data class BackupManga(
     @ProtoNumber(103) var viewer_flags: Int? = null,
     @ProtoNumber(104) var history: List<BackupHistory> = emptyList(),
     @ProtoNumber(105) var updateStrategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE,
+    @ProtoNumber(106) var lastModifiedAt: Long = 0,
+    @ProtoNumber(107) var favoriteModifiedAt: Long? = 0,
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -76,6 +78,7 @@ data class BackupManga(
             viewerFlags = (this@BackupManga.viewer_flags ?: this@BackupManga.viewer).toLong(),
             chapterFlags = this@BackupManga.chapterFlags.toLong(),
             updateStrategy = this@BackupManga.updateStrategy,
+            lastModifiedAt = this@BackupManga.lastModifiedAt,
             filteredScanlators = this@BackupManga.filtered_scanlators?.let(listOfStringsAndAdapter::decode),
         )
     }
@@ -135,6 +138,8 @@ data class BackupManga(
                 viewer_flags = manga.viewerFlags.toInt(),
                 chapterFlags = manga.chapterFlags.toInt(),
                 updateStrategy = manga.updateStrategy,
+                lastModifiedAt = manga.lastModifiedAt,
+                favoriteModifiedAt = manga.favoriteModifiedAt,
                 // SY -->
                 filtered_scanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
             ).also { backupManga ->

@@ -28,6 +28,8 @@ data class Manga(
     val thumbnailUrl: String?,
     val updateStrategy: UpdateStrategy,
     val initialized: Boolean,
+    val lastModifiedAt: Long,
+    val favoriteModifiedAt: Long?,
     // SY -->
     val filteredScanlators: List<String>?,
     // SY <--
@@ -146,6 +148,8 @@ data class Manga(
             thumbnailUrl = null,
             updateStrategy = UpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
+            lastModifiedAt = 0L,
+            favoriteModifiedAt = 0L,
             // SY -->
             filteredScanlators = null,
             // SY <--

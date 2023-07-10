@@ -246,6 +246,7 @@ class EHentaiUpdateHelper(context: Context) {
                         chapterNumber = -1F,
                         scanlator = null,
                         sourceOrder = -1,
+                        lastModifiedAt = 0,
                     )
                 }
             }
