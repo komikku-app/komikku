@@ -74,7 +74,7 @@ fun BrowseSourceContent(
             )
             when (result) {
                 SnackbarResult.Dismissed -> snackbarHostState.currentSnackbarData?.dismiss()
-                SnackbarResult.ActionPerformed -> mangaList.refresh()
+                SnackbarResult.ActionPerformed -> mangaList.retry()
             }
         }
     }
