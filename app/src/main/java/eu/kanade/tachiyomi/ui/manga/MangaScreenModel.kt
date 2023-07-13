@@ -292,7 +292,7 @@ class MangaInfoScreenModel(
                 ) { state, mergedData ->
                     state.copy(mergedData = mergedData)
                 }
-                .combine(downloadCache.changes) { state, _ -> state }
+                .combine(downloadCache.changes, downloadManager.queueState) { state, _, _ -> state }
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterItems(manga /* SY --> */, mergedData /* SY <-- */)
