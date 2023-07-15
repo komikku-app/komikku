@@ -839,7 +839,7 @@ class LibraryScreenModel(
         }
     }
 
-    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriStateFilter>): List<LibraryItem> {
+    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
@@ -903,7 +903,7 @@ class LibraryScreenModel(
         checkGenre: Boolean = true,
         searchTags: List<SearchTag>? = null,
         searchTitles: List<SearchTitle>? = null,
-        loggedInTrackServices: Map<Long, TriStateFilter>,
+        loggedInTrackServices: Map<Long, TriState>,
     ): Boolean {
         val manga = libraryManga.manga
         val sourceIdString = manga.source.takeUnless { it == LocalSource.ID }?.toString()

@@ -34,7 +34,6 @@ import exh.util.under
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -42,6 +41,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.core.preference.TriState
 import tachiyomi.core.preference.getEnum
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
@@ -59,7 +59,6 @@ import tachiyomi.domain.manga.interactor.InsertMergedReference
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
-import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -530,12 +529,12 @@ object EXHMigrations {
                             remove(key)
 
                             val newValue = when (pref.get()) {
-                                1 -> TriStateFilter.ENABLED_IS
-                                2 -> TriStateFilter.ENABLED_NOT
-                                else -> TriStateFilter.DISABLED
+                                1 -> TriState.ENABLED_IS
+                                2 -> TriState.ENABLED_NOT
+                                else -> TriState.DISABLED
                             }
 
-                            preferenceStore.getEnum("${key}_v2", TriStateFilter.DISABLED).set(newValue)
+                            preferenceStore.getEnum("${key}_v2", TriState.DISABLED).set(newValue)
                         }
                     }
                 }
