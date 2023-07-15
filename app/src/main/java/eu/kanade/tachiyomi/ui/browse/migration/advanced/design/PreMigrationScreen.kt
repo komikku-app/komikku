@@ -12,8 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +22,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -57,17 +54,6 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         var fabExpanded by remember { mutableStateOf(true) }
         val items by screenModel.state.collectAsState()
-        val context = LocalContext.current
-        DisposableEffect(screenModel) {
-            screenModel.dialog = MigrationBottomSheetDialog(context, screenModel.listener)
-            onDispose {}
-        }
-
-        LaunchedEffect(screenModel) {
-            screenModel.startMigration.collect { extraParam ->
-                navigator replace MigrationListScreen(MigrationProcedureConfig(mangaIds, extraParam))
-            }
-        }
 
         val nestedScrollConnection = remember {
             // All this lines just for fab state :/
@@ -132,9 +118,7 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                         )
                     },
                     onClick = {
-                        if (!screenModel.dialog.isShowing) {
-                            screenModel.dialog.show()
-                        }
+                        screenModel.onMigrationSheet(true)
                     },
                     expanded = fabExpanded,
                 )
@@ -181,6 +165,19 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     },
                 )
             }
+        }
+
+        val migrationSheetOpen by screenModel.migrationSheetOpen.collectAsState()
+        if (migrationSheetOpen) {
+            MigrationBottomSheetDialog(
+                onDismissRequest = { screenModel.onMigrationSheet(false) },
+                onStartMigration = { extraParam ->
+                    screenModel.onMigrationSheet(false)
+                    screenModel.saveEnabledSources()
+
+                    navigator replace MigrationListScreen(MigrationProcedureConfig(mangaIds, extraParam))
+                },
+            )
         }
     }
 

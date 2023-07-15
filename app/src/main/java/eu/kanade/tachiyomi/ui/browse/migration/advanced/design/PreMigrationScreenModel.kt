@@ -6,11 +6,9 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.source.online.HttpSource
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
@@ -26,28 +24,12 @@ class PreMigrationScreenModel(
     private val _state = MutableStateFlow(emptyList<MigrationSourceItem>())
     val state = _state.asStateFlow()
 
+    private val _migrationSheetOpen = MutableStateFlow(false)
+    val migrationSheetOpen = _migrationSheetOpen.asStateFlow()
+
     lateinit var controllerBinding: PreMigrationListBinding
     var adapter: MigrationSourceAdapter? = null
 
-    val startMigration = MutableSharedFlow<String?>()
-
-    val listener = object : StartMigrationListener {
-        override fun startMigration(extraParam: String?) {
-            val listOfSources = adapter?.currentItems
-                ?.filterIsInstance<MigrationSourceItem>()
-                ?.filter {
-                    it.sourceEnabled
-                }
-                ?.joinToString("/") { it.source.id.toString() }
-                .orEmpty()
-
-            prefs.migrationSources().set(listOfSources)
-
-            coroutineScope.launch {
-                startMigration.emit(extraParam)
-            }
-        }
-    }
     val clickListener = FlexibleAdapter.OnItemClickListener { _, position ->
         val adapter = adapter ?: return@OnItemClickListener false
         adapter.getItem(position)?.let {
@@ -56,8 +38,6 @@ class PreMigrationScreenModel(
         adapter.notifyItemChanged(position)
         false
     }
-
-    lateinit var dialog: MigrationBottomSheetDialog
 
     init {
         coroutineScope.launchIO {
@@ -139,5 +119,21 @@ class PreMigrationScreenModel(
         }
         val sortedItems = items.sortedBy { it.source.name }.sortedBy { !it.sourceEnabled }
         adapter.updateDataSet(sortedItems)
+    }
+
+    fun onMigrationSheet(isOpen: Boolean) {
+        _migrationSheetOpen.value = isOpen
+    }
+
+    fun saveEnabledSources() {
+        val listOfSources = adapter?.currentItems
+            ?.filterIsInstance<MigrationSourceItem>()
+            ?.filter {
+                it.sourceEnabled
+            }
+            ?.joinToString("/") { it.source.id.toString() }
+            .orEmpty()
+
+        prefs.migrationSources().set(listOfSources)
     }
 }
