@@ -47,6 +47,8 @@ open /* SY <-- */ class NetworkHelper(
                 builder.addNetworkInterceptor(httpLoggingInterceptor)
             }
 
+            builder.addInterceptor(cloudflareInterceptor)
+
             when (preferences.dohProvider().get()) {
                 PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
                 PREF_DOH_GOOGLE -> builder.dohGoogle()
@@ -68,11 +70,14 @@ open /* SY <-- */ class NetworkHelper(
     /* SY --> */
     open /* SY <-- */val client by lazy { baseClientBuilder.cache(Cache(cacheDir, cacheSize)).build() }
 
+    /**
+     * @deprecated Since extension-lib 1.5
+     */
+    @Deprecated("The regular client handles Cloudflare by default")
+    @Suppress("UNUSED")
     /* SY --> */
     open /* SY <-- */val cloudflareClient by lazy {
-        client.newBuilder()
-            .addInterceptor(cloudflareInterceptor)
-            .build()
+        client
     }
 
     fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
