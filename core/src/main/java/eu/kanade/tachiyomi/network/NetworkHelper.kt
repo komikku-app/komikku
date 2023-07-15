@@ -18,10 +18,10 @@ open /* SY <-- */ class NetworkHelper(
 ) {
 
     /* SY --> */
-    open /* SY <-- */val cookieJar by lazy { AndroidCookieJar() }
+    open /* SY <-- */val cookieJar = AndroidCookieJar()
 
     /* SY --> */
-    open /* SY <-- */val client by lazy {
+    open /* SY <-- */val client: OkHttpClient = run {
         val builder = OkHttpClient.Builder()
             .cookieJar(cookieJar)
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -69,7 +69,7 @@ open /* SY <-- */ class NetworkHelper(
     @Deprecated("The regular client handles Cloudflare by default")
     @Suppress("UNUSED")
     /* SY --> */
-    open /* SY <-- */val cloudflareClient by lazy { client }
+    open /* SY <-- */val cloudflareClient: OkHttpClient = client
 
     fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
 }

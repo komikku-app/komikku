@@ -125,6 +125,10 @@ class MainActivity : BaseActivity() {
 
     private var navigator: Navigator? = null
 
+    init {
+        registerSecureActivity(this)
+    }
+
     // SY -->
     // Idle-until-urgent
     private var firstPaint = false
@@ -491,10 +495,6 @@ class MainActivity : BaseActivity() {
 
         ready = true
         return true
-    }
-
-    init {
-        registerSecureActivity(this)
     }
 
     // SY -->
