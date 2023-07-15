@@ -134,7 +134,6 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     open val baseHttpClient: OkHttpClient? = null
     open val networkHttpClient: OkHttpClient get() = network.client
-    open val networkCloudflareClient: OkHttpClient get() = network.cloudflareClient
 
     /**
      * Visible name of the source.

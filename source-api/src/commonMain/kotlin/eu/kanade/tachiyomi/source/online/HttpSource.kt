@@ -45,11 +45,9 @@ abstract class HttpSource : CatalogueSource {
                     .maybeInjectEHLogger()
                     .build()
 
+            @Deprecated("The regular client handles Cloudflare by default")
             override val cloudflareClient: OkHttpClient
-                get() = delegate?.networkCloudflareClient ?: network.cloudflareClient
-                    .newBuilder()
-                    .maybeInjectEHLogger()
-                    .build()
+                get() = delegate?.networkHttpClient ?: client
 
             override val cookieJar: AndroidCookieJar
                 get() = network.cookieJar
