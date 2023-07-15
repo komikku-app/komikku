@@ -8,10 +8,12 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.CompoundButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -19,7 +21,6 @@ import com.google.android.material.bottomsheet.getElevation
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
-import eu.kanade.tachiyomi.util.system.displayCompat
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.isTabletUi
@@ -48,8 +49,14 @@ class MigrationBottomSheetDialog(private val baseContext: Context, private val l
         }
 
         // Set peek height to 50% display height
-        context.displayCompat?.let {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            context.display
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService<WindowManager>()?.defaultDisplay
+        }?.let {
             val metrics = DisplayMetrics()
+            @Suppress("DEPRECATION")
             it.getRealMetrics(metrics)
             behavior.peekHeight = metrics.heightPixels / 2
         }
