@@ -32,7 +32,6 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.IconItem
-import tachiyomi.presentation.core.components.RadioItem
 import tachiyomi.presentation.core.components.SettingsFlowRow
 import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.components.SortItem

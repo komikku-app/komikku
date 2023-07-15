@@ -18,36 +18,35 @@ import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
-import tachiyomi.presentation.core.components.RadioItem
+import tachiyomi.presentation.core.components.SelectItem
 import tachiyomi.presentation.core.components.SliderItem
 import java.text.NumberFormat
 
+private val readingModeOptions = ReadingModeType.values().map { it.stringRes to it }
+private val orientationTypeOptions = OrientationType.values().map { it.stringRes to it }
+private val tappingInvertModeOptions = ReaderPreferences.TappingInvertMode.values().map { it.titleResId to it }
+
 @Composable
 internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
-    HeadingItem("This is still a WIP, the UI will be improved soon")
-
     HeadingItem(R.string.pref_category_for_this_series)
-
     val manga by screenModel.mangaFlow.collectAsState()
-    val readingMode = remember(manga) { ReadingModeType.fromPreference(manga?.readingModeType?.toInt()) }
-    val orientation = remember(manga) { OrientationType.fromPreference(manga?.orientationType?.toInt()) }
 
-    HeadingItem(R.string.pref_category_reading_mode)
-    ReadingModeType.values().map {
-        RadioItem(
-            label = stringResource(it.stringRes),
-            selected = readingMode == it,
-            onClick = { screenModel.onChangeReadingMode(it) },
-        )
+    val readingMode = remember(manga) { ReadingModeType.fromPreference(manga?.readingModeType?.toInt()) }
+    SelectItem(
+        label = stringResource(R.string.pref_category_reading_mode),
+        options = readingModeOptions.map { stringResource(it.first) }.toTypedArray(),
+        selectedIndex = readingModeOptions.indexOfFirst { it.second == readingMode },
+    ) {
+        screenModel.onChangeReadingMode(readingModeOptions[it].second)
     }
 
-    HeadingItem(R.string.rotation_type)
-    OrientationType.values().map {
-        RadioItem(
-            label = stringResource(it.stringRes),
-            selected = orientation == it,
-            onClick = { screenModel.onChangeOrientation(it) },
-        )
+    val orientationType = remember(manga) { OrientationType.fromPreference(manga?.orientationType?.toInt()) }
+    SelectItem(
+        label = stringResource(R.string.rotation_type),
+        options = orientationTypeOptions.map { stringResource(it.first) }.toTypedArray(),
+        selectedIndex = orientationTypeOptions.indexOfFirst { it.second == orientationType },
+    ) {
+        screenModel.onChangeOrientation(orientationTypeOptions[it].second)
     }
 
     val viewer by screenModel.viewerFlow.collectAsState()
@@ -66,57 +65,49 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
     HeadingItem(R.string.pager_viewer)
 
     val navigationModePager by screenModel.preferences.navigationModePager().collectAsState()
-    HeadingItem(R.string.pref_viewer_nav)
-    ReaderPreferences.TapZones.mapIndexed { index, titleResId ->
-        RadioItem(
-            label = stringResource(titleResId),
-            selected = navigationModePager == index,
-            onClick = { screenModel.preferences.navigationModePager().set(index) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.pref_viewer_nav),
+        options = ReaderPreferences.TapZones.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = navigationModePager,
+        onSelect = { screenModel.preferences.navigationModePager().set(it) },
+    )
 
     if (navigationModePager != 5) {
         val pagerNavInverted by screenModel.preferences.pagerNavInverted().collectAsState()
-        HeadingItem(R.string.pref_read_with_tapping_inverted)
-        ReaderPreferences.TappingInvertMode.values().map {
-            RadioItem(
-                label = stringResource(it.titleResId),
-                selected = pagerNavInverted == it,
-                onClick = { screenModel.preferences.pagerNavInverted().set(it) },
-            )
-        }
+        SelectItem(
+            label = stringResource(R.string.pref_read_with_tapping_inverted),
+            options = tappingInvertModeOptions.map { stringResource(it.first) }.toTypedArray(),
+            selectedIndex = tappingInvertModeOptions.indexOfFirst { it.second == pagerNavInverted },
+            onSelect = {
+                screenModel.preferences.pagerNavInverted().set(tappingInvertModeOptions[it].second)
+            },
+        )
     }
 
     val imageScaleType by screenModel.preferences.imageScaleType().collectAsState()
-    HeadingItem(R.string.pref_image_scale_type)
-    ReaderPreferences.ImageScaleType.mapIndexed { index, it ->
-        RadioItem(
-            label = stringResource(it),
-            selected = imageScaleType == index + 1,
-            onClick = { screenModel.preferences.imageScaleType().set(index + 1) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.pref_image_scale_type),
+        options = ReaderPreferences.ImageScaleType.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = imageScaleType - 1,
+        onSelect = { screenModel.preferences.imageScaleType().set(it + 1) },
+    )
 
     val zoomStart by screenModel.preferences.zoomStart().collectAsState()
-    HeadingItem(R.string.pref_zoom_start)
-    ReaderPreferences.ZoomStart.mapIndexed { index, it ->
-        RadioItem(
-            label = stringResource(it),
-            selected = zoomStart == index + 1,
-            onClick = { screenModel.preferences.zoomStart().set(index + 1) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.pref_zoom_start),
+        options = ReaderPreferences.ZoomStart.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = zoomStart - 1,
+        onSelect = { screenModel.preferences.zoomStart().set(it + 1) },
+    )
 
     // SY -->
     val pageLayout by screenModel.preferences.pageLayout().collectAsState()
-    HeadingItem(R.string.page_layout)
-    ReaderPreferences.PageLayouts.mapIndexed { index, it ->
-        RadioItem(
-            label = stringResource(it),
-            selected = pageLayout == index + 1,
-            onClick = { screenModel.preferences.pageLayout().set(index + 1) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.page_layout),
+        options = ReaderPreferences.PageLayouts.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = pageLayout,
+        onSelect = { screenModel.preferences.pageLayout().set(it) },
+    )
     // SY <--
 
     val cropBorders by screenModel.preferences.cropBorders().collectAsState()
@@ -206,14 +197,12 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
     )
 
     val centerMarginType by screenModel.preferences.centerMarginType().collectAsState()
-    HeadingItem(R.string.pref_center_margin)
-    ReaderPreferences.CenterMarginTypes.mapIndexed { index, it ->
-        RadioItem(
-            label = stringResource(it),
-            selected = centerMarginType == index + 1,
-            onClick = { screenModel.preferences.centerMarginType().set(index + 1) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.pref_center_margin),
+        options = ReaderPreferences.CenterMarginTypes.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = centerMarginType,
+        onSelect = { screenModel.preferences.centerMarginType().set(it) },
+    )
     // SY <--
 }
 
@@ -224,25 +213,23 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
     HeadingItem(R.string.webtoon_viewer)
 
     val navigationModeWebtoon by screenModel.preferences.navigationModeWebtoon().collectAsState()
-    HeadingItem(R.string.pref_viewer_nav)
-    ReaderPreferences.TapZones.mapIndexed { index, titleResId ->
-        RadioItem(
-            label = stringResource(titleResId),
-            selected = navigationModeWebtoon == index,
-            onClick = { screenModel.preferences.navigationModeWebtoon().set(index) },
-        )
-    }
+    SelectItem(
+        label = stringResource(R.string.pref_viewer_nav),
+        options = ReaderPreferences.TapZones.map { stringResource(it) }.toTypedArray(),
+        selectedIndex = navigationModeWebtoon,
+        onSelect = { screenModel.preferences.navigationModeWebtoon().set(it) },
+    )
 
     if (navigationModeWebtoon != 5) {
         val webtoonNavInverted by screenModel.preferences.webtoonNavInverted().collectAsState()
-        HeadingItem(R.string.pref_read_with_tapping_inverted)
-        ReaderPreferences.TappingInvertMode.values().map {
-            RadioItem(
-                label = stringResource(it.titleResId),
-                selected = webtoonNavInverted == it,
-                onClick = { screenModel.preferences.webtoonNavInverted().set(it) },
-            )
-        }
+        SelectItem(
+            label = stringResource(R.string.pref_read_with_tapping_inverted),
+            options = tappingInvertModeOptions.map { stringResource(it.first) }.toTypedArray(),
+            selectedIndex = tappingInvertModeOptions.indexOfFirst { it.second == webtoonNavInverted },
+            onSelect = {
+                screenModel.preferences.webtoonNavInverted().set(tappingInvertModeOptions[it].second)
+            },
+        )
     }
 
     val webtoonSidePadding by screenModel.preferences.webtoonSidePadding().collectAsState()
