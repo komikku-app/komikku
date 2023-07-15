@@ -19,7 +19,7 @@ import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaCompactGridItem
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.MangaDexSearchMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover

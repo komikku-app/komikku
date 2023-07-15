@@ -1,5 +1,6 @@
 package exh.metadata.metadata.base
 
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle

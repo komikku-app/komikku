@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.source.online
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 
 interface FollowsSource : CatalogueSource {
     suspend fun fetchFollows(page: Int): MangasPage

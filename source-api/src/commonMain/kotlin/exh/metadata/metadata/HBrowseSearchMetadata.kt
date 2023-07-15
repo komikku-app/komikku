@@ -4,7 +4,6 @@ import android.content.Context
 import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
 
 @Serializable

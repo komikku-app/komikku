@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.PururinSearchMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.util.dropBlank

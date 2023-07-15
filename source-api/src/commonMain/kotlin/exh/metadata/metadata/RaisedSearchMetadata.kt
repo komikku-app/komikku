@@ -1,32 +1,23 @@
-package exh.metadata.metadata.base
+package exh.metadata.metadata
 
 import android.content.Context
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.EightMusesSearchMetadata
-import exh.metadata.metadata.HBrowseSearchMetadata
-import exh.metadata.metadata.MangaDexSearchMetadata
-import exh.metadata.metadata.NHentaiSearchMetadata
-import exh.metadata.metadata.PururinSearchMetadata
-import exh.metadata.metadata.TsuminoSearchMetadata
+import exh.metadata.metadata.base.FlatMetadata
+import exh.metadata.metadata.base.RaisedTag
+import exh.metadata.metadata.base.RaisedTitle
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import exh.util.plusAssign
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-@Polymorphic
 @Serializable
-abstract class RaisedSearchMetadata {
+sealed class RaisedSearchMetadata {
     @Transient
     var mangaId: Long = -1
 
@@ -156,21 +147,8 @@ abstract class RaisedSearchMetadata {
             this.filter { it.type != TAG_TYPE_VIRTUAL }
                 .map { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
-        private val module = SerializersModule {
-            polymorphic(RaisedSearchMetadata::class) {
-                subclass(EHentaiSearchMetadata::class)
-                subclass(EightMusesSearchMetadata::class)
-                subclass(HBrowseSearchMetadata::class)
-                subclass(MangaDexSearchMetadata::class)
-                subclass(NHentaiSearchMetadata::class)
-                subclass(PururinSearchMetadata::class)
-                subclass(TsuminoSearchMetadata::class)
-            }
-        }
-
         val raiseFlattenJson = Json {
             ignoreUnknownKeys = true
-            serializersModule = module
         }
 
         fun titleDelegate(type: Int) = object : ReadWriteProperty<RaisedSearchMetadata, String?> {

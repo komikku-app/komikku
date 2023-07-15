@@ -1,7 +1,7 @@
 package tachiyomi.domain.manga.repository
 
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle

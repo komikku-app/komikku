@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt

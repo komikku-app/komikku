@@ -36,7 +36,7 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor

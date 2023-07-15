@@ -25,7 +25,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.isEhBasedSource
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.library.model.LibraryDisplayMode

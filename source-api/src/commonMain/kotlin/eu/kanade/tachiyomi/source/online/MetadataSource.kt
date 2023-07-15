@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.source.online
 
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import rx.Completable
 import rx.Single
 import tachiyomi.core.util.lang.awaitSingle

@@ -41,8 +41,8 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_VISIBILITY_NAMES
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
-import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
-import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
+import exh.metadata.metadata.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
+import exh.metadata.metadata.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
 import exh.ui.login.EhLoginActivity
 import exh.util.UriFilter

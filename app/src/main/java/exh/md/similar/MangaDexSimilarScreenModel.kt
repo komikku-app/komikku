@@ -3,7 +3,7 @@ package exh.md.similar
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

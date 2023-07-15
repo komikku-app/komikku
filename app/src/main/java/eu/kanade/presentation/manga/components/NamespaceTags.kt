@@ -27,7 +27,7 @@ import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
