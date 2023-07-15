@@ -133,6 +133,11 @@ abstract class SearchScreenModel<T>(
     }
 }
 
+enum class SourceFilter {
+    All,
+    PinnedOnly,
+}
+
 sealed class SearchItemResult {
     object Loading : SearchItemResult()
 
