@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -62,7 +64,10 @@ fun HeadingItem(
         style = MaterialTheme.typography.header,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(
+                horizontal = SettingsItemsPaddings.Horizontal,
+                vertical = SettingsItemsPaddings.Vertical,
+            ),
     )
 }
 
@@ -204,7 +209,10 @@ fun SelectItem(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth()
-                .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+                .padding(
+                    horizontal = SettingsItemsPaddings.Horizontal,
+                    vertical = SettingsItemsPaddings.Vertical,
+                ),
             label = { Text(text = label) },
             value = options[selectedIndex].toString(),
             onValueChange = {},
@@ -260,7 +268,10 @@ fun TriStateItem(
                 },
             )
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(
+                horizontal = SettingsItemsPaddings.Horizontal,
+                vertical = SettingsItemsPaddings.Vertical,
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -334,6 +345,26 @@ fun IconItem(
 // SY <--
 
 @Composable
+fun SettingsFlowRow(
+    @StringRes labelRes: Int,
+    content: @Composable FlowRowScope.() -> Unit,
+) {
+    Column {
+        HeadingItem(labelRes)
+        FlowRow(
+            modifier = Modifier.padding(
+                start = SettingsItemsPaddings.Horizontal,
+                top = 0.dp,
+                end = SettingsItemsPaddings.Horizontal,
+                bottom = SettingsItemsPaddings.Vertical,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            content = content,
+        )
+    }
+}
+
+@Composable
 private fun BaseSettingsItem(
     label: String,
     widget: @Composable RowScope.() -> Unit,
@@ -343,7 +374,10 @@ private fun BaseSettingsItem(
         modifier = Modifier
             .clickable(onClick = onClick)
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(
+                horizontal = SettingsItemsPaddings.Horizontal,
+                vertical = SettingsItemsPaddings.Vertical,
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
