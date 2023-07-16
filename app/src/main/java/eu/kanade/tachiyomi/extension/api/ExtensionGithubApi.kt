@@ -159,7 +159,7 @@ internal class ExtensionGithubApi {
                     hasChangelog = it.hasChangelog == 1,
                     sources = it.sources?.map(extensionSourceMapper).orEmpty(),
                     apkName = it.apk,
-                    iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
+                    iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.pkg}.png",
                     // SY -->
                     repoUrl = repoUrl,
                     isRepoSource = repoSource,
