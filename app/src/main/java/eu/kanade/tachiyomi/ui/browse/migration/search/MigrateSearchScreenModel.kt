@@ -25,10 +25,9 @@ class MigrateSearchScreenModel(
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-) : SearchScreenModel<MigrateSearchState>(MigrateSearchState()) {
+) : SearchScreenModel<MigrateSearchScreenModel.State>(State()) {
 
     init {
-        extensionFilter = initialExtensionFilter
         coroutineScope.launch {
             val manga = getManga.await(mangaId)!!
 
@@ -65,16 +64,14 @@ class MigrateSearchScreenModel(
     override fun getItems(): Map<CatalogueSource, SearchItemResult> {
         return mutableState.value.items
     }
-}
 
-@Immutable
-data class MigrateSearchState(
-    val manga: Manga? = null,
-    val searchQuery: String? = null,
-    val items: Map<CatalogueSource, SearchItemResult> = emptyMap(),
-) {
-
-    val progress: Int = items.count { it.value !is SearchItemResult.Loading }
-
-    val total: Int = items.size
+    @Immutable
+    data class State(
+        val manga: Manga? = null,
+        val searchQuery: String? = null,
+        val items: Map<CatalogueSource, SearchItemResult> = emptyMap(),
+    ) {
+        val progress: Int = items.count { it.value !is SearchItemResult.Loading }
+        val total: Int = items.size
+    }
 }
