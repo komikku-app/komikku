@@ -11,7 +11,6 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
-// TODO: this should probably be merged with GlobalSearchScreen somehow to dedupe logic
 class MigrateSearchScreen(private val mangaId: Long, private val validSources: List<Long>) : Screen() {
 
     @Composable
@@ -20,8 +19,12 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
         val screenModel = rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId, validSources = validSources) }
         val state by screenModel.state.collectAsState()
 
+        val dialogScreenModel = rememberScreenModel { MigrateSearchScreenDialogScreenModel(mangaId = mangaId) }
+        val dialogState by dialogScreenModel.state.collectAsState()
+
         MigrateSearchScreen(
             state = state,
+            fromSourceId = state.fromSourceId,
             navigateUp = navigator::pop,
             onChangeSearchQuery = screenModel::updateSearchQuery,
             onSearch = screenModel::search,
@@ -30,7 +33,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             onToggleResults = screenModel::toggleFilterResults,
             onClickSource = {
                 // SY -->
-                navigator.push(SourceSearchScreen(state.manga!!, it.id, state.searchQuery))
+                navigator.push(SourceSearchScreen(dialogState.manga!!, it.id, state.searchQuery))
                 // SY <--
             },
             onClickItem = {
