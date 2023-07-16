@@ -7,6 +7,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.domain.manga.interactor.GetManga
@@ -27,6 +28,9 @@ class MigrateSearchScreenModel(
     private val getManga: GetManga = Injekt.get(),
 ) : SearchScreenModel<MigrateSearchScreenModel.State>(State()) {
 
+    val incognitoMode = preferences.incognitoMode()
+    val lastUsedSourceId = sourcePreferences.lastUsedSource()
+
     init {
         coroutineScope.launch {
             val manga = getManga.await(mangaId)!!
@@ -39,13 +43,12 @@ class MigrateSearchScreenModel(
         }
     }
 
-    val incognitoMode = preferences.incognitoMode()
-    val lastUsedSourceId = sourcePreferences.lastUsedSource()
-
     override fun getEnabledSources(): List<CatalogueSource> {
+        val pinnedSources = sourcePreferences.pinnedSources().get()
         // SY -->
         return validSources.mapNotNull { sourceManager.get(it) }
             .filterIsInstance<CatalogueSource>()
+            .filter { mutableState.value.sourceFilter != SourceFilter.PinnedOnly || "${it.id}" in pinnedSources }
         // SY <--
     }
 
@@ -65,13 +68,27 @@ class MigrateSearchScreenModel(
         return mutableState.value.items
     }
 
+    fun setSourceFilter(filter: SourceFilter) {
+        mutableState.update { it.copy(sourceFilter = filter) }
+    }
+
+    fun toggleFilterResults() {
+        mutableState.update {
+            it.copy(onlyShowHasResults = !it.onlyShowHasResults)
+        }
+    }
+
     @Immutable
     data class State(
         val manga: Manga? = null,
+
         val searchQuery: String? = null,
+        val sourceFilter: SourceFilter = SourceFilter.PinnedOnly,
+        val onlyShowHasResults: Boolean = false,
         val items: Map<CatalogueSource, SearchItemResult> = emptyMap(),
     ) {
         val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
+        val filteredItems = items.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
     }
 }
