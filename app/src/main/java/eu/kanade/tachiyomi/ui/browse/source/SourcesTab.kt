@@ -69,7 +69,6 @@ fun Screen.sourcesTab(
                         listing == Listing.Popular && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
                         else -> BrowseSourceScreen(source.id, listing.query)
                     }
-                    screenModel.onOpenSource(source)
                     navigator.push(screen)
                     // SY <--
                 },

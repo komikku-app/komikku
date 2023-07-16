@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.migration.search
 
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.coroutineScope
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -21,15 +20,10 @@ class MigrateSearchScreenModel(
     // SY -->
     val validSources: List<Long>,
     // SY <--
-    initialExtensionFilter: String = "",
-    preferences: BasePreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
 ) : SearchScreenModel<MigrateSearchScreenModel.State>(State()) {
-
-    val incognitoMode = preferences.incognitoMode()
-    val lastUsedSourceId = sourcePreferences.lastUsedSource()
 
     init {
         coroutineScope.launch {
@@ -68,11 +62,11 @@ class MigrateSearchScreenModel(
         return mutableState.value.items
     }
 
-    fun setSourceFilter(filter: SourceFilter) {
+    override fun setSourceFilter(filter: SourceFilter) {
         mutableState.update { it.copy(sourceFilter = filter) }
     }
 
-    fun toggleFilterResults() {
+    override fun toggleFilterResults() {
         mutableState.update {
             it.copy(onlyShowHasResults = !it.onlyShowHasResults)
         }

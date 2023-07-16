@@ -29,9 +29,6 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             onChangeSearchFilter = screenModel::setSourceFilter,
             onToggleResults = screenModel::toggleFilterResults,
             onClickSource = {
-                if (!screenModel.incognitoMode.get()) {
-                    screenModel.lastUsedSourceId.set(it.id)
-                }
                 // SY -->
                 navigator.push(SourceSearchScreen(state.manga!!, it.id, state.searchQuery))
                 // SY <--

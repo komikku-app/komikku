@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
@@ -36,8 +35,6 @@ import uy.kohesive.injekt.api.get
 import java.util.TreeMap
 
 class SourcesScreenModel(
-    private val preferences: BasePreferences = Injekt.get(),
-    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getEnabledSources: GetEnabledSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
@@ -47,9 +44,10 @@ class SourcesScreenModel(
     private val getShowLatest: GetShowLatest = Injekt.get(),
     private val toggleExcludeFromDataSaver: ToggleExcludeFromDataSaver = Injekt.get(),
     private val setSourceCategories: SetSourceCategories = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     val smartSearchConfig: SourcesScreen.SmartSearchConfig?,
     // SY <--
-) : StateScreenModel<SourcesState>(SourcesState()) {
+) : StateScreenModel<SourcesScreenModel.State>(State()) {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
@@ -132,12 +130,6 @@ class SourcesScreenModel(
         }
     }
 
-    fun onOpenSource(source: Source) {
-        if (!preferences.incognitoMode().get()) {
-            sourcePreferences.lastUsedSource().set(source.id)
-        }
-    }
-
     fun toggleSource(source: Source) {
         toggleSource.await(source)
     }
@@ -177,6 +169,21 @@ class SourcesScreenModel(
         data class SourceCategories(val source: Source) : Dialog()
     }
 
+    @Immutable
+    data class State(
+        val dialog: Dialog? = null,
+        val isLoading: Boolean = true,
+        val items: List<SourceUiModel> = emptyList(),
+        // SY -->
+        val categories: List<String> = emptyList(),
+        val showPin: Boolean = true,
+        val showLatest: Boolean = false,
+        val dataSaverEnabled: Boolean = false,
+        // SY <--
+    ) {
+        val isEmpty = items.isEmpty()
+    }
+
     companion object {
         const val PINNED_KEY = "pinned"
         const val LAST_USED_KEY = "last_used"
@@ -185,19 +192,4 @@ class SourcesScreenModel(
         const val CATEGORY_KEY_PREFIX = "category-"
         // SY <--
     }
-}
-
-@Immutable
-data class SourcesState(
-    val dialog: SourcesScreenModel.Dialog? = null,
-    val isLoading: Boolean = true,
-    val items: List<SourceUiModel> = emptyList(),
-    // SY -->
-    val categories: List<String> = emptyList(),
-    val showPin: Boolean = true,
-    val showLatest: Boolean = false,
-    val dataSaverEnabled: Boolean = false,
-    // SY <--
-) {
-    val isEmpty = items.isEmpty()
 }
