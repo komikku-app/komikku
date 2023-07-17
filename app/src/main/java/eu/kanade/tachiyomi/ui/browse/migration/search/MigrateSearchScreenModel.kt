@@ -17,12 +17,13 @@ class MigrateSearchScreenModel(
     init {
         coroutineScope.launch {
             val manga = getManga.await(mangaId)!!
-
             mutableState.update {
-                it.copy(fromSourceId = manga.source, searchQuery = manga.title)
+                it.copy(
+                    fromSourceId = manga.source,
+                    searchQuery = manga.title,
+                )
             }
-
-            search(manga.title)
+            search()
         }
     }
 
