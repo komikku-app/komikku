@@ -474,10 +474,11 @@ private fun MangaScreenSmallImpl(
                             contentType = MangaScreenItem.METADATA_INFO,
                         ) {
                             metadataDescription(
-                                state = state,
-                                openMetadataViewer = onMetadataViewerClicked,
-                                search = { onSearch(it, false) },
-                            )
+                                state,
+                                onMetadataViewerClicked,
+                            ) {
+                                onSearch(it, false)
+                            }
                         }
                     }
                     // SY <--
@@ -756,10 +757,11 @@ fun MangaScreenLargeImpl(
                         )
                         // SY -->
                         metadataDescription?.invoke(
-                            state = state,
-                            openMetadataViewer = onMetadataViewerClicked,
-                            search = { onSearch(it, false) },
-                        )
+                            state,
+                            onMetadataViewerClicked,
+                        ) {
+                            onSearch(it, false)
+                        }
                         // SY <--
                         ExpandableMangaDescription(
                             defaultExpandState = true,

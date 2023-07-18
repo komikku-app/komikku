@@ -1157,13 +1157,13 @@ class ReaderViewModel(
     }
 
     sealed class Dialog {
-        object Loading : Dialog()
-        object Settings : Dialog()
+        data object Loading : Dialog()
+        data object Settings : Dialog()
         data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
     }
 
     sealed class Event {
-        object ReloadViewerChapters : Event()
+        data object ReloadViewerChapters : Event()
         data class SetOrientation(val orientation: Int) : Event()
         data class SetCoverResult(val result: SetAsCoverResult) : Event()
 

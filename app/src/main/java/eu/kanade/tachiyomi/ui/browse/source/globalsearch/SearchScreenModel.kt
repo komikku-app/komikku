@@ -180,7 +180,7 @@ enum class SourceFilter {
 }
 
 sealed class SearchItemResult {
-    object Loading : SearchItemResult()
+    data object Loading : SearchItemResult()
 
     data class Error(
         val throwable: Throwable,

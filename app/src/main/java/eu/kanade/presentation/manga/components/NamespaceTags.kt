@@ -20,7 +20,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.ChipBorder
 import eu.kanade.presentation.components.SuggestionChip
+import eu.kanade.presentation.components.SuggestionChipDefaults
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -30,6 +32,8 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.util.SourceTagsUtil
+import androidx.compose.material3.ChipBorder as ChipBorderM3
+import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
 @Immutable
 data class DisplayTag(
@@ -110,10 +114,17 @@ fun NamespaceTags(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     tags.forEach { (_, text, search, border) ->
+                        val borderDp = border?.dp
                         TagsChip(
                             modifier = Modifier.padding(vertical = 4.dp),
                             text = text,
                             onClick = { onClick(search) },
+                            border = borderDp?.let {
+                                SuggestionChipDefaults.suggestionChipBorder(borderWidth = it)
+                            },
+                            borderM3 = borderDp?.let {
+                                SuggestionChipDefaultsM3.suggestionChipBorder(borderWidth = it)
+                            },
                         )
                     }
                 }
@@ -127,6 +138,8 @@ fun TagsChip(
     modifier: Modifier = Modifier,
     text: String,
     onClick: (() -> Unit)?,
+    border: ChipBorder? = null,
+    borderM3: ChipBorderM3? = null,
 ) {
     CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
         if (onClick != null) {
@@ -141,6 +154,7 @@ fun TagsChip(
                         overflow = TextOverflow.Ellipsis,
                     )
                 },
+                border = borderM3,
             )
         } else {
             SuggestionChip(
@@ -153,6 +167,7 @@ fun TagsChip(
                         overflow = TextOverflow.Ellipsis,
                     )
                 },
+                border = border,
             )
         }
     }
