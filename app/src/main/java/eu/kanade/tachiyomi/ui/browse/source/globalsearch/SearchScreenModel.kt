@@ -29,22 +29,24 @@ import java.util.concurrent.Executors
 
 abstract class SearchScreenModel(
     initialState: State = State(),
-    protected val sourcePreferences: SourcePreferences = Injekt.get(),
-    protected val sourceManager: SourceManager = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    protected val getManga: GetManga = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
 ) : StateScreenModel<SearchScreenModel.State>(initialState) {
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     private var searchJob: Job? = null
 
-    private val sources by lazy { getSelectedSources() }
+    private val enabledLanguages = sourcePreferences.enabledLanguages().get()
+    private val disabledSources = sourcePreferences.disabledSources().get()
+    protected val pinnedSources = sourcePreferences.pinnedSources().get()
+
     private var lastQuery: String? = null
     private var lastSourceFilter: SourceFilter? = null
 
     protected var extensionFilter: String? = null
-    protected val pinnedSources = sourcePreferences.pinnedSources().get()
 
     private val sortComparator = { map: Map<CatalogueSource, SearchItemResult> ->
         compareBy<CatalogueSource>(
@@ -66,10 +68,6 @@ abstract class SearchScreenModel(
     }
 
     open fun getEnabledSources(): List<CatalogueSource> {
-        val enabledLanguages = sourcePreferences.enabledLanguages().get()
-        val disabledSources = sourcePreferences.disabledSources().get()
-        val pinnedSources = sourcePreferences.pinnedSources().get()
-
         return sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in enabledLanguages && "${it.id}" !in disabledSources }
             .sortedWith(
@@ -125,7 +123,7 @@ abstract class SearchScreenModel(
         val initialItems = getSelectedSources().associateWith { SearchItemResult.Loading }
         updateItems(initialItems)
         searchJob = ioCoroutineScope.launch {
-            sources.map { source ->
+            getSelectedSources().map { source ->
                 async {
                     try {
                         val page = withContext(coroutineDispatcher) {
