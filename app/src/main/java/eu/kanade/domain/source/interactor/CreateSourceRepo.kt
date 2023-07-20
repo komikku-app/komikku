@@ -1,6 +1,6 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.tachiyomi.util.preference.plusAssign
+import tachiyomi.core.preference.plusAssign
 import tachiyomi.domain.UnsortedPreferences
 
 class CreateSourceRepo(private val preferences: UnsortedPreferences) {

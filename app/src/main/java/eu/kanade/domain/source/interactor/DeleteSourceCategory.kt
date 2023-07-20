@@ -1,8 +1,8 @@
 package eu.kanade.domain.source.interactor
 
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.util.preference.minusAssign
 import tachiyomi.core.preference.getAndSet
+import tachiyomi.core.preference.minusAssign
 
 class DeleteSourceCategory(private val preferences: SourcePreferences) {
 

@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import eu.kanade.domain.manga.model.orientationType
 import eu.kanade.domain.manga.model.readingModeType
-import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -22,6 +21,7 @@ import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.SettingsChipRow
 import tachiyomi.presentation.core.components.SliderItem
+import tachiyomi.presentation.core.util.collectAsState
 import java.text.NumberFormat
 
 private val readingModeOptions = ReadingModeType.entries.map { it.stringRes to it }
@@ -114,90 +114,56 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
     }
     // SY <--
 
-    val cropBorders by screenModel.preferences.cropBorders().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_crop_borders),
-        checked = cropBorders,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::cropBorders)
-        },
+        pref = screenModel.preferences.cropBorders(),
     )
 
-    val landscapeZoom by screenModel.preferences.landscapeZoom().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_landscape_zoom),
-        checked = landscapeZoom,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::landscapeZoom)
-        },
+        pref = screenModel.preferences.landscapeZoom(),
     )
 
-    val navigateToPan by screenModel.preferences.navigateToPan().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_navigate_pan),
-        checked = navigateToPan,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::navigateToPan)
-        },
+        pref = screenModel.preferences.navigateToPan(),
     )
 
     val dualPageSplitPaged by screenModel.preferences.dualPageSplitPaged().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_dual_page_split),
-        checked = dualPageSplitPaged,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::dualPageSplitPaged)
-        },
+        pref = screenModel.preferences.dualPageSplitPaged(),
     )
 
     if (dualPageSplitPaged) {
-        val dualPageInvertPaged by screenModel.preferences.dualPageInvertPaged().collectAsState()
         CheckboxItem(
             label = stringResource(R.string.pref_dual_page_invert),
-            checked = dualPageInvertPaged,
-            onClick = {
-                screenModel.togglePreference(ReaderPreferences::dualPageInvertPaged)
-            },
+            pref = screenModel.preferences.dualPageInvertPaged(),
         )
     }
 
     val dualPageRotateToFit by screenModel.preferences.dualPageRotateToFit().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_page_rotate),
-        checked = dualPageRotateToFit,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::dualPageRotateToFit)
-        },
+        pref = screenModel.preferences.dualPageRotateToFit(),
     )
 
     if (dualPageRotateToFit) {
-        val dualPageRotateToFitInvert by screenModel.preferences.dualPageRotateToFitInvert().collectAsState()
         CheckboxItem(
             label = stringResource(R.string.pref_page_rotate_invert),
-            checked = dualPageRotateToFitInvert,
-            onClick = {
-                screenModel.togglePreference(ReaderPreferences::dualPageRotateToFitInvert)
-            },
+            pref = screenModel.preferences.dualPageRotateToFitInvert(),
         )
     }
 
     // SY -->
-    val pageTransitionsPager by screenModel.preferences.pageTransitionsPager().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_page_transitions),
-        checked = pageTransitionsPager,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::pageTransitionsPager)
-        },
+        pref = screenModel.preferences.pageTransitionsPager(),
     )
 
-    val invertDoublePages by screenModel.preferences.invertDoublePages().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.invert_double_pages),
-        checked = invertDoublePages,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::invertDoublePages)
-        },
+        pref = screenModel.preferences.invertDoublePages(),
     )
 
     val centerMarginType by screenModel.preferences.centerMarginType().collectAsState()
@@ -240,84 +206,51 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         },
     )
 
-    val cropBordersWebtoon by screenModel.preferences.cropBordersWebtoon().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_crop_borders),
-        checked = cropBordersWebtoon,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::cropBordersWebtoon)
-        },
+        pref = screenModel.preferences.cropBordersWebtoon(),
     )
 
     // SY -->
-    val smoothAutoScroll by screenModel.preferences.smoothAutoScroll().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_smooth_scroll),
-        checked = smoothAutoScroll,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::smoothAutoScroll)
-        },
+        pref = screenModel.preferences.smoothAutoScroll(),
     )
 
-    val pageTransitionsWebtoon by screenModel.preferences.pageTransitionsWebtoon().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_page_transitions),
-        checked = pageTransitionsWebtoon,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::pageTransitionsWebtoon)
-        },
+        pref = screenModel.preferences.pageTransitionsWebtoon(),
     )
 
-    val webtoonEnableZoomOut by screenModel.preferences.webtoonEnableZoomOut().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.enable_zoom_out),
-        checked = webtoonEnableZoomOut,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::webtoonEnableZoomOut)
-        },
+        pref = screenModel.preferences.webtoonEnableZoomOut(),
     )
     // SY <--
 
     val dualPageSplitWebtoon by screenModel.preferences.dualPageSplitWebtoon().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_dual_page_split),
-        checked = dualPageSplitWebtoon,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::dualPageSplitWebtoon)
-        },
+        pref = screenModel.preferences.dualPageSplitWebtoon(),
     )
 
     if (dualPageSplitWebtoon) {
-        val dualPageInvertWebtoon by screenModel.preferences.dualPageInvertWebtoon()
-            .collectAsState()
         CheckboxItem(
             label = stringResource(R.string.pref_dual_page_invert),
-            checked = dualPageInvertWebtoon,
-            onClick = {
-                screenModel.togglePreference(ReaderPreferences::dualPageInvertWebtoon)
-            },
+            pref = screenModel.preferences.dualPageInvertWebtoon(),
         )
     }
 
     if (!isReleaseBuildType) {
-        val longStripSplitWebtoon by screenModel.preferences.longStripSplitWebtoon()
-            .collectAsState()
         CheckboxItem(
             label = stringResource(R.string.pref_long_strip_split),
-            checked = longStripSplitWebtoon,
-            onClick = {
-                screenModel.togglePreference(ReaderPreferences::longStripSplitWebtoon)
-            },
+            pref = screenModel.preferences.longStripSplitWebtoon(),
         )
     }
 
-    val webtoonDoubleTapZoomEnabled by screenModel.preferences.webtoonDoubleTapZoomEnabled().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_double_tap_zoom),
-        checked = webtoonDoubleTapZoomEnabled,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::webtoonDoubleTapZoomEnabled)
-        },
+        pref = screenModel.preferences.webtoonDoubleTapZoomEnabled(),
     )
 }
 
@@ -326,13 +259,9 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
 private fun ColumnScope.WebtoonWithGapsViewerSettings(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(R.string.vertical_plus_viewer)
 
-    val cropBordersContinuousVertical by screenModel.preferences.cropBordersContinuousVertical().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.pref_crop_borders),
-        checked = cropBordersContinuousVertical,
-        onClick = {
-            screenModel.togglePreference(ReaderPreferences::cropBordersContinuousVertical)
-        },
+        pref = screenModel.preferences.cropBordersContinuousVertical(),
     )
 }
 // SY <--

@@ -1,7 +1,7 @@
 package eu.kanade.domain.source.interactor
 
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.util.preference.plusAssign
+import tachiyomi.core.preference.plusAssign
 
 class CreateSourceCategory(private val preferences: SourcePreferences) {
 

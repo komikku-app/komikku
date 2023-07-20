@@ -40,8 +40,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.TriState
+import tachiyomi.core.preference.toggle
 import tachiyomi.presentation.core.theme.header
+import tachiyomi.presentation.core.util.collectAsState
 
 object SettingsItemsPaddings {
     val Horizontal = 24.dp
@@ -116,6 +119,19 @@ fun SortItem(
             }
         },
         onClick = onClick,
+    )
+}
+
+@Composable
+fun CheckboxItem(
+    label: String,
+    pref: Preference<Boolean>,
+) {
+    val checked by pref.collectAsState()
+    CheckboxItem(
+        label = label,
+        checked = checked,
+        onClick = { pref.toggle() },
     )
 }
 
