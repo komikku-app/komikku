@@ -80,7 +80,7 @@ val libraryManga: (Long, Long, String, String?, String?, String?, List<String>?,
 
 val libraryViewMapper: (LibraryView) -> LibraryManga = {
     LibraryManga(
-        Manga(
+        manga = Manga(
             id = it._id,
             source = it.source,
             favorite = it.favorite,
@@ -105,12 +105,12 @@ val libraryViewMapper: (LibraryView) -> LibraryManga = {
             lastModifiedAt = it.last_modified_at,
             favoriteModifiedAt = it.favorite_modified_at,
         ),
-        it.category,
-        it.totalCount,
-        it.readCount,
-        it.bookmarkCount,
-        it.latestUpload,
-        it.chapterFetchedAt,
-        it.lastRead,
+        category = it.category,
+        totalChapters = it.totalCount,
+        readCount = it.readCount,
+        bookmarkCount = it.bookmarkCount,
+        latestUpload = it.latestUpload,
+        chapterFetchedAt = it.chapterFetchedAt,
+        lastRead = it.lastRead,
     )
 }
