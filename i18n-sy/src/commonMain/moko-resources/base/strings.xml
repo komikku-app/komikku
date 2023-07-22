@@ -475,6 +475,7 @@
     <string name="stop_migrating">Stop migrating?</string>
     <string name="action_stop">Stop</string>
     <string name="skipping_">(skipping %1$d)</string>
+    <string name="migrating_all_entries">Migrating all entries from source</string>
 
     <!-- Library -->
     <!-- Library Actions -->
