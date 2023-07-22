@@ -80,6 +80,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -141,6 +142,7 @@ class LibraryScreenModel(
     private val getSearchTitles: GetSearchTitles = Injekt.get(),
     private val searchEngine: SearchEngine = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
+    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     // SY <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -582,7 +584,14 @@ class LibraryScreenModel(
     }
 
     suspend fun getNextUnreadChapter(manga: Manga): Chapter? {
-        return getChaptersByMangaId.await(manga.id).getNextUnread(manga, downloadManager)
+        // SY -->
+        val mergedManga = getMergedMangaById.await(manga.id).associateBy { it.id }
+        return if (manga.id == MERGED_SOURCE_ID) {
+            getMergedChapterByMangaId.await(manga.id)
+        } else {
+            getChaptersByMangaId.await(manga.id)
+        }.getNextUnread(manga, downloadManager, mergedManga)
+        // SY <--
     }
 
     /**
