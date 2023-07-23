@@ -34,6 +34,7 @@ import eu.kanade.presentation.manga.MangaScreen
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.SelectScanlatorsDialog
+import eu.kanade.presentation.manga.components.SetIntervalDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
@@ -75,6 +76,7 @@ import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -139,6 +141,7 @@ class MangaScreen(
             snackbarHostState = screenModel.snackbarHostState,
             dateRelativeTime = screenModel.relativeTime,
             dateFormat = screenModel.dateFormat,
+            intervalDisplay = screenModel::intervalDisplay,
             isTabletUi = isTabletUi(),
             chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
@@ -169,6 +172,7 @@ class MangaScreen(
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::promptChangeCategories.takeIf { successState.manga.favorite },
+            onEditIntervalClicked = screenModel::showSetMangaIntervalDialog.takeIf { MANGA_OUTSIDE_RELEASE_PERIOD in screenModel.libraryPreferences.libraryUpdateMangaRestriction().get() && successState.manga.favorite },
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
@@ -270,6 +274,13 @@ class MangaScreen(
                 } else {
                     LoadingScreen(Modifier.systemBarsPadding())
                 }
+            }
+            is MangaScreenModel.Dialog.SetMangaInterval -> {
+                SetIntervalDialog(
+                    interval = if (dialog.manga.calculateInterval < 0) -dialog.manga.calculateInterval else 0,
+                    onDismissRequest = onDismissRequest,
+                    onValueChanged = { screenModel.setFetchRangeInterval(dialog.manga, it) },
+                )
             }
             // SY -->
             is MangaScreenModel.Dialog.EditMangaInfo -> {

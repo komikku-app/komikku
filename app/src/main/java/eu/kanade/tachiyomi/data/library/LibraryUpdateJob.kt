@@ -45,7 +45,6 @@ import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
-import exh.source.isMdBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CancellationException
@@ -80,12 +79,14 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
+import tachiyomi.domain.manga.interactor.SetMangaUpdateInterval
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.SourceNotInstalledException
@@ -95,6 +96,7 @@ import tachiyomi.domain.track.interactor.InsertTrack
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.time.ZonedDateTime
 import java.util.Date
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
@@ -119,6 +121,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getTracks: GetTracks = Injekt.get()
     private val insertTrack: InsertTrack = Injekt.get()
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get()
+    private val setMangaUpdateInterval: SetMangaUpdateInterval = Injekt.get()
 
     // SY -->
     private val getFavorites: GetFavorites = Injekt.get()
@@ -300,6 +303,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         val failedUpdates = CopyOnWriteArrayList<Pair<Manga, String?>>()
         val hasDownloads = AtomicBoolean(false)
         val restrictions = libraryPreferences.libraryUpdateMangaRestriction().get()
+        // SY -->
+        val mdlistLogged = trackManager.services.any { it.isLogged && it.id == TrackManager.MDLIST }
+        // SY <--
+
+        val now = ZonedDateTime.now()
+        val fetchRange = setMangaUpdateInterval.getCurrentFetchRange(now)
+        val higherLimit = fetchRange.second
 
         coroutineScope {
             mangaToUpdate.groupBy { it.manga.source }
@@ -310,6 +320,22 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 .map { mangaInSource ->
                     async {
                         semaphore.withPermit {
+                            if (mdlistLogged && mangaInSource.firstOrNull()?.let { it.manga.source in mangaDexSourceIds } == true) {
+                                launch {
+                                    mangaInSource.forEach { (manga) ->
+                                        try {
+                                            val tracks = getTracks.await(manga.id)
+                                            if (tracks.isEmpty() || tracks.none { it.syncId == TrackManager.MDLIST }) {
+                                                val track = trackManager.mdList.createInitialTracker(manga)
+                                                insertTrack.await(trackManager.mdList.refresh(track).toDomainTrack(false)!!)
+                                            }
+                                        } catch (e: Exception) {
+                                            if (e is CancellationException) throw e
+                                            xLogE("Error adding initial track for ${manga.title}", e)
+                                        }
+                                    }
+                                }
+                            }
                             mangaInSource.forEach { libraryManga ->
                                 val manga = libraryManga.manga
                                 ensureActive()
@@ -325,6 +351,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     manga,
                                 ) {
                                     when {
+                                        MANGA_OUTSIDE_RELEASE_PERIOD in restrictions && manga.nextUpdate > higherLimit ->
+                                            skippedUpdates.add(manga to context.getString(R.string.skipped_reason_not_in_release_period))
+
                                         MANGA_NON_COMPLETED in restrictions && manga.status.toInt() == SManga.COMPLETED ->
                                             skippedUpdates.add(manga to context.getString(R.string.skipped_reason_completed))
 
@@ -339,8 +368,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                                         else -> {
                                             try {
-                                                val loggedServices = trackManager.services.filter { it.isLogged }
-                                                val newChapters = updateManga(manga, loggedServices)
+                                                val newChapters = updateManga(manga, now, fetchRange)
                                                     .sortedByDescending { it.sourceOrder }
 
                                                 if (newChapters.isNotEmpty()) {
@@ -428,7 +456,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      * @param manga the manga to update.
      * @return a pair of the inserted and removed chapters.
      */
-    private suspend fun updateManga(manga: Manga, loggedServices: List<TrackService>): List<Chapter> = coroutineScope {
+    private suspend fun updateManga(manga: Manga, zoneDateTime: ZonedDateTime, fetchRange: Pair<Long, Long>): List<Chapter> {
         val source = sourceManager.getOrStub(manga.source)
 
         // Update manga metadata if needed
@@ -437,34 +465,17 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             updateManga.awaitUpdateFromSource(manga, networkManga, manualFetch = false, coverCache)
         }
 
-        // SY -->
-        if (source.isMdBasedSource() && trackManager.mdList in loggedServices) {
-            launch {
-                try {
-                    val tracks = getTracks.await(manga.id)
-                    if (tracks.isEmpty() || tracks.none { it.syncId == TrackManager.MDLIST }) {
-                        val track = trackManager.mdList.createInitialTracker(manga)
-                        insertTrack.await(trackManager.mdList.refresh(track).toDomainTrack(false)!!)
-                    }
-                } catch (e: Exception) {
-                    if (e is CancellationException) throw e
-                    xLogE("Error adding initial track for ${manga.title}", e)
-                }
-            }
-        }
-
         if (source is MergedSource) {
-            return@coroutineScope source.fetchChaptersAndSync(manga, false)
+            return source.fetchChaptersAndSync(manga, false)
         }
-        // SY <--
 
         val chapters = source.getChapterList(manga.toSManga())
 
         // Get manga from database to account for if it was removed during the update and
         // to get latest data so it doesn't get overwritten later on
-        val dbManga = getManga.await(manga.id)?.takeIf { it.favorite } ?: return@coroutineScope emptyList()
+        val dbManga = getManga.await(manga.id)?.takeIf { it.favorite } ?: return emptyList()
 
-        return@coroutineScope syncChaptersWithSource.await(chapters, dbManga, source)
+        return syncChaptersWithSource.await(chapters, dbManga, source, false, zoneDateTime, fetchRange)
     }
 
     private suspend fun updateCovers() {

@@ -111,6 +111,7 @@ import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.applyFilter
+import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
@@ -119,6 +120,7 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import kotlin.math.absoluteValue
 
 class MangaScreenModel(
     val context: Context,
@@ -126,9 +128,9 @@ class MangaScreenModel(
     private val isFromSource: Boolean,
     val smartSearched: Boolean,
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
-    private val libraryPreferences: LibraryPreferences = Injekt.get(),
-    readerPreferences: ReaderPreferences = Injekt.get(),
-    uiPreferences: UiPreferences = Injekt.get(),
+    val libraryPreferences: LibraryPreferences = Injekt.get(),
+    val readerPreferences: ReaderPreferences = Injekt.get(),
+    val uiPreferences: UiPreferences = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
@@ -161,6 +163,7 @@ class MangaScreenModel(
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
+    private val mangaRepository: MangaRepository = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<MangaScreenModel.State>(State.Loading) {
 
@@ -728,7 +731,7 @@ class MangaScreenModel(
                     }
 
                     // Choose a category
-                    else -> promptChangeCategories()
+                    else -> showChangeCategoryDialog()
                 }
 
                 // Finally match with enhanced tracking when available
@@ -754,7 +757,7 @@ class MangaScreenModel(
         }
     }
 
-    fun promptChangeCategories() {
+    fun showChangeCategoryDialog() {
         val manga = successState?.manga ?: return
         coroutineScope.launch {
             val categories = getCategories()
@@ -767,6 +770,39 @@ class MangaScreenModel(
                     ),
                 )
             }
+        }
+    }
+
+    fun showSetMangaIntervalDialog() {
+        val manga = successState?.manga ?: return
+        updateSuccessState {
+            it.copy(dialog = Dialog.SetMangaInterval(manga))
+        }
+    }
+
+    // TODO: this should be in the state/composables
+    fun intervalDisplay(): Pair<Int, Int>? {
+        val state = successState ?: return null
+        val leadDay = libraryPreferences.leadingExpectedDays().get()
+        val followDay = libraryPreferences.followingExpectedDays().get()
+        val effInterval = state.manga.calculateInterval
+        return 1.coerceAtLeast(effInterval.absoluteValue - leadDay) to (effInterval.absoluteValue + followDay)
+    }
+
+    fun setFetchRangeInterval(manga: Manga, newInterval: Int) {
+        val interval = when (newInterval) {
+            // reset interval 0 default to trigger recalculation
+            // only reset if interval is custom, which is negative
+            0 -> if (manga.calculateInterval < 0) 0 else manga.calculateInterval
+            else -> -newInterval
+        }
+        coroutineScope.launchIO {
+            updateManga.awaitUpdateFetchInterval(
+                manga.copy(calculateInterval = interval),
+                successState?.chapters?.map { it.chapter }.orEmpty(),
+            )
+            val newManga = mangaRepository.getMangaById(mangaId)
+            updateSuccessState { it.copy(manga = newManga) }
         }
     }
 
@@ -977,6 +1013,7 @@ class MangaScreenModel(
                         chapters,
                         state.manga,
                         state.source,
+                        manualFetch,
                     )
 
                     if (manualFetch) {
@@ -997,6 +1034,8 @@ class MangaScreenModel(
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(message = message)
             }
+            val newManga = mangaRepository.getMangaById(mangaId)
+            updateSuccessState { it.copy(manga = newManga, isRefreshingData = false) }
         }
     }
 
@@ -1475,6 +1514,7 @@ class MangaScreenModel(
         data class ChangeCategory(val manga: Manga, val initialSelection: List<CheckboxState<Category>>) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
+        data class SetMangaInterval(val manga: Manga) : Dialog
 
         // SY -->
         data class EditMangaInfo(val manga: Manga) : Dialog
