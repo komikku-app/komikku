@@ -60,6 +60,7 @@ import eu.kanade.presentation.manga.components.MangaInfoButtons
 import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.SearchMetadataChips
+import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.Source
@@ -75,7 +76,6 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
-import eu.kanade.tachiyomi.ui.manga.chapterDecimalFormat
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
@@ -912,7 +912,7 @@ private fun LazyListScope.sharedChapterItems(
             title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
                 stringResource(
                     R.string.display_mode_chapter,
-                    chapterDecimalFormat.format(chapterItem.chapter.chapterNumber.toDouble()),
+                    formatChapterNumber(chapterItem.chapter.chapterNumber),
                 )
             } else {
                 chapterItem.chapter.name

@@ -119,10 +119,8 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 
-class MangaInfoScreenModel(
+class MangaScreenModel(
     val context: Context,
     val mangaId: Long,
     private val isFromSource: Boolean,
@@ -1553,7 +1551,7 @@ sealed class MangaScreenState {
         val chapters: List<ChapterItem>,
         val trackItems: List<TrackItem> = emptyList(),
         val isRefreshingData: Boolean = false,
-        val dialog: MangaInfoScreenModel.Dialog? = null,
+        val dialog: MangaScreenModel.Dialog? = null,
         val hasPromptedToAddBefore: Boolean = false,
         // SY -->
         val meta: RaisedSearchMetadata?,
@@ -1614,12 +1612,6 @@ data class ChapterItem(
 ) {
     val isDownloaded = downloadState == Download.State.DOWNLOADED
 }
-
-val chapterDecimalFormat = DecimalFormat(
-    "#.###",
-    DecimalFormatSymbols()
-        .apply { decimalSeparator = '.' },
-)
 
 // SY -->
 sealed class PagePreviewState {
