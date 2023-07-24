@@ -1077,9 +1077,9 @@ class ReaderViewModel(
         Error,
     }
 
-    sealed class SaveImageResult {
-        class Success(val uri: Uri) : SaveImageResult()
-        class Error(val error: Throwable) : SaveImageResult()
+    sealed interface SaveImageResult {
+        class Success(val uri: Uri) : SaveImageResult
+        class Error(val error: Throwable) : SaveImageResult
     }
 
     /**
@@ -1156,18 +1156,18 @@ class ReaderViewModel(
             get() = viewerChapters?.currChapter?.pages?.size ?: -1
     }
 
-    sealed class Dialog {
-        data object Loading : Dialog()
-        data object Settings : Dialog()
-        data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog()
+    sealed interface Dialog {
+        data object Loading : Dialog
+        data object Settings : Dialog
+        data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog
     }
 
-    sealed class Event {
-        data object ReloadViewerChapters : Event()
-        data class SetOrientation(val orientation: Int) : Event()
-        data class SetCoverResult(val result: SetAsCoverResult) : Event()
+    sealed interface Event {
+        data object ReloadViewerChapters : Event
+        data class SetOrientation(val orientation: Int) : Event
+        data class SetCoverResult(val result: SetAsCoverResult) : Event
 
-        data class SavedImage(val result: SaveImageResult) : Event()
-        data class ShareImage(val uri: Uri, val page: ReaderPage, val secondPage: ReaderPage? = null) : Event()
+        data class SavedImage(val result: SaveImageResult) : Event
+        data class ShareImage(val uri: Uri, val page: ReaderPage/* SY --> */, val secondPage: ReaderPage? = null /* SY <-- */) : Event
     }
 }

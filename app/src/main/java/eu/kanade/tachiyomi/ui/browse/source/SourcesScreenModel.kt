@@ -160,8 +160,8 @@ class SourcesScreenModel(
         mutableState.update { it.copy(dialog = null) }
     }
 
-    sealed class Event {
-        data object FailedFetchingSources : Event()
+    sealed interface Event {
+        data object FailedFetchingSources : Event
     }
 
     sealed class Dialog {

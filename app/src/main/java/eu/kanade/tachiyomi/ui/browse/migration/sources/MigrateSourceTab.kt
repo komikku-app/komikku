@@ -16,7 +16,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
-import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaScreen
+import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreen
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.domain.UnsortedPreferences
@@ -47,7 +47,7 @@ fun Screen.migrateSourceTab(): TabContent {
                 state = state,
                 contentPadding = contentPadding,
                 onClickItem = { source ->
-                    navigator.push(MigrationMangaScreen(source.id))
+                    navigator.push(MigrateMangaScreen(source.id))
                 },
                 onToggleSortingDirection = screenModel::toggleSortingDirection,
                 onToggleSortingMode = screenModel::toggleSortingMode,

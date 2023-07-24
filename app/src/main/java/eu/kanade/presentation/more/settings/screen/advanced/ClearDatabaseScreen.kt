@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -304,12 +305,15 @@ private class ClearDatabaseScreenModel : StateScreenModel<ClearDatabaseScreenMod
         state.copy(showConfirmation = false)
     }
 
-    sealed class State {
-        data object Loading : State()
+    sealed interface State {
+        @Immutable
+        data object Loading : State
+
+        @Immutable
         data class Ready(
             val items: List<SourceWithCount>,
             val selection: List<Long> = emptyList(),
             val showConfirmation: Boolean = false,
-        ) : State()
+        ) : State
     }
 }

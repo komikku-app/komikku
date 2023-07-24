@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterTsBinding
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
@@ -17,7 +17,7 @@ import java.util.Date
 import kotlin.math.round
 
 @Composable
-fun TsuminoDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit) {
+fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     AndroidView(
         modifier = Modifier.fillMaxWidth(),

@@ -74,7 +74,7 @@ import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -106,7 +106,7 @@ import java.util.Date
 
 @Composable
 fun MangaScreen(
-    state: MangaScreenState.Success,
+    state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     dateRelativeTime: Int,
     dateFormat: DateFormat,
@@ -264,7 +264,7 @@ fun MangaScreen(
 
 @Composable
 private fun MangaScreenSmallImpl(
-    state: MangaScreenState.Success,
+    state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     dateRelativeTime: Int,
     dateFormat: DateFormat,
@@ -566,7 +566,7 @@ private fun MangaScreenSmallImpl(
 
 @Composable
 fun MangaScreenLargeImpl(
-    state: MangaScreenState.Success,
+    state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     dateRelativeTime: Int,
     dateFormat: DateFormat,
@@ -990,7 +990,7 @@ private fun onChapterItemClick(
 }
 
 // SY -->
-typealias MetadataDescriptionComposable = @Composable (state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) -> Unit
+typealias MetadataDescriptionComposable = @Composable (state: MangaScreenModel.State.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) -> Unit
 
 @Composable
 fun metadataDescription(source: Source): MetadataDescriptionComposable? {

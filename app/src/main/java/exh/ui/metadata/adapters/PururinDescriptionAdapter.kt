@@ -9,14 +9,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterPuBinding
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import kotlin.math.round
 
 @Composable
-fun PururinDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit) {
+fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     AndroidView(
         modifier = Modifier.fillMaxWidth(),

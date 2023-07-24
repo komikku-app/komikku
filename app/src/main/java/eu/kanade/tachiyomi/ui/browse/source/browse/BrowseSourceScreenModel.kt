@@ -474,19 +474,19 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    sealed class Dialog {
-        data object Filter : Dialog()
-        data class RemoveManga(val manga: Manga) : Dialog()
-        data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
+    sealed interface Dialog {
+        data object Filter : Dialog
+        data class RemoveManga(val manga: Manga) : Dialog
+        data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
         data class ChangeMangaCategory(
             val manga: Manga,
             val initialSelection: List<CheckboxState.State<Category>>,
-        ) : Dialog()
-        data class Migrate(val newManga: Manga) : Dialog()
+        ) : Dialog
+        data class Migrate(val newManga: Manga) : Dialog
 
         // SY -->
-        data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog()
-        data class CreateSavedSearch(val currentSavedSearches: List<String>) : Dialog()
+        data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog
+        data class CreateSavedSearch(val currentSavedSearches: List<String>) : Dialog
         // SY <--
     }
 

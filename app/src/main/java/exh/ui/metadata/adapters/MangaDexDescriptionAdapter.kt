@@ -10,7 +10,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
@@ -18,7 +18,7 @@ import exh.ui.metadata.adapters.MetadataUIUtil.getRatingString
 import kotlin.math.round
 
 @Composable
-fun MangaDexDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit) {
+fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
