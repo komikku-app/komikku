@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -25,9 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
+import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -42,6 +48,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.collectAsState
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -93,7 +100,7 @@ object SettingsMangadexScreen : SearchableSettings {
     }
 
     @Composable
-    fun loginPreference(mdex: MangaDex, trackPreferences: TrackPreferences): Preference.PreferenceItem.MangaDexPreference {
+    fun loginPreference(mdex: MangaDex, trackPreferences: TrackPreferences): Preference.PreferenceItem.CustomPreference {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val loggedIn by remember { trackPreferences.trackToken(mdex.mdList) }.collectAsState()
@@ -124,17 +131,39 @@ object SettingsMangadexScreen : SearchableSettings {
                 },
             )
         }
-        return Preference.PreferenceItem.MangaDexPreference(
+        return Preference.PreferenceItem.CustomPreference(
             title = mdex.name + " Login",
-            loggedIn = loggedIn.isNotEmpty(),
-            login = {
-                context.openInBrowser(
-                    MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()),
-                    forceDefaultBrowser = true,
+            content = {
+                BasePreferenceWidget(
+                    title = it.title,
+                    widget = {
+                        Icon(
+                            imageVector = Icons.Outlined.PeopleAlt,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(start = 12.dp, end = PrefsHorizontalPadding)
+                                .secondaryItemAlpha(),
+                            tint = if (loggedIn.isNotEmpty()) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                    },
+                    subcomponent = null,
+                    onClick = if (loggedIn.isNotEmpty()) {
+                        {
+                            logoutDialogOpen = true
+                        }
+                    } else {
+                        {
+                            context.openInBrowser(
+                                MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()),
+                                forceDefaultBrowser = true,
+                            )
+                        }
+                    },
                 )
-            },
-            logout = {
-                logoutDialogOpen = true
             },
         )
     }

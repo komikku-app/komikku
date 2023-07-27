@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,7 +31,6 @@ import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.padding
 
 @Composable
@@ -72,7 +72,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
-                                Divider(Modifier.padding(vertical = 8.dp))
+                                HorizontalDivider(Modifier.padding(vertical = 8.dp))
                                 Column(
                                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                                 ) {

@@ -21,6 +21,7 @@ import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
@@ -63,8 +64,11 @@ object SettingsAppearanceScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         val themeModePref = uiPreferences.themeMode()
         val themeMode by themeModePref.collectAsState()
+
         val appThemePref = uiPreferences.appTheme()
+
         val amoledPref = uiPreferences.themeDarkAmoled()
+        val amoled by amoledPref.collectAsState()
 
         LaunchedEffect(themeMode) {
             setAppCompatDelegateThemeMode(themeMode)
@@ -95,10 +99,17 @@ object SettingsAppearanceScreen : SearchableSettings {
                         )
                     },
                 ),
-                Preference.PreferenceItem.AppThemePreference(
+                Preference.PreferenceItem.CustomPreference(
                     title = stringResource(R.string.pref_app_theme),
-                    pref = appThemePref,
-                ),
+                ) { item ->
+                    val value by appThemePref.collectAsState()
+                    AppThemePreferenceWidget(
+                        title = item.title,
+                        value = value,
+                        amoled = amoled,
+                        onItemClick = { appThemePref.set(it) },
+                    )
+                },
                 Preference.PreferenceItem.SwitchPreference(
                     pref = amoledPref,
                     title = stringResource(R.string.pref_dark_theme_pure_black),

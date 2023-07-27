@@ -5,28 +5,18 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PeopleAlt
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.structuralEqualityPolicy
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.track.service.TrackPreferences
-import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
-import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.InfoWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget
-import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
@@ -34,7 +24,6 @@ import kotlinx.coroutines.launch
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.util.collectAsState
-import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -167,16 +156,6 @@ internal fun PreferenceItem(
                     },
                 )
             }
-            is Preference.PreferenceItem.AppThemePreference -> {
-                val value by item.pref.collectAsState()
-                val amoled by Injekt.get<UiPreferences>().themeDarkAmoled().collectAsState()
-                AppThemePreferenceWidget(
-                    title = item.title,
-                    value = value,
-                    amoled = amoled,
-                    onItemClick = { scope.launch { item.pref.set(it) } },
-                )
-            }
             is Preference.PreferenceItem.TrackingPreference -> {
                 val uName by Injekt.get<PreferenceStore>()
                     .getString(TrackPreferences.trackUsername(item.service.id))
@@ -192,33 +171,9 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.InfoPreference -> {
                 InfoWidget(text = item.title)
             }
-            // SY -->
-            is Preference.PreferenceItem.MangaDexPreference -> {
-                BasePreferenceWidget(
-                    title = item.title,
-                    widget = {
-                        Icon(
-                            imageVector = Icons.Outlined.PeopleAlt,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(start = 12.dp, end = PrefsHorizontalPadding)
-                                .secondaryItemAlpha(),
-                            tint = if (item.loggedIn) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                        )
-                    },
-                    subcomponent = null,
-                    onClick = if (item.loggedIn) {
-                        item.logout
-                    } else {
-                        item.login
-                    },
-                )
+            is Preference.PreferenceItem.CustomPreference -> {
+                item.content(item)
             }
-            // SY <--
         }
     }
 }
