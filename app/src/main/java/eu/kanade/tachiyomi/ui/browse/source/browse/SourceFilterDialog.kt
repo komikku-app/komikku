@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -33,7 +34,6 @@ import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TextItem
 import tachiyomi.presentation.core.components.TriStateItem
 import tachiyomi.presentation.core.components.material.Button
-import tachiyomi.presentation.core.components.material.Divider
 
 @Composable
 fun SourceFilterDialog(
@@ -91,7 +91,7 @@ fun SourceFilterDialog(
                         Text(stringResource(R.string.action_filter))
                     }
                 }
-                Divider()
+                HorizontalDivider()
             }
 
             if (openMangaDexRandom != null && openMangaDexFollows != null) {
@@ -140,7 +140,7 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
             HeadingItem(filter.name)
         }
         is Filter.Separator -> {
-            Divider()
+            HorizontalDivider()
         }
         is Filter.CheckBox -> {
             CheckboxItem(
