@@ -73,7 +73,6 @@ object UpdatesTab : Tab {
             state = state,
             snackbarHostState = screenModel.snackbarHostState,
             lastUpdated = screenModel.lastUpdated,
-            relativeTime = screenModel.relativeTime,
             // SY -->
             preserveReadingPosition = screenModel.preserveReadingPosition,
             // SY <--

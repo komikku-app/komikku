@@ -108,7 +108,6 @@ import java.util.Date
 fun MangaScreen(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    dateRelativeTime: Int,
     intervalDisplay: () -> Pair<Int, Int>?,
     dateFormat: DateFormat,
     isTabletUi: Boolean,
@@ -175,7 +174,6 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
-            dateRelativeTime = dateRelativeTime,
             dateFormat = dateFormat,
             intervalDisplay = intervalDisplay,
             chapterSwipeStartAction = chapterSwipeStartAction,
@@ -222,7 +220,6 @@ fun MangaScreen(
         MangaScreenLargeImpl(
             state = state,
             snackbarHostState = snackbarHostState,
-            dateRelativeTime = dateRelativeTime,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             dateFormat = dateFormat,
@@ -272,7 +269,6 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    dateRelativeTime: Int,
     dateFormat: DateFormat,
     intervalDisplay: () -> Pair<Int, Int>?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -354,9 +350,11 @@ private fun MangaScreenSmallImpl(
             }
             val animatedTitleAlpha by animateFloatAsState(
                 if (firstVisibleItemIndex > 0) 1f else 0f,
+                label = "titleAlpha",
             )
             val animatedBgAlpha by animateFloatAsState(
                 if (firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0) 1f else 0f,
+                label = "bgAlpha",
             )
             MangaToolbar(
                 title = state.manga.title,
@@ -557,7 +555,6 @@ private fun MangaScreenSmallImpl(
                     sharedChapterItems(
                         manga = state.manga,
                         chapters = chapters,
-                        dateRelativeTime = dateRelativeTime,
                         dateFormat = dateFormat,
                         chapterSwipeStartAction = chapterSwipeStartAction,
                         chapterSwipeEndAction = chapterSwipeEndAction,
@@ -579,7 +576,6 @@ private fun MangaScreenSmallImpl(
 fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    dateRelativeTime: Int,
     dateFormat: DateFormat,
     intervalDisplay: () -> Pair<Int, Int>?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -839,7 +835,6 @@ fun MangaScreenLargeImpl(
                             sharedChapterItems(
                                 manga = state.manga,
                                 chapters = chapters,
-                                dateRelativeTime = dateRelativeTime,
                                 dateFormat = dateFormat,
                                 chapterSwipeStartAction = chapterSwipeStartAction,
                                 chapterSwipeEndAction = chapterSwipeEndAction,
@@ -904,7 +899,6 @@ private fun SharedMangaBottomActionMenu(
 private fun LazyListScope.sharedChapterItems(
     manga: Manga,
     chapters: List<ChapterItem>,
-    dateRelativeTime: Int,
     dateFormat: DateFormat,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -940,11 +934,7 @@ private fun LazyListScope.sharedChapterItems(
                     if (manga.isEhBasedManga()) {
                         MetadataUtil.EX_DATE_FORMAT.format(Date(it))
                     } else {
-                        Date(it).toRelativeString(
-                            context,
-                            dateRelativeTime,
-                            dateFormat,
-                        )
+                        Date(it).toRelativeString(context, dateFormat)
                     }
                     // SY <--
                 },

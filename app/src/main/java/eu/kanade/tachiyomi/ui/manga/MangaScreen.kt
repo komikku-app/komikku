@@ -138,7 +138,6 @@ class MangaScreen(
         MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
-            dateRelativeTime = screenModel.relativeTime,
             dateFormat = screenModel.dateFormat,
             intervalDisplay = screenModel::intervalDisplay,
             isTabletUi = isTabletUi(),
