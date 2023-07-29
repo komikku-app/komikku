@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.data.StringListAndColumnAdapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
@@ -79,7 +79,7 @@ data class BackupManga(
             chapterFlags = this@BackupManga.chapterFlags.toLong(),
             updateStrategy = this@BackupManga.updateStrategy,
             lastModifiedAt = this@BackupManga.lastModifiedAt,
-            filteredScanlators = this@BackupManga.filtered_scanlators?.let(listOfStringsAndAdapter::decode),
+            filteredScanlators = this@BackupManga.filtered_scanlators?.let(StringListAndColumnAdapter::decode),
         )
     }
 
@@ -141,7 +141,7 @@ data class BackupManga(
                 lastModifiedAt = manga.lastModifiedAt,
                 favoriteModifiedAt = manga.favoriteModifiedAt,
                 // SY -->
-                filtered_scanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
+                filtered_scanlators = manga.filteredScanlators?.let(StringListAndColumnAdapter::encode),
             ).also { backupManga ->
                 customMangaInfo?.let {
                     backupManga.customTitle = it.title

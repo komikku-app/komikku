@@ -44,15 +44,14 @@ import logcat.LogPriority
 import okio.buffer
 import okio.gzip
 import okio.sink
-import tachiyomi.core.util.lang.toLong
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
-import tachiyomi.data.listOfStringsAndAdapter
+import tachiyomi.data.StringListAndColumnAdapter
+import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.mangaMapper
 import tachiyomi.data.manga.mergedMangaReferenceMapper
-import tachiyomi.data.updateStrategyAdapter
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
@@ -484,7 +483,7 @@ class BackupManager(
                         track.last_chapter_read,
                         track.total_chapters,
                         track.status,
-                        track.score.toDouble(),
+                        track.score,
                         track.remote_url,
                         track.start_date,
                         track.finish_date,
@@ -608,10 +607,10 @@ class BackupManager(
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
                 // SY -->
-                filteredScanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
+                filteredScanlators = manga.filteredScanlators?.let(StringListAndColumnAdapter::encode),
                 // SY <--
                 mangaId = manga.id,
-                updateStrategy = manga.updateStrategy.let(updateStrategyAdapter::encode),
+                updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
             )
         }
         return manga.id

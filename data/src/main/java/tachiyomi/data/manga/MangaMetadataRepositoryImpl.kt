@@ -44,15 +44,15 @@ class MangaMetadataRepositoryImpl(
 
         handler.await(true) {
             flatMetadata.metadata.run {
-                search_metadataQueries.upsert(mangaId, uploader, extra, indexedExtra, extraVersion)
+                search_metadataQueries.upsert(mangaId, uploader, extra, indexedExtra, extraVersion.toLong())
             }
             search_tagsQueries.deleteByManga(flatMetadata.metadata.mangaId)
             flatMetadata.tags.forEach {
-                search_tagsQueries.insert(it.mangaId, it.namespace, it.name, it.type)
+                search_tagsQueries.insert(it.mangaId, it.namespace, it.name, it.type.toLong())
             }
             search_titlesQueries.deleteByManga(flatMetadata.metadata.mangaId)
             flatMetadata.titles.forEach {
-                search_titlesQueries.insert(it.mangaId, it.title, it.type)
+                search_titlesQueries.insert(it.mangaId, it.title, it.type.toLong())
             }
         }
     }

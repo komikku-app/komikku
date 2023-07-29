@@ -5,8 +5,6 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import app.cash.sqldelight.adapter.primitive.FloatColumnAdapter
-import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import eu.kanade.domain.base.BasePreferences
@@ -44,19 +42,14 @@ import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.provider.AndroidBackupFolderProvider
 import tachiyomi.core.provider.AndroidDownloadFolderProvider
 import tachiyomi.data.AndroidDatabaseHandler
-import tachiyomi.data.Chapters
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.DateColumnAdapter
 import tachiyomi.data.History
-import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
-import tachiyomi.data.Search_metadata
-import tachiyomi.data.Search_tags
-import tachiyomi.data.Search_titles
-import tachiyomi.data.dateAdapter
-import tachiyomi.data.listOfStringsAdapter
-import tachiyomi.data.listOfStringsAndAdapter
-import tachiyomi.data.updateStrategyAdapter
+import tachiyomi.data.StringListAndColumnAdapter
+import tachiyomi.data.StringListColumnAdapter
+import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -127,30 +120,15 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory {
             Database(
                 driver = get(),
-                chaptersAdapter = Chapters.Adapter(
-                    chapter_numberAdapter = FloatColumnAdapter,
-                ),
                 historyAdapter = History.Adapter(
-                    last_readAdapter = dateAdapter,
-                ),
-                manga_syncAdapter = Manga_sync.Adapter(
-                    scoreAdapter = FloatColumnAdapter,
+                    last_readAdapter = DateColumnAdapter,
                 ),
                 mangasAdapter = Mangas.Adapter(
-                    genreAdapter = listOfStringsAdapter,
-                    update_strategyAdapter = updateStrategyAdapter,
+                    genreAdapter = StringListColumnAdapter,
+                    update_strategyAdapter = UpdateStrategyColumnAdapter,
                     // SY -->
-                    filtered_scanlatorsAdapter = listOfStringsAndAdapter,
+                    filtered_scanlatorsAdapter = StringListAndColumnAdapter,
                     // SY <--
-                ),
-                search_metadataAdapter = Search_metadata.Adapter(
-                    extra_versionAdapter = IntColumnAdapter,
-                ),
-                search_tagsAdapter = Search_tags.Adapter(
-                    typeAdapter = IntColumnAdapter,
-                ),
-                search_titlesAdapter = Search_titles.Adapter(
-                    typeAdapter = IntColumnAdapter,
                 ),
             )
         }

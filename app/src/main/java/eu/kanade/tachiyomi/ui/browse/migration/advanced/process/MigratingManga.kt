@@ -30,11 +30,11 @@ class MigratingManga(
     }
 
     data class ChapterInfo(
-        val latestChapter: Float?,
+        val latestChapter: Double?,
         val chapterCount: Int,
     ) {
         fun getFormattedLatestChapter(context: Context): String {
-            return if (latestChapter != null && latestChapter > 0f) {
+            return if (latestChapter != null && latestChapter > 0.0) {
                 context.getString(
                     R.string.latest_,
                     DecimalFormat("#.#").format(latestChapter),

@@ -5,7 +5,7 @@ CREATE TABLE search_metadata (
     uploader TEXT,
     extra TEXT NOT NULL,
     indexed_extra TEXT,
-    extra_version INTEGER AS Int NOT NULL,
+    extra_version INTEGER NOT NULL,
     FOREIGN KEY(manga_id) REFERENCES mangas (_id)
     ON DELETE CASCADE
 );

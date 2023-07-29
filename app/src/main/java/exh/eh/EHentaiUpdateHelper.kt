@@ -243,7 +243,7 @@ class EHentaiUpdateHelper(context: Context) {
                         },
                         dateFetch = chapter.dateFetch,
                         dateUpload = chapter.dateUpload,
-                        chapterNumber = -1F,
+                        chapterNumber = -1.0,
                         scanlator = null,
                         sourceOrder = -1,
                         lastModifiedAt = 0,
@@ -256,7 +256,7 @@ class EHentaiUpdateHelper(context: Context) {
                 val newChapters = mutableListOf<Chapter>()
                 chapters.mapIndexed { index, chapter ->
                     val name = "v${index + 1}: " + chapter.name.substringAfter(" ")
-                    val chapterNumber = index + 1f
+                    val chapterNumber = index + 1.0
                     val sourceOrder = chapters.lastIndex - index.toLong()
                     when (chapter.id) {
                         -1L -> newChapters.add(

@@ -4,23 +4,23 @@ import app.cash.sqldelight.ColumnAdapter
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import java.util.Date
 
-val dateAdapter = object : ColumnAdapter<Date, Long> {
+object DateColumnAdapter : ColumnAdapter<Date, Long> {
     override fun decode(databaseValue: Long): Date = Date(databaseValue)
     override fun encode(value: Date): Long = value.time
 }
 
-private const val listOfStringsSeparator = ", "
-val listOfStringsAdapter = object : ColumnAdapter<List<String>, String> {
+private const val LIST_OF_STRINGS_SEPARATOR = ", "
+object StringListColumnAdapter : ColumnAdapter<List<String>, String> {
     override fun decode(databaseValue: String) =
         if (databaseValue.isEmpty()) {
             emptyList()
         } else {
-            databaseValue.split(listOfStringsSeparator)
+            databaseValue.split(LIST_OF_STRINGS_SEPARATOR)
         }
-    override fun encode(value: List<String>) = value.joinToString(separator = listOfStringsSeparator)
+    override fun encode(value: List<String>) = value.joinToString(separator = LIST_OF_STRINGS_SEPARATOR)
 }
 
-val updateStrategyAdapter = object : ColumnAdapter<UpdateStrategy, Long> {
+object UpdateStrategyColumnAdapter : ColumnAdapter<UpdateStrategy, Long> {
     override fun decode(databaseValue: Long): UpdateStrategy =
         UpdateStrategy.entries.getOrElse(databaseValue.toInt()) { UpdateStrategy.ALWAYS_UPDATE }
 
@@ -28,25 +28,14 @@ val updateStrategyAdapter = object : ColumnAdapter<UpdateStrategy, Long> {
 }
 
 // SY -->
-private const val listOfStringsAndSeparator = " & "
-val listOfStringsAndAdapter = object : ColumnAdapter<List<String>, String> {
+private const val LIST_OF_STRINGS_AND_SEPARATOR = " & "
+object StringListAndColumnAdapter : ColumnAdapter<List<String>, String> {
     override fun decode(databaseValue: String) =
         if (databaseValue.isEmpty()) {
             emptyList()
         } else {
-            databaseValue.split(listOfStringsAndSeparator)
+            databaseValue.split(LIST_OF_STRINGS_AND_SEPARATOR)
         }
-    override fun encode(value: List<String>) = value.joinToString(separator = listOfStringsAndSeparator)
-}
-
-private const val listOfLongsSeparator = "/"
-val listOfLongsAdapter = object : ColumnAdapter<List<Long>, String> {
-    override fun decode(databaseValue: String) =
-        if (databaseValue.isEmpty()) {
-            emptyList()
-        } else {
-            databaseValue.split(listOfLongsSeparator).mapNotNull { it.toLongOrNull() }
-        }
-    override fun encode(value: List<Long>) = value.joinToString(separator = listOfLongsSeparator)
+    override fun encode(value: List<String>) = value.joinToString(separator = LIST_OF_STRINGS_AND_SEPARATOR)
 }
 // SY <--

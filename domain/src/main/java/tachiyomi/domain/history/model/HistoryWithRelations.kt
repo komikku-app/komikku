@@ -12,7 +12,7 @@ data class HistoryWithRelations(
     // SY -->
     val ogTitle: String,
     // SY <--
-    val chapterNumber: Float,
+    val chapterNumber: Double,
     val readAt: Date?,
     val readDuration: Long,
     val coverData: MangaCover,

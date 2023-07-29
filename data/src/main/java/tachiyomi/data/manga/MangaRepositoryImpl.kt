@@ -6,9 +6,9 @@ import logcat.LogPriority
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.listOfStringsAdapter
-import tachiyomi.data.listOfStringsAndAdapter
-import tachiyomi.data.updateStrategyAdapter
+import tachiyomi.data.StringListAndColumnAdapter
+import tachiyomi.data.StringListColumnAdapter
+import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
@@ -143,7 +143,7 @@ class MangaRepositoryImpl(
                     artist = value.artist,
                     author = value.author,
                     description = value.description,
-                    genre = value.genre?.let(listOfStringsAdapter::encode),
+                    genre = value.genre?.let(StringListColumnAdapter::encode),
                     title = value.title,
                     status = value.status,
                     thumbnailUrl = value.thumbnailUrl,
@@ -157,10 +157,10 @@ class MangaRepositoryImpl(
                     coverLastModified = value.coverLastModified,
                     dateAdded = value.dateAdded,
                     // SY -->
-                    filteredScanlators = value.filteredScanlators?.let(listOfStringsAndAdapter::encode),
+                    filteredScanlators = value.filteredScanlators?.let(StringListAndColumnAdapter::encode),
                     // SY <--
                     mangaId = value.id,
-                    updateStrategy = value.updateStrategy?.let(updateStrategyAdapter::encode),
+                    updateStrategy = value.updateStrategy?.let(UpdateStrategyColumnAdapter::encode),
                 )
             }
         }

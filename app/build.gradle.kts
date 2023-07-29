@@ -168,7 +168,6 @@ dependencies {
     implementation(androidx.paging.compose)
 
     implementation(libs.bundles.sqlite)
-    implementation(libs.sqldelight.primitive.adapters)
     // SY -->
     implementation(libs.sqlcipher)
     // SY <--
