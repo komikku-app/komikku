@@ -74,6 +74,7 @@ import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
+import eu.kanade.tachiyomi.ui.manga.FetchInterval
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import eu.kanade.tachiyomi.util.lang.toRelativeString
@@ -108,7 +109,7 @@ import java.util.Date
 fun MangaScreen(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    intervalDisplay: () -> Pair<Int, Int>?,
+    fetchInterval: FetchInterval?,
     dateFormat: DateFormat,
     isTabletUi: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -136,7 +137,7 @@ fun MangaScreen(
     onShareClicked: (() -> Unit)?,
     onDownloadActionClicked: ((DownloadAction) -> Unit)?,
     onEditCategoryClicked: (() -> Unit)?,
-    onEditIntervalClicked: (() -> Unit)?,
+    onEditFetchIntervalClicked: (() -> Unit)?,
     onMigrateClicked: (() -> Unit)?,
     // SY -->
     onMetadataViewerClicked: () -> Unit,
@@ -175,7 +176,7 @@ fun MangaScreen(
             state = state,
             snackbarHostState = snackbarHostState,
             dateFormat = dateFormat,
-            intervalDisplay = intervalDisplay,
+            fetchInterval = fetchInterval,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             onBackClicked = onBackClicked,
@@ -195,7 +196,7 @@ fun MangaScreen(
             onShareClicked = onShareClicked,
             onDownloadActionClicked = onDownloadActionClicked,
             onEditCategoryClicked = onEditCategoryClicked,
-            onEditIntervalClicked = onEditIntervalClicked,
+            onEditIntervalClicked = onEditFetchIntervalClicked,
             onMigrateClicked = onMigrateClicked,
             // SY -->
             onMetadataViewerClicked = onMetadataViewerClicked,
@@ -223,7 +224,7 @@ fun MangaScreen(
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             dateFormat = dateFormat,
-            intervalDisplay = intervalDisplay,
+            fetchInterval = fetchInterval,
             onBackClicked = onBackClicked,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
@@ -241,7 +242,7 @@ fun MangaScreen(
             onShareClicked = onShareClicked,
             onDownloadActionClicked = onDownloadActionClicked,
             onEditCategoryClicked = onEditCategoryClicked,
-            onEditIntervalClicked = onEditIntervalClicked,
+            onEditIntervalClicked = onEditFetchIntervalClicked,
             onMigrateClicked = onMigrateClicked,
             // SY -->
             onMetadataViewerClicked = onMetadataViewerClicked,
@@ -270,7 +271,7 @@ private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     dateFormat: DateFormat,
-    intervalDisplay: () -> Pair<Int, Int>?,
+    fetchInterval: FetchInterval?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onBackClicked: () -> Unit,
@@ -462,8 +463,8 @@ private fun MangaScreenSmallImpl(
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
-                            intervalDisplay = intervalDisplay,
-                            isUserIntervalMode = state.manga.calculateInterval < 0,
+                            fetchInterval = fetchInterval,
+                            isUserIntervalMode = state.manga.fetchInterval < 0,
                             onAddToLibraryClicked = onAddToLibraryClicked,
                             onWebViewClicked = onWebViewClicked,
                             onWebViewLongClicked = onWebViewLongClicked,
@@ -577,7 +578,7 @@ fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     dateFormat: DateFormat,
-    intervalDisplay: () -> Pair<Int, Int>?,
+    fetchInterval: FetchInterval?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onBackClicked: () -> Unit,
@@ -755,8 +756,8 @@ fun MangaScreenLargeImpl(
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
-                            intervalDisplay = intervalDisplay,
-                            isUserIntervalMode = state.manga.calculateInterval < 0,
+                            fetchInterval = fetchInterval,
+                            isUserIntervalMode = state.manga.fetchInterval < 0,
                             onAddToLibraryClicked = onAddToLibraryClicked,
                             onWebViewClicked = onWebViewClicked,
                             onWebViewLongClicked = onWebViewLongClicked,
