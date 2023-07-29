@@ -76,7 +76,6 @@ import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -171,8 +170,8 @@ class MangaScreen(
             onCoverClicked = screenModel::showCoverDialog,
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
-            onEditCategoryClicked = screenModel::promptChangeCategories.takeIf { successState.manga.favorite },
-            onEditIntervalClicked = screenModel::showSetMangaIntervalDialog.takeIf { MANGA_OUTSIDE_RELEASE_PERIOD in screenModel.libraryPreferences.libraryUpdateMangaRestriction().get() && successState.manga.favorite },
+            onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
+            onEditIntervalClicked = screenModel::showSetMangaIntervalDialog.takeIf { screenModel.isIntervalEnabled && successState.manga.favorite },
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },

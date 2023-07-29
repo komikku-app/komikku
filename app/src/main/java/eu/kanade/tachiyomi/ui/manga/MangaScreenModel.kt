@@ -128,9 +128,9 @@ class MangaScreenModel(
     private val isFromSource: Boolean,
     val smartSearched: Boolean,
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
-    val libraryPreferences: LibraryPreferences = Injekt.get(),
-    val readerPreferences: ReaderPreferences = Injekt.get(),
-    val uiPreferences: UiPreferences = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    readerPreferences: ReaderPreferences = Injekt.get(),
+    uiPreferences: UiPreferences = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
@@ -193,6 +193,10 @@ class MangaScreenModel(
     val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
     val dateFormat by mutableStateOf(UiPreferences.dateFormat(uiPreferences.dateFormat().get()))
     private val skipFiltered by readerPreferences.skipFiltered().asState(coroutineScope)
+
+    val isIntervalEnabled = LibraryPreferences.MANGA_OUTSIDE_RELEASE_PERIOD in libraryPreferences.libraryUpdateMangaRestriction().get()
+    private val leadDay = libraryPreferences.leadingExpectedDays().get()
+    private val followDay = libraryPreferences.followingExpectedDays().get()
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
@@ -782,10 +786,8 @@ class MangaScreenModel(
 
     // TODO: this should be in the state/composables
     fun intervalDisplay(): Pair<Int, Int>? {
-        val state = successState ?: return null
-        val leadDay = libraryPreferences.leadingExpectedDays().get()
-        val followDay = libraryPreferences.followingExpectedDays().get()
-        val effInterval = state.manga.calculateInterval
+        val manga = successState?.manga ?: return null
+        val effInterval = manga.calculateInterval
         return 1.coerceAtLeast(effInterval.absoluteValue - leadDay) to (effInterval.absoluteValue + followDay)
     }
 
