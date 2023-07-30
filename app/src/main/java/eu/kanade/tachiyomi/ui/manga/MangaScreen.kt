@@ -109,13 +109,6 @@ class MangaScreen(
 
         val successState = state as MangaScreenModel.State.Success
         val isHttpSource = remember { successState.source is HttpSource }
-        val fetchInterval = remember(successState.manga.fetchInterval) {
-            FetchInterval(
-                interval = successState.manga.fetchInterval,
-                leadDays = screenModel.leadDay,
-                followDays = screenModel.followDay,
-            )
-        }
 
         LaunchedEffect(successState.manga, screenModel.source) {
             if (isHttpSource) {
@@ -146,7 +139,7 @@ class MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
             dateFormat = screenModel.dateFormat,
-            fetchInterval = fetchInterval,
+            fetchInterval = successState.manga.fetchInterval,
             isTabletUi = isTabletUi(),
             chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
@@ -282,7 +275,7 @@ class MangaScreen(
             }
             is MangaScreenModel.Dialog.SetFetchInterval -> {
                 SetIntervalDialog(
-                    interval = if (dialog.manga.fetchInterval < 0) -dialog.manga.fetchInterval else 0,
+                    interval = dialog.manga.fetchInterval,
                     onDismissRequest = onDismissRequest,
                     onValueChanged = { screenModel.setFetchInterval(dialog.manga, it) },
                 )

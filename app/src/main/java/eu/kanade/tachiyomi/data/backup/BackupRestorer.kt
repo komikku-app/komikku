@@ -39,8 +39,8 @@ class BackupRestorer(
     private val chapterRepository: ChapterRepository = Injekt.get()
     private val setFetchInterval: SetFetchInterval = Injekt.get()
 
-    private var zonedDateTime = ZonedDateTime.now()
-    private var currentFetchInterval = setFetchInterval.getCurrent(zonedDateTime)
+    private var now = ZonedDateTime.now()
+    private var currentFetchWindow = setFetchInterval.getWindow(now)
 
     private var backupManager = BackupManager(context)
 
@@ -114,8 +114,8 @@ class BackupRestorer(
         // Store source mapping for error messages
         val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
-        zonedDateTime = ZonedDateTime.now()
-        currentFetchInterval = setFetchInterval.getCurrent(zonedDateTime)
+        now = ZonedDateTime.now()
+        currentFetchWindow = setFetchInterval.getWindow(now)
 
         return coroutineScope {
             // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
@@ -177,8 +177,7 @@ class BackupRestorer(
                 // Fetch rest of manga information
                 restoreNewManga(updatedManga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
             }
-            val updatedChapters = chapterRepository.getChapterByMangaId(restoredManga.id)
-            updateManga.awaitUpdateFetchInterval(restoredManga, updatedChapters, zonedDateTime, currentFetchInterval)
+            updateManga.awaitUpdateFetchInterval(restoredManga, now, currentFetchWindow)
         } catch (e: Exception) {
             val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
             errors.add(Date() to "${manga.title} [$sourceName]: ${e.message}")
