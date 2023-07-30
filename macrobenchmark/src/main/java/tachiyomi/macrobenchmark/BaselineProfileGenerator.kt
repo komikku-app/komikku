@@ -5,14 +5,13 @@ import androidx.test.uiautomator.By
 import org.junit.Rule
 import org.junit.Test
 
-// @OptIn(ExperimentalBaselineProfilesApi::class)
 class BaselineProfileGenerator {
 
     @get:Rule
     val baselineProfileRule = BaselineProfileRule()
 
     @Test
-    fun generate() = baselineProfileRule.collectBaselineProfile(
+    fun generate() = baselineProfileRule.collect(
         packageName = "eu.kanade.tachiyomi.sy.benchmark",
         profileBlock = {
             pressHome()
