@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
+import eu.kanade.tachiyomi.extension.api.ExtensionUpdateNotifier
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.extension.model.LoadResult
@@ -251,7 +252,7 @@ class ExtensionManager(
     }
 
     /**
-     * Returns an observable of the installation process for the given extension. It will complete
+     * Returns a flow of the installation process for the given extension. It will complete
      * once the extension is installed or throws an error. The process will be canceled if
      * unsubscribed before its completion.
      *
@@ -262,7 +263,7 @@ class ExtensionManager(
     }
 
     /**
-     * Returns an observable of the installation process for the given extension. It will complete
+     * Returns a flow of the installation process for the given extension. It will complete
      * once the extension is updated or throws an error. The process will be canceled if
      * unsubscribed before its completion.
      *
@@ -426,6 +427,10 @@ class ExtensionManager(
     }
 
     private fun updatePendingUpdatesCount() {
-        preferences.extensionUpdatesCount().set(_installedExtensionsFlow.value.count { it.hasUpdate })
+        val pendingUpdateCount = _installedExtensionsFlow.value.count { it.hasUpdate }
+        preferences.extensionUpdatesCount().set(pendingUpdateCount)
+        if (pendingUpdateCount == 0) {
+            ExtensionUpdateNotifier(context).dismiss()
+        }
     }
 }
