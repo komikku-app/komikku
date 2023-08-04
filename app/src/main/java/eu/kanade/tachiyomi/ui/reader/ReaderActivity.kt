@@ -59,10 +59,12 @@ import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.manga.model.orientationType
 import eu.kanade.domain.manga.model.readingModeType
 import eu.kanade.presentation.reader.ChapterNavigator
+import eu.kanade.presentation.reader.OrientationModeSelectDialog
 import eu.kanade.presentation.reader.PageIndicatorText
+import eu.kanade.presentation.reader.ReaderPageActionsDialog
+import eu.kanade.presentation.reader.ReadingModeSelectDialog
 import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -99,7 +101,6 @@ import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.copy
-import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
@@ -165,7 +166,7 @@ class ReaderActivity : BaseActivity() {
     val viewModel by viewModels<ReaderViewModel>()
     private var assistUrl: String? = null
 
-    val hasCutout by lazy { hasDisplayCutout() }
+    private val hasCutout by lazy { hasDisplayCutout() }
 
     // SY -->
     private val sourceManager = Injekt.get<SourceManager>()
@@ -486,6 +487,7 @@ class ReaderActivity : BaseActivity() {
             val settingsScreenModel = remember {
                 ReaderSettingsScreenModel(
                     readerState = viewModel.state,
+                    hasDisplayCutout = hasCutout,
                     onChangeReadingMode = viewModel::setMangaReadingMode,
                     onChangeOrientation = viewModel::setMangaOrientationType,
                 )
@@ -514,6 +516,30 @@ class ReaderActivity : BaseActivity() {
                         onShowMenus = { setMenuVisibility(true) },
                         onHideMenus = { setMenuVisibility(false) },
                         screenModel = settingsScreenModel,
+                    )
+                }
+                is ReaderViewModel.Dialog.ReadingModeSelect -> {
+                    ReadingModeSelectDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        onChange = { stringRes ->
+                            menuToggleToast?.cancel()
+                            if (!readerPreferences.showReadingMode().get()) {
+                                menuToggleToast = toast(stringRes)
+                            }
+
+                            updateCropBordersShortcut()
+                        },
+                    )
+                }
+                is ReaderViewModel.Dialog.OrientationModeSelect -> {
+                    OrientationModeSelectDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        onChange = { stringRes ->
+                            menuToggleToast?.cancel()
+                            menuToggleToast = toast(stringRes)
+                        },
                     )
                 }
                 is ReaderViewModel.Dialog.PageActions -> {
@@ -608,21 +634,7 @@ class ReaderActivity : BaseActivity() {
             setTooltip(R.string.viewer)
 
             setOnClickListener {
-                popupMenu(
-                    items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
-                    selectedItemId = viewModel.getMangaReadingMode(resolveDefault = false),
-                ) {
-                    val newReadingMode = ReadingModeType.fromPreference(itemId)
-
-                    viewModel.setMangaReadingMode(newReadingMode)
-
-                    menuToggleToast?.cancel()
-                    if (!readerPreferences.showReadingMode().get()) {
-                        menuToggleToast = toast(newReadingMode.stringRes)
-                    }
-
-                    updateCropBordersShortcut()
-                }
+                viewModel.openReadingModeSelectDialog()
             }
         }
 
@@ -670,18 +682,7 @@ class ReaderActivity : BaseActivity() {
             setTooltip(R.string.rotation_type)
 
             setOnClickListener {
-                popupMenu(
-                    items = OrientationType.entries.map { it.flagValue to it.stringRes },
-                    selectedItemId = viewModel.manga?.orientationType?.toInt()
-                        ?: readerPreferences.defaultOrientationType().get(),
-                ) {
-                    val newOrientation = OrientationType.fromPreference(itemId)
-
-                    viewModel.setMangaOrientationType(newOrientation)
-
-                    menuToggleToast?.cancel()
-                    menuToggleToast = toast(newOrientation.stringRes)
-                }
+                viewModel.openOrientationModeSelectDialog()
             }
         }
 
