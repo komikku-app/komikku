@@ -7,7 +7,7 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt

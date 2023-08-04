@@ -31,6 +31,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,8 +39,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -60,6 +64,8 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingModeType
+import eu.kanade.presentation.reader.BottomReaderBar
+import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.ChapterNavigator
 import eu.kanade.presentation.reader.OrientationModeSelectDialog
 import eu.kanade.presentation.reader.PageIndicatorText
@@ -71,19 +77,16 @@ import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.AddToLibraryFirst
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Error
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Success
-import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterDialog
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
@@ -100,9 +103,7 @@ import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.copy
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
@@ -126,13 +127,13 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.Constants
-import tachiyomi.core.preference.toggle
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.math.abs
@@ -527,8 +528,6 @@ class ReaderActivity : BaseActivity() {
                             if (!readerPreferences.showReadingMode().get()) {
                                 menuToggleToast = toast(stringRes)
                             }
-
-                            updateCropBordersShortcut()
                         },
                     )
                 }
@@ -553,6 +552,30 @@ class ReaderActivity : BaseActivity() {
                         hasExtraPage = (state.dialog as? ReaderViewModel.Dialog.PageActions)?.extraPage != null,
                     )
                 }
+                is ReaderViewModel.Dialog.ChapterList -> {
+                    var chapters by remember {
+                        mutableStateOf(viewModel.getChapters())
+                    }
+                    ChapterListDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        chapters = chapters,
+                        onClickChapter = {
+                            viewModel.loadNewChapterFromDialog(it)
+                            onDismissRequest()
+                        },
+                        onBookmark = { chapter ->
+                            viewModel.toggleBookmark(chapter.id, !chapter.bookmark)
+                            chapters = chapters.map {
+                                if (it.chapter.id == chapter.id) {
+                                    it.copy(chapter = chapter.copy(bookmark = !chapter.bookmark))
+                                } else {
+                                    it
+                                }
+                            }
+                        },
+                    )
+                }
                 null -> {}
             }
         }
@@ -560,8 +583,19 @@ class ReaderActivity : BaseActivity() {
         // SY -->
         val sliderContent: @Composable (Boolean) -> Unit = a@{ isVertical ->
             val state by viewModel.state.collectAsState()
-
             if (state.viewer == null) return@a
+
+            val forceHorizontalSeekbar by readerPreferences.forceHorizontalSeekbar().collectAsState()
+            val landscapeVerticalSeekbar by readerPreferences.landscapeVerticalSeekbar().collectAsState()
+            val configuration = LocalConfiguration.current
+            val verticalSeekbarLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && landscapeVerticalSeekbar
+            val verticalSeekbarHorizontal = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            val viewerIsVertical = (state.viewer is WebtoonViewer || state.viewer is VerticalPagerViewer)
+            val showVerticalSeekbar = !forceHorizontalSeekbar && (verticalSeekbarLandscape || verticalSeekbarHorizontal) && viewerIsVertical
+            if ((isVertical && !showVerticalSeekbar) || (!isVertical && showVerticalSeekbar)) {
+                return@a
+            }
+
             val isRtl = state.viewer is R2LPagerViewer
 
             ChapterNavigator(
@@ -586,26 +620,103 @@ class ReaderActivity : BaseActivity() {
         }
 
         // Init listeners on bottom menu
-        binding.readerNavHorz.setComposeContent {
-            sliderContent(false)
-        }
         binding.readerNavVert.setComposeContent {
             sliderContent(true)
         }
 
-        initBottomShortcuts()
+        binding.readerMenuBottom.setComposeContent {
+            val state by viewModel.state.collectAsState()
 
-        // SY <--
-        updateBottomButtons()
+            if (state.viewer == null) return@setComposeContent
+
+            val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
+            val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
+            val cropBorderContinuousVertical by readerPreferences.cropBordersContinuousVertical().collectAsState()
+            val readingMode = viewModel.getMangaReadingMode()
+            val isPagerType = ReadingModeType.isPagerType(readingMode)
+            val isWebtoon = ReadingModeType.WEBTOON.prefValue == readingMode
+            val cropEnabled = if (isPagerType) {
+                cropBorderPaged
+            } else if (isWebtoon) {
+                cropBorderWebtoon
+            } else {
+                cropBorderContinuousVertical
+            }
+            val readerBottomButtons by readerPreferences.readerBottomButtons().collectAsState()
+            val dualPageSplitPaged by readerPreferences.dualPageSplitPaged().collectAsState()
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // SY -->
+                sliderContent(false)
+                // SY <--
+
+                BottomReaderBar(
+                    enabledButtons = readerBottomButtons,
+                    readingMode = ReadingModeType.fromPreference(
+                        viewModel.getMangaReadingMode(
+                            resolveDefault = false,
+                        ),
+                    ),
+                    onClickReadingMode = viewModel::openReadingModeSelectDialog,
+                    orientationMode = OrientationType.fromPreference(
+                        viewModel.getMangaOrientationType(
+                            resolveDefault = false,
+                        ),
+                    ),
+                    onClickOrientationMode = viewModel::openOrientationModeSelectDialog,
+                    cropEnabled = cropEnabled,
+                    onClickCropBorder = {
+                        val enabled = viewModel.toggleCropBorders()
+
+                        menuToggleToast?.cancel()
+                        menuToggleToast = toast(
+                            if (enabled) {
+                                R.string.on
+                            } else {
+                                R.string.off
+                            },
+                        )
+                    },
+                    onClickSettings = viewModel::openSettingsDialog,
+                    // SY -->
+                    isHttpSource = remember {
+                        viewModel.getSource() != null
+                    },
+                    dualPageSplitEnabled = dualPageSplitPaged,
+                    doublePages = state.doublePages,
+                    onClickChapterList = viewModel::openChapterListDialog,
+                    onClickWebView = ::openChapterInWebView,
+                    onClickShare = {
+                        assistUrl?.let {
+                            val intent = it.toUri().toShareIntent(this@ReaderActivity, type = "text/plain")
+                            startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
+                        }
+                    },
+                    onClickPageLayout = {
+                        if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
+                            (viewModel.state.value.viewer as? PagerViewer)?.config?.let { config ->
+                                config.doublePages = !config.doublePages
+                                reloadChapters(config.doublePages, true)
+                            }
+                        } else {
+                            readerPreferences.pageLayout().set(1 - readerPreferences.pageLayout().get())
+                        }
+                    },
+                    onClickShiftPage = ::shiftDoublePages,
+                    // SY <--
+                )
+            }
+        }
 
         initDropdownMenu()
+        // SY <--
 
         val toolbarBackground = (binding.toolbar.background as MaterialShapeDrawable).apply {
             elevation = resources.getDimension(R.dimen.m3_sys_elevation_level2)
             alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
         }
-        binding.toolbarBottom.background = toolbarBackground.copy(this@ReaderActivity)
-
         val toolbarColor = ColorUtils.setAlphaComponent(
             toolbarBackground.resolvedTintColor,
             toolbarBackground.alpha,
@@ -628,125 +739,6 @@ class ReaderActivity : BaseActivity() {
     }
 
     // EXH -->
-    fun initBottomShortcuts() {
-        // Reading mode
-        with(binding.actionReadingMode) {
-            setTooltip(R.string.viewer)
-
-            setOnClickListener {
-                viewModel.openReadingModeSelectDialog()
-            }
-        }
-
-        // Crop borders
-        with(binding.actionCropBorders) {
-            setTooltip(R.string.pref_crop_borders)
-
-            setOnClickListener {
-                // SY -->
-                val mangaViewer = viewModel.getMangaReadingMode()
-                // SY <--
-                val isPagerType = ReadingModeType.isPagerType(mangaViewer)
-                val enabled = if (isPagerType) {
-                    readerPreferences.cropBorders().toggle()
-                } else {
-                    // SY -->
-                    if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                        readerPreferences.cropBordersContinuousVertical().toggle()
-                    } else {
-                        readerPreferences.cropBordersWebtoon().toggle()
-                    }
-                    // SY <--
-                }
-
-                menuToggleToast?.cancel()
-                menuToggleToast = toast(
-                    if (enabled) {
-                        R.string.on
-                    } else {
-                        R.string.off
-                    },
-                )
-            }
-        }
-        updateCropBordersShortcut()
-        listOf(readerPreferences.cropBorders(), readerPreferences.cropBordersWebtoon() /* SY --> */, readerPreferences.cropBordersContinuousVertical()/* SY <-- */)
-            .forEach { pref ->
-                pref.changes()
-                    .onEach { updateCropBordersShortcut() }
-                    .launchIn(lifecycleScope)
-            }
-
-        // Rotation
-        with(binding.actionRotation) {
-            setTooltip(R.string.rotation_type)
-
-            setOnClickListener {
-                viewModel.openOrientationModeSelectDialog()
-            }
-        }
-
-        // Settings sheet
-        with(binding.actionSettings) {
-            setTooltip(R.string.action_settings)
-
-            setOnClickListener {
-                viewModel.openSettingsDialog()
-            }
-        }
-
-        // --> EH
-        with(binding.actionWebView) {
-            setTooltip(R.string.action_open_in_web_view)
-
-            setOnClickListener {
-                openChapterInWebView()
-            }
-        }
-
-        with(binding.actionChapterList) {
-            setTooltip(R.string.chapters)
-
-            setOnClickListener {
-                ReaderChapterDialog(this@ReaderActivity)
-            }
-        }
-
-        with(binding.actionShare) {
-            setTooltip(R.string.action_share)
-
-            setOnClickListener {
-                assistUrl?.let {
-                    val intent = it.toUri().toShareIntent(this@ReaderActivity, type = "text/plain")
-                    startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
-                }
-            }
-        }
-
-        with(binding.doublePage) {
-            setTooltip(R.string.page_layout)
-
-            setOnClickListener {
-                if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
-                    (viewModel.state.value.viewer as? PagerViewer)?.config?.let { config ->
-                        config.doublePages = !config.doublePages
-                        reloadChapters(config.doublePages, true)
-                    }
-                    updateBottomButtons()
-                } else {
-                    readerPreferences.pageLayout().set(1 - readerPreferences.pageLayout().get())
-                }
-            }
-        }
-        with(binding.shiftPageButton) {
-            setTooltip(R.string.shift_double_pages)
-
-            setOnClickListener {
-                shiftDoublePages()
-            }
-        }
-    }
-
     fun initDropdownMenu() {
         binding.expandEhButton.setOnClickListener {
             val newValue = !viewModel.state.value.ehUtilsVisible
@@ -904,36 +896,6 @@ class ReaderActivity : BaseActivity() {
         return currentPage?.let { viewModel.state.value.viewerChapters?.currChapter?.pages?.getOrNull(it) }
     }
 
-    fun updateBottomButtons() {
-        val viewer = viewModel.state.value.viewer
-        val enabledButtons = readerPreferences.readerBottomButtons().get()
-        with(binding) {
-            actionReadingMode.isVisible = ReaderBottomButton.ReadingMode.isIn(enabledButtons)
-            actionRotation.isVisible =
-                ReaderBottomButton.Rotation.isIn(enabledButtons)
-            doublePage.isVisible =
-                viewer is PagerViewer && ReaderBottomButton.PageLayout.isIn(enabledButtons) && !readerPreferences.dualPageSplitPaged().get()
-            actionCropBorders.isVisible =
-                if (viewer is PagerViewer) {
-                    ReaderBottomButton.CropBordersPager.isIn(enabledButtons)
-                } else {
-                    val continuous = (viewer as? WebtoonViewer)?.isContinuous ?: false
-                    if (continuous) {
-                        ReaderBottomButton.CropBordersWebtoon.isIn(enabledButtons)
-                    } else {
-                        ReaderBottomButton.CropBordersContinuesVertical.isIn(enabledButtons)
-                    }
-                }
-            actionWebView.isVisible =
-                ReaderBottomButton.WebView.isIn(enabledButtons) && viewModel.getSource() is HttpSource
-            actionShare.isVisible =
-                ReaderBottomButton.Share.isIn(enabledButtons) && viewModel.getSource() is HttpSource
-            actionChapterList.isVisible =
-                ReaderBottomButton.ViewChapters.isIn(enabledButtons)
-            shiftPageButton.isVisible = (viewer as? PagerViewer)?.config?.doublePages ?: false
-        }
-    }
-
     fun reloadChapters(doublePages: Boolean, force: Boolean = false) {
         val viewer = viewModel.state.value.viewer as? PagerViewer ?: return
         viewer.updateShifting()
@@ -941,6 +903,7 @@ class ReaderActivity : BaseActivity() {
             setDoublePageMode(viewer)
         } else {
             viewer.config.doublePages = doublePages
+            viewModel.setDoublePages(viewer.config.doublePages)
         }
         val currentChapter = viewModel.getCurrentChapter()
         if (doublePages) {
@@ -958,6 +921,7 @@ class ReaderActivity : BaseActivity() {
     private fun setDoublePageMode(viewer: PagerViewer) {
         val currentOrientation = resources.configuration.orientation
         viewer.config.doublePages = currentOrientation == Configuration.ORIENTATION_LANDSCAPE
+        viewModel.setDoublePages(viewer.config.doublePages)
     }
 
     private fun shiftDoublePages() {
@@ -972,35 +936,6 @@ class ReaderActivity : BaseActivity() {
         }
     }
     // EXH <--
-
-    private fun updateOrientationShortcut(preference: Int) {
-        val orientation = OrientationType.fromPreference(preference)
-        binding.actionRotation.setImageResource(orientation.iconRes)
-    }
-
-    private fun updateCropBordersShortcut() {
-        val mangaViewer = viewModel.getMangaReadingMode()
-        val isPagerType = ReadingModeType.isPagerType(mangaViewer)
-        val enabled = if (isPagerType) {
-            readerPreferences.cropBorders().get()
-        } else {
-            // SY -->
-            if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                readerPreferences.cropBordersContinuousVertical().get()
-            } else {
-                readerPreferences.cropBordersWebtoon().get()
-            }
-            // SY <--
-        }
-
-        binding.actionCropBorders.setImageResource(
-            if (enabled) {
-                R.drawable.ic_crop_24dp
-            } else {
-                R.drawable.ic_crop_off_24dp
-            },
-        )
-    }
 
     /**
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
@@ -1088,13 +1023,8 @@ class ReaderActivity : BaseActivity() {
      */
     private fun setManga(manga: Manga) {
         val prevViewer = viewModel.state.value.viewer
-
-        val viewerMode = ReadingModeType.fromPreference(viewModel.getMangaReadingMode(resolveDefault = false))
-        binding.actionReadingMode.setImageResource(viewerMode.iconRes)
-
         val newViewer = ReadingModeType.toViewer(viewModel.getMangaReadingMode(), this)
 
-        updateCropBordersShortcut()
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
             window.sharedElementEnterTransition.doOnEnd {
@@ -1131,11 +1061,7 @@ class ReaderActivity : BaseActivity() {
         }
 
         // SY -->
-
-        // --> Vertical seekbar hide on landscape
-
-        if (
-            !readerPreferences.forceHorizontalSeekbar().get() &&
+        binding.readerNavVert.isVisible = !readerPreferences.forceHorizontalSeekbar().get() &&
             (
                 (
                     resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && readerPreferences.landscapeVerticalSeekbar().get()
@@ -1143,27 +1069,12 @@ class ReaderActivity : BaseActivity() {
                     resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
                 ) &&
             (viewModel.state.value.viewer is WebtoonViewer || viewModel.state.value.viewer is VerticalPagerViewer)
-        ) {
-            binding.readerNavVert.isVisible = true
-            binding.readerNavHorz.isVisible = false
-        } else {
-            binding.readerNavVert.isVisible = false
-            binding.readerNavHorz.isVisible = true
-        }
-
-        // <-- Vertical seekbar hide on landscape
-
-        // --> Left-handed vertical seekbar
 
         val params = binding.readerNavVert.layoutParams as RelativeLayout.LayoutParams
         if (readerPreferences.leftVerticalSeekbar().get() && binding.readerNavVert.isVisible) {
             params.removeRule(RelativeLayout.ALIGN_PARENT_END)
             binding.readerNavVert.layoutParams = params
         }
-
-        // <-- Left-handed vertical seekbar
-
-        updateBottomButtons()
         // SY <--
         supportActionBar?.title = manga.title
 
@@ -1416,7 +1327,6 @@ class ReaderActivity : BaseActivity() {
         if (newOrientation.flag != requestedOrientation) {
             requestedOrientation = newOrientation.flag
         }
-        updateOrientationShortcut(viewModel.getMangaOrientationType(resolveDefault = false))
     }
 
     /**
@@ -1524,14 +1434,20 @@ class ReaderActivity : BaseActivity() {
             // SY -->
             readerPreferences.pageLayout().changes()
                 .drop(1)
-                .onEach { updateBottomButtons() }
+                .onEach {
+                    viewModel.setDoublePages(
+                        (viewModel.state.value.viewer as? PagerViewer)
+                            ?.config
+                            ?.doublePages
+                            ?: false,
+                    )
+                }
                 .launchIn(lifecycleScope)
 
             readerPreferences.dualPageSplitPaged().changes()
                 .drop(1)
                 .onEach {
                     if (viewModel.state.value.viewer !is PagerViewer) return@onEach
-                    updateBottomButtons()
                     reloadChapters(
                         !it && when (readerPreferences.pageLayout().get()) {
                             PagerConfig.PageLayout.DOUBLE_PAGES -> true

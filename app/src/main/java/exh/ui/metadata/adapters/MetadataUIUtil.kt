@@ -1,13 +1,19 @@
 package exh.ui.metadata.adapters
 
 import android.content.Context
+import android.graphics.Color
 import android.widget.TextView
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.util.SourceTagsUtil
 import kotlin.math.roundToInt
 
@@ -55,5 +61,25 @@ object MetadataUIUtil {
             setBounds(0, 0, 20.dpToPx, 20.dpToPx)
             setCompoundDrawables(this, null, null, null)
         }
+    }
+
+    /**
+     * Returns the color for the given attribute.
+     *
+     * @param resource the attribute.
+     * @param alphaFactor the alpha number [0,1].
+     */
+    @ColorInt
+    fun Context.getResourceColor(@AttrRes resource: Int, alphaFactor: Float = 1f): Int {
+        val typedArray = obtainStyledAttributes(intArrayOf(resource))
+        val color = typedArray.getColor(0, 0)
+        typedArray.recycle()
+
+        if (alphaFactor < 1f) {
+            val alpha = (color.alpha * alphaFactor).roundToInt()
+            return Color.argb(alpha, color.red, color.green, color.blue)
+        }
+
+        return color
     }
 }

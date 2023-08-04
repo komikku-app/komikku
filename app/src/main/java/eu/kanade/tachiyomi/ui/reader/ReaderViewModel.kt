@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.app.Application
-import android.content.Context
 import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.compose.runtime.Immutable
@@ -71,6 +70,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
+import tachiyomi.core.preference.toggle
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
@@ -97,8 +97,6 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 import java.util.Date
 
 /**
@@ -333,22 +331,15 @@ class ReaderViewModel(
     }
 
     // SY -->
-    fun getChapters(context: Context): List<ReaderChapterItem> {
+    fun getChapters(): List<ReaderChapterItem> {
         val currentChapter = getCurrentChapter()
-        val decimalFormat = DecimalFormat(
-            "#.###",
-            DecimalFormatSymbols()
-                .apply { decimalSeparator = '.' },
-        )
 
         return chapterList.map {
             ReaderChapterItem(
-                it.chapter.toDomainChapter()!!,
-                manga!!,
-                it.chapter.id == currentChapter?.chapter?.id,
-                context,
-                UiPreferences.dateFormat(uiPreferences.dateFormat().get()),
-                decimalFormat,
+                chapter = it.chapter.toDomainChapter()!!,
+                manga = manga!!,
+                isCurrent = it.chapter.id == currentChapter?.chapter?.id,
+                dateFormat = UiPreferences.dateFormat(uiPreferences.dateFormat().get()),
             )
         }
     }
@@ -411,9 +402,11 @@ class ReaderViewModel(
         }
     }
 
-    suspend fun loadNewChapterFromDialog(chapter: Chapter) {
-        val newChapter = chapterList.firstOrNull { it.chapter.id == chapter.id } ?: return
-        loadAdjacent(newChapter)
+    fun loadNewChapterFromDialog(chapter: Chapter) {
+        viewModelScope.launchIO {
+            val newChapter = chapterList.firstOrNull { it.chapter.id == chapter.id } ?: return@launchIO
+            loadAdjacent(newChapter)
+        }
     }
 
     /**
@@ -716,7 +709,7 @@ class ReaderViewModel(
         viewModelScope.launchNonCancellable {
             updateChapter.await(
                 ChapterUpdate(
-                    id = chapter.id!!.toLong(),
+                    id = chapterId,
                     bookmark = bookmarked,
                 ),
             )
@@ -804,6 +797,21 @@ class ReaderViewModel(
         }
     }
 
+    // SY -->
+    fun toggleCropBorders(): Boolean {
+        val readingMode = getMangaReadingMode()
+        val isPagerType = ReadingModeType.isPagerType(readingMode)
+        val isWebtoon = ReadingModeType.WEBTOON.prefValue == readingMode
+        return if (isPagerType) {
+            readerPreferences.cropBorders().toggle()
+        } else if (isWebtoon) {
+            readerPreferences.cropBordersWebtoon().toggle()
+        } else {
+            readerPreferences.cropBordersContinuousVertical().toggle()
+        }
+    }
+    // SY <--
+
     /**
      * Generate a filename for the given [manga] and [page]
      */
@@ -833,6 +841,14 @@ class ReaderViewModel(
 
     fun setIndexPageToShift(index: Int?) {
         mutableState.update { it.copy(indexPageToShift = index) }
+    }
+
+    fun openChapterListDialog() {
+        mutableState.update { it.copy(dialog = Dialog.ChapterList) }
+    }
+
+    fun setDoublePages(doublePages: Boolean) {
+        mutableState.update { it.copy(doublePages = doublePages) }
     }
     // SY <--
 
@@ -1158,6 +1174,7 @@ class ReaderViewModel(
         val lastShiftDoubleState: Boolean? = null,
         val indexPageToShift: Int? = null,
         val indexChapterToShift: Long? = null,
+        val doublePages: Boolean = false,
         // SY <--
     ) {
         val totalPages: Int
@@ -1169,6 +1186,11 @@ class ReaderViewModel(
         data object Settings : Dialog
         data object ReadingModeSelect : Dialog
         data object OrientationModeSelect : Dialog
+
+        // SY -->
+        data object ChapterList : Dialog
+        // SY <--
+
         data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog
     }
 
