@@ -102,8 +102,8 @@ import java.util.Date
 /**
  * Presenter used by the activity to perform background operations.
  */
-class ReaderViewModel(
-    private val savedState: SavedStateHandle = SavedStateHandle(),
+class ReaderViewModel @JvmOverloads constructor(
+    private val savedState: SavedStateHandle,
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadProvider: DownloadProvider = Injekt.get(),
@@ -147,6 +147,15 @@ class ReaderViewModel(
     private var chapterId = savedState.get<Long>("chapter_id") ?: -1L
         set(value) {
             savedState["chapter_id"] = value
+            field = value
+        }
+
+    /**
+     * The visible page index of the currently loaded chapter. Used to restore from process kill.
+     */
+    private var chapterPageIndex = savedState.get<Int>("page_index") ?: -1
+        set(value) {
+            savedState["page_index"] = value
             field = value
         }
 
@@ -254,7 +263,10 @@ class ReaderViewModel(
             .drop(1) // allow the loader to set the first page and chapter id
             // SY <-
             .onEach { currentChapter ->
-                if (!currentChapter.chapter.read) {
+                if (chapterPageIndex >= 0) {
+                    // Restore from SavedState
+                    currentChapter.requestedPage = chapterPageIndex
+                } else if (!currentChapter.chapter.read) {
                     currentChapter.requestedPage = currentChapter.chapter.last_page_read
                 }
                 chapterId = currentChapter.chapter.id!!
@@ -588,6 +600,7 @@ class ReaderViewModel(
             it.copy(currentPage = pageIndex + 1)
         }
         readerChapter.requestedPage = pageIndex
+        chapterPageIndex = pageIndex
 
         if (!incognitoMode && page.status != Page.State.ERROR) {
             readerChapter.chapter.last_page_read = pageIndex
