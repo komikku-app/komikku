@@ -267,7 +267,7 @@ abstract class HttpSource : CatalogueSource {
                     chapterListParse(response)
                 }
         } else {
-            Observable.error(Exception("Licensed - No chapters to show"))
+            Observable.error(LicensedMangaChaptersException())
         }
     }
 
@@ -471,3 +471,5 @@ abstract class HttpSource : CatalogueSource {
     }
     // EXH <--
 }
+
+class LicensedMangaChaptersException : Exception("Licensed - No chapters to show")
