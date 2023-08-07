@@ -474,13 +474,16 @@ class ReaderActivity : BaseActivity() {
 
         binding.pageNumber.setComposeContent {
             val state by viewModel.state.collectAsState()
+            val showPageNumber by viewModel.readerPreferences.showPageNumber().collectAsState()
 
-            PageIndicatorText(
-                // SY -->
-                currentPage = state.currentPageText,
-                // SY <--
-                totalPages = state.totalPages,
-            )
+            if (!state.menuVisible && showPageNumber) {
+                PageIndicatorText(
+                    // SY -->
+                    currentPage = state.currentPageText,
+                    // SY <--
+                    totalPages = state.totalPages,
+                )
+            }
         }
 
         binding.dialogRoot.setComposeContent {
@@ -634,7 +637,7 @@ class ReaderActivity : BaseActivity() {
             val cropBorderContinuousVertical by readerPreferences.cropBordersContinuousVertical().collectAsState()
             val readingMode = viewModel.getMangaReadingMode()
             val isPagerType = ReadingModeType.isPagerType(readingMode)
-            val isWebtoon = ReadingModeType.WEBTOON.prefValue == readingMode
+            val isWebtoon = ReadingModeType.WEBTOON.flagValue == readingMode
             val cropEnabled = if (isPagerType) {
                 cropBorderPaged
             } else if (isWebtoon) {
@@ -974,10 +977,6 @@ class ReaderActivity : BaseActivity() {
                 bottomAnimation.applySystemAnimatorScale(this)
                 binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
-
-            if (readerPreferences.showPageNumber().get()) {
-                config?.setPageNumberVisibility(false)
-            }
         } else {
             if (readerPreferences.fullscreen().get()) {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
@@ -1009,10 +1008,6 @@ class ReaderActivity : BaseActivity() {
                 val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_bottom)
                 bottomAnimation.applySystemAnimatorScale(this)
                 binding.readerMenuBottom.startAnimation(bottomAnimation)
-            }
-
-            if (readerPreferences.showPageNumber().get()) {
-                config?.setPageNumberVisibility(true)
             }
         }
     }
@@ -1052,7 +1047,7 @@ class ReaderActivity : BaseActivity() {
         }
 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
-        if (readerPreferences.useAutoWebtoon().get() && manga.readingModeType.toInt() == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
+        if (readerPreferences.useAutoWebtoon().get() && manga.readingModeType.toInt() == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.flagValue) {
             readingModeToast?.cancel()
             readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
         } else if (readerPreferences.showReadingMode().get()) {
@@ -1095,9 +1090,8 @@ class ReaderActivity : BaseActivity() {
 
     private fun showReadingModeToast(mode: Int) {
         try {
-            val strings = resources.getStringArray(R.array.viewers_selector)
             readingModeToast?.cancel()
-            readingModeToast = toast(strings[mode])
+            readingModeToast = toast(ReadingModeType.fromPreference(mode).stringRes)
         } catch (e: ArrayIndexOutOfBoundsException) {
             logcat(LogPriority.ERROR) { "Unknown reading mode: $mode" }
         }
@@ -1390,10 +1384,6 @@ class ReaderActivity : BaseActivity() {
                 }
                 .launchIn(lifecycleScope)
 
-            readerPreferences.showPageNumber().changes()
-                .onEach(::setPageNumberVisibility)
-                .launchIn(lifecycleScope)
-
             readerPreferences.trueColor().changes()
                 .onEach(::setTrueColor)
                 .launchIn(lifecycleScope)
@@ -1470,13 +1460,6 @@ class ReaderActivity : BaseActivity() {
             } else {
                 Color.WHITE
             }
-        }
-
-        /**
-         * Sets the visibility of the bottom page indicator according to [visible].
-         */
-        fun setPageNumberVisibility(visible: Boolean) {
-            binding.pageNumber.isVisible = visible
         }
 
         /**

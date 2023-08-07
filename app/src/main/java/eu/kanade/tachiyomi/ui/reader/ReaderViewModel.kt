@@ -609,7 +609,7 @@ class ReaderViewModel @JvmOverloads constructor(
             if (
                 readerChapter.pages?.lastIndex == pageIndex ||
                 (hasExtraPage && readerChapter.pages?.lastIndex?.minus(1) == page.index)
-                ) {
+            ) {
                 // SY <--
                 readerChapter.chapter.read = true
                 // SY -->
@@ -819,7 +819,7 @@ class ReaderViewModel @JvmOverloads constructor(
     fun toggleCropBorders(): Boolean {
         val readingMode = getMangaReadingMode()
         val isPagerType = ReadingModeType.isPagerType(readingMode)
-        val isWebtoon = ReadingModeType.WEBTOON.prefValue == readingMode
+        val isWebtoon = ReadingModeType.WEBTOON.flagValue == readingMode
         return if (isPagerType) {
             readerPreferences.cropBorders().toggle()
         } else if (isWebtoon) {
