@@ -130,7 +130,7 @@ class BackupRestorer(
         backupManager.restoreSavedSearches(backupSavedSearches)
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.saved_searches))
+        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.saved_searches), context.getString(R.string.restoring_backup))
     }
     // SY <--
 
