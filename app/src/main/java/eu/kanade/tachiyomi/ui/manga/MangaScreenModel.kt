@@ -544,6 +544,9 @@ class MangaInfoScreenModel(
 
             return originalManga
         } else {
+            if (manga.id == originalMangaId) {
+                throw IllegalArgumentException(context.getString(R.string.merged_already))
+            }
             var mergedManga = Manga.create()
                 .copy(
                     url = originalManga.url,
