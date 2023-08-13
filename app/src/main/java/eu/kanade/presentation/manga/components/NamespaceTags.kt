@@ -121,10 +121,10 @@ fun NamespaceTags(
                             onClick = { onClick(search) },
                             border = borderDp?.let {
                                 SuggestionChipDefaults.suggestionChipBorder(borderWidth = it)
-                            },
+                            } ?: SuggestionChipDefaults.suggestionChipBorder(),
                             borderM3 = borderDp?.let {
                                 SuggestionChipDefaultsM3.suggestionChipBorder(borderWidth = it)
-                            },
+                            } ?: SuggestionChipDefaultsM3.suggestionChipBorder(),
                         )
                     }
                 }
@@ -138,8 +138,8 @@ fun TagsChip(
     modifier: Modifier = Modifier,
     text: String,
     onClick: (() -> Unit)?,
-    border: ChipBorder? = null,
-    borderM3: ChipBorderM3? = null,
+    border: ChipBorder? = SuggestionChipDefaults.suggestionChipBorder(),
+    borderM3: ChipBorderM3? = SuggestionChipDefaultsM3.suggestionChipBorder(),
 ) {
     CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
         if (onClick != null) {
