@@ -85,8 +85,8 @@ class UpdatesQuery(val driver: SqlDriver, val after: Long, val limit: Long) : Ex
             mapper,
             2,
             binders = {
-                bindLong(1, after)
-                bindLong(2, limit)
+                bindLong(0, after)
+                bindLong(1, limit)
             },
         )
     }
