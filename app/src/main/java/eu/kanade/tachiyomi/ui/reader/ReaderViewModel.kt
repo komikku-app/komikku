@@ -484,7 +484,7 @@ class ReaderViewModel(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage, currentPageText: String) {
+    fun onPageSelected(page: ReaderPage, currentPageText: String /* SY --> */, hasExtraPage: Boolean /* SY <-- */) {
         // InsertPage and StencilPage doesn't change page progress
         if (page is InsertPage || page is StencilPage) {
             return
@@ -499,7 +499,7 @@ class ReaderViewModel(
 
         // Save last page read and mark as read if needed
         viewModelScope.launchNonCancellable {
-            updateChapterProgress(selectedChapter, page)
+            updateChapterProgress(selectedChapter, page/* SY --> */, hasExtraPage/* SY <-- */)
         }
 
         if (selectedChapter != getCurrentChapter()) {
@@ -581,7 +581,7 @@ class ReaderViewModel(
      * Saves the chapter progress (last read page and whether it's read)
      * if incognito mode isn't on.
      */
-    private suspend fun updateChapterProgress(readerChapter: ReaderChapter, page: Page) {
+    private suspend fun updateChapterProgress(readerChapter: ReaderChapter, page: Page/* SY --> */, hasExtraPage: Boolean/* SY <-- */) {
         val pageIndex = page.index
 
         mutableState.update {
@@ -592,7 +592,12 @@ class ReaderViewModel(
         if (!incognitoMode && page.status != Page.State.ERROR) {
             readerChapter.chapter.last_page_read = pageIndex
 
-            if (readerChapter.pages?.lastIndex == pageIndex) {
+            // SY -->
+            if (
+                readerChapter.pages?.lastIndex == pageIndex ||
+                (hasExtraPage && readerChapter.pages?.lastIndex?.minus(1) == page.index)
+                ) {
+                // SY <--
                 readerChapter.chapter.read = true
                 // SY -->
                 if (manga?.isEhBasedManga() == true) {

@@ -1219,7 +1219,7 @@ class ReaderActivity : BaseActivity() {
         } else {
             "${page.number}"
         }
-        viewModel.onPageSelected(page, currentPageText)
+        viewModel.onPageSelected(page, currentPageText, hasExtraPage)
         // SY <--
     }
 
