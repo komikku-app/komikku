@@ -170,7 +170,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     getLibraryGroup(),
                     getExtensionsGroup(basePreferences = basePreferences),
                     // SY -->
-                    getDownloaderGroup(),
+                    // getDownloaderGroup(),
                     getDataSaverGroup(),
                     getDeveloperToolsGroup(),
                     // SY <--
