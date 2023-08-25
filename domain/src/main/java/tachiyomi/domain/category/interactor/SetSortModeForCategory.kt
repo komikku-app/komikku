@@ -16,7 +16,7 @@ class SetSortModeForCategory(
     suspend fun await(categoryId: Long?, type: LibrarySort.Type, direction: LibrarySort.Direction) {
         // SY -->
         if (preferences.groupLibraryBy().get() != LibraryGroup.BY_DEFAULT) {
-            preferences.librarySortingMode().set(LibrarySort(type, direction))
+            preferences.sortingMode().set(LibrarySort(type, direction))
             return
         }
         // SY <--
@@ -30,7 +30,7 @@ class SetSortModeForCategory(
                 ),
             )
         } else {
-            preferences.librarySortingMode().set(LibrarySort(type, direction))
+            preferences.sortingMode().set(LibrarySort(type, direction))
             categoryRepository.updateAllFlags(flags)
         }
     }

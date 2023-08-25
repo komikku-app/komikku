@@ -70,7 +70,7 @@ class UpdatesScreenModel(
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events: Flow<Event> = _events.receiveAsFlow()
 
-    val lastUpdated by libraryPreferences.libraryUpdateLastTimestamp().asState(coroutineScope)
+    val lastUpdated by libraryPreferences.lastUpdatedTimestamp().asState(coroutineScope)
 
     // SY -->
     val preserveReadingPosition by readerPreferences.preserveReadingPosition().asState(coroutineScope)

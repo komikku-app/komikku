@@ -103,7 +103,7 @@ fun EhLoginWebViewScreen(
             object : AccompanistWebViewClient() {
                 override fun onPageFinished(view: WebView, url: String?) {
                     super.onPageFinished(view, url)
-                    onPageFinished(view ?: return, url ?: return)
+                    onPageFinished(view, url ?: return)
                 }
             }
         }

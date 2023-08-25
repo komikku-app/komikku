@@ -172,7 +172,7 @@ class LibraryScreenModel(
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
-                    libraryPreferences.librarySortingMode().changes(),
+                    libraryPreferences.sortingMode().changes(),
                     ::Pair,
                 ),
                 // SY <--
@@ -795,7 +795,7 @@ class LibraryScreenModel(
     }
 
     fun getDisplayMode(): PreferenceMutableState<LibraryDisplayMode> {
-        return libraryPreferences.libraryDisplayMode().asState(coroutineScope)
+        return libraryPreferences.displayMode().asState(coroutineScope)
     }
 
     fun getColumnsPreferenceForCurrentOrientation(isLandscape: Boolean): PreferenceMutableState<Int> {
