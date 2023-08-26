@@ -168,7 +168,7 @@ class MdList(id: Long) : TrackService(id) {
         trackPreferences.trackToken(this).delete()
     }
 
-    override val isLogged: Boolean
+    override val isLoggedIn: Boolean
         get() = trackPreferences.trackToken(this).get().isNotEmpty()
 
     class MangaDexNotFoundException : Exception("Mangadex not enabled")

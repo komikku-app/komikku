@@ -229,7 +229,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override val twoFactorAuth = LoginSource.AuthSupport.NOT_SUPPORTED
 
     override fun isLogged(): Boolean {
-        return mdList.isLogged
+        return mdList.isLoggedIn
     }
 
     override fun getUsername(): String {

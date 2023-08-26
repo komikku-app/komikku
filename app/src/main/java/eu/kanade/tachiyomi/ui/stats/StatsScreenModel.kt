@@ -43,7 +43,7 @@ class StatsScreenModel(
     // SY <--
 ) : StateScreenModel<StatsScreenState>(StatsScreenState.Loading) {
 
-    private val loggedServices by lazy { trackManager.services.fastFilter { it.isLogged } }
+    private val loggedServices by lazy { trackManager.services.fastFilter { it.isLoggedIn } }
 
     // SY -->
     private val _allRead = MutableStateFlow(false)
