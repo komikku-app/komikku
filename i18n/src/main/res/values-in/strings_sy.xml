@@ -597,7 +597,6 @@
     <string name="dedupe_highest_chapter">Tampilkan sumber dengan nomor bab tertinggi</string>
 
     <!-- MangaDex -->
-    <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Tak diikuti</string>
     <string name="mangadex_sync_follows_to_library">Sinkronkan MangaDex ke pustaka</string>
     <string name="mangadex_sync_follows_to_library_summary">Tambahkan manga yang belum ditambahkan ke pustaka dari akun MangaDex Anda.</string>

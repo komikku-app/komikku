@@ -19,14 +19,11 @@ import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MdList(id: Long) : TrackService(id) {
+class MdList(id: Long) : TrackService(id, "MDList") {
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(Injekt.get()) }
 
     val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
-
-    @StringRes
-    override fun nameRes(): Int = R.string.mdlist
 
     override fun getLogo(): Int {
         return R.drawable.ic_tracker_mangadex_logo

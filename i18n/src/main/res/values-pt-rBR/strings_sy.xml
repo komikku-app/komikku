@@ -563,7 +563,6 @@
     <string name="deduplication_entry_info">Informações do mangá:</string>
 
     <!-- MangaDex -->
-    <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Deixado de seguir</string>
     <string name="mangadex_sync_follows_to_library">Sincronizar mangá do MangaDex a sua bilioteca</string>
     <string name="mangadex_sync_follows_to_library_summary">Move mangás do MangaDex a sua biblioteca, se ainda não adicionados.</string>

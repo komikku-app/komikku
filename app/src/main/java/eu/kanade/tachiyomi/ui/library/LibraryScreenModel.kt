@@ -150,12 +150,6 @@ class LibraryScreenModel(
 
     // SY -->
     val favoritesSync = FavoritesSyncHelper(preferences.context)
-
-    private val services by lazy {
-        trackManager.services.associate { service ->
-            service.id to preferences.context.getString(service.nameRes())
-        }
-    }
     // SY <--
 
     init {
@@ -986,7 +980,7 @@ class LibraryScreenModel(
                 val status = trackService.getStatus(track.status.toInt())?.let {
                     context.getString(it)
                 }
-                val name = services[track.syncId]
+                val name = trackManager.getService(track.syncId)?.name
                 status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
             } else {
                 false

@@ -14,7 +14,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
+import eu.kanade.domain.chapter.interactor.SyncChapterProgressWithTrack
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
@@ -109,7 +109,7 @@ open class BrowseSourceScreenModel(
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
-    private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
+    private val syncChapterProgressWithTrack: SyncChapterProgressWithTrack = Injekt.get(),
 
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
@@ -400,7 +400,7 @@ open class BrowseSourceScreenModel(
                         (service as TrackService).bind(track)
                         insertTrack.await(track.toDomainTrack()!!)
 
-                        syncChaptersWithTrackServiceTwoWay.await(manga.id, track.toDomainTrack()!!, service)
+                        syncChapterProgressWithTrack.await(manga.id, track.toDomainTrack()!!, service)
                     }
                 } catch (e: Exception) {
                     logcat(LogPriority.WARN, e) { "Could not match manga: ${manga.title} with service $service" }

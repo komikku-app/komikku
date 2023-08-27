@@ -665,7 +665,6 @@
     <string name="dedupe_highest_chapter">Show source with highest chapter number</string>
 
     <!-- MangaDex -->
-    <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Unfollowed</string>
     <string name="mangadex_sync_follows_to_library">Sync MangaDex entries to your library</string>
     <string name="mangadex_sync_follows_to_library_summary">Pulls entries from MangaDex into your library if they are not already added.</string>
