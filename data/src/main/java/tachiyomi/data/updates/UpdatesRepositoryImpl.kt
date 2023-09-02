@@ -11,7 +11,11 @@ class UpdatesRepositoryImpl(
     private val databaseHandler: DatabaseHandler,
 ) : UpdatesRepository {
 
-    override suspend fun awaitWithRead(read: Boolean, after: Long, limit: Long): List<UpdatesWithRelations> {
+    override suspend fun awaitWithRead(
+        read: Boolean,
+        after: Long,
+        limit: Long,
+    ): List<UpdatesWithRelations> {
         return databaseHandler.awaitList {
             updatesViewQueries.getUpdatesByReadStatus(
                 read = read,
@@ -31,7 +35,11 @@ class UpdatesRepositoryImpl(
         }
     }
 
-    override fun subscribeWithRead(read: Boolean, after: Long, limit: Long): Flow<List<UpdatesWithRelations>> {
+    override fun subscribeWithRead(
+        read: Boolean,
+        after: Long,
+        limit: Long,
+    ): Flow<List<UpdatesWithRelations>> {
         return databaseHandler.subscribeToList {
             updatesViewQueries.getUpdatesByReadStatus(
                 read = read,

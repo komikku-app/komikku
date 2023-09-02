@@ -135,7 +135,7 @@ fun PagePreviewPageDialog(
             TextButton(onClick = {
                 onPageSelected(page.roundToInt())
                 onDismissPageDialog()
-            },) {
+            }) {
                 Text(stringResource(R.string.action_ok))
             }
         },

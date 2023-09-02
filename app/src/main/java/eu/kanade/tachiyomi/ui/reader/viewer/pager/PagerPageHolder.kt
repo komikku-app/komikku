@@ -261,12 +261,12 @@ class PagerPageHolder(
             return if (imageStream is BufferedInputStream &&
                 !ImageUtil.isAnimatedAndSupported(imageStream) &&
                 ImageUtil.isWideImage(
-                        imageStream,
-                        // SY -->
-                        page.zip4jFile,
-                        page.zip4jEntry,
-                        // SY <--
-                    ) &&
+                    imageStream,
+                    // SY -->
+                    page.zip4jFile,
+                    page.zip4jEntry,
+                    // SY <--
+                ) &&
                 viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
                 !viewer.config.imageCropBorders
             ) {

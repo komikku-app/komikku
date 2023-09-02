@@ -81,7 +81,9 @@ class GetApplicationReleaseTest {
             ),
         )
 
-        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(release).release
+        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(
+            release,
+        ).release
     }
 
     @Test
@@ -109,7 +111,9 @@ class GetApplicationReleaseTest {
             ),
         )
 
-        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(release).release
+        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(
+            release,
+        ).release
     }
 
     @Test

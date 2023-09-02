@@ -1201,7 +1201,8 @@ class MangaScreenModel(
                 val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
                 downloadManager.downloadChapters(manga, map.value)
             }
-        } else { /* SY <-- */
+        } else {
+            /* SY <-- */
             val manga = state.manga
             downloadManager.downloadChapters(manga, chapters)
         }

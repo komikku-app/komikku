@@ -88,7 +88,7 @@ object Entry {
         override val key = "uh"
     }
 
-    /* ktlint-disable enum-entry-name-case */
+    @Suppress("ktlint:standard:enum-entry-name-case")
     enum class ImageSize(override val value: String) : ConfigItem {
         AUTO("0"),
         `2400`("5"),
@@ -100,7 +100,6 @@ object Entry {
 
         override val key = "xr"
     }
-    /* ktlint-enable experimental:enum-entry-name-case */
 
     enum class TitleDisplayLanguage(override val value: String) : ConfigItem {
         DEFAULT("0"),
@@ -116,7 +115,7 @@ object Entry {
         override val value = "2"
     }
 
-    /* ktlint-disable experimental:enum-entry-name-case */
+    @Suppress("ktlint:standard:enum-entry-name-case")
     enum class SearchResultsCount(override val value: String) : ConfigItem {
         `25`("0"),
         `50`("1"),
@@ -127,6 +126,7 @@ object Entry {
         override val key = "rc"
     }
 
+    @Suppress("ktlint:standard:enum-entry-name-case")
     enum class ThumbnailRows(override val value: String) : ConfigItem {
         `4`("0"),
         `10`("1"),
@@ -136,7 +136,6 @@ object Entry {
 
         override val key = "tr"
     }
-    /* ktlint-enable enum-entry-name-case */
 
     enum class UseOriginalImages(override val value: String) : ConfigItem {
         NO("0"),

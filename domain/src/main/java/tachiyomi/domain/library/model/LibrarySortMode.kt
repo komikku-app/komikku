@@ -69,7 +69,19 @@ data class LibrarySort(
     }
 
     companion object {
-        val types by lazy { setOf(Type.Alphabetical, Type.LastRead, Type.LastUpdate, Type.UnreadCount, Type.TotalChapters, Type.LatestChapter, Type.ChapterFetchDate, Type.DateAdded /* SY -->*/, Type.TagList /* SY <--*/) }
+        val types by lazy {
+            setOf(
+                Type.Alphabetical,
+                Type.LastRead,
+                Type.LastUpdate,
+                Type.UnreadCount,
+                Type.TotalChapters,
+                Type.LatestChapter,
+                Type.ChapterFetchDate,
+                Type.DateAdded,
+                /* SY -->*/ Type.TagList, /* SY <--*/
+            )
+        }
         val directions by lazy { setOf(Direction.Ascending, Direction.Descending) }
         val default = LibrarySort(Type.Alphabetical, Direction.Ascending)
 

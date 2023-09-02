@@ -47,10 +47,7 @@ private fun Modifier.tabIndicatorOffset(
     }
 
 @Composable
-fun TabIndicator(
-    currentTabPosition: TabPosition,
-    currentPageOffsetFraction: Float,
-) {
+fun TabIndicator(currentTabPosition: TabPosition, currentPageOffsetFraction: Float) {
     SecondaryIndicator(
         modifier = Modifier
             .tabIndicatorOffset(currentTabPosition, currentPageOffsetFraction)
@@ -60,10 +57,7 @@ fun TabIndicator(
 }
 
 @Composable
-fun TabText(
-    text: String,
-    badgeCount: Int? = null,
-) {
+fun TabText(text: String, badgeCount: Int? = null) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
 
     Row(

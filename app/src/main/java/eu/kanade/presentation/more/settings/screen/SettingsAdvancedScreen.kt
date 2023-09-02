@@ -741,7 +741,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(R.string.log_level_summary),
                     entries = EHLogLevel.values().mapIndexed { index, ehLogLevel ->
                         index to "${context.getString(ehLogLevel.nameRes)} (${
-                        context.getString(ehLogLevel.description)
+                            context.getString(ehLogLevel.description)
                         })"
                     }.toMap(),
                 ),
