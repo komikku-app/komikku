@@ -132,17 +132,14 @@ class BackupManager(
 
                     // Delete older backups
                     val numberOfBackups = backupPreferences.numberOfBackups().get()
-                    // SY -->
-                    val backupRegex = Regex("""tachiyomi(?:_sy)?_\d+-\d+-\d+_\d+-\d+.proto.gz""")
-                    // SY <--
-                    dir.listFiles { _, filename -> backupRegex.matches(filename) }
+                    dir.listFiles { _, filename -> Backup.filenameRegex.matches(filename) }
                         .orEmpty()
                         .sortedByDescending { it.name }
                         .drop(numberOfBackups - 1)
                         .forEach { it.delete() }
 
                     // Create new file to place backup
-                    dir.createFile(Backup.getBackupFilename())
+                    dir.createFile(Backup.getFilename())
                 } else {
                     UniFile.fromUri(context, uri)
                 }
