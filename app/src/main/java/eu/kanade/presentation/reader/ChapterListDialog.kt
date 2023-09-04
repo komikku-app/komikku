@@ -63,7 +63,7 @@ fun ChapterListDialog(
                     readProgress = null,
                     scanlator = chapterItem.chapter.scanlator,
                     sourceName = null,
-                    read = false,
+                    read = chapterItem.chapter.read,
                     bookmark = chapterItem.chapter.bookmark,
                     selected = false,
                     downloadIndicatorEnabled = false,
