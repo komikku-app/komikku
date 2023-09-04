@@ -33,7 +33,10 @@ val Manga.downloadedFilter: TriState
 fun Manga.chaptersFiltered(): Boolean {
     return unreadFilter != TriState.DISABLED ||
         downloadedFilter != TriState.DISABLED ||
-        bookmarkedFilter != TriState.DISABLED
+        bookmarkedFilter != TriState.DISABLED ||
+        // SY -->
+        !filteredScanlators.isNullOrEmpty()
+    // SY <--
 }
 fun Manga.forceDownloaded(): Boolean {
     return favorite && Injekt.get<BasePreferences>().downloadedOnly().get()
