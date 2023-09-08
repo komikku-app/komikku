@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
@@ -28,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -132,34 +131,26 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
             val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
             Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
                 AndroidView(
+                    modifier = Modifier.fillMaxWidth(),
                     factory = { context ->
                         screenModel.controllerBinding = PreMigrationListBinding.inflate(LayoutInflater.from(context))
                         screenModel.adapter = MigrationSourceAdapter(screenModel.clickListener)
-                        screenModel.controllerBinding.recycler.adapter = screenModel.adapter
+                        screenModel.controllerBinding.root.adapter = screenModel.adapter
                         screenModel.adapter?.isHandleDragEnabled = true
-                        screenModel.adapter?.fastScroller = screenModel.controllerBinding.fastScroller
-                        screenModel.controllerBinding.recycler.layoutManager = LinearLayoutManager(context)
+                        screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(context)
 
                         ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
 
                         screenModel.controllerBinding.root
                     },
                     update = {
-                        screenModel.controllerBinding.recycler
+                        screenModel.controllerBinding.root
                             .updatePadding(
                                 left = left,
                                 top = top,
                                 right = right,
                                 bottom = bottom,
                             )
-
-                        screenModel.controllerBinding.fastScroller
-                            .updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                                leftMargin = left
-                                topMargin = top
-                                rightMargin = right
-                                bottomMargin = bottom
-                            }
 
                         screenModel.adapter?.updateDataSet(items)
                     },
