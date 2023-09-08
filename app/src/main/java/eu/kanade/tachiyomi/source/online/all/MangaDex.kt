@@ -159,6 +159,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
@@ -169,6 +170,16 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             .map { response ->
                 delegate.latestUpdatesParse(response)
             }
+    }
+
+    override suspend fun getLatestUpdates(page: Int): MangasPage {
+        val request = delegate.latestUpdatesRequest(page)
+        val url = request.url.newBuilder()
+            .removeAllQueryParameters("includeFutureUpdates")
+            .build()
+
+        val response = client.newCall(request.newBuilder().url(url).build()).awaitSuccess()
+        return delegate.latestUpdatesParse(response)
     }
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
@@ -198,19 +209,22 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate)
     }
 
-    override fun fetchImage(page: Page): Observable<Response> {
-        val call = pageHandler.getImageCall(page)
-        return call?.asObservableSuccess() ?: super.fetchImage(page)
-    }
-
     override suspend fun getImage(page: Page): Response {
         val call = pageHandler.getImageCall(page)
         return call?.awaitSuccess() ?: super.getImage(page)
     }
 
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return pageHandler.fetchImageUrl(page) {
+            @Suppress("DEPRECATION")
             super.fetchImageUrl(it)
+        }
+    }
+
+    override suspend fun getImageUrl(page: Page): String {
+        return pageHandler.getImageUrl(page) {
+            super.getImageUrl(page)
         }
     }
 

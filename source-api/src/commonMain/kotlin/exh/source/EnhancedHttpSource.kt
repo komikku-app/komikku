@@ -149,7 +149,10 @@ class EnhancedHttpSource(
      *
      * @param page the page number to retrieve.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int) = source().fetchPopularManga(page)
+
+    override suspend fun getPopularManga(page: Int) = source().getPopularManga(page)
 
     /**
      * Returns an observable containing a page with a list of manga. Normally it's not needed to
@@ -159,15 +162,22 @@ class EnhancedHttpSource(
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         source().fetchSearchManga(page, query, filters)
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList) =
+        source().getSearchManga(page, query, filters)
 
     /**
      * Returns an observable containing a page with a list of latest manga updates.
      *
      * @param page the page number to retrieve.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int) = source().fetchLatestUpdates(page)
+
+    override suspend fun getLatestUpdates(page: Int) = source().getLatestUpdates(page)
 
     /**
      * Returns an observable with the updated details for a manga. Normally it's not needed to
@@ -224,14 +234,10 @@ class EnhancedHttpSource(
      *
      * @param page the page whose source image has to be fetched.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page) = source().fetchImageUrl(page)
 
-    /**
-     * Returns an observable with the response of the source image.
-     *
-     * @param page the page whose source image has to be downloaded.
-     */
-    override fun fetchImage(page: Page) = source().fetchImage(page)
+    override suspend fun getImageUrl(page: Page) = source().getImageUrl(page)
 
     /**
      * Returns the response of the source image.

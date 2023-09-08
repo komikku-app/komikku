@@ -19,6 +19,7 @@ import exh.source.DelegatedHttpSource
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
+import exh.util.urlImportFetchSearchMangaSuspend
 import org.jsoup.nodes.Document
 import rx.Observable
 import java.text.SimpleDateFormat
@@ -34,10 +35,17 @@ class Tsumino(delegate: HttpSource, val context: Context) :
     override val lang = "en"
 
     // Support direct URL importing
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
-            super.fetchSearchManga(page, query, filters)
+            super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
         }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        return urlImportFetchSearchMangaSuspend(context, query) {
+            super<DelegatedHttpSource>.getSearchManga(page, query, filters,)
+        }
+    }
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.lowercase(Locale.ROOT) ?: return null

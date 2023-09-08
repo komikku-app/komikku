@@ -146,9 +146,15 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         ensureDelegateCompatible()
         return delegate.fetchPopularManga(page)
+    }
+
+    override suspend fun getPopularManga(page: Int): MangasPage {
+        ensureDelegateCompatible()
+        return delegate.getPopularManga(page)
     }
 
     /**
@@ -159,9 +165,15 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         ensureDelegateCompatible()
         return delegate.fetchSearchManga(page, query, filters)
+    }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        ensureDelegateCompatible()
+        return delegate.getSearchManga(page, query, filters)
     }
 
     /**
@@ -169,9 +181,15 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         ensureDelegateCompatible()
         return delegate.fetchLatestUpdates(page)
+    }
+
+    override suspend fun getLatestUpdates(page: Int): MangasPage {
+        ensureDelegateCompatible()
+        return delegate.getLatestUpdates(page)
     }
 
     /**
@@ -250,19 +268,15 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param page the page whose source image has to be fetched.
      */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         ensureDelegateCompatible()
         return delegate.fetchImageUrl(page)
     }
 
-    /**
-     * Returns an observable with the response of the source image.
-     *
-     * @param page the page whose source image has to be downloaded.
-     */
-    override fun fetchImage(page: Page): Observable<Response> {
+    override suspend fun getImageUrl(page: Page): String {
         ensureDelegateCompatible()
-        return delegate.fetchImage(page)
+        return delegate.getImageUrl(page)
     }
 
     /**

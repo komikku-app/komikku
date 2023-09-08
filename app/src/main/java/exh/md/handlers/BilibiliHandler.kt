@@ -1,7 +1,6 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.network.parseAs
@@ -22,6 +21,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.core.util.lang.runAsObservable
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
@@ -154,12 +154,13 @@ class BilibiliHandler(currentClient: OkHttpClient) {
             .mapIndexed { i, page -> Page(i, page.path, "") }
     }
 
+    suspend fun getImageUrl(page: Page): String {
+        val response = client.newCall(imageUrlRequest(page)).awaitSuccess()
+        return imageUrlParse(response)
+    }
+
     fun fetchImageUrl(page: Page): Observable<String> {
-        return client.newCall(imageUrlRequest(page))
-            .asObservableSuccess()
-            .map {
-                imageUrlParse(it)
-            }
+        return runAsObservable { getImageUrl(page) }
     }
 
     private fun imageUrlRequest(page: Page): Request {

@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -15,6 +16,7 @@ import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.util.urlImportFetchSearchManga
+import exh.util.urlImportFetchSearchMangaSuspend
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -28,10 +30,17 @@ class EightMuses(delegate: HttpSource, val context: Context) :
     override val lang = "en"
 
     // Support direct URL importing
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
-            super.fetchSearchManga(page, query, filters)
+            super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
         }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        return urlImportFetchSearchMangaSuspend(context, query) {
+            super<DelegatedHttpSource>.getSearchManga(page, query, filters,)
+        }
+    }
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         val response = client.newCall(mangaDetailsRequest(manga)).awaitSuccess()

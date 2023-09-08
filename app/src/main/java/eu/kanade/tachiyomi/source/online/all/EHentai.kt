@@ -54,7 +54,7 @@ import exh.util.nullIfBlank
 import exh.util.trimAll
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
-import kotlinx.serialization.decodeFromString
+import exh.util.urlImportFetchSearchMangaSuspend
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -456,26 +456,43 @@ class EHentai(
     }
 
     private fun <T : MangasPage> Observable<T>.checkValid(): Observable<MangasPage> = map {
-        if (exh && it.mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
-            throw Exception("Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu")
-        } else {
-            it
-        }
+        it.checkValid()
     }
 
+    private fun <T : MangasPage> T.checkValid(): MangasPage =
+        if (exh && mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
+            throw Exception("Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu")
+        } else {
+            this
+        }
+
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        return super.fetchLatestUpdates(page).checkValid()
+        return super<HttpSource>.fetchLatestUpdates(page).checkValid()
+    }
+
+    override suspend fun getLatestUpdates(page: Int): MangasPage {
+        return super<HttpSource>.getLatestUpdates(page).checkValid()
     }
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        return super.fetchPopularManga(page).checkValid()
+        return super<HttpSource>.fetchPopularManga(page).checkValid()
+    }
+
+    override suspend fun getPopularManga(page: Int): MangasPage {
+        return super<HttpSource>.getPopularManga(page).checkValid()
     }
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
-            super.fetchSearchManga(page, query, filters).checkValid()
+            super<HttpSource>.fetchSearchManga(page, query, filters).checkValid()
         }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        return urlImportFetchSearchMangaSuspend(context, query) {
+            super<HttpSource>.getSearchManga(page, query, filters).checkValid()
+        }
+    }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         val toplist = ToplistOption.values()[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]

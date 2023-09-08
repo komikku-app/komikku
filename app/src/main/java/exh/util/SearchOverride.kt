@@ -35,3 +35,29 @@ fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: Strin
         }
         else -> fail()
     }
+
+
+/**
+ * A version of fetchSearchManga that supports URL importing
+ */
+suspend fun UrlImportableSource.urlImportFetchSearchMangaSuspend(context: Context, query: String, fail: suspend () -> MangasPage): MangasPage =
+    when {
+        query.startsWith("http://") || query.startsWith("https://") -> {
+            val res = galleryAdder.addGallery(
+                context = context,
+                url = query,
+                fav = false,
+                forceSource = this
+            )
+
+            MangasPage(
+                if (res is GalleryAddEvent.Success) {
+                    listOf(res.manga.toSManga())
+                } else {
+                    emptyList()
+                },
+                false,
+            )
+        }
+        else -> fail()
+    }

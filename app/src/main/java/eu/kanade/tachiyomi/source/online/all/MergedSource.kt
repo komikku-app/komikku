@@ -61,15 +61,20 @@ class MergedSource : HttpSource() {
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga) = throw UnsupportedOperationException()
     override suspend fun getChapterList(manga: SManga) = throw UnsupportedOperationException()
-    override fun fetchImage(page: Page) = throw UnsupportedOperationException()
     override suspend fun getImage(page: Page): Response = throw UnsupportedOperationException()
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page) = throw UnsupportedOperationException()
+    override suspend fun getImageUrl(page: Page) = throw UnsupportedOperationException()
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter) = throw UnsupportedOperationException()
     override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException()
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int) = throw UnsupportedOperationException()
+    override suspend fun getLatestUpdates(page: Int) = throw UnsupportedOperationException()
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int) = throw UnsupportedOperationException()
+    override suspend fun getPopularManga(page: Int) = throw UnsupportedOperationException()
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         return withIOContext {

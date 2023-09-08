@@ -134,4 +134,13 @@ class PageHandler(
             else -> superMethod(page)
         }
     }
+
+    suspend fun getImageUrl(page: Page, superMethod: suspend (Page) -> String): String {
+        return when {
+            page.url.contains("/bfs/comic/") -> {
+                bilibiliHandler.getImageUrl(page)
+            }
+            else -> superMethod(page)
+        }
+    }
 }

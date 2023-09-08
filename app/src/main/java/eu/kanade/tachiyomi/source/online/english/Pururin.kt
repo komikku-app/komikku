@@ -19,6 +19,7 @@ import exh.source.DelegatedHttpSource
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
+import exh.util.urlImportFetchSearchMangaSuspend
 import org.jsoup.nodes.Document
 import rx.Observable
 
@@ -39,6 +40,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
     override fun newMetaInstance() = PururinSearchMetadata()
 
     // Support direct URL importing
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         val trimmedIdQuery = query.trim().removePrefix("id:")
         val newQuery = if ((trimmedIdQuery.toIntOrNull() ?: -1) >= 0) {
@@ -48,7 +50,19 @@ class Pururin(delegate: HttpSource, val context: Context) :
         }
 
         return urlImportFetchSearchManga(context, newQuery) {
-            super.fetchSearchManga(page, query, filters)
+            super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
+        }
+    }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        val trimmedIdQuery = query.trim().removePrefix("id:")
+        val newQuery = if ((trimmedIdQuery.toIntOrNull() ?: -1) >= 0) {
+            "$baseUrl/gallery/$trimmedIdQuery/-"
+        } else {
+            query
+        }
+        return urlImportFetchSearchMangaSuspend(context, newQuery) {
+            super<DelegatedHttpSource>.getSearchManga(page, query, filters,)
         }
     }
 
