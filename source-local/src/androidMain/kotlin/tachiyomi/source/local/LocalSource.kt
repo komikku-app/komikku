@@ -430,7 +430,7 @@ actual class LocalSource(
 
     companion object {
         const val ID = 0L
-        const val HELP_URL = "https://tachiyomi.org/docs/guides/local-series/"
+        const val HELP_URL = "https://tachiyomi.org/docs/guides/local-source/"
 
         // SY -->
         const val COMIC_INFO_ARCHIVE = "ComicInfo.cbm"

@@ -156,7 +156,7 @@ object AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(R.string.help_translate),
-                        onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/docs/contribution#translation") },
+                        onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/docs/contribute#translation") },
                     )
                 }
 
@@ -170,7 +170,7 @@ object AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(R.string.privacy_policy),
-                        onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/privacy") },
+                        onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/privacy/") },
                     )
                 }
 
