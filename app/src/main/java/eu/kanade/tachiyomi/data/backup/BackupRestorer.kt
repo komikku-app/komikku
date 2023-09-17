@@ -19,7 +19,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
-import tachiyomi.domain.manga.interactor.SetFetchInterval
+import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.model.Track
@@ -37,10 +37,10 @@ class BackupRestorer(
 ) {
     private val updateManga: UpdateManga = Injekt.get()
     private val chapterRepository: ChapterRepository = Injekt.get()
-    private val setFetchInterval: SetFetchInterval = Injekt.get()
+    private val fetchInterval: FetchInterval = Injekt.get()
 
     private var now = ZonedDateTime.now()
-    private var currentFetchWindow = setFetchInterval.getWindow(now)
+    private var currentFetchWindow = fetchInterval.getWindow(now)
 
     private var backupManager = BackupManager(context)
 
@@ -115,7 +115,7 @@ class BackupRestorer(
         val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
         now = ZonedDateTime.now()
-        currentFetchWindow = setFetchInterval.getWindow(now)
+        currentFetchWindow = fetchInterval.getWindow(now)
 
         return coroutineScope {
             // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids

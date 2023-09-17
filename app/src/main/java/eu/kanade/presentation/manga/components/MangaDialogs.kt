@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.tachiyomi.R
-import tachiyomi.domain.manga.interactor.MAX_FETCH_INTERVAL
+import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.presentation.core.components.WheelTextPicker
 
 @Composable
@@ -78,7 +78,7 @@ fun SetIntervalDialog(
                 contentAlignment = Alignment.Center,
             ) {
                 val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                val items = (0..MAX_FETCH_INTERVAL).map {
+                val items = (0..FetchInterval.MAX_INTERVAL).map {
                     if (it == 0) {
                         stringResource(R.string.label_default)
                     } else {

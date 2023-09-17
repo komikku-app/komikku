@@ -75,13 +75,13 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
+import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
-import tachiyomi.domain.manga.interactor.SetFetchInterval
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.SourceNotInstalledException
@@ -112,7 +112,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getCategories: GetCategories = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
     private val refreshTracks: RefreshTracks = Injekt.get()
-    private val setFetchInterval: SetFetchInterval = Injekt.get()
+    private val fetchInterval: FetchInterval = Injekt.get()
 
     // SY -->
     private val getFavorites: GetFavorites = Injekt.get()
@@ -301,7 +301,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         val mdlistLogged = mdList.isLoggedIn
         // SY <--
 
-        val fetchWindow = setFetchInterval.getWindow(ZonedDateTime.now())
+        val fetchWindow = fetchInterval.getWindow(ZonedDateTime.now())
 
         coroutineScope {
             mangaToUpdate.groupBy { it.manga.source }
