@@ -76,7 +76,6 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
-import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.source.MERGED_SOURCE_ID
@@ -934,7 +933,7 @@ private fun LazyListScope.sharedChapterItems(
                     if (manga.isEhBasedManga()) {
                         MetadataUtil.EX_DATE_FORMAT.format(Date(it))
                     } else {
-                        Date(it).toRelativeString(context, dateFormat)
+                        dateFormat.format(Date(it))
                     }
                     // SY <--
                 },
