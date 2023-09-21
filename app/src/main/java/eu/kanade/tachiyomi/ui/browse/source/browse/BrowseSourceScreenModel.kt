@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -39,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -191,30 +191,25 @@ open class BrowseSourceScreenModel(
     /**
      * Flow of Pager flow tied to [State.listing]
      */
+    private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
-            Pager(
-                PagingConfig(pageSize = 25),
-            ) {
+            Pager(PagingConfig(pageSize = 25)) {
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
             }.flow.map { pagingData ->
                 pagingData.map { (it, metadata) ->
                     networkToLocalManga.await(it.toDomainManga(sourceId))
-                        .let { localManga ->
-                            getManga.subscribe(localManga.url, localManga.source)
-                        }
+                        .let { localManga -> getManga.subscribe(localManga.url, localManga.source) }
                         .filterNotNull()
-                        .filter { localManga ->
-                            !sourcePreferences.hideInLibraryItems().get() || !localManga.favorite
-                        }
                         // SY -->
                         .combineMetadata(metadata)
                         // SY <--
                         .stateIn(ioCoroutineScope)
                 }
+                    .filter { !hideInLibraryItems || !it.value.favorite }
             }
                 .cachedIn(ioCoroutineScope)
         }
