@@ -43,6 +43,7 @@ fun UpdateScreen(
     state: UpdatesScreenModel.State,
     snackbarHostState: SnackbarHostState,
     lastUpdated: Long,
+    relativeTime: Boolean,
     // SY -->
     preserveReadingPosition: Boolean,
     // SY <--
@@ -116,7 +117,7 @@ fun UpdateScreen(
                         }
 
                         updatesUiItems(
-                            uiModels = state.getUiModel(context),
+                            uiModels = state.getUiModel(context, relativeTime),
                             selectionMode = state.selectionMode,
                             // SY -->
                             preserveReadingPosition = preserveReadingPosition,

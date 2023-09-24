@@ -76,6 +76,7 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
+import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.source.MERGED_SOURCE_ID
@@ -108,6 +109,7 @@ fun MangaScreen(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     fetchInterval: Int?,
+    dateRelativeTime: Boolean,
     dateFormat: DateFormat,
     isTabletUi: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -173,6 +175,7 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
+            dateRelativeTime = dateRelativeTime,
             dateFormat = dateFormat,
             fetchInterval = fetchInterval,
             chapterSwipeStartAction = chapterSwipeStartAction,
@@ -219,6 +222,7 @@ fun MangaScreen(
         MangaScreenLargeImpl(
             state = state,
             snackbarHostState = snackbarHostState,
+            dateRelativeTime = dateRelativeTime,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             dateFormat = dateFormat,
@@ -268,6 +272,7 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
+    dateRelativeTime: Boolean,
     dateFormat: DateFormat,
     fetchInterval: Int?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -349,11 +354,9 @@ private fun MangaScreenSmallImpl(
             }
             val animatedTitleAlpha by animateFloatAsState(
                 if (firstVisibleItemIndex > 0) 1f else 0f,
-                label = "titleAlpha",
             )
             val animatedBgAlpha by animateFloatAsState(
                 if (firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0) 1f else 0f,
-                label = "bgAlpha",
             )
             MangaToolbar(
                 title = state.manga.title,
@@ -554,6 +557,7 @@ private fun MangaScreenSmallImpl(
                     sharedChapterItems(
                         manga = state.manga,
                         chapters = chapters,
+                        dateRelativeTime = dateRelativeTime,
                         dateFormat = dateFormat,
                         chapterSwipeStartAction = chapterSwipeStartAction,
                         chapterSwipeEndAction = chapterSwipeEndAction,
@@ -575,6 +579,7 @@ private fun MangaScreenSmallImpl(
 fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
+    dateRelativeTime: Boolean,
     dateFormat: DateFormat,
     fetchInterval: Int?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -834,6 +839,7 @@ fun MangaScreenLargeImpl(
                             sharedChapterItems(
                                 manga = state.manga,
                                 chapters = chapters,
+                                dateRelativeTime = dateRelativeTime,
                                 dateFormat = dateFormat,
                                 chapterSwipeStartAction = chapterSwipeStartAction,
                                 chapterSwipeEndAction = chapterSwipeEndAction,
@@ -898,6 +904,7 @@ private fun SharedMangaBottomActionMenu(
 private fun LazyListScope.sharedChapterItems(
     manga: Manga,
     chapters: List<ChapterItem>,
+    dateRelativeTime: Boolean,
     dateFormat: DateFormat,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -933,7 +940,11 @@ private fun LazyListScope.sharedChapterItems(
                     if (manga.isEhBasedManga()) {
                         MetadataUtil.EX_DATE_FORMAT.format(Date(it))
                     } else {
-                        dateFormat.format(Date(it))
+                        Date(it).toRelativeString(
+                            context,
+                            dateRelativeTime,
+                            dateFormat,
+                        )
                     }
                     // SY <--
                 },

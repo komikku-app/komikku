@@ -26,7 +26,7 @@ android {
     defaultConfig {
         applicationId = "eu.kanade.tachiyomi.sy"
 
-        versionCode = 56
+        versionCode = 57
         versionName = "1.9.3"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")

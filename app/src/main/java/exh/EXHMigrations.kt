@@ -553,6 +553,12 @@ object EXHMigrations {
                         pref.getAndSet { it - "battery_not_low" }
                     }
                 }
+                if (oldVersion under 57) {
+                    val pref = preferenceStore.getInt("relative_time", 7)
+                    if (pref.get() == 0) {
+                        uiPreferences.relativeTime().set(false)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

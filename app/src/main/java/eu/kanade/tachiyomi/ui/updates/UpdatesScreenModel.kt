@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.toDateKey
+import eu.kanade.tachiyomi.util.lang.toRelativeString
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.channels.Channel
@@ -61,6 +62,7 @@ class UpdatesScreenModel(
     private val getChapter: GetChapter = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    uiPreferences: UiPreferences = Injekt.get(),
     // SY -->
     readerPreferences: ReaderPreferences = Injekt.get(),
     // SY <--
@@ -70,6 +72,7 @@ class UpdatesScreenModel(
     val events: Flow<Event> = _events.receiveAsFlow()
 
     val lastUpdated by libraryPreferences.lastUpdatedTimestamp().asState(coroutineScope)
+    val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
 
     // SY -->
     val preserveReadingPosition by readerPreferences.preserveReadingPosition().asState(coroutineScope)
@@ -385,7 +388,7 @@ class UpdatesScreenModel(
         val selected = items.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
 
-        fun getUiModel(context: Context): List<UpdatesUiModel> {
+        fun getUiModel(context: Context, relativeTime: Boolean): List<UpdatesUiModel> {
             val dateFormat by mutableStateOf(UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()))
 
             return items
@@ -395,7 +398,11 @@ class UpdatesScreenModel(
                     val afterDate = after?.item?.update?.dateFetch?.toDateKey() ?: Date(0)
                     when {
                         beforeDate.time != afterDate.time && afterDate.time != 0L -> {
-                            val text = dateFormat.format(afterDate)
+                            val text = afterDate.toRelativeString(
+                                context = context,
+                                relative = relativeTime,
+                                dateFormat = dateFormat,
+                            )
                             UpdatesUiModel.Header(text)
                         }
                         // Return null to avoid adding a separator between two items.
