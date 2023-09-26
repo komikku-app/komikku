@@ -4,32 +4,32 @@ import android.content.Context
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.service.DelayedTrackingUpdateJob
 import eu.kanade.domain.track.store.DelayedTrackingStore
-import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import exh.md.utils.FollowStatus
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import logcat.LogPriority
-import tachiyomi.core.util.lang.launchNonCancellable
+import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 
 class TrackChapter(
     private val getTracks: GetTracks,
-    private val trackManager: TrackManager,
+    private val trackerManager: TrackerManager,
     private val insertTrack: InsertTrack,
     private val delayedTrackingStore: DelayedTrackingStore,
 ) {
 
-    suspend fun await(context: Context, mangaId: Long, chapterNumber: Double) = coroutineScope {
-        launchNonCancellable {
+    suspend fun await(context: Context, mangaId: Long, chapterNumber: Double) {
+        withNonCancellableContext {
             val tracks = getTracks.await(mangaId)
-            if (tracks.isEmpty()) return@launchNonCancellable
+            if (tracks.isEmpty()) return@withNonCancellableContext
 
             tracks.mapNotNull { track ->
-                val service = trackManager.getService(track.syncId)
-                if (service == null || !service.isLoggedIn || chapterNumber <= track.lastChapterRead /* SY --> */ || (service.id == TrackManager.MDLIST && track.status == FollowStatus.UNFOLLOWED.int.toLong())/* SY <-- */) {
+                val service = trackerManager.get(track.syncId)
+                if (service == null || !service.isLoggedIn || chapterNumber <= track.lastChapterRead /* SY --> */ || (service is MdList && track.status == FollowStatus.UNFOLLOWED.int.toLong())/* SY <-- */) {
                     return@mapNotNull null
                 }
 

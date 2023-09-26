@@ -8,7 +8,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -51,7 +51,7 @@ object DebugFunctions {
     val libraryPrefs: LibraryPreferences by injectLazy()
     val readerPrefs: ReaderPreferences by injectLazy()
     val backupPrefs: BackupPreferences by injectLazy()
-    val trackManager: TrackManager by injectLazy()
+    val trackerManager: TrackerManager by injectLazy()
     val sourceManager: SourceManager by injectLazy()
     val updateManga: UpdateManga by injectLazy()
     val getFavorites: GetFavorites by injectLazy()
@@ -64,13 +64,13 @@ object DebugFunctions {
     fun forceUpgradeMigration() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(1)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackManager)
+        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackerManager)
     }
 
     fun forceSetupJobs() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(0)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackManager)
+        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackerManager)
     }
 
     fun resetAgedFlagInEXHManga() {

@@ -1,6 +1,6 @@
 package exh.recs
 
-import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
@@ -268,6 +268,7 @@ open class RecommendsPagingSource(
     private val smart: Boolean = true,
     private var preferredApi: API = API.MYANIMELIST,
 ) : SourcePagingSource(source) {
+    val trackerManager: TrackerManager by injectLazy()
     val getTracks: GetTracks by injectLazy()
 
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
@@ -280,8 +281,8 @@ open class RecommendsPagingSource(
         val recs = apiList.firstNotNullOfOrNull { (key, api) ->
             try {
                 val id = when (key) {
-                    API.MYANIMELIST -> tracks.find { it.syncId == TrackManager.MYANIMELIST }?.remoteId
-                    API.ANILIST -> tracks.find { it.syncId == TrackManager.ANILIST }?.remoteId
+                    API.MYANIMELIST -> tracks.find { it.syncId == trackerManager.myAnimeList.id }?.remoteId
+                    API.ANILIST -> tracks.find { it.syncId == trackerManager.aniList.id }?.remoteId
                 }
 
                 val recs = if (id != null) {

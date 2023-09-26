@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreateJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
@@ -98,7 +98,7 @@ object EXHMigrations {
         libraryPreferences: LibraryPreferences,
         readerPreferences: ReaderPreferences,
         backupPreferences: BackupPreferences,
-        trackManager: TrackManager,
+        trackerManager: TrackerManager,
     ): Boolean {
         val lastVersionCode = preferenceStore.getInt("eh_last_version_code", 0)
         val oldVersion = lastVersionCode.get()
@@ -205,7 +205,7 @@ object EXHMigrations {
                 }
                 if (oldVersion under 12) {
                     // Force MAL log out due to login flow change
-                    trackManager.myAnimeList.logout()
+                    trackerManager.myAnimeList.logout()
                 }
                 if (oldVersion under 14) {
                     // Migrate DNS over HTTPS setting
@@ -502,7 +502,7 @@ object EXHMigrations {
                 }
                 if (oldVersion under 45) {
                     // Force MangaDex log out due to login flow change
-                    trackManager.mdList.logout()
+                    trackerManager.mdList.logout()
                 }
                 if (oldVersion under 51) {
                     LibraryUpdateJob.cancelAllWorks(context)
@@ -520,7 +520,7 @@ object EXHMigrations {
                         "pref_filter_library_bookmarked",
                         "pref_filter_library_completed",
                         "pref_filter_library_lewd",
-                    ) + trackManager.services.map { "pref_filter_library_tracked_${it.id}" }
+                    ) + trackerManager.trackers.map { "pref_filter_library_tracked_${it.id}" }
 
                     prefKeys.forEach { key ->
                         val pref = preferenceStore.getInt(key, 0)

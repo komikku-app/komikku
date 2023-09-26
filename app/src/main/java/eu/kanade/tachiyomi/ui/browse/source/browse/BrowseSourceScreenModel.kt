@@ -15,19 +15,16 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.chapter.interactor.SyncChapterProgressWithTrack
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.track.EnhancedTrackService
-import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -81,7 +78,6 @@ import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.repository.SourcePagingSourceType
 import tachiyomi.domain.source.service.SourceManager
-import tachiyomi.domain.track.interactor.InsertTrack
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -108,8 +104,7 @@ open class BrowseSourceScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
-    private val insertTrack: InsertTrack = Injekt.get(),
-    private val syncChapterProgressWithTrack: SyncChapterProgressWithTrack = Injekt.get(),
+    private val addTracks: AddTracks = Injekt.get(),
 
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
@@ -120,8 +115,6 @@ open class BrowseSourceScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
-
-    private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLoggedIn } }
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(coroutineScope)
 
@@ -209,7 +202,7 @@ open class BrowseSourceScreenModel(
                         // SY <--
                         .stateIn(ioCoroutineScope)
                 }
-                    .filter { !hideInLibraryItems || !it.value.favorite }
+                    .filter { !hideInLibraryItems || !it.value.first.favorite }
             }
                 .cachedIn(ioCoroutineScope)
         }
@@ -346,8 +339,7 @@ open class BrowseSourceScreenModel(
                 new = new.removeCovers(coverCache)
             } else {
                 setMangaDefaultChapterFlags.await(manga)
-
-                autoAddTrack(manga)
+                addTracks.bindEnhancedTracks(manga, source)
             }
 
             updateManga.await(new.toMangaUpdate())
@@ -382,25 +374,6 @@ open class BrowseSourceScreenModel(
                 }
             }
         }
-    }
-
-    private suspend fun autoAddTrack(manga: Manga) {
-        loggedServices
-            .filterIsInstance<EnhancedTrackService>()
-            .filter { it.accept(source) }
-            .forEach { service ->
-                try {
-                    service.match(manga)?.let { track ->
-                        track.manga_id = manga.id
-                        (service as TrackService).bind(track)
-                        insertTrack.await(track.toDomainTrack()!!)
-
-                        syncChapterProgressWithTrack.await(manga.id, track.toDomainTrack()!!, service)
-                    }
-                } catch (e: Exception) {
-                    logcat(LogPriority.WARN, e) { "Could not match manga: ${manga.title} with service $service" }
-                }
-            }
     }
 
     // SY -->

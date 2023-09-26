@@ -4,8 +4,7 @@ import android.graphics.Color
 import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.data.track.TrackService
+import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -19,7 +18,7 @@ import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MdList(id: Long) : TrackService(id, "MDList") {
+class MdList(id: Long) : Tracker(id, "MDList") {
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(Injekt.get()) }
 
@@ -128,7 +127,7 @@ class MdList(id: Long) : TrackService(id, "MDList") {
     }
 
     fun createInitialTracker(dbManga: Manga, mdManga: Manga = dbManga): Track {
-        return Track.create(TrackManager.MDLIST).apply {
+        return Track.create(id).apply {
             manga_id = dbManga.id
             status = FollowStatus.UNFOLLOWED.int
             tracking_url = MdUtil.baseUrl + mdManga.url
@@ -151,7 +150,7 @@ class MdList(id: Long) : TrackService(id, "MDList") {
         }
     }
 
-    private fun toTrackSearch(mangaInfo: SManga): TrackSearch = TrackSearch.create(TrackManager.MDLIST).apply {
+    private fun toTrackSearch(mangaInfo: SManga): TrackSearch = TrackSearch.create(id).apply {
         tracking_url = MdUtil.baseUrl + mangaInfo.url
         title = mangaInfo.title
         cover_url = mangaInfo.thumbnail_url.orEmpty()

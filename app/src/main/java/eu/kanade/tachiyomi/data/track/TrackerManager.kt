@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.track
 
-import android.content.Context
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kavita.Kavita
@@ -12,18 +11,12 @@ import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.suwayomi.Suwayomi
 
-class TrackManager(context: Context) {
+class TrackerManager {
 
     companion object {
-        const val MYANIMELIST = 1L
         const val ANILIST = 2L
         const val KITSU = 3L
-        const val SHIKIMORI = 4L
-        const val BANGUMI = 5L
-        const val KOMGA = 6L
-        const val MANGA_UPDATES = 7L
         const val KAVITA = 8L
-        const val SUWAYOMI = 9L
 
         // SY --> Mangadex from Neko
         const val MDLIST = 60L
@@ -32,19 +25,19 @@ class TrackManager(context: Context) {
 
     val mdList = MdList(MDLIST)
 
-    val myAnimeList = MyAnimeList(MYANIMELIST)
+    val myAnimeList = MyAnimeList(1L)
     val aniList = Anilist(ANILIST)
     val kitsu = Kitsu(KITSU)
-    val shikimori = Shikimori(SHIKIMORI)
-    val bangumi = Bangumi(BANGUMI)
-    val komga = Komga(KOMGA)
-    val mangaUpdates = MangaUpdates(MANGA_UPDATES)
-    val kavita = Kavita(context, KAVITA)
-    val suwayomi = Suwayomi(SUWAYOMI)
+    val shikimori = Shikimori(4L)
+    val bangumi = Bangumi(5L)
+    val komga = Komga(6L)
+    val mangaUpdates = MangaUpdates(7L)
+    val kavita = Kavita(KAVITA)
+    val suwayomi = Suwayomi(9L)
 
-    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
+    val trackers = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
 
-    fun getService(id: Long) = services.find { it.id == id }
+    fun get(id: Long) = trackers.find { it.id == id }
 
-    fun hasLoggedServices() = services.any { it.isLoggedIn }
+    fun hasLoggedIn() = trackers.any { it.isLoggedIn }
 }

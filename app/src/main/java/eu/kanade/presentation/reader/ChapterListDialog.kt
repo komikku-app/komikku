@@ -30,6 +30,7 @@ fun ChapterListDialog(
     chapters: List<ReaderChapterItem>,
     onClickChapter: (Chapter) -> Unit,
     onBookmark: (Chapter) -> Unit,
+    dateRelativeTime: Boolean,
 ) {
     val manga by screenModel.mangaFlow.collectAsState()
     val context = LocalContext.current
@@ -56,7 +57,7 @@ fun ChapterListDialog(
                             if (manga?.isEhBasedManga() == true) {
                                 MetadataUtil.EX_DATE_FORMAT.format(Date(it))
                             } else {
-                                Date(it).toRelativeString(context, chapterItem.dateFormat)
+                                Date(it).toRelativeString(context, dateRelativeTime, chapterItem.dateFormat)
                             }
                             // SY <--
                         },

@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
@@ -70,7 +70,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
     val trackPreferences: TrackPreferences by injectLazy()
-    val mdList: MdList by lazy { Injekt.get<TrackManager>().mdList }
+    val mdList: MdList by lazy { Injekt.get<TrackerManager>().mdList }
 
     private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)

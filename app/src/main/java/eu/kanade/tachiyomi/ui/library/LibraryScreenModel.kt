@@ -29,8 +29,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -131,7 +131,7 @@ class LibraryScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
-    private val trackManager: TrackManager = Injekt.get(),
+    private val trackerManager: TrackerManager = Injekt.get(),
     // SY -->
     private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
@@ -170,18 +170,18 @@ class LibraryScreenModel(
                     ::Pair,
                 ),
                 // SY <--
-            ) { searchQuery, library, tracks, (loggedInTrackServices, _), (groupType, sort) ->
+            ) { searchQuery, library, tracks, (loggedInTrackers, _), (groupType, sort) ->
                 library
                     // SY -->
                     .applyGrouping(groupType)
                     // SY <--
-                    .applyFilters(tracks, loggedInTrackServices)
+                    .applyFilters(tracks, loggedInTrackers)
                     .applySort(/* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT } /* SY <-- */)
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
                             // Filter query
                             // SY -->
-                            filterLibrary(value, searchQuery, loggedInTrackServices)
+                            filterLibrary(value, searchQuery, loggedInTrackers)
                             // SY <--
                         } else {
                             // Don't do anything
@@ -268,7 +268,7 @@ class LibraryScreenModel(
      */
     private suspend fun LibraryMap.applyFilters(
         trackMap: Map<Long, List<Long>>,
-        loggedInTrackServices: Map<Long, TriState>,
+        loggedInTrackers: Map<Long, TriState>,
     ): LibraryMap {
         val prefs = getLibraryItemPreferencesFlow().first()
         val downloadedOnly = prefs.globalFilterDownloaded
@@ -279,10 +279,10 @@ class LibraryScreenModel(
         val filterBookmarked = prefs.filterBookmarked
         val filterCompleted = prefs.filterCompleted
 
-        val isNotLoggedInAnyTrack = loggedInTrackServices.isEmpty()
+        val isNotLoggedInAnyTrack = loggedInTrackers.isEmpty()
 
-        val excludedTracks = loggedInTrackServices.mapNotNull { if (it.value == TriState.ENABLED_NOT) it.key else null }
-        val includedTracks = loggedInTrackServices.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
+        val excludedTracks = loggedInTrackers.mapNotNull { if (it.value == TriState.ENABLED_NOT) it.key else null }
+        val includedTracks = loggedInTrackers.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
         val trackFiltersIsIgnored = includedTracks.isEmpty() && excludedTracks.isEmpty()
 
         // SY -->
@@ -550,14 +550,14 @@ class LibraryScreenModel(
      * @return map of track id with the filter value
      */
     private fun getTrackingFilterFlow(): Flow<Map<Long, TriState>> {
-        val loggedServices = trackManager.services.filter { it.isLoggedIn }
-        return if (loggedServices.isNotEmpty()) {
-            val prefFlows = loggedServices
+        val loggedInTrackers = trackerManager.trackers.filter { it.isLoggedIn }
+        return if (loggedInTrackers.isNotEmpty()) {
+            val prefFlows = loggedInTrackers
                 .map { libraryPreferences.filterTracking(it.id.toInt()).changes() }
                 .toTypedArray()
             combine(*prefFlows) {
-                loggedServices
-                    .mapIndexed { index, trackService -> trackService.id to it[index] }
+                loggedInTrackers
+                    .mapIndexed { index, tracker -> tracker.id to it[index] }
                     .toMap()
             }
         } else {
@@ -975,12 +975,12 @@ class LibraryScreenModel(
 
     private fun filterTracks(constraint: String, tracks: List<Track>, context: Context): Boolean {
         return tracks.fastAny { track ->
-            val trackService = trackManager.getService(track.syncId)
+            val trackService = trackerManager.get(track.syncId)
             if (trackService != null) {
                 val status = trackService.getStatus(track.status.toInt())?.let {
                     context.getString(it)
                 }
-                val name = trackManager.getService(track.syncId)?.name
+                val name = trackerManager.get(track.syncId)?.name
                 status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
             } else {
                 false
@@ -1132,7 +1132,7 @@ class LibraryScreenModel(
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
                 libraryManga.groupBy { item ->
                     val status = tracks[item.libraryManga.manga.id]?.firstNotNullOfOrNull { track ->
-                        TrackStatus.parseTrackerStatus(track.syncId, track.status)
+                        TrackStatus.parseTrackerStatus(trackerManager, track.syncId, track.status)
                     } ?: TrackStatus.OTHER
 
                     status.int

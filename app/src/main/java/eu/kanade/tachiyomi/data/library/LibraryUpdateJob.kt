@@ -25,8 +25,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
@@ -121,7 +121,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getMergedMangaForDownloading: GetMergedMangaForDownloading = Injekt.get()
     private val getTracks: GetTracks = Injekt.get()
     private val insertTrack: InsertTrack = Injekt.get()
-    private val mdList = Injekt.get<TrackManager>().mdList
+    private val trackerManager: TrackerManager = Injekt.get()
+    private val mdList = trackerManager.mdList
     // SY <--
 
     private val notifier = LibraryUpdateNotifier(context)
@@ -238,7 +239,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                     libraryManga.filter { (manga) ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
-                            TrackStatus.parseTrackerStatus(track.syncId, track.status)
+                            TrackStatus.parseTrackerStatus(trackerManager, track.syncId, track.status)
                         } ?: TrackStatus.OTHER
                         status.int == trackingExtra
                     }
@@ -317,7 +318,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     mangaInSource.forEach { (manga) ->
                                         try {
                                             val tracks = getTracks.await(manga.id)
-                                            if (tracks.isEmpty() || tracks.none { it.syncId == TrackManager.MDLIST }) {
+                                            if (tracks.isEmpty() || tracks.none { it.syncId == TrackerManager.MDLIST }) {
                                                 val track = mdList.createInitialTracker(manga)
                                                 insertTrack.await(mdList.refresh(track).toDomainTrack(false)!!)
                                             }
@@ -613,7 +614,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 val dbTracks = getTracks.await(manga.id)
 
                 // find the mdlist entry if its unfollowed the follow it
-                var tracker = dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }
+                var tracker = dbTracks.firstOrNull { it.syncId == TrackerManager.MDLIST }
                     ?: mdList.createInitialTracker(manga).toDomainTrack(idRequired = false)
 
                 if (tracker?.status == FollowStatus.UNFOLLOWED.int.toLong()) {

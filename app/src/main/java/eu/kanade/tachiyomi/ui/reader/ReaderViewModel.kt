@@ -319,8 +319,9 @@ class ReaderViewModel @JvmOverloads constructor(
                     }
                     val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id) } else emptyList()
                     val mergedManga = if (source is MergedSource) runBlocking { getMergedMangaById.await(manga.id) }.associateBy { it.id } else emptyMap()
+                    val relativeTime = uiPreferences.relativeTime().get()
                     // SY <--
-                    mutableState.update { it.copy(manga = manga /* SY --> */, meta = metadata, mergedManga = mergedManga/* SY <-- */) }
+                    mutableState.update { it.copy(manga = manga /* SY --> */, meta = metadata, mergedManga = mergedManga, dateRelativeTime = relativeTime/* SY <-- */) }
                     if (chapterId == -1L) chapterId = initialChapterId
 
                     val context = Injekt.get<Application>()
@@ -1193,6 +1194,7 @@ class ReaderViewModel @JvmOverloads constructor(
         val indexPageToShift: Int? = null,
         val indexChapterToShift: Long? = null,
         val doublePages: Boolean = false,
+        val dateRelativeTime: Boolean = true,
         // SY <--
     ) {
         val totalPages: Int

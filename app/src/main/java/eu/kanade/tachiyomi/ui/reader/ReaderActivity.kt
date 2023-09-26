@@ -577,6 +577,7 @@ class ReaderActivity : BaseActivity() {
                                 }
                             }
                         },
+                        state.dateRelativeTime
                     )
                 }
                 null -> {}
