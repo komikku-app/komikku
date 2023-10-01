@@ -26,9 +26,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
@@ -224,14 +222,14 @@ open class FeedScreenModel(
                         if (itemUI.source != null) {
                             withContext(coroutineDispatcher) {
                                 if (itemUI.savedSearch == null) {
-                                    itemUI.source.fetchLatestUpdates(1)
+                                    itemUI.source.getLatestUpdates(1)
                                 } else {
-                                    itemUI.source.fetchSearchManga(
+                                    itemUI.source.getSearchManga(
                                         1,
                                         itemUI.savedSearch.query.orEmpty(),
                                         getFilterList(itemUI.savedSearch, itemUI.source),
                                     )
-                                }.awaitSingle()
+                                }
                             }.mangas
                         } else {
                             emptyList()

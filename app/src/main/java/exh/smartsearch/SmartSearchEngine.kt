@@ -8,7 +8,6 @@ import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
-import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.domain.manga.model.Manga
 import java.util.Locale
 
@@ -31,7 +30,7 @@ class SmartSearchEngine(
                         query
                     }
 
-                    val searchResults = source.fetchSearchManga(1, builtQuery, FilterList()).awaitSingle()
+                    val searchResults = source.getSearchManga(1, builtQuery, FilterList())
 
                     searchResults.mangas.map {
                         val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
@@ -54,7 +53,7 @@ class SmartSearchEngine(
             } else {
                 title
             }
-            val searchResults = source.fetchSearchManga(1, searchQuery, FilterList()).awaitSingle()
+            val searchResults = source.getSearchManga(1, searchQuery, FilterList())
 
             if (searchResults.mangas.size == 1) {
                 return@supervisorScope listOf(SearchEntry(searchResults.mangas.first(), 0.0))
