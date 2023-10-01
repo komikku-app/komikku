@@ -21,6 +21,7 @@ import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
+import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.view.animation.Animation
@@ -99,7 +100,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
-import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
@@ -1209,7 +1209,7 @@ class ReaderActivity : BaseActivity() {
         // SY -->
         val currentPageText = if (hasExtraPage) {
             val invertDoublePage = (viewModel.state.value.viewer as? PagerViewer)?.config?.invertDoublePages ?: false
-            if (resources.isLTR xor invertDoublePage) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
+            if ((resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_LTR) xor invertDoublePage) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
         } else {
             "${page.number}"
         }
@@ -1271,7 +1271,7 @@ class ReaderActivity : BaseActivity() {
 
         // SY -->
         val text = if (secondPage != null) {
-            getString(R.string.share_pages_info, manga.title, chapter.name, if (resources.isLTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}")
+            getString(R.string.share_pages_info, manga.title, chapter.name, if (resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_LTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}")
         } else {
             getString(R.string.share_page_info, manga.title, chapter.name, page.number)
         }
