@@ -36,6 +36,7 @@ data class ChapterAttributesDto(
     val createdAt: String,
     val updatedAt: String,
     val publishAt: String,
+    val readableAt: String,
 )
 
 @Serializable
