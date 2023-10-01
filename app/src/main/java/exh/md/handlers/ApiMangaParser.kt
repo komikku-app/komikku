@@ -242,7 +242,7 @@ class ApiMangaParser(
 
         val name = chapterName.toString()
         // Convert from unix time
-        val dateUpload = MdUtil.parseDate(attributes.publishAt)
+        val dateUpload = MdUtil.parseDate(attributes.readableAt)
 
         val scanlatorName = networkChapter.relationships
             .filter {
