@@ -62,8 +62,8 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
         }
 
         private fun isApplicable(source: BufferedSource): Boolean {
-            val type = source.peek().inputStream().use {
-                // SY -->
+            // SY -->
+            val type = source.peek().inputStream().buffered().use {
                 if (CbzCrypto.detectCoverImageArchive(it)) return true
                 // SY <--
                 ImageUtil.findImageType(it)
