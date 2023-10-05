@@ -191,6 +191,7 @@ class MainActivity : BaseActivity() {
         // SY <--
 
         // Draw edge-to-edge
+        // TODO: replace with ComponentActivity#enableEdgeToEdge
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setComposeContent {
