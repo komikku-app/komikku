@@ -41,6 +41,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import logcat.LogPriority
+import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.preference.TriState
 import tachiyomi.core.preference.getAndSet
@@ -575,6 +576,18 @@ object EXHMigrations {
                             logcat(LogPriority.WARN, e) { "Failed to remove file from cache" }
                         }
                     }
+
+                    preferenceStore.getAll()
+                        .filter { it.key.startsWith("pref_mangasync_") || it.key.startsWith("track_token_") }
+                        .forEach { (key, value) ->
+                            if (value is String) {
+                                preferenceStore
+                                    .getString(Preference.privateKey(key))
+                                    .set(value)
+
+                                preferenceStore.getString(key).delete()
+                            }
+                        }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
