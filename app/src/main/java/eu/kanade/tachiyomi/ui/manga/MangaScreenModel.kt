@@ -19,6 +19,7 @@ import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
@@ -29,7 +30,6 @@ import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
-import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.HttpException
@@ -162,6 +162,7 @@ class MangaScreenModel(
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
+    private val addTracks: AddTracks = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val mangaRepository: MangaRepository = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
@@ -737,24 +738,7 @@ class MangaScreenModel(
                 }
 
                 // Finally match with enhanced tracking when available
-                val source = state.source
-                state.trackItems
-                    .map { it.tracker }
-                    .filterIsInstance<EnhancedTracker>()
-                    .filter { it.accept(source) }
-                    .forEach { service ->
-                        launchIO {
-                            try {
-                                service.match(manga)?.let { track ->
-                                    (service as Tracker).register(track, mangaId)
-                                }
-                            } catch (e: Exception) {
-                                logcat(LogPriority.WARN, e) {
-                                    "Could not match manga: ${manga.title} with service $service"
-                                }
-                            }
-                        }
-                    }
+                addTracks.bindEnhancedTracks(manga, state.source)
             }
         }
     }
