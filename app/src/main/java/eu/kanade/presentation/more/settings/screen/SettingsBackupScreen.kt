@@ -148,6 +148,7 @@ object SettingsBackupScreen : SearchableSettings {
                 BackupConst.BACKUP_TRACK to R.string.track,
                 BackupConst.BACKUP_HISTORY to R.string.history,
                 BackupConst.BACKUP_APP_PREFS to R.string.app_settings,
+                BackupConst.BACKUP_SOURCE_PREFS to R.string.source_settings,
                 // SY -->
                 BackupConst.BACKUP_CUSTOM_INFO to R.string.custom_entry_info,
                 BackupConst.BACKUP_READ_MANGA to R.string.all_read_entries,

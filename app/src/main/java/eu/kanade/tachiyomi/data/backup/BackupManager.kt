@@ -18,6 +18,8 @@ import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_HISTORY
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_HISTORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_READ_MANGA
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_READ_MANGA_MASK
+import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_SOURCE_PREFS
+import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_SOURCE_PREFS_MASK
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_TRACK
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_TRACK_MASK
 import eu.kanade.tachiyomi.data.backup.models.Backup
@@ -28,6 +30,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
+import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
 import eu.kanade.tachiyomi.data.backup.models.BackupSerializer
 import eu.kanade.tachiyomi.data.backup.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.models.BooleanPreferenceValue
@@ -41,8 +44,11 @@ import eu.kanade.tachiyomi.data.backup.models.backupChapterMapper
 import eu.kanade.tachiyomi.data.backup.models.backupMergedMangaReferenceMapper
 import eu.kanade.tachiyomi.data.backup.models.backupSavedSearchMapper
 import eu.kanade.tachiyomi.data.backup.models.backupTrackMapper
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.preferenceKey
+import eu.kanade.tachiyomi.source.sourcePreferences
 import eu.kanade.tachiyomi.util.system.hasPermission
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
@@ -130,6 +136,7 @@ class BackupManager(
             emptyList(),
             prepExtensionInfoForSync(databaseManga),
             backupAppPreferences(flags),
+            backupSourcePreferences(flags),
             // SY -->
             backupSavedSearches(),
             // SY <--
@@ -299,12 +306,28 @@ class BackupManager(
         return mangaObject
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun backupAppPreferences(flags: Int): List<BackupPreference> {
         if (flags and BACKUP_APP_PREFS_MASK != BACKUP_APP_PREFS) return emptyList()
 
-        return preferenceStore.getAll()
-            .filterKeys { !Preference.isPrivate(it) }
+        return preferenceStore.getAll().toBackupPreferences()
+    }
+
+    private fun backupSourcePreferences(flags: Int): List<BackupSourcePreferences> {
+        if (flags and BACKUP_SOURCE_PREFS_MASK != BACKUP_SOURCE_PREFS) return emptyList()
+
+        return sourceManager.getOnlineSources()
+            .filterIsInstance<ConfigurableSource>()
+            .map {
+                BackupSourcePreferences(
+                    it.preferenceKey(),
+                    it.sourcePreferences().all.toBackupPreferences()
+                )
+            }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun Map<String, *>.toBackupPreferences(): List<BackupPreference> {
+        return this.filterKeys { !Preference.isPrivate(it) }
             .mapNotNull { (key, value) ->
                 when (value) {
                     is Int -> BackupPreference(key, IntPreferenceValue(value))

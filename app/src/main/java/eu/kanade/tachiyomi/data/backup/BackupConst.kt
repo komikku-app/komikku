@@ -17,13 +17,16 @@ internal object BackupConst {
     const val BACKUP_APP_PREFS = 0x10
     const val BACKUP_APP_PREFS_MASK = 0x10
 
+    const val BACKUP_SOURCE_PREFS = 0x20
+    const val BACKUP_SOURCE_PREFS_MASK = 0x20
+
     // SY -->
-    const val BACKUP_CUSTOM_INFO = 0x20
-    const val BACKUP_CUSTOM_INFO_MASK = 0x20
+    const val BACKUP_CUSTOM_INFO = 0x40
+    const val BACKUP_CUSTOM_INFO_MASK = 0x40
 
-    const val BACKUP_READ_MANGA = 0x40
-    const val BACKUP_READ_MANGA_MASK = 0x40
+    const val BACKUP_READ_MANGA = 0x80
+    const val BACKUP_READ_MANGA_MASK = 0x80
 
-    const val BACKUP_ALL = 0x7F
+    const val BACKUP_ALL = 0xFF
     // SY <--
 }
