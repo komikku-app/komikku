@@ -14,6 +14,7 @@ import eu.kanade.presentation.category.CategoryScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
+import eu.kanade.presentation.category.components.CategorySortAlphabeticallyDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
@@ -40,6 +41,7 @@ class CategoryScreen : Screen() {
         CategoryScreen(
             state = successState,
             onClickCreate = { screenModel.showDialog(CategoryDialog.Create) },
+            onClickSortAlphabetically = { screenModel.showDialog(CategoryDialog.SortAlphabetically) },
             onClickRename = { screenModel.showDialog(CategoryDialog.Rename(it)) },
             onClickDelete = { screenModel.showDialog(CategoryDialog.Delete(it)) },
             onClickMoveUp = screenModel::moveUp,
@@ -77,6 +79,12 @@ class CategoryScreen : Screen() {
                     title = stringResource(R.string.delete_category),
                     text = stringResource(R.string.delete_category_confirmation, dialog.category.name),
                     // SY <--
+                )
+            }
+            is CategoryDialog.SortAlphabetically -> {
+                CategorySortAlphabeticallyDialog(
+                    onDismissRequest = screenModel::dismissDialog,
+                    onSort = { screenModel.sortAlphabetically() },
                 )
             }
         }
