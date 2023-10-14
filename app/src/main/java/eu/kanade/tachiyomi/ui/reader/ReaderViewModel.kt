@@ -64,6 +64,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -271,6 +272,24 @@ class ReaderViewModel @JvmOverloads constructor(
                 chapterId = currentChapter.chapter.id!!
             }
             .launchIn(viewModelScope)
+
+        // SY -->
+        state.mapLatest { it.ehAutoscrollFreq }
+            .distinctUntilChanged()
+            .drop(1)
+            .onEach { text ->
+                val parsed = text.toDoubleOrNull()
+
+                if (parsed == null || parsed <= 0 || parsed > 9999) {
+                    readerPreferences.autoscrollInterval().set(-1f)
+                    mutableState.update { it.copy(isAutoScrollEnabled = false) }
+                } else {
+                    readerPreferences.autoscrollInterval().set(parsed.toFloat())
+                    mutableState.update { it.copy(isAutoScrollEnabled = true) }
+                }
+            }
+            .launchIn(viewModelScope)
+        // SY <--
     }
 
     override fun onCleared() {
@@ -319,8 +338,24 @@ class ReaderViewModel @JvmOverloads constructor(
                     val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id) } else emptyList()
                     val mergedManga = if (source is MergedSource) runBlocking { getMergedMangaById.await(manga.id) }.associateBy { it.id } else emptyMap()
                     val relativeTime = uiPreferences.relativeTime().get()
+                    val autoScrollFreq = readerPreferences.autoscrollInterval().get()
                     // SY <--
-                    mutableState.update { it.copy(manga = manga /* SY --> */, meta = metadata, mergedManga = mergedManga, dateRelativeTime = relativeTime/* SY <-- */) }
+                    mutableState.update {
+                        it.copy(
+                            manga = manga,
+                            /* SY --> */
+                            meta = metadata,
+                            mergedManga = mergedManga,
+                            dateRelativeTime = relativeTime,
+                            ehAutoscrollFreq = if (autoScrollFreq == -1f) {
+                                ""
+                            } else {
+                                autoScrollFreq.toString()
+                            },
+                            isAutoScrollEnabled = autoScrollFreq != -1f
+                            /* SY <-- */
+                        )
+                    }
                     if (chapterId == -1L) chapterId = initialChapterId
 
                     val context = Injekt.get<Application>()
@@ -384,7 +419,10 @@ class ReaderViewModel @JvmOverloads constructor(
                 it.viewerChapters?.unref()
 
                 chapterToDownload = cancelQueuedDownloads(newChapters.currChapter)
-                it.copy(viewerChapters = newChapters)
+                it.copy(
+                    viewerChapters = newChapters,
+                    bookmarked = newChapters.currChapter.chapter.bookmark,
+                )
             }
         }
         return newChapters
@@ -686,8 +724,8 @@ class ReaderViewModel @JvmOverloads constructor(
     /**
      * Returns the currently active chapter.
      */
-    fun getCurrentChapter(): ReaderChapter? {
-        return state.value.viewerChapters?.currChapter
+    private fun getCurrentChapter(): ReaderChapter? {
+        return state.value.currentChapter
     }
 
     fun getSource() = manga?.source?.let { sourceManager.getOrStub(it) } as? HttpSource
@@ -707,15 +745,23 @@ class ReaderViewModel @JvmOverloads constructor(
     /**
      * Bookmarks the currently active chapter.
      */
-    fun bookmarkCurrentChapter(bookmarked: Boolean) {
+    fun toggleChapterBookmark() {
         val chapter = getCurrentChapter()?.chapter ?: return
-        chapter.bookmark = bookmarked // Otherwise the bookmark icon doesn't update
+        val bookmarked = !chapter.bookmark
+        chapter.bookmark = bookmarked
+
         viewModelScope.launchNonCancellable {
             updateChapter.await(
                 ChapterUpdate(
                     id = chapter.id!!.toLong(),
                     bookmark = bookmarked,
                 ),
+            )
+        }
+
+        mutableState.update {
+            it.copy(
+                bookmarked = bookmarked,
             )
         }
     }
@@ -867,6 +913,26 @@ class ReaderViewModel @JvmOverloads constructor(
 
     fun setDoublePages(doublePages: Boolean) {
         mutableState.update { it.copy(doublePages = doublePages) }
+    }
+
+    fun openAutoScrollHelpDialog() {
+        mutableState.update { it.copy(dialog = Dialog.AutoScrollHelp) }
+    }
+
+    fun openBoostPageHelp() {
+        mutableState.update { it.copy(dialog = Dialog.BoostPageHelp) }
+    }
+
+    fun openRetryAllHelp() {
+        mutableState.update { it.copy(dialog = Dialog.RetryAllHelp) }
+    }
+
+    fun toggleAutoScroll(enabled: Boolean) {
+        mutableState.update { it.copy(autoScroll = enabled) }
+    }
+
+    fun setAutoScrollFrequency(frequency: String) {
+        mutableState.update { it.copy(ehAutoscrollFreq = frequency) }
     }
     // SY <--
 
@@ -1168,6 +1234,7 @@ class ReaderViewModel @JvmOverloads constructor(
     data class State(
         val manga: Manga? = null,
         val viewerChapters: ViewerChapters? = null,
+        val bookmarked: Boolean = false,
         val isLoadingAdjacentChapter: Boolean = false,
         val currentPage: Int = -1,
 
@@ -1188,10 +1255,16 @@ class ReaderViewModel @JvmOverloads constructor(
         val indexChapterToShift: Long? = null,
         val doublePages: Boolean = false,
         val dateRelativeTime: Boolean = true,
+        val autoScroll: Boolean = false,
+        val isAutoScrollEnabled: Boolean = false,
+        val ehAutoscrollFreq: String = "",
         // SY <--
     ) {
+        val currentChapter: ReaderChapter?
+            get() = viewerChapters?.currChapter
+
         val totalPages: Int
-            get() = viewerChapters?.currChapter?.pages?.size ?: -1
+            get() = currentChapter?.pages?.size ?: -1
     }
 
     sealed interface Dialog {
@@ -1205,6 +1278,12 @@ class ReaderViewModel @JvmOverloads constructor(
         // SY <--
 
         data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog
+
+        // SY -->
+        data object AutoScrollHelp : Dialog
+        data object RetryAllHelp : Dialog
+        data object BoostPageHelp : Dialog
+        // SY <--
     }
 
     sealed interface Event {

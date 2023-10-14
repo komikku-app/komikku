@@ -6,14 +6,23 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -22,6 +31,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
@@ -56,8 +66,18 @@ fun BoxIgnoreLayoutDirection(modifier: Modifier, content: @Composable BoxScope.(
 @Composable
 fun ReaderAppBars(
     visible: Boolean,
-    viewer: Viewer?,
+    fullscreen: Boolean,
 
+    mangaTitle: String?,
+    chapterTitle: String?,
+    navigateUp: () -> Unit,
+    onClickTopAppBar: () -> Unit,
+    // bookmarked: Boolean,
+    // onToggleBookmarked: () -> Unit,
+    onOpenInWebView: (() -> Unit)?,
+    onShare: (() -> Unit)?,
+
+    viewer: Viewer?,
     onNextChapter: () -> Unit,
     enabledNext: Boolean,
     onPreviousChapter: () -> Unit,
@@ -74,20 +94,40 @@ fun ReaderAppBars(
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
     // SY -->
+    isExhToolsVisible: Boolean,
+    onSetExhUtilsVisibility: (Boolean) -> Unit,
+    isAutoScroll: Boolean,
+    isAutoScrollEnabled: Boolean,
+    onToggleAutoscroll: (Boolean) -> Unit,
+    autoScrollFrequency: String,
+    onSetAutoScrollFrequency: (String) -> Unit,
+    onClickAutoScrollHelp: () -> Unit,
+    onClickRetryAll: () -> Unit,
+    onClickRetryAllHelp: () -> Unit,
+    onClickBoostPage: () -> Unit,
+    onClickBoostPageHelp: () -> Unit,
     navBarType: NavBarType,
     currentPageText: String,
     enabledButtons: Set<String>,
-    isHttpSource: Boolean,
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
-    onClickWebView: () -> Unit,
-    onClickShare: () -> Unit,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
 
 ) {
     val isRtl = viewer is R2LPagerViewer
+    val backgroundColor = MaterialTheme.colorScheme
+        .surfaceColorAtElevation(3.dp)
+        .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+
+    val appBarModifier = if (fullscreen) {
+        // SY -->
+        Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+        // SY <--
+    } else {
+        Modifier
+    }
 
 
     // SY -->
@@ -104,7 +144,8 @@ fun ReaderAppBars(
                 targetOffsetX = { -it },
                 animationSpec = animationSpec,
             ),
-            modifier = Modifier.padding(bottom = 48.dp, top = 120.dp)
+            modifier = Modifier
+                .padding(bottom = 48.dp, top = 120.dp)
                 .align(Alignment.TopStart)
         ) {
             ChapterNavigator(
@@ -131,7 +172,8 @@ fun ReaderAppBars(
                 targetOffsetX = { it },
                 animationSpec = animationSpec,
             ),
-            modifier = Modifier.padding(bottom = 48.dp, top = 120.dp)
+            modifier = Modifier
+                .padding(bottom = 48.dp, top = 120.dp)
                 .align(Alignment.TopEnd)
         ) {
             ChapterNavigator(
@@ -152,6 +194,72 @@ fun ReaderAppBars(
             modifier = Modifier.fillMaxHeight(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = animationSpec,
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = animationSpec,
+                ),
+            ) {
+                // SY -->
+                Column(appBarModifier) {
+                    // SY <--
+                    AppBar(
+                        modifier = /*SY --> */ Modifier /*SY <-- */
+                            .clickable(onClick = onClickTopAppBar),
+                        backgroundColor = backgroundColor,
+                        title = mangaTitle,
+                        subtitle = chapterTitle,
+                        navigateUp = navigateUp,
+                        /* SY --> actions = {
+                            AppBarActions(
+                                listOfNotNull(
+                                    AppBar.Action(
+                                        title = stringResource(if (bookmarked) R.string.action_remove_bookmark else R.string.action_bookmark),
+                                        icon = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
+                                        onClick = onToggleBookmarked,
+                                    ),
+                                    onOpenInWebView?.let {
+                                        AppBar.OverflowAction(
+                                            title = stringResource(R.string.action_open_in_web_view),
+                                            onClick = it,
+                                        )
+                                    },
+                                    onShare?.let {
+                                        AppBar.OverflowAction(
+                                            title = stringResource(R.string.action_share),
+                                            onClick = it,
+                                        )
+                                    },
+                                ),
+                            )
+                        }, SY <-- */
+                    )
+                    // SY -->
+                    ExhUtils(
+                        isVisible = isExhToolsVisible,
+                        onSetExhUtilsVisibility = onSetExhUtilsVisibility,
+                        backgroundColor = backgroundColor,
+                        isAutoScroll = isAutoScroll,
+                        isAutoScrollEnabled = isAutoScrollEnabled,
+                        onToggleAutoscroll = onToggleAutoscroll,
+                        autoScrollFrequency = autoScrollFrequency,
+                        onSetAutoScrollFrequency = onSetAutoScrollFrequency,
+                        onClickAutoScrollHelp = onClickAutoScrollHelp,
+                        onClickRetryAll = onClickRetryAll,
+                        onClickRetryAllHelp = onClickRetryAllHelp,
+                        onClickBoostPage = onClickBoostPage,
+                        onClickBoostPageHelp = onClickBoostPageHelp
+                    )
+                    // SY <--
+                }
+            }
+
+
             Spacer(modifier = Modifier.weight(1f))
 
             AnimatedVisibility(
@@ -187,6 +295,7 @@ fun ReaderAppBars(
                         // SY -->
                         enabledButtons = enabledButtons,
                         // SY <--
+                        backgroundColor = backgroundColor,
                         readingMode = readingMode,
                         onClickReadingMode = onClickReadingMode,
                         orientationMode = orientationMode,
@@ -195,12 +304,11 @@ fun ReaderAppBars(
                         onClickCropBorder = onClickCropBorder,
                         onClickSettings = onClickSettings,
                         // SY -->
-                        isHttpSource = isHttpSource,
                         dualPageSplitEnabled = dualPageSplitEnabled,
                         doublePages = doublePages,
                         onClickChapterList = onClickChapterList,
-                        onClickWebView = onClickWebView,
-                        onClickShare = onClickShare,
+                        onClickWebView = onOpenInWebView,
+                        onClickShare = onShare,
                         onClickPageLayout = onClickPageLayout,
                         onClickShiftPage = onClickShiftPage
                     )

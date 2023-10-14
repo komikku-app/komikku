@@ -1,7 +1,6 @@
 package eu.kanade.presentation.reader.appbars
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,11 +12,10 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,6 +29,7 @@ fun BottomReaderBar(
     // SY -->
     enabledButtons: Set<String>,
     // SY <--
+    backgroundColor: Color,
     readingMode: ReadingModeType,
     onClickReadingMode: () -> Unit,
     orientationMode: OrientationType,
@@ -39,21 +38,15 @@ fun BottomReaderBar(
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
     // SY -->
-    isHttpSource: Boolean,
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
-    onClickWebView: () -> Unit,
-    onClickShare: () -> Unit,
+    onClickWebView: (() -> Unit)?,
+    onClickShare: (() -> Unit)?,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
     // SY <--
 ) {
-    // Match with toolbar background color set in ReaderActivity
-    val backgroundColor = MaterialTheme.colorScheme
-        .surfaceColorAtElevation(3.dp)
-        .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,7 +65,7 @@ fun BottomReaderBar(
             }
         }
 
-        if (ReaderBottomButton.WebView.isIn(enabledButtons) && isHttpSource) {
+        if (ReaderBottomButton.WebView.isIn(enabledButtons) && onClickWebView != null) {
             IconButton(onClick = onClickWebView) {
                 Icon(
                     imageVector = Icons.Outlined.Public,
@@ -81,7 +74,7 @@ fun BottomReaderBar(
             }
         }
 
-        if (ReaderBottomButton.Share.isIn(enabledButtons) && isHttpSource) {
+        if (ReaderBottomButton.Share.isIn(enabledButtons) && onClickShare != null) {
             IconButton(onClick = onClickShare) {
                 Icon(
                     imageVector = Icons.Outlined.Share,

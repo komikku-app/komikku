@@ -5,7 +5,6 @@ import android.annotation.TargetApi
 import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -15,19 +14,11 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextUtils
-import android.text.TextWatcher
 import android.view.KeyEvent
-import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.CompoundButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,9 +47,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.internal.ToolbarUtils
-import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
@@ -75,6 +65,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.AddToLibraryFirst
@@ -94,22 +85,16 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
@@ -118,7 +103,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -271,19 +255,6 @@ class ReaderActivity : BaseActivity() {
             .launchIn(lifecycleScope)
     }
 
-    // SY -->
-    private fun setEhUtilsVisibility(visible: Boolean) {
-        viewModel.showEhUtils(visible)
-        if (visible) {
-            binding.ehUtils.isVisible = true
-            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_up_white_32dp)
-        } else {
-            binding.ehUtils.isVisible = false
-            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_down_white_32dp)
-        }
-    }
-    // SY <--
-
     /**
      * Called when the activity is destroyed. Cleans up the viewer, configuration and any view.
      */
@@ -326,47 +297,6 @@ class ReaderActivity : BaseActivity() {
         assistUrl?.let { outContent.webUri = it.toUri() }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.reader, menu)
-
-        /*val isChapterBookmarked = viewModel.getCurrentChapter()?.chapter?.bookmark ?: false
-        menu.findItem(R.id.action_bookmark).isVisible = !isChapterBookmarked
-        menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked
-
-        val isHttpSource = viewModel.getSource() is HttpSource
-        menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource
-        menu.findItem(R.id.action_share).isVisible = isHttpSource*/
-
-        return true
-    }
-
-    /**
-     * Called when an item of the options menu was clicked. Used to handle clicks on our menu
-     * entries.
-     */
-    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_open_in_web_view -> {
-                openChapterInWebView()
-            }
-            R.id.action_bookmark -> {
-                viewModel.bookmarkCurrentChapter(true)
-                invalidateOptionsMenu()
-            }
-            R.id.action_remove_bookmark -> {
-                viewModel.bookmarkCurrentChapter(false)
-                invalidateOptionsMenu()
-            }
-            R.id.action_share -> {
-                assistUrl?.let {
-                    val intent = it.toUri().toShareIntent(this, type = "text/plain")
-                    startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }*/
-
     /**
      * Called when the user clicks the back key or the button on the toolbar. The call is
      * delegated to the presenter.
@@ -405,66 +335,13 @@ class ReaderActivity : BaseActivity() {
         return handled || super.dispatchGenericMotionEvent(event)
     }
 
-    // SY -->
-    fun TextView.textChanges(): Flow<CharSequence> = callbackFlow {
-        val listener = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) = Unit
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                trySend(s)
-            }
-
-            override fun afterTextChanged(s: Editable) = Unit
-        }
-
-        addTextChangedListener(listener)
-        awaitClose { removeTextChangedListener(listener) }
-    }
-        .conflate()
-        .onStart { emit(text) }
-
-    fun CompoundButton.checkedChanges(): Flow<Boolean> = callbackFlow {
-        val listener = CompoundButton.OnCheckedChangeListener { _, isChecked ->
-            trySend(isChecked)
-        }
-        setOnCheckedChangeListener(listener)
-
-        awaitClose { setOnCheckedChangeListener(null) }
-    }
-        .conflate()
-        .onStart { emit(isChecked) }
-    // SY <--
-
     /**
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
     private fun initializeMenu() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
-
-        binding.header.applyInsetter {
-            type(navigationBars = true, statusBars = true) {
-                margin(top = true, horizontal = true)
-            }
-        }
         binding.dialogRoot.applyInsetter {
             type(navigationBars = true) {
                 margin(vertical = true, horizontal = true)
-            }
-        }
-
-        binding.toolbar.setOnClickListener {
-            viewModel.manga?.id?.let { id ->
-                startActivity(
-                    Intent(this, MainActivity::class.java).apply {
-                        action = Constants.SHORTCUT_MANGA
-                        putExtra(Constants.MANGA_EXTRA, id)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    },
-                )
             }
         }
 
@@ -492,6 +369,9 @@ class ReaderActivity : BaseActivity() {
                     onChangeOrientation = viewModel::setMangaOrientationType,
                 )
             }
+
+            val isHttpSource = viewModel.getSource() is HttpSource
+            val isFullscreen by readerPreferences.fullscreen().collectAsState()
 
             val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
             val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
@@ -526,11 +406,20 @@ class ReaderActivity : BaseActivity() {
             }
             // SY <--
 
-            
             ReaderAppBars(
                 visible = state.menuVisible,
-                viewer = state.viewer,
+                fullscreen = isFullscreen,
 
+                mangaTitle = state.manga?.title,
+                chapterTitle = state.currentChapter?.chapter?.name,
+                navigateUp = onBackPressedDispatcher::onBackPressed,
+                onClickTopAppBar = ::openMangaScreen,
+                // bookmarked = state.bookmarked,
+                // onToggleBookmarked = viewModel::toggleChapterBookmark,
+                onOpenInWebView = ::openChapterInWebView.takeIf { isHttpSource },
+                onShare = ::shareChapter.takeIf { isHttpSource },
+
+                viewer = state.viewer,
                 onNextChapter = ::loadNextChapter,
                 enabledNext = state.viewerChapters?.nextChapter != null,
                 onPreviousChapter = ::loadPreviousChapter,
@@ -557,34 +446,29 @@ class ReaderActivity : BaseActivity() {
                 cropEnabled = cropEnabled,
                 onClickCropBorder = {
                     val enabled = viewModel.toggleCropBorders()
-
                     menuToggleToast?.cancel()
-                    menuToggleToast = toast(
-                        if (enabled) {
-                            R.string.on
-                        } else {
-                            R.string.off
-                        },
-                    )
+                    menuToggleToast = toast(if (enabled) R.string.on else R.string.off)
                 },
                 onClickSettings = viewModel::openSettingsDialog,
                 // SY -->
+                isExhToolsVisible = state.ehUtilsVisible,
+                onSetExhUtilsVisibility = viewModel::showEhUtils,
+                isAutoScroll = state.autoScroll,
+                isAutoScrollEnabled = state.isAutoScrollEnabled,
+                onToggleAutoscroll = viewModel::toggleAutoScroll,
+                autoScrollFrequency = state.ehAutoscrollFreq,
+                onSetAutoScrollFrequency = viewModel::setAutoScrollFrequency,
+                onClickAutoScrollHelp = viewModel::openAutoScrollHelpDialog,
+                onClickRetryAll = ::exhRetryAll,
+                onClickRetryAllHelp = viewModel::openRetryAllHelp,
+                onClickBoostPage = ::exhBoostPage,
+                onClickBoostPageHelp = viewModel::openBoostPageHelp,
                 currentPageText = state.currentPageText,
                 navBarType = navBarType,
                 enabledButtons = readerBottomButtons,
-                isHttpSource = remember {
-                    viewModel.getSource() != null
-                },
                 dualPageSplitEnabled = dualPageSplitPaged,
                 doublePages = state.doublePages,
                 onClickChapterList = viewModel::openChapterListDialog,
-                onClickWebView = ::openChapterInWebView,
-                onClickShare = {
-                    assistUrl?.let {
-                        val intent = it.toUri().toShareIntent(this@ReaderActivity, type = "text/plain")
-                        startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
-                    }
-                },
                 onClickPageLayout = {
                     if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
                         (viewModel.state.value.viewer as? PagerViewer)?.config?.let { config ->
@@ -682,188 +566,154 @@ class ReaderActivity : BaseActivity() {
                         state.dateRelativeTime
                     )
                 }
+                // SY -->
+                ReaderViewModel.Dialog.AutoScrollHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(R.string.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(R.string.eh_autoscroll_help)) },
+                    text = { Text(text = stringResource(R.string.eh_autoscroll_help_message)) },
+                )
+                ReaderViewModel.Dialog.BoostPageHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(R.string.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(R.string.eh_boost_page_help)) },
+                    text = { Text(text = stringResource(R.string.eh_boost_page_help_message)) },
+                )
+                ReaderViewModel.Dialog.RetryAllHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(R.string.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(R.string.eh_retry_all_help)) },
+                    text = { Text(text = stringResource(R.string.eh_retry_all_help_message)) },
+                )
+                // SY <--
                 null -> {}
+
             }
         }
 
-        // SY -->
-        initDropdownMenu()
-        // SY <--
-
-        val toolbarBackground = (binding.toolbar.background as MaterialShapeDrawable).apply {
-            elevation = resources.getDimension(R.dimen.m3_sys_elevation_level2)
-            alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
-        }
         val toolbarColor = ColorUtils.setAlphaComponent(
-            toolbarBackground.resolvedTintColor,
-            toolbarBackground.alpha,
+            SurfaceColors.SURFACE_2.getColor(this),
+            if (isNightMode()) 230 else 242, // 90% dark 95% light
         )
         window.statusBarColor = toolbarColor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             window.navigationBarColor = toolbarColor
         }
-        // SY -->
-        binding.toolbar.background.alpha = 0
-        (binding.header.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(toolbarColor)
-        // SY <--
 
         // Set initial visibility
         setMenuVisibility(viewModel.state.value.menuVisible)
 
-        // --> EH
-        setEhUtilsVisibility(viewModel.state.value.ehUtilsVisible)
-        // <-- EH
+        enableExhAutoScroll()
     }
 
-    // EXH -->
-    fun initDropdownMenu() {
-        binding.expandEhButton.setOnClickListener {
-            val newValue = !viewModel.state.value.ehUtilsVisible
-            viewModel.showEhUtils(newValue)
-            setEhUtilsVisibility(newValue)
-        }
-
-        binding.ehAutoscrollFreq.setText(
-            readerPreferences.autoscrollInterval().get().let {
-                if (it == -1f) {
-                    ""
-                } else {
-                    it.toString()
-                }
-            },
-        )
-
-        binding.ehAutoscroll.checkedChanges()
-            .combine(binding.ehAutoscrollFreq.textChanges()) { checked, text ->
-                checked to text
-            }
-            .mapLatest { (checked, text) ->
-                val parsed = text.toString().toDoubleOrNull()
-
-                if (parsed == null || parsed <= 0 || parsed > 9999) {
-                    binding.ehAutoscrollFreq.error = getString(R.string.eh_autoscroll_freq_invalid)
-                    readerPreferences.autoscrollInterval().set(-1f)
-                    binding.ehAutoscroll.isEnabled = false
-                } else {
-                    binding.ehAutoscrollFreq.error = null
-                    readerPreferences.autoscrollInterval().set(parsed.toFloat())
-                    binding.ehAutoscroll.isEnabled = true
-                    if (checked) {
-                        repeatOnLifecycle(Lifecycle.State.STARTED) {
-                            val interval = parsed.seconds
-                            while (true) {
-                                if (!binding.readerMenu.isVisible) {
-                                    viewModel.state.value.viewer.let { v ->
-                                        when (v) {
-                                            is PagerViewer -> v.moveToNext()
-                                            is WebtoonViewer -> {
-                                                if (readerPreferences.smoothAutoScroll().get()) {
-                                                    v.linearScroll(interval)
-                                                } else {
-                                                    v.scrollDown()
-                                                }
+    private fun enableExhAutoScroll() {
+        readerPreferences.autoscrollInterval().changes()
+            .combine(viewModel.state.map { it.autoScroll }.distinctUntilChanged()) { interval, enabled ->
+                interval.toDouble() to enabled
+            }.mapLatest { (intervalFloat, enabled) ->
+                if (enabled) {
+                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        val interval = intervalFloat.seconds
+                        while (true) {
+                            if (!viewModel.state.value.menuVisible) {
+                                viewModel.state.value.viewer.let { v ->
+                                    when (v) {
+                                        is PagerViewer -> v.moveToNext()
+                                        is WebtoonViewer -> {
+                                            if (readerPreferences.smoothAutoScroll().get()) {
+                                                v.linearScroll(interval)
+                                            } else {
+                                                v.scrollDown()
                                             }
                                         }
                                     }
-                                    delay(interval)
-                                } else {
-                                    delay(100)
                                 }
+                                delay(interval)
+                            } else {
+                                delay(100)
                             }
                         }
                     }
                 }
             }
             .launchIn(lifecycleScope)
+    }
 
-        binding.ehAutoscrollHelp.setOnClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.eh_autoscroll_help)
-                .setMessage(R.string.eh_autoscroll_help_message)
-                .setPositiveButton(R.string.action_ok, null)
-                .show()
-        }
+    private fun exhRetryAll() {
+        var retried = 0
 
-        binding.ehRetryAll.setOnClickListener {
-            var retried = 0
+        viewModel.state.value.viewerChapters
+            ?.currChapter
+            ?.pages
+            ?.forEachIndexed { _, page ->
+                var shouldQueuePage = false
+                if (page.status == Page.State.ERROR) {
+                    shouldQueuePage = true
+                } /*else if (page.status == Page.LOAD_PAGE ||
+                                    page.status == Page.DOWNLOAD_IMAGE) {
+                                // Do nothing
+                            }*/
 
-            viewModel.state.value.viewerChapters
-                ?.currChapter
-                ?.pages
-                ?.forEachIndexed { _, page ->
-                    var shouldQueuePage = false
-                    if (page.status == Page.State.ERROR) {
-                        shouldQueuePage = true
-                    } /*else if (page.status == Page.LOAD_PAGE ||
-                                page.status == Page.DOWNLOAD_IMAGE) {
-                            // Do nothing
-                        }*/
-
-                    if (shouldQueuePage) {
-                        page.status = Page.State.QUEUE
-                    } else {
-                        return@forEachIndexed
-                    }
-
-                    // If we are using EHentai/ExHentai, get a new image URL
-                    viewModel.manga?.let { m ->
-                        val src = sourceManager.get(m.source)
-                        if (src?.isEhBasedSource() == true) {
-                            page.imageUrl = null
-                        }
-                    }
-
-                    val loader = page.chapter.pageLoader
-                    if (page.index == exhCurrentpage()?.index && loader is HttpPageLoader) {
-                        loader.boostPage(page)
-                    } else {
-                        loader?.retryPage(page)
-                    }
-
-                    retried++
-                }
-
-            toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
-        }
-
-        binding.ehRetryAllHelp.setOnClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.eh_retry_all_help)
-                .setMessage(R.string.eh_retry_all_help_message)
-                .setPositiveButton(R.string.action_ok, null)
-                .show()
-        }
-
-        binding.ehBoostPage.setOnClickListener {
-            viewModel.state.value.viewer ?: return@setOnClickListener
-            val curPage = exhCurrentpage() ?: run {
-                toast(R.string.eh_boost_page_invalid)
-                return@setOnClickListener
-            }
-
-            if (curPage.status == Page.State.ERROR) {
-                toast(R.string.eh_boost_page_errored)
-            } else if (curPage.status == Page.State.LOAD_PAGE || curPage.status == Page.State.DOWNLOAD_IMAGE) {
-                toast(R.string.eh_boost_page_downloading)
-            } else if (curPage.status == Page.State.READY) {
-                toast(R.string.eh_boost_page_downloaded)
-            } else {
-                val loader = (viewModel.state.value.viewerChapters?.currChapter?.pageLoader as? HttpPageLoader)
-                if (loader != null) {
-                    loader.boostPage(curPage)
-                    toast(R.string.eh_boost_boosted)
+                if (shouldQueuePage) {
+                    page.status = Page.State.QUEUE
                 } else {
-                    toast(R.string.eh_boost_invalid_loader)
+                    return@forEachIndexed
                 }
+
+                // If we are using EHentai/ExHentai, get a new image URL
+                viewModel.manga?.let { m ->
+                    val src = sourceManager.get(m.source)
+                    if (src?.isEhBasedSource() == true) {
+                        page.imageUrl = null
+                    }
+                }
+
+                val loader = page.chapter.pageLoader
+                if (page.index == exhCurrentpage()?.index && loader is HttpPageLoader) {
+                    loader.boostPage(page)
+                } else {
+                    loader?.retryPage(page)
+                }
+
+                retried++
             }
+
+        toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
+    }
+
+    private fun exhBoostPage() {
+        viewModel.state.value.viewer ?: return
+        val curPage = exhCurrentpage() ?: run {
+            toast(R.string.eh_boost_page_invalid)
+            return
         }
 
-        binding.ehBoostPageHelp.setOnClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.eh_boost_page_help)
-                .setMessage(R.string.eh_boost_page_help_message)
-                .setPositiveButton(R.string.action_ok, null)
-                .show()
+        if (curPage.status == Page.State.ERROR) {
+            toast(R.string.eh_boost_page_errored)
+        } else if (curPage.status == Page.State.LOAD_PAGE || curPage.status == Page.State.DOWNLOAD_IMAGE) {
+            toast(R.string.eh_boost_page_downloading)
+        } else if (curPage.status == Page.State.READY) {
+            toast(R.string.eh_boost_page_downloaded)
+        } else {
+            val loader = (viewModel.state.value.viewerChapters?.currChapter?.pageLoader as? HttpPageLoader)
+            if (loader != null) {
+                loader.boostPage(curPage)
+                toast(R.string.eh_boost_boosted)
+            } else {
+                toast(R.string.eh_boost_invalid_loader)
+            }
         }
     }
 
@@ -882,7 +732,7 @@ class ReaderActivity : BaseActivity() {
             viewer.config.doublePages = doublePages
             viewModel.setDoublePages(viewer.config.doublePages)
         }
-        val currentChapter = viewModel.getCurrentChapter()
+        val currentChapter = viewModel.state.value.currentChapter
         if (doublePages) {
             // If we're moving from singe to double, we want the current page to be the first page
             val currentPage = viewModel.state.value.currentPage
@@ -921,40 +771,12 @@ class ReaderActivity : BaseActivity() {
         viewModel.showMenus(visible)
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-            binding.readerMenu.isVisible = true
-
-            val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_top)
-            toolbarAnimation.applySystemAnimatorScale(this)
-            toolbarAnimation.setAnimationListener(
-                object : SimpleAnimationListener() {
-                    override fun onAnimationStart(animation: Animation) {
-                        // Fix status bar being translucent the first time it's opened.
-                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                    }
-                },
-            )
-            // EXH -->
-            binding.header.startAnimation(toolbarAnimation)
-            // EXH <--
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         } else {
             if (readerPreferences.fullscreen().get()) {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                 windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
-
-            val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_top)
-            toolbarAnimation.applySystemAnimatorScale(this)
-            toolbarAnimation.setAnimationListener(
-                object : SimpleAnimationListener() {
-                    override fun onAnimationEnd(animation: Animation) {
-                        binding.readerMenu.isVisible = false
-                    }
-                },
-            )
-            // EXH -->
-            binding.header.startAnimation(toolbarAnimation)
-            // EXH <--
-
         }
     }
 
@@ -1001,12 +823,22 @@ class ReaderActivity : BaseActivity() {
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
-        supportActionBar?.title = manga.title
-
         loadingIndicator = ReaderProgressIndicator(this)
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
+    }
+
+    private fun openMangaScreen() {
+        viewModel.manga?.id?.let { id ->
+            startActivity(
+                Intent(this, MainActivity::class.java).apply {
+                    action = Constants.SHORTCUT_MANGA
+                    putExtra(Constants.MANGA_EXTRA, id)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                },
+            )
+        }
     }
 
     private fun openChapterInWebView() {
@@ -1015,6 +847,13 @@ class ReaderActivity : BaseActivity() {
         assistUrl?.let {
             val intent = WebViewActivity.newIntent(this@ReaderActivity, it, source.id, manga.title)
             startActivity(intent)
+        }
+    }
+
+    private fun shareChapter() {
+        assistUrl?.let {
+            val intent = it.toUri().toShareIntent(this, type = "text/plain")
+            startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
         }
     }
 
@@ -1057,15 +896,6 @@ class ReaderActivity : BaseActivity() {
 
         viewModel.state.value.viewer?.setChapters(viewerChapters)
 
-        binding.toolbar.subtitle = viewerChapters.currChapter.chapter.name
-        ToolbarUtils.getSubtitleTextView(binding.toolbar)?.let {
-            it.ellipsize = TextUtils.TruncateAt.MARQUEE
-            it.isSelected = true
-        }
-
-        // Invalidate menu to show proper chapter bookmark state
-        invalidateOptionsMenu()
-
         lifecycleScope.launchIO {
             viewModel.getChapterUrl()?.let { url ->
                 assistUrl = url
@@ -1103,7 +933,7 @@ class ReaderActivity : BaseActivity() {
      */
     private fun moveToPageIndex(index: Int) {
         val viewer = viewModel.state.value.viewer ?: return
-        val currentChapter = viewModel.getCurrentChapter() ?: return
+        val currentChapter = viewModel.state.value.currentChapter ?: return
         val page = currentChapter.pages?.getOrNull(index) ?: return
         viewer.moveToPage(page)
     }
