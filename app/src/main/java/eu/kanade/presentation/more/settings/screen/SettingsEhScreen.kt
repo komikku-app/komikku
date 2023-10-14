@@ -308,7 +308,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             },
             title = {
@@ -593,7 +593,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -759,7 +759,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -889,7 +889,7 @@ object SettingsEhScreen : SearchableSettings {
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             },
             properties = DialogProperties(

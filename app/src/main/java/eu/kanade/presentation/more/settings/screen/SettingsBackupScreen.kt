@@ -250,7 +250,7 @@ object SettingsBackupScreen : SearchableSettings {
                                     onDismissRequest()
                                 },
                             ) {
-                                Text(text = stringResource(android.R.string.copy))
+                                Text(text = stringResource(R.string.action_copy_to_clipboard))
                             }
                         },
                         confirmButton = {

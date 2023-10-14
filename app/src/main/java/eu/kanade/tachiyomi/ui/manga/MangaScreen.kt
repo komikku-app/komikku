@@ -451,7 +451,7 @@ class MangaScreen(
                 dialog.dismiss()
                 openMangaInWebView(navigator, mergedManga[index], sources[index] as? HttpSource)
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 

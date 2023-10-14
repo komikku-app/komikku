@@ -91,7 +91,7 @@ class EditMergedSettingsState(
                 onDeleteClick(mergeMangaReference)
                 onDismissRequest()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -102,7 +102,7 @@ class EditMergedSettingsState(
             .setPositiveButton(R.string.action_ok) { _, _ ->
                 toggleChapterUpdates(position)
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -130,7 +130,7 @@ class EditMergedSettingsState(
             .setPositiveButton(R.string.action_ok) { _, _ ->
                 toggleChapterDownloads(position)
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -177,7 +177,7 @@ fun EditMergedSettingsDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(stringResource(android.R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         },
         text = {

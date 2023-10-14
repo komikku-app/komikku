@@ -88,7 +88,7 @@ fun EditMangaDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(stringResource(android.R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         },
         text = {
@@ -240,7 +240,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
                 .setPositiveButton(R.string.action_ok) { _, _ ->
                     if (newTag != null) setChips(items + listOfNotNull(newTag), scope)
                 }
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.action_cancel, null)
                 .show()
         }
     }

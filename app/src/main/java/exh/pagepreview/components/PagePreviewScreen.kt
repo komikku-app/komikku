@@ -141,7 +141,7 @@ fun PagePreviewPageDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissPageDialog) {
-                Text(stringResource(android.R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {

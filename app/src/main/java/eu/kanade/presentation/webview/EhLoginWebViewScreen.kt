@@ -139,7 +139,7 @@ fun EhLoginWebViewScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Button(onClick = onUp, Modifier.weight(0.5F)) {
-                        Text(text = stringResource(android.R.string.cancel))
+                        Text(text = stringResource(R.string.action_cancel))
                     }
                     Button(onClick = { showAdvancedOptions = true }, Modifier.weight(0.5F)) {
                         Text(text = stringResource(R.string.pref_category_advanced))
@@ -194,7 +194,7 @@ fun EhLoginWebViewScreen(
                                 Text(text = stringResource(R.string.custom_igneous_cookie))
                             }
                             Button(onClick = { showAdvancedOptions = false }, Modifier.fillMaxWidth()) {
-                                Text(text = stringResource(android.R.string.cancel))
+                                Text(text = stringResource(R.string.action_cancel))
                             }
                         }
                     }

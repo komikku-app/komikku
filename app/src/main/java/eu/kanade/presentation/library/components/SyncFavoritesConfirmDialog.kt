@@ -22,7 +22,7 @@ fun SyncFavoritesConfirmDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(android.R.string.cancel))
+                Text(text = stringResource(R.string.action_cancel))
             }
         },
         title = {
