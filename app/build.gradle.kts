@@ -193,7 +193,7 @@ dependencies {
     implementation(androidx.bundles.lifecycle)
 
     // Job scheduling
-    implementation(androidx.bundles.workmanager)
+    implementation(androidx.workmanager)
 
     // RxJava
     implementation(libs.rxjava)
