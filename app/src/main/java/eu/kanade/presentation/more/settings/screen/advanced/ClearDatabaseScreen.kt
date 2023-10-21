@@ -1,7 +1,6 @@
 package eu.kanade.presentation.more.settings.screen.advanced
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,6 +53,7 @@ import tachiyomi.data.Database
 import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
+import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -107,20 +107,11 @@ class ClearDatabaseScreen : Screen() {
                                 // SY <--
                                 Text(text = stringResource(R.string.clear_database_confirmation))
                                 // SY -->
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp)
-                                        .clickable(onClick = { keepReadManga = !keepReadManga }),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(stringResource(R.string.clear_db_exclude_read))
-                                    Checkbox(
-                                        checked = keepReadManga,
-                                        onCheckedChange = null,
-                                    )
-                                }
+                                LabeledCheckbox(
+                                    label = stringResource(R.string.clear_db_exclude_read),
+                                    checked = keepReadManga,
+                                    onCheckedChange = { keepReadManga = it },
+                                )
                             }
                             // SY <--
                         },
