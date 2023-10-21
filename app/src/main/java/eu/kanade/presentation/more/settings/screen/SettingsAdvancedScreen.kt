@@ -44,7 +44,6 @@ import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_360
@@ -382,7 +381,6 @@ object SettingsAdvancedScreen : SearchableSettings {
     private fun getLibraryGroup(): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
-        val trackerManager = remember { Injekt.get<TrackerManager>() }
 
         return Preference.PreferenceGroup(
             title = stringResource(R.string.label_library),
@@ -390,12 +388,6 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.pref_refresh_library_covers),
                     onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.COVERS) },
-                ),
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_refresh_library_tracking),
-                    subtitle = stringResource(R.string.pref_refresh_library_tracking_summary),
-                    enabled = trackerManager.hasLoggedIn(),
-                    onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.TRACKING) },
                 ),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.pref_reset_viewer_flags),
