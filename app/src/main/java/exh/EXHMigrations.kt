@@ -48,8 +48,8 @@ import tachiyomi.core.preference.getEnum
 import tachiyomi.core.preference.minusAssign
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.category.categoryMapper
-import tachiyomi.data.chapter.chapterMapper
+import tachiyomi.data.category.CategoryMapper
+import tachiyomi.data.chapter.ChapterMapper
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.chapter.interactor.DeleteChapters
 import tachiyomi.domain.chapter.interactor.UpdateChapter
@@ -184,8 +184,8 @@ object EXHMigrations {
                             }
 
                             val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load() }.distinct()
-                            val chapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(mergedMangas.map { it.id }, chapterMapper) } }
-                            val mergedMangaChapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(loadedMangaList.map { it.manga.id }, chapterMapper) } }
+                            val chapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(mergedMangas.map { it.id }, ChapterMapper::mapChapter) } }
+                            val mergedMangaChapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(loadedMangaList.map { it.manga.id }, ChapterMapper::mapChapter) } }
 
                             val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
                             val parsedChapters = chapters.filter { it.read || it.lastPageRead != 0L }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
@@ -430,7 +430,7 @@ object EXHMigrations {
                     }
                     runBlocking {
                         handler.await(true) {
-                            categoriesQueries.getCategories(categoryMapper).executeAsList()
+                            categoriesQueries.getCategories(CategoryMapper::mapCategory).executeAsList()
                                 .filter { (it.flags and 0b00111100L) == 0b00100000L }
                                 .forEach {
                                     categoriesQueries.update(

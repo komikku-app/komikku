@@ -28,7 +28,7 @@ class FavoritesEntryRepositoryImpl(
     }
 
     override suspend fun selectAll(): List<FavoriteEntry> {
-        return handler.awaitList { eh_favoritesQueries.selectAll(favoriteEntryMapper) }
+        return handler.awaitList { eh_favoritesQueries.selectAll(::mapFavoriteEntry) }
     }
 
     override suspend fun addAlternative(favoriteEntryAlternative: FavoriteEntryAlternative) {
@@ -44,5 +44,23 @@ class FavoritesEntryRepositoryImpl(
         } catch (e: Exception) {
             logcat(LogPriority.INFO, e)
         }
+    }
+
+    private fun mapFavoriteEntry(
+        gid: String,
+        token: String,
+        title: String,
+        category: Long,
+        otherGid: String?,
+        otherToken: String?,
+    ): FavoriteEntry {
+        return FavoriteEntry(
+            gid = gid,
+            token = token,
+            title = title,
+            category = category.toInt(),
+            otherGid = otherGid,
+            otherToken = otherToken,
+        )
     }
 }

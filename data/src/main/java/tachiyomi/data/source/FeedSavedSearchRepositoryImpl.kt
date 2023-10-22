@@ -11,15 +11,15 @@ class FeedSavedSearchRepositoryImpl(
 ) : FeedSavedSearchRepository {
 
     override suspend fun getGlobal(): List<FeedSavedSearch> {
-        return handler.awaitList { feed_saved_searchQueries.selectAllGlobal(feedSavedSearchMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectAllGlobal(FeedSavedSearchMapper::map) }
     }
 
     override fun getGlobalAsFlow(): Flow<List<FeedSavedSearch>> {
-        return handler.subscribeToList { feed_saved_searchQueries.selectAllGlobal(feedSavedSearchMapper) }
+        return handler.subscribeToList { feed_saved_searchQueries.selectAllGlobal(FeedSavedSearchMapper::map) }
     }
 
     override suspend fun getGlobalFeedSavedSearch(): List<SavedSearch> {
-        return handler.awaitList { feed_saved_searchQueries.selectGlobalFeedSavedSearch(savedSearchMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectGlobalFeedSavedSearch(SavedSearchMapper::map) }
     }
 
     override suspend fun countGlobal(): Long {
@@ -27,15 +27,15 @@ class FeedSavedSearchRepositoryImpl(
     }
 
     override suspend fun getBySourceId(sourceId: Long): List<FeedSavedSearch> {
-        return handler.awaitList { feed_saved_searchQueries.selectBySource(sourceId, feedSavedSearchMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectBySource(sourceId, FeedSavedSearchMapper::map) }
     }
 
     override fun getBySourceIdAsFlow(sourceId: Long): Flow<List<FeedSavedSearch>> {
-        return handler.subscribeToList { feed_saved_searchQueries.selectBySource(sourceId, feedSavedSearchMapper) }
+        return handler.subscribeToList { feed_saved_searchQueries.selectBySource(sourceId, FeedSavedSearchMapper::map) }
     }
 
     override suspend fun getBySourceIdFeedSavedSearch(sourceId: Long): List<SavedSearch> {
-        return handler.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(sourceId, savedSearchMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(sourceId, SavedSearchMapper::map) }
     }
 
     override suspend fun countBySourceId(sourceId: Long): Long {

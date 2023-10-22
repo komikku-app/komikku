@@ -2,35 +2,34 @@ package tachiyomi.data.chapter
 
 import tachiyomi.domain.chapter.model.Chapter
 
-val chapterMapper: (
-    Long,
-    Long,
-    String,
-    String,
-    String?,
-    Boolean,
-    Boolean,
-    Long,
-    Double,
-    Long,
-    Long,
-    Long,
-    Long,
-) -> Chapter =
-    { id, mangaId, url, name, scanlator, read, bookmark, lastPageRead, chapterNumber, sourceOrder, dateFetch, dateUpload, lastModifiedAt ->
-        Chapter(
-            id = id,
-            mangaId = mangaId,
-            read = read,
-            bookmark = bookmark,
-            lastPageRead = lastPageRead,
-            dateFetch = dateFetch,
-            sourceOrder = sourceOrder,
-            url = url,
-            name = name,
-            dateUpload = dateUpload,
-            chapterNumber = chapterNumber,
-            scanlator = scanlator,
-            lastModifiedAt = lastModifiedAt,
-        )
-    }
+object ChapterMapper {
+    fun mapChapter(
+        id: Long,
+        mangaId: Long,
+        url: String,
+        name: String,
+        scanlator: String?,
+        read: Boolean,
+        bookmark: Boolean,
+        lastPageRead: Long,
+        chapterNumber: Double,
+        sourceOrder: Long,
+        dateFetch: Long,
+        dateUpload: Long,
+        lastModifiedAt: Long,
+    ): Chapter = Chapter(
+        id = id,
+        mangaId = mangaId,
+        read = read,
+        bookmark = bookmark,
+        lastPageRead = lastPageRead,
+        dateFetch = dateFetch,
+        sourceOrder = sourceOrder,
+        url = url,
+        name = name,
+        dateUpload = dateUpload,
+        chapterNumber = chapterNumber,
+        scanlator = scanlator,
+        lastModifiedAt = lastModifiedAt,
+    )
+}

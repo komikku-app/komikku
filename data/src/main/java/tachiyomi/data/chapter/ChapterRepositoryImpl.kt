@@ -77,27 +77,27 @@ class ChapterRepositoryImpl(
     }
 
     override suspend fun getChapterByMangaId(mangaId: Long): List<Chapter> {
-        return handler.awaitList { chaptersQueries.getChaptersByMangaId(mangaId, chapterMapper) }
+        return handler.awaitList { chaptersQueries.getChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
     }
 
     override suspend fun getBookmarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getBookmarkedChaptersByMangaId(
                 mangaId,
-                chapterMapper,
+                ChapterMapper::mapChapter,
             )
         }
     }
 
     override suspend fun getChapterById(id: Long): Chapter? {
-        return handler.awaitOneOrNull { chaptersQueries.getChapterById(id, chapterMapper) }
+        return handler.awaitOneOrNull { chaptersQueries.getChapterById(id, ChapterMapper::mapChapter) }
     }
 
     override suspend fun getChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>> {
         return handler.subscribeToList {
             chaptersQueries.getChaptersByMangaId(
                 mangaId,
-                chapterMapper,
+                ChapterMapper::mapChapter,
             )
         }
     }
@@ -107,22 +107,22 @@ class ChapterRepositoryImpl(
             chaptersQueries.getChapterByUrlAndMangaId(
                 url,
                 mangaId,
-                chapterMapper,
+                ChapterMapper::mapChapter,
             )
         }
     }
 
     // SY -->
     override suspend fun getChapterByUrl(url: String): List<Chapter> {
-        return handler.awaitList { chaptersQueries.getChapterByUrl(url, chapterMapper) }
+        return handler.awaitList { chaptersQueries.getChapterByUrl(url, ChapterMapper::mapChapter) }
     }
 
     override suspend fun getMergedChapterByMangaId(mangaId: Long): List<Chapter> {
-        return handler.awaitList { chaptersQueries.getMergedChaptersByMangaId(mangaId, chapterMapper) }
+        return handler.awaitList { chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
     }
 
     override suspend fun getMergedChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>> {
-        return handler.subscribeToList { chaptersQueries.getMergedChaptersByMangaId(mangaId, chapterMapper) }
+        return handler.subscribeToList { chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
     }
     // SY <--
 }

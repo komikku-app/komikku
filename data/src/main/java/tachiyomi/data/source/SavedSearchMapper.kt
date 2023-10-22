@@ -2,9 +2,15 @@ package tachiyomi.data.source
 
 import tachiyomi.domain.source.model.SavedSearch
 
-val savedSearchMapper: (Long, Long, String, String?, String?) -> SavedSearch =
-    { id, source, name, query, filtersJson ->
-        SavedSearch(
+object SavedSearchMapper {
+    fun map(
+        id: Long,
+        source: Long,
+        name: String,
+        query: String?,
+        filtersJson: String?
+    ): SavedSearch {
+        return SavedSearch(
             id = id,
             source = source,
             name = name,
@@ -12,3 +18,4 @@ val savedSearchMapper: (Long, Long, String, String?, String?) -> SavedSearch =
             filtersJson = filtersJson,
         )
     }
+}

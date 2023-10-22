@@ -2,9 +2,21 @@ package tachiyomi.data.manga
 
 import tachiyomi.domain.manga.model.MergedMangaReference
 
-val mergedMangaReferenceMapper =
-    { id: Long, isInfoManga: Boolean, getChapterUpdates: Boolean, chapterSortMode: Long, chapterPriority: Long, downloadChapters: Boolean, mergeId: Long, mergeUrl: String, mangaId: Long?, mangaUrl: String, mangaSourceId: Long ->
-        MergedMangaReference(
+object MergedMangaMapper {
+    fun map(
+        id: Long,
+        isInfoManga: Boolean,
+        getChapterUpdates: Boolean,
+        chapterSortMode: Long,
+        chapterPriority: Long,
+        downloadChapters: Boolean,
+        mergeId: Long,
+        mergeUrl: String,
+        mangaId: Long?,
+        mangaUrl: String,
+        mangaSourceId: Long,
+    ): MergedMangaReference {
+        return MergedMangaReference(
             id = id,
             isInfoManga = isInfoManga,
             getChapterUpdates = getChapterUpdates,
@@ -18,3 +30,4 @@ val mergedMangaReferenceMapper =
             mangaSourceId = mangaSourceId,
         )
     }
+}

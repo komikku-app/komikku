@@ -58,7 +58,7 @@ import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.manga.mangaMapper
+import tachiyomi.data.manga.MangaMapper
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
@@ -105,7 +105,7 @@ class BackupCreator(
         }
 
         val databaseManga = getFavorites.await() /* SY --> */ + if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
-            handler.awaitList { mangasQueries.getReadMangaNotInLibrary(mangaMapper) }
+            handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
         } else {
             emptyList()
         } + getMergedManga.await() // SY <--

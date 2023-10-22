@@ -10,15 +10,15 @@ class SavedSearchRepositoryImpl(
 ) : SavedSearchRepository {
 
     override suspend fun getById(savedSearchId: Long): SavedSearch? {
-        return handler.awaitOneOrNull { saved_searchQueries.selectById(savedSearchId, savedSearchMapper) }
+        return handler.awaitOneOrNull { saved_searchQueries.selectById(savedSearchId, SavedSearchMapper::map) }
     }
 
     override suspend fun getBySourceId(sourceId: Long): List<SavedSearch> {
-        return handler.awaitList { saved_searchQueries.selectBySource(sourceId, savedSearchMapper) }
+        return handler.awaitList { saved_searchQueries.selectBySource(sourceId, SavedSearchMapper::map) }
     }
 
     override fun getBySourceIdAsFlow(sourceId: Long): Flow<List<SavedSearch>> {
-        return handler.subscribeToList { saved_searchQueries.selectBySource(sourceId, savedSearchMapper) }
+        return handler.subscribeToList { saved_searchQueries.selectBySource(sourceId, SavedSearchMapper::map) }
     }
 
     override suspend fun delete(savedSearchId: Long) {
