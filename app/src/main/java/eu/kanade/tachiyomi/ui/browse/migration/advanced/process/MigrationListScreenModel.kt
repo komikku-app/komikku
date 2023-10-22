@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 import android.content.Context
 import android.widget.Toast
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
@@ -101,7 +101,7 @@ class MigrationListScreenModel(
     private var migrateJob: Job? = null
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             runMigrations(
                 config.mangaIds
                     .map {
@@ -118,7 +118,7 @@ class MigrationListScreenModel(
                                         null
                                     },
                                 ),
-                                parentContext = coroutineScope.coroutineContext,
+                                parentContext = screenModelScope.coroutineContext,
                             )
                         }
                     }
@@ -403,7 +403,7 @@ class MigrationListScreenModel(
         val migratingManga = migratingItems.value.orEmpty().find { it.manga.id == selectedMangaId }
             ?: return
         migratingManga.searchResult.value = SearchResult.Searching
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val result = migratingManga.migrationScope.async {
                 val manga = getManga(newMangaId)!!
                 val localManga = networkToLocalManga.await(manga)
@@ -447,7 +447,7 @@ class MigrationListScreenModel(
 
     private fun migrateMangas(replace: Boolean) {
         dialog.value = null
-        migrateJob = coroutineScope.launchIO {
+        migrateJob = screenModelScope.launchIO {
             migratingProgress.value = 0f
             val items = migratingItems.value.orEmpty()
             try {
@@ -494,7 +494,7 @@ class MigrationListScreenModel(
 
     fun migrateManga(mangaId: Long, copy: Boolean) {
         manualMigrations.value++
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val manga = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
 
@@ -511,7 +511,7 @@ class MigrationListScreenModel(
     }
 
     fun removeManga(mangaId: Long) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val item = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
             removeManga(item)

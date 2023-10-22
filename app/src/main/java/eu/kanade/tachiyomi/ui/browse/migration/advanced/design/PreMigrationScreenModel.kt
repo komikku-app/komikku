@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
@@ -40,7 +40,7 @@ class PreMigrationScreenModel(
     }
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val enabledSources = getEnabledSources()
             _state.update { enabledSources }
         }

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.source.Source
@@ -35,7 +35,7 @@ class PagePreviewScreenModel(
     var pageDialogOpen by mutableStateOf(false)
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val manga = getManga.await(mangaId)!!
             val chapter = getChapterByMangaId.await(mangaId).minByOrNull { it.sourceOrder }
             if (chapter == null) {

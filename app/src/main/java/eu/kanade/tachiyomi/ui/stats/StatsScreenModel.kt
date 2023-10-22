@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.stats
 
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.fastCountNot
 import eu.kanade.core.util.fastDistinctBy
 import eu.kanade.core.util.fastFilter
@@ -103,7 +103,7 @@ class StatsScreenModel(
                 )
             }
             // SY -->
-        }.launchIn(coroutineScope)
+        }.launchIn(screenModelScope)
         // SY <--
     }
 

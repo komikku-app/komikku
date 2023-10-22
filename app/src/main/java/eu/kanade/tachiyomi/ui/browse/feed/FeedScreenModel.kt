@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.service.SourcePreferences
@@ -90,12 +90,12 @@ open class FeedScreenModel(
                 getFeed(items)
             }
             .catch { _events.send(Event.FailedFetchingSources) }
-            .launchIn(coroutineScope)
+            .launchIn(screenModelScope)
     }
 
     fun init() {
         pushed = false
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
             mutableState.update { state ->
                 state.copy(
@@ -107,7 +107,7 @@ open class FeedScreenModel(
     }
 
     fun openAddDialog() {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             if (hasTooManyFeeds()) {
                 _events.send(Event.TooManyFeeds)
                 return@launchIO
@@ -121,7 +121,7 @@ open class FeedScreenModel(
     }
 
     fun openAddSearchDialog(source: CatalogueSource) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
                     dialog = Dialog.AddFeedSearch(source, (if (source.supportsLatest) listOf(null) else emptyList()) + getSourceSavedSearches(source.id)),
@@ -131,7 +131,7 @@ open class FeedScreenModel(
     }
 
     fun openDeleteDialog(feed: FeedSavedSearch) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
                     dialog = Dialog.DeleteFeed(feed),
@@ -163,7 +163,7 @@ open class FeedScreenModel(
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -176,7 +176,7 @@ open class FeedScreenModel(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
@@ -215,7 +215,7 @@ open class FeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<FeedItemUI>) {
-        coroutineScope.launch {
+        screenModelScope.launch {
             feedSavedSearch.map { itemUI ->
                 async {
                     val page = try {

@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.category.genre
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.CreateSortTag
 import eu.kanade.domain.manga.interactor.DeleteSortTag
 import eu.kanade.domain.manga.interactor.GetSortTag
@@ -28,7 +28,7 @@ class SortTagScreenModel(
     val events = _events.receiveAsFlow()
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             getSortTag.subscribe()
                 .collectLatest { tags ->
                     mutableState.update {
@@ -41,7 +41,7 @@ class SortTagScreenModel(
     }
 
     fun createTag(name: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (createSortTag.await(name)) {
                 is CreateSortTag.Result.TagExists -> _events.send(SortTagEvent.TagExists)
                 else -> {}
@@ -50,13 +50,13 @@ class SortTagScreenModel(
     }
 
     fun delete(tag: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             deleteSortTag.await(tag)
         }
     }
 
     fun moveUp(tag: String, index: Int) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (reorderSortTag.await(tag, index - 1)) {
                 is ReorderSortTag.Result.InternalError -> _events.send(SortTagEvent.InternalError)
                 else -> {}
@@ -65,7 +65,7 @@ class SortTagScreenModel(
     }
 
     fun moveDown(tag: String, index: Int) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (reorderSortTag.await(tag, index + 1)) {
                 is ReorderSortTag.Result.InternalError -> _events.send(SortTagEvent.InternalError)
                 else -> {}

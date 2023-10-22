@@ -1,7 +1,7 @@
 package exh.ui.metadata
 
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
@@ -26,11 +26,11 @@ class MetadataViewScreenModel(
     val manga = _manga.asStateFlow()
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             _manga.value = getManga.await(mangaId)
         }
 
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val metadataSource = sourceManager.get(sourceId)?.getMainSource<MetadataSource<*, *>>()
             if (metadataSource == null) {
                 mutableState.value = MetadataViewState.SourceNotFound

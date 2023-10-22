@@ -12,7 +12,7 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -116,14 +116,14 @@ open class BrowseSourceScreenModel(
     // SY <--
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
-    var displayMode by sourcePreferences.sourceDisplayMode().asState(coroutineScope)
+    var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
 
     val source = sourceManager.getOrStub(sourceId)
 
     // SY -->
-    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(coroutineScope)
+    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(screenModelScope)
 
-    val startExpanded by uiPreferences.expandFilters().asState(coroutineScope)
+    val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
 
     private val filterSerializer = FilterSerializer()
 
@@ -176,7 +176,7 @@ open class BrowseSourceScreenModel(
                 .onEach { savedSearches ->
                     mutableState.update { it.copy(savedSearches = savedSearches) }
                 }
-                .launchIn(coroutineScope)
+                .launchIn(screenModelScope)
         }
         // SY <--
     }
@@ -326,7 +326,7 @@ open class BrowseSourceScreenModel(
      * @param manga the manga to update.
      */
     fun changeMangaFavorite(manga: Manga) {
-        coroutineScope.launch {
+        screenModelScope.launch {
             var new = manga.copy(
                 favorite = !manga.favorite,
                 dateAdded = when (manga.favorite) {
@@ -347,7 +347,7 @@ open class BrowseSourceScreenModel(
     }
 
     fun addFavorite(manga: Manga) {
-        coroutineScope.launch {
+        screenModelScope.launch {
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
@@ -403,7 +403,7 @@ open class BrowseSourceScreenModel(
     }
 
     fun moveMangaToCategories(manga: Manga, categoryIds: List<Long>) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             setMangaCategories.await(
                 mangaId = manga.id,
                 categoryIds = categoryIds.toList(),
@@ -471,7 +471,7 @@ open class BrowseSourceScreenModel(
 
     // EXH -->
     fun onSaveSearch() {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val names = state.value.savedSearches.map { it.name }
             mutableState.update { it.copy(dialog = Dialog.CreateSavedSearch(names)) }
         }
@@ -481,7 +481,7 @@ open class BrowseSourceScreenModel(
         search: EXHSavedSearch,
         onToast: (Int) -> Unit,
     ) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             if (source !is CatalogueSource) return@launchIO
 
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
@@ -519,7 +519,7 @@ open class BrowseSourceScreenModel(
         name: String,
     ) {
         if (source !is CatalogueSource) return
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             val query = state.value.toolbarQuery?.takeUnless {
                 it.isBlank() || it == GetRemoteManga.QUERY_POPULAR || it == GetRemoteManga.QUERY_LATEST
             }?.trim()
@@ -537,13 +537,13 @@ open class BrowseSourceScreenModel(
     }
 
     fun deleteSearch(savedSearchId: Long) {
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             deleteSavedSearchById.await(savedSearchId)
         }
     }
 
     fun onMangaDexRandom(onRandomFound: (String) -> Unit) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val random = source.getMainSource<MangaDex>()?.fetchRandomMangaUrl()
                 ?: return@launchIO
             onRandomFound(random)

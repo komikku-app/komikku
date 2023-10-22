@@ -84,6 +84,14 @@ class EnhancedHttpSource(
         throw UnsupportedOperationException("Should never be called!")
 
     /**
+     * Parses the response from the site and returns a SChapter Object.
+     *
+     * @param response the response from the site.
+     */
+    override fun chapterPageParse(response: Response) =
+        throw UnsupportedOperationException("Should never be called!")
+
+    /**
      * Parses the response from the site and returns a list of pages.
      *
      * @param response the response from the site.

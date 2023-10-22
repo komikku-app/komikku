@@ -2,7 +2,7 @@ package exh.ui.batchadd
 
 import android.content.Context
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.R
 import exh.GalleryAddEvent
 import exh.GalleryAdder
@@ -62,7 +62,7 @@ class BatchAddScreenModel(
             xLogE("Batch add error", throwable)
         }
 
-        coroutineScope.launch(Dispatchers.IO + handler) {
+        screenModelScope.launch(Dispatchers.IO + handler) {
             val succeeded = mutableListOf<String>()
             val failed = mutableListOf<String>()
 

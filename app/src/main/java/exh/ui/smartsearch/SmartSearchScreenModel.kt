@@ -1,7 +1,7 @@
 package exh.ui.smartsearch
 
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import exh.smartsearch.SmartSearchEngine
@@ -24,7 +24,7 @@ class SmartSearchScreenModel(
     val source = sourceManager.get(sourceId) as CatalogueSource
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {

@@ -6,7 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
@@ -75,13 +75,13 @@ open class SourceFeedScreenModel(
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
-    val startExpanded by uiPreferences.expandFilters().asState(coroutineScope)
+    val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
 
     init {
         if (source is CatalogueSource) {
             setFilters(source.getFilterList())
 
-            coroutineScope.launchIO {
+            screenModelScope.launchIO {
                 val searches = loadSearches()
                 mutableState.update { it.copy(savedSearches = searches) }
             }
@@ -96,7 +96,7 @@ open class SourceFeedScreenModel(
                     }
                     getFeed(items)
                 }
-                .launchIn(coroutineScope)
+                .launchIn(screenModelScope)
         }
     }
 
@@ -109,7 +109,7 @@ open class SourceFeedScreenModel(
     }
 
     fun createFeed(savedSearchId: Long) {
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -122,7 +122,7 @@ open class SourceFeedScreenModel(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        coroutineScope.launchNonCancellable {
+        screenModelScope.launchNonCancellable {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
@@ -148,7 +148,7 @@ open class SourceFeedScreenModel(
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
         if (source !is CatalogueSource) return
-        coroutineScope.launch {
+        screenModelScope.launch {
             feedSavedSearch.map { sourceFeed ->
                 async {
                     val page = try {
@@ -213,7 +213,7 @@ open class SourceFeedScreenModel(
 
     fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
         if (source !is CatalogueSource) return
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val allDefault = state.value.filters == source.getFilterList()
             dismissDialog()
             if (allDefault) {
@@ -236,7 +236,7 @@ open class SourceFeedScreenModel(
         onToast: (Int) -> Unit,
     ) {
         if (source !is CatalogueSource) return
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
                     onToast(R.string.save_search_invalid)
@@ -260,7 +260,7 @@ open class SourceFeedScreenModel(
         search: EXHSavedSearch,
         onToast: (Int) -> Unit,
     ) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             if (hasTooManyFeeds()) {
                 withUIContext {
                     onToast(R.string.too_many_in_feed)
@@ -272,7 +272,7 @@ open class SourceFeedScreenModel(
     }
 
     fun onMangaDexRandom(onRandomFound: (String) -> Unit) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val random = source.getMainSource<MangaDex>()?.fetchRandomMangaUrl()
                 ?: return@launchIO
             onRandomFound(random)

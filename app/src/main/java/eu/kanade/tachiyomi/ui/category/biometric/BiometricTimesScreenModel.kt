@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +24,7 @@ class BiometricTimesScreenModel(
     val events = _events.receiveAsFlow()
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             // todo usecase
             preferences.authenticatorTimeRanges().changes()
                 .collectLatest { times ->
@@ -47,7 +47,7 @@ class BiometricTimesScreenModel(
      */
     fun createTimeRange(timeRange: TimeRange) {
         // todo usecase
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             // Do not allow duplicate categories.
             if (timeRangeConflicts(timeRange)) {
                 _events.send(BiometricTimesEvent.TimeConflicts)
@@ -65,7 +65,7 @@ class BiometricTimesScreenModel(
      */
     fun deleteTimeRanges(timeRange: TimeRangeItem) {
         // todo usecase
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             val state = state.value as? BiometricTimesScreenState.Success ?: return@launchIO
             preferences.authenticatorTimeRanges().set(
                 state.timeRanges.filterNot { it == timeRange }.map { it.timeRange.toPreferenceString() }.toSet(),

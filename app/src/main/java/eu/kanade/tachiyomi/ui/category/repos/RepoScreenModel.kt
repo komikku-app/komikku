@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.category.repos
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.interactor.CreateSourceRepo
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +26,7 @@ class RepoScreenModel(
     val events = _events.receiveAsFlow()
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             getSourceRepos.subscribe()
                 .collectLatest { repos ->
                     mutableState.update {
@@ -44,7 +44,7 @@ class RepoScreenModel(
      * @param name The name of the repo to create.
      */
     fun createRepo(name: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (createSourceRepo.await(name)) {
                 is CreateSourceRepo.Result.InvalidName -> _events.send(RepoEvent.InvalidName)
                 else -> {}
@@ -58,7 +58,7 @@ class RepoScreenModel(
      * @param repos The list of repos to delete.
      */
     fun deleteRepos(repos: List<String>) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             deleteSourceRepos.await(repos)
         }
     }

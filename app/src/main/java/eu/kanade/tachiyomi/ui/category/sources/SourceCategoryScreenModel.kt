@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.category.sources
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.interactor.CreateSourceCategory
 import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetSourceCategories
@@ -28,7 +28,7 @@ class SourceCategoryScreenModel(
     val events = _events.receiveAsFlow()
 
     init {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             getSourceCategories.subscribe()
                 .collectLatest { categories ->
                     mutableState.update {
@@ -46,7 +46,7 @@ class SourceCategoryScreenModel(
      * @param name The name of the category to create.
      */
     fun createCategory(name: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (createSourceCategory.await(name)) {
                 is CreateSourceCategory.Result.InvalidName -> _events.send(SourceCategoryEvent.InvalidName)
                 else -> {}
@@ -60,7 +60,7 @@ class SourceCategoryScreenModel(
      * @param categories The list of categories to delete.
      */
     fun deleteCategory(categories: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             deleteSourceCategory.await(categories)
         }
     }
@@ -72,7 +72,7 @@ class SourceCategoryScreenModel(
      * @param categoryNew The new name of the category.
      */
     fun renameCategory(categoryOld: String, categoryNew: String) {
-        coroutineScope.launchIO {
+        screenModelScope.launchIO {
             when (renameSourceCategory.await(categoryOld, categoryNew)) {
                 is CreateSourceCategory.Result.InvalidName -> _events.send(SourceCategoryEvent.InvalidName)
                 else -> {}
