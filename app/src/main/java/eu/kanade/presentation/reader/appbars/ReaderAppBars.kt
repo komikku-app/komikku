@@ -13,14 +13,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -114,7 +110,7 @@ fun ReaderAppBars(
     onClickChapterList: () -> Unit,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
-
+    // SY <--
 ) {
     val isRtl = viewer is R2LPagerViewer
     val backgroundColor = MaterialTheme.colorScheme
@@ -122,9 +118,7 @@ fun ReaderAppBars(
         .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
     val appBarModifier = if (fullscreen) {
-        // SY -->
-        Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
-        // SY <--
+        Modifier.systemBarsPadding()
     } else {
         Modifier
     }
