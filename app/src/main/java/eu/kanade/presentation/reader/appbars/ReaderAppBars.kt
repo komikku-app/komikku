@@ -117,12 +117,11 @@ fun ReaderAppBars(
         .surfaceColorAtElevation(3.dp)
         .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
-    val appBarModifier = if (fullscreen) {
+    val modifierWithInsetsPadding = if (fullscreen) {
         Modifier.systemBarsPadding()
     } else {
         Modifier
     }
-
 
     // SY -->
     BoxIgnoreLayoutDirection(
@@ -138,7 +137,7 @@ fun ReaderAppBars(
                 targetOffsetX = { -it },
                 animationSpec = animationSpec,
             ),
-            modifier = Modifier
+            modifier = modifierWithInsetsPadding
                 .padding(bottom = 48.dp, top = 120.dp)
                 .align(Alignment.TopStart)
         ) {
@@ -166,7 +165,7 @@ fun ReaderAppBars(
                 targetOffsetX = { it },
                 animationSpec = animationSpec,
             ),
-            modifier = Modifier
+            modifier = modifierWithInsetsPadding
                 .padding(bottom = 48.dp, top = 120.dp)
                 .align(Alignment.TopEnd)
         ) {
@@ -200,7 +199,7 @@ fun ReaderAppBars(
                 ),
             ) {
                 // SY -->
-                Column(appBarModifier) {
+                Column(modifierWithInsetsPadding) {
                     // SY <--
                     AppBar(
                         modifier = /*SY --> */ Modifier /*SY <-- */
@@ -268,6 +267,7 @@ fun ReaderAppBars(
                 ),
             ) {
                 Column(
+                    modifier = modifierWithInsetsPadding,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (navBarType == NavBarType.Bottom) {
