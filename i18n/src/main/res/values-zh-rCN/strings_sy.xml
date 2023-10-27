@@ -136,7 +136,7 @@
     <string name="data_saver_ignore_jpeg">忽略 JPEG 图像</string>
     <string name="data_saver_ignore_gif">忽略 Gif 动画</string>
     <string name="data_saver_image_quality">图像质量</string>
-    <string name="data_saver_image_quality_summary">更高值意味着更高的保存的图像质量，但这意味着更大的文件大小，80% 可以很好地平衡图片质量和文件大小</string>
+    <string name="data_saver_image_quality_summary">更高值意味着更高的保存的图像质量，但这意味着更大的文件大小，80\% 可以很好地平衡图片质量和文件大小</string>
     <string name="data_saver_image_format">压缩为 JPEG</string>
     <string name="data_saver_image_format_summary_on">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 JPEG</string>
     <string name="data_saver_image_format_summary_off">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 Webp</string>
