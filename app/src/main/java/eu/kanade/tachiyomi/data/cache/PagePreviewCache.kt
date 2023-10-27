@@ -9,9 +9,11 @@ import eu.kanade.tachiyomi.util.storage.saveTo
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.Response
+import logcat.LogPriority
+import okio.Source
 import okio.buffer
 import okio.sink
+import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -159,7 +161,7 @@ class PagePreviewCache(private val context: Context) {
      * @throws IOException page error.
      */
     @Throws(IOException::class)
-    fun putImageToCache(imageUrl: String, response: Response) {
+    fun putImageToCache(imageUrl: String, source: Source) {
         // Initialize editor (edits the values for an entry).
         var editor: DiskLruCache.Editor? = null
 
@@ -169,12 +171,12 @@ class PagePreviewCache(private val context: Context) {
             editor = diskCache.edit(key) ?: throw IOException("Unable to edit key")
 
             // Get OutputStream and write page with Okio.
-            response.body.source().saveTo(editor.newOutputStream(0))
+            source.buffer().saveTo(editor.newOutputStream(0))
 
             diskCache.flush()
             editor.commit()
         } finally {
-            response.body.close()
+            source.close()
             editor?.abortUnlessCommitted()
         }
     }
@@ -207,6 +209,7 @@ class PagePreviewCache(private val context: Context) {
             // Remove file from cache.
             diskCache.remove(key)
         } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) { "Failed to remove file from cache" }
             false
         }
     }

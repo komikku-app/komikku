@@ -180,6 +180,7 @@ class MainActivity : BaseActivity() {
                 libraryPreferences = libraryPreferences,
                 readerPreferences = Injekt.get(),
                 backupPreferences = Injekt.get(),
+                pagePreviewCache = Injekt.get(),
             )
         } else {
             false

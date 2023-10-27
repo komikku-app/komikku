@@ -17,6 +17,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -57,17 +58,42 @@ object DebugFunctions {
     val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
     val getSearchMetadata: GetSearchMetadata by injectLazy()
     val getAllManga: GetAllManga by injectLazy()
+    val pagePreviewCache: PagePreviewCache by injectLazy()
 
     fun forceUpgradeMigration() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(1)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
+        EXHMigrations.upgrade(
+            context = app,
+            preferenceStore = prefsStore,
+            basePreferences = basePrefs,
+            uiPreferences = uiPrefs,
+            networkPreferences = networkPrefs,
+            sourcePreferences = sourcePrefs,
+            securityPreferences = securityPrefs,
+            libraryPreferences = libraryPrefs,
+            readerPreferences = readerPrefs,
+            backupPreferences = backupPrefs,
+            pagePreviewCache = pagePreviewCache,
+        )
     }
 
     fun forceSetupJobs() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(0)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs)
+        EXHMigrations.upgrade(
+            context = app,
+            preferenceStore = prefsStore,
+            basePreferences = basePrefs,
+            uiPreferences = uiPrefs,
+            networkPreferences = networkPrefs,
+            sourcePreferences = sourcePrefs,
+            securityPreferences = securityPrefs,
+            libraryPreferences = libraryPrefs,
+            readerPreferences = readerPrefs,
+            backupPreferences = backupPrefs,
+            pagePreviewCache = pagePreviewCache,
+        )
     }
 
     fun resetAgedFlagInEXHManga() {
@@ -187,7 +213,7 @@ object DebugFunctions {
             """
             {
                 id: ${info.id},
-                isPeriodic: ${j.extras["EXTRA_IS_PERIODIC"]},
+                isPeriodic: ${j.extras.getBoolean("EXTRA_IS_PERIODIC")},
                 state: ${info.state.name},
                 tags: [
                     ${info.tags.joinToString(separator = ",\n                    ")}

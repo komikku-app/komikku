@@ -21,6 +21,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
+import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
@@ -56,6 +57,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import logcat.LogPriority
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
@@ -102,6 +104,7 @@ object EXHMigrations {
         libraryPreferences: LibraryPreferences,
         readerPreferences: ReaderPreferences,
         backupPreferences: BackupPreferences,
+        pagePreviewCache: PagePreviewCache,
     ): Boolean {
         val lastVersionCode = preferenceStore.getInt("eh_last_version_code", 0)
         val oldVersion = lastVersionCode.get()
@@ -514,6 +517,20 @@ object EXHMigrations {
                     // Force MangaDex log out due to login flow change
                     val trackManager = Injekt.get<TrackManager>()
                     trackManager.mdList.logout()
+                }
+                if (oldVersion under 51) {
+                    pagePreviewCache.clear()
+                    File(context.cacheDir, PagePreviewCache.PARAMETER_CACHE_DIRECTORY).listFiles()?.forEach {
+                        if (it.name == "journal" || it.name.startsWith("journal.")) {
+                            return@forEach
+                        }
+
+                        try {
+                            it.delete()
+                        } catch (e: Exception) {
+                            logcat(LogPriority.WARN, e) { "Failed to remove file from cache" }
+                        }
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

@@ -1156,7 +1156,7 @@ class EHentai(
                     .map {
                         PagePreviewInfo(
                             it.attr("alt").toInt(),
-                            imageUrl = it.attr("src")
+                            imageUrl = it.attr("src"),
                         )
                     }
             }
