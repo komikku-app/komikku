@@ -322,7 +322,7 @@ class ReaderViewModel(
 
                     val context = Injekt.get<Application>()
                     // val source = sourceManager.getOrStub(manga.source)
-                    loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source, /* SY --> */sourceManager, mergedReferences, mergedManga/* SY <-- */)
+                    loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source, /* SY --> */sourceManager, readerPreferences, mergedReferences, mergedManga/* SY <-- */)
 
                     loadChapter(loader!!, chapterList.first { chapterId == it.chapter.id } /* SY --> */, page/* SY <-- */)
                     Result.success(true)
