@@ -952,9 +952,6 @@ class ReaderViewModel @JvmOverloads constructor(
         val notifier = SaveImageNotifier(context)
         notifier.onClear()
 
-        // Pictures directory.
-        val relativePath = if (readerPreferences.folderPerManga().get()) DiskUtil.buildValidFilename(manga.title) else ""
-
         // Copy file in background.
         viewModelScope.launchNonCancellable {
             try {
@@ -963,7 +960,7 @@ class ReaderViewModel @JvmOverloads constructor(
                     page2 = secondPage,
                     isLTR = isLTR,
                     bg = bg,
-                    location = Location.Pictures.create(relativePath),
+                    location = Location.Pictures(DiskUtil.buildValidFilename(manga.title)),
                     manga = manga,
                 )
                 eventChannel.send(Event.SavedImage(SaveImageResult.Success(uri)))
