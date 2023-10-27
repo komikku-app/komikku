@@ -173,6 +173,7 @@ class MainActivity : BaseActivity() {
                 readerPreferences = Injekt.get(),
                 backupPreferences = Injekt.get(),
                 trackerManager = Injekt.get(),
+                pagePreviewCache = Injekt.get(),
             )
         } else {
             false

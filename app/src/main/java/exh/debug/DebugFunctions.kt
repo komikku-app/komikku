@@ -8,6 +8,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.AndroidSourceManager
@@ -40,37 +41,64 @@ import java.util.UUID
 
 @Suppress("unused")
 object DebugFunctions {
-    val app: Application by injectLazy()
-    val handler: DatabaseHandler by injectLazy()
-    val prefsStore: PreferenceStore by injectLazy()
-    val basePrefs: BasePreferences by injectLazy()
-    val uiPrefs: UiPreferences by injectLazy()
-    val networkPrefs: NetworkPreferences by injectLazy()
-    val sourcePrefs: SourcePreferences by injectLazy()
-    val securityPrefs: SecurityPreferences by injectLazy()
-    val libraryPrefs: LibraryPreferences by injectLazy()
-    val readerPrefs: ReaderPreferences by injectLazy()
-    val backupPrefs: BackupPreferences by injectLazy()
-    val trackerManager: TrackerManager by injectLazy()
-    val sourceManager: SourceManager by injectLazy()
-    val updateManga: UpdateManga by injectLazy()
-    val getFavorites: GetFavorites by injectLazy()
-    val getFlatMetadataById: GetFlatMetadataById by injectLazy()
-    val insertFlatMetadata: InsertFlatMetadata by injectLazy()
-    val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
-    val getSearchMetadata: GetSearchMetadata by injectLazy()
-    val getAllManga: GetAllManga by injectLazy()
+    private val app: Application by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
+    private val prefsStore: PreferenceStore by injectLazy()
+    private val basePrefs: BasePreferences by injectLazy()
+    private val uiPrefs: UiPreferences by injectLazy()
+    private val networkPrefs: NetworkPreferences by injectLazy()
+    private val sourcePrefs: SourcePreferences by injectLazy()
+    private val securityPrefs: SecurityPreferences by injectLazy()
+    private val libraryPrefs: LibraryPreferences by injectLazy()
+    private val readerPrefs: ReaderPreferences by injectLazy()
+    private val backupPrefs: BackupPreferences by injectLazy()
+    private val trackerManager: TrackerManager by injectLazy()
+    private val sourceManager: SourceManager by injectLazy()
+    private val updateManga: UpdateManga by injectLazy()
+    private val getFavorites: GetFavorites by injectLazy()
+    private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
+    private val insertFlatMetadata: InsertFlatMetadata by injectLazy()
+    private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
+    private val getSearchMetadata: GetSearchMetadata by injectLazy()
+    private val getAllManga: GetAllManga by injectLazy()
+    private val pagePreviewCache: PagePreviewCache by injectLazy()
 
     fun forceUpgradeMigration() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(1)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackerManager)
+        EXHMigrations.upgrade(
+            context = app,
+            preferenceStore = prefsStore,
+            basePreferences = basePrefs,
+            uiPreferences = uiPrefs,
+            networkPreferences = networkPrefs,
+            sourcePreferences = sourcePrefs,
+            securityPreferences = securityPrefs,
+            libraryPreferences = libraryPrefs,
+            readerPreferences = readerPrefs,
+            backupPreferences = backupPrefs,
+            trackerManager = trackerManager,
+            pagePreviewCache = pagePreviewCache,
+        )
     }
 
     fun forceSetupJobs() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
         lastVersionCode.set(0)
-        EXHMigrations.upgrade(app, prefsStore, basePrefs, uiPrefs, networkPrefs, sourcePrefs, securityPrefs, libraryPrefs, readerPrefs, backupPrefs, trackerManager)
+        EXHMigrations.upgrade(
+            context = app,
+            preferenceStore = prefsStore,
+            basePreferences = basePrefs,
+            uiPreferences = uiPrefs,
+            networkPreferences = networkPrefs,
+            sourcePreferences = sourcePrefs,
+            securityPreferences = securityPrefs,
+            libraryPreferences = libraryPrefs,
+            readerPreferences = readerPrefs,
+            backupPreferences = backupPrefs,
+            trackerManager = trackerManager,
+            pagePreviewCache = pagePreviewCache,
+        )
     }
 
     fun resetAgedFlagInEXHManga() {
@@ -190,7 +218,7 @@ object DebugFunctions {
             """
             {
                 id: ${info.id},
-                isPeriodic: ${j.extras["EXTRA_IS_PERIODIC"]},
+                isPeriodic: ${j.extras.getBoolean("EXTRA_IS_PERIODIC")},
                 state: ${info.state.name},
                 tags: [
                     ${info.tags.joinToString(separator = ",\n                    ")}

@@ -23,8 +23,6 @@ import okhttp3.Response
 import okhttp3.internal.http.HTTP_NOT_MODIFIED
 import okio.Path.Companion.toOkioPath
 import okio.Source
-import okio.buffer
-import okio.sink
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
@@ -39,7 +37,9 @@ import java.io.File
 class PagePreviewFetcher(
     private val page: PagePreview,
     private val options: Options,
-    private val pagePreviewFileLazy: Lazy<File>,
+    private val pagePreviewFile: () -> File,
+    private val isInCache: () -> Boolean,
+    private val writeToCache: (Source) -> Unit,
     private val diskCacheKeyLazy: Lazy<String>,
     private val sourceLazy: Lazy<PagePreviewSource?>,
     private val callFactoryLazy: Lazy<Call.Factory>,
@@ -62,14 +62,14 @@ class PagePreviewFetcher(
     }
 
     private suspend fun httpLoader(): FetchResult {
-        if (pagePreviewFileLazy.value.exists() && options.diskCachePolicy.readEnabled) {
-            return fileLoader(pagePreviewFileLazy.value)
+        if (isInCache() && options.diskCachePolicy.readEnabled) {
+            return fileLoader(pagePreviewFile())
         }
         var snapshot = readFromDiskCache()
         try {
             // Fetch from disk cache
             if (snapshot != null) {
-                val snapshotPagePreviewCache = moveSnapshotToPagePreviewCache(snapshot, pagePreviewFileLazy.value)
+                val snapshotPagePreviewCache = moveSnapshotToPagePreviewCache(snapshot)
                 if (snapshotPagePreviewCache != null) {
                     // Read from page preview cache
                     return fileLoader(snapshotPagePreviewCache)
@@ -88,7 +88,7 @@ class PagePreviewFetcher(
             val responseBody = checkNotNull(response.body) { "Null response source" }
             try {
                 // Read from page preview cache after page preview updated
-                val responsePagePreviewCache = writeResponseToPagePreviewCache(response, pagePreviewFileLazy.value)
+                val responsePagePreviewCache = writeResponseToPagePreviewCache(response)
                 if (responsePagePreviewCache != null) {
                     return fileLoader(responsePagePreviewCache)
                 }
@@ -153,60 +153,59 @@ class PagePreviewFetcher(
         return request.build()
     }
 
-    private fun moveSnapshotToPagePreviewCache(snapshot: DiskCache.Snapshot, cacheFile: File): File? {
+    private fun moveSnapshotToPagePreviewCache(snapshot: DiskCache.Snapshot): File? {
         return try {
             diskCacheLazy.value.run {
                 fileSystem.source(snapshot.data).use { input ->
-                    writeSourceToPagePreviewCache(input, cacheFile)
+                    writeSourceToPagePreviewCache(input)
                 }
                 remove(diskCacheKey)
             }
-            cacheFile.takeIf { it.exists() }
+            return if (isInCache()) {
+                pagePreviewFile()
+            } else {
+                null
+            }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to write snapshot data to page preview cache ${cacheFile.name}" }
+            logcat(LogPriority.ERROR, e) { "Failed to write snapshot data to page preview cache $diskCacheKey" }
             null
         }
     }
 
-    private fun writeResponseToPagePreviewCache(response: Response, cacheFile: File): File? {
+    private fun writeResponseToPagePreviewCache(response: Response): File? {
         if (!options.diskCachePolicy.writeEnabled) return null
         return try {
             response.peekBody(Long.MAX_VALUE).source().use { input ->
-                writeSourceToPagePreviewCache(input, cacheFile)
+                writeSourceToPagePreviewCache(input)
             }
-            cacheFile.takeIf { it.exists() }
+            return if (isInCache()) {
+                pagePreviewFile()
+            } else {
+                null
+            }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to write response data to page preview cache ${cacheFile.name}" }
+            logcat(LogPriority.ERROR, e) { "Failed to write response data to page preview cache $diskCacheKey" }
             null
         }
     }
 
-    private fun writeSourceToPagePreviewCache(input: Source, cacheFile: File) {
-        cacheFile.parentFile?.mkdirs()
-        cacheFile.delete()
-        try {
-            cacheFile.sink().buffer().use { output ->
-                output.writeAll(input)
-            }
-        } catch (e: Exception) {
-            cacheFile.delete()
-            throw e
-        }
+    private fun writeSourceToPagePreviewCache(input: Source) {
+        writeToCache(input)
     }
 
     private fun readFromDiskCache(): DiskCache.Snapshot? {
-        return if (options.diskCachePolicy.readEnabled) diskCacheLazy.value[diskCacheKey] else null
+        return if (options.diskCachePolicy.readEnabled) diskCacheLazy.value.openSnapshot(diskCacheKey) else null
     }
 
     private fun writeToDiskCache(
         response: Response,
     ): DiskCache.Snapshot? {
-        val editor = diskCacheLazy.value.edit(diskCacheKey) ?: return null
+        val editor = diskCacheLazy.value.openEditor(diskCacheKey) ?: return null
         try {
             diskCacheLazy.value.fileSystem.write(editor.data) {
                 response.body.source().readAll(this)
             }
-            return editor.commitAndGet()
+            return editor.commitAndOpenSnapshot()
         } catch (e: Exception) {
             try {
                 editor.abort()
@@ -232,7 +231,9 @@ class PagePreviewFetcher(
             return PagePreviewFetcher(
                 page = data,
                 options = options,
-                pagePreviewFileLazy = lazy { pagePreviewCache.getImageFile(data.imageUrl) },
+                pagePreviewFile = { pagePreviewCache.getImageFile(data.imageUrl) },
+                isInCache = { pagePreviewCache.isImageInCache(data.imageUrl) },
+                writeToCache = { pagePreviewCache.putImageToCache(data.imageUrl, it) },
                 diskCacheKeyLazy = lazy { PagePreviewKeyer().key(data, options) },
                 sourceLazy = lazy { sourceManager.get(data.source) as? PagePreviewSource },
                 callFactoryLazy = callFactoryLazy,
