@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
-import exh.debug.DebugFunctions.readerPrefs
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
@@ -30,6 +30,7 @@ class ChapterLoader(
     private val source: Source,
     // SY -->
     private val sourceManager: SourceManager,
+    private val readerPrefs: ReaderPreferences,
     private val mergedReferences: List<MergedMangaReference>,
     private val mergedManga: Map<Long, Manga>,
     // SY <--
