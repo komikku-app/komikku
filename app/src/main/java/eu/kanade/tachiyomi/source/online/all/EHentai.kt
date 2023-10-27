@@ -1158,18 +1158,23 @@ class EHentai(
                     .toString(),
             ),
         ).awaitSuccess().asJsoup()
-        val previews = if (doc.selectFirst("div#gdo4 .ths")!!.attr("onClick").contains("inline_set=ts_l")) {
-            doc.body()
-                .select("#gdt div a")
-                .map {
-                    PagePreviewInfo(it.text().toInt(), imageUrl = it.select("img").attr("src"))
-                }
-        } else {
-            parseNormalPreviewSet(doc)
-                .map { preview ->
-                    PagePreviewInfo(preview.index, imageUrl = preview.toUrl())
-                }
-        }
+
+        val body = doc.body()
+        val previews = body
+            .select("#gdt div div")
+            .map {
+                val preview = parseNormalPreview(it)
+                PagePreviewInfo(preview.index, imageUrl = preview.toUrl())
+            }
+            .ifEmpty {
+                body.select("#gdt div a img")
+                    .map {
+                        PagePreviewInfo(
+                            it.attr("alt").toInt(),
+                            imageUrl = it.attr("src")
+                        )
+                    }
+            }
 
         return PagePreviewPage(
             page = page,
@@ -1190,37 +1195,33 @@ class EHentai(
     /**
      * Parse normal previews with regular expressions
      */
-    private fun parseNormalPreviewSet(doc: Document): List<EHentaiThumbnailPreview> {
-        return doc.body()
-            .select("#gdt div div")
-            .map { it.selectFirst("img")!!.attr("alt").toInt() to it.attr("style") }
-            .map { (index, style) ->
-                val styles = style.split(";").mapNotNull { it.trimOrNull() }
-                val width = styles.first { it.startsWith("width:") }
-                    .removePrefix("width:")
-                    .removeSuffix("px")
-                    .toInt()
+    private fun parseNormalPreview(element: Element): EHentaiThumbnailPreview {
+        val index = element.selectFirst("img")!!.attr("alt").toInt()
+        val styles = element.attr("style").split(";").mapNotNull { it.trimOrNull() }
+        val width = styles.first { it.startsWith("width:") }
+            .removePrefix("width:")
+            .removeSuffix("px")
+            .toInt()
 
-                val height = styles.first { it.startsWith("height:") }
-                    .removePrefix("height:")
-                    .removeSuffix("px")
-                    .toInt()
+        val height = styles.first { it.startsWith("height:") }
+            .removePrefix("height:")
+            .removeSuffix("px")
+            .toInt()
 
-                val background = styles.first { it.startsWith("background:") }
-                    .removePrefix("background:")
-                    .split(" ")
+        val background = styles.first { it.startsWith("background:") }
+            .removePrefix("background:")
+            .split(" ")
 
-                val url = background.first { it.startsWith("url(") }
-                    .removePrefix("url(")
-                    .removeSuffix(")")
+        val url = background.first { it.startsWith("url(") }
+            .removePrefix("url(")
+            .removeSuffix(")")
 
-                val widthOffset = background.first { it.startsWith("-") }
-                    .removePrefix("-")
-                    .removeSuffix("px")
-                    .toInt()
+        val widthOffset = background.first { it.startsWith("-") }
+            .removePrefix("-")
+            .removeSuffix("px")
+            .toInt()
 
-                EHentaiThumbnailPreview(url, width, height, widthOffset, index)
-            }
+        return EHentaiThumbnailPreview(url, width, height, widthOffset, index).also(::println)
     }
     data class EHentaiThumbnailPreview(
         val imageUrl: String,
