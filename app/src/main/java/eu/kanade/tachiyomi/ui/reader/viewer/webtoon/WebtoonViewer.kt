@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.model.StencilPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
@@ -154,12 +153,6 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
 
-        config.longStripSplitChangedListener = { enabled ->
-            if (!enabled) {
-                cleanupSplitStrips()
-            }
-        }
-
         // SY -->
         config.zoomPropertyChangedListener = {
             frame.enableZoomOut = it
@@ -213,11 +206,6 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         val pages = page.chapter.pages ?: return
         logcat { "onPageSelected: ${page.number}/${pages.size}" }
         activity.onPageSelected(page)
-
-        // Skip preload on StencilPage
-        if (page is StencilPage) {
-            return
-        }
 
         // Preload next chapter once we're within the last 5 pages of the current chapter
         val inPreloadRange = pages.size - page.number < 5
@@ -396,16 +384,5 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             max(0, position - 3),
             min(position + 3, adapter.itemCount - 1),
         )
-    }
-
-    fun onLongStripSplit(currentStrip: Any?, newStrips: List<StencilPage>) {
-        activity.runOnUiThread {
-            // Need to insert on UI thread else images will go blank
-            adapter.onLongStripSplit(currentStrip, newStrips)
-        }
-    }
-
-    private fun cleanupSplitStrips() {
-        adapter.cleanupSplitStrips()
     }
 }

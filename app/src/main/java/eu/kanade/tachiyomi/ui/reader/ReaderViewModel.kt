@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.model.StencilPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -498,8 +497,8 @@ class ReaderViewModel @JvmOverloads constructor(
      * [page]'s chapter is different from the currently active.
      */
     fun onPageSelected(page: ReaderPage, currentPageText: String /* SY --> */, hasExtraPage: Boolean /* SY <-- */) {
-        // InsertPage and StencilPage doesn't change page progress
-        if (page is InsertPage || page is StencilPage) {
+        // InsertPage doesn't change page progress
+        if (page is InsertPage) {
             return
         }
 

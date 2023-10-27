@@ -20,7 +20,6 @@ import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.DeviceUtil
-import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
@@ -544,13 +543,13 @@ object EXHMigrations {
                 if (oldVersion under 52) {
                     BackupCreateJob.setupTask(context)
                 }
-                if (oldVersion under 53) {
-                    // This was accidentally visible from the reader settings sheet, but should always
-                    // be disabled in release builds.
-                    if (isReleaseBuildType) {
-                        readerPreferences.longStripSplitWebtoon().set(false)
-                    }
-                }
+                // if (oldVersion under 53) {
+                //     // This was accidentally visible from the reader settings sheet, but should always
+                //     // be disabled in release builds.
+                //     if (isReleaseBuildType) {
+                //         readerPreferences.longStripSplitWebtoon().set(false)
+                //     }
+                // }
                 if (oldVersion under 56) {
                     val pref = libraryPreferences.autoUpdateDeviceRestrictions()
                     if (pref.isSet() && "battery_not_low" in pref.get()) {
