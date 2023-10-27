@@ -16,7 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,8 +38,6 @@ import eu.kanade.presentation.more.settings.screen.advanced.ClearDatabaseScreen
 import eu.kanade.presentation.more.settings.screen.debug.DebugInfoScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.data.cache.ChapterCache
-import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
@@ -81,7 +78,6 @@ import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
-import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -211,66 +207,12 @@ object SettingsAdvancedScreen : SearchableSettings {
 
     @Composable
     private fun getDataGroup(): Preference.PreferenceGroup {
-        val scope = rememberCoroutineScope()
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
-
-        val chapterCache = remember { Injekt.get<ChapterCache>() }
-        var readableSizeSema by remember { mutableIntStateOf(0) }
-        val readableSize = remember(readableSizeSema) { chapterCache.readableSize }
-
-        // SY -->
-        val pagePreviewCache = remember { Injekt.get<PagePreviewCache>() }
-        var pagePreviewReadableSizeSema by remember { mutableStateOf(0) }
-        val pagePreviewReadableSize = remember(pagePreviewReadableSizeSema) { pagePreviewCache.readableSize }
-        // SY <--
 
         return Preference.PreferenceGroup(
             title = stringResource(R.string.label_data),
             preferenceItems = listOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_clear_chapter_cache),
-                    subtitle = stringResource(R.string.used_cache, readableSize),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            try {
-                                val deletedFiles = chapterCache.clear()
-                                withUIContext {
-                                    context.toast(context.getString(R.string.cache_deleted, deletedFiles))
-                                    readableSizeSema++
-                                }
-                            } catch (e: Throwable) {
-                                logcat(LogPriority.ERROR, e)
-                                withUIContext { context.toast(R.string.cache_delete_error) }
-                            }
-                        }
-                    },
-                ),
-                // SY -->
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_clear_page_preview_cache),
-                    subtitle = stringResource(R.string.used_cache, pagePreviewReadableSize),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            try {
-                                val deletedFiles = pagePreviewCache.clear()
-                                withUIContext {
-                                    context.toast(context.getString(R.string.cache_deleted, deletedFiles))
-                                    pagePreviewReadableSizeSema++
-                                }
-                            } catch (e: Throwable) {
-                                logcat(LogPriority.ERROR, e)
-                                withUIContext { context.toast(R.string.cache_delete_error) }
-                            }
-                        }
-                    },
-                ),
-                // SY <--
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.autoClearChapterCache(),
-                    title = stringResource(R.string.pref_auto_clear_chapter_cache),
-                ),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.pref_invalidate_download_cache),
                     subtitle = stringResource(R.string.pref_invalidate_download_cache_summary),

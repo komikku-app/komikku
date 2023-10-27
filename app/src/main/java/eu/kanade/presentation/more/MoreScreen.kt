@@ -19,7 +19,7 @@ import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.SettingsBackupRestore
+import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -52,7 +52,7 @@ fun MoreScreen(
     onClickDownloadQueue: () -> Unit,
     onClickCategories: () -> Unit,
     onClickStats: () -> Unit,
-    onClickBackupAndRestore: () -> Unit,
+    onClickDataAndStorage: () -> Unit,
     onClickSettings: () -> Unit,
     onClickAbout: () -> Unit,
     onClickBatchAdd: () -> Unit,
@@ -172,9 +172,9 @@ fun MoreScreen(
             }
             item {
                 TextPreferenceWidget(
-                    title = stringResource(R.string.label_backup),
-                    icon = Icons.Outlined.SettingsBackupRestore,
-                    onPreferenceClick = onClickBackupAndRestore,
+                    title = stringResource(R.string.label_data_storage),
+                    icon = Icons.Outlined.Storage,
+                    onPreferenceClick = onClickDataAndStorage,
                 )
             }
             // SY -->
