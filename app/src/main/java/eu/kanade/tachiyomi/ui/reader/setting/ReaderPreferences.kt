@@ -18,6 +18,8 @@ class ReaderPreferences(
     fun pageTransitionsWebtoon() = preferenceStore.getBoolean("pref_enable_transitions_webtoon_key", true)
     // SY <--
 
+    fun flashOnPageChange() = preferenceStore.getBoolean("pref_reader_flash", false)
+
     fun doubleTapAnimSpeed() = preferenceStore.getInt("pref_double_tap_anim_speed", 500)
 
     fun showPageNumber() = preferenceStore.getBoolean("pref_show_page_number_key", true)

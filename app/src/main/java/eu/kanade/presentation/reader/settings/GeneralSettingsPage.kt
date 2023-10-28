@@ -88,7 +88,14 @@ internal fun ColumnScope.GeneralPage(screenModel: ReaderSettingsScreenModel) {
     /*CheckboxItem(
         label = stringResource(R.string.pref_page_transitions),
         pref = screenModel.preferences.pageTransitions(),
-    )*/
+    ) SY <-- */
+
+    CheckboxItem(
+        label = stringResource(R.string.pref_flash_page),
+        pref = screenModel.preferences.flashOnPageChange(),
+    )
+
+    // SY -->
     CheckboxItem(
         label = stringResource(R.string.auto_webtoon_mode),
         pref = screenModel.preferences.useAutoWebtoon(),

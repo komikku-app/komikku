@@ -53,6 +53,7 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingModeType
 import eu.kanade.presentation.reader.BrightnessOverlay
 import eu.kanade.presentation.reader.ChapterListDialog
+import eu.kanade.presentation.reader.DisplayRefreshHost
 import eu.kanade.presentation.reader.OrientationModeSelectDialog
 import eu.kanade.presentation.reader.PageIndicatorText
 import eu.kanade.presentation.reader.ReaderPageActionsDialog
@@ -160,6 +161,7 @@ class ReaderActivity : BaseActivity() {
 
     private var menuToggleToast: Toast? = null
     private var readingModeToast: Toast? = null
+    private val displayRefreshHost = DisplayRefreshHost()
 
     private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, binding.root) }
 
@@ -237,6 +239,9 @@ class ReaderActivity : BaseActivity() {
                 when (event) {
                     ReaderViewModel.Event.ReloadViewerChapters -> {
                         viewModel.state.value.viewerChapters?.let(::setChapters)
+                    }
+                    ReaderViewModel.Event.PageChanged -> {
+                        displayRefreshHost.flash()
                     }
                     is ReaderViewModel.Event.SetOrientation -> {
                         setOrientation(event.orientation)
@@ -366,6 +371,7 @@ class ReaderActivity : BaseActivity() {
 
             val isHttpSource = viewModel.getSource() is HttpSource
             val isFullscreen by readerPreferences.fullscreen().collectAsState()
+            val flashOnPageChange by readerPreferences.flashOnPageChange().collectAsState()
 
             val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
             val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
@@ -476,6 +482,12 @@ class ReaderActivity : BaseActivity() {
             BrightnessOverlay(
                 value = state.brightnessOverlayValue,
             )
+
+            if (flashOnPageChange) {
+                DisplayRefreshHost(
+                    hostState = displayRefreshHost,
+                )
+            }
 
             val onDismissRequest = viewModel::closeDialog
             when (state.dialog) {

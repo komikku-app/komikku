@@ -90,6 +90,11 @@ object SettingsReaderScreen : SearchableSettings {
                 title = stringResource(R.string.pref_page_transitions),
             ),
             SY <-- */
+            Preference.PreferenceItem.SwitchPreference(
+                pref = readerPref.flashOnPageChange(),
+                title = stringResource(R.string.pref_flash_page),
+                subtitle = stringResource(R.string.pref_flash_page_summ),
+            ),
             getDisplayGroup(readerPreferences = readerPref),
             getReadingGroup(readerPreferences = readerPref),
             getPagedGroup(readerPreferences = readerPref),
