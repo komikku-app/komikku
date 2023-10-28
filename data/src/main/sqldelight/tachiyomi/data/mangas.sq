@@ -58,7 +58,8 @@ WHERE _id = :id;
 getMangaByUrlAndSource:
 SELECT *
 FROM mangas
-WHERE url = :url AND source = :source
+WHERE url = :url
+AND source = :source
 LIMIT 1;
 
 getFavorites:
@@ -115,7 +116,9 @@ GROUP BY source;
 
 deleteMangasNotInLibraryBySourceIds:
 DELETE FROM mangas
-WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
+WHERE favorite = 0
+AND source IN :sourceIds
+AND _id NOT IN (
     SELECT manga_id FROM merged WHERE manga_id != merge_id
 );
 
@@ -128,8 +131,8 @@ WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
 );
 
 insert:
-INSERT INTO mangas(source,url,artist,author,description,genre,title,status,thumbnail_url,favorite,last_update,next_update,initialized,viewer,chapter_flags,cover_last_modified,date_added,filtered_scanlators,update_strategy,calculate_interval, last_modified_at)
-VALUES (:source,:url,:artist,:author,:description,:genre,:title,:status,:thumbnailUrl,:favorite,:lastUpdate,:nextUpdate,:initialized,:viewerFlags,:chapterFlags,:coverLastModified,:dateAdded,:filteredScanlators,:updateStrategy,:calculateInterval, strftime('%s', 'now'));
+INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, filtered_scanlators, update_strategy, calculate_interval, last_modified_at)
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :filteredScanlators, :updateStrategy, :calculateInterval, strftime('%s', 'now'));
 
 update:
 UPDATE mangas SET

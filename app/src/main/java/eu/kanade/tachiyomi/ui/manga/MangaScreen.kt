@@ -233,6 +233,7 @@ class MangaScreen(
                 onSortModeChanged = screenModel::setSorting,
                 onDisplayModeChanged = screenModel::setDisplayMode,
                 onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
+                onResetToDefault = screenModel::resetToDefaultSettings,
                 // SY -->
                 onClickShowScanlatorSelection = { showScanlatorsDialog = true }.takeIf { successState.scanlators.size > 1 },
                 // SY <--

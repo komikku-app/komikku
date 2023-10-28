@@ -79,6 +79,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.manga.interactor.GetAllManga
+import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.LabeledCheckbox
@@ -336,7 +337,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(R.string.pref_reset_viewer_flags_summary),
                     onClick = {
                         scope.launchNonCancellable {
-                            val success = Injekt.get<MangaRepository>().resetViewerFlags()
+                            val success = Injekt.get<ResetViewerFlags>().await()
                             withUIContext {
                                 val message = if (success) {
                                     R.string.pref_reset_viewer_flags_success
