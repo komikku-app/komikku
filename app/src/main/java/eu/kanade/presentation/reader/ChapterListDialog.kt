@@ -1,7 +1,7 @@
 package eu.kanade.presentation.reader
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -41,7 +41,7 @@ fun ChapterListDialog(
     ) {
         LazyColumn(
             state = state,
-            modifier = Modifier.defaultMinSize(minHeight = 200.dp),
+            modifier = Modifier.heightIn(min = 200.dp, max = 500.dp),
             contentPadding = PaddingValues(vertical = 16.dp),
         ) {
             items(
