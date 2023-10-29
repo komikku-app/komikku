@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.core.security
 
 import eu.kanade.tachiyomi.core.R
+import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.preference.getEnum
 
@@ -21,22 +22,25 @@ class SecurityPreferences(
 
     fun authenticatorDays() = this.preferenceStore.getInt("biometric_days", 0x7F)
 
-    fun encryptDatabase() = this.preferenceStore.getBoolean("encrypt_database", false)
+    fun encryptDatabase() = this.preferenceStore.getBoolean(Preference.privateKey("encrypt_database"), false)
 
-    fun sqlPassword() = this.preferenceStore.getString("sql_password", "")
+    fun sqlPassword() = this.preferenceStore.getString(Preference.privateKey("sql_password"), "")
 
-    fun passwordProtectDownloads() = preferenceStore.getBoolean("password_protect_downloads", false)
+    fun passwordProtectDownloads() = preferenceStore.getBoolean(Preference.privateKey("password_protect_downloads"), false)
 
     fun encryptionType() = this.preferenceStore.getEnum("encryption_type", EncryptionType.AES_256)
 
-    fun cbzPassword() = this.preferenceStore.getString("cbz_password", "")
+    fun cbzPassword() = this.preferenceStore.getString(Preference.privateKey("cbz_password"), "")
     // SY <--
 
     /**
      * For app lock. Will be set when there is a pending timed lock.
      * Otherwise this pref should be deleted.
      */
-    fun lastAppClosed() = preferenceStore.getLong("last_app_closed", 0)
+    fun lastAppClosed() = preferenceStore.getLong(
+        Preference.appStateKey("last_app_closed"),
+        0,
+    )
 
     enum class SecureScreenMode(val titleResId: Int) {
         ALWAYS(R.string.lock_always),

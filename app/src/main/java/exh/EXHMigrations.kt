@@ -587,6 +587,47 @@ object EXHMigrations {
                                 preferenceStore.getString(key).delete()
                             }
                         }
+
+                    val prefsToReplace = listOf(
+                        "pref_download_only",
+                        "incognito_mode",
+                        "last_catalogue_source",
+                        "trusted_signatures",
+                        "last_app_closed",
+                        "library_update_last_timestamp",
+                        "library_unseen_updates_count",
+                        "last_used_category",
+                        "skip_pre_migration",
+                        "eh_auto_update_stats",
+                    )
+                    replacePreferences(
+                        preferenceStore = preferenceStore,
+                        filterPredicate = { it.key in prefsToReplace },
+                        newKey = { Preference.appStateKey(it) },
+                    )
+
+                    val privatePrefsToReplace = listOf(
+                        "sql_password",
+                        "encrypt_database",
+                        "cbz_password",
+                        "password_protect_downloads",
+                        "eh_ipb_member_id",
+                        "enable_exhentai",
+                        "eh_ipb_member_id",
+                        "eh_ipb_pass_hash",
+                        "eh_igneous",
+                        "eh_ehSettingsProfile",
+                        "eh_exhSettingsProfile",
+                        "eh_settingsKey",
+                        "eh_sessionCookie",
+                        "eh_hathPerksCookie"
+                    )
+
+                    replacePreferences(
+                        preferenceStore = preferenceStore,
+                        filterPredicate = { it.key in privatePrefsToReplace },
+                        newKey = { Preference.privateKey(it) },
+                    )
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
@@ -709,5 +750,44 @@ object EXHMigrations {
         runBlocking {
             handler.await { ehQueries.migrateSource(newId, oldId) }
         }
+    }
+
+
+    @Suppress("UNCHECKED_CAST")
+    private fun replacePreferences(
+        preferenceStore: PreferenceStore,
+        filterPredicate: (Map.Entry<String, Any?>) -> Boolean,
+        newKey: (String) -> String,
+    ) {
+        preferenceStore.getAll()
+            .filter(filterPredicate)
+            .forEach { (key, value) ->
+                when (value) {
+                    is Int -> {
+                        preferenceStore.getInt(newKey(key)).set(value)
+                        preferenceStore.getInt(key).delete()
+                    }
+                    is Long -> {
+                        preferenceStore.getLong(newKey(key)).set(value)
+                        preferenceStore.getLong(key).delete()
+                    }
+                    is Float -> {
+                        preferenceStore.getFloat(newKey(key)).set(value)
+                        preferenceStore.getFloat(key).delete()
+                    }
+                    is String -> {
+                        preferenceStore.getString(newKey(key)).set(value)
+                        preferenceStore.getString(key).delete()
+                    }
+                    is Boolean -> {
+                        preferenceStore.getBoolean(newKey(key)).set(value)
+                        preferenceStore.getBoolean(key).delete()
+                    }
+                    is Set<*> -> (value as? Set<String>)?.let {
+                        preferenceStore.getStringSet(newKey(key)).set(value)
+                        preferenceStore.getStringSet(key).delete()
+                    }
+                }
+            }
     }
 }
