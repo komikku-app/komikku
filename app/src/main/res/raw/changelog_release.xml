@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.9.4" changeDate="Oct 29,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.7(from 0.14.6)[/b]</changelogtext>
+        <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
+        <changelogtext>Fix E-H/Exh page previews</changelogtext>
+        <changelogtext>Fix page previews cache</changelogtext>
+        <changelogtext>Fix E-H/Exh browse thumbnails</changelogtext>
+        <changelogtext>Fix crash on Chinese</changelogtext>
+        <changelogtext>Fix Mangadex Recommendations when Delegation is off</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.9.3" changeDate="Apr 18,2023">
         <changelogtext>Hotfix for 1.9.2, fix backup restore</changelogtext>
     </changelogversion>
