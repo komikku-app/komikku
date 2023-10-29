@@ -39,7 +39,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
@@ -70,7 +70,7 @@ class MigrationListScreenModel(
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
-    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getHistoryByMangaId: GetHistoryByMangaId = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
@@ -134,7 +134,7 @@ class MigrationListScreenModel(
     suspend fun getManga(result: SearchResult.Result) = getManga(result.id)
     suspend fun getManga(id: Long) = getManga.await(id)
     suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
-    suspend fun getChapterInfo(id: Long) = getChapterByMangaId.await(id).let { chapters ->
+    suspend fun getChapterInfo(id: Long) = getChaptersByMangaId.await(id).let { chapters ->
         MigratingManga.ChapterInfo(
             latestChapter = chapters.maxOfOrNull { it.chapterNumber },
             chapterCount = chapters.size,
@@ -310,10 +310,10 @@ class MigrationListScreenModel(
         val flags = preferences.migrateFlags().get()
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
-            val prevMangaChapters = getChapterByMangaId.await(prevManga.id)
+            val prevMangaChapters = getChaptersByMangaId.await(prevManga.id)
             val maxChapterRead = prevMangaChapters.filter(Chapter::read)
                 .maxOfOrNull(Chapter::chapterNumber)
-            val dbChapters = getChapterByMangaId.await(manga.id)
+            val dbChapters = getChaptersByMangaId.await(manga.id)
             val prevHistoryList = getHistoryByMangaId.await(prevManga.id)
 
             val chapterUpdates = mutableListOf<ChapterUpdate>()

@@ -77,10 +77,9 @@ import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
-import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.util.collectAsState
@@ -497,7 +496,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                                         )
                                     mangaFolder.delete()
                                 } else {
-                                    val chapterList = Injekt.get<GetChapterByMangaId>().await(manga.id)
+                                    val chapterList = Injekt.get<GetChaptersByMangaId>().await(manga.id)
                                     foldersCleared += downloadManager.cleanupChapters(
                                         chapterList,
                                         manga,

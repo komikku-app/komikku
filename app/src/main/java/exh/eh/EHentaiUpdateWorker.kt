@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.domain.UnsortedPreferences
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
@@ -51,7 +51,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
     private val logger: Logger = xLog()
     private val updateManga: UpdateManga by injectLazy()
     private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
-    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getChaptersByMangaId: GetChaptersByMangaId by injectLazy()
     private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
     private val insertFlatMetadata: InsertFlatMetadata by injectLazy()
     private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
@@ -92,7 +92,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 return@mapNotNull null
             }
 
-            val chapter = getChapterByMangaId.await(manga.id).minByOrNull {
+            val chapter = getChaptersByMangaId.await(manga.id).minByOrNull {
                 it.dateUpload
             }
 
@@ -206,7 +206,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val newChapters = source.getChapterList(manga.toSManga())
 
             val new = syncChaptersWithSource.await(newChapters, manga, source)
-            return new to getChapterByMangaId.await(manga.id)
+            return new to getChaptersByMangaId.await(manga.id)
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
                 val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>()

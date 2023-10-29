@@ -79,8 +79,8 @@ import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
-import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -121,7 +121,7 @@ class LibraryScreenModel(
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
-    private val getChaptersByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -142,7 +142,7 @@ class LibraryScreenModel(
     private val getSearchTitles: GetSearchTitles = Injekt.get(),
     private val searchEngine: SearchEngine = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     // SY <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -581,7 +581,7 @@ class LibraryScreenModel(
         // SY -->
         val mergedManga = getMergedMangaById.await(manga.id).associateBy { it.id }
         return if (manga.id == MERGED_SOURCE_ID) {
-            getMergedChapterByMangaId.await(manga.id)
+            getMergedChaptersByMangaId.await(manga.id)
         } else {
             getChaptersByMangaId.await(manga.id)
         }.getNextUnread(manga, downloadManager, mergedManga)

@@ -2,8 +2,8 @@ package tachiyomi.domain.history.interactor
 
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
-import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.history.repository.HistoryRepository
@@ -11,9 +11,9 @@ import tachiyomi.domain.manga.interactor.GetManga
 import kotlin.math.max
 
 class GetNextChapters(
-    private val getChapterByMangaId: GetChapterByMangaId,
+    private val getChaptersByMangaId: GetChaptersByMangaId,
     // SY -->
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId,
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId,
     // SY <--
     private val getManga: GetManga,
     private val historyRepository: HistoryRepository,
@@ -29,7 +29,7 @@ class GetNextChapters(
 
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
-            val chapters = getMergedChapterByMangaId.await(mangaId)
+            val chapters = getMergedChaptersByMangaId.await(mangaId)
                 .sortedWith(getChapterSort(manga, sortDescending = false))
 
             return if (onlyUnread) {
@@ -39,7 +39,7 @@ class GetNextChapters(
             }
         }
         if (manga.isEhBasedManga()) {
-            val chapters = getChapterByMangaId.await(mangaId)
+            val chapters = getChaptersByMangaId.await(mangaId)
                 .sortedWith(getChapterSort(manga, sortDescending = false))
 
             return if (onlyUnread) {
@@ -50,7 +50,7 @@ class GetNextChapters(
         }
         // SY <--
 
-        val chapters = getChapterByMangaId.await(mangaId)
+        val chapters = getChaptersByMangaId.await(mangaId)
             .sortedWith(getChapterSort(manga, sortDescending = false))
 
         return if (onlyUnread) {

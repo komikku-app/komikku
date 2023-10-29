@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.source.isEhBasedManga
 import tachiyomi.data.chapter.ChapterSanitizer
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.ShouldUpdateDbChapter
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
@@ -33,7 +33,7 @@ class SyncChaptersWithSource(
     private val shouldUpdateDbChapter: ShouldUpdateDbChapter,
     private val updateManga: UpdateManga,
     private val updateChapter: UpdateChapter,
-    private val getChapterByMangaId: GetChapterByMangaId,
+    private val getChaptersByMangaId: GetChaptersByMangaId,
 ) {
 
     /**
@@ -67,7 +67,7 @@ class SyncChaptersWithSource(
             }
 
         // Chapters from db.
-        val dbChapters = getChapterByMangaId.await(manga.id)
+        val dbChapters = getChaptersByMangaId.await(manga.id)
 
         // Chapters from the source not in db.
         val toAdd = mutableListOf<Chapter>()

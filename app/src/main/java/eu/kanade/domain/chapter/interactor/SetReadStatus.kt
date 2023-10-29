@@ -5,7 +5,7 @@ import exh.source.MERGED_SOURCE_ID
 import logcat.LogPriority
 import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
-import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
@@ -19,7 +19,7 @@ class SetReadStatus(
     private val mangaRepository: MangaRepository,
     private val chapterRepository: ChapterRepository,
     // SY -->
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId,
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId,
     // SY <--
 ) {
 
@@ -78,7 +78,7 @@ class SetReadStatus(
     private suspend fun awaitMerged(mangaId: Long, read: Boolean) = withNonCancellableContext f@{
         return@f await(
             read = read,
-            chapters = getMergedChapterByMangaId
+            chapters = getMergedChaptersByMangaId
                 .await(mangaId, dedupe = false)
                 .toTypedArray(),
         )

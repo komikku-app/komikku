@@ -79,8 +79,8 @@ import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
-import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
@@ -116,7 +116,7 @@ class ReaderViewModel @JvmOverloads constructor(
     private val trackPreferences: TrackPreferences = Injekt.get(),
     private val trackChapter: TrackChapter = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
@@ -126,7 +126,7 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     // SY <--
 ) : ViewModel() {
 
@@ -181,10 +181,10 @@ class ReaderViewModel @JvmOverloads constructor(
         // SY -->
         val (chapters, mangaMap) = runBlocking {
             if (manga.source == MERGED_SOURCE_ID) {
-                getMergedChapterByMangaId.await(manga.id) to getMergedMangaById.await(manga.id)
+                getMergedChaptersByMangaId.await(manga.id) to getMergedMangaById.await(manga.id)
                     .associateBy { it.id }
             } else {
-                getChapterByMangaId.await(manga.id) to null
+                getChaptersByMangaId.await(manga.id) to null
             }
         }
         fun isChapterDownloaded(chapter: Chapter): Boolean {

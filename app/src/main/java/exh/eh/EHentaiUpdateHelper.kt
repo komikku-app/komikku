@@ -8,8 +8,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.interactor.GetChapterByUrl
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
@@ -35,7 +35,7 @@ class EHentaiUpdateHelper(context: Context) {
             GalleryEntry.Serializer(),
         )
     private val getChapterByUrl: GetChapterByUrl by injectLazy()
-    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getChaptersByMangaId: GetChaptersByMangaId by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
@@ -64,7 +64,7 @@ class EHentaiUpdateHelper(context: Context) {
                         getManga.await(mangaId)
                     }
                     val chapterList = async(Dispatchers.IO) {
-                        getChapterByMangaId.await(mangaId)
+                        getChaptersByMangaId.await(mangaId)
                     }
                     val history = async(Dispatchers.IO) {
                         getHistoryByMangaId.await(mangaId)
@@ -115,7 +115,7 @@ class EHentaiUpdateHelper(context: Context) {
             chapterRepository.updateAll(chapterUpdates)
             chapterRepository.addAll(newChapters)
 
-            val (newHistory, deleteHistory) = getHistory(getChapterByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
+            val (newHistory, deleteHistory) = getHistory(getChaptersByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
 
             // Delete the duplicate history first
             deleteHistory.forEach {

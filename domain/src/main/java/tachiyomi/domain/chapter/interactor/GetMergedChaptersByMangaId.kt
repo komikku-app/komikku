@@ -11,7 +11,7 @@ import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.model.MergedMangaReference
 
-class GetMergedChapterByMangaId(
+class GetMergedChaptersByMangaId(
     private val chapterRepository: ChapterRepository,
     private val getMergedReferencesById: GetMergedReferencesById,
 ) {

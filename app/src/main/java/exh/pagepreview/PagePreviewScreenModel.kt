@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.util.lang.launchIO
-import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
@@ -26,7 +26,7 @@ class PagePreviewScreenModel(
     private val mangaId: Long,
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<PagePreviewState>(PagePreviewState.Loading) {
 
@@ -37,7 +37,7 @@ class PagePreviewScreenModel(
     init {
         screenModelScope.launchIO {
             val manga = getManga.await(mangaId)!!
-            val chapter = getChapterByMangaId.await(mangaId).minByOrNull { it.sourceOrder }
+            val chapter = getChaptersByMangaId.await(mangaId).minByOrNull { it.sourceOrder }
             if (chapter == null) {
                 mutableState.update {
                     PagePreviewState.Error(Exception("No chapters found"))

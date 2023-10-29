@@ -82,7 +82,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.chapter.interactor.GetMergedChapterByMangaId
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
@@ -139,7 +139,7 @@ class MangaScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val insertMergedReference: InsertMergedReference = Injekt.get(),
@@ -239,7 +239,7 @@ class MangaScreenModel(
                 .distinctUntilChanged()
                 // SY -->
                 .combine(
-                    getMergedChapterByMangaId.subscribe(mangaId, true)
+                    getMergedChaptersByMangaId.subscribe(mangaId, true)
                         .distinctUntilChanged(),
                 ) { (manga, chapters), mergedChapters ->
                     if (manga.source == MERGED_SOURCE_ID) {
@@ -320,7 +320,7 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
-            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChapterByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
+            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
                 .toChapterItems(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
