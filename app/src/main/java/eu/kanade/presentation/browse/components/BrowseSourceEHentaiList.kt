@@ -171,7 +171,7 @@ fun BrowseSourceEHentaiListItem(
                             drawRect(overlayColor)
                         }
                     },
-                data = manga.thumbnailUrl,
+                data = manga,
             )
             if (manga.favorite) {
                 BadgeGroup(
