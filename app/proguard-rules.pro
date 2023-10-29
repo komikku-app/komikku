@@ -144,13 +144,6 @@
 -keep class com.hippo.image.** { *; }
 -keep interface com.hippo.image.** { *; }
 
-# == Nucleus
--keepclassmembers class * extends nucleus.presenter.Presenter {
-    <init>();
-}
-
-# TODO Changeloglib? Does it need proguard?
-
 # === Injekt
 ## From original config: "Attempt to fix: java.lang.NoClassDefFoundError: uy.kohesive.injekt.registry.default.DefaultRegistrar$NOKEY$1"
 -keep class uy.kohesive.injekt.** { *; }
