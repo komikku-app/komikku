@@ -79,7 +79,7 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
         fun items() = sequence {
             var count = 1
             while (true) {
-                yield(randItem { it.copy(title = "Example Title $count") })
+                yield(randItem { it.copy(/* SY --> */ogTitle = /* SY <-- */ "Example Title $count") })
                 count += 1
             }
         }
@@ -91,7 +91,9 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
                         id = Random.nextLong(),
                         chapterId = Random.nextLong(),
                         mangaId = Random.nextLong(),
-                        title = "Test Title",
+                        // SY -->
+                        ogTitle = "Test Title",
+                        // SY <--
                         chapterNumber = Random.nextDouble(),
                         readAt = Date.from(Instant.now()),
                         readDuration = Random.nextLong(),

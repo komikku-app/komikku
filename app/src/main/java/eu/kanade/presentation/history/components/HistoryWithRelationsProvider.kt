@@ -10,7 +10,9 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         id = 1L,
         chapterId = 2L,
         mangaId = 3L,
-        title = "Test Title",
+        // SY -->
+        ogTitle = "Test Title",
+        // SY <--
         chapterNumber = 10.2,
         readAt = Date(1697247357L),
         readDuration = 123L,
@@ -27,7 +29,9 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         id = 1L,
         chapterId = 2L,
         mangaId = 3L,
-        title = "Test Title",
+        // SY -->
+        ogTitle = "Test Title",
+        // SY <--
         chapterNumber = 10.2,
         readAt = null,
         readDuration = 123L,
@@ -44,7 +48,9 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         id = 1L,
         chapterId = 2L,
         mangaId = 3L,
-        title = "Test Title",
+        // SY -->
+        ogTitle = "Test Title",
+        // SY <--
         chapterNumber = -2.0,
         readAt = Date(1697247357L),
         readDuration = 123L,
