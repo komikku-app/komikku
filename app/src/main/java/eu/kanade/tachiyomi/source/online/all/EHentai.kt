@@ -763,6 +763,7 @@ class EHentai(
     }
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
+    override fun chapterPageParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
 
     override fun pageListParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
 

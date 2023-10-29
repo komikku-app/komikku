@@ -55,6 +55,7 @@ class MergedSource : HttpSource() {
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
+    override fun chapterPageParse(response: Response) = throw UnsupportedOperationException()
     override fun pageListParse(response: Response) = throw UnsupportedOperationException()
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
