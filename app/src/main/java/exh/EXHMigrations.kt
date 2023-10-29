@@ -507,7 +507,7 @@ object EXHMigrations {
                     // Force MangaDex log out due to login flow change
                     trackerManager.mdList.logout()
                 }
-                if (oldVersion under 51) {
+                if (oldVersion under 52) {
                     LibraryUpdateJob.cancelAllWorks(context)
                     LibraryUpdateJob.setupTask(context)
                     // Removed background jobs
@@ -539,8 +539,6 @@ object EXHMigrations {
                             preferenceStore.getEnum("${key}_v2", TriState.DISABLED).set(newValue)
                         }
                     }
-                }
-                if (oldVersion under 52) {
                     BackupCreateJob.setupTask(context)
                 }
                 // if (oldVersion under 53) {
