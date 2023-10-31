@@ -26,6 +26,7 @@ dependencies {
 
     api(libs.okhttp.core)
     api(libs.okhttp.logging)
+    api(libs.okhttp.brotli)
     api(libs.okhttp.dnsoverhttps)
     api(libs.okio)
 
