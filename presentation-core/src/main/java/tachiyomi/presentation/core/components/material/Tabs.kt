@@ -65,10 +65,8 @@ fun TabText(text: String, badgeCount: Int? = null) {
     ) {
         Text(
             text = text,
-            // SY -->
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            // SY <--
         )
         if (badgeCount != null) {
             Pill(
