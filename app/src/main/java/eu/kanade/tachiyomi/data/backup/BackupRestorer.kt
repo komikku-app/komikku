@@ -367,7 +367,6 @@ class BackupRestorer(
                     .copyFrom(dbChapter)
                     .copy(
                         id = dbChapter.id,
-                        mangaId = manga.id,
                         bookmark = updatedChapter.bookmark || dbChapter.bookmark,
                     )
                 if (dbChapter.read && !updatedChapter.read) {
@@ -382,7 +381,7 @@ class BackupRestorer(
                 }
             }
 
-            updatedChapter
+            updatedChapter.copy(mangaId = manga.id)
         }
 
         val (existingChapters, newChapters) = processed.partition { it.id > 0 }
