@@ -185,6 +185,13 @@ private fun ColumnScope.SortPage(
     }.collectAsState(initial = screenModel.libraryPreferences.sortTagsForLibrary().get().isNotEmpty())
     // SY <--
 
+    val trackerSortOption =
+        if (screenModel.trackers.isEmpty()) {
+            emptyList()
+        } else {
+            listOf(R.string.action_sort_tracker_score to LibrarySort.Type.TrackerMean)
+        }
+
     listOfNotNull(
         R.string.action_sort_alpha to LibrarySort.Type.Alphabetical,
         R.string.action_sort_total to LibrarySort.Type.TotalChapters,
@@ -194,12 +201,14 @@ private fun ColumnScope.SortPage(
         R.string.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
         R.string.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
         R.string.action_sort_date_added to LibrarySort.Type.DateAdded,
+        // SY -->
         if (hasSortTags) {
             R.string.tag_sorting to LibrarySort.Type.TagList
         } else {
             null
         },
-    ).map { (titleRes, mode) ->
+        // SY <--
+    ).plus(trackerSortOption).map { (titleRes, mode) ->
         SortItem(
             label = stringResource(titleRes),
             sortDescending = sortDescending.takeIf { sortingMode == mode },
@@ -290,6 +299,7 @@ private fun ColumnScope.DisplayPage(
     )
 }
 
+// SY -->
 data class GroupMode(
     val int: Int,
     val nameRes: Int,
@@ -342,3 +352,4 @@ private fun ColumnScope.GroupPage(
         )
     }
 }
+// SY <--

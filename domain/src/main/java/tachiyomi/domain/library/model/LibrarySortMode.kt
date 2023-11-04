@@ -30,9 +30,10 @@ data class LibrarySort(
         data object LatestChapter : Type(0b00010100)
         data object ChapterFetchDate : Type(0b00011000)
         data object DateAdded : Type(0b00011100)
+        data object TrackerMean : Type(0b000100000)
 
         // SY -->
-        object TagList : Type(0b00100100)
+        data object TagList : Type(0b00100100)
         // SY <--
 
         companion object {
@@ -79,6 +80,7 @@ data class LibrarySort(
                 Type.LatestChapter,
                 Type.ChapterFetchDate,
                 Type.DateAdded,
+                Type.TrackerMean,
                 /* SY -->*/ Type.TagList, /* SY <--*/
             )
         }
@@ -106,6 +108,7 @@ data class LibrarySort(
                     "LATEST_CHAPTER" -> Type.LatestChapter
                     "CHAPTER_FETCH_DATE" -> Type.ChapterFetchDate
                     "DATE_ADDED" -> Type.DateAdded
+                    "TRACKER_MEAN" -> Type.TrackerMean
                     // SY -->
                     "TAG_LIST" -> Type.TagList
                     // SY <--
@@ -129,7 +132,10 @@ data class LibrarySort(
             Type.LatestChapter -> "LATEST_CHAPTER"
             Type.ChapterFetchDate -> "CHAPTER_FETCH_DATE"
             Type.DateAdded -> "DATE_ADDED"
+            Type.TrackerMean -> "TRACKER_MEAN"
+            // SY -->
             Type.TagList -> "TAG_LIST"
+            // SY <--
         }
         val direction = if (direction == Direction.Ascending) "ASCENDING" else "DESCENDING"
         return "$type,$direction"
