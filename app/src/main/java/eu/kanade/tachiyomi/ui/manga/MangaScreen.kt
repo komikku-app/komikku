@@ -99,7 +99,8 @@ class MangaScreen(
         val context = LocalContext.current
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
-        val screenModel = rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
+        val screenModel =
+            rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
 
         val state by screenModel.state.collectAsState()
 
@@ -172,7 +173,9 @@ class MangaScreen(
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
-            onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf { screenModel.isUpdateIntervalEnabled && successState.manga.favorite },
+            onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
+                screenModel.isUpdateIntervalEnabled && successState.manga.favorite
+            },
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
@@ -181,7 +184,9 @@ class MangaScreen(
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
             onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
-            onOpenPagePreview = { openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, it) },
+            onOpenPagePreview = {
+                openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, it)
+            },
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
             onMultiBookmarkClicked = screenModel::bookmarkChapters,

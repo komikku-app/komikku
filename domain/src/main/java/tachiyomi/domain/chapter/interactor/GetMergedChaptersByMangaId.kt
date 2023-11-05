@@ -41,11 +41,18 @@ class GetMergedChaptersByMangaId(
         }
     }
 
-    fun transformMergedChapters(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>, dedupe: Boolean): List<Chapter> {
+    fun transformMergedChapters(
+        mangaReferences: List<MergedMangaReference>,
+        chapterList: List<Chapter>,
+        dedupe: Boolean,
+    ): List<Chapter> {
         return if (dedupe) dedupeChapterList(mangaReferences, chapterList) else chapterList
     }
 
-    private fun dedupeChapterList(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>): List<Chapter> {
+    private fun dedupeChapterList(
+        mangaReferences: List<MergedMangaReference>,
+        chapterList: List<Chapter>,
+    ): List<Chapter> {
         return when (mangaReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }?.chapterSortMode) {
             MergedMangaReference.CHAPTER_SORT_NO_DEDUPE, MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
             MergedMangaReference.CHAPTER_SORT_PRIORITY -> dedupeByPriority(mangaReferences, chapterList)
@@ -71,7 +78,10 @@ class GetMergedChaptersByMangaId(
         return chapterList.maxByOrNull { it.chapterNumber }?.mangaId
     }
 
-    private fun dedupeByPriority(mangaReferences: List<MergedMangaReference>, chapterList: List<Chapter>): List<Chapter> {
+    private fun dedupeByPriority(
+        mangaReferences: List<MergedMangaReference>,
+        chapterList: List<Chapter>,
+    ): List<Chapter> {
         val sortedChapterList = mutableListOf<Chapter>()
 
         var existingChapterIndex: Int
@@ -86,8 +96,10 @@ class GetMergedChaptersByMangaId(
                     val oldChapterIndex = existingChapterIndex
                     if (chapter.isRecognizedNumber) {
                         existingChapterIndex = sortedChapterList.indexOfFirst {
-                            it.isRecognizedNumber && it.chapterNumber == chapter.chapterNumber && // check if the chapter is not already there
-                                it.mangaId != chapter.mangaId // allow multiple chapters of the same number from the same source
+                            // check if the chapter is not already there
+                            it.isRecognizedNumber && it.chapterNumber == chapter.chapterNumber &&
+                                // allow multiple chapters of the same number from the same source
+                                it.mangaId != chapter.mangaId
                         }
                         if (existingChapterIndex == -1) {
                             sortedChapterList.add(oldChapterIndex + 1, chapter)

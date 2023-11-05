@@ -14,7 +14,11 @@ import tachiyomi.source.local.isLocal
  * Applies the view filters to the list of chapters obtained from the database.
  * @return an observable of the list of chapters filtered and sorted.
  */
-fun List<Chapter>.applyFilters(manga: Manga, downloadManager: DownloadManager/* SY --> */, mergedManga: Map<Long, Manga>/* SY <-- */): List<Chapter> {
+fun List<Chapter>.applyFilters(
+    manga: Manga,
+    downloadManager: DownloadManager/* SY --> */,
+    mergedManga: Map<Long, Manga>, /* SY <-- */
+): List<Chapter> {
     val isLocalManga = manga.isLocal()
     val unreadFilter = manga.unreadFilter
     val downloadedFilter = manga.downloadedFilter
@@ -28,13 +32,21 @@ fun List<Chapter>.applyFilters(manga: Manga, downloadManager: DownloadManager/* 
             val manga = mergedManga.getOrElse(chapter.mangaId) { manga }
             // SY <--
             applyFilter(downloadedFilter) {
-                val downloaded = downloadManager.isChapterDownloaded(chapter.name, chapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)
+                val downloaded = downloadManager.isChapterDownloaded(
+                    chapter.name,
+                    chapter.scanlator,
+                    /* SY --> */ manga.ogTitle /* SY <-- */,
+                    manga.source,
+                )
                 downloaded || isLocalManga
             }
         }
         // SY -->
         .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
+            manga.filteredScanlators.isNullOrEmpty() ||
+                MdUtil.getScanlators(chapter.scanlator).any { group ->
+                    manga.filteredScanlators!!.contains(group)
+                }
         }
         // SY <--
         .sortedWith(getChapterSort(manga))
@@ -55,7 +67,10 @@ fun List<ChapterList.Item>.applyFilters(manga: Manga): Sequence<ChapterList.Item
         .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
         // SY -->
         .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
+            manga.filteredScanlators.isNullOrEmpty() ||
+                MdUtil.getScanlators(chapter.chapter.scanlator).any { group ->
+                    manga.filteredScanlators!!.contains(group)
+                }
         }
         // SY <--
         .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }

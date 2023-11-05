@@ -19,7 +19,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
@@ -52,13 +51,11 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import logcat.LogPriority
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.core.preference.mapAsCheckboxState
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
-import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
@@ -370,7 +367,9 @@ open class BrowseSourceScreenModel(
                 // Choose a category
                 else -> {
                     val preselectedIds = getCategories.await(manga.id).map { it.id }
-                    setDialog(Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }))
+                    setDialog(
+                        Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }),
+                    )
                 }
             }
         }
@@ -426,7 +425,10 @@ open class BrowseSourceScreenModel(
     sealed class Listing(open val query: String?, open val filters: FilterList) {
         data object Popular : Listing(query = GetRemoteManga.QUERY_POPULAR, filters = FilterList())
         data object Latest : Listing(query = GetRemoteManga.QUERY_LATEST, filters = FilterList())
-        data class Search(override val query: String?, override val filters: FilterList) : Listing(query = query, filters = filters)
+        data class Search(
+            override val query: String?,
+            override val filters: FilterList,
+        ) : Listing(query = query, filters = filters)
 
         companion object {
             fun valueOf(query: String?): Listing {
@@ -530,7 +532,9 @@ open class BrowseSourceScreenModel(
                     source = source.id,
                     name = name.trim(),
                     query = query,
-                    filtersJson = runCatching { filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) } }.getOrNull(),
+                    filtersJson = runCatching {
+                        filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) }
+                    }.getOrNull(),
                 ),
             )
         }

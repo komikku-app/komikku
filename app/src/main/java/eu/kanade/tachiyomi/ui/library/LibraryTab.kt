@@ -141,7 +141,9 @@ object LibraryTab : Tab {
                     onClickSelectAll = { screenModel.selectAll(screenModel.activeCategoryIndex) },
                     onClickInvertSelection = { screenModel.invertSelection(screenModel.activeCategoryIndex) },
                     onClickFilter = screenModel::showSettingsDialog,
-                    onClickRefresh = { onClickRefresh(state.categories[screenModel.activeCategoryIndex.coerceAtMost(state.categories.lastIndex)]) },
+                    onClickRefresh = {
+                        onClickRefresh(state.categories[screenModel.activeCategoryIndex.coerceAtMost(state.categories.lastIndex)])
+                    },
                     onClickGlobalUpdate = { onClickRefresh(null) },
                     onClickOpenRandomManga = {
                         scope.launch {
@@ -224,7 +226,9 @@ object LibraryTab : Tab {
                             scope.launchIO {
                                 val chapter = screenModel.getNextUnreadChapter(it.manga)
                                 if (chapter != null) {
-                                    context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
+                                    context.startActivity(
+                                        ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
+                                    )
                                 } else {
                                     snackbarHostState.showSnackbar(context.getString(R.string.no_next_chapter))
                                 }

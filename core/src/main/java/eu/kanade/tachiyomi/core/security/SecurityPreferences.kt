@@ -26,7 +26,10 @@ class SecurityPreferences(
 
     fun sqlPassword() = this.preferenceStore.getString(Preference.privateKey("sql_password"), "")
 
-    fun passwordProtectDownloads() = preferenceStore.getBoolean(Preference.privateKey("password_protect_downloads"), false)
+    fun passwordProtectDownloads() = preferenceStore.getBoolean(
+        Preference.privateKey("password_protect_downloads"),
+        false,
+    )
 
     fun encryptionType() = this.preferenceStore.getEnum("encryption_type", EncryptionType.AES_256)
 

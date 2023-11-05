@@ -28,7 +28,10 @@ class MangaHandler(
             val mangaId = MdUtil.getMangaId(manga.url)
             val response = async(Dispatchers.IO) { service.viewManga(mangaId) }
             val simpleChapters = async(Dispatchers.IO) { getSimpleChapters(manga) }
-            val statistics = async(Dispatchers.IO) { kotlin.runCatching { service.mangasRating(mangaId) }.getOrNull()?.statistics?.get(mangaId) }
+            val statistics =
+                async(Dispatchers.IO) {
+                    kotlin.runCatching { service.mangasRating(mangaId) }.getOrNull()?.statistics?.get(mangaId)
+                }
             apiMangaParser.parseToManga(
                 manga,
                 sourceId,
@@ -45,7 +48,11 @@ class MangaHandler(
         }
     }
 
-    fun fetchChapterListObservable(manga: SManga, blockedGroups: String, blockedUploaders: String): Observable<List<SChapter>> = runAsObservable {
+    fun fetchChapterListObservable(
+        manga: SManga,
+        blockedGroups: String,
+        blockedUploaders: String,
+    ): Observable<List<SChapter>> = runAsObservable {
         getChapterList(manga, blockedGroups, blockedUploaders)
     }
 

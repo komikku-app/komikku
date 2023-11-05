@@ -53,6 +53,6 @@ fun PageIndicatorText(
 @Composable
 private fun PageIndicatorTextPreview() {
     TachiyomiTheme {
-        PageIndicatorText(currentPage = 10, totalPages = 69)
+        PageIndicatorText(currentPage = "10", totalPages = 69)
     }
 }

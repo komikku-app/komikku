@@ -43,7 +43,7 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         return urlImportFetchSearchMangaSuspend(context, query) {
-            super<DelegatedHttpSource>.getSearchManga(page, query, filters,)
+            super<DelegatedHttpSource>.getSearchManga(page, query, filters)
         }
     }
 

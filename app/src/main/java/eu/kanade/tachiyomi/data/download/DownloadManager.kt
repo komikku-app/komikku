@@ -156,7 +156,12 @@ class DownloadManager(
      * @return the list of pages from the chapter.
      */
     fun buildPageList(source: Source, manga: Manga, chapter: Chapter): List<Page> {
-        val chapterDir = provider.findChapterDir(chapter.name, chapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source)
+        val chapterDir = provider.findChapterDir(
+            chapter.name,
+            chapter.scanlator,
+            /* SY --> */ manga.ogTitle /* SY <-- */,
+            source,
+        )
         val files = chapterDir?.listFiles().orEmpty()
             .filter { "image" in it.type.orEmpty() }
 
@@ -292,7 +297,13 @@ class DownloadManager(
      * @param manga the manga of the chapters.
      * @param source the source of the chapters.
      */
-    suspend fun cleanupChapters(allChapters: List<Chapter>, manga: Manga, source: Source, removeRead: Boolean, removeNonFavorite: Boolean): Int {
+    suspend fun cleanupChapters(
+        allChapters: List<Chapter>,
+        manga: Manga,
+        source: Source,
+        removeRead: Boolean,
+        removeNonFavorite: Boolean,
+    ): Int {
         var cleaned = 0
 
         if (removeNonFavorite && !manga.favorite) {

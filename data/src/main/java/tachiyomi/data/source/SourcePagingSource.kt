@@ -10,9 +10,8 @@ import exh.metadata.metadata.RaisedSearchMetadata
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.source.repository.SourcePagingSourceType
 
-class SourceSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) : SourcePagingSource(
-    source,
-) {
+class SourceSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) :
+    SourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         return source.getSearchManga(currentPage, query, filters)
     }
@@ -36,7 +35,9 @@ abstract class SourcePagingSource(
 
     abstract suspend fun requestNextPage(currentPage: Int): MangasPage
 
-    override suspend fun load(params: LoadParams<Long>): LoadResult<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */> {
+    override suspend fun load(
+        params: LoadParams<Long>,
+    ): LoadResult<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */> {
         val page = params.key ?: 1
 
         val mangasPage = try {
@@ -55,7 +56,10 @@ abstract class SourcePagingSource(
     }
 
     // SY -->
-    open fun getPageLoadResult(params: LoadParams<Long>, mangasPage: MangasPage): LoadResult.Page<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */> {
+    open fun getPageLoadResult(
+        params: LoadParams<Long>,
+        mangasPage: MangasPage,
+    ): LoadResult.Page<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */> {
         val page = params.key ?: 1
 
         // SY -->
@@ -77,7 +81,9 @@ abstract class SourcePagingSource(
     }
     // SY <--
 
-    override fun getRefreshKey(state: PagingState<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */>): Long? {
+    override fun getRefreshKey(
+        state: PagingState<Long, /*SY --> */ Pair<SManga, RaisedSearchMetadata?>/*SY <-- */>,
+    ): Long? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey ?: anchorPage?.nextKey

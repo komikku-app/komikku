@@ -88,16 +88,37 @@ class ChapterLoader(
      */
     private fun getPageLoader(chapter: ReaderChapter): PageLoader {
         val dbChapter = chapter.chapter
-        val isDownloaded = downloadManager.isChapterDownloaded(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source, skipCache = true)
+        val isDownloaded = downloadManager.isChapterDownloaded(
+            chapterName = dbChapter.name,
+            chapterScanlator = dbChapter.scanlator, /* SY --> */
+            mangaTitle = manga.ogTitle /* SY <-- */,
+            sourceId = manga.source,
+            skipCache = true,
+        )
         return when {
             // SY -->
             source is MergedSource -> {
-                val mangaReference = mergedReferences.firstOrNull { it.mangaId == chapter.chapter.manga_id } ?: error("Merge reference null")
-                val source = sourceManager.get(mangaReference.mangaSourceId) ?: error("Source ${mangaReference.mangaSourceId} was null")
+                val mangaReference = mergedReferences.firstOrNull {
+                    it.mangaId == chapter.chapter.manga_id
+                } ?: error("Merge reference null")
+                val source = sourceManager.get(mangaReference.mangaSourceId)
+                    ?: error("Source ${mangaReference.mangaSourceId} was null")
                 val manga = mergedManga[chapter.chapter.manga_id] ?: error("Manga for merged chapter was null")
-                val isMergedMangaDownloaded = downloadManager.isChapterDownloaded(chapter.chapter.name, chapter.chapter.scanlator, manga.ogTitle, manga.source, true)
+                val isMergedMangaDownloaded = downloadManager.isChapterDownloaded(
+                    chapterName = chapter.chapter.name,
+                    chapterScanlator = chapter.chapter.scanlator,
+                    mangaTitle = manga.ogTitle,
+                    sourceId = manga.source,
+                    skipCache = true,
+                )
                 when {
-                    isMergedMangaDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
+                    isMergedMangaDownloaded -> DownloadPageLoader(
+                        chapter = chapter,
+                        manga = manga,
+                        source = source,
+                        downloadManager = downloadManager,
+                        downloadProvider = downloadProvider,
+                    )
                     source is HttpSource -> HttpPageLoader(chapter, source)
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {

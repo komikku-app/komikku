@@ -104,7 +104,11 @@ internal fun LazyListScope.updatesUiItems(
                     update = updatesItem.update,
                     selected = updatesItem.selected,
                     readProgress = updatesItem.update.lastPageRead
-                        .takeIf { /* SY --> */(!updatesItem.update.read || (preserveReadingPosition && updatesItem.isEhBasedUpdate()))/* SY <-- */ && it > 0L }
+                        .takeIf {
+                            /* SY --> */(
+                                !updatesItem.update.read || (preserveReadingPosition && updatesItem.isEhBasedUpdate())
+                                )/* SY <-- */ && it > 0L
+                        }
                         ?.let {
                             stringResource(
                                 R.string.chapter_progress,

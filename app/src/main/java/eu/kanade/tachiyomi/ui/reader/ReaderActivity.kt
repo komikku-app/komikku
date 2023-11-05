@@ -117,7 +117,6 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.seconds
 
 class ReaderActivity : BaseActivity() {
@@ -402,7 +401,6 @@ class ReaderActivity : BaseActivity() {
                 !showVerticalSeekbar -> NavBarType.Bottom
                 leftHandedVerticalSeekbar -> NavBarType.VerticalLeft
                 else -> NavBarType.VerticalRight
-
             }
             // SY <--
 
@@ -569,7 +567,7 @@ class ReaderActivity : BaseActivity() {
                                 }
                             }
                         },
-                        state.dateRelativeTime
+                        state.dateRelativeTime,
                     )
                 }
                 // SY -->
@@ -605,7 +603,6 @@ class ReaderActivity : BaseActivity() {
                 )
                 // SY <--
                 null -> {}
-
             }
         }
 
@@ -883,7 +880,9 @@ class ReaderActivity : BaseActivity() {
         // SY -->
         val state = viewModel.state.value
         if (state.indexChapterToShift != null && state.indexPageToShift != null) {
-            viewerChapters.currChapter.pages?.find { it.index == state.indexPageToShift && it.chapter.chapter.id == state.indexChapterToShift }?.let {
+            viewerChapters.currChapter.pages?.find {
+                it.index == state.indexPageToShift && it.chapter.chapter.id == state.indexChapterToShift
+            }?.let {
                 (viewModel.state.value.viewer as? PagerViewer)?.updateShifting(it)
             }
             viewModel.setIndexChapterToShift(null)

@@ -49,7 +49,11 @@ class MergedSource : HttpSource() {
 
     override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
     override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
@@ -63,6 +67,7 @@ class MergedSource : HttpSource() {
     override fun fetchChapterList(manga: SManga) = throw UnsupportedOperationException()
     override suspend fun getChapterList(manga: SManga) = throw UnsupportedOperationException()
     override suspend fun getImage(page: Page): Response = throw UnsupportedOperationException()
+
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page) = throw UnsupportedOperationException()
     override suspend fun getImageUrl(page: Page) = throw UnsupportedOperationException()
@@ -70,9 +75,11 @@ class MergedSource : HttpSource() {
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter) = throw UnsupportedOperationException()
     override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException()
+
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int) = throw UnsupportedOperationException()
     override suspend fun getLatestUpdates(page: Int) = throw UnsupportedOperationException()
+
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int) = throw UnsupportedOperationException()
     override suspend fun getPopularManga(page: Int) = throw UnsupportedOperationException()
@@ -99,7 +106,12 @@ class MergedSource : HttpSource() {
         }
     }
 
-    suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true) {
+    suspend fun fetchChaptersForMergedManga(
+        manga: Manga,
+        downloadChapters: Boolean = true,
+        editScanlators: Boolean = false,
+        dedupe: Boolean = true,
+    ) {
         fetchChaptersAndSync(manga, downloadChapters)
     }
 
@@ -109,7 +121,12 @@ class MergedSource : HttpSource() {
             "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
-        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(getCategories.await(manga.id).map { it.id }, downloadPreferences)
+        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(
+            getCategories.await(manga.id).map {
+                it.id
+            },
+            downloadPreferences,
+        )
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {

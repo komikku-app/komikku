@@ -340,7 +340,11 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
 
     protected open fun ensureDelegateCompatible() {
         if (versionId != delegate.versionId || lang != delegate.lang) {
-            throw IncompatibleDelegateException("Delegate source is not compatible (versionId: $versionId <=> ${delegate.versionId}, lang: $lang <=> ${delegate.lang})!")
+            throw IncompatibleDelegateException(
+                "Delegate source is not compatible (" +
+                    "versionId: $versionId <=> ${delegate.versionId}, lang: $lang <=> ${delegate.lang}" +
+                    ")!",
+            )
         }
     }
 

@@ -869,7 +869,9 @@ class MangaScreenModel(
         // SY <--
         screenModelScope.launchIO {
             downloadManager.statusFlow()
-                .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
+                .filter {
+                    /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id
+                }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
                     withUIContext {
@@ -880,7 +882,9 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             downloadManager.progressFlow()
-                .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
+                .filter {
+                    /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id
+                }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
                     withUIContext {
@@ -1454,7 +1458,10 @@ class MangaScreenModel(
                 }
                 // SY -->
                 .map { trackItems ->
-                    if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any { it.source in mangaDexSourceIds }) {
+                    if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any {
+                            it.source in mangaDexSourceIds
+                        }
+                    ) {
                         val mdTrack = trackItems.firstOrNull { it.tracker is MdList }
                         when {
                             mdTrack == null -> {
@@ -1614,7 +1621,9 @@ class MangaScreenModel(
                 get() = trackItems.isNotEmpty()
 
             val trackingCount: Int
-                get() = trackItems.count { it.track != null && ((it.tracker is MdList && it.track.status != FollowStatus.UNFOLLOWED.int.toLong()) || it.tracker !is MdList ) }
+                get() = trackItems.count {
+                    it.track != null && ((it.tracker is MdList && it.track.status != FollowStatus.UNFOLLOWED.int.toLong()) || it.tracker !is MdList)
+                }
 
             /**
              * Applies the view filters to the list of chapters obtained from the database.

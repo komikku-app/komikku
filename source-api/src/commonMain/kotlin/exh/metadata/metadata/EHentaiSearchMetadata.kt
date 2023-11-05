@@ -97,7 +97,9 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(title) { getString(R.string.title) },
                 getItem(altTitle) { getString(R.string.alt_title) },
                 getItem(genre) { getString(R.string.genre) },
-                getItem(datePosted, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.date_posted) },
+                getItem(datePosted, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
+                    getString(R.string.date_posted)
+                },
                 getItem(parent) { getString(R.string.parent) },
                 getItem(visible) { getString(R.string.visible) },
                 getItem(language) { getString(R.string.language) },
@@ -108,7 +110,9 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(ratingCount) { getString(R.string.total_ratings) },
                 getItem(averageRating) { getString(R.string.average_rating) },
                 getItem(aged) { getString(R.string.aged) },
-                getItem(lastUpdateCheck, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.last_update_check) },
+                getItem(lastUpdateCheck, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
+                    getString(R.string.last_update_check)
+                },
             )
         }
     }

@@ -16,7 +16,8 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId, validSources = validSources) }
+        val screenModel =
+            rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId, validSources = validSources) }
         val state by screenModel.state.collectAsState()
 
         val dialogScreenModel = rememberScreenModel { MigrateSearchScreenDialogScreenModel(mangaId = mangaId) }

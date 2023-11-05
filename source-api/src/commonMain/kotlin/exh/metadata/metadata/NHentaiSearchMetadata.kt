@@ -90,7 +90,9 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         return with(context) {
             listOfNotNull(
                 getItem(nhId) { getString(R.string.id) },
-                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }) { getString(R.string.date_posted) },
+                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }) {
+                    getString(R.string.date_posted)
+                },
                 getItem(favoritesCount) { getString(R.string.total_favorites) },
                 getItem(mediaId) { getString(R.string.media_id) },
                 getItem(japaneseTitle) { getString(R.string.japanese_title) },

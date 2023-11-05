@@ -51,7 +51,9 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
-        return handler.awaitListExecutable { (handler as AndroidDatabaseHandler).getLibraryQuery() }.map(MangaMapper::mapLibraryView)
+        return handler.awaitListExecutable {
+            (handler as AndroidDatabaseHandler).getLibraryQuery()
+        }.map(MangaMapper::mapLibraryView)
         // return handler.awaitList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
     }
 

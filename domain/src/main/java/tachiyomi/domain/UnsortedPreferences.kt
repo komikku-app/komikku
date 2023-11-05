@@ -70,7 +70,10 @@ class UnsortedPreferences(
 
     fun exhSettingsLanguages() = preferenceStore.getString(
         "eh_settings_languages",
-        "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false",
+        "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\n" +
+            "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\n" +
+            "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\n" +
+            "false*false*false\nfalse*false*false",
     )
 
     fun exhEnabledCategories() = preferenceStore.getString(
@@ -82,7 +85,10 @@ class UnsortedPreferences(
 
     fun preferredMangaDexId() = preferenceStore.getString("preferred_mangaDex_id", "0")
 
-    fun mangadexSyncToLibraryIndexes() = preferenceStore.getStringSet("pref_mangadex_sync_to_library_indexes", emptySet())
+    fun mangadexSyncToLibraryIndexes() = preferenceStore.getStringSet(
+        "pref_mangadex_sync_to_library_indexes",
+        emptySet(),
+    )
 
     fun allowLocalSourceHiddenFolders() = preferenceStore.getBoolean("allow_local_source_hidden_folders", false)
 

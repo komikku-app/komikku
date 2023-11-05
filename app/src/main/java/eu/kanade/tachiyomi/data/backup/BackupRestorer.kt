@@ -108,7 +108,13 @@ class BackupRestorer(
         val logFile = writeErrorLog()
 
         if (sync) {
-            notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name, contentTitle = context.getString(R.string.library_sync_complete))
+            notifier.showRestoreComplete(
+                time,
+                errors.size,
+                logFile.parent,
+                logFile.name,
+                contentTitle = context.getString(R.string.library_sync_complete),
+            )
         } else {
             notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name)
         }
@@ -210,7 +216,12 @@ class BackupRestorer(
         )
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.categories), context.getString(R.string.restoring_backup))
+        showRestoreProgress(
+            restoreProgress,
+            restoreAmount,
+            context.getString(R.string.categories),
+            context.getString(R.string.restoring_backup),
+        )
     }
 
     // SY -->
@@ -234,7 +245,12 @@ class BackupRestorer(
         }
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.saved_searches), context.getString(R.string.restoring_backup))
+        showRestoreProgress(
+            restoreProgress,
+            restoreAmount,
+            context.getString(R.string.saved_searches),
+            context.getString(R.string.restoring_backup),
+        )
     }
     // SY <--
 
@@ -259,13 +275,33 @@ class BackupRestorer(
             val dbManga = getMangaFromDatabase(manga.url, manga.source)
             val restoredManga = if (dbManga == null) {
                 // Manga not in database
-                restoreExistingManga(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
+                restoreExistingManga(
+                    manga = manga,
+                    chapters = chapters,
+                    categories = categories,
+                    history = history,
+                    tracks = tracks,
+                    backupCategories = backupCategories/* SY --> */,
+                    mergedMangaReferences = mergedMangaReferences,
+                    flatMetadata = flatMetadata,
+                    customManga = customManga, /* SY <-- */
+                )
             } else {
                 // Manga in database
                 // Copy information from manga already in database
                 val updatedManga = restoreExistingManga(manga, dbManga)
                 // Fetch rest of manga information
-                restoreNewManga(updatedManga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
+                restoreNewManga(
+                    backupManga = updatedManga,
+                    chapters = chapters,
+                    categories = categories,
+                    history = history,
+                    tracks = tracks,
+                    backupCategories = backupCategories/* SY --> */,
+                    mergedMangaReferences = mergedMangaReferences,
+                    flatMetadata = flatMetadata,
+                    customManga = customManga, /* SY <-- */
+                )
             }
             updateManga.awaitUpdateFetchInterval(restoredManga, now, currentFetchWindow)
         } catch (e: Exception) {
@@ -275,9 +311,19 @@ class BackupRestorer(
 
         restoreProgress += 1
         if (sync) {
-            showRestoreProgress(restoreProgress, restoreAmount, manga.title, context.getString(R.string.syncing_library))
+            showRestoreProgress(
+                restoreProgress,
+                restoreAmount,
+                manga.title,
+                context.getString(R.string.syncing_library),
+            )
         } else {
-            showRestoreProgress(restoreProgress, restoreAmount, manga.title, context.getString(R.string.restoring_backup))
+            showRestoreProgress(
+                restoreProgress,
+                restoreAmount,
+                manga.title,
+                context.getString(R.string.restoring_backup),
+            )
         }
     }
 
@@ -350,7 +396,16 @@ class BackupRestorer(
     ): Manga {
         val fetchedManga = restoreNewManga(manga)
         restoreChapters(fetchedManga, chapters)
-        restoreExtras(fetchedManga, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
+        restoreExtras(
+            manga = fetchedManga,
+            categories = categories,
+            history = history,
+            tracks = tracks,
+            backupCategories = backupCategories/* SY --> */,
+            mergedMangaReferences = mergedMangaReferences,
+            flatMetadata = flatMetadata,
+            customManga = customManga, /* SY <-- */
+        )
         return fetchedManga
     }
 
@@ -498,7 +553,16 @@ class BackupRestorer(
         // SY <--
     ): Manga {
         restoreChapters(backupManga, chapters)
-        restoreExtras(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, customManga)
+        restoreExtras(
+            manga = backupManga,
+            categories = categories,
+            history = history,
+            tracks = tracks,
+            backupCategories = backupCategories,
+            mergedMangaReferences = mergedMangaReferences,
+            flatMetadata = flatMetadata,
+            customManga = customManga,
+        )
         return backupManga
     }
 
@@ -696,17 +760,33 @@ class BackupRestorer(
      * @param manga the merge manga for the references
      * @param backupMergedMangaReferences the list of backup manga references for the merged manga
      */
-    internal suspend fun restoreMergedMangaReferencesForManga(mergeMangaId: Long, backupMergedMangaReferences: List<BackupMergedMangaReference>) {
+    internal suspend fun restoreMergedMangaReferencesForManga(
+        mergeMangaId: Long,
+        backupMergedMangaReferences: List<BackupMergedMangaReference>,
+    ) {
         // Get merged manga references from file and from db
-        val dbMergedMangaReferences = handler.awaitList { mergedQueries.selectAll(MergedMangaMapper::map) }
+        val dbMergedMangaReferences = handler.awaitList {
+            mergedQueries.selectAll(MergedMangaMapper::map)
+        }
 
         // Iterate over them
         backupMergedMangaReferences.forEach { backupMergedMangaReference ->
-            // If the backupMergedMangaReference isn't in the db, remove the id and insert a new backupMergedMangaReference
+            // If the backupMergedMangaReference isn't in the db,
+            // remove the id and insert a new backupMergedMangaReference
             // Store the inserted id in the backupMergedMangaReference
-            if (dbMergedMangaReferences.none { backupMergedMangaReference.mergeUrl == it.mergeUrl && backupMergedMangaReference.mangaUrl == it.mangaUrl }) {
+            if (dbMergedMangaReferences.none {
+                    backupMergedMangaReference.mergeUrl == it.mergeUrl &&
+                        backupMergedMangaReference.mangaUrl == it.mangaUrl
+                }
+            ) {
                 // Let the db assign the id
-                val mergedManga = handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(backupMergedMangaReference.mangaUrl, backupMergedMangaReference.mangaSourceId, MangaMapper::mapManga) } ?: return@forEach
+                val mergedManga = handler.awaitOneOrNull {
+                    mangasQueries.getMangaByUrlAndSource(
+                        backupMergedMangaReference.mangaUrl,
+                        backupMergedMangaReference.mangaSourceId,
+                        MangaMapper::mapManga,
+                    )
+                } ?: return@forEach
                 backupMergedMangaReference.getMergedMangaReference().run {
                     handler.await {
                         mergedQueries.insert(
@@ -746,7 +826,12 @@ class BackupRestorer(
         BackupCreateJob.setupTask(context)
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.app_settings), context.getString(R.string.restoring_backup))
+        showRestoreProgress(
+            restoreProgress,
+            restoreAmount,
+            context.getString(R.string.app_settings),
+            context.getString(R.string.restoring_backup),
+        )
     }
 
     private fun restoreSourcePreferences(preferences: List<BackupSourcePreferences>) {
@@ -756,7 +841,12 @@ class BackupRestorer(
         }
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.source_settings), context.getString(R.string.restoring_backup))
+        showRestoreProgress(
+            restoreProgress,
+            restoreAmount,
+            context.getString(R.string.source_settings),
+            context.getString(R.string.restoring_backup),
+        )
     }
 
     private fun restorePreferences(

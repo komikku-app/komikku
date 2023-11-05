@@ -53,7 +53,9 @@ class EditMergedSettingsState(
             context.toast(R.string.merged_references_invalid)
             onDismissRequest()
         }
-        mergedMangas += mergedReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.map { reference -> mergedManga.firstOrNull { it.id == reference.mangaId } to reference }
+        mergedMangas += mergedReferences.filter {
+            it.mangaSourceId != MERGED_SOURCE_ID
+        }.map { reference -> mergedManga.firstOrNull { it.id == reference.mangaId } to reference }
         mergeReference = mergedReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }
 
         val isPriorityOrder = mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
@@ -66,7 +68,11 @@ class EditMergedSettingsState(
 
         mergedMangaAdapter?.isHandleDragEnabled = isPriorityOrder
 
-        mergedMangaAdapter?.updateDataSet(mergedMangas.map { it.toModel() }.sortedBy { it.mergedMangaReference.chapterPriority })
+        mergedMangaAdapter?.updateDataSet(
+            mergedMangas.map {
+                it.toModel()
+            }.sortedBy { it.mergedMangaReference.chapterPriority },
+        )
     }
 
     override fun onItemReleased(position: Int) {
@@ -113,7 +119,9 @@ class EditMergedSettingsState(
             val (manga, reference) = pair
             if (reference.id != adapterReference.id) return@map pair
 
-            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == reference.id }?.let {
+            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull {
+                it is EditMergedMangaHolder && it.reference.id == reference.id
+            }?.let {
                 if (it is EditMergedMangaHolder) {
                     it.updateChapterUpdatesIcon(!reference.getChapterUpdates)
                 }
@@ -141,7 +149,9 @@ class EditMergedSettingsState(
             val (manga, reference) = pair
             if (reference.id != adapterReference.id) return@map pair
 
-            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull { it is EditMergedMangaHolder && it.reference.id == reference.id }?.let {
+            mergedMangaAdapter?.allBoundViewHolders?.firstOrNull {
+                it is EditMergedMangaHolder && it.reference.id == reference.id
+            }?.let {
                 if (it is EditMergedMangaHolder) {
                     it.updateDownloadChaptersIcon(!reference.downloadChapters)
                 }

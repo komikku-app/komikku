@@ -78,14 +78,22 @@ actual class LocalSource(
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         val baseDirsFiles = fileSystem.getFilesInBaseDirectories()
-        val lastModifiedLimit by lazy { if (filters === LATEST_FILTERS) System.currentTimeMillis() - LATEST_THRESHOLD else 0L }
+        val lastModifiedLimit by lazy {
+            if (filters === LATEST_FILTERS) System.currentTimeMillis() - LATEST_THRESHOLD else 0L
+        }
         // SY -->
         val allowLocalSourceHiddenFolders = allowHiddenFiles()
         // SY <--
 
         var mangaDirs = baseDirsFiles
             // Filter out files that are hidden and is not a folder
-            .filter { it.isDirectory && /* SY --> */ (!it.name.startsWith('.') || allowLocalSourceHiddenFolders) /* SY <-- */ }
+            .filter {
+                it.isDirectory &&
+                    /* SY --> */ (
+                        !it.name.startsWith('.') ||
+                            allowLocalSourceHiddenFolders
+                        ) /* SY <-- */
+            }
             .distinctBy { it.name }
             .filter { // Filter by query or last modified
                 if (lastModifiedLimit == 0L) {
@@ -276,7 +284,8 @@ actual class LocalSource(
                         if (zip.isEncrypted && !CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())
                         ) {
                             return null
-                        } else if (zip.isEncrypted && CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())
+                        } else if (
+                            zip.isEncrypted && CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())
                         ) {
                             zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
                         }

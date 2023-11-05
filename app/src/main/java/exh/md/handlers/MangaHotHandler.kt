@@ -21,7 +21,13 @@ class MangaHotHandler(currentClient: OkHttpClient, userAgent: String) {
     val client: OkHttpClient = currentClient
 
     suspend fun fetchPageList(externalUrl: String): List<Page> {
-        val request = GET(externalUrl.substringBefore("?").replace(baseUrl, apiUrl).replace("viewer", "v1/works/storyDetail"), headers)
+        val request =
+            GET(
+                externalUrl.substringBefore("?")
+                    .replace(baseUrl, apiUrl)
+                    .replace("viewer", "v1/works/storyDetail"),
+                headers,
+            )
         return pageListParse(client.newCall(request).awaitSuccess())
     }
 

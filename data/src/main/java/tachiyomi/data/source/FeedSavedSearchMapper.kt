@@ -7,7 +7,7 @@ object FeedSavedSearchMapper {
         id: Long,
         source: Long,
         savedSearch: Long?,
-        global: Boolean
+        global: Boolean,
     ): FeedSavedSearch {
         return FeedSavedSearch(
             id = id,

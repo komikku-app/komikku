@@ -59,7 +59,9 @@ class AndroidSourceManager(
 
     private val stubSourcesMap = ConcurrentHashMap<Long, StubSource>()
 
-    override val catalogueSources: Flow<List<CatalogueSource>> = sourcesMapFlow.map { it.values.filterIsInstance<CatalogueSource>() }
+    override val catalogueSources: Flow<List<CatalogueSource>> = sourcesMapFlow.map {
+        it.values.filterIsInstance<CatalogueSource>()
+    }
 
     // SY -->
     private val preferences: UnsortedPreferences by injectLazy()
@@ -118,7 +120,9 @@ class AndroidSourceManager(
     private fun Source.toInternalSource(): Source? {
         // EXH -->
         val sourceQName = this::class.qualifiedName
-        val factories = DELEGATED_SOURCES.entries.filter { it.value.factory }.map { it.value.originalSourceQualifiedClassName }
+        val factories = DELEGATED_SOURCES.entries
+            .filter { it.value.factory }
+            .map { it.value.originalSourceQualifiedClassName }
         val delegate = if (sourceQName != null) {
             val matched = factories.find { sourceQName.startsWith(it) }
             if (matched != null) {
@@ -149,7 +153,12 @@ class AndroidSourceManager(
         }
 
         return if (id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
-            xLogD("Removing blacklisted source: (id: %s, name: %s, lang: %s)!", id, name, (this as? CatalogueSource)?.lang)
+            xLogD(
+                "Removing blacklisted source: (id: %s, name: %s, lang: %s)!",
+                id,
+                name,
+                (this as? CatalogueSource)?.lang,
+            )
             null
         } else {
             newSource
@@ -177,17 +186,23 @@ class AndroidSourceManager(
     }
 
     // SY -->
-    override fun getVisibleOnlineSources() = sourcesMapFlow.value.values.filterIsInstance<HttpSource>().filter {
-        it.id !in BlacklistedSources.HIDDEN_SOURCES
-    }
+    override fun getVisibleOnlineSources() = sourcesMapFlow.value.values
+        .filterIsInstance<HttpSource>()
+        .filter {
+            it.id !in BlacklistedSources.HIDDEN_SOURCES
+        }
 
-    override fun getVisibleCatalogueSources() = sourcesMapFlow.value.values.filterIsInstance<CatalogueSource>().filter {
-        it.id !in BlacklistedSources.HIDDEN_SOURCES
-    }
+    override fun getVisibleCatalogueSources() = sourcesMapFlow.value.values
+        .filterIsInstance<CatalogueSource>()
+        .filter {
+            it.id !in BlacklistedSources.HIDDEN_SOURCES
+        }
 
-    fun getDelegatedCatalogueSources() = sourcesMapFlow.value.values.filterIsInstance<EnhancedHttpSource>().mapNotNull { enhancedHttpSource ->
-        enhancedHttpSource.enhancedSource as? DelegatedHttpSource
-    }
+    fun getDelegatedCatalogueSources() = sourcesMapFlow.value.values
+        .filterIsInstance<EnhancedHttpSource>()
+        .mapNotNull { enhancedHttpSource ->
+            enhancedHttpSource.enhancedSource as? DelegatedHttpSource
+        }
     // SY <--
 
     private fun registerStubSource(source: StubSource) {
@@ -256,7 +271,8 @@ class AndroidSourceManager(
             ),
         ).associateBy { it.originalSourceQualifiedClassName }
 
-        val currentDelegatedSources: MutableMap<Long, DelegatedSource> = ListenMutableMap(mutableMapOf(), ::handleSourceLibrary)
+        val currentDelegatedSources: MutableMap<Long, DelegatedSource> =
+            ListenMutableMap(mutableMapOf(), ::handleSourceLibrary)
 
         data class DelegatedSource(
             val sourceName: String,

@@ -122,7 +122,9 @@ class ChapterRepositoryImpl(
     }
 
     override suspend fun getMergedChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>> {
-        return handler.subscribeToList { chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
+        return handler.subscribeToList {
+            chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter)
+        }
     }
     // SY <--
 }

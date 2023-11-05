@@ -104,11 +104,12 @@ class BackupCreator(
             throw IllegalStateException(context.getString(R.string.missing_storage_permission))
         }
 
-        val databaseManga = getFavorites.await() /* SY --> */ + if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
-            handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
-        } else {
-            emptyList()
-        } + getMergedManga.await() // SY <--
+        val databaseManga = getFavorites.await() /* SY --> */ +
+            if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
+                handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
+            } else {
+                emptyList()
+            } + getMergedManga.await() // SY <--
         val backup = Backup(
             backupMangas(databaseManga, flags),
             backupCategories(flags),
@@ -226,12 +227,18 @@ class BackupCreator(
         val mangaObject = BackupManga.copyFrom(
             manga,
             // SY -->
-            if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) getCustomMangaInfo.get(manga.id) else null, /* SY <-- */
+            if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) {
+                getCustomMangaInfo.get(manga.id)
+            } else {
+                null
+            }, /* SY <-- */
         )
 
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
-            mangaObject.mergedMangaReferences = handler.awaitList { mergedQueries.selectByMergeId(manga.id, backupMergedMangaReferenceMapper) }
+            mangaObject.mergedMangaReferences = handler.awaitList {
+                mergedQueries.selectByMergeId(manga.id, backupMergedMangaReferenceMapper)
+            }
         }
 
         val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()

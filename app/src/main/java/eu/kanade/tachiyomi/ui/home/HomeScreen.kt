@@ -188,7 +188,10 @@ object HomeScreen : Screen() {
     }
 
     @Composable
-    private fun RowScope.NavigationBarItem(tab: eu.kanade.presentation.util.Tab/* SY --> */, alwaysShowLabel: Boolean/* SY <-- */) {
+    private fun RowScope.NavigationBarItem(
+        tab: eu.kanade.presentation.util.Tab/* SY --> */,
+        alwaysShowLabel: Boolean, /* SY <-- */
+    ) {
         val tabNavigator = LocalTabNavigator.current
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()

@@ -33,7 +33,12 @@ class SimilarHandler(
             MdUtil.createMangaEntry(it, lang)
         }
 
-        return MetadataMangasPage(mangaList, false, List(mangaList.size) { MangaDexSearchMetadata().also { it.relation = MangaDexRelation.SIMILAR } })
+        return MetadataMangasPage(
+            mangaList, false,
+            List(mangaList.size) {
+                MangaDexSearchMetadata().also { it.relation = MangaDexRelation.SIMILAR }
+            },
+        )
     }
 
     suspend fun getRelated(manga: SManga): MetadataMangasPage {
@@ -57,7 +62,8 @@ class SimilarHandler(
             hasNextPage = false,
             mangasMetadata = mangaList.map { manga ->
                 MangaDexSearchMetadata().also {
-                    it.relation = relatedListDto.data.firstOrNull { it.relationships.any { it.id == MdUtil.getMangaId(manga.url) } }
+                    it.relation = relatedListDto.data
+                        .firstOrNull { it.relationships.any { it.id == MdUtil.getMangaId(manga.url) } }
                         ?.attributes?.relation?.let(MangaDexRelation::fromDex)
                 }
             },

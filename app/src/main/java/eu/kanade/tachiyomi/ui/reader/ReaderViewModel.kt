@@ -210,13 +210,22 @@ class ReaderViewModel @JvmOverloads constructor(
                             (manga.unreadFilterRaw == Manga.CHAPTER_SHOW_READ && !it.read) ||
                                 (manga.unreadFilterRaw == Manga.CHAPTER_SHOW_UNREAD && it.read) ||
                                 // SY -->
-                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_DOWNLOADED && !isChapterDownloaded(it)) ||
-                                (manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_NOT_DOWNLOADED && isChapterDownloaded(it)) ||
+                                (
+                                    manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_DOWNLOADED &&
+                                        !isChapterDownloaded(it)
+                                    ) ||
+                                (
+                                    manga.downloadedFilterRaw == Manga.CHAPTER_SHOW_NOT_DOWNLOADED &&
+                                        isChapterDownloaded(it)
+                                    ) ||
                                 // SY <--
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark) ||
                                 // SY -->
-                                (manga.filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> manga.filteredScanlators!!.contains(group) })
+                                (
+                                    manga.filteredScanlators != null && MdUtil.getScanlators(it.scanlator)
+                                        .none { group -> manga.filteredScanlators!!.contains(group) }
+                                    )
                             // SY <--
                         }
                         else -> false
@@ -336,8 +345,20 @@ class ReaderViewModel @JvmOverloads constructor(
                     } else {
                         null
                     }
-                    val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id) } else emptyList()
-                    val mergedManga = if (source is MergedSource) runBlocking { getMergedMangaById.await(manga.id) }.associateBy { it.id } else emptyMap()
+                    val mergedReferences = if (source is MergedSource) {
+                        runBlocking {
+                            getMergedReferencesById.await(manga.id)
+                        }
+                    } else {
+                        emptyList()
+                    }
+                    val mergedManga = if (source is MergedSource) {
+                        runBlocking {
+                            getMergedMangaById.await(manga.id)
+                        }.associateBy { it.id }
+                    } else {
+                        emptyMap()
+                    }
                     val relativeTime = uiPreferences.relativeTime().get()
                     val autoScrollFreq = readerPreferences.autoscrollInterval().get()
                     // SY <--
@@ -353,7 +374,7 @@ class ReaderViewModel @JvmOverloads constructor(
                             } else {
                                 autoScrollFreq.toString()
                             },
-                            isAutoScrollEnabled = autoScrollFreq != -1f
+                            isAutoScrollEnabled = autoScrollFreq != -1f,
                             /* SY <-- */
                         )
                     }
@@ -361,9 +382,23 @@ class ReaderViewModel @JvmOverloads constructor(
 
                     val context = Injekt.get<Application>()
                     // val source = sourceManager.getOrStub(manga.source)
-                    loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source, /* SY --> */sourceManager, readerPreferences, mergedReferences, mergedManga/* SY <-- */)
+                    loader = ChapterLoader(
+                        context = context,
+                        downloadManager = downloadManager,
+                        downloadProvider = downloadProvider,
+                        manga = manga,
+                        source = source, /* SY --> */
+                        sourceManager = sourceManager,
+                        readerPrefs = readerPreferences,
+                        mergedReferences = mergedReferences,
+                        mergedManga = mergedManga, /* SY <-- */
+                    )
 
-                    loadChapter(loader!!, chapterList.first { chapterId == it.chapter.id } /* SY --> */, page/* SY <-- */)
+                    loadChapter(
+                        loader!!,
+                        chapterList.first { chapterId == it.chapter.id },
+                        /* SY --> */page, /* SY <-- */
+                    )
                     Result.success(true)
                 } else {
                     // Unlikely but okay
@@ -634,7 +669,11 @@ class ReaderViewModel @JvmOverloads constructor(
      * Saves the chapter progress (last read page and whether it's read)
      * if incognito mode isn't on.
      */
-    private suspend fun updateChapterProgress(readerChapter: ReaderChapter, page: Page/* SY --> */, hasExtraPage: Boolean/* SY <-- */) {
+    private suspend fun updateChapterProgress(
+        readerChapter: ReaderChapter,
+        page: Page/* SY --> */,
+        hasExtraPage: Boolean, /* SY <-- */
+    ) {
         val pageIndex = page.index
 
         mutableState.update {
@@ -989,7 +1028,11 @@ class ReaderViewModel @JvmOverloads constructor(
         val filename = generateFilename(manga, page)
 
         // Pictures directory.
-        val relativePath = if (readerPreferences.folderPerManga().get()) DiskUtil.buildValidFilename(manga.title) else ""
+        val relativePath = if (readerPreferences.folderPerManga().get()) {
+            DiskUtil.buildValidFilename(manga.title)
+        } else {
+            ""
+        }
 
         // Copy file in background.
         viewModelScope.launchNonCancellable {
@@ -1036,7 +1079,7 @@ class ReaderViewModel @JvmOverloads constructor(
                     page2 = secondPage,
                     isLTR = isLTR,
                     bg = bg,
-                    location = Location.Pictures(DiskUtil.buildValidFilename(manga.title)),
+                    location = Location.Pictures.create(DiskUtil.buildValidFilename(manga.title)),
                     manga = manga,
                 )
                 eventChannel.send(Event.SavedImage(SaveImageResult.Success(uri)))
@@ -1288,7 +1331,10 @@ class ReaderViewModel @JvmOverloads constructor(
         data object ChapterList : Dialog
         // SY <--
 
-        data class PageActions(val page: ReaderPage/* SY --> */, val extraPage: ReaderPage? = null /* SY <-- */) : Dialog
+        data class PageActions(
+            val page: ReaderPage/* SY --> */,
+            val extraPage: ReaderPage? = null, /* SY <-- */
+        ) : Dialog
 
         // SY -->
         data object AutoScrollHelp : Dialog
@@ -1304,6 +1350,10 @@ class ReaderViewModel @JvmOverloads constructor(
         data class SetCoverResult(val result: SetAsCoverResult) : Event
 
         data class SavedImage(val result: SaveImageResult) : Event
-        data class ShareImage(val uri: Uri, val page: ReaderPage/* SY --> */, val secondPage: ReaderPage? = null /* SY <-- */) : Event
+        data class ShareImage(
+            val uri: Uri,
+            val page: ReaderPage/* SY --> */,
+            val secondPage: ReaderPage? = null, /* SY <-- */
+        ) : Event
     }
 }

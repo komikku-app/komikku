@@ -42,7 +42,6 @@ import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -192,7 +191,11 @@ fun MangaActionRow(
         )
         if (onEditIntervalClicked != null && fetchInterval != null) {
             MangaActionButton(
-                title = pluralStringResource(id = R.plurals.day, count = fetchInterval.absoluteValue, fetchInterval.absoluteValue),
+                title = pluralStringResource(
+                    id = R.plurals.day,
+                    count = fetchInterval.absoluteValue,
+                    fetchInterval.absoluteValue,
+                ),
                 icon = Icons.Default.HourglassEmpty,
                 color = if (isUserIntervalMode) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
                 onClick = onEditIntervalClicked,
@@ -625,7 +628,9 @@ private fun MangaSummary(
                     val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_caret_down)
                     Icon(
                         painter = rememberAnimatedVectorPainter(image, !expanded),
-                        contentDescription = stringResource(if (expanded) R.string.manga_info_collapse else R.string.manga_info_expand),
+                        contentDescription = stringResource(
+                            if (expanded) R.string.manga_info_collapse else R.string.manga_info_expand,
+                        ),
                         tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.background(Brush.radialGradient(colors = colors.asReversed())),
                     )

@@ -61,7 +61,7 @@ fun ExhUtils(
     Column(
         modifier
             .fillMaxWidth()
-            .background(backgroundColor)
+            .background(backgroundColor),
     ) {
         AnimatedVisibility(visible = isVisible) {
             Column {
@@ -83,12 +83,12 @@ fun ExhUtils(
                             fontSize = 13.sp,
                             fontFamily = FontFamily.SansSerif,
                             style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(start = 24.dp)
+                            modifier = Modifier.padding(start = 24.dp),
                         )
                         Switch(
                             checked = isAutoScroll,
                             onCheckedChange = null,
-                            enabled = isAutoScrollEnabled
+                            enabled = isAutoScrollEnabled,
                         )
                     }
                     Row(
@@ -112,18 +112,18 @@ fun ExhUtils(
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                                 keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Decimal
+                                    keyboardType = KeyboardType.Decimal,
                                 ),
                             )
                             AnimatedVisibility(!isAutoScrollEnabled) {
                                 Text(
                                     text = stringResource(R.string.eh_autoscroll_freq_invalid),
                                     color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.labelSmall,
                                 )
                             }
                         }
@@ -147,7 +147,7 @@ fun ExhUtils(
                     Row(
                         Modifier.fillMaxWidth(0.5f),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         TextButton(
                             onClick = onClickRetryAll,
@@ -157,7 +157,7 @@ fun ExhUtils(
                                 text = stringResource(R.string.eh_retry_all),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
-                                fontFamily = FontFamily.SansSerif
+                                fontFamily = FontFamily.SansSerif,
                             )
                         }
                         TextButton(
@@ -175,7 +175,7 @@ fun ExhUtils(
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         TextButton(
                             onClick = onClickBoostPage,
@@ -185,7 +185,7 @@ fun ExhUtils(
                                 text = stringResource(R.string.eh_boost_page),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
-                                fontFamily = FontFamily.SansSerif
+                                fontFamily = FontFamily.SansSerif,
                             )
                         }
                         TextButton(
@@ -206,7 +206,7 @@ fun ExhUtils(
 
         IconButton(
             onClick = { onSetExhUtilsVisibility(!isVisible) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(
                 imageVector = if (isVisible) {
@@ -237,7 +237,7 @@ private fun ExhUtilsPreview() {
             onClickBoostPage = {},
             onClickBoostPageHelp = {},
             onClickRetryAll = {},
-            onClickRetryAllHelp = {}
+            onClickRetryAllHelp = {},
         )
     }
 }

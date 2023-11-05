@@ -248,7 +248,8 @@ fun LibraryBottomActionMenu(
             tonalElevation = 3.dp,
         ) {
             val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false /* SY --> */, false /* SY <-- */) }
+            val confirm =
+                remember { mutableStateListOf(false, false, false, false, false /* SY --> */, false /* SY <-- */) }
             var resetJob: Job? = remember { null }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)

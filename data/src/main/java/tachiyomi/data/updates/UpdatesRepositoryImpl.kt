@@ -32,7 +32,9 @@ class UpdatesRepositoryImpl(
         return databaseHandler.subscribeToList {
             updatesViewQueries.getRecentUpdates(after, limit, ::mapUpdatesWithRelations)
         }.map {
-            databaseHandler.awaitListExecutable { (databaseHandler as AndroidDatabaseHandler).getUpdatesQuery(after, limit) }
+            databaseHandler.awaitListExecutable {
+                (databaseHandler as AndroidDatabaseHandler).getUpdatesQuery(after, limit)
+            }
                 .map(::mapUpdatesView)
         }
     }

@@ -46,11 +46,11 @@ enum class NavBarType {
 fun BoxIgnoreLayoutDirection(modifier: Modifier, content: @Composable BoxScope.() -> Unit) {
     val layoutDirection = LocalLayoutDirection.current
     CompositionLocalProvider(
-        LocalLayoutDirection provides LayoutDirection.Ltr
+        LocalLayoutDirection provides LayoutDirection.Ltr,
     ) {
         Box(modifier) {
             CompositionLocalProvider(
-                LocalLayoutDirection provides layoutDirection
+                LocalLayoutDirection provides layoutDirection,
             ) {
                 content()
             }
@@ -125,7 +125,7 @@ fun ReaderAppBars(
 
     // SY -->
     BoxIgnoreLayoutDirection(
-        Modifier.fillMaxWidth()
+        Modifier.fillMaxWidth(),
     ) {
         AnimatedVisibility(
             visible = visible && navBarType == NavBarType.VerticalLeft,
@@ -139,7 +139,7 @@ fun ReaderAppBars(
             ),
             modifier = modifierWithInsetsPadding
                 .padding(bottom = 48.dp, top = 120.dp)
-                .align(Alignment.TopStart)
+                .align(Alignment.TopStart),
         ) {
             ChapterNavigator(
                 isRtl = isRtl,
@@ -167,7 +167,7 @@ fun ReaderAppBars(
             ),
             modifier = modifierWithInsetsPadding
                 .padding(bottom = 48.dp, top = 120.dp)
-                .align(Alignment.TopEnd)
+                .align(Alignment.TopEnd),
         ) {
             ChapterNavigator(
                 isRtl = isRtl,
@@ -246,12 +246,11 @@ fun ReaderAppBars(
                         onClickRetryAll = onClickRetryAll,
                         onClickRetryAllHelp = onClickRetryAllHelp,
                         onClickBoostPage = onClickBoostPage,
-                        onClickBoostPageHelp = onClickBoostPageHelp
+                        onClickBoostPageHelp = onClickBoostPageHelp,
                     )
                     // SY <--
                 }
             }
-
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -304,7 +303,7 @@ fun ReaderAppBars(
                         onClickWebView = onOpenInWebView,
                         onClickShare = onShare,
                         onClickPageLayout = onClickPageLayout,
-                        onClickShiftPage = onClickShiftPage
+                        onClickShiftPage = onClickShiftPage,
                     )
                 }
             }

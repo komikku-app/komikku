@@ -138,7 +138,9 @@ object EXHMigrations {
                     val mergedMangas = runBlocking { getMangaBySource.await(MERGED_SOURCE_ID) }
 
                     if (mergedMangas.isNotEmpty()) {
-                        val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga)?.let { mergedManga to it } }
+                        val mangaConfigs = mergedMangas.mapNotNull { mergedManga ->
+                            readMangaConfig(mergedManga)?.let { mergedManga to it }
+                        }
                         if (mangaConfigs.isNotEmpty()) {
                             val mangaToUpdate = mutableListOf<MangaUpdate>()
                             val mergedMangaReferences = mutableListOf<MergedMangaReference>()
@@ -183,15 +185,45 @@ object EXHMigrations {
                                 insertMergedReference.awaitAll(mergedMangaReferences)
                             }
 
-                            val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load() }.distinct()
-                            val chapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(mergedMangas.map { it.id }, ChapterMapper::mapChapter) } }
-                            val mergedMangaChapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(loadedMangaList.map { it.manga.id }, ChapterMapper::mapChapter) } }
+                            val loadedMangaList = mangaConfigs
+                                .map { it.second.children }
+                                .flatten()
+                                .mapNotNull { it.load() }
+                                .distinct()
+                            val chapters =
+                                runBlocking {
+                                    handler.awaitList {
+                                        ehQueries.getChaptersByMangaIds(
+                                            mergedMangas.map { it.id },
+                                            ChapterMapper::mapChapter,
+                                        )
+                                    }
+                                }
+                            val mergedMangaChapters =
+                                runBlocking {
+                                    handler.awaitList {
+                                        ehQueries.getChaptersByMangaIds(
+                                            loadedMangaList.map { it.manga.id },
+                                            ChapterMapper::mapChapter,
+                                        )
+                                    }
+                                }
 
-                            val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
-                            val parsedChapters = chapters.filter { it.read || it.lastPageRead != 0L }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
+                            val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter ->
+                                loadedMangaList.firstOrNull {
+                                    it.manga.id == chapter.id
+                                }?.let { it to chapter }
+                            }
+                            val parsedChapters = chapters.filter {
+                                it.read || it.lastPageRead != 0L
+                            }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
                             val chaptersToUpdate = mutableListOf<ChapterUpdate>()
                             parsedChapters.forEach { parsedChapter ->
-                                mergedMangaChaptersMatched.firstOrNull { it.second.url == parsedChapter.second.url && it.first.source.id == parsedChapter.second.source && it.first.manga.url == parsedChapter.second.mangaUrl }?.let {
+                                mergedMangaChaptersMatched.firstOrNull {
+                                    it.second.url == parsedChapter.second.url &&
+                                        it.first.source.id == parsedChapter.second.source &&
+                                        it.first.manga.url == parsedChapter.second.mangaUrl
+                                }?.let {
                                     chaptersToUpdate += ChapterUpdate(
                                         it.second.id,
                                         read = parsedChapter.first.read,
@@ -353,7 +385,11 @@ object EXHMigrations {
                     if (oldSecureScreen) {
                         securityPreferences.secureScreen().set(SecurityPreferences.SecureScreenMode.ALWAYS)
                     }
-                    if (DeviceUtil.isMiui && basePreferences.extensionInstaller().get() == BasePreferences.ExtensionInstaller.PACKAGEINSTALLER) {
+                    if (
+                        DeviceUtil.isMiui &&
+                        basePreferences.extensionInstaller().get() == BasePreferences.ExtensionInstaller
+                            .PACKAGEINSTALLER
+                    ) {
                         basePreferences.extensionInstaller().set(BasePreferences.ExtensionInstaller.LEGACY)
                     }
                 }
@@ -418,7 +454,9 @@ object EXHMigrations {
                 }
                 if (oldVersion under 38) {
                     // Handle renamed enum values
-                    val newSortingMode = when (val oldSortingMode = prefs.getString(libraryPreferences.sortingMode().key(), "ALPHABETICAL")) {
+                    val newSortingMode = when (
+                        val oldSortingMode = prefs.getString(libraryPreferences.sortingMode().key(), "ALPHABETICAL")
+                    ) {
                         "LAST_CHECKED" -> "LAST_MANGA_UPDATE"
                         "UNREAD" -> "UNREAD_COUNT"
                         "DATE_FETCHED" -> "CHAPTER_FETCH_DATE"
@@ -618,7 +656,7 @@ object EXHMigrations {
                         "eh_exhSettingsProfile",
                         "eh_settingsKey",
                         "eh_sessionCookie",
-                        "eh_hathPerksCookie"
+                        "eh_hathPerksCookie",
                     )
 
                     replacePreferences(
@@ -749,7 +787,6 @@ object EXHMigrations {
             handler.await { ehQueries.migrateSource(newId, oldId) }
         }
     }
-
 
     @Suppress("UNCHECKED_CAST")
     private fun replacePreferences(

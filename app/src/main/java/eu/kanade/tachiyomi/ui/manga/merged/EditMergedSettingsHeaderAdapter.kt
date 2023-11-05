@@ -133,7 +133,9 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 }
             }
 
-            binding.dedupeSwitch.isChecked = state.mergeReference?.let { it.chapterSortMode != MergedMangaReference.CHAPTER_SORT_NONE } ?: false
+            binding.dedupeSwitch.isChecked = state.mergeReference?.let {
+                it.chapterSortMode != MergedMangaReference.CHAPTER_SORT_NONE
+            } ?: false
             binding.dedupeSwitch.setOnCheckedChangeListener { _, isChecked ->
                 binding.dedupeModeSpinner.isEnabled = isChecked
                 binding.dedupeModeSpinner.alpha = when (isChecked) {

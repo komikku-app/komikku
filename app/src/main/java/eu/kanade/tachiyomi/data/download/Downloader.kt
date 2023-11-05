@@ -286,7 +286,9 @@ class Downloader(
         val wasEmpty = queueState.value.isEmpty()
         val chaptersWithoutDir = chapters
             // Filter out those already downloaded.
-            .filter { provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null }
+            .filter {
+                provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null
+            }
             // Add chapters to queue from the start.
             .sortedByDescending { it.sourceOrder }
 
@@ -335,7 +337,11 @@ class Downloader(
         val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
         if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {
             download.status = Download.State.ERROR
-            notifier.onError(context.getString(R.string.download_insufficient_space), download.chapter.name, download.manga.title)
+            notifier.onError(
+                context.getString(R.string.download_insufficient_space),
+                download.chapter.name,
+                download.manga.title,
+            )
             return
         }
 
@@ -449,13 +455,16 @@ class Downloader(
         tmpFile?.delete()
 
         // Try to find the image file
-        val imageFile = tmpDir.listFiles()?.firstOrNull { it.name!!.startsWith("$filename.") || it.name!!.startsWith("${filename}__001") }
+        val imageFile = tmpDir.listFiles()?.firstOrNull {
+            it.name!!.startsWith("$filename.") || it.name!!.startsWith("${filename}__001")
+        }
 
         try {
             // If the image is already downloaded, do nothing. Otherwise download from network
             val file = when {
                 imageFile != null -> imageFile
-                chapterCache.isImageInCache(page.imageUrl!!) -> copyImageFromCache(chapterCache.getImageFile(page.imageUrl!!), tmpDir, filename)
+                chapterCache.isImageInCache(page.imageUrl!!) ->
+                    copyImageFromCache(chapterCache.getImageFile(page.imageUrl!!), tmpDir, filename)
                 else -> downloadImage(page, download.source, tmpDir, filename, dataSaver)
             }
 
@@ -482,7 +491,13 @@ class Downloader(
      * @param tmpDir the temporary directory of the download.
      * @param filename the filename of the image.
      */
-    private suspend fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String, dataSaver: DataSaver): UniFile {
+    private suspend fun downloadImage(
+        page: Page,
+        source: HttpSource,
+        tmpDir: UniFile,
+        filename: String,
+        dataSaver: DataSaver,
+    ): UniFile {
         page.status = Page.State.DOWNLOAD_IMAGE
         page.progress = 0
         return flow {

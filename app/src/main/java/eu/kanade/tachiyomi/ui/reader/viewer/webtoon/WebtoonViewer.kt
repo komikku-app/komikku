@@ -33,7 +33,11 @@ import kotlin.time.Duration
 /**
  * Implementation of a [Viewer] to display pages with a [RecyclerView].
  */
-class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true, private val tapByPage: Boolean = false) : Viewer {
+class WebtoonViewer(
+    val activity: ReaderActivity,
+    val isContinuous: Boolean = true,
+    private val tapByPage: Boolean = false,
+) : Viewer {
 
     val downloadManager: DownloadManager by injectLazy()
 
@@ -291,7 +295,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
      * Scrolls one screen over a period of time
      */
     fun linearScroll(duration: Duration) {
-        recycler.smoothScrollBy(0, activity.resources.displayMetrics.heightPixels, LinearInterpolator(), duration.inWholeMilliseconds.toInt())
+        recycler.smoothScrollBy(
+            0,
+            activity.resources.displayMetrics.heightPixels,
+            LinearInterpolator(),
+            duration.inWholeMilliseconds.toInt(),
+        )
     }
 
     /**

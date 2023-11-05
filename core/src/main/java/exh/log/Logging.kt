@@ -27,7 +27,10 @@ fun Any.xLogE(log: Any?) = xLog().let { if (log == null) it.e("null") else it.e(
 fun Any.xLogW(log: Any?) = xLog().let { if (log == null) it.w("null") else it.w(log) }
 fun Any.xLogD(log: Any?) = xLog().let { if (log == null) it.d("null") else it.d(log) }
 fun Any.xLogI(log: Any?) = xLog().let { if (log == null) it.i("null") else it.i(log) }
-fun Any.xLog(logLevel: LogLevel, log: Any?) = xLog().let { if (log == null) it.log(logLevel.int, "null") else it.log(logLevel.int, log) }
+fun Any.xLog(
+    logLevel: LogLevel,
+    log: Any?,
+) = xLog().let { if (log == null) it.log(logLevel.int, "null") else it.log(logLevel.int, log) }
 
 /*fun Any.xLogE(vararg logs: Any) = xLog().e(logs)
 fun Any.xLogW(vararg logs: Any) = xLog().w(logs)

@@ -100,7 +100,11 @@ class SyncChaptersWithSource(
             }
 
             // Recognize chapter number for the chapter.
-            val chapterNumber = ChapterRecognition.parseChapterNumber(manga.title, chapter.name, chapter.chapterNumber)
+            val chapterNumber = ChapterRecognition.parseChapterNumber(
+                manga.title,
+                chapter.name,
+                chapter.chapterNumber,
+            )
             chapter = chapter.copy(chapterNumber = chapterNumber)
 
             val dbChapter = dbChapters.find { it.url == chapter.url }
@@ -117,7 +121,12 @@ class SyncChaptersWithSource(
             } else {
                 if (shouldUpdateDbChapter.await(dbChapter, chapter)) {
                     val shouldRenameChapter = downloadProvider.isChapterDirNameChanged(dbChapter, chapter) &&
-                        downloadManager.isChapterDownloaded(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)
+                        downloadManager.isChapterDownloaded(
+                            dbChapter.name,
+                            dbChapter.scanlator,
+                            /* SY --> */ manga.ogTitle /* SY <-- */,
+                            manga.source,
+                        )
 
                     if (shouldRenameChapter) {
                         downloadManager.renameChapter(source, manga, dbChapter, chapter)

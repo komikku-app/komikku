@@ -29,10 +29,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
@@ -175,7 +173,9 @@ open class SourceFeedScreenModel(
 
                     mutableState.update { state ->
                         state.copy(
-                            items = state.items.map { item -> if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item },
+                            items = state.items.map { item ->
+                                if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item
+                            },
                         )
                     }
                 }

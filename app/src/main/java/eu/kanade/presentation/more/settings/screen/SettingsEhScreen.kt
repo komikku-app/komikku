@@ -181,12 +181,13 @@ object SettingsEhScreen : SearchableSettings {
         unsortedPreferences: UnsortedPreferences,
         openWarnConfigureDialogController: () -> Unit,
     ): Preference.PreferenceItem.SwitchPreference {
-        val activityResultContract = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == Activity.RESULT_OK) {
-                // Upload settings
-                openWarnConfigureDialogController()
+        val activityResultContract =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == Activity.RESULT_OK) {
+                    // Upload settings
+                    openWarnConfigureDialogController()
+                }
             }
-        }
         val context = LocalContext.current
         val value by unsortedPreferences.enableExhentai().collectAsState()
         return Preference.PreferenceItem.SwitchPreference(
@@ -932,7 +933,9 @@ object SettingsEhScreen : SearchableSettings {
     }
 
     @Composable
-    fun updateCheckerFrequency(unsortedPreferences: UnsortedPreferences): Preference.PreferenceItem.ListPreference<Int> {
+    fun updateCheckerFrequency(
+        unsortedPreferences: UnsortedPreferences,
+    ): Preference.PreferenceItem.ListPreference<Int> {
         val value by unsortedPreferences.exhAutoUpdateFrequency().collectAsState()
         val context = LocalContext.current
         return Preference.PreferenceItem.ListPreference(
@@ -941,7 +944,12 @@ object SettingsEhScreen : SearchableSettings {
             subtitle = if (value == 0) {
                 stringResource(R.string.time_between_batches_summary_1, stringResource(R.string.app_name))
             } else {
-                stringResource(R.string.time_between_batches_summary_2, stringResource(R.string.app_name), value, EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION)
+                stringResource(
+                    R.string.time_between_batches_summary_2,
+                    stringResource(R.string.app_name),
+                    value,
+                    EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION,
+                )
             },
             entries = mapOf(
                 0 to stringResource(R.string.time_between_batches_never),
@@ -961,7 +969,9 @@ object SettingsEhScreen : SearchableSettings {
     }
 
     @Composable
-    fun autoUpdateRequirements(unsortedPreferences: UnsortedPreferences): Preference.PreferenceItem.MultiSelectListPreference {
+    fun autoUpdateRequirements(
+        unsortedPreferences: UnsortedPreferences,
+    ): Preference.PreferenceItem.MultiSelectListPreference {
         val value by unsortedPreferences.exhAutoUpdateRequirements().collectAsState()
         val context = LocalContext.current
         return Preference.PreferenceItem.MultiSelectListPreference(
@@ -1100,12 +1110,18 @@ object SettingsEhScreen : SearchableSettings {
 
     private fun getRelativeTimeString(relativeTime: RelativeTime, context: Context): String {
         return relativeTime.years?.let { context.resources.getQuantityString(R.plurals.humanize_year, it.toInt(), it) }
-            ?: relativeTime.months?.let { context.resources.getQuantityString(R.plurals.humanize_month, it.toInt(), it) }
+            ?: relativeTime.months?.let {
+                context.resources.getQuantityString(R.plurals.humanize_month, it.toInt(), it)
+            }
             ?: relativeTime.weeks?.let { context.resources.getQuantityString(R.plurals.humanize_week, it.toInt(), it) }
             ?: relativeTime.days?.let { context.resources.getQuantityString(R.plurals.humanize_day, it.toInt(), it) }
             ?: relativeTime.hours?.let { context.resources.getQuantityString(R.plurals.humanize_hour, it.toInt(), it) }
-            ?: relativeTime.minutes?.let { context.resources.getQuantityString(R.plurals.humanize_minute, it.toInt(), it) }
-            ?: relativeTime.seconds?.let { context.resources.getQuantityString(R.plurals.humanize_second, it.toInt(), it) }
+            ?: relativeTime.minutes?.let {
+                context.resources.getQuantityString(R.plurals.humanize_minute, it.toInt(), it)
+            }
+            ?: relativeTime.seconds?.let {
+                context.resources.getQuantityString(R.plurals.humanize_second, it.toInt(), it)
+            }
             ?: context.getString(R.string.humanize_fallback)
     }
 
@@ -1138,7 +1154,12 @@ object SettingsEhScreen : SearchableSettings {
                             }
 
                         val statsText = if (stats != null) {
-                            context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
+                            context.getString(
+                                R.string.gallery_updater_stats_text,
+                                getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context),
+                                stats.updateCount,
+                                stats.possibleUpdates,
+                            )
                         } else {
                             context.getString(R.string.gallery_updater_not_ran_yet)
                         }

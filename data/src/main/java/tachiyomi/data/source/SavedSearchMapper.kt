@@ -8,7 +8,7 @@ object SavedSearchMapper {
         source: Long,
         name: String,
         query: String?,
-        filtersJson: String?
+        filtersJson: String?,
     ): SavedSearch {
         return SavedSearch(
             id = id,

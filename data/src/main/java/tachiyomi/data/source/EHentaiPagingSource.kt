@@ -25,7 +25,11 @@ abstract class EHentaiPagingSource(override val source: CatalogueSource) : Sourc
     }
 }
 
-class EHentaiSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) : EHentaiPagingSource(source) {
+class EHentaiSearchPagingSource(
+    source: CatalogueSource,
+    val query: String,
+    val filters: FilterList,
+) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         return source.getSearchManga(currentPage, query, filters)
     }

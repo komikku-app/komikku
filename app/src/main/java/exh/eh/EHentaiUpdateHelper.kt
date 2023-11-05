@@ -51,7 +51,10 @@ class EHentaiUpdateHelper(context: Context) {
      *
      * @return Triple<Accepted, Discarded, HasNew>
      */
-    suspend fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Triple<ChapterChain, List<ChapterChain>, Boolean> {
+    suspend fun findAcceptedRootAndDiscardOthers(
+        sourceId: Long,
+        chapters: List<Chapter>,
+    ): Triple<ChapterChain, List<ChapterChain>, Boolean> {
         // Find other chains
         val chains = chapters
             .flatMap { chapter ->
@@ -115,7 +118,11 @@ class EHentaiUpdateHelper(context: Context) {
             chapterRepository.updateAll(chapterUpdates)
             chapterRepository.addAll(newChapters)
 
-            val (newHistory, deleteHistory) = getHistory(getChaptersByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
+            val (newHistory, deleteHistory) = getHistory(
+                getChaptersByMangaId.await(accepted.manga.id),
+                chainsAsChapters,
+                chainsAsHistory,
+            )
 
             // Delete the duplicate history first
             deleteHistory.forEach {

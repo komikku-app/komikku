@@ -58,7 +58,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         return urlImportFetchSearchMangaSuspend(context, query) {
-            super<DelegatedHttpSource>.getSearchManga(page, query, filters,)
+            super<DelegatedHttpSource>.getSearchManga(page, query, filters)
         }
     }
 
@@ -195,9 +195,10 @@ class NHentai(delegate: HttpSource, val context: Context) :
         )
     }
 
-    private fun thumbnailUrlFromType(mediaId: String, page: Int, t: String) = NHentaiSearchMetadata.typeToExtension(t)?.let {
-        "https://t3.nhentai.net/galleries/$mediaId/${page}t.$it"
-    }
+    private fun thumbnailUrlFromType(mediaId: String, page: Int, t: String) =
+        NHentaiSearchMetadata.typeToExtension(t)?.let {
+            "https://t3.nhentai.net/galleries/$mediaId/${page}t.$it"
+        }
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
         return client.newCachelessCallWithProgress(

@@ -16,7 +16,11 @@ private val galleryAdder by lazy {
 /**
  * A version of fetchSearchManga that supports URL importing
  */
-fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
+fun UrlImportableSource.urlImportFetchSearchManga(
+    context: Context,
+    query: String,
+    fail: () -> Observable<MangasPage>,
+): Observable<MangasPage> =
     when {
         query.startsWith("http://") || query.startsWith("https://") -> {
             runAsObservable {
@@ -36,18 +40,21 @@ fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: Strin
         else -> fail()
     }
 
-
 /**
  * A version of fetchSearchManga that supports URL importing
  */
-suspend fun UrlImportableSource.urlImportFetchSearchMangaSuspend(context: Context, query: String, fail: suspend () -> MangasPage): MangasPage =
+suspend fun UrlImportableSource.urlImportFetchSearchMangaSuspend(
+    context: Context,
+    query: String,
+    fail: suspend () -> MangasPage,
+): MangasPage =
     when {
         query.startsWith("http://") || query.startsWith("https://") -> {
             val res = galleryAdder.addGallery(
                 context = context,
                 url = query,
                 fav = false,
-                forceSource = this
+                forceSource = this,
             )
 
             MangasPage(

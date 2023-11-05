@@ -281,7 +281,9 @@ class EHentai(
     private fun getRating(element: Element?): Double? {
         val ratingStyle = element?.attr("style")?.nullIfBlank()
         return if (ratingStyle != null) {
-            val matches = RATING_REGEX.findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
+            val matches = RATING_REGEX.findAll(ratingStyle)
+                .mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }
+                .toList()
             if (matches.size == 2) {
                 var rate = 5 - matches[0] / 16
                 if (matches[1] == 21) {
@@ -314,7 +316,9 @@ class EHentai(
     /**
      * Parse a list of galleries
      */
-    private fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let { (parsedManga, nextPage) ->
+    private fun genericMangaParse(
+        response: Response,
+    ) = extendedGenericMangaParse(response.asJsoup()).let { (parsedManga, nextPage) ->
         MetadataMangasPage(
             parsedManga.map { it.manga },
             nextPage != null,
@@ -409,7 +413,9 @@ class EHentai(
     }
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
-    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> = fetchChapterPage(chapter, baseUrl + chapter.url)
+    override fun fetchPageList(
+        chapter: SChapter,
+    ): Observable<List<Page>> = fetchChapterPage(chapter, baseUrl + chapter.url)
         .map {
             it.mapIndexed { i, s ->
                 Page(i, s)
@@ -461,7 +467,9 @@ class EHentai(
 
     private fun <T : MangasPage> T.checkValid(): MangasPage =
         if (exh && mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
-            throw Exception("Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu")
+            throw Exception(
+                "Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu",
+            )
         } else {
             this
         }
@@ -521,7 +529,11 @@ class EHentai(
         if (jumpSeekValue != null && page == 1) {
             if (
                 MATCH_SEEK_REGEX.matches(jumpSeekValue) ||
-                (MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let { it in 2007..2099 } == true)
+                (
+                    MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let {
+                        it in 2007..2099
+                    } == true
+                    )
             ) {
                 uri.appendQueryParameter("seek", jumpSeekValue)
             } else if (MATCH_JUMP_REGEX.matches(jumpSeekValue)) {
@@ -590,7 +602,9 @@ class EHentai(
                     // Pull to most recent
                     val doc = response.asJsoup()
                     val newerGallery = doc.select("#gnd a").lastOrNull()
-                    val pre = if (newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled) {
+                    val pre = if (
+                        newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
+                    ) {
                         manga.url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
                         client.newCall(mangaDetailsRequest(manga))
                             .asObservableSuccess().map { it.asJsoup() }
@@ -627,7 +641,9 @@ class EHentai(
             // Pull to most recent
             val doc = response.asJsoup()
             val newerGallery = doc.select("#gnd a").lastOrNull()
-            val pre = if (newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled) {
+            val pre = if (
+                newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
+            ) {
                 val sManga = manga.copy(
                     url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href")),
                 )
@@ -756,16 +772,24 @@ class EHentai(
                     tags += RaisedTag(EH_UPLOADER_NAMESPACE, it, TAG_TYPE_VIRTUAL)
                 }
                 visible?.let {
-                    tags += RaisedTag(EH_VISIBILITY_NAMESPACE, it.substringAfter('(').substringBeforeLast(')'), TAG_TYPE_VIRTUAL)
+                    tags += RaisedTag(
+                        EH_VISIBILITY_NAMESPACE,
+                        it.substringAfter('(').substringBeforeLast(')'),
+                        TAG_TYPE_VIRTUAL,
+                    )
                 }
             }
         }
     }
 
-    override fun chapterListParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
-    override fun chapterPageParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
+    override fun chapterListParse(response: Response) =
+        throw UnsupportedOperationException("Unused method was called somehow!")
+    override fun chapterPageParse(
+        response: Response,
+    ) = throw UnsupportedOperationException("Unused method was called somehow!")
 
-    override fun pageListParse(response: Response) = throw UnsupportedOperationException("Unused method was called somehow!")
+    override fun pageListParse(response: Response) =
+        throw UnsupportedOperationException("Unused method was called somehow!")
 
     override fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
@@ -959,7 +983,11 @@ class EHentai(
         }
     }
 
-    class AdvancedOption(name: String, val param: String, defValue: Boolean = false) : Filter.CheckBox(name, defValue), UriFilter {
+    class AdvancedOption(
+        name: String,
+        val param: String,
+        defValue: Boolean = false,
+    ) : Filter.CheckBox(name, defValue), UriFilter {
         override fun addToUri(builder: Uri.Builder) {
             if (state) {
                 builder.appendQueryParameter(param, "on")
@@ -1140,7 +1168,9 @@ class EHentai(
         )
 
         val obj = outJson["tokenlist"]!!.jsonArray.first().jsonObject
-        return "${uri.scheme}://${uri.host}/g/${obj["gid"]!!.jsonPrimitive.int}/${obj["token"]!!.jsonPrimitive.content}/"
+        return "${uri.scheme}://${uri.host}/g/${obj["gid"]!!.jsonPrimitive.int}/${
+            obj["token"]!!.jsonPrimitive.content
+        }/"
     }
 
     override suspend fun getPagePreviewList(
@@ -1190,7 +1220,8 @@ class EHentai(
     }
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
-        return client.newCachelessCallWithProgress(exGet(page.imageUrl, cacheControl = cacheControl), page).awaitSuccess()
+        return client.newCachelessCallWithProgress(exGet(page.imageUrl, cacheControl = cacheControl), page)
+            .awaitSuccess()
     }
 
     /**

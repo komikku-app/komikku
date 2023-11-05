@@ -71,7 +71,9 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
                 getItem(tmId) { getString(R.string.id) },
                 getItem(title) { getString(R.string.title) },
                 getItem(uploader) { getString(R.string.uploader) },
-                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.date_posted) },
+                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
+                    getString(R.string.date_posted)
+                },
                 getItem(length) { getString(R.string.page_count) },
                 getItem(ratingString) { getString(R.string.rating_string) },
                 getItem(averageRating) { getString(R.string.average_rating) },

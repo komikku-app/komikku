@@ -23,7 +23,7 @@ import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.util.lang.runAsObservable
 import uy.kohesive.injekt.injectLazy
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class BilibiliHandler(currentClient: OkHttpClient) {
     val baseUrl = "https://www.bilibilicomics.com"
@@ -34,7 +34,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         .build()
 
     val client: OkHttpClient = currentClient.newBuilder()
-        .rateLimit(1, 1, TimeUnit.SECONDS)
+        .rateLimit(1, 1.seconds)
         .build()
 
     val json by injectLazy<Json>()

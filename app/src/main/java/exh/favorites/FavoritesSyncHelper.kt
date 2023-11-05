@@ -102,7 +102,8 @@ class FavoritesSyncHelper(val context: Context) {
 
             if (manga.id in seenManga) {
                 val inCategories = getCategories.await(manga.id)
-                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(manga, inCategories, context)
+                status.value = FavoritesSyncStatus.BadLibraryState
+                    .MangaInMultipleCategories(manga, inCategories, context)
 
                 logger.w(context.getString(R.string.favorites_sync_gallery_multiple_categories_error, manga.id))
                 return
@@ -143,17 +144,23 @@ class FavoritesSyncHelper(val context: Context) {
             // Do not update galleries while syncing favorites
             EHentaiUpdateWorker.cancelBackground(context)
 
-            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes))
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_calculating_remote_changes),
+            )
             val remoteChanges = storage.getChangedRemoteEntries(favorites.first)
             val localChanges = if (prefs.exhReadOnlySync().get()) {
                 null // Do not build local changes if they are not going to be applied
             } else {
-                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes))
+                status.value = FavoritesSyncStatus.Processing(
+                    context.getString(R.string.favorites_sync_calculating_local_changes),
+                )
                 storage.getChangedDbEntries()
             }
 
             // Apply remote categories
-            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names))
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_syncing_category_names),
+            )
             applyRemoteCategories(favorites.second)
 
             // Apply change sets
@@ -173,7 +180,9 @@ class FavoritesSyncHelper(val context: Context) {
             logger.w(context.getString(R.string.favorites_sync_ignoring_exception), e)
             return
         } catch (e: Exception) {
-            status.value = FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_unknown_error, e.message))
+            status.value = FavoritesSyncStatus.Error(
+                context.getString(R.string.favorites_sync_unknown_error, e.message),
+            )
             logger.e(context.getString(R.string.favorites_sync_sync_error), e)
             return
         } finally {
@@ -273,7 +282,9 @@ class FavoritesSyncHelper(val context: Context) {
     private suspend fun applyChangeSetToRemote(errorList: MutableList<String>, changeSet: ChangeSet) {
         // Apply removals
         if (changeSet.removed.isNotEmpty()) {
-            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size))
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size),
+            )
 
             val formBody = FormBody.Builder()
                 .add("ddact", "delete")
@@ -322,7 +333,10 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Apply removals
         changeSet.removed.forEachIndexed { index, it ->
-            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_remove_from_local, index + 1, changeSet.removed.size), title = it.title)
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_remove_from_local, index + 1, changeSet.removed.size),
+                title = it.title,
+            )
             val url = it.getUrl()
 
             // Consider both EX and EH sources
@@ -377,11 +391,18 @@ class FavoritesSyncHelper(val context: Context) {
                     return@forEachIndexed
                 }
 
-                val errorString = context.getString(R.string.favorites_sync_failed_to_add_to_local) + when (result) {
-                    is GalleryAddEvent.Fail.Error -> context.getString(R.string.favorites_sync_failed_to_add_to_local_error, it.title, result.logMessage)
-                    is GalleryAddEvent.Fail.UnknownType -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
-                    is GalleryAddEvent.Fail.UnknownSource -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
-                }
+                val errorString = context.getString(R.string.favorites_sync_failed_to_add_to_local) +
+                    when (result) {
+                        is GalleryAddEvent.Fail.Error -> context.getString(
+                            R.string.favorites_sync_failed_to_add_to_local_error, it.title, result.logMessage,
+                        )
+                        is GalleryAddEvent.Fail.UnknownType -> context.getString(
+                            R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl,
+                        )
+                        is GalleryAddEvent.Fail.UnknownSource -> context.getString(
+                            R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl,
+                        )
+                    }
 
                 if (prefs.exhLenientSync().get()) {
                     errorList += errorString
@@ -427,7 +448,12 @@ sealed class FavoritesSyncStatus() {
                 this(
                     manga = manga,
                     categories = categories,
-                    message = context.getString(R.string.favorites_sync_gallery_in_multiple_categories, manga.title, categories.joinToString { it.name }),
+                    message = context.getString(
+                        R.string.favorites_sync_gallery_in_multiple_categories, manga.title,
+                        categories.joinToString {
+                            it.name
+                        },
+                    ),
                 )
         }
     }

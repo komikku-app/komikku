@@ -5,7 +5,6 @@ import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.view.LibraryView
 
-
 object MangaMapper {
     fun mapManga(
         id: Long,

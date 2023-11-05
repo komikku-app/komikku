@@ -29,7 +29,9 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
         if (resources.sourceOrNull()?.peek()?.use { CbzCrypto.detectCoverImageArchive(it.inputStream()) } == true) {
             if (resources.source().peek().use { ImageUtil.findImageType(it.inputStream()) == null }) {
                 zip4j = ZipFile(resources.file().toFile().absolutePath)
-                entry = zip4j.fileHeaders.firstOrNull { it.fileName.equals(CbzCrypto.DEFAULT_COVER_NAME, ignoreCase = true) }
+                entry = zip4j.fileHeaders.firstOrNull {
+                    it.fileName.equals(CbzCrypto.DEFAULT_COVER_NAME, ignoreCase = true)
+                }
 
                 if (zip4j.isEncrypted) zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
             }
@@ -67,7 +69,7 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
             }
             // SY -->
             source.peek().inputStream().use { stream ->
-            if (CbzCrypto.detectCoverImageArchive(stream)) return true
+                if (CbzCrypto.detectCoverImageArchive(stream)) return true
             }
             // SY <--
             return when (type) {

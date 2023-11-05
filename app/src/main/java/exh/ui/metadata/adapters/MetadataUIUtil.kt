@@ -18,7 +18,10 @@ import exh.util.SourceTagsUtil
 import kotlin.math.roundToInt
 
 object MetadataUIUtil {
-    fun getRatingString(context: Context, @FloatRange(from = 0.0, to = 10.0) rating: Float? = null) = when (rating?.roundToInt()) {
+    fun getRatingString(
+        context: Context,
+        @FloatRange(from = 0.0, to = 10.0) rating: Float? = null,
+    ) = when (rating?.roundToInt()) {
         0 -> R.string.rating0
         1 -> R.string.rating1
         2 -> R.string.rating2
@@ -36,7 +39,8 @@ object MetadataUIUtil {
     fun getGenreAndColour(context: Context, genre: String) = when (genre) {
         "doujinshi", "Doujinshi" -> SourceTagsUtil.GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
         "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.entry_type_manga
-        "artistcg", "artist CG", "artist-cg", "Artist CG" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
+        "artistcg", "artist CG", "artist-cg", "Artist CG" ->
+            SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
         "gamecg", "game CG", "game-cg", "Game CG" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.game_cg
         "western" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.western
         "non-h", "non-H" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.non_h

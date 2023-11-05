@@ -33,7 +33,8 @@ class GetApplicationRelease(
 
         // Check if latest version is different from current version
         // SY -->
-        val isNewVersion = isNewVersion(arguments.isPreview, arguments.syDebugVersion, arguments.versionName, release.version)
+        val isNewVersion =
+            isNewVersion(arguments.isPreview, arguments.syDebugVersion, arguments.versionName, release.version)
         // SY <--
         return when {
             isNewVersion && arguments.isThirdParty -> Result.ThirdPartyInstallation
@@ -43,7 +44,12 @@ class GetApplicationRelease(
     }
 
     // SY -->
-    private fun isNewVersion(isPreview: Boolean, syDebugVersion: String, versionName: String, versionTag: String): Boolean {
+    private fun isNewVersion(
+        isPreview: Boolean,
+        syDebugVersion: String,
+        versionName: String,
+        versionTag: String,
+    ): Boolean {
         // Removes prefixes like "r" or "v"
         val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
         return if (isPreview) {

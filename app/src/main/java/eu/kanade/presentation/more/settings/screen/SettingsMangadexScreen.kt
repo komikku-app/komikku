@@ -100,7 +100,10 @@ object SettingsMangadexScreen : SearchableSettings {
     }
 
     @Composable
-    fun loginPreference(mdex: MangaDex, trackPreferences: TrackPreferences): Preference.PreferenceItem.CustomPreference {
+    fun loginPreference(
+        mdex: MangaDex,
+        trackPreferences: TrackPreferences,
+    ): Preference.PreferenceItem.CustomPreference {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val loggedIn by remember { trackPreferences.trackToken(mdex.mdList) }.collectAsState()

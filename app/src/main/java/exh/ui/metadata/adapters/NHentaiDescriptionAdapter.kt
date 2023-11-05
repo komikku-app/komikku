@@ -29,7 +29,9 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             if (meta == null || meta !is NHentaiSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterNhBinding.bind(it)
 
-            binding.genre.text = meta.tags.filter { it.namespace == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE }.let { tags ->
+            binding.genre.text = meta.tags.filter {
+                it.namespace == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE
+            }.let { tags ->
                 if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
             }.let { categoriesString ->
                 categoriesString?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
@@ -46,7 +48,11 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
 
             binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
 
-            binding.pages.text = context.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
+            binding.pages.text = context.resources.getQuantityString(
+                R.plurals.num_pages,
+                meta.pageImageTypes.size,
+                meta.pageImageTypes.size,
+            )
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24)
 
             @SuppressLint("SetTextI18n")

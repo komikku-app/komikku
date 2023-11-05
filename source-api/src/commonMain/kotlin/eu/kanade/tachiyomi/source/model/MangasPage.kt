@@ -72,7 +72,12 @@ class MetadataMangasPage(
     }
 
     override fun toString(): String {
-        return "MetadataMangasPage(mangas=$mangas, hasNextPage=$hasNextPage, mangasMetadata=$mangasMetadata, nextKey=$nextKey)"
+        return "MetadataMangasPage(" +
+            "mangas=$mangas, " +
+            "hasNextPage=$hasNextPage, " +
+            "mangasMetadata=$mangasMetadata, " +
+            "nextKey=$nextKey" +
+            ")"
     }
 }
 // SY <--

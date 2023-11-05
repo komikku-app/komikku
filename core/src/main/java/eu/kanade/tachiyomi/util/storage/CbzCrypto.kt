@@ -159,7 +159,9 @@ object CbzCrypto {
             }
             return true
         } catch (e: Exception) {
-            logcat(LogPriority.WARN) { "Wrong CBZ archive password for: ${zip4j.file.name} in: ${zip4j.file.parentFile?.name}" }
+            logcat(LogPriority.WARN) {
+                "Wrong CBZ archive password for: ${zip4j.file.name} in: ${zip4j.file.parentFile?.name}"
+            }
         }
         return false
     }

@@ -15,7 +15,9 @@ enum class FollowStatus(val int: Int) {
     fun toDex(): String = this.name.lowercase(Locale.US)
 
     companion object {
-        fun fromDex(value: String?): FollowStatus = values().firstOrNull { it.name.lowercase(Locale.US) == value } ?: UNFOLLOWED
+        fun fromDex(
+            value: String?,
+        ): FollowStatus = values().firstOrNull { it.name.lowercase(Locale.US) == value } ?: UNFOLLOWED
         fun fromInt(value: Int): FollowStatus = values().firstOrNull { it.int == value } ?: UNFOLLOWED
     }
 }

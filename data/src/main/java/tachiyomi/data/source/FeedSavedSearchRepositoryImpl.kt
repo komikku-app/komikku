@@ -35,7 +35,9 @@ class FeedSavedSearchRepositoryImpl(
     }
 
     override suspend fun getBySourceIdFeedSavedSearch(sourceId: Long): List<SavedSearch> {
-        return handler.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(sourceId, SavedSearchMapper::map) }
+        return handler.awaitList {
+            feed_saved_searchQueries.selectSourceFeedSavedSearch(sourceId, SavedSearchMapper::map)
+        }
     }
 
     override suspend fun countBySourceId(sourceId: Long): Long {

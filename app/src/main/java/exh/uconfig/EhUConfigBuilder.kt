@@ -66,7 +66,11 @@ class EhUConfigBuilder {
 
         configItems += Entry.LanguageSystem().getLanguages(preferences.exhSettingsLanguages().get().split("\n"))
 
-        configItems += Entry.Categories().categoryConfigs(preferences.exhEnabledCategories().get().split(",").map { it.toBoolean() })
+        configItems += Entry.Categories().categoryConfigs(
+            preferences.exhEnabledCategories().get().split(",").map {
+                it.toBoolean()
+            },
+        )
 
         // Actually build form body
         val formBody = FormBody.Builder()

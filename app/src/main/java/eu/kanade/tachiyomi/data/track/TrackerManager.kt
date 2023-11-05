@@ -35,7 +35,8 @@ class TrackerManager {
     val kavita = Kavita(KAVITA)
     val suwayomi = Suwayomi(9L)
 
-    val trackers = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
+    val trackers =
+        listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
 
     fun loggedInTrackers() = trackers.filter { it.isLoggedIn }
 

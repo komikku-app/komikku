@@ -352,7 +352,8 @@ class LibraryScreenModel(
     private fun LibraryMap.applySort(
         // Map<MangaId, List<Track>>
         trackMap: Map<Long, List<Track>>,
-        /* SY --> */ groupSort: LibrarySort? = null, /* SY <-- */
+        /* SY --> */
+        groupSort: LibrarySort? = null, /* SY <-- */
     ): LibraryMap {
         // SY -->
         val listOfTags by lazy {
@@ -813,7 +814,8 @@ class LibraryScreenModel(
     }
 
     fun getColumnsPreferenceForCurrentOrientation(isLandscape: Boolean): PreferenceMutableState<Int> {
-        return (if (isLandscape) libraryPreferences.landscapeColumns() else libraryPreferences.portraitColumns()).asState(screenModelScope)
+        return (if (isLandscape) libraryPreferences.landscapeColumns() else libraryPreferences.portraitColumns())
+            .asState(screenModelScope)
     }
 
     suspend fun getRandomLibraryItemForCurrentCategory(): LibraryItem? {
@@ -1163,7 +1165,9 @@ class LibraryScreenModel(
                             .find { it.int == id }
                             .let { it ?: TrackStatus.OTHER }
                             .let { context.getString(it.res) },
-                        order = TrackStatus.values().indexOfFirst { it.int == id }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
+                        order = TrackStatus.values().indexOfFirst {
+                            it.int == id
+                        }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,
                     )
                 }
