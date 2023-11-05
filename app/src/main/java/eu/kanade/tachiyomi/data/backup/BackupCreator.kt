@@ -5,22 +5,14 @@ import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_APP_PREFS
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_APP_PREFS_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CATEGORY
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CATEGORY_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CHAPTER
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CHAPTER_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CUSTOM_INFO
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CUSTOM_INFO_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_HISTORY
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_HISTORY_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_READ_MANGA
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_READ_MANGA_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_SOURCE_PREFS
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_SOURCE_PREFS_MASK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_TRACK
-import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_TRACK_MASK
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_APP_PREFS
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_CATEGORY
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_CHAPTER
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_CUSTOM_INFO
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_HISTORY
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_READ_MANGA
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_SOURCE_PREFS
+import eu.kanade.tachiyomi.data.backup.BackupCreateFlags.BACKUP_TRACK
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
@@ -106,7 +98,7 @@ class BackupCreator(
         }
 
         val databaseManga = getFavorites.await() /* SY --> */ +
-            if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
+            if (flags and BACKUP_READ_MANGA == BACKUP_READ_MANGA) {
                 handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
             } else {
                 emptyList()
@@ -190,7 +182,7 @@ class BackupCreator(
      */
     private suspend fun backupCategories(options: Int): List<BackupCategory> {
         // Check if user wants category information in backup
-        return if (options and BACKUP_CATEGORY_MASK == BACKUP_CATEGORY) {
+        return if (options and BACKUP_CATEGORY == BACKUP_CATEGORY) {
             getCategories.await()
                 .filterNot(Category::isSystemCategory)
                 .map(backupCategoryMapper)
@@ -228,7 +220,7 @@ class BackupCreator(
         val mangaObject = BackupManga.copyFrom(
             manga,
             // SY -->
-            if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) {
+            if (options and BACKUP_CUSTOM_INFO == BACKUP_CUSTOM_INFO) {
                 getCustomMangaInfo.get(manga.id)
             } else {
                 null
@@ -251,7 +243,7 @@ class BackupCreator(
         // SY <--
 
         // Check if user wants chapter information in backup
-        if (options and BACKUP_CHAPTER_MASK == BACKUP_CHAPTER) {
+        if (options and BACKUP_CHAPTER == BACKUP_CHAPTER) {
             // Backup all the chapters
             handler.awaitList {
                 chaptersQueries.getChaptersByMangaId(
@@ -265,7 +257,7 @@ class BackupCreator(
         }
 
         // Check if user wants category information in backup
-        if (options and BACKUP_CATEGORY_MASK == BACKUP_CATEGORY) {
+        if (options and BACKUP_CATEGORY == BACKUP_CATEGORY) {
             // Backup categories for this manga
             val categoriesForManga = getCategories.await(manga.id)
             if (categoriesForManga.isNotEmpty()) {
@@ -274,7 +266,7 @@ class BackupCreator(
         }
 
         // Check if user wants track information in backup
-        if (options and BACKUP_TRACK_MASK == BACKUP_TRACK) {
+        if (options and BACKUP_TRACK == BACKUP_TRACK) {
             val tracks = handler.awaitList { manga_syncQueries.getTracksByMangaId(manga.id, backupTrackMapper) }
             if (tracks.isNotEmpty()) {
                 mangaObject.tracking = tracks
@@ -282,7 +274,7 @@ class BackupCreator(
         }
 
         // Check if user wants history information in backup
-        if (options and BACKUP_HISTORY_MASK == BACKUP_HISTORY) {
+        if (options and BACKUP_HISTORY == BACKUP_HISTORY) {
             val historyByMangaId = getHistory.await(manga.id)
             if (historyByMangaId.isNotEmpty()) {
                 val history = historyByMangaId.map { history ->
@@ -299,13 +291,13 @@ class BackupCreator(
     }
 
     private fun backupAppPreferences(flags: Int): List<BackupPreference> {
-        if (flags and BACKUP_APP_PREFS_MASK != BACKUP_APP_PREFS) return emptyList()
+        if (flags and BACKUP_APP_PREFS != BACKUP_APP_PREFS) return emptyList()
 
         return preferenceStore.getAll().toBackupPreferences()
     }
 
     private fun backupSourcePreferences(flags: Int): List<BackupSourcePreferences> {
-        if (flags and BACKUP_SOURCE_PREFS_MASK != BACKUP_SOURCE_PREFS) return emptyList()
+        if (flags and BACKUP_SOURCE_PREFS != BACKUP_SOURCE_PREFS) return emptyList()
 
         return sourceManager.getCatalogueSources()
             .filterIsInstance<ConfigurableSource>()
