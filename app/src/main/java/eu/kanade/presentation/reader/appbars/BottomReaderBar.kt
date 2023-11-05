@@ -92,6 +92,15 @@ fun BottomReaderBar(
             }
         }
 
+        if (ReaderBottomButton.Rotation.isIn(enabledButtons)) {
+            IconButton(onClick = onClickOrientation) {
+                Icon(
+                    painter = painterResource(orientation.iconRes),
+                    contentDescription = stringResource(R.string.pref_rotation_type),
+                )
+            }
+        }
+
         val cropBorders = when (readingMode) {
             ReadingMode.WEBTOON -> ReaderBottomButton.CropBordersWebtoon
             ReadingMode.CONTINUOUS_VERTICAL -> ReaderBottomButton.CropBordersContinuesVertical
@@ -102,15 +111,6 @@ fun BottomReaderBar(
                 Icon(
                     painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
                     contentDescription = stringResource(R.string.pref_crop_borders),
-                )
-            }
-        }
-
-        if (ReaderBottomButton.Rotation.isIn(enabledButtons)) {
-            IconButton(onClick = onClickOrientation) {
-                Icon(
-                    painter = painterResource(orientation.iconRes),
-                    contentDescription = stringResource(R.string.pref_rotation_type),
                 )
             }
         }
