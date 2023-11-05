@@ -2,7 +2,7 @@ package exh.util
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -54,7 +54,7 @@ fun Manga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(source
  */
 fun Manga.defaultReaderType(type: MangaType = mangaType()): Int? {
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
-        ReadingModeType.WEBTOON.flagValue
+        ReadingMode.WEBTOON.flagValue
     } else {
         null
     }

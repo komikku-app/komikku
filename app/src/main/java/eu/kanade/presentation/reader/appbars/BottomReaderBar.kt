@@ -20,9 +20,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 
 @Composable
 fun BottomReaderBar(
@@ -30,10 +30,10 @@ fun BottomReaderBar(
     enabledButtons: Set<String>,
     // SY <--
     backgroundColor: Color,
-    readingMode: ReadingModeType,
+    readingMode: ReadingMode,
     onClickReadingMode: () -> Unit,
-    orientationMode: OrientationType,
-    onClickOrientationMode: () -> Unit,
+    orientation: ReaderOrientation,
+    onClickOrientation: () -> Unit,
     cropEnabled: Boolean,
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
@@ -93,8 +93,8 @@ fun BottomReaderBar(
         }
 
         val cropBorders = when (readingMode) {
-            ReadingModeType.WEBTOON -> ReaderBottomButton.CropBordersWebtoon
-            ReadingModeType.CONTINUOUS_VERTICAL -> ReaderBottomButton.CropBordersContinuesVertical
+            ReadingMode.WEBTOON -> ReaderBottomButton.CropBordersWebtoon
+            ReadingMode.CONTINUOUS_VERTICAL -> ReaderBottomButton.CropBordersContinuesVertical
             else -> ReaderBottomButton.CropBordersPager
         }
         if (cropBorders.isIn(enabledButtons)) {
@@ -107,9 +107,9 @@ fun BottomReaderBar(
         }
 
         if (ReaderBottomButton.Rotation.isIn(enabledButtons)) {
-            IconButton(onClick = onClickOrientationMode) {
+            IconButton(onClick = onClickOrientation) {
                 Icon(
-                    painter = painterResource(orientationMode.iconRes),
+                    painter = painterResource(orientation.iconRes),
                     contentDescription = stringResource(R.string.pref_rotation_type),
                 )
             }
@@ -118,7 +118,7 @@ fun BottomReaderBar(
         if (
             !dualPageSplitEnabled &&
             ReaderBottomButton.PageLayout.isIn(enabledButtons) &&
-            ReadingModeType.isPagerType(readingMode.flagValue)
+            ReadingMode.isPagerType(readingMode.flagValue)
         ) {
             IconButton(onClick = onClickPageLayout) {
                 Icon(

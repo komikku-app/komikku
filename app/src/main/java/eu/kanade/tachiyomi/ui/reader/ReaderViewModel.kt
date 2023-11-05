@@ -11,8 +11,8 @@ import androidx.lifecycle.viewModelScope
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
-import eu.kanade.domain.manga.model.orientationType
-import eu.kanade.domain.manga.model.readingModeType
+import eu.kanade.domain.manga.model.readerOrientation
+import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.track.interactor.TrackChapter
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -34,9 +34,9 @@ import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
@@ -829,15 +829,15 @@ class ReaderViewModel @JvmOverloads constructor(
     fun getMangaReadingMode(resolveDefault: Boolean = true): Int {
         val default = readerPreferences.defaultReadingMode().get()
         val manga = manga ?: return default
-        val readingMode = ReadingModeType.fromPreference(manga.readingModeType.toInt())
+        val readingMode = ReadingMode.fromPreference(manga.readingMode.toInt())
         // SY -->
         return when {
-            resolveDefault && readingMode == ReadingModeType.DEFAULT && readerPreferences.useAutoWebtoon().get() -> {
+            resolveDefault && readingMode == ReadingMode.DEFAULT && readerPreferences.useAutoWebtoon().get() -> {
                 manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
                     ?: default
             }
-            resolveDefault && readingMode == ReadingModeType.DEFAULT -> default
-            else -> manga.readingModeType.toInt()
+            resolveDefault && readingMode == ReadingMode.DEFAULT -> default
+            else -> manga.readingMode.toInt()
         }
         // SY <--
     }
@@ -845,10 +845,10 @@ class ReaderViewModel @JvmOverloads constructor(
     /**
      * Updates the viewer position for the open manga.
      */
-    fun setMangaReadingMode(readingModeType: ReadingModeType) {
+    fun setMangaReadingMode(readingMode: ReadingMode) {
         val manga = manga ?: return
         runBlocking(Dispatchers.IO) {
-            setMangaViewerFlags.awaitSetReadingMode(manga.id, readingModeType.flagValue.toLong())
+            setMangaViewerFlags.awaitSetReadingMode(manga.id, readingMode.flagValue.toLong())
             val currChapters = state.value.viewerChapters
             if (currChapters != null) {
                 // Save current page
@@ -869,22 +869,22 @@ class ReaderViewModel @JvmOverloads constructor(
     /**
      * Returns the orientation type used by this manga or the default one.
      */
-    fun getMangaOrientationType(resolveDefault: Boolean = true): Int {
+    fun getMangaOrientation(resolveDefault: Boolean = true): Int {
         val default = readerPreferences.defaultOrientationType().get()
-        val orientation = OrientationType.fromPreference(manga?.orientationType?.toInt())
+        val orientation = ReaderOrientation.fromPreference(manga?.readerOrientation?.toInt())
         return when {
-            resolveDefault && orientation == OrientationType.DEFAULT -> default
-            else -> manga?.orientationType?.toInt() ?: default
+            resolveDefault && orientation == ReaderOrientation.DEFAULT -> default
+            else -> manga?.readerOrientation?.toInt() ?: default
         }
     }
 
     /**
      * Updates the orientation type for the open manga.
      */
-    fun setMangaOrientationType(rotationType: OrientationType) {
+    fun setMangaOrientationType(orientation: ReaderOrientation) {
         val manga = manga ?: return
         viewModelScope.launchIO {
-            setMangaViewerFlags.awaitSetOrientation(manga.id, rotationType.flagValue.toLong())
+            setMangaViewerFlags.awaitSetOrientation(manga.id, orientation.flagValue.toLong())
             val currChapters = state.value.viewerChapters
             if (currChapters != null) {
                 // Save current page
@@ -897,7 +897,7 @@ class ReaderViewModel @JvmOverloads constructor(
                         viewerChapters = currChapters,
                     )
                 }
-                eventChannel.send(Event.SetOrientation(getMangaOrientationType()))
+                eventChannel.send(Event.SetOrientation(getMangaOrientation()))
                 eventChannel.send(Event.ReloadViewerChapters)
             }
         }
@@ -906,8 +906,8 @@ class ReaderViewModel @JvmOverloads constructor(
     // SY -->
     fun toggleCropBorders(): Boolean {
         val readingMode = getMangaReadingMode()
-        val isPagerType = ReadingModeType.isPagerType(readingMode)
-        val isWebtoon = ReadingModeType.WEBTOON.flagValue == readingMode
+        val isPagerType = ReadingMode.isPagerType(readingMode)
+        val isWebtoon = ReadingMode.WEBTOON.flagValue == readingMode
         return if (isPagerType) {
             readerPreferences.cropBorders().toggle()
         } else if (isWebtoon) {
