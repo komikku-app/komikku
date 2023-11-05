@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.Looper
 import android.webkit.WebView
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -211,7 +212,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
                     return WebViewUtil.SPOOF_PACKAGE_NAME
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
         return super.getPackageName()
@@ -303,7 +304,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
         fun register() {
             if (!registered) {
-                registerReceiver(this, IntentFilter(ACTION_DISABLE_INCOGNITO_MODE))
+                ContextCompat.registerReceiver(this@App, this, IntentFilter(ACTION_DISABLE_INCOGNITO_MODE), ContextCompat.RECEIVER_NOT_EXPORTED)
                 registered = true
             }
         }
@@ -322,7 +323,7 @@ private const val ACTION_DISABLE_INCOGNITO_MODE = "tachi.action.DISABLE_INCOGNIT
 /**
  * Direct copy of Coil's internal SingletonDiskCache so that [MangaCoverFetcher] can access it.
  */
-internal object CoilDiskCache {
+private object CoilDiskCache {
 
     private const val FOLDER_NAME = "image_cache"
     private var instance: DiskCache? = null
