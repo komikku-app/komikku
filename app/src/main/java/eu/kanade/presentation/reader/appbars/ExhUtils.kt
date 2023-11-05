@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,11 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
-import tachiyomi.presentation.core.util.ThemePreviews
 
 @Composable
 fun ExhUtils(
@@ -66,7 +66,9 @@ fun ExhUtils(
         AnimatedVisibility(visible = isVisible) {
             Column {
                 Row(
-                    Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(
@@ -221,9 +223,9 @@ fun ExhUtils(
 }
 
 @Composable
-@ThemePreviews
+@PreviewLightDark
 private fun ExhUtilsPreview() {
-    TachiyomiTheme {
+    Surface {
         ExhUtils(
             isVisible = true,
             onSetExhUtilsVisibility = {},
