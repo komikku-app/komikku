@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,6 +38,7 @@ import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.RadioItem
 import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TriStateItem
+import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun ChapterSettingsDialog(
@@ -45,13 +47,12 @@ fun ChapterSettingsDialog(
     onDownloadFilterChanged: (TriState) -> Unit,
     onUnreadFilterChanged: (TriState) -> Unit,
     onBookmarkedFilterChanged: (TriState) -> Unit,
+    scanlatorFilterActive: Boolean,
+    onScanlatorFilterClicked: (() -> Unit),
     onSortModeChanged: (Long) -> Unit,
     onDisplayModeChanged: (Long) -> Unit,
     onSetAsDefault: (applyToExistingManga: Boolean) -> Unit,
     onResetToDefault: () -> Unit,
-    // SY -->
-    onClickShowScanlatorSelection: (() -> Unit)?,
-    // SY <--
 ) {
     var showSetAsDefaultDialog by rememberSaveable { mutableStateOf(false) }
     if (showSetAsDefaultDialog) {
@@ -94,14 +95,14 @@ fun ChapterSettingsDialog(
                 0 -> {
                     FilterPage(
                         downloadFilter = manga?.downloadedFilter ?: TriState.DISABLED,
-                        onDownloadFilterChanged = onDownloadFilterChanged.takeUnless { manga?.forceDownloaded() == true },
+                        onDownloadFilterChanged = onDownloadFilterChanged
+                            .takeUnless { manga?.forceDownloaded() == true },
                         unreadFilter = manga?.unreadFilter ?: TriState.DISABLED,
                         onUnreadFilterChanged = onUnreadFilterChanged,
                         bookmarkedFilter = manga?.bookmarkedFilter ?: TriState.DISABLED,
                         onBookmarkedFilterChanged = onBookmarkedFilterChanged,
-                        // SY -->
-                        onClickShowScanlatorSelection = onClickShowScanlatorSelection,
-                        // SY <--
+                        scanlatorFilterActive = scanlatorFilterActive,
+                        onScanlatorFilterClicked = onScanlatorFilterClicked,
                     )
                 }
                 1 -> {
@@ -130,9 +131,8 @@ private fun ColumnScope.FilterPage(
     onUnreadFilterChanged: (TriState) -> Unit,
     bookmarkedFilter: TriState,
     onBookmarkedFilterChanged: (TriState) -> Unit,
-    // SY -->
-    onClickShowScanlatorSelection: (() -> Unit)?,
-    // SY <--
+    scanlatorFilterActive: Boolean,
+    onScanlatorFilterClicked: (() -> Unit),
 ) {
     TriStateItem(
         label = stringResource(R.string.label_downloaded),
@@ -149,23 +149,20 @@ private fun ColumnScope.FilterPage(
         state = bookmarkedFilter,
         onClick = onBookmarkedFilterChanged,
     )
-    // SY -->
-    if (onClickShowScanlatorSelection != null) {
-        SetScanlatorsItem(onClickShowScanlatorSelection)
-    }
-    // SY <--
+    ScanlatorFilterItem(
+        active = scanlatorFilterActive,
+        onClick = onScanlatorFilterClicked,
+    )
 }
 
-// SY -->
 @Composable
-private fun SetScanlatorsItem(
-    onClickShowScanlatorSelection: () -> Unit,
+fun ScanlatorFilterItem(
+    active: Boolean,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
-            .clickable(
-                onClick = onClickShowScanlatorSelection,
-            )
+            .clickable(onClick = onClick)
             .fillMaxWidth()
             .padding(horizontal = TabbedDialogPaddings.Horizontal, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -174,6 +171,11 @@ private fun SetScanlatorsItem(
         Icon(
             imageVector = Icons.Outlined.PeopleAlt,
             contentDescription = null,
+            tint = if (active) {
+                MaterialTheme.colorScheme.active
+            } else {
+                LocalContentColor.current
+            },
         )
         Text(
             text = stringResource(R.string.scanlator),
@@ -181,7 +183,6 @@ private fun SetScanlatorsItem(
         )
     }
 }
-// SY <--
 
 @Composable
 private fun ColumnScope.SortPage(

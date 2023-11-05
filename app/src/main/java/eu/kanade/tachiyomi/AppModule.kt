@@ -47,7 +47,6 @@ import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.DateColumnAdapter
 import tachiyomi.data.History
 import tachiyomi.data.Mangas
-import tachiyomi.data.StringListAndColumnAdapter
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.UnsortedPreferences
@@ -126,9 +125,6 @@ class AppModule(val app: Application) : InjektModule {
                 mangasAdapter = Mangas.Adapter(
                     genreAdapter = StringListColumnAdapter,
                     update_strategyAdapter = UpdateStrategyColumnAdapter,
-                    // SY -->
-                    filtered_scanlatorsAdapter = StringListAndColumnAdapter,
-                    // SY <--
                 ),
             )
         }

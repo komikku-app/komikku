@@ -11,11 +11,15 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
+import eu.kanade.domain.chapter.interactor.GetAvailableScanlators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.manga.interactor.GetExcludedScanlators
+import eu.kanade.domain.manga.interactor.SetExcludedScanlators
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.PagePreview
+import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.toSManga
@@ -106,7 +110,6 @@ import tachiyomi.domain.manga.interactor.InsertMergedReference
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
-import tachiyomi.domain.manga.interactor.SetMangaFilteredScanlators
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
@@ -141,7 +144,6 @@ class MangaScreenModel(
     // SY -->
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
@@ -157,6 +159,9 @@ class MangaScreenModel(
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     // SY <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
+    private val getAvailableScanlators: GetAvailableScanlators = Injekt.get(),
+    private val getExcludedScanlators: GetExcludedScanlators = Injekt.get(),
+    private val setExcludedScanlators: SetExcludedScanlators = Injekt.get(),
     private val setMangaChapterFlags: SetMangaChapterFlags = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
@@ -238,11 +243,11 @@ class MangaScreenModel(
 
     init {
         screenModelScope.launchIO {
-            getMangaAndChapters.subscribe(mangaId)
+            getMangaAndChapters.subscribe(mangaId, applyScanlatorFilter = true)
                 .distinctUntilChanged()
                 // SY -->
                 .combine(
-                    getMergedChaptersByMangaId.subscribe(mangaId, true)
+                    getMergedChaptersByMangaId.subscribe(mangaId, true, applyScanlatorFilter = true)
                         .distinctUntilChanged(),
                 ) { (manga, chapters), mergedChapters ->
                     if (manga.source == MERGED_SOURCE_ID) {
@@ -311,9 +316,28 @@ class MangaScreenModel(
                             // SY -->
                             meta = raiseMetadata(flatMetadata, it.source),
                             mergedData = mergedData,
-                            scanlators = getChapterScanlators(manga, chapters),
                             // SY <--
                         )
+                    }
+                }
+        }
+
+        screenModelScope.launchIO {
+            getExcludedScanlators.subscribe(mangaId)
+                .distinctUntilChanged()
+                .collectLatest { excludedScanlators ->
+                    updateSuccessState {
+                        it.copy(excludedScanlators = excludedScanlators)
+                    }
+                }
+        }
+
+        screenModelScope.launchIO {
+            getAvailableScanlators.subscribe(mangaId)
+                .distinctUntilChanged()
+                .collectLatest { availableScanlators ->
+                    updateSuccessState {
+                        it.copy(availableScanlators = availableScanlators)
                     }
                 }
         }
@@ -323,7 +347,7 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
             // SY -->
-            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId) else getMangaAndChapters.awaitChapters(mangaId))
+            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
                 .toChapterListItems(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
@@ -351,6 +375,8 @@ class MangaScreenModel(
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
+                    availableScanlators = getAvailableScanlators.await(mangaId),
+                    excludedScanlators = getExcludedScanlators.await(mangaId),
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     // SY -->
@@ -365,7 +391,6 @@ class MangaScreenModel(
                     } else {
                         PagePreviewState.Unused
                     },
-                    scanlators = getChapterScanlators(manga, chapters.map { it.chapter }),
                     alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                     // SY <--
                 )
@@ -424,15 +449,6 @@ class MangaScreenModel(
     }
 
     // SY -->
-    private fun getChapterScanlators(manga: Manga, chapters: List<Chapter>): List<String> {
-        return if (manga.isEhBasedManga()) {
-            emptyList()
-        } else {
-            chapters.flatMap { MdUtil.getScanlators(it.scanlator) }
-                .distinct()
-        }
-    }
-
     private fun raiseMetadata(flatMetadata: FlatMetadata?, source: Source): RaisedSearchMetadata? {
         return if (flatMetadata != null) {
             val metaClass = source.getMainSource<MetadataSource<*, *>>()?.metaClass
@@ -1299,15 +1315,6 @@ class MangaScreenModel(
         }
     }
 
-    // SY -->
-    fun setScanlatorFilter(filteredScanlators: List<String>) {
-        val manga = manga ?: return
-        screenModelScope.launchIO {
-            setMangaFilteredScanlators.awaitSetFilteredScanlators(manga, filteredScanlators)
-        }
-    }
-    // SY <--
-
     /**
      * Sets the active display mode.
      * @param mode the mode to set.
@@ -1535,6 +1542,12 @@ class MangaScreenModel(
         updateSuccessState { it.copy(dialog = Dialog.FullCover) }
     }
 
+    fun setExcludedScanlators(excludedScanlators: Set<String>) {
+        screenModelScope.launchIO {
+            setExcludedScanlators.await(mangaId, excludedScanlators)
+        }
+    }
+
     // SY -->
     fun showEditMangaInfoDialog() {
         mutableState.update { state ->
@@ -1570,6 +1583,8 @@ class MangaScreenModel(
             val source: Source,
             val isFromSource: Boolean,
             val chapters: List<ChapterList.Item>,
+            val availableScanlators: Set<String>,
+            val excludedScanlators: Set<String>,
             val trackItems: List<TrackItem> = emptyList(),
             val isRefreshingData: Boolean = false,
             val dialog: MangaScreenModel.Dialog? = null,
@@ -1581,11 +1596,9 @@ class MangaScreenModel(
             val showMergeInOverflow: Boolean,
             val showMergeWithAnother: Boolean,
             val pagePreviewsState: PagePreviewState,
-            val scanlators: List<String>,
             val alwaysShowReadingProgress: Boolean,
             // SY <--
         ) : State {
-
             val processedChapters by lazy {
                 chapters.applyFilters(manga).toList()
             }
@@ -1617,6 +1630,12 @@ class MangaScreenModel(
                 }
             }
 
+            val scanlatorFilterActive: Boolean
+                get() = excludedScanlators.intersect(availableScanlators).isNotEmpty()
+
+            val filterActive: Boolean
+                get() = scanlatorFilterActive || manga.chaptersFiltered()
+
             val trackingAvailable: Boolean
                 get() = trackItems.isNotEmpty()
 
@@ -1638,11 +1657,6 @@ class MangaScreenModel(
                     .filter { (chapter) -> applyFilter(unreadFilter) { !chapter.read } }
                     .filter { (chapter) -> applyFilter(bookmarkedFilter) { chapter.bookmark } }
                     .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
-                    // SY -->
-                    .filter { chapter ->
-                        manga.filteredScanlators.isNullOrEmpty() || MdUtil.getScanlators(chapter.chapter.scanlator).any { group -> manga.filteredScanlators!!.contains(group) }
-                    }
-                    // SY <--
                     .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }
             }
         }

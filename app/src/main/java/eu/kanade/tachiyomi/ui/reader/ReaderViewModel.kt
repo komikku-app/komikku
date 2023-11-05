@@ -181,10 +181,10 @@ class ReaderViewModel @JvmOverloads constructor(
         // SY -->
         val (chapters, mangaMap) = runBlocking {
             if (manga.source == MERGED_SOURCE_ID) {
-                getMergedChaptersByMangaId.await(manga.id) to getMergedMangaById.await(manga.id)
+                getMergedChaptersByMangaId.await(manga.id, applyScanlatorFilter = true) to getMergedMangaById.await(manga.id)
                     .associateBy { it.id }
             } else {
-                getChaptersByMangaId.await(manga.id) to null
+                getChaptersByMangaId.await(manga.id, applyScanlatorFilter = true) to null
             }
         }
         fun isChapterDownloaded(chapter: Chapter): Boolean {
@@ -220,13 +220,7 @@ class ReaderViewModel @JvmOverloads constructor(
                                     ) ||
                                 // SY <--
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
-                                (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark) ||
-                                // SY -->
-                                (
-                                    manga.filteredScanlators != null && MdUtil.getScanlators(it.scanlator)
-                                        .none { group -> manga.filteredScanlators!!.contains(group) }
-                                    )
-                            // SY <--
+                                (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark)
                         }
                         else -> false
                     }

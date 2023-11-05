@@ -31,9 +31,6 @@ data class Manga(
     val initialized: Boolean,
     val lastModifiedAt: Long,
     val favoriteModifiedAt: Long?,
-    // SY -->
-    val filteredScanlators: List<String>?,
-    // SY <--
 ) : Serializable {
 
     // SY -->
@@ -152,9 +149,6 @@ data class Manga(
             initialized = false,
             lastModifiedAt = 0L,
             favoriteModifiedAt = null,
-            // SY -->
-            filteredScanlators = null,
-            // SY <--
         )
 
         // SY -->

@@ -9,10 +9,6 @@ WHERE source = :oldId;
 getChaptersByMangaIds:
 SELECT * FROM chapters WHERE manga_id IN :mangaIds;
 
-resetFilteredScanlatorsForAllManga:
-UPDATE mangas
-SET filtered_scanlators = NULL;
-
 migrateAllNhentaiToOtherLang:
 UPDATE mangas
 SET source = :nh

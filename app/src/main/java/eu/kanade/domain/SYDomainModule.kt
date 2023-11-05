@@ -52,7 +52,6 @@ import tachiyomi.domain.manga.interactor.InsertFavoriteEntryAlternative
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.InsertMergedReference
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
-import tachiyomi.domain.manga.interactor.SetMangaFilteredScanlators
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
 import tachiyomi.domain.manga.repository.CustomMangaRepository
 import tachiyomi.domain.manga.repository.FavoritesEntryRepository
@@ -88,7 +87,6 @@ class SYDomainModule : InjektModule {
         addFactory { GetShowLatest(get()) }
         addFactory { ToggleExcludeFromDataSaver(get()) }
         addFactory { SetSourceCategories(get()) }
-        addFactory { SetMangaFilteredScanlators(get()) }
         addFactory { GetAllManga(get()) }
         addFactory { GetMangaBySource(get()) }
         addFactory { DeleteChapters(get()) }

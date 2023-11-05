@@ -582,7 +582,6 @@
     <string name="short_title">短标题</string>
     <string name="cover_image_file_type">转换图像类型</string>
     <string name="thumbnail_image_file_type">缓存图像类型</string>
-    <string name="scanlator">扫译组</string>
     <string name="uploader_capital">上传者名字</string>
     <string name="uploader">上传者</string>
     <string name="rating_string">评分字符串</string>

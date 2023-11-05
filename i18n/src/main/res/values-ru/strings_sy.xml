@@ -616,7 +616,6 @@
     <string name="short_title">Краткое название</string>
     <string name="cover_image_file_type">Тип изображения обложки</string>
     <string name="thumbnail_image_file_type">Тип изображения миниатюры</string>
-    <string name="scanlator">Переводчик</string>
     <string name="url">URL-адрес</string>
     <string name="uploader_capital">Имя загрузчика с заглавной буквы</string>
     <string name="uploader">Имя загрузчика</string>

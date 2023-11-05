@@ -16,13 +16,21 @@ class GetMergedChaptersByMangaId(
     private val getMergedReferencesById: GetMergedReferencesById,
 ) {
 
-    suspend fun await(mangaId: Long, dedupe: Boolean = true): List<Chapter> {
-        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId), dedupe)
+    suspend fun await(
+        mangaId: Long,
+        dedupe: Boolean = true,
+        applyScanlatorFilter: Boolean = false,
+    ): List<Chapter> {
+        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId, applyScanlatorFilter), dedupe)
     }
 
-    suspend fun subscribe(mangaId: Long, dedupe: Boolean = true): Flow<List<Chapter>> {
+    suspend fun subscribe(
+        mangaId: Long,
+        dedupe: Boolean = true,
+        applyScanlatorFilter: Boolean = false,
+    ): Flow<List<Chapter>> {
         return try {
-            chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId)
+            chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId, applyScanlatorFilter)
                 .combine(getMergedReferencesById.subscribe(mangaId)) { chapters, references ->
                     transformMergedChapters(references, chapters, dedupe)
                 }
@@ -32,16 +40,19 @@ class GetMergedChaptersByMangaId(
         }
     }
 
-    private suspend fun getFromDatabase(mangaId: Long): List<Chapter> {
+    private suspend fun getFromDatabase(
+        mangaId: Long,
+        applyScanlatorFilter: Boolean = false,
+    ): List<Chapter> {
         return try {
-            chapterRepository.getMergedChapterByMangaId(mangaId)
+            chapterRepository.getMergedChapterByMangaId(mangaId, applyScanlatorFilter)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             emptyList()
         }
     }
 
-    fun transformMergedChapters(
+    private fun transformMergedChapters(
         mangaReferences: List<MergedMangaReference>,
         chapterList: List<Chapter>,
         dedupe: Boolean,

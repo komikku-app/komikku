@@ -33,7 +33,7 @@ import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
-import eu.kanade.presentation.manga.components.SelectScanlatorsDialog
+import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
 import eu.kanade.presentation.manga.components.SetIntervalDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
@@ -156,9 +156,17 @@ class MangaScreen(
             // SY -->
             onWebViewClicked = {
                 if (successState.mergedData == null) {
-                    openMangaInWebView(navigator, screenModel.manga, screenModel.source)
+                    openMangaInWebView(
+                        navigator,
+                        screenModel.manga,
+                        screenModel.source
+                    )
                 } else {
-                    openMergedMangaWebview(context, navigator, successState.mergedData)
+                    openMergedMangaWebview(
+                        context,
+                        navigator,
+                        successState.mergedData
+                    )
                 }
             }.takeIf { isHttpSource },
             // SY <--
@@ -199,9 +207,7 @@ class MangaScreen(
             onInvertSelection = screenModel::invertSelection,
         )
 
-        // SY -->
         var showScanlatorsDialog by remember { mutableStateOf(false) }
-        // SY <--
 
         val onDismissRequest = { screenModel.dismissDialog() }
         when (val dialog = successState.dialog) {
@@ -240,9 +246,8 @@ class MangaScreen(
                 onDisplayModeChanged = screenModel::setDisplayMode,
                 onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
                 onResetToDefault = screenModel::resetToDefaultSettings,
-                // SY -->
-                onClickShowScanlatorSelection = { showScanlatorsDialog = true }.takeIf { successState.scanlators.size > 1 },
-                // SY <--
+                scanlatorFilterActive = successState.scanlatorFilterActive,
+                onScanlatorFilterClicked = { showScanlatorsDialog = true },
             )
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
@@ -306,16 +311,15 @@ class MangaScreen(
             }
             // SY <--
         }
-        // SY -->
+
         if (showScanlatorsDialog) {
-            SelectScanlatorsDialog(
+            ScanlatorFilterDialog(
+                availableScanlators = successState.availableScanlators,
+                excludedScanlators = successState.excludedScanlators,
                 onDismissRequest = { showScanlatorsDialog = false },
-                availableScanlators = successState.scanlators,
-                initialSelectedScanlators = successState.manga.filteredScanlators ?: successState.scanlators,
-                onSelectScanlators = screenModel::setScanlatorFilter,
+                onConfirm = screenModel::setExcludedScanlators,
             )
         }
-        // SY <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {

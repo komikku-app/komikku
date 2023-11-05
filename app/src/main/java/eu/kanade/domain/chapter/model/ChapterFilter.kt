@@ -3,7 +3,6 @@ package eu.kanade.domain.chapter.model
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.manga.ChapterList
-import exh.md.utils.MdUtil
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.manga.model.Manga
@@ -16,7 +15,7 @@ import tachiyomi.source.local.isLocal
  */
 fun List<Chapter>.applyFilters(
     manga: Manga,
-    downloadManager: DownloadManager/* SY --> */,
+    downloadManager: DownloadManager,/* SY --> */
     mergedManga: Map<Long, Manga>, /* SY <-- */
 ): List<Chapter> {
     val isLocalManga = manga.isLocal()
@@ -41,14 +40,6 @@ fun List<Chapter>.applyFilters(
                 downloaded || isLocalManga
             }
         }
-        // SY -->
-        .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() ||
-                MdUtil.getScanlators(chapter.scanlator).any { group ->
-                    manga.filteredScanlators!!.contains(group)
-                }
-        }
-        // SY <--
         .sortedWith(getChapterSort(manga))
 }
 
@@ -65,13 +56,5 @@ fun List<ChapterList.Item>.applyFilters(manga: Manga): Sequence<ChapterList.Item
         .filter { (chapter) -> applyFilter(unreadFilter) { !chapter.read } }
         .filter { (chapter) -> applyFilter(bookmarkedFilter) { chapter.bookmark } }
         .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
-        // SY -->
-        .filter { chapter ->
-            manga.filteredScanlators.isNullOrEmpty() ||
-                MdUtil.getScanlators(chapter.chapter.scanlator).any { group ->
-                    manga.filteredScanlators!!.contains(group)
-                }
-        }
-        // SY <--
         .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }
 }

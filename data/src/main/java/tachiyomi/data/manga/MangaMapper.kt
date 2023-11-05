@@ -25,7 +25,10 @@ object MangaMapper {
         chapterFlags: Long,
         coverLastModified: Long,
         dateAdded: Long,
-        filteredScanlators: List<String>?,
+        // SY -->
+        @Suppress("UNUSED_PARAMETER")
+        filteredScanlators: String?,
+        // SY <--
         updateStrategy: UpdateStrategy,
         calculateInterval: Long,
         lastModifiedAt: Long,
@@ -53,9 +56,6 @@ object MangaMapper {
         thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,
         initialized = initialized,
-        // SY -->
-        filteredScanlators = filteredScanlators,
-        // SY <--
         lastModifiedAt = lastModifiedAt,
         favoriteModifiedAt = favoriteModifiedAt,
     )
@@ -79,7 +79,10 @@ object MangaMapper {
         chapterFlags: Long,
         coverLastModified: Long,
         dateAdded: Long,
-        filteredScanlators: List<String>?,
+        // SY -->
+        @Suppress("UNUSED_PARAMETER")
+        filteredScanlators: String?,
+        // SY <--
         updateStrategy: UpdateStrategy,
         calculateInterval: Long,
         lastModifiedAt: Long,
@@ -112,7 +115,7 @@ object MangaMapper {
             coverLastModified,
             dateAdded,
             // SY -->
-            filteredScanlators,
+            null,
             // SY <--
             updateStrategy,
             calculateInterval,
@@ -150,7 +153,6 @@ object MangaMapper {
                 thumbnailUrl = libraryView.thumbnail_url,
                 updateStrategy = libraryView.update_strategy,
                 initialized = libraryView.initialized,
-                filteredScanlators = libraryView.filtered_scanlators,
                 fetchInterval = libraryView.calculate_interval.toInt(),
                 lastModifiedAt = libraryView.last_modified_at,
                 favoriteModifiedAt = libraryView.favorite_modified_at,

@@ -2,6 +2,7 @@ package tachiyomi.data.chapter
 
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
+import tachiyomi.core.util.lang.toLong
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.chapter.model.Chapter
@@ -76,8 +77,22 @@ class ChapterRepositoryImpl(
         }
     }
 
-    override suspend fun getChapterByMangaId(mangaId: Long): List<Chapter> {
-        return handler.awaitList { chaptersQueries.getChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
+    override suspend fun getChapterByMangaId(mangaId: Long, applyScanlatorFilter: Boolean): List<Chapter> {
+        return handler.awaitList {
+            chaptersQueries.getChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ChapterMapper::mapChapter)
+        }
+    }
+
+    override suspend fun getScanlatorsByMangaId(mangaId: Long): List<String> {
+        return handler.awaitList {
+            chaptersQueries.getScanlatorsByMangaId(mangaId) { it.orEmpty() }
+        }
+    }
+
+    override fun getScanlatorsByMangaIdAsFlow(mangaId: Long): Flow<List<String>> {
+        return handler.subscribeToList {
+            chaptersQueries.getScanlatorsByMangaId(mangaId) { it.orEmpty() }
+        }
     }
 
     override suspend fun getBookmarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
@@ -93,12 +108,9 @@ class ChapterRepositoryImpl(
         return handler.awaitOneOrNull { chaptersQueries.getChapterById(id, ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>> {
+    override suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyScanlatorFilter: Boolean): Flow<List<Chapter>> {
         return handler.subscribeToList {
-            chaptersQueries.getChaptersByMangaId(
-                mangaId,
-                ChapterMapper::mapChapter,
-            )
+            chaptersQueries.getChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ChapterMapper::mapChapter)
         }
     }
 
@@ -117,13 +129,13 @@ class ChapterRepositoryImpl(
         return handler.awaitList { chaptersQueries.getChapterByUrl(url, ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getMergedChapterByMangaId(mangaId: Long): List<Chapter> {
-        return handler.awaitList { chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter) }
+    override suspend fun getMergedChapterByMangaId(mangaId: Long, applyScanlatorFilter: Boolean): List<Chapter> {
+        return handler.awaitList { chaptersQueries.getMergedChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getMergedChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>> {
+    override suspend fun getMergedChapterByMangaIdAsFlow(mangaId: Long, applyScanlatorFilter: Boolean): Flow<List<Chapter>> {
         return handler.subscribeToList {
-            chaptersQueries.getMergedChaptersByMangaId(mangaId, ChapterMapper::mapChapter)
+            chaptersQueries.getMergedChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ChapterMapper::mapChapter)
         }
     }
     // SY <--

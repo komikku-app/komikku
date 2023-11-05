@@ -52,8 +52,5 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,
         initialized = initialized,
-        // SY -->
-        filteredScanlators = filteredScanlators,
-        // SY <--
     )
 }

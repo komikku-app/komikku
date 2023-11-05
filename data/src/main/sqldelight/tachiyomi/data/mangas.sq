@@ -22,7 +22,7 @@ CREATE TABLE mangas(
     chapter_flags INTEGER NOT NULL,
     cover_last_modified INTEGER NOT NULL,
     date_added INTEGER NOT NULL,
-    filtered_scanlators TEXT AS List<String>,
+    filtered_scanlators TEXT,
     update_strategy INTEGER AS UpdateStrategy NOT NULL DEFAULT 0,
     calculate_interval INTEGER DEFAULT 0 NOT NULL,
     last_modified_at INTEGER NOT NULL DEFAULT 0,
@@ -131,8 +131,8 @@ WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
 );
 
 insert:
-INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, filtered_scanlators, update_strategy, calculate_interval, last_modified_at)
-VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :filteredScanlators, :updateStrategy, :calculateInterval, strftime('%s', 'now'));
+INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at)
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, strftime('%s', 'now'));
 
 update:
 UPDATE mangas SET
@@ -153,7 +153,6 @@ UPDATE mangas SET
     chapter_flags = coalesce(:chapterFlags, chapter_flags),
     cover_last_modified = coalesce(:coverLastModified, cover_last_modified),
     date_added = coalesce(:dateAdded, date_added),
-    filtered_scanlators = coalesce(:filteredScanlators, filtered_scanlators),
     update_strategy = coalesce(:updateStrategy, update_strategy),
     calculate_interval = coalesce(:calculateInterval, calculate_interval)
 WHERE _id = :mangaId;

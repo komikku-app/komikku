@@ -602,9 +602,9 @@ class LibraryScreenModel(
         // SY -->
         val mergedManga = getMergedMangaById.await(manga.id).associateBy { it.id }
         return if (manga.id == MERGED_SOURCE_ID) {
-            getMergedChaptersByMangaId.await(manga.id)
+            getMergedChaptersByMangaId.await(manga.id, applyScanlatorFilter = true)
         } else {
-            getChaptersByMangaId.await(manga.id)
+            getChaptersByMangaId.await(manga.id, applyScanlatorFilter = true)
         }.getNextUnread(manga, downloadManager, mergedManga)
         // SY <--
     }

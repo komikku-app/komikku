@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
 import exh.util.nullIfBlank
-import exh.util.nullIfEmpty
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import tachiyomi.core.preference.AndroidPreferenceStore
@@ -35,7 +34,6 @@ import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.Manga_sync
 import tachiyomi.data.Mangas
-import tachiyomi.data.StringListAndColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
 import tachiyomi.data.manga.MergedMangaMapper
@@ -365,9 +363,6 @@ class BackupRestorer(
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
                 mangaId = manga.id,
-                // SY -->
-                filteredScanlators = manga.filteredScanlators?.let(StringListAndColumnAdapter::encode),
-                // SY <--
                 updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
             )
         }
@@ -530,9 +525,6 @@ class BackupRestorer(
                 chapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
-                // SY -->
-                filteredScanlators = manga.filteredScanlators?.nullIfEmpty(),
-                // SY <--
                 updateStrategy = manga.updateStrategy,
             )
             mangasQueries.selectLastInsertedRowId()

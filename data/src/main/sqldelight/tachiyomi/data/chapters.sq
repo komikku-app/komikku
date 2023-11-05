@@ -36,7 +36,19 @@ FROM chapters
 WHERE _id = :id;
 
 getChaptersByMangaId:
-SELECT *
+SELECT C.*
+FROM chapters C
+LEFT JOIN excluded_scanlators ES
+ON C.manga_id = ES.manga_id
+AND C.scanlator = ES.scanlator
+WHERE C.manga_id = :mangaId
+AND (
+    :applyScanlatorFilter = 0
+    OR ES.scanlator IS NULL
+);
+
+getScanlatorsByMangaId:
+SELECT scanlator
 FROM chapters
 WHERE manga_id = :mangaId;
 
@@ -58,12 +70,20 @@ WHERE url = :chapterUrl
 AND manga_id = :mangaId;
 
 getMergedChaptersByMangaId:
-SELECT chapters.*
-FROM (
-    SELECT manga_id FROM merged WHERE merge_id = ?
+SELECT C.*
+FROM chapters C
+JOIN (
+    SELECT manga_id FROM merged WHERE merge_id = :mangaId
 ) AS M
-JOIN chapters
-ON chapters.manga_id = M.manga_id;
+ON C.manga_id = M.manga_id
+LEFT JOIN excluded_scanlators ES
+ON C.manga_id = ES.manga_id
+AND C.scanlator = ES.scanlator
+WHERE C.manga_id = :mangaId
+AND (
+    :applyScanlatorFilter = 0
+    OR ES.scanlator IS NULL
+);
 
 removeChaptersWithIds:
 DELETE FROM chapters

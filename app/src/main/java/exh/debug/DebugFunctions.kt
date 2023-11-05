@@ -339,9 +339,5 @@ object DebugFunctions {
         runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) } }
     }
 
-    fun resetFilteredScanlatorsForAllManga() {
-        runBlocking { handler.await { ehQueries.resetFilteredScanlatorsForAllManga() } }
-    }
-
     fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(Backup.serializer().descriptor)
 }

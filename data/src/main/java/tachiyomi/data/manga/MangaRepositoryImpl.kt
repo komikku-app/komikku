@@ -6,7 +6,6 @@ import logcat.LogPriority
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.StringListAndColumnAdapter
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.library.model.LibraryManga
@@ -119,9 +118,6 @@ class MangaRepositoryImpl(
                 chapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
-                // SY -->
-                filteredScanlators = manga.filteredScanlators,
-                // SY <--
                 updateStrategy = manga.updateStrategy,
             )
             mangasQueries.selectLastInsertedRowId()
@@ -170,9 +166,6 @@ class MangaRepositoryImpl(
                     chapterFlags = value.chapterFlags,
                     coverLastModified = value.coverLastModified,
                     dateAdded = value.dateAdded,
-                    // SY -->
-                    filteredScanlators = value.filteredScanlators?.let(StringListAndColumnAdapter::encode),
-                    // SY <--
                     mangaId = value.id,
                     updateStrategy = value.updateStrategy?.let(UpdateStrategyColumnAdapter::encode),
                 )
