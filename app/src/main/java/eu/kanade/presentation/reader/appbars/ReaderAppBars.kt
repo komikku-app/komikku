@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.reader.components.ChapterNavigator
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
@@ -212,7 +213,9 @@ fun ReaderAppBars(
                             AppBarActions(
                                 listOfNotNull(
                                     AppBar.Action(
-                                        title = stringResource(if (bookmarked) R.string.action_remove_bookmark else R.string.action_bookmark),
+                                        title = stringResource(
+                                            if (bookmarked) R.string.action_remove_bookmark else R.string.action_bookmark
+                                        ),
                                         icon = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
                                         onClick = onToggleBookmarked,
                                     ),
