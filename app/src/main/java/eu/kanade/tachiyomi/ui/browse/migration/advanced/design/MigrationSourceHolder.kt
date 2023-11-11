@@ -4,9 +4,11 @@ import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.MigrationSourceItemBinding
-import eu.kanade.tachiyomi.source.icon
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.util.capitalize
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     FlexibleViewHolder(view, adapter) {
@@ -22,7 +24,7 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
         binding.title.text = sourceName
         // Update circle letter image.
         itemView.post {
-            val icon = source.icon()
+            val icon = Injekt.get<ExtensionManager>().getAppIconForSource(source.id)
             if (icon != null) {
                 binding.image.setImageDrawable(icon)
             }

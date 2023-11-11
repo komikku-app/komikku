@@ -99,7 +99,7 @@ class AndroidSourceManager(
                     extensions.forEach { extension ->
                         extension.sources.mapNotNull { it.toInternalSource() }.forEach {
                             mutableMap[it.id] = it
-                            registerStubSource(it.toStubSource())
+                            registerStubSource(StubSource.from(it))
                         }
                     }
                     sourcesMapFlow.value = mutableMap
