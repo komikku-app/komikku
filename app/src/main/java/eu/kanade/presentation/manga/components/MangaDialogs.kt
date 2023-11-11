@@ -80,8 +80,8 @@ fun SetIntervalDialog(
                     }
                 }
                 WheelTextPicker(
-                    size = size,
                     items = items,
+                    size = size,
                     startIndex = selectedInterval,
                     onSelectionChanged = { selectedInterval = it },
                 )
