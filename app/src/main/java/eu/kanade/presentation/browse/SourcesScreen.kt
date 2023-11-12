@@ -106,11 +106,11 @@ fun SourcesScreen(
 
 @Composable
 private fun SourceHeader(
-    modifier: Modifier = Modifier,
     language: String,
     // SY -->
     isCategory: Boolean,
     // SY <--
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     Text(
@@ -129,7 +129,6 @@ private fun SourceHeader(
 
 @Composable
 private fun SourceItem(
-    modifier: Modifier = Modifier,
     source: Source,
     // SY -->
     showLatest: Boolean,
@@ -138,6 +137,7 @@ private fun SourceItem(
     onClickItem: (Source, Listing) -> Unit,
     onLongClickItem: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     BaseSourceItem(
         modifier = modifier,

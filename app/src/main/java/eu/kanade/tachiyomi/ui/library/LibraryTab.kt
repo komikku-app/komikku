@@ -51,6 +51,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -202,7 +203,7 @@ object LibraryTab : Tab {
                     EmptyScreen(
                         textResource = R.string.information_empty_library,
                         modifier = Modifier.padding(contentPadding),
-                        actions = listOf(
+                        actions = persistentListOf(
                             EmptyScreenAction(
                                 stringResId = R.string.getting_started_guide,
                                 icon = Icons.Outlined.HelpOutline,

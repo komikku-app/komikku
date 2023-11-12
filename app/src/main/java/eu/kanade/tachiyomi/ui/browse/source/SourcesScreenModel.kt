@@ -16,6 +16,9 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceUiModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
@@ -113,16 +116,20 @@ class SourcesScreenModel(
 
             state.copy(
                 isLoading = false,
-                items = byLang.flatMap {
-                    listOf(
-                        SourceUiModel.Header(it.key.removePrefix(CATEGORY_KEY_PREFIX), it.value.firstOrNull()?.category != null),
-                        *it.value.map { source ->
-                            SourceUiModel.Item(source)
-                        }.toTypedArray(),
-                    )
-                },
+                items = byLang
+                    .flatMap {
+                        listOf(
+                            SourceUiModel.Header(it.key.removePrefix(CATEGORY_KEY_PREFIX), it.value.firstOrNull()?.category != null),
+                            *it.value.map { source ->
+                                SourceUiModel.Item(source)
+                            }.toTypedArray(),
+                        )
+                    }
+                    .toImmutableList(),
                 // SY -->
-                categories = categories.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it }),
+                categories = categories
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it })
+                    .toImmutableList(),
                 showPin = showPin,
                 showLatest = showLatest,
                 // SY <--
@@ -173,9 +180,9 @@ class SourcesScreenModel(
     data class State(
         val dialog: Dialog? = null,
         val isLoading: Boolean = true,
-        val items: List<SourceUiModel> = emptyList(),
+        val items: ImmutableList<SourceUiModel> = persistentListOf(),
         // SY -->
-        val categories: List<String> = emptyList(),
+        val categories: ImmutableList<String> = persistentListOf(),
         val showPin: Boolean = true,
         val showLatest: Boolean = false,
         val dataSaverEnabled: Boolean = false,

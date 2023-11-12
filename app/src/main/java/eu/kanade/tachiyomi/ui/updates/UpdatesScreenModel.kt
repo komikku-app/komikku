@@ -24,6 +24,10 @@ import eu.kanade.tachiyomi.util.lang.toDateKey
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.mutate
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -116,29 +120,31 @@ class UpdatesScreenModel(
         }
     }
 
-    private fun List<UpdatesWithRelations>.toUpdateItems(): List<UpdatesItem> {
-        return this.map { update ->
-            val activeDownload = downloadManager.getQueuedDownloadOrNull(update.chapterId)
-            val downloaded = downloadManager.isChapterDownloaded(
-                update.chapterName,
-                update.scanlator,
-                // SY -->
-                update.ogMangaTitle,
-                // SY <--
-                update.sourceId,
-            )
-            val downloadState = when {
-                activeDownload != null -> activeDownload.status
-                downloaded -> Download.State.DOWNLOADED
-                else -> Download.State.NOT_DOWNLOADED
+    private fun List<UpdatesWithRelations>.toUpdateItems(): PersistentList<UpdatesItem> {
+        return this
+            .map { update ->
+                val activeDownload = downloadManager.getQueuedDownloadOrNull(update.chapterId)
+                val downloaded = downloadManager.isChapterDownloaded(
+                    update.chapterName,
+                    update.scanlator,
+                    // SY -->
+                    update.ogMangaTitle,
+                    // SY <--
+                    update.sourceId,
+                )
+                val downloadState = when {
+                    activeDownload != null -> activeDownload.status
+                    downloaded -> Download.State.DOWNLOADED
+                    else -> Download.State.NOT_DOWNLOADED
+                }
+                UpdatesItem(
+                    update = update,
+                    downloadStateProvider = { downloadState },
+                    downloadProgressProvider = { activeDownload?.progress ?: 0 },
+                    selected = update.chapterId in selectedChapterIds,
+                )
             }
-            UpdatesItem(
-                update = update,
-                downloadStateProvider = { downloadState },
-                downloadProgressProvider = { activeDownload?.progress ?: 0 },
-                selected = update.chapterId in selectedChapterIds,
-            )
-        }
+            .toPersistentList()
     }
 
     fun updateLibrary(): Boolean {
@@ -156,17 +162,14 @@ class UpdatesScreenModel(
      */
     private fun updateDownloadState(download: Download) {
         mutableState.update { state ->
-            val newItems = state.items.toMutableList().apply {
-                val modifiedIndex = indexOfFirst { it.update.chapterId == download.chapter.id }
-                if (modifiedIndex < 0) return@apply
+            val newItems = state.items.mutate { list ->
+                val modifiedIndex = list.indexOfFirst { it.update.chapterId == download.chapter.id }
+                if (modifiedIndex < 0) return@mutate
 
-                val item = get(modifiedIndex)
-                set(
-                    modifiedIndex,
-                    item.copy(
-                        downloadStateProvider = { download.status },
-                        downloadProgressProvider = { download.progress },
-                    ),
+                val item = list[modifiedIndex]
+                list[modifiedIndex] = item.copy(
+                    downloadStateProvider = { download.status },
+                    downloadProgressProvider = { download.progress },
                 )
             }
             state.copy(items = newItems)
@@ -342,7 +345,7 @@ class UpdatesScreenModel(
                     }
                 }
             }
-            state.copy(items = newItems)
+            state.copy(items = newItems.toPersistentList())
         }
     }
 
@@ -352,7 +355,7 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, selected)
                 it.copy(selected = selected)
             }
-            state.copy(items = newItems)
+            state.copy(items = newItems.toPersistentList())
         }
 
         selectedPositions[0] = -1
@@ -365,7 +368,7 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, !it.selected)
                 it.copy(selected = !it.selected)
             }
-            state.copy(items = newItems)
+            state.copy(items = newItems.toPersistentList())
         }
         selectedPositions[0] = -1
         selectedPositions[1] = -1
@@ -382,7 +385,7 @@ class UpdatesScreenModel(
     @Immutable
     data class State(
         val isLoading: Boolean = true,
-        val items: List<UpdatesItem> = emptyList(),
+        val items: PersistentList<UpdatesItem> = persistentListOf(),
         val dialog: Dialog? = null,
     ) {
         val selected = items.filter { it.selected }

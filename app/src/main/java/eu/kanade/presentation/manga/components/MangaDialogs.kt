@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.WheelTextPicker
@@ -72,13 +73,15 @@ fun SetIntervalDialog(
                 contentAlignment = Alignment.Center,
             ) {
                 val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                val items = (0..FetchInterval.MAX_INTERVAL).map {
-                    if (it == 0) {
-                        stringResource(R.string.label_default)
-                    } else {
-                        it.toString()
+                val items = (0..FetchInterval.MAX_INTERVAL)
+                    .map {
+                        if (it == 0) {
+                            stringResource(R.string.label_default)
+                        } else {
+                            it.toString()
+                        }
                     }
-                }
+                    .toImmutableList()
                 WheelTextPicker(
                     items = items,
                     size = size,

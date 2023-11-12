@@ -176,6 +176,7 @@ dependencies {
     // SY <--
 
     implementation(kotlinx.reflect)
+    implementation(kotlinx.immutables)
 
     implementation(platform(kotlinx.coroutines.bom))
     implementation(kotlinx.bundles.coroutines)

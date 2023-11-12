@@ -27,6 +27,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.isEhBasedSource
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.Manga
@@ -84,7 +86,7 @@ fun BrowseSourceContent(
             modifier = Modifier.padding(contentPadding),
             message = getErrorMessage(errorState),
             actions = if (source is LocalSource /* SY --> */ && onLocalSourceHelpClick != null /* SY <-- */) {
-                listOf(
+                persistentListOf(
                     EmptyScreenAction(
                         stringResId = R.string.local_source_help_guide,
                         icon = Icons.Outlined.HelpOutline,
@@ -118,7 +120,7 @@ fun BrowseSourceContent(
                         null
                     },
                     // SY <--
-                )
+                ).toImmutableList()
             },
         )
 

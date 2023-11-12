@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.network.MangaDexAuthInterceptor
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.runAsObservable
 import tachiyomi.core.util.lang.withIOContext
@@ -19,6 +20,12 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MdList(id: Long) : BaseTracker(id, "MDList") {
+
+    companion object {
+        private val SCORE_LIST = IntRange(0, 10)
+            .map(Int::toString)
+            .toImmutableList()
+    }
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(Injekt.get()) }
 
@@ -48,7 +55,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         else -> null
     }
 
-    override fun getScoreList() = IntRange(0, 10).map(Int::toString)
+    override fun getScoreList() = SCORE_LIST
 
     override fun displayScore(track: Track) = track.score.toInt().toString()
 
