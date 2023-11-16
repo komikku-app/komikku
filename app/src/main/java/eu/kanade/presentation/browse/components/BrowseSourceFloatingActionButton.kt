@@ -12,9 +12,9 @@ import tachiyomi.presentation.core.components.material.ExtendedFloatingActionBut
 
 @Composable
 fun BrowseSourceFloatingActionButton(
-    modifier: Modifier = Modifier,
     isVisible: Boolean,
     onFabClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     ExtendedFloatingActionButton(
         modifier = modifier,

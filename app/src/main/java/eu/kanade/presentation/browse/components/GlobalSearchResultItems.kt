@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.CircularProgressIndicator
@@ -73,7 +74,7 @@ fun GlobalSearchResultItem(
                 }
             }
             IconButton(onClick = onClick) {
-                Icon(imageVector = Icons.Outlined.ArrowForward, contentDescription = null)
+                Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
             }
         }
         content()
