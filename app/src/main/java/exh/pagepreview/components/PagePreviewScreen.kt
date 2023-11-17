@@ -35,6 +35,7 @@ import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.tachiyomi.R
 import exh.pagepreview.PagePreviewState
 import exh.util.floor
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -185,13 +186,17 @@ fun PagePreviewTopAppBar(
         title = title,
         actions = {
             AppBarActions(
-                listOfNotNull(
-                    AppBar.Action(
-                        title = stringResource(R.string.page_preview_page_go_to),
-                        icon = Icons.Outlined.UTurnRight,
-                        onClick = onOpenPageDialog,
-                    ).takeIf { showOpenPageDialog },
-                ),
+                if (showOpenPageDialog) {
+                    persistentListOf(
+                        AppBar.Action(
+                            title = stringResource(R.string.page_preview_page_go_to),
+                            icon = Icons.Outlined.UTurnRight,
+                            onClick = onOpenPageDialog,
+                        ),
+                    )
+                } else {
+                    persistentListOf()
+                },
             )
         },
         navigateUp = navigateUp,

@@ -21,6 +21,7 @@ import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.map
 import tachiyomi.core.preference.TriState
 import tachiyomi.domain.category.model.Category
@@ -49,7 +50,7 @@ fun LibrarySettingsDialog(
 ) {
     TabbedDialog(
         onDismissRequest = onDismissRequest,
-        tabTitles = listOf(
+        tabTitles = persistentListOf(
             stringResource(R.string.action_filter),
             stringResource(R.string.action_sort),
             stringResource(R.string.action_display),

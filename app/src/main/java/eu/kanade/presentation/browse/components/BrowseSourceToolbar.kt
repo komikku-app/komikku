@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import exh.source.anyIs
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.source.local.LocalSource
 
@@ -56,49 +57,67 @@ fun BrowseSourceToolbar(
         onClickCloseSearch = navigateUp,
         actions = {
             AppBarActions(
-                actions = listOfNotNull(
-                    AppBar.Action(
-                        title = stringResource(R.string.action_display_mode),
-                        icon = if (displayMode == LibraryDisplayMode.List) {
-                            Icons.AutoMirrored.Filled.ViewList
-                        } else {
-                            Icons.Filled.ViewModule
-                        },
-                        onClick = { selectingDisplayMode = true },
-                    ).takeIf { displayMode != null },
-                    if (isLocalSource) {
-                        if (isConfigurableSource && displayMode != null) {
-                            AppBar.OverflowAction(
-                                title = stringResource(R.string.label_help),
-                                onClick = onHelpClick,
-                            )
-                        } else {
-                            AppBar.Action(
-                                title = stringResource(R.string.label_help),
-                                icon = Icons.Outlined.Help,
-                                onClick = onHelpClick,
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        if (displayMode != null) {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(R.string.action_display_mode),
+                                    icon = if (displayMode == LibraryDisplayMode.List) {
+                                        Icons.AutoMirrored.Filled.ViewList
+                                    } else {
+                                        Icons.Filled.ViewModule
+                                    },
+                                    onClick = { selectingDisplayMode = true },
+                                ),
                             )
                         }
-                    } else {
-                        if (isConfigurableSource && displayMode != null) {
-                            AppBar.OverflowAction(
-                                title = stringResource(R.string.action_web_view),
-                                onClick = onWebViewClick,
-                            )
+                        if (isLocalSource) {
+                            if (isConfigurableSource && displayMode != null) {
+                                add(
+                                    AppBar.OverflowAction(
+                                        title = stringResource(R.string.label_help),
+                                        onClick = onHelpClick,
+                                    ),
+                                )
+                            } else {
+                                add(
+                                    AppBar.Action(
+                                        title = stringResource(R.string.label_help),
+                                        icon = Icons.Outlined.Help,
+                                        onClick = onHelpClick,
+                                    ),
+                                )
+                            }
                         } else {
-                            AppBar.Action(
-                                title = stringResource(R.string.action_web_view),
-                                icon = Icons.Outlined.Public,
-                                onClick = onWebViewClick,
+                            if (isConfigurableSource && displayMode != null) {
+                                add(
+                                    AppBar.OverflowAction(
+                                        title = stringResource(R.string.action_web_view),
+                                        onClick = onWebViewClick,
+                                    )
+                                )
+                            } else {
+                                add(
+                                    AppBar.Action(
+                                        title = stringResource(R.string.action_web_view),
+                                        icon = Icons.Outlined.Public,
+                                        onClick = onWebViewClick,
+                                    )
+                                )
+                            }
+                        }
+                        // SY <--
+                        if (isConfigurableSource) {
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(R.string.action_settings),
+                                    onClick = onSettingsClick,
+                                ),
                             )
                         }
-                    },
-                    // SY <--
-                    AppBar.OverflowAction(
-                        title = stringResource(R.string.action_settings),
-                        onClick = onSettingsClick,
-                    ).takeIf { isConfigurableSource },
-                ),
+                    }
+                    .build(),
             )
 
             DropdownMenu(

@@ -29,6 +29,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
@@ -134,7 +135,6 @@ fun UpdateScreen(
 
 @Composable
 private fun UpdatesAppBar(
-    modifier: Modifier = Modifier,
     onUpdateLibrary: () -> Unit,
     // For action mode
     actionModeCounter: Int,
@@ -142,13 +142,14 @@ private fun UpdatesAppBar(
     onInvertSelection: () -> Unit,
     onCancelActionMode: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    modifier: Modifier = Modifier,
 ) {
     AppBar(
         modifier = modifier,
         title = stringResource(R.string.label_recent_updates),
         actions = {
             AppBarActions(
-                listOf(
+                persistentListOf(
                     AppBar.Action(
                         title = stringResource(R.string.action_update_library),
                         icon = Icons.Outlined.Refresh,
@@ -161,7 +162,7 @@ private fun UpdatesAppBar(
         onCancelActionMode = onCancelActionMode,
         actionModeActions = {
             AppBarActions(
-                listOf(
+                persistentListOf(
                     AppBar.Action(
                         title = stringResource(R.string.action_select_all),
                         icon = Icons.Outlined.SelectAll,

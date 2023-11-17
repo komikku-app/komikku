@@ -41,6 +41,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
 import kotlin.math.roundToInt
@@ -83,7 +84,7 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     scrollBehavior = scrollBehavior,
                     actions = {
                         AppBarActions(
-                            listOf(
+                            persistentListOf(
                                 AppBar.Action(
                                     title = stringResource(R.string.select_none),
                                     icon = Icons.Outlined.Deselect,

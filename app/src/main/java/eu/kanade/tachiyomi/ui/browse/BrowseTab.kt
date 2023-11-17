@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.sourcesTab
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import kotlinx.collections.immutable.persistentListOf
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -69,14 +70,14 @@ data class BrowseTab(
             titleRes = R.string.browse,
             // SY -->
             tabs = if (feedTabInFront) {
-                listOf(
+                persistentListOf(
                     feedTab(),
                     sourcesTab(),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
                 )
             } else {
-                listOf(
+                persistentListOf(
                     sourcesTab(),
                     feedTab(),
                     extensionsTab(extensionsScreenModel),

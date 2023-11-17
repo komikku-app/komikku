@@ -50,6 +50,7 @@ import eu.kanade.tachiyomi.R
 import exh.assets.EhAssets
 import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.presentation.core.components.material.Scaffold
 import cafe.adriel.voyager.core.screen.Screen as VoyagerScreen
 
@@ -91,7 +92,7 @@ object SettingsMainScreen : Screen() {
                     navigateUp = backPress::invoke,
                     actions = {
                         AppBarActions(
-                            listOf(
+                            persistentListOf(
                                 AppBar.Action(
                                     title = stringResource(R.string.action_search),
                                     icon = Icons.Outlined.Search,

@@ -22,6 +22,7 @@ import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
+import kotlinx.collections.immutable.persistentListOf
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -34,7 +35,7 @@ fun Screen.migrateSourceTab(): TabContent {
 
     return TabContent(
         titleRes = R.string.label_migration,
-        actions = listOf(
+        actions = persistentListOf(
             AppBar.Action(
                 title = stringResource(R.string.migration_help_guide),
                 icon = Icons.AutoMirrored.Outlined.HelpOutline,

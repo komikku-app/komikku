@@ -24,6 +24,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listi
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import exh.ui.smartsearch.SmartSearchScreen
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -42,7 +43,7 @@ fun Screen.sourcesTab(
             false -> R.string.find_in_another_source
         },
         actions = if (smartSearchConfig == null) {
-            listOf(
+            persistentListOf(
                 AppBar.Action(
                     title = stringResource(R.string.action_global_search),
                     icon = Icons.Outlined.TravelExplore,
@@ -55,7 +56,7 @@ fun Screen.sourcesTab(
                 ),
             )
         } else {
-            emptyList()
+            persistentListOf()
         },
         // SY <--
         content = { contentPadding, snackbarHostState ->

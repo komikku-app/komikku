@@ -30,6 +30,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
@@ -64,7 +65,7 @@ fun MigrationListScreen(
                 title = title,
                 actions = {
                     AppBarActions(
-                        listOf(
+                        persistentListOf(
                             AppBar.Action(
                                 title = stringResource(R.string.copy),
                                 icon = if (items.size == 1) Icons.Outlined.ContentCopy else Icons.Outlined.CopyAll,

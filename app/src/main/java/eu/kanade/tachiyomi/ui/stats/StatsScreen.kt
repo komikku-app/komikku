@@ -13,6 +13,7 @@ import eu.kanade.presentation.more.stats.StatsScreenContent
 import eu.kanade.presentation.more.stats.StatsScreenState
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.LoadingScreen
 
@@ -35,7 +36,7 @@ class StatsScreen : Screen() {
                     actions = {
                         val allRead by screenModel.allRead.collectAsState()
                         AppBarActions(
-                            listOf(
+                            persistentListOf(
                                 AppBar.OverflowAction(
                                     title = if (allRead) {
                                         stringResource(R.string.ignore_non_library_entries)

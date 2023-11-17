@@ -158,7 +158,6 @@ private fun MigrateSourceList(
 
 @Composable
 private fun MigrateSourceItem(
-    modifier: Modifier = Modifier,
     source: Source,
     count: Long,
     onClickItem: () -> Unit,
@@ -166,6 +165,7 @@ private fun MigrateSourceItem(
     // SY -->
     onClickAll: () -> Unit,
     // SY <--
+    modifier: Modifier = Modifier,
 ) {
     BaseSourceItem(
         modifier = modifier,

@@ -17,6 +17,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 
 @Composable
@@ -34,7 +35,7 @@ fun BrowseSourceSimpleToolbar(
             var selectingDisplayMode by remember { mutableStateOf(false) }
             AppBarActions(
                 // SY -->
-                actions = listOfNotNull(
+                actions = persistentListOf(
                     AppBar.Action(
                         title = stringResource(id = R.string.action_display_mode),
                         icon = Icons.Outlined.ViewModule,

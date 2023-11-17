@@ -177,7 +177,7 @@ fun BrowseSourceContent(
 }
 
 @Composable
-fun MissingSourceScreen(
+internal fun MissingSourceScreen(
     source: StubSource,
     navigateUp: () -> Unit,
 ) {

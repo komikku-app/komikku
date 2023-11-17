@@ -138,7 +138,6 @@ internal fun LazyListScope.updatesUiItems(
 
 @Composable
 private fun UpdatesUiItem(
-    modifier: Modifier,
     update: UpdatesWithRelations,
     selected: Boolean,
     readProgress: String?,
@@ -149,6 +148,7 @@ private fun UpdatesUiItem(
     // Download Indicator
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
+    modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
     val textAlpha = if (update.read) ReadItemAlpha else 1f

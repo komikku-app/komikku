@@ -22,6 +22,7 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -48,7 +49,7 @@ fun Screen.feedTab(): TabContent {
 
     return TabContent(
         titleRes = R.string.feed,
-        actions = listOf(
+        actions = persistentListOf(
             AppBar.Action(
                 title = stringResource(R.string.action_add),
                 icon = Icons.Outlined.Add,
