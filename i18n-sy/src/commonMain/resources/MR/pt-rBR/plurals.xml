@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Limpeza feita. %d pasta removida</item>
+        <item quantity="other">Limpeza feita. %d pastas removidas</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d tempo de bloqueio</item>
+        <item quantity="other">%d tempos de bloqueio</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">Sem tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
+        <item quantity="one">%1$d tag na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
+        <item quantity="other">%1$d tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
+    </plurals>
+    <plurals name="num_repos">
+        <item quantity="one">%d repositório adicional</item>
+        <item quantity="other">%d repositórios adicionais</item>
+    </plurals>
+
+    <plurals name="migrate_entry">
+        <item quantity="one">Migrar %1$d%2$s mangá?</item>
+        <item quantity="other">Migrar %1$d%2$s mangás?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Copiar %1$d%2$s mangá?</item>
+        <item quantity="other">Copiar %1$d%2$s mangás?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d mangá migrado</item>
+        <item quantity="other">%d mangás migrados</item>
+    </plurals>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d página</item>
+        <item quantity="other">%1$d páginas</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d página</item>
+        <item quantity="other">%2$s, %1$d páginas</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">há %1$d ano</item>
+        <item quantity="other">há %1$d anos</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">há %1$d mês</item>
+        <item quantity="other">há %1$d meses</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">há %1$d semana</item>
+        <item quantity="other">há %1$d semanas</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">há %1$d dia</item>
+        <item quantity="other">há %1$d dias</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">há %1$d hora</item>
+        <item quantity="other">há %1$d horas</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">há %1$d minuto</item>
+        <item quantity="other">há %1$d minutos</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">há %1$d segundo</item>
+        <item quantity="other">há %1$d segundo</item>
+    </plurals>
+</resources>

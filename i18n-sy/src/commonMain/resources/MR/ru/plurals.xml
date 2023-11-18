@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Очистка завершена. %d папка удалена.</item>
+        <item quantity="few">Очистка завершена. %d папки удалено.</item>
+        <item quantity="many">Очистка завершена. %d папок удалено.</item>
+        <item quantity="other">Очистка завершена. %d папок удалено.</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d таймер блокировки</item>
+        <item quantity="few">%d таймера блокировки</item>
+        <item quantity="many">%d таймеров блокировки</item>
+        <item quantity="other">%d таймеров блокировки</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Повторить всё, для %1$d главы с ошибкой</item>
+        <item quantity="few">Повторить всё, для %1$d глав с ошибками</item>
+        <item quantity="many">Повторить всё, для %1$d глав с ошибками</item>
+        <item quantity="other">Повторить всё, для %1$d глав с ошибками</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d тэг в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленный тэг.</item>
+        <item quantity="few">%1$d тэга в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
+        <item quantity="many">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
+        <item quantity="other">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по тэгам, основанному на приоритете. Это означает, что будут отображатся только те серии, которые имеют добавленные тэги.</item>
+    </plurals>
+    <plurals name="num_repos">
+        <item quantity="one">%d дополнительный репозиторий</item>
+        <item quantity="few">%d дополнительных репозитория</item>
+        <item quantity="many">%d дополнительных репозиториев</item>
+        <item quantity="other">%d дополнительных репозиториев</item>
+    </plurals>
+
+    <plurals name="migrate_entry">
+        <item quantity="one">Перенести %1$d%2$s серию?</item>
+        <item quantity="few">Перенести %1$d%2$s серии?</item>
+        <item quantity="many">Перенести %1$d%2$s серий?</item>
+        <item quantity="other">Перенести %1$d%2$s серий?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Копировать %1$d%2$s серию?</item>
+        <item quantity="few">Копировать %1$d%2$s серии?</item>
+        <item quantity="many">Копировать %1$d%2$s серий?</item>
+        <item quantity="other">Копировать %1$d%2$s серий?</item>
+    </plurals>
+    <string name="skipping_">(Исключая %1$d)</string>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d серию перемещена</item>
+        <item quantity="few">%d серии перемещены</item>
+        <item quantity="many">%d серий перемещено</item>
+        <item quantity="other">%d серий перемещено</item>
+    </plurals>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d страница</item>
+        <item quantity="few">%1$d страницы</item>
+        <item quantity="many">%1$d страниц</item>
+        <item quantity="other">%1$d страниц</item>
+    </plurals>
+
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d страница</item>
+        <item quantity="few">%2$s, %1$d страницы</item>
+        <item quantity="many">%2$s, %1$d страниц</item>
+        <item quantity="other">%2$s, %1$d страниц</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d год назад</item>
+        <item quantity="few">%1$d года назад</item>
+        <item quantity="many">%1$d лет назад</item>
+        <item quantity="other">%1$d лет назад</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d месяц назад</item>
+        <item quantity="few">%1$d месяца назад</item>
+        <item quantity="many">%1$d месяцев назад</item>
+        <item quantity="other">%1$d месяцев назад</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d неделю назад</item>
+        <item quantity="few">%1$d недели назад</item>
+        <item quantity="many">%1$d недель назад</item>
+        <item quantity="other">%1$d недель назад</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d день назад</item>
+        <item quantity="few">%1$d дня назад</item>
+        <item quantity="many">%1$d дней назад</item>
+        <item quantity="other">%1$d дней назад</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d час назад</item>
+        <item quantity="few">%1$d часа назад</item>
+        <item quantity="many">%1$d часов назад</item>
+        <item quantity="other">%1$d часов назад</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d минуту назад</item>
+        <item quantity="few">%1$d минуты назад</item>
+        <item quantity="many">%1$d минут назад</item>
+        <item quantity="other">%1$d минут назад</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d секунду назад</item>
+        <item quantity="few">%1$d секунды назад</item>
+        <item quantity="many">%1$d секунд назад</item>
+        <item quantity="other">%1$d секунд назад</item>
+    </plurals>
+</resources>

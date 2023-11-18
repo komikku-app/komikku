@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Berhasil membersihkan. Menghapus %d folder</item>
+        <item quantity="other">Berhasil membersihkan. Menghapus %d folder</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d waktu kunci</item>
+        <item quantity="other">%d waktu kunci</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="zero">Memuat ulang 0 halaman…</item>
+        <item quantity="one">Memuat ulang %1$d halaman…</item>
+        <item quantity="other">Memuat ulang %1$d halaman…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">Tidak ada tagar dalam daftar penyortiran. Ini menambahkan opsi di perpustakaan untuk mengurutkan berdasarkan daftar tagar berdasarkan prioritas, yang berarti manga akan diurutkan dengan cara memprioritaskan sesuai dengan tagar yang Anda inginkan</item>
+        <item quantity="one">Ada %1$d tagar dalam daftar penyortiran. Ini menambahkan opsi di perpustakaan untuk mengurutkan berdasarkan daftar tagar berdasarkan prioritas, yang berarti manga akan diurutkan dengan cara memprioritaskan sesuai dengan tagar yang Anda inginkan</item>
+        <item quantity="other">Ada %1$d tagar dalam daftar penyortiran. Ini menambahkan opsi di perpustakaan untuk mengurutkan berdasarkan daftar tagar berdasarkan prioritas, yang berarti manga akan diurutkan dengan cara memprioritaskan sesuai dengan tagar yang Anda inginkan</item>
+    </plurals>
+    <plurals name="num_repos">
+        <item quantity="one">%d repo tambahan</item>
+        <item quantity="other">%d repo tambahan</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Pindahkan %1$d%2$s manga?</item>
+        <item quantity="other">Pindahkan %1$d%2$s manga?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Salin %1$d%2$s manga?</item>
+        <item quantity="other">Salin %1$d%2$s manga?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d manga dipindahkan</item>
+        <item quantity="other">%d manga dipindahkan</item>
+    </plurals>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d page</item>
+        <item quantity="other">%2$s, %1$d pages</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d tahun yang lalu</item>
+        <item quantity="other">%1$d tahun yang lalu</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d bulan yang lalu</item>
+        <item quantity="other">%1$d bulan yang lalu</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d minggu yang lalu</item>
+        <item quantity="other">%1$d minggu yang lalu</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d hari yang lalu</item>
+        <item quantity="other">%1$d hari yang lalu</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d jam yang lalu</item>
+        <item quantity="other">%1$d jam yang lalu</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d menit yang lalu</item>
+        <item quantity="other">%1$d menit yang lalu</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d detik yang lalu</item>
+        <item quantity="other">%1$d detik yang lalu</item>
+    </plurals>
+</resources>

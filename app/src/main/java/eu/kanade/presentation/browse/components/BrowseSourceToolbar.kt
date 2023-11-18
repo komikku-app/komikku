@@ -12,19 +12,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import exh.source.anyIs
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.localize
 import tachiyomi.source.local.LocalSource
 
 @Composable
@@ -111,7 +111,7 @@ fun BrowseSourceToolbar(
                         if (isConfigurableSource) {
                             add(
                                 AppBar.OverflowAction(
-                                    title = stringResource(R.string.action_settings),
+                                    title = localize(MR.strings.action_settings),
                                     onClick = onSettingsClick,
                                 ),
                             )
@@ -125,21 +125,21 @@ fun BrowseSourceToolbar(
                 onDismissRequest = { selectingDisplayMode = false },
             ) {
                 RadioMenuItem(
-                    text = { Text(text = stringResource(R.string.action_display_comfortable_grid)) },
+                    text = { Text(text = localize(MR.strings.action_display_comfortable_grid)) },
                     isChecked = displayMode == LibraryDisplayMode.ComfortableGrid,
                 ) {
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.ComfortableGrid)
                 }
                 RadioMenuItem(
-                    text = { Text(text = stringResource(R.string.action_display_grid)) },
+                    text = { Text(text = localize(MR.strings.action_display_grid)) },
                     isChecked = displayMode == LibraryDisplayMode.CompactGrid,
                 ) {
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.CompactGrid)
                 }
                 RadioMenuItem(
-                    text = { Text(text = stringResource(R.string.action_display_list)) },
+                    text = { Text(text = localize(MR.strings.action_display_list)) },
                     isChecked = displayMode == LibraryDisplayMode.List,
                 ) {
                     selectingDisplayMode = false

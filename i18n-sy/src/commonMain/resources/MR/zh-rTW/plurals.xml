@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="other">清理完成。清理了 %d 个文件夹</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="other">%d 个锁定时间表</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="other">重试 %1$d 个失败的页面……</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="other">%1$d 个标签在排序列表中。 这在书架中增加了一个选项，以基于优先级的标签列表进行排序，这意味着作品将以你想要的标签优先的方式进行排序。</item>
+    </plurals>
+    <plurals name="num_repos">
+        <item quantity="other">%d 个额外的仓库</item>
+    </plurals>
+
+    <plurals name="migrate_entry">
+        <item quantity="other">迁移 %1$d%2$s 作品？</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="other">复制 %1$d%2$s 作品？</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="other">%d 个作品已迁移</item>
+    </plurals>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="other">%1$d 页</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="other">%2$s, %1$d 页</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="other">%1$d 年前</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="other">%1$d 月前</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="other">%1$d 周前</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="other">%1$d 天前</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="other">%1$d 小时前</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="other">%1$d 分钟前</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="other">%1$d 秒前</item>
+    </plurals>
+</resources>

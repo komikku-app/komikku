@@ -21,7 +21,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":core"))
+    api(project(":i18n"))
+    // SY -->
+    api(project(":i18n-sy"))
+    // SY <--
 
     // Compose
     implementation(platform(compose.bom))

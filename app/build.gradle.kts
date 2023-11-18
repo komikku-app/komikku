@@ -140,6 +140,9 @@ android {
 
 dependencies {
     implementation(project(":i18n"))
+    // SY -->
+    implementation(project(":i18n-sy"))
+    // SY <--
     implementation(project(":core"))
     implementation(project(":core-metadata"))
     implementation(project(":source-api"))

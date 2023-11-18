@@ -20,6 +20,7 @@ import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import nl.adaptivity.xmlutil.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
+import tachiyomi.core.i18n.localize
 import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE
 import tachiyomi.core.metadata.comicinfo.ComicInfo
 import tachiyomi.core.metadata.comicinfo.copyFromComicInfo
@@ -30,6 +31,7 @@ import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.service.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
 import tachiyomi.source.local.filter.OrderBy
 import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.Archive
@@ -61,7 +63,7 @@ actual class LocalSource(
     private val POPULAR_FILTERS = FilterList(OrderBy.Popular(context))
     private val LATEST_FILTERS = FilterList(OrderBy.Latest(context))
 
-    override val name: String = context.getString(R.string.local_source)
+    override val name: String = context.localize(MR.strings.local_source)
 
     override val id: Long = ID
 
@@ -389,9 +391,9 @@ actual class LocalSource(
                 .map { dir -> File(dir, chapter.url) }
                 .find { it.exists() }
                 ?.let(Format.Companion::valueOf)
-                ?: throw Exception(context.getString(R.string.chapter_not_found))
+                ?: throw Exception(context.localize(MR.strings.chapter_not_found))
         } catch (e: Format.UnknownFormatException) {
-            throw Exception(context.getString(R.string.local_invalid_format))
+            throw Exception(context.localize(MR.strings.local_invalid_format))
         } catch (e: Exception) {
             throw e
         }

@@ -1,6 +1,5 @@
 package tachiyomi.presentation.core.components
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,12 +42,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.StringResource
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.TriState
 import tachiyomi.core.preference.toggle
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.localize
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.collectAsState
 
@@ -58,8 +58,8 @@ object SettingsItemsPaddings {
 }
 
 @Composable
-fun HeadingItem(@StringRes labelRes: Int) {
-    HeadingItem(stringResource(labelRes))
+fun HeadingItem(labelRes: StringResource) {
+    HeadingItem(localize(labelRes))
 }
 
 @Composable
@@ -348,7 +348,7 @@ fun IconItem(
 // SY <--
 
 @Composable
-fun SettingsChipRow(@StringRes labelRes: Int, content: @Composable FlowRowScope.() -> Unit) {
+fun SettingsChipRow(labelRes: StringResource, content: @Composable FlowRowScope.() -> Unit) {
     Column {
         HeadingItem(labelRes)
         FlowRow(
@@ -365,7 +365,7 @@ fun SettingsChipRow(@StringRes labelRes: Int, content: @Composable FlowRowScope.
 }
 
 @Composable
-fun SettingsIconGrid(@StringRes labelRes: Int, content: LazyGridScope.() -> Unit) {
+fun SettingsIconGrid(labelRes: StringResource, content: LazyGridScope.() -> Unit) {
     Column {
         HeadingItem(labelRes)
         LazyVerticalGrid(

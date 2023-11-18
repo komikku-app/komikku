@@ -41,6 +41,9 @@ dependencyResolutionManagement {
 rootProject.name = "TachiyomiSY"
 include(":app")
 include(":i18n")
+// SY -->
+include(":i18n-sy")
+// SY <--
 include(":source-api")
 include(":core")
 include(":macrobenchmark")

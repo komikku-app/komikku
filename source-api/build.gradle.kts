@@ -16,6 +16,7 @@ kotlin {
                 api(libs.jsoup)
                 // SY -->
                 api(project(":i18n"))
+                api(project(":i18n-sy"))
                 api(kotlinx.reflect)
                 // SY <--
             }

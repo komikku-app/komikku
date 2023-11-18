@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Nettoyage terminé. Dossier %d supprimé</item>
+        <item quantity="other">Nettoyage terminé. Dossiers %d supprimé</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d temps de verrouillage</item>
+        <item quantity="other">%d heures de verrouillage</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">Aucun Tag dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tags basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tags que vous voulez</item>
+        <item quantity="one">%1$d Tag dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tag basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tag que vous voulez</item>
+        <item quantity="other">%1$d Tags dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tags basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tags que vous voulez</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Migrer %1$d%2$s manga?</item>
+        <item quantity="other">Migrer %1$d%2$s manga?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Copie %1$d%2$s manga?</item>
+        <item quantity="other">Copie %1$d%2$s mangas?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d manga migré</item>
+        <item quantity="other">%d mangas migrés</item>
+    </plurals>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d page</item>
+        <item quantity="other">%2$s, %1$d pages</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one"> %1$d an auparavant</item>
+        <item quantity="other">%1$d ans auparavant</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d mois auparavant</item>
+        <item quantity="other">%1$d mois auparavant</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d samaine auparavant</item>
+        <item quantity="other">%1$d samaine auparavant</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d jour auparavant</item>
+        <item quantity="other">%1$d jours auparavant</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d heure auparavant</item>
+        <item quantity="other">%1$d heurs auparavant</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d minute auparavant</item>
+        <item quantity="other">%1$d minutes auparavant</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d seconde auparavant</item>
+        <item quantity="other">%1$d seconde auparavant</item>
+    </plurals>
+</resources>

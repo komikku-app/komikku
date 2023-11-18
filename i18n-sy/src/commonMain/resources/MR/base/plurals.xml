@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Cleanup done. Removed %d folder</item>
+        <item quantity="other">Cleanup done. Removed %d folders</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d lock time</item>
+        <item quantity="other">%d lock times</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="zero">Retrying 0 failed pages…</item>
+        <item quantity="one">Retrying %1$d failed page…</item>
+        <item quantity="other">Retrying %1$d failed pages…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">No tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+    </plurals>
+    <plurals name="num_repos">
+        <item quantity="one">%d additional repo</item>
+        <item quantity="other">%d additional repos</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Migrate %1$d%2$s entry?</item>
+        <item quantity="other">Migrate %1$d%2$s entries?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Copy %1$d%2$s entry?</item>
+        <item quantity="other">Copy %1$d%2$s entries?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d entry migrated</item>
+        <item quantity="other">%d entries migrated</item>
+    </plurals>
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d page</item>
+        <item quantity="other">%2$s, %1$d pages</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d year ago</item>
+        <item quantity="other">%1$d years ago</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d second ago</item>
+        <item quantity="other">%1$d seconds ago</item>
+    </plurals>
+</resources>

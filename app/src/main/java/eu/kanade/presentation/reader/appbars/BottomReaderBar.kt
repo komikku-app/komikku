@@ -17,12 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.localize
 
 @Composable
 fun BottomReaderBar(
@@ -60,7 +61,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickChapterList) {
                 Icon(
                     imageVector = Icons.Outlined.FormatListNumbered,
-                    contentDescription = stringResource(R.string.chapters),
+                    contentDescription = localize(MR.strings.chapters),
                 )
             }
         }
@@ -69,7 +70,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickWebView) {
                 Icon(
                     imageVector = Icons.Outlined.Public,
-                    contentDescription = stringResource(R.string.action_open_in_web_view),
+                    contentDescription = localize(MR.strings.action_open_in_web_view),
                 )
             }
         }
@@ -78,7 +79,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickShare) {
                 Icon(
                     imageVector = Icons.Outlined.Share,
-                    contentDescription = stringResource(R.string.action_share),
+                    contentDescription = localize(MR.strings.action_share),
                 )
             }
         }
@@ -87,7 +88,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickReadingMode) {
                 Icon(
                     painter = painterResource(readingMode.iconRes),
-                    contentDescription = stringResource(R.string.viewer),
+                    contentDescription = localize(MR.strings.viewer),
                 )
             }
         }
@@ -96,7 +97,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickOrientation) {
                 Icon(
                     painter = painterResource(orientation.iconRes),
-                    contentDescription = stringResource(R.string.pref_rotation_type),
+                    contentDescription = localize(MR.strings.pref_rotation_type),
                 )
             }
         }
@@ -110,7 +111,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickCropBorder) {
                 Icon(
                     painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
-                    contentDescription = stringResource(R.string.pref_crop_borders),
+                    contentDescription = localize(MR.strings.pref_crop_borders),
                 )
             }
         }
@@ -123,7 +124,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickPageLayout) {
                 Icon(
                     painter = painterResource(R.drawable.ic_book_open_variant_24dp),
-                    contentDescription = stringResource(R.string.page_layout),
+                    contentDescription = localize(MR.strings.page_layout),
                 )
             }
         }
@@ -132,7 +133,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickShiftPage) {
                 Icon(
                     painter = painterResource(R.drawable.ic_page_next_outline_24dp),
-                    contentDescription = stringResource(R.string.shift_double_pages),
+                    contentDescription = localize(MR.strings.shift_double_pages),
                 )
             }
         }
@@ -140,7 +141,7 @@ fun BottomReaderBar(
         IconButton(onClick = onClickSettings) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.action_settings),
+                contentDescription = localize(MR.stringss.action_settings),
             )
         }
         // SY <--

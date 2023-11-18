@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Actions -->
+    <string name="action_skip_entry">Don\'t migrate</string>
+    <string name="action_search_manually">Search manually</string>
+    <string name="action_migrate_now">Migrate now</string>
+    <string name="action_copy_now">Copy now</string>
+    <string name="action_clean_titles">Clean titles</string>
+    <string name="action_start_reading">Start reading</string>
+    <string name="action_edit_info">Edit info</string>
+
+    <!-- Entry Type -->
+    <string name="entry_type_manga">Manga</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Comic</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+
+    <!-- Preferences -->
+    <!-- Subsections -->
+    <string name="pref_category_all_sources">All Sources</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_fork">Fork Settings</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="pref_ehentai_summary">E/ExHentai login, gallery sync</string>
+    <string name="pref_mangadex_summary">MangaDex login, follows sync</string>
+
+    <!-- About -->
+    <string name="changelog_version">Version %1$s</string>
+
+    <!-- EH Settings -->
+    <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
+    <string name="enable_exhentai">Enable ExHentai</string>
+    <string name="requires_login">Requires login</string>
+    <string name="use_hentai_at_home">Use Hentai@Home Network</string>
+    <string name="use_hentai_at_home_summary">Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n- Any client (Recommended)\n- Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)</string>
+    <string name="use_hentai_at_home_option_1">Any client (Recommended)</string>
+    <string name="use_hentai_at_home_option_2">Default port clients only</string>
+    <string name="show_japanese_titles">Show Japanese titles in search results</string>
+    <string name="show_japanese_titles_option_1">Currently showing Japanese titles in search results. Clear the chapter cache after changing this (in the Advanced section)</string>
+    <string name="show_japanese_titles_option_2">Currently showing English/Romanized titles in search results. Clear the chapter cache after changing this (in the Advanced section)</string>
+    <string name="use_original_images">Use original images</string>
+    <string name="use_original_images_on">Currently using original images</string>
+    <string name="use_original_images_off">Currently using resampled images</string>
+    <string name="watched_tags">Watched Tags</string>
+    <string name="watched_tags_summary">Opens a webview to your E/ExHentai watched tags page</string>
+    <string name="watched_tags_exh">ExHentai Watched Tags</string>
+    <string name="tag_filtering_threshold">Tag Filtering Threshold</string>
+    <string name="tag_filtering_threshhold_error">Must be between -9999 and 0!</string>
+    <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %1$d</string>
+    <string name="tag_watching_threshhold">Tag Watching Threshold</string>
+    <string name="tag_watching_threshhold_error">Must be between 0 and 9999!</string>
+    <string name="tag_watching_threshhold_summary">Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: %1$d</string>
+    <string name="language_filtering">Language Filtering</string>
+    <string name="language_filtering_summary">If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude</string>
+    <string name="frong_page_categories">Front Page Categories</string>
+    <string name="fromt_page_categories_summary">What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters</string>
+    <string name="watched_list_default">Watched List Filter Default State</string>
+    <string name="watched_list_state_summary">When browsing ExHentai/E-Hentai should the watched list filter be enabled by default</string>
+    <string name="eh_image_quality_summary">The quality of the downloaded images</string>
+    <string name="eh_image_quality">Image quality</string>
+    <string name="eh_image_quality_auto">Auto</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="pref_enhanced_e_hentai_view">Enhanced E/ExHentai browse</string>
+    <string name="pref_enhanced_e_hentai_view_summary">Enable/Disable the enhanced browse menu made for E/ExHentai</string>
+    <string name="favorites_sync">E-Hentai Favorites sync</string>
+    <string name="disable_favorites_uploading">Disable favorites uploading</string>
+    <string name="disable_favorites_uploading_summary">Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well).</string>
+    <string name="show_favorite_sync_notes">Show favorites sync notes</string>
+    <string name="show_favorite_sync_notes_summary">Show some information regarding the favorites sync feature</string>
+    <string name="please_login">Please log in!</string>
+    <string name="ignore_sync_errors">Ignore sync errors when possible</string>
+    <string name="ignore_sync_errors_summary">Do not abort immediately when encountering errors during the sync process. Errors will still be displayed when the sync is complete. Can cause loss of favorites in some cases. Useful when syncing large libraries.</string>
+    <string name="force_sync_state_reset">Force sync state reset</string>
+    <string name="force_sync_state_reset_summary">Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted.</string>
+    <string name="sync_state_reset">Sync state reset</string>
+    <string name="gallery_update_checker">Gallery update checker</string>
+    <string name="auto_update_restrictions">Auto update restrictions</string>
+    <string name="time_between_batches">Time between update batches</string>
+    <string name="time_between_batches_never">Never update galleries</string>
+    <string name="time_between_batches_1_hour">1 hour</string>
+    <string name="time_between_batches_2_hours">2 hours</string>
+    <string name="time_between_batches_3_hours">3 hours</string>
+    <string name="time_between_batches_6_hours">6 hours</string>
+    <string name="time_between_batches_12_hours">12 hours</string>
+    <string name="time_between_batches_24_hours">24 hours</string>
+    <string name="time_between_batches_48_hours">48 hours</string>
+    <string name="time_between_batches_summary_1">%1$s will currently never check galleries in your library for updates.</string>
+    <string name="time_between_batches_summary_2">%1$s checks/updates galleries in batches. This means it will wait %2$d hour(s), check %3$d galleries, wait %2$d hour(s), check %3$d and so on…</string>
+    <string name="show_updater_statistics">Show updater statistics</string>
+    <string name="gallery_updater_statistics_collection">Collecting statistics…</string>
+    <string name="gallery_updater_statistics">Gallery updater statistics</string>
+    <string name="gallery_updater_stats_text">The updater last ran %1$s, and checked %2$d out of the %3$d galleries that were ready for checking.</string>
+    <string name="gallery_updater_not_ran_yet">The updater has not ran yet.</string>
+    <string name="gallery_updater_stats_time">\nGalleries that were checked in the last:\n- hour: %1$d\n- 6 hours: %2$d\n- 12 hours: %3$d\n- day: %4$d\n- 2 days: %5$d\n- week: %6$d\n- month: %7$d\n- year: %8$d</string>
+
+    <!-- EH Settings Upload Dialogs -->
+    <string name="settings_profile_note">Settings profile note</string>
+    <string name="settings_profile_note_message">The app will now add a new settings profile on E-Hentai and ExHentai to optimize app performance. Please ensure that you have less than three profiles on both sites.\n\nIf you have no idea what settings profiles are, then it probably doesn\'t matter, just hit \'OK\'.</string>
+    <string name="eh_settings_successfully_uploaded">Settings successfully uploaded!</string>
+    <string name="eh_settings_configuration_failed">Configuration failed!</string>
+    <string name="eh_settings_configuration_failed_message">An error occurred during the configuration process: %1$s</string>
+    <string name="eh_settings_uploading_to_server">Uploading settings to server</string>
+    <string name="eh_settings_uploading_to_server_message">Please wait, this may take some time…</string>
+    <string name="eh_settings_out_of_slots_error">You are out of profile slots on %1$s, please delete a profile!</string>
+
+    <!-- EH Settings Login Activity -->
+    <string name="recheck_login_status">Recheck login status</string>
+    <string name="alternative_login_page">Alternative login page</string>
+    <string name="skip_page_restyling">Skip page restyling</string>
+    <string name="custom_igneous_cookie">Custom igneous cookie</string>
+    <string name="custom_igneous_cookie_message">Some users cannot access ExHentai the normal way, and have to pass in a specific igneous cookie value, this option is for those users.</string>
+
+    <!-- Advanced Settings -->
+    <string name="developer_tools">Developer tools</string>
+    <string name="toggle_hentai_features">Enable integrated hentai features</string>
+    <string name="toggle_hentai_features_summary">This is a experimental feature that will disable all hentai features if toggled off</string>
+    <string name="toggle_delegated_sources">Enable delegated sources</string>
+    <string name="toggle_delegated_sources_summary">Apply %1$s enhancements to the following sources if they are installed: %2$s</string>
+    <string name="log_level">Log level</string>
+    <string name="log_level_summary">Changing this can impact app performance. Force-restart app after changing. Current value: %s</string>
+    <string name="enable_source_blacklist">Enable source blacklist</string>
+    <string name="enable_source_blacklist_summary">Hide extensions/sources that are incompatible with %1$s. Force-restart app after changing.</string>
+    <string name="open_debug_menu">Open debug menu</string>
+    <string name="open_debug_menu_summary">
+        <![CDATA[DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color=\'red\'>IT CAN CORRUPT YOUR LIBRARY!</font>]]>
+    </string>
+    <string name="starting_cleanup">Starting cleanup</string>
+    <string name="clean_up_downloaded_chapters">Clean up downloaded chapters</string>
+    <string name="delete_unused_chapters">Delete non-existent, partially downloaded, and read chapter folders</string>
+    <string name="no_folders_to_cleanup">No folders to cleanup</string>
+    <string name="clean_orphaned_downloads">Clean orphaned</string>
+    <string name="clean_read_downloads">Clean read</string>
+    <string name="clean_read_entries_not_in_library">Clean entries not in library</string>
+    <string name="data_saver">Data Saver</string>
+    <string name="data_saver_summary">Compress images before downloading or loading in reader</string>
+    <string name="data_saver_downloader">Use data saver in the downloader</string>
+    <string name="data_saver_ignore_jpeg">Ignore Jpeg Images</string>
+    <string name="data_saver_ignore_gif">Ignore Gif Animations</string>
+    <string name="data_saver_image_quality">Image Quality</string>
+    <string name="data_saver_image_quality_summary">Higher values mean that a higher percentage of the image quality is saved, but it also means the file size is larger, 80 percent is a good median between file size and image quality</string>
+    <string name="data_saver_image_format">Compress to Jpeg</string>
+    <string name="data_saver_image_format_summary_on">The Jpeg file size is considerably smaller then Webp is(meaning more data is saved), but it makes the images lose more quality as well.\nCurrently compresses to Jpeg</string>
+    <string name="data_saver_image_format_summary_off">The Jpeg file size is considerably smaller then Webp is(meaning more data is saved), but it makes the images lose more quality as well.\nCurrently compresses to Webp</string>
+    <string name="data_saver_color_bw">Convert to Black And White</string>
+    <string name="bandwidth_hero">Bandwidth Hero (requires a Bandwidth Hero Proxy server)</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
+    <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
+    <string name="clear_db_exclude_read">Keep entries with read chapters</string>
+
+    <!-- Log Level -->
+    <string name="log_minimal">Minimal</string>
+    <string name="log_extra">Extra</string>
+    <string name="log_extreme">Extreme</string>
+    <string name="log_minimal_desc">Critical errors only</string>
+    <string name="log_extra_desc">Log everything</string>
+    <string name="log_extreme_desc">Network inspection mode</string>
+
+    <!-- General Settings -->
+    <string name="toggle_expand_search_filters">Expand all search filters by default</string>
+    <string name="put_recommends_in_overflow">Recommendations in overflow</string>
+    <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the entry page</string>
+    <string name="put_merge_in_overflow">Merge in overflow</string>
+    <string name="put_merge_in_overflow_summary">Put the merge button in the overflow menu instead of on the entry page</string>
+
+    <!-- Appearance Settings -->
+    <string name="pref_category_navbar">Navbar</string>
+    <string name="pref_hide_updates_button">Show updates in the nav</string>
+    <string name="pref_hide_history_button">Show history in the nav</string>
+    <string name="pref_show_bottom_bar_labels">Always show nav labels</string>
+
+    <!-- Library settings -->
+    <string name="pref_sorting_settings">Sorting Settings</string>
+    <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
+    <string name="library_group_updates">Library dynamic category updates</string>
+    <string name="library_group_updates_global">Always launch global updates</string>
+    <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
+    <string name="library_group_updates_all">Launch category updates all the time</string>
+
+    <!-- Browse settings -->
+    <string name="pref_feed_position">Feed tab position</string>
+    <string name="pref_feed_position_summery">Do you want the feed tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if you\'re on data or a metered network</string>
+    <string name="pref_source_source_filtering">Filter sources in categories</string>
+    <string name="pref_source_source_filtering_summery">Filter the sources that are in categories, making the sources not get put under the language if they are in a category</string>
+    <string name="pref_source_navigation">Replace latest button</string>
+    <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
+    <string name="pref_local_source_hidden_folders">Local source hidden folders</string>
+    <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
+
+    <!-- Backup settings -->
+    <string name="custom_entry_info">Custom entry info</string>
+    <string name="all_read_entries">All read entries</string>
+
+    <!-- Security settings -->
+    <string name="biometric_lock_times">Biometric lock times</string>
+    <string name="action_edit_biometric_lock_times">Edit lock times</string>
+    <string name="biometric_lock_times_empty">You have no biometric lock times. Tap the plus button to create one.</string>
+    <string name="biometric_lock_time_conflicts">A lock time conflicts with one that already exists!</string>
+    <string name="biometric_lock_start_time">Enter starting time</string>
+    <string name="biometric_lock_end_time">Enter end time</string>
+    <string name="biometric_lock_days">Biometric lock days</string>
+    <string name="biometric_lock_days_summary">Days to have the app locked</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="encrypt_database">Encrypt database</string>
+    <string name="encrypt_database_subtitle">Requires app restart to take effect</string>
+    <string name="encrypt_database_message">
+        <![CDATA[<font color=\'red\'>ENABLING THIS WILL CREATE A NEW DATABASE. USE THESE STEPS TO KEEP YOUR DATA<br>1. SETTINGS -> BACKUP -> CREATE<br>2. SYSTEM SETTINGS -> CLEAR APP DATA<br>3. OPEN APP AND ENABLE THIS<br>4. SYSTEM SETTINGS -> FORCE RESTART<br>5. SETTINGS -> BACKUP -> RESTORE</font>]]>
+    </string>
+    <string name="set_cbz_zip_password">Set CBZ archive password</string>
+    <string name="password_protect_downloads">Password protect downloads</string>
+    <string name="password_protect_downloads_summary">Encrypts CBZ archive downloads with the given password.\nWARNING: DATA INSIDE THE ARCHIVES WILL BE LOST FOREVER IF YOU FORGET THE PASSWORD</string>
+    <string name="delete_cbz_archive_password">Delete CBZ archive password</string>
+    <string name="cbz_archive_password">CBZ archive password</string>
+    <string name="wrong_cbz_archive_password">Wrong CBZ archive password</string>
+    <string name="encryption_type">Encryption type</string>
+    <string name="aes_256">AES 256</string>
+    <string name="aes_192">AES 192</string>
+    <string name="aes_128">AES 128</string>
+    <string name="standard_zip_encryption">Standard zip encryption (fast but insecure)</string>
+
+    <!-- Reader Settings -->
+    <string name="page_downloading">Page Downloading</string>
+    <string name="download_threads">Download threads</string>
+    <string name="download_threads_summary">Higher values can speed up image downloading significantly, but can also trigger bans. Recommended value is 2 or 3. Current value is: %s</string>
+    <string name="aggressively_load_pages">Aggressively load pages</string>
+    <string name="aggressively_load_pages_summary">Slowly download the entire chapter while reading instead of just loading the pages you are viewing.</string>
+    <string name="skip_queue_on_retry">Skip queue on retry</string>
+    <string name="skip_queue_on_retry_summary">Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button.</string>
+    <string name="reader_preload_amount">Page Preload amount</string>
+    <string name="reader_preload_amount_4_pages">4 Pages</string>
+    <string name="reader_preload_amount_6_pages">6 Pages</string>
+    <string name="reader_preload_amount_8_pages">8 Pages</string>
+    <string name="reader_preload_amount_10_pages">10 Pages</string>
+    <string name="reader_preload_amount_12_pages">12 Pages</string>
+    <string name="reader_preload_amount_14_pages">14 Pages</string>
+    <string name="reader_preload_amount_16_pages">16 Pages</string>
+    <string name="reader_preload_amount_20_pages">20 Pages</string>
+    <string name="reader_preload_amount_summary">The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values</string>
+    <string name="reader_cache_size">Reader cache size</string>
+    <string name="reader_cache_size_summary">The amount of images to save on device while reading. Higher values will result in a smoother reading experience, at the cost of higher disk space usage</string>
+    <string name="preserve_reading_position">Preserve reading position on read entries</string>
+    <string name="auto_webtoon_mode">Auto Webtoon Mode</string>
+    <string name="auto_webtoon_mode_summary">Use auto webtoon mode for entries that are detected to likely use the long strip format</string>
+    <string name="enable_zoom_out">Enable zoom out</string>
+    <string name="tap_scroll_page">Tap scroll by page</string>
+    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>
+    <string name="reader_bottom_buttons">Reader Bottom Buttons</string>
+    <string name="reader_bottom_buttons_summary">Customize what buttons appear at the bottom of the reader</string>
+    <string name="pref_show_vert_seekbar_landscape">Show vertical seekbar in landscape</string>
+    <string name="pref_show_vert_seekbar_landscape_summary">Enables vertical seekbar when in landscape</string>
+    <string name="pref_left_handed_vertical_seekbar">Left-handed vertical seekbar</string>
+    <string name="pref_left_handed_vertical_seekbar_summary">Switches which side the seekbar is on</string>
+    <string name="pref_force_horz_seekbar">Force horizontal seekbar</string>
+    <string name="pref_force_horz_seekbar_summary">Removes vertical seekbar entirely in favour of horizontal</string>
+    <string name="pref_smooth_scroll">Smooth Auto Scroll</string>
+
+    <!-- Reader -->
+    <!-- Reader Actions -->
+    <string name="eh_autoscroll">Autoscroll</string>
+    <string name="eh_retry_all">Retry all</string>
+    <string name="eh_boost_page">Boost page</string>
+    <string name="eh_autoscroll_help">Autoscroll help</string>
+    <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.</string>
+    <string name="eh_autoscroll_freq_invalid">Invalid frequency</string>
+    <string name="eh_retry_all_help">Retry all help</string>
+    <string name="eh_retry_all_help_message">Re-add all failed pages to the download queue.</string>
+    <string name="eh_boost_page_help">Boost page help</string>
+    <string name="eh_boost_page_help_message">Normally the downloader can only download a specific amount of pages at the same time. This means you can be waiting for a page to download but the downloader will not start downloading the page until it has a free download slot. Pressing \'Boost page\' will force the downloader to begin downloading the current page, regardless of whether or not there is an available slot.</string>
+    <string name="eh_boost_page_invalid">This page cannot be boosted (invalid page)!</string>
+    <string name="eh_boost_page_errored">Page failed to load, press the retry button instead!</string>
+    <string name="eh_boost_page_downloading">This page is already downloading!</string>
+    <string name="eh_boost_page_downloaded">This page has already been downloaded!</string>
+    <string name="eh_boost_boosted">Boosted current page!</string>
+    <string name="eh_boost_invalid_loader">This page cannot be boosted (invalid page loader)!</string>
+    <string name="pref_crop_borders_pager">Crop borders Pager</string>
+    <string name="pref_crop_borders_continuous_vertical">Crop borders Continuous Vertical</string>
+    <string name="pref_crop_borders_webtoon">Crop borders Webtoon</string>
+    <string name="action_set_first_page_cover">Set first page as cover</string>
+    <string name="action_set_second_page_cover">Set second page as cover</string>
+    <string name="action_save_first_page">Save first page</string>
+    <string name="action_save_second_page">Save second page</string>
+    <string name="action_share_first_page">Share first page</string>
+    <string name="action_share_second_page">Share second page</string>
+    <string name="action_save_combined_page">Save combined page</string>
+    <string name="action_share_combined_page">Share combined page</string>
+
+    <!-- Reader Sharing -->
+    <string name="share_pages_info">%1$s: %2$s, pages %3$s</string>
+
+    <!-- Auto Webtoon Mode -->
+    <string name="eh_auto_webtoon_snack">Reading webtoon style</string>
+
+    <!-- Double page spread -->
+    <string name="page_layout">Page layout</string>
+    <string name="shift_double_pages">Shift one page over</string>
+    <string name="double_pages">Double pages</string>
+    <string name="single_page">Single page</string>
+    <string name="automatic_orientation">Automatic (based on orientation)</string>
+    <string name="automatic_can_still_switch">While using automatic page layout, you can still switch between layouts while reading without overriding this setting</string>
+    <string name="invert_double_pages">Invert double pages</string>
+
+    <!-- Center margin -->
+    <string name="center_margin">Center Margin</string>
+    <string name="center_margin_none">None</string>
+    <string name="center_margin_double_page">Add to double Page</string>
+    <string name="center_margin_wide_page">Add to wide Page</string>
+    <string name="center_margin_double_and_wide_page">Add to both</string>
+    <string name="pref_center_margin">Center margin type</string>
+    <string name="pref_center_margin_summary">Insert spacer to accommodate deadspace on foldable devices.</string>
+
+    <!-- Cache archived manga to disk -->
+    <string name="cache_archived_manga_to_disk">Cache images inside CBZ/CBR archives on disk</string>
+    <string name="cache_archived_manga_to_disk_subtitle">Temporarily copy images inside comic book archives to disk while reading \nMay improve reader performance</string>
+
+    <!-- Entry Page -->
+    <!-- Entry Info -->
+    <string name="az_recommends">See Recommendations</string>
+    <string name="merge">Merge</string>
+    <string name="merge_with_another_source">Merge With Another</string>
+    <string name="entry_merged">Entry merged!</string>
+    <string name="failed_merge">Failed to merge entry: %1$s</string>
+    <string name="merge_unknown_entry">Unknown entry ID: %1$d</string>
+    <string name="merged_already">This entry is already merged with the current entry!</string>
+    <string name="merge_duplicate">This merged entry is a duplicate!</string>
+
+    <!-- Entry Info Edit -->
+    <string name="reset_tags">Reset Tags</string>
+    <string name="add_tag">Add Tag</string>
+    <string name="title_hint">Title: %1$s</string>
+    <string name="description_hint">Description: %1$s</string>
+    <string name="author_hint">Author: %1$s</string>
+    <string name="artist_hint">Artist: %1$s</string>
+
+    <!-- Browse -->
+    <!-- Sources Tab -->
+    <string name="find_in_another_source">Find in another source</string>
+    <string name="data_saver_exclude">Exclude from data saver</string>
+    <string name="data_saver_stop_exclude">Stop excluding from data saver</string>
+
+    <!-- Smart Search -->
+    <string name="searching_source">Searching source…</string>
+    <string name="could_not_find_entry">Couldn\'t find the entry in the source!</string>
+    <string name="automatic_search_error">Error performing automatic search!</string>
+
+    <!-- Saved Searches -->
+    <string name="saved_searches">Saved Searches</string>
+    <string name="save_search">Save current search query?</string>
+    <string name="save_search_hint">My search name</string>
+    <string name="save_search_failed_to_load">Failed to load saved searches!</string>
+    <string name="save_search_failed_to_load_message">An error occurred while loading your saved searches.</string>
+    <string name="save_search_delete">Delete saved search query?</string>
+    <string name="save_search_delete_message">Are you sure you wish to delete your saved search query: \'%1$s\'?</string>
+    <string name="save_search_invalid">Saved search invalid, filters have changed</string>
+    <string name="save_search_invalid_name">Invalid saved search name</string>
+
+    <!-- Source Categories -->
+    <string name="no_source_categories">No source categories available</string>
+    <string name="invalid_category_name">Invalid category name</string>
+
+    <!-- Feed Tab -->
+    <string name="feed">Feed</string>
+    <string name="feed_delete">Delete feed item?</string>
+    <string name="too_many_in_feed">Too many sources in your feed, cannot add more then 10</string>
+    <string name="feed_tab_empty">You don\'t have any sources in your feed, navigate to the top right to add one</string>
+    <string name="feed_add">Add %1$s to feed?</string>
+
+    <!-- Sort by tags -->
+    <string name="pref_tag_sorting">Tag sorting tags</string>
+    <string name="tag_sorting">Tag sorting</string>
+    <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is\n\"female: sole female\"\nwithout quotes!\nAdding multiple variants of the same tag is supported, so feel free to do \"tag: netorare\" for NHentai and \"female: netorare\" for E-Hentai!</string>
+    <string name="action_edit_tags">Edit tags</string>
+    <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
+    <string name="error_tag_exists">This tag exists!</string>
+    <string name="delete_tag">Delete tag</string>
+    <string name="delete_tag_confirmation">Do you wish to delete the tag %s?</string>
+    <string name="delete_time_range">Delete time range</string>
+    <string name="delete_time_range_confirmation">Do you wish to delete the time range %s?</string>
+
+    <!-- Extension section -->
+    <string name="ext_redundant">Redundant</string>
+    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Tachiyomi.</string>
+    <string name="repo_extension_message">This extension is from an external repo. Tap to view the repo.</string>
+
+    <!-- Extension Repos -->
+    <string name="information_empty_repos">You have no additional repos. Tap the plus button to create one for adding external extensions.</string>
+    <string name="action_add_repo">Add repo</string>
+    <string name="action_add_repo_message">Add additional repos to Tachiyomi, the format of a repo is \'username/repo\' , with username being the repo owner, and repo being the repo name</string>
+    <string name="action_edit_repos">Edit repos</string>
+    <string name="error_repo_exists">This repo already exists!</string>
+    <string name="invalid_repo_name">Invalid repo name</string>
+    <string name="repo_source">Repo source</string>
+    <string name="delete_repo">Delete repo</string>
+    <string name="delete_repo_confirmation">Do you wish to delete the repo %s?</string>
+
+    <!-- Migration -->
+    <string name="select_sources">Select sources</string>
+    <string name="select_none">Select none</string>
+    <string name="migration">Migration</string>
+    <string name="skip_pre_migration">Skip pre-migration</string>
+    <string name="pre_migration_skip_toast">To show this screen again, go to Settings -> Library.</string>
+    <string name="use_intelligent_search">Search title + keywords of title</string>
+    <string name="data_to_include_in_migration">Data to include in migration</string>
+    <string name="include_extra_search_parameter">Include extra search parameter when searching</string>
+    <string name="use_most_chapters">Use source with the most chapters (slower)</string>
+    <string name="use_first_source">Use first source with alternative</string>
+    <string name="skip_this_step_next_time">Skip this step next time</string>
+    <string name="hide_not_found_entries">Hide not found entries</string>
+    <string name="search_parameter">Search parameter (e.g. language:english)</string>
+    <string name="latest_">Latest: %1$s</string>
+    <string name="migrating_to">migrating to</string>
+    <string name="match_pinned_sources">Match pinned sources</string>
+    <string name="match_enabled_sources">Match enabled sources</string>
+    <string name="no_chapters_found_for_migration">No chapters found, this entry cannot be used for migration</string>
+    <string name="no_alternatives_found">No Alternatives Found</string>
+    <string name="stop_migrating">Stop migrating?</string>
+    <string name="action_stop">Stop</string>
+    <string name="skipping_">(skipping %1$d)</string>
+
+    <!-- Library -->
+    <!-- Library Actions -->
+    <string name="no_valid_entry">No valid entry selected</string>
+
+    <!-- Library Sheet -->
+    <string name="lewd">Lewd</string>
+
+    <!-- Library Grouping -->
+    <string name="tracking_status">Tracking status</string>
+    <string name="ungrouped">Ungrouped</string>
+    <string name="not_tracked">Not tracked</string>
+
+    <!-- Favorites Sync -->
+    <string name="sync_favorites">Sync EH favorites</string>
+    <string name="favorites_sync_error">Favorites sync error</string>
+    <string name="show_gallery">Show Gallery</string>
+    <string name="favorites_sync_bad_library_state">%1$s Sync will not start until the gallery is in only one category.</string>
+    <string name="favorites_syncing">Favorites syncing</string>
+    <string name="favorites_sync_error_string">An error occurred during the sync process: %1$s</string>
+    <string name="favorites_sync_done_errors">Favorites sync complete with errors</string>
+    <string name="favorites_sync_done_errors_message">Errors occurred during the sync process that were ignored:\n%1$s</string>
+    <string name="favorites_sync_verifying_library">Verifying local library</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">Gallery %1$d is in multiple categories!</string>
+    <string name="favorites_sync_downloading">Downloading favorites from remote server</string>
+    <string name="favorites_sync_failed_to_featch">Failed to fetch favorites from remote server!</string>
+    <string name="favorites_sync_could_not_fetch">Could not fetch favorites!</string>
+    <string name="favorites_sync_calculating_remote_changes">Calculating remote changes</string>
+    <string name="favorites_sync_calculating_local_changes">Calculating local changes</string>
+    <string name="favorites_sync_syncing_category_names">Updating category names</string>
+    <string name="favorites_sync_cleaning_up">Cleaning up</string>
+    <string name="favorites_sync_complete">Sync complete!</string>
+    <string name="favorites_sync_ignoring_exception">Ignoring exception!</string>
+    <string name="favorites_sync_sync_error">Sync error!</string>
+    <string name="favorites_sync_unknown_error">Unknown error: %1$s</string>
+    <string name="favorites_sync_network_error">Sync network error!</string>
+    <string name="favorites_sync_removing_galleries">Removing %1$d galleries from remote server</string>
+    <string name="favorites_sync_unable_to_delete">Unable to delete galleries from the remote servers!</string>
+    <string name="favorites_sync_adding_to_remote">Adding gallery %1$d of %2$d to remote server</string>
+    <string name="favorites_sync_remove_from_local">Removing gallery %1$d of %2$d from local library</string>
+    <string name="favorites_sync_add_to_local">Adding gallery %1$d of %2$d to local library</string>
+    <string name="favorites_sync_remote_not_exist">Remote gallery does not exist, skipping: %1$s!</string>
+    <string name="favorites_sync_failed_to_add_to_local">Failed to add gallery to local database: </string>
+    <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
+    <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) is not a valid gallery!</string>
+    <string name="favorites_sync_waiting_for_start">Waiting for sync to start</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">The gallery: %1$s is in more than one category (%2$s)!</string>
+    <string name="favorites_sync_initializing">Initializing sync</string>
+    <string name="favorites_sync_processing_throttle">%1$s\n\nSync is currently throttling (to avoid being banned from ExHentai) and may take a long time to complete.</string>
+    <string name="favorites_sync_notes">IMPORTANT FAVORITES SYNC NOTES</string>
+    <string name="favorites_sync_notes_message">
+        <![CDATA[1. Changes to category names in the app are <b>NOT</b> synced! Please <i>change the category names on ExHentai instead</i>. The category names will be copied from the ExHentai servers every sync.<br><br>2. The favorite categories on ExHentai correspond to the <b>first 10 categories in the app</b> (excluding the \'Default\' category). <i>Galleries in other categories will <b>NOT</b> be synced!</i><br><br>3. <font color=\'red\'><b>ENSURE YOU HAVE A STABLE INTERNET CONNECTION WHEN SYNC IS IN PROGRESS!</b></font> If the internet disconnects while the app is syncing, your favorites may be left in a <i>partially-synced state</i>.<br><br>4. Keep the app open while favorites are syncing. Android will close apps that are in the background sometimes and that could be bad if it happens while the app is syncing.<br><br>5. <b>Do NOT put favorites in multiple categories</b> (the app supports this). This can confuse the sync algorithm as ExHentai only allows each favorite to be in one category.<br><br>This dialog will only popup once. You can read these notes again by going to \'Settings > E-Hentai > Show favorites sync notes\'.]]>
+    </string>
+    <string name="favorites_sync_reset">Are you sure?</string>
+    <string name="favorites_sync_reset_message">Resetting the sync state can cause your next sync to be extremely slow.</string>
+    <string name="favorites_sync_conformation_message">Are you sure you wish to sync your favorites with E-Hentai?</string>
+
+    <!-- Gallery Adder -->
+    <!-- Batch Add -->
+    <string name="eh_batch_add">Batch Add</string>
+    <string name="eh_batch_add_description">Example:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nIt also supports E-H Visited exported data\n</string>
+    <string name="eh_batch_add_title">Enter the galleries to add (separated by a new line):</string>
+    <string name="eh_batch_add_button">Add Galleries</string>
+    <string name="eh_batch_add_adding_galleries">Adding galleries…</string>
+    <string name="eh_batch_add_finish">Finish</string>
+    <string name="batch_add_no_valid_galleries">No galleries to add!</string>
+    <string name="batch_add_no_valid_galleries_message">You must specify at least one gallery to add!</string>
+    <string name="batch_add">Batch add</string>
+    <string name="batch_add_ok">[OK]</string>
+    <string name="batch_add_error">[ERROR]</string>
+    <string name="batch_add_summary">\nSummary:\nAdded: %1$d gallerie(s)\nFailed: %2$d gallerie(s)</string>
+    <string name="batch_add_success_log_message">Added gallery: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Unknown entry type for gallery: %1$s</string>
+    <string name="batch_add_unknown_source_log_message">Unknown source for gallery: %1$s</string>
+    <string name="batch_add_not_exist_log_message">Gallery does not exist: %1$s</string>
+    <string name="gallery_adder_importing_gallery">Importing gallery (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">Source URI map-to-gallery error!</string>
+    <string name="gallery_adder_uri_map_to_chapter_error">Source URI map-to-chapter error!</string>
+    <string name="gallery_adder_uri_clean_error">Source URI clean error!</string>
+    <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for gallery: %1$s!</string>
+    <string name="gallery_adder_could_not_add_gallery">Could not add gallery (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_identify_chapter">Could not identify chapter (url: %1$s)!</string>
+
+    <!-- Intercept Activity -->
+    <string name="launching_app">Launching app…</string>
+    <string name="error_with_reason">Error: %1$s</string>
+    <string name="could_not_open_entry">Could not open this entry:\n\n%1$s</string>
+    <string name="loading_entry">Loading entry…</string>
+
+    <!-- Page previews -->
+    <string name="page_previews">Page previews</string>
+    <string name="more_previews">More previews</string>
+    <string name="pref_clear_page_preview_cache">Clear page preview cache</string>
+    <string name="page_preview_page_go_to">Go to</string>
+
+    <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
+    <string name="rating10">Masterpiece</string>
+    <string name="rating9">Amazing</string>
+    <string name="rating8">Great</string>
+    <string name="rating7">Good</string>
+    <string name="rating6">Okay</string>
+    <string name="rating5">Mediocre</string>
+    <string name="rating4">Bad</string>
+    <string name="rating3">Awful</string>
+    <string name="rating2">Painful</string>
+    <string name="rating1">Unbearable</string>
+    <string name="rating0">Disaster</string>
+    <string name="no_rating">No rating</string>
+
+    <!-- Gallery types -->
+    <string name="doujinshi">Doujinshi</string>
+    <string name="artist_cg">Artist CG</string>
+    <string name="game_cg">Game CG</string>
+    <string name="western">Western</string>
+    <string name="non_h">Non-H</string>
+    <string name="image_set">Image Set</string>
+    <string name="cosplay">Cosplay</string>
+    <string name="asian_porn">Asian Porn</string>
+    <string name="misc">Misc</string>
+    <string name="artbook">Artbook</string>
+    <string name="video">Video</string>
+
+    <!-- More Info Menu -->
+    <string name="more_info">More info</string>
+    <string name="alt_title">Alt Title</string>
+    <string name="id">Id</string>
+    <string name="token">Token</string>
+    <string name="is_exhentai_gallery">is Exhentai gallery</string>
+    <string name="thumbnail_url">Thumbnail url</string>
+    <string name="genre">Genre</string>
+    <string name="date_posted">Date posted</string>
+    <string name="page_count">Page count</string>
+    <string name="parent">Parent</string>
+    <string name="visible">Visible</string>
+    <string name="language">Language</string>
+    <string name="gallery_size">Gallery size</string>
+    <string name="total_favorites">Total favorites</string>
+    <string name="total_ratings">Total ratings</string>
+    <string name="average_rating">Average rating</string>
+    <string name="aged">Aged</string>
+    <string name="last_update_check">Last update check</string>
+    <string name="path">Path</string>
+    <string name="artist">Artist</string>
+    <string name="characters">Characters</string>
+    <string name="group">Group</string>
+    <string name="media_id">Media id</string>
+    <string name="japanese_title">Japanese Title</string>
+    <string name="english_title">English Title</string>
+    <string name="short_title">Short Title</string>
+    <string name="cover_image_file_type">Cover image file type</string>
+    <string name="thumbnail_image_file_type">Thumbnail image file type</string>
+    <string name="url">Url</string>
+    <string name="uploader_capital">Uploader Capitalized</string>
+    <string name="uploader">Uploader</string>
+    <string name="rating_string">Rating string</string>
+    <string name="collection">Collection</string>
+    <string name="parodies">Parodies</string>
+    <string name="author">Author</string>
+    <string name="last_chapter_number">Last chapter number</string>
+    <string name="follow_status">Follow status</string>
+    <string name="anilist_id">Anilist id</string>
+    <string name="kitsu_id">Kitsu id</string>
+    <string name="mal_id">Mal id</string>
+    <string name="manga_updates_id">Manga updates id</string>
+    <string name="anime_planet_id">Anime planet id</string>
+    <string name="translated">Translated</string>
+
+    <!-- Extra gallery info -->
+    <string name="is_visible">Visible: %1$s</string>
+    <string name="language_translated">%1$s TR</string>
+
+    <!-- Merged entry -->
+    <string name="merge_settings">Merge settings</string>
+    <string name="fetch_chapter_updates">Fetch chapter updates</string>
+    <string name="delete_merged_entry">Are you sure?</string>
+    <string name="delete_merged_entry_desc">This will remove the entry from the merge, using this will also lose any unsaved changes applied to the merged entry</string>
+    <string name="chapter_updates_merged_entry">Toggle chapter updates</string>
+    <string name="chapter_updates_merged_entry_desc">Toggling this will disable or enable chapter updates for this merged entry</string>
+    <string name="download_merged_entry">Toggle new chapter downloads</string>
+    <string name="download_merged_entry_desc">Toggling this will disable or enable chapter downloads for this merged entry</string>
+    <string name="merged_references_invalid">Merged references invalid</string>
+    <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
+    <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
+    <string name="allow_deduplication">Allow deduplication:</string>
+    <string name="deduplication_mode">Dedupe mode:</string>
+    <string name="deduplication_entry_info">Info entry:</string>
+    <string name="no_dedupe">No dedupe</string>
+    <string name="dedupe_priority">Dedupe by priority</string>
+    <string name="dedupe_most_chapters">Show source with most chapters</string>
+    <string name="dedupe_highest_chapter">Show source with highest chapter number</string>
+
+    <!-- MangaDex -->
+    <string name="md_follows_unfollowed">Unfollowed</string>
+    <string name="mangadex_sync_follows_to_library">Sync MangaDex entries to your library</string>
+    <string name="mangadex_sync_follows_to_library_summary">Pulls entries from MangaDex into your library if they are not already added.</string>
+    <string name="mangadex_preffered_source">Preferred MangaDex source</string>
+    <string name="mangadex_preffered_source_summary">Set your chosen MangaDex source, this will be used for follows and a bunch more features around the app</string>
+    <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
+    <string name="mangadex_follows">MangaDex follows</string>
+    <string name="random">Random</string>
+    <string name="mangadex_push_favorites_to_mangadex">Sync library entries to MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked entries to MangaDex as reading.</string>
+    <string name="mangadex_similar">MangaDex similar</string>
+    <string name="community_recommendations">Community recommendations</string>
+
+    <!-- Scanlator filters -->
+    <string name="select_scanlators">Scanlator groups to show</string>
+
+    <!-- Similar -->
+    <string name="similar">Similar to %1$s</string>
+
+    <!-- MangaDex relations-->
+    <string name="relation_similar">Similar</string>
+    <string name="relation_monochrome">Monochrome</string>
+    <string name="relation_main_story">Main story</string>
+    <string name="relation_adapted_from">Adapted from</string>
+    <string name="relation_based_on">Based on</string>
+    <string name="relation_prequel">Prequel</string>
+    <string name="relation_side_story">Side story</string>
+    <string name="relation_doujinshi">Doujinshi</string>
+    <string name="relation_same_franchise">Same franchise</string>
+    <string name="relation_shared_universe">Shared universe</string>
+    <string name="relation_sequel">Sequel</string>
+    <string name="relation_spin_off">Spin-off</string>
+    <string name="relation_alternate_story">Alternate story</string>
+    <string name="relation_preserialization">Pre-serialization</string>
+    <string name="relation_colored">Colored</string>
+    <string name="relation_serialization">Serialization</string>
+    <string name="relation_alternate_version">Alternate version</string>
+
+    <!-- Stats page -->
+    <string name="include_all_read_entries">Include all read entries</string>
+    <string name="ignore_non_library_entries">Ignore non-library entries</string>
+
+    <!-- Humanize time -->
+    <string name="humanize_fallback">moments ago</string>
+</resources>

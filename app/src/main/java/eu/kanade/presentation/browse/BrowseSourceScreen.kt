@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.browse.components.BrowseSourceComfortableGrid
@@ -23,17 +22,19 @@ import eu.kanade.presentation.browse.components.BrowseSourceEHentaiList
 import eu.kanade.presentation.browse.components.BrowseSourceList
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.formattedMessage
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.isEhBasedSource
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.core.i18n.localize
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.localize
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.EmptyScreenAction
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -71,7 +72,7 @@ fun BrowseSourceContent(
         if (mangaList.itemCount > 0 && errorState != null && errorState is LoadState.Error) {
             val result = snackbarHostState.showSnackbar(
                 message = getErrorMessage(errorState),
-                actionLabel = context.getString(R.string.action_retry),
+                actionLabel = context.localize(MR.strings.action_retry),
                 duration = SnackbarDuration.Indefinite,
             )
             when (result) {
@@ -88,7 +89,7 @@ fun BrowseSourceContent(
             actions = if (source is LocalSource /* SY --> */ && onLocalSourceHelpClick != null /* SY <-- */) {
                 persistentListOf(
                     EmptyScreenAction(
-                        stringResId = R.string.local_source_help_guide,
+                        stringRes = MR.strings.local_source_help_guide,
                         icon = Icons.AutoMirrored.Outlined.HelpOutline,
                         onClick = onLocalSourceHelpClick,
                     ),
@@ -96,7 +97,7 @@ fun BrowseSourceContent(
             } else {
                 listOfNotNull(
                     EmptyScreenAction(
-                        stringResId = R.string.action_retry,
+                        stringRes = MR.strings.action_retry,
                         icon = Icons.Outlined.Refresh,
                         onClick = mangaList::refresh,
                     ),
@@ -191,7 +192,7 @@ internal fun MissingSourceScreen(
         },
     ) { paddingValues ->
         EmptyScreen(
-            message = stringResource(R.string.source_not_installed, source.toString()),
+            message = localize(MR.strings.source_not_installed, source.toString()),
             modifier = Modifier.padding(paddingValues),
         )
     }
