@@ -68,7 +68,7 @@ import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
-import tachiyomi.core.i18n.localize
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.system.logcat
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
@@ -129,8 +129,8 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                         Notifications.ID_INCOGNITO_MODE,
                         Notifications.CHANNEL_INCOGNITO_MODE,
                     ) {
-                        setContentTitle(localize(MR.strings.pref_incognito_mode))
-                        setContentText(localize(MR.strings.notification_incognito_text))
+                        setContentTitle(stringResource(MR.strings.pref_incognito_mode))
+                        setContentText(stringResource(MR.strings.notification_incognito_text))
                         setSmallIcon(R.drawable.ic_glasses_24dp)
                         setOngoing(true)
 
