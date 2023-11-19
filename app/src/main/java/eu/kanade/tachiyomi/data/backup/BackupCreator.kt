@@ -52,7 +52,6 @@ import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.manga.MangaMapper
-import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.history.interactor.GetHistory
@@ -73,7 +72,6 @@ class BackupCreator(
 
     private val handler: DatabaseHandler = Injekt.get()
     private val sourceManager: SourceManager = Injekt.get()
-    private val backupPreferences: BackupPreferences = Injekt.get()
     private val getCategories: GetCategories = Injekt.get()
     private val getFavorites: GetFavorites = Injekt.get()
     private val getHistory: GetHistory = Injekt.get()
@@ -125,11 +123,10 @@ class BackupCreator(
                     dir = dir.createDirectory("automatic")
 
                     // Delete older backups
-                    val numberOfBackups = backupPreferences.numberOfBackups().get()
                     dir.listFiles { _, filename -> Backup.filenameRegex.matches(filename) }
                         .orEmpty()
                         .sortedByDescending { it.name }
-                        .drop(numberOfBackups - 1)
+                        .drop(MAX_AUTO_BACKUPS - 1)
                         .forEach { it.delete() }
 
                     // Create new file to place backup
@@ -330,3 +327,5 @@ class BackupCreator(
             }
     }
 }
+
+private val MAX_AUTO_BACKUPS: Int = 4
