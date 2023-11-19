@@ -37,3 +37,9 @@ multiplatformResources {
     multiplatformResourcesClassName = "SYMR"
     multiplatformResourcesPackage = "tachiyomi.i18n.sy"
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.freeCompilerArgs += listOf(
+        "-Xexpect-actual-classes",
+    )
+}
