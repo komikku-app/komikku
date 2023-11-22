@@ -330,17 +330,16 @@ private fun MangaScreenSmallImpl(
 ) {
     val chapterListState = rememberLazyListState()
 
-    val chapters = remember(state) { state.processedChapters }
-    val listItem = remember(state) { state.chapterListItems }
+    val (chapters, listItem, isAnySelected) = remember(state) {
+        Triple(
+            first = state.processedChapters,
+            second = state.chapterListItems,
+            third = state.isAnySelected,
+        )
+    }
     // SY -->
     val metadataDescription = metadataDescription(state.source)
     // SY <--
-
-    val isAnySelected by remember {
-        derivedStateOf {
-            chapters.fastAny { it.selected }
-        }
-    }
 
     val internalOnBackPressed = {
         if (isAnySelected) {
@@ -660,13 +659,12 @@ fun MangaScreenLargeImpl(
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
 
-    val chapters = remember(state) { state.processedChapters }
-    val listItem = remember(state) { state.chapterListItems }
-
-    val isAnySelected by remember {
-        derivedStateOf {
-            chapters.fastAny { it.selected }
-        }
+    val (chapters, listItem, isAnySelected) = remember(state) {
+        Triple(
+            first = state.processedChapters,
+            second = state.chapterListItems,
+            third = state.isAnySelected,
+        )
     }
 
     // SY -->
