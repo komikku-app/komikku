@@ -623,7 +623,8 @@ object EXHMigrations {
                                 preferenceStore.getString(key).delete()
                             }
                         }
-
+                }
+                if (oldVersion under 59) {
                     val prefsToReplace = listOf(
                         "pref_download_only",
                         "incognito_mode",
@@ -633,6 +634,9 @@ object EXHMigrations {
                         "library_update_last_timestamp",
                         "library_unseen_updates_count",
                         "last_used_category",
+                        "last_app_check",
+                        "last_ext_check",
+                        "last_version_code",
                         "skip_pre_migration",
                         "eh_auto_update_stats",
                     )
