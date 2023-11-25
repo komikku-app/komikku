@@ -107,8 +107,8 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
             if (packageName != process) WebView.setDataDirectorySuffix(process)
         }
 
-        Injekt.importModule(AppModule(this))
         Injekt.importModule(PreferenceModule(this))
+        Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
         // SY -->
         Injekt.importModule(SYPreferenceModule(this))
