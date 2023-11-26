@@ -7,6 +7,8 @@ import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
+import tachiyomi.core.storage.nameWithoutExtension
+import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import java.io.File
@@ -20,13 +22,13 @@ actual class LocalCoverManager(
     private val fileSystem: LocalSourceFileSystem,
 ) {
 
-    actual fun find(mangaUrl: String): File? {
+    actual fun find(mangaUrl: String): UniFile? {
         return fileSystem.getFilesInMangaDirectory(mangaUrl)
             // Get all file whose names start with "cover"
             .filter { it.isFile && it.nameWithoutExtension.equals("cover", ignoreCase = true) }
             // Get the first actual image
             .firstOrNull {
-                ImageUtil.isImage(it.name) { it.inputStream() } || it.name == COVER_ARCHIVE_NAME
+                ImageUtil.isImage(it.name) { it.openInputStream() } || it.name == COVER_ARCHIVE_NAME
             }
     }
 
@@ -36,7 +38,7 @@ actual class LocalCoverManager(
         // SY -->
         encrypted: Boolean,
         // SY <--
-    ): File? {
+    ): UniFile? {
         val directory = fileSystem.getMangaDirectory(manga.url)
         if (directory == null) {
             inputStream.close()
@@ -46,38 +48,38 @@ actual class LocalCoverManager(
         var targetFile = find(manga.url)
         if (targetFile == null) {
             // SY -->
-            if (encrypted) {
-                targetFile = File(directory.absolutePath, COVER_ARCHIVE_NAME)
+            targetFile = if (encrypted) {
+                directory.createFile(COVER_ARCHIVE_NAME)
             } else {
-                targetFile = File(directory.absolutePath, DEFAULT_COVER_NAME)
-                targetFile.createNewFile()
+                directory.createFile(DEFAULT_COVER_NAME)
             }
             // SY <--
         }
 
+        targetFile!!
+
         // It might not exist at this point
-        targetFile.parentFile?.mkdirs()
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
-                val zip4j = ZipFile(targetFile)
+                val zip4j = ZipFile(targetFile.toFile())
                 val zipParameters = ZipParameters()
                 zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
                 CbzCrypto.setZipParametersEncrypted(zipParameters)
                 zipParameters.fileNameInZip = DEFAULT_COVER_NAME
                 zip4j.addStream(input, zipParameters)
 
-                DiskUtil.createNoMediaFile(UniFile.fromFile(directory), context)
+                DiskUtil.createNoMediaFile(directory, context)
 
-                manga.thumbnail_url = zip4j.file.absolutePath
-                return zip4j.file
+                manga.thumbnail_url = targetFile.uri.toString()
+                return targetFile
             } else {
                 // SY <--
-                targetFile.outputStream().use { output ->
+                targetFile.openOutputStream().use { output ->
                     input.copyTo(output)
                 }
-                DiskUtil.createNoMediaFile(UniFile.fromFile(directory), context)
-                manga.thumbnail_url = targetFile.absolutePath
+                DiskUtil.createNoMediaFile(directory, context)
+                manga.thumbnail_url = targetFile.uri.toString()
                 return targetFile
             }
         }

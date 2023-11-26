@@ -43,7 +43,8 @@ import kotlin.math.min
 
 object ImageUtil {
 
-    fun isImage(name: String, openStream: (() -> InputStream)? = null): Boolean {
+    fun isImage(name: String?, openStream: (() -> InputStream)? = null): Boolean {
+        if (name == null) return false
         // SY -->
         if (File(name).extension.equals("cbi", ignoreCase = true)) return true
         // SY <--

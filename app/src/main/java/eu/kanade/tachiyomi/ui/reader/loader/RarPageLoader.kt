@@ -3,10 +3,12 @@ package eu.kanade.tachiyomi.ui.reader.loader
 import android.app.Application
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
+import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
+import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -17,9 +19,9 @@ import java.io.PipedOutputStream
 /**
  * Loader used to load a chapter from a .rar or .cbr file.
  */
-internal class RarPageLoader(file: File) : PageLoader() {
+internal class RarPageLoader(file: UniFile) : PageLoader() {
 
-    private val rar = Archive(file)
+    private val rar = Archive(file.toFile())
 
     // SY -->
     private val context: Application by injectLazy()
@@ -31,7 +33,7 @@ internal class RarPageLoader(file: File) : PageLoader() {
     init {
         if (readerPreferences.cacheArchiveMangaOnDisk().get()) {
             tmpDir.mkdirs()
-            Archive(file).use { rar ->
+            Archive(file.toFile()).use { rar ->
                 rar.fileHeaders.asSequence()
                     .filterNot { it.isDirectory }
                     .forEach { header ->
@@ -52,7 +54,7 @@ internal class RarPageLoader(file: File) : PageLoader() {
     override suspend fun getPages(): List<ReaderPage> {
         // SY -->
         if (readerPreferences.cacheArchiveMangaOnDisk().get()) {
-            return DirectoryPageLoader(tmpDir).getPages()
+            return DirectoryPageLoader(UniFile.fromFile(tmpDir)!!).getPages()
         }
         // SY <--
         return rar.fileHeaders.asSequence()
