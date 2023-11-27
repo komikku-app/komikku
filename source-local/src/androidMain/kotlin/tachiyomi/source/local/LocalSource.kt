@@ -12,6 +12,8 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.storage.EpubFile
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -40,8 +42,7 @@ import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.Archive
 import tachiyomi.source.local.io.Format
 import tachiyomi.source.local.io.LocalSourceFileSystem
-import tachiyomi.source.local.metadata.fillChapterMetadata
-import tachiyomi.source.local.metadata.fillMangaMetadata
+import tachiyomi.source.local.metadata.fillMetadata
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.InputStream
@@ -80,20 +81,17 @@ actual class LocalSource(
 
     override suspend fun getLatestUpdates(page: Int) = getSearchManga(page, "", LATEST_FILTERS)
 
-    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
-        val baseDirFiles = fileSystem.getFilesInBaseDirectory()
-        val lastModifiedLimit by lazy {
-            if (filters === LATEST_FILTERS) {
-                System.currentTimeMillis() - LATEST_THRESHOLD
-            } else {
-                0L
-            }
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage = withIOContext {
+        val lastModifiedLimit = if (filters === LATEST_FILTERS) {
+            System.currentTimeMillis() - LATEST_THRESHOLD
+        } else {
+            0L
         }
         // SY -->
         val allowLocalSourceHiddenFolders = allowHiddenFiles()
         // SY <--
 
-        var mangaDirs = baseDirFiles
+        var mangaDirs = fileSystem.getFilesInBaseDirectory()
             // Filter out files that are hidden and is not a folder
             .filter {
                 it.isDirectory &&
@@ -103,8 +101,10 @@ actual class LocalSource(
                         ) /* SY <-- */
             }
             .distinctBy { it.name }
-            .filter { // Filter by query or last modified
-                if (lastModifiedLimit == 0L) {
+            .filter {
+                if (lastModifiedLimit == 0L && query.isBlank()) {
+                    true
+                } else if (lastModifiedLimit == 0L) {
                     it.name.orEmpty().contains(query, ignoreCase = true)
                 } else {
                     it.lastModified() >= lastModifiedLimit
@@ -127,47 +127,29 @@ actual class LocalSource(
                         mangaDirs.sortedByDescending(UniFile::lastModified)
                     }
                 }
-
                 else -> {
                     /* Do nothing */
                 }
             }
         }
 
-        // Transform mangaDirs to list of SManga
-        val mangas = mangaDirs.map { mangaDir ->
-            SManga.create().apply {
-                title = mangaDir.name.orEmpty()
-                url = mangaDir.name.orEmpty()
+        val mangas = mangaDirs
+            .map { mangaDir ->
+                async {
+                    SManga.create().apply {
+                        title = mangaDir.name.orEmpty()
+                        url = mangaDir.name.orEmpty()
 
-                // Try to find the cover
-                coverManager.find(mangaDir.name.orEmpty())
-                    ?.takeIf(UniFile::exists)
-                    ?.let { thumbnail_url = it.uri.toString() }
-            }
-        }
-
-        // Fetch chapters of all the manga
-        mangas.forEach { manga ->
-            val chapters = getChapterList(manga)
-            if (chapters.isNotEmpty()) {
-                val chapter = chapters.last()
-                val format = getFormat(chapter)
-
-                if (format is Format.Epub) {
-                    EpubFile(format.file).use { epub ->
-                        epub.fillMangaMetadata(manga)
+                        // Try to find the cover
+                        coverManager.find(mangaDir.name.orEmpty())?.let {
+                            thumbnail_url = it.filePath
+                        }
                     }
                 }
-
-                // Copy the cover from the first chapter found if not available
-                if (manga.thumbnail_url == null) {
-                    updateCover(chapter, manga)
-                }
             }
-        }
+            .awaitAll()
 
-        return MangasPage(mangas.toList(), false)
+        MangasPage(mangas, false)
     }
 
     // SY -->
@@ -190,13 +172,13 @@ actual class LocalSource(
     // Manga details related
     override suspend fun getMangaDetails(manga: SManga): SManga = withIOContext {
         coverManager.find(manga.url)?.let {
-            manga.thumbnail_url = it.uri.toString()
+            manga.thumbnail_url = it.filePath
         }
 
         // Augment manga details based on metadata files
         try {
-            val mangaDir = fileSystem.getMangaDirectory(manga.url)
-            val mangaDirFiles = fileSystem.getFilesInMangaDirectory(manga.url).toList()
+            val mangaDir by lazy { fileSystem.getMangaDirectory(manga.url) }
+            val mangaDirFiles = fileSystem.getFilesInMangaDirectory(manga.url)
 
             val comicInfoFile = mangaDirFiles
                 .firstOrNull { it.name == COMIC_INFO_FILE }
@@ -272,7 +254,7 @@ actual class LocalSource(
                     } // SY <--
                     else {
                         // Avoid re-scanning
-                        File("$folderPath/.noxml").createNewFile()
+                        mangaDir?.createFile(".noxml")
                     }
                 }
             }
@@ -353,18 +335,18 @@ actual class LocalSource(
     }
 
     // Chapters
-    override suspend fun getChapterList(manga: SManga): List<SChapter> {
-        return fileSystem.getFilesInMangaDirectory(manga.url)
+    override suspend fun getChapterList(manga: SManga): List<SChapter> = withIOContext {
+        val chapters = fileSystem.getFilesInMangaDirectory(manga.url)
             // Only keep supported formats
             .filter { it.isDirectory || Archive.isSupported(it) }
             .map { chapterFile ->
                 SChapter.create().apply {
                     url = "${manga.url}/${chapterFile.name}"
                     name = if (chapterFile.isDirectory) {
-                        chapterFile.name.orEmpty()
+                        chapterFile.name
                     } else {
-                        chapterFile.nameWithoutExtension.orEmpty()
-                    }
+                        chapterFile.nameWithoutExtension
+                    }.orEmpty()
                     date_upload = chapterFile.lastModified()
                     chapter_number = ChapterRecognition
                         .parseChapterNumber(manga.title, this.name, this.chapter_number.toDouble())
@@ -373,7 +355,7 @@ actual class LocalSource(
                     val format = Format.valueOf(chapterFile)
                     if (format is Format.Epub) {
                         EpubFile(format.file).use { epub ->
-                            epub.fillChapterMetadata(this)
+                            epub.fillMetadata(manga, this)
                         }
                     }
                 }
@@ -382,7 +364,15 @@ actual class LocalSource(
                 val c = c2.chapter_number.compareTo(c1.chapter_number)
                 if (c == 0) c2.name.compareToCaseInsensitiveNaturalOrder(c1.name) else c
             }
-            .toList()
+
+        // Copy the cover from the first chapter found if not available
+        if (manga.thumbnail_url.isNullOrBlank()) {
+            chapters.lastOrNull()?.let { chapter ->
+                updateCover(chapter, manga)
+            }
+        }
+
+        chapters
     }
 
     // Filters
@@ -393,7 +383,7 @@ actual class LocalSource(
 
     fun getFormat(chapter: SChapter): Format {
         try {
-            val (mangaDirName, chapterName) = chapter.url.split(File.separator, limit = 2)
+            val (mangaDirName, chapterName) = chapter.url.split('/', limit = 2)
             return fileSystem.getBaseDirectory()
                 ?.findFile(mangaDirName)
                 ?.findFile(chapterName)
