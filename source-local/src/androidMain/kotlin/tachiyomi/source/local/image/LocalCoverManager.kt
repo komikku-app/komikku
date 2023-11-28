@@ -58,7 +58,6 @@ actual class LocalCoverManager(
 
         targetFile!!
 
-        // It might not exist at this point
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
