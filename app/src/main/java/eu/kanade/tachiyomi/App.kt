@@ -27,7 +27,6 @@ import com.elvishew.xlog.XLog
 import com.elvishew.xlog.printer.AndroidPrinter
 import com.elvishew.xlog.printer.Printer
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy
-import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
@@ -67,7 +66,6 @@ import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
 import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
@@ -78,7 +76,6 @@ import uy.kohesive.injekt.injectLazy
 import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.time.Duration.Companion.days
 
 class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
@@ -250,8 +247,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         val printers = mutableListOf<Printer>(AndroidPrinter())
 
         val logFolder = Injekt.get<StorageManager>().getLogsDirectory()
-            ?.toFile()
-            ?.absolutePath
 
         if (logFolder != null) {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
@@ -269,7 +264,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                     flattener { timeMillis, level, tag, message ->
                         "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
                     }
-                    cleanStrategy = FileLastModifiedCleanStrategy(7.days.inWholeMilliseconds)
                     backupStrategy = NeverBackupStrategy()
                 }
         }

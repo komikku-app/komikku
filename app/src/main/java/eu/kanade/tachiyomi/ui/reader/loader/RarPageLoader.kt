@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
-import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -19,9 +18,9 @@ import java.io.PipedOutputStream
 /**
  * Loader used to load a chapter from a .rar or .cbr file.
  */
-internal class RarPageLoader(file: UniFile) : PageLoader() {
+internal class RarPageLoader(file: File) : PageLoader() {
 
-    private val rar = Archive(file.toFile())
+    private val rar = Archive(file)
 
     // SY -->
     private val context: Application by injectLazy()
@@ -33,7 +32,7 @@ internal class RarPageLoader(file: UniFile) : PageLoader() {
     init {
         if (readerPreferences.cacheArchiveMangaOnDisk().get()) {
             tmpDir.mkdirs()
-            Archive(file.toFile()).use { rar ->
+            Archive(file).use { rar ->
                 rar.fileHeaders.asSequence()
                     .filterNot { it.isDirectory }
                     .forEach { header ->

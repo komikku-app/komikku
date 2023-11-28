@@ -30,7 +30,7 @@ import tachiyomi.core.metadata.comicinfo.getComicInfo
 import tachiyomi.core.metadata.tachiyomi.MangaDetails
 import tachiyomi.core.storage.extension
 import tachiyomi.core.storage.nameWithoutExtension
-import tachiyomi.core.storage.toFile
+import tachiyomi.core.storage.toTempFile
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
@@ -154,12 +154,12 @@ actual class LocalSource(
 
     // SY -->
     fun updateMangaInfo(manga: SManga) {
-        val directory = fileSystem.getFilesInBaseDirectory().map { File(it.toFile(), manga.url) }.find {
-            it.exists()
+        val directory = fileSystem.getFilesInBaseDirectory().map { it.createDirectory(manga.url) }.find {
+            it?.exists() == true
         } ?: return
-        val existingFileName = directory.listFiles()?.find { it.extension == "json" }?.name
-        val file = File(directory, existingFileName ?: "info.json")
-        file.outputStream().use {
+        val existingFile = directory.listFiles()?.find { it.extension == "json" }
+        val file = existingFile ?: directory.createFile("info.json") ?: return
+        file.openOutputStream().use {
             json.encodeToStream(manga.toJson(), it)
         }
     }
@@ -199,7 +199,7 @@ actual class LocalSource(
                 }
                 // SY -->
                 comicInfoArchiveFile != null -> {
-                    val comicInfoArchive = ZipFile(comicInfoArchiveFile.toFile())
+                    val comicInfoArchive = ZipFile(comicInfoArchiveFile.toTempFile(context))
                     noXmlFile?.delete()
 
                     if (CbzCrypto.checkCbzPassword(comicInfoArchive, CbzCrypto.getDecryptedPasswordCbz())) {
@@ -269,7 +269,7 @@ actual class LocalSource(
         for (chapter in chapterArchives) {
             when (Format.valueOf(chapter)) {
                 is Format.Zip -> {
-                    ZipFile(chapter.toFile()).use { zip: ZipFile ->
+                    ZipFile(chapter.toTempFile(context)).use { zip: ZipFile ->
                         // SY -->
                         if (zip.isEncrypted && !CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())
                         ) {
@@ -288,7 +288,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Rar -> {
-                    JunrarArchive(chapter.toFile()).use { rar ->
+                    JunrarArchive(chapter.toTempFile(context)).use { rar ->
                         rar.fileHeaders.firstOrNull { it.fileName == COMIC_INFO_FILE }?.let { comicInfoFile ->
                             rar.getInputStream(comicInfoFile).buffered().use { stream ->
                                 return copyComicInfoFile(stream, folderPath)
@@ -354,7 +354,7 @@ actual class LocalSource(
 
                     val format = Format.valueOf(chapterFile)
                     if (format is Format.Epub) {
-                        EpubFile(format.file).use { epub ->
+                        EpubFile(format.file.toTempFile(context)).use { epub ->
                             epub.fillMetadata(manga, this)
                         }
                     }
@@ -413,7 +413,7 @@ actual class LocalSource(
                     entry?.let { coverManager.update(manga, it.openInputStream()) }
                 }
                 is Format.Zip -> {
-                    ZipFile(format.file.toFile()).use { zip ->
+                    ZipFile(format.file.toTempFile(context)).use { zip ->
                         // SY -->
                         var encrypted = false
                         if (zip.isEncrypted) {
@@ -428,7 +428,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Rar -> {
-                    JunrarArchive(format.file.toFile()).use { archive ->
+                    JunrarArchive(format.file.toTempFile(context)).use { archive ->
                         val entry = archive.fileHeaders
                             .sortedWith { f1, f2 -> f1.fileName.compareToCaseInsensitiveNaturalOrder(f2.fileName) }
                             .find { !it.isDirectory && ImageUtil.isImage(it.fileName) { archive.getInputStream(it) } }
@@ -437,7 +437,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Epub -> {
-                    EpubFile(format.file).use { epub ->
+                    EpubFile(format.file.toTempFile(context)).use { epub ->
                         val entry = epub.getImagesFromPages()
                             .firstOrNull()
                             ?.let { epub.getEntry(it) }

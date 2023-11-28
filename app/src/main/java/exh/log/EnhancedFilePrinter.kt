@@ -3,14 +3,14 @@ package exh.log
 import com.elvishew.xlog.internal.DefaultsFactory
 import com.elvishew.xlog.printer.Printer
 import com.elvishew.xlog.printer.file.backup.BackupStrategy
-import com.elvishew.xlog.printer.file.clean.CleanStrategy
 import com.elvishew.xlog.printer.file.naming.FileNameGenerator
+import com.hippo.unifile.UniFile
+import exh.log.EnhancedFilePrinter.Builder
 import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
+import kotlin.time.Duration.Companion.days
 import com.elvishew.xlog.flattener.Flattener2 as Flattener
 
 /**
@@ -18,7 +18,7 @@ import com.elvishew.xlog.flattener.Flattener2 as Flattener
  *
  * Use the [Builder] to construct a [EnhancedFilePrinter] object.
  *
- * @param folderPath The folder path of log file.
+ * @param folder The folder path of log file.
  * @param fileNameGenerator the file name generator for log file.
  * @param backupStrategy the backup strategy for log file.
  * @param cleanStrategy The clean strategy for log file.
@@ -27,10 +27,9 @@ import com.elvishew.xlog.flattener.Flattener2 as Flattener
  */
 @Suppress("unused")
 class EnhancedFilePrinter internal constructor(
-    private val folderPath: String,
+    private val folder: UniFile,
     private val fileNameGenerator: FileNameGenerator,
     private val backupStrategy: BackupStrategy,
-    private val cleanStrategy: CleanStrategy,
     private val flattener: Flattener,
 ) : Printer {
     /**
@@ -40,16 +39,6 @@ class EnhancedFilePrinter internal constructor(
 
     @Volatile
     private var worker: Worker? = null
-
-    /**
-     * Make sure the folder of log file exists.
-     */
-    private fun checkLogFolder() {
-        val folder = File(folderPath)
-        if (!folder.exists()) {
-            folder.mkdirs()
-        }
-    }
 
     override fun println(logLevel: Int, tag: String, msg: String) {
         val timeMillis = System.currentTimeMillis()
@@ -68,8 +57,8 @@ class EnhancedFilePrinter internal constructor(
      * Do the real job of writing log to file.
      */
     private fun doPrintln(timeMillis: Long, logLevel: Int, tag: String, msg: String) {
-        var lastFileName = writer.lastFileName
-        if (lastFileName == null || fileNameGenerator.isFileNameChangeable) {
+        val lastFileName = writer.lastFileName
+        if (fileNameGenerator.isFileNameChangeable) {
             val newFileName = fileNameGenerator.generateFileName(logLevel, System.currentTimeMillis())
             require(!(newFileName == null || newFileName.trim { it <= ' ' }.isEmpty())) { "File name should not be empty." }
             if (newFileName != lastFileName) {
@@ -77,37 +66,29 @@ class EnhancedFilePrinter internal constructor(
                     writer.close()
                 }
                 cleanLogFilesIfNecessary()
-                if (writer.open(newFileName).not()) {
+                if (writer.open(folder.createFile(newFileName)!!).not()) {
                     return
                 }
-                lastFileName = newFileName
-            }
-        }
-        val lastFile = writer.file ?: return
-        if (backupStrategy.shouldBackup(lastFile)) {
-            // Backup the log file, and create a new log file.
-            writer.close()
-            val backupFile = File(folderPath, "$lastFileName.bak")
-            if (backupFile.exists()) {
-                backupFile.delete()
-            }
-            lastFile.renameTo(backupFile)
-            if (writer.open(lastFileName).not()) {
-                return
             }
         }
         val flattenedLog = flattener.flatten(timeMillis, logLevel, tag, msg).toString()
         writer.appendLog(flattenedLog)
     }
 
+    private val maxTimeMillis = 7.days.inWholeMilliseconds
+    private fun shouldClean(file: UniFile): Boolean {
+        val currentTimeMillis = System.currentTimeMillis()
+        val lastModified = file.lastModified()
+        return currentTimeMillis - lastModified > maxTimeMillis
+    }
+
     /**
      * Clean log files if should clean follow strategy
      */
     private fun cleanLogFilesIfNecessary() {
-        val logDir = File(folderPath)
-        logDir.listFiles().orEmpty()
+        folder.listFiles().orEmpty()
             .asSequence()
-            .filter { cleanStrategy.shouldClean(it) }
+            .filter { shouldClean(it) }
             .forEach { it.delete() }
     }
 
@@ -115,7 +96,7 @@ class EnhancedFilePrinter internal constructor(
      * Builder for [EnhancedFilePrinter].
      * @param folderPath the folder path of log file
      */
-    class Builder(private val folderPath: String) {
+    class Builder(private val folder: UniFile) {
         /**
          * The file name generator for log file.
          */
@@ -125,11 +106,6 @@ class EnhancedFilePrinter internal constructor(
          * The backup strategy for log file.
          */
         var backupStrategy: BackupStrategy? = null
-
-        /**
-         * The clean strategy for log file.
-         */
-        var cleanStrategy: CleanStrategy? = null
 
         /**
          * The flattener when print a log.
@@ -159,17 +135,6 @@ class EnhancedFilePrinter internal constructor(
         }
 
         /**
-         * Set the clean strategy for log file.
-         *
-         * @param cleanStrategy the clean strategy for log file
-         * @return the builder
-         */
-        fun cleanStrategy(cleanStrategy: CleanStrategy): Builder {
-            this.cleanStrategy = cleanStrategy
-            return this
-        }
-
-        /**
          * Set the flattener when print a log.
          *
          * @param flattener the flattener when print a log
@@ -187,17 +152,16 @@ class EnhancedFilePrinter internal constructor(
          */
         fun build(): EnhancedFilePrinter {
             return EnhancedFilePrinter(
-                folderPath,
+                folder,
                 fileNameGenerator ?: DefaultsFactory.createFileNameGenerator(),
                 backupStrategy ?: DefaultsFactory.createBackupStrategy(),
-                cleanStrategy ?: DefaultsFactory.createCleanStrategy(),
                 flattener ?: DefaultsFactory.createFlattener2(),
             )
         }
 
         companion object {
-            operator fun invoke(folderPath: String, block: Builder.() -> Unit): EnhancedFilePrinter {
-                return Builder(folderPath).apply(block).build()
+            operator fun invoke(folder: UniFile, block: Builder.() -> Unit): EnhancedFilePrinter {
+                return Builder(folder).apply(block).build()
             }
         }
     }
@@ -271,9 +235,6 @@ class EnhancedFilePrinter internal constructor(
          * Get the name of last used log file.
          * @return the name of last used log file, maybe null
          */
-        /**
-         * The file name of last used log file.
-         */
         var lastFileName: String? = null
             private set
         /**
@@ -281,10 +242,7 @@ class EnhancedFilePrinter internal constructor(
          *
          * @return the current log file, maybe null
          */
-        /**
-         * The current log file.
-         */
-        var file: File? = null
+        var file: UniFile? = null
             private set
 
         private var bufferedWriter: BufferedWriter? = null
@@ -303,15 +261,10 @@ class EnhancedFilePrinter internal constructor(
          * @param newFileName the specific file name
          * @return true if opened successfully, false otherwise
          */
-        fun open(newFileName: String): Boolean {
+        fun open(file: UniFile): Boolean {
             return try {
-                val file = File(folderPath, newFileName)
-                if (file.exists().not()) {
-                    (file.parentFile ?: File(file.absolutePath.substringBeforeLast(File.separatorChar))).mkdirs()
-                    file.createNewFile()
-                }
-                bufferedWriter = FileWriter(file, true).buffered()
-                lastFileName = newFileName
+                bufferedWriter = file.openOutputStream().bufferedWriter()
+                lastFileName = file.name
                 this.file = file
                 true
             } catch (e: Exception) {
@@ -370,6 +323,5 @@ class EnhancedFilePrinter internal constructor(
         if (USE_WORKER) {
             worker = Worker()
         }
-        checkLogFolder()
     }
 }

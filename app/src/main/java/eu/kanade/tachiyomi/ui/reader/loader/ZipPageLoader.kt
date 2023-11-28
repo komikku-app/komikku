@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
@@ -21,7 +20,7 @@ import net.lingala.zip4j.ZipFile as Zip4jFile
 /**
  * Loader used to load a chapter from a .zip or .cbz file.
  */
-internal class ZipPageLoader(file: UniFile) : PageLoader() {
+internal class ZipPageLoader(file: File) : PageLoader() {
 
     // SY -->
     private val context: Application by injectLazy()
@@ -29,12 +28,12 @@ internal class ZipPageLoader(file: UniFile) : PageLoader() {
     private val tmpDir = File(context.externalCacheDir, "reader_${file.hashCode()}").also {
         it.deleteRecursively()
     }
-    private val zip4j: Zip4jFile = Zip4jFile(file.toFile())
+    private val zip4j: Zip4jFile = Zip4jFile(file)
     private val zip: ZipFile? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (!zip4j.isEncrypted) ZipFile(file.toFile(), StandardCharsets.ISO_8859_1) else null
+            if (!zip4j.isEncrypted) ZipFile(file, StandardCharsets.ISO_8859_1) else null
         } else {
-            if (!zip4j.isEncrypted) ZipFile(file.toFile()) else null
+            if (!zip4j.isEncrypted) ZipFile(file) else null
         }
 
     init {
@@ -42,7 +41,7 @@ internal class ZipPageLoader(file: UniFile) : PageLoader() {
             zip4j.charset = StandardCharsets.ISO_8859_1
         }
 
-        Zip4jFile(file.toFile()).use { zip ->
+        Zip4jFile(file).use { zip ->
             if (zip.isEncrypted) {
                 if (!CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())) {
                     this.recycle()

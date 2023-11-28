@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import tachiyomi.core.storage.nameWithoutExtension
-import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import java.io.File
@@ -61,12 +60,22 @@ actual class LocalCoverManager(
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
-                val zip4j = ZipFile(targetFile.toFile())
+                val tempFile = File.createTempFile(
+                    targetFile.nameWithoutExtension.orEmpty(),
+                    null,
+                )
+                val zip4j = ZipFile(tempFile)
                 val zipParameters = ZipParameters()
                 zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
                 CbzCrypto.setZipParametersEncrypted(zipParameters)
                 zipParameters.fileNameInZip = DEFAULT_COVER_NAME
                 zip4j.addStream(input, zipParameters)
+                zip4j.close()
+                targetFile.openOutputStream().use { output ->
+                    tempFile.inputStream().use { input ->
+                        input.copyTo(output)
+                    }
+                }
 
                 DiskUtil.createNoMediaFile(directory, context)
 
