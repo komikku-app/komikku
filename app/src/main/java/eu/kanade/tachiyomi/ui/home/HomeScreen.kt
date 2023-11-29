@@ -70,6 +70,7 @@ object HomeScreen : Screen() {
     private val showBottomNavEvent = Channel<Boolean>()
 
     private const val TabFadeDuration = 200
+    private const val TabNavigatorKey = "HomeTabs"
 
     private val tabs = listOf(
         LibraryTab,
@@ -90,6 +91,7 @@ object HomeScreen : Screen() {
         // SY <--
         TabNavigator(
             tab = LibraryTab,
+            key = TabNavigatorKey,
         ) { tabNavigator ->
             // Provide usable navigator to content screen
             CompositionLocalProvider(LocalNavigator provides navigator) {
