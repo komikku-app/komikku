@@ -172,10 +172,7 @@ class Downloader(
 
         isPaused = false
 
-        // Prevent recursion when DownloadService.onDestroy() calls downloader.stop()
-        if (DownloadService.isRunning.value) {
-            DownloadService.stop(context)
-        }
+        DownloadJob.stop(context)
     }
 
     /**
@@ -323,7 +320,7 @@ class Downloader(
                         )
                     }
                 }
-                DownloadService.start(context)
+                DownloadJob.start(context)
             }
         }
     }
