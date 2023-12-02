@@ -47,7 +47,7 @@ class InterceptActivity : BaseActivity() {
     private val status: MutableStateFlow<InterceptResult> = MutableStateFlow(InterceptResult.Idle)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransitionCompat(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
+        overridePendingTransition(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
         super.onCreate(savedInstanceState)
 
         setComposeContent {
@@ -143,7 +143,7 @@ class InterceptActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransitionCompat(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
+        overridePendingTransition(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
     }
 
     private val galleryAdder = GalleryAdder()
