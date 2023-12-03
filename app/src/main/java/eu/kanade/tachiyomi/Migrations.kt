@@ -419,6 +419,11 @@ object Migrations {
                     newKey = { Preference.appStateKey(it) },
                 )
             }
+            if (oldVersion < 111) {
+                File(context.cacheDir, "dl_index_cache")
+                    .takeIf { it.exists() }
+                    ?.delete()
+            }
             return true
         }
 

@@ -665,6 +665,10 @@ object EXHMigrations {
                         filterPredicate = { it.key in privatePrefsToReplace },
                         newKey = { Preference.privateKey(it) },
                     )
+
+                    File(context.cacheDir, "dl_index_cache")
+                        .takeIf { it.exists() }
+                        ?.delete()
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
