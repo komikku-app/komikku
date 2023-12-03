@@ -115,7 +115,6 @@ import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
-import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -228,7 +227,7 @@ class ReaderActivity : BaseActivity() {
             .map { it.manga }
             .distinctUntilChanged()
             .filterNotNull()
-            .onEach(::setManga)
+            .onEach { updateViewer() }
             .launchIn(lifecycleScope)
 
         viewModel.state
@@ -799,10 +798,9 @@ class ReaderActivity : BaseActivity() {
     }
 
     /**
-     * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer
-     * and the toolbar title.
+     * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer.
      */
-    private fun setManga(manga: Manga) {
+    private fun updateViewer() {
         val prevViewer = viewModel.state.value.viewer
         val newViewer = ReadingMode.toViewer(viewModel.getMangaReadingMode(), this)
 
