@@ -54,7 +54,6 @@ import tachiyomi.core.storage.extension
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNow
 import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
@@ -276,26 +275,23 @@ class Downloader(
      * @param chapters the list of chapters to download.
      * @param autoStart whether to start the downloader after enqueing the chapters.
      */
-    fun queueChapters(manga: Manga, chapters: List<Chapter>, autoStart: Boolean) = launchIO {
-        if (chapters.isEmpty()) {
-            return@launchIO
-        }
+    fun queueChapters(manga: Manga, chapters: List<Chapter>, autoStart: Boolean) {
+        if (chapters.isEmpty()) return
 
-        val source = sourceManager.get(manga.source) as? HttpSource ?: return@launchIO
+        val source = sourceManager.get(manga.source) as? HttpSource ?: return
         val wasEmpty = queueState.value.isEmpty()
-        val chaptersWithoutDir = chapters
+        val chaptersToQueue = chapters.asSequence()
             // Filter out those already downloaded.
             .filter {
                 provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null
             }
             // Add chapters to queue from the start.
             .sortedByDescending { it.sourceOrder }
-
-        val chaptersToQueue = chaptersWithoutDir
             // Filter out those already enqueued.
             .filter { chapter -> queueState.value.none { it.chapter.id == chapter.id } }
             // Create a download for each one.
             .map { Download(source, manga, it) }
+            .toList()
 
         if (chaptersToQueue.isNotEmpty()) {
             addAllToQueue(chaptersToQueue)
@@ -312,13 +308,11 @@ class Downloader(
                     queuedDownloads > DOWNLOADS_QUEUED_WARNING_THRESHOLD ||
                     maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD
                 ) {
-                    withUIContext {
-                        notifier.onWarning(
-                            context.stringResource(MR.strings.download_queue_size_warning),
-                            WARNING_NOTIF_TIMEOUT_MS,
-                            NotificationHandler.openUrl(context, LibraryUpdateNotifier.HELP_WARNING_URL),
-                        )
-                    }
+                    notifier.onWarning(
+                        context.stringResource(MR.strings.download_queue_size_warning),
+                        WARNING_NOTIF_TIMEOUT_MS,
+                        NotificationHandler.openUrl(context, LibraryUpdateNotifier.HELP_WARNING_URL),
+                    )
                 }
                 DownloadJob.start(context)
             }
