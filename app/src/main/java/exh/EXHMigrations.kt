@@ -636,6 +636,7 @@ object EXHMigrations {
                         "last_version_code",
                         "skip_pre_migration",
                         "eh_auto_update_stats",
+                        "storage_dir",
                     )
                     replacePreferences(
                         preferenceStore = preferenceStore,
