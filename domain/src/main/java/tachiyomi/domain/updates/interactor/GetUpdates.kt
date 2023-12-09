@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.domain.updates.repository.UpdatesRepository
-import java.util.Calendar
+import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
 
 class GetUpdates(
@@ -24,8 +24,8 @@ class GetUpdates(
         // SY <--
     }
 
-    fun subscribe(calendar: Calendar): Flow<List<UpdatesWithRelations>> {
-        return repository.subscribeAll(calendar.time.time, limit = 500)
+    fun subscribe(instant: Instant): Flow<List<UpdatesWithRelations>> {
+        return repository.subscribeAll(instant.toEpochMilli(), limit = 500)
             // SY -->
             .catchNPE()
         // SY <--
