@@ -73,6 +73,7 @@ import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
+import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
@@ -305,6 +306,7 @@ class MainActivity : BaseActivity() {
                 HandleOnNewIntent(context = context, navigator = navigator)
 
                 CheckForUpdates()
+                ShowOnboarding()
             }
 
             // SY -->
@@ -403,6 +405,17 @@ class MainActivity : BaseActivity() {
                 ExtensionGithubApi().checkForUpdates(context)
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
+            }
+        }
+    }
+
+    @Composable
+    private fun ShowOnboarding() {
+        val navigator = LocalNavigator.currentOrThrow
+
+        LaunchedEffect(Unit) {
+            if (!preferences.shownOnboardingFlow().get()) {
+                navigator.push(OnboardingScreen())
             }
         }
     }
