@@ -1649,9 +1649,6 @@ class MangaScreenModel(
             val filterActive: Boolean
                 get() = scanlatorFilterActive || manga.chaptersFiltered()
 
-            val trackingAvailable: Boolean
-                get() = trackItems.isNotEmpty()
-
             val trackingCount: Int
                 get() = trackItems.count {
                     it.track != null && ((it.tracker is MdList && it.track.status != FollowStatus.UNFOLLOWED.int.toLong()) || it.tracker !is MdList)
