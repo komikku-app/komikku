@@ -27,7 +27,7 @@ import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
 import exh.util.nullIfBlank
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.preference.AndroidPreferenceStore
 import tachiyomi.core.preference.PreferenceStore
@@ -93,14 +93,12 @@ class BackupRestorer(
 
     private val errors = mutableListOf<Pair<Date, String>>()
 
-    suspend fun syncFromBackup(uri: Uri, sync: Boolean): Boolean {
+    suspend fun syncFromBackup(uri: Uri, sync: Boolean) {
         val startTime = System.currentTimeMillis()
         restoreProgress = 0
         errors.clear()
 
-        if (!performRestore(uri, sync)) {
-            return false
-        }
+        performRestore(uri, sync)
 
         val endTime = System.currentTimeMillis()
         val time = endTime - startTime
@@ -118,7 +116,6 @@ class BackupRestorer(
         } else {
             notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name)
         }
-        return true
     }
 
     private fun writeErrorLog(): File {
@@ -140,21 +137,10 @@ class BackupRestorer(
         return File("")
     }
 
-    private suspend fun performRestore(uri: Uri, sync: Boolean): Boolean {
+    private suspend fun performRestore(uri: Uri, sync: Boolean) {
         val backup = BackupUtil.decodeBackup(context, uri)
 
         restoreAmount = backup.backupManga.size + 4 // +4 for categories, app prefs, source prefs, saved searches
-
-        // Restore categories
-        if (backup.backupCategories.isNotEmpty()) {
-            restoreCategories(backup.backupCategories)
-        }
-
-        // SY -->
-        if (backup.backupSavedSearches.isNotEmpty()) {
-            restoreSavedSearches(backup.backupSavedSearches)
-        }
-        // SY <--
 
         // Store source mapping for error messages
         val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
@@ -162,58 +148,50 @@ class BackupRestorer(
         now = ZonedDateTime.now()
         currentFetchWindow = fetchInterval.getWindow(now)
 
-        return coroutineScope {
+        coroutineScope {
+            ensureActive()
+            restoreCategories(backup.backupCategories)
+
+            // SY -->
+            ensureActive()
+            restoreSavedSearches(backup.backupSavedSearches)
+            // SY <--
+
+            ensureActive()
             restoreAppPreferences(backup.backupPreferences)
+
+            ensureActive()
             restoreSourcePreferences(backup.backupSourcePreferences)
 
-            // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
-            backup.backupManga /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
-                if (!isActive) {
-                    return@coroutineScope false
-                }
-
+            // Restore individual manga
+            backup.backupManga/* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
+                ensureActive()
                 restoreManga(it, backup.backupCategories, sync)
             }
 
             // TODO: optionally trigger online library + tracker update
-
-            true
         }
     }
 
     private suspend fun restoreCategories(backupCategories: List<BackupCategory>) {
-        // Get categories from file and from db
-        val dbCategories = getCategories.await()
+        if (backupCategories.isNotEmpty()) {
+            val dbCategories = getCategories.await()
+            val dbCategoriesByName = dbCategories.associateBy { it.name }
 
-        val categories = backupCategories.map {
-            var category = it.getCategory()
-            var found = false
-            for (dbCategory in dbCategories) {
-                // If the category is already in the db, assign the id to the file's category
-                // and do nothing
-                if (category.name == dbCategory.name) {
-                    category = category.copy(id = dbCategory.id)
-                    found = true
-                    break
-                }
-            }
-            if (!found) {
-                // Let the db assign the id
-                val id = handler.awaitOneExecutable {
-                    categoriesQueries.insert(category.name, category.order, category.flags)
-                    categoriesQueries.selectLastInsertedRowId()
-                }
-                category = category.copy(id = id)
+            val categories = backupCategories.map {
+                dbCategoriesByName[it.name]
+                    ?: handler.awaitOneExecutable {
+                        categoriesQueries.insert(it.name, it.order, it.flags)
+                        categoriesQueries.selectLastInsertedRowId()
+                    }.let { id -> it.toCategory(id) }
             }
 
-            category
+            libraryPreferences.categorizedDisplaySettings().set(
+                (dbCategories + categories)
+                    .distinctBy { it.flags }
+                    .size > 1,
+            )
         }
-
-        libraryPreferences.categorizedDisplaySettings().set(
-            (dbCategories + categories)
-                .distinctBy { it.flags }
-                .size > 1,
-        )
 
         restoreProgress += 1
         showRestoreProgress(
@@ -226,6 +204,8 @@ class BackupRestorer(
 
     // SY -->
     private suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
+        if (backupSavedSearches.isEmpty()) return
+
         val currentSavedSearches = handler.awaitList {
             saved_searchQueries.selectNamesAndSources()
         }

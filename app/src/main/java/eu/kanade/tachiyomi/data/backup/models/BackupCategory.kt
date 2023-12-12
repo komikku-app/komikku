@@ -13,15 +13,13 @@ class BackupCategory(
     // SY specific values
     /*@ProtoNumber(600) var mangaOrder: List<Long> = emptyList(),*/
 ) {
-    fun getCategory(): Category {
-        return Category(
-            id = 0,
-            name = this@BackupCategory.name,
-            flags = this@BackupCategory.flags,
-            order = this@BackupCategory.order,
-            /*mangaOrder = this@BackupCategory.mangaOrder*/
-        )
-    }
+    fun toCategory(id: Long) = Category(
+        id = id,
+        name = this@BackupCategory.name,
+        flags = this@BackupCategory.flags,
+        order = this@BackupCategory.order,
+        /*mangaOrder = this@BackupCategory.mangaOrder*/
+    )
 }
 
 val backupCategoryMapper = { category: Category ->
