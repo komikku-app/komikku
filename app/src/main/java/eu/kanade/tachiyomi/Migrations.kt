@@ -68,10 +68,6 @@ object Migrations {
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
-            if (oldVersion < 14) {
-                // Restore jobs after upgrading to Evernote's job scheduler.
-                LibraryUpdateJob.setupTask(context)
-            }
             if (oldVersion < 15) {
                 // Delete internal chapter cache dir.
                 File(context.cacheDir, "chapter_disk_cache").deleteRecursively()
@@ -97,11 +93,6 @@ object Migrations {
                         chapterCache.deleteRecursively()
                     }
                 }
-            }
-            if (oldVersion < 43) {
-                // Restore jobs after migrating from Evernote's job scheduler to WorkManager.
-                LibraryUpdateJob.setupTask(context)
-                BackupCreateJob.setupTask(context)
             }
             if (oldVersion < 44) {
                 // Reset sorting preference if using removed sort by source
@@ -262,9 +253,6 @@ object Migrations {
                     basePreferences.extensionInstaller().set(BasePreferences.ExtensionInstaller.LEGACY)
                 }
             }
-            if (oldVersion < 76) {
-                BackupCreateJob.setupTask(context)
-            }
             if (oldVersion < 77) {
                 val oldReaderTap = prefs.getBoolean("reader_tap", false)
                 if (!oldReaderTap) {
@@ -376,9 +364,6 @@ object Migrations {
                         preferenceStore.getEnum("${key}_v2", TriState.DISABLED).set(newValue)
                     }
                 }
-            }
-            if (oldVersion < 100) {
-                BackupCreateJob.setupTask(context)
             }
             if (oldVersion < 105) {
                 val pref = libraryPreferences.autoUpdateDeviceRestrictions()

@@ -298,7 +298,6 @@ object EXHMigrations {
                     val updateInterval = libraryPreferences.autoUpdateInterval().get()
                     if (updateInterval == 1 || updateInterval == 2) {
                         libraryPreferences.autoUpdateInterval().set(3)
-                        LibraryUpdateJob.setupTask(context, 3)
                     }
                 }
                 if (oldVersion under 20) {
@@ -338,20 +337,11 @@ object EXHMigrations {
                         logcat(throwable = e) { "Already done migration" }
                     }
                 }
-                if (oldVersion under 21) {
-                    // Setup EH updater task after migrating to WorkManager
-                    EHentaiUpdateWorker.scheduleBackground(context)
-
-                    // if (preferences.lang().get() in listOf("en-US", "en-GB")) {
-                    //    preferences.lang().set("en")
-                    // }
-                }
                 if (oldVersion under 22) {
                     // Handle removed every 3, 4, 6, and 8 hour library updates
                     val updateInterval = libraryPreferences.autoUpdateInterval().get()
                     if (updateInterval in listOf(3, 4, 6, 8)) {
                         libraryPreferences.autoUpdateInterval().set(12)
-                        LibraryUpdateJob.setupTask(context, 12)
                     }
                 }
                 if (oldVersion under 23) {
@@ -406,9 +396,6 @@ object EXHMigrations {
                             putString("pref_display_mode_catalogue", "COMPACT_GRID")
                         }
                     }
-                }
-                if (oldVersion under 30) {
-                    BackupCreateJob.setupTask(context)
                 }
                 if (oldVersion under 31) {
                     runBlocking {
@@ -492,7 +479,6 @@ object EXHMigrations {
                 if (oldVersion under 40) {
                     if (backupPreferences.backupInterval().get() == 0) {
                         backupPreferences.backupInterval().set(12)
-                        BackupCreateJob.setupTask(context)
                     }
                 }
                 if (oldVersion under 41) {
@@ -543,8 +529,6 @@ object EXHMigrations {
                     trackerManager.mdList.logout()
                 }
                 if (oldVersion under 52) {
-                    LibraryUpdateJob.cancelAllWorks(context)
-                    LibraryUpdateJob.setupTask(context)
                     // Removed background jobs
                     context.workManager.cancelAllWorkByTag("UpdateChecker")
                     context.workManager.cancelAllWorkByTag("ExtensionUpdate")
@@ -574,7 +558,6 @@ object EXHMigrations {
                             preferenceStore.getEnum("${key}_v2", TriState.DISABLED).set(newValue)
                         }
                     }
-                    BackupCreateJob.setupTask(context)
                 }
                 // if (oldVersion under 53) {
                 //     // This was accidentally visible from the reader settings sheet, but should always
