@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.data.backup.models.LongPreferenceValue
 import eu.kanade.tachiyomi.data.backup.models.StringPreferenceValue
 import eu.kanade.tachiyomi.data.backup.models.StringSetPreferenceValue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.sourcePreferences
 import eu.kanade.tachiyomi.util.BackupUtil
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
@@ -33,7 +32,6 @@ import tachiyomi.core.preference.AndroidPreferenceStore
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.Manga_sync
-import tachiyomi.data.Mangas
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
 import tachiyomi.data.manga.MergedMangaMapper
@@ -44,6 +42,8 @@ import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.GetMangaByUrlAndSourceId
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.model.CustomMangaInfo
@@ -63,28 +63,30 @@ import kotlin.math.max
 class BackupRestorer(
     private val context: Context,
     private val notifier: BackupNotifier,
-) {
 
-    private val handler: DatabaseHandler = Injekt.get()
-    private val updateManga: UpdateManga = Injekt.get()
-    private val getCategories: GetCategories = Injekt.get()
-    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get()
-    private val fetchInterval: FetchInterval = Injekt.get()
+    private val handler: DatabaseHandler = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
+    private val getMangaByUrlAndSourceId: GetMangaByUrlAndSourceId = Injekt.get(),
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
+    private val fetchInterval: FetchInterval = Injekt.get(),
 
-    private val preferenceStore: PreferenceStore = Injekt.get()
-    private val libraryPreferences: LibraryPreferences = Injekt.get()
+    private val preferenceStore: PreferenceStore = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
 
     // SY -->
-    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get()
-    private val insertFlatMetadata: InsertFlatMetadata = Injekt.get()
-    private val getFlatMetadataById: GetFlatMetadataById = Injekt.get()
+    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
+    private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
+    private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     // SY <--
-
-    private var now = ZonedDateTime.now()
-    private var currentFetchWindow = fetchInterval.getWindow(now)
+) {
 
     private var restoreAmount = 0
     private var restoreProgress = 0
+
+    private var now = ZonedDateTime.now()
+    private var currentFetchWindow = fetchInterval.getWindow(now)
 
     /**
      * Mapping of source ID to source name from backup data
@@ -95,27 +97,22 @@ class BackupRestorer(
 
     suspend fun syncFromBackup(uri: Uri, sync: Boolean) {
         val startTime = System.currentTimeMillis()
-        restoreProgress = 0
-        errors.clear()
 
-        performRestore(uri, sync)
+        prepareState()
+        restoreFromFile(uri, sync)
 
         val endTime = System.currentTimeMillis()
         val time = endTime - startTime
 
         val logFile = writeErrorLog()
 
-        if (sync) {
-            notifier.showRestoreComplete(
-                time,
-                errors.size,
-                logFile.parent,
-                logFile.name,
-                contentTitle = context.stringResource(MR.strings.library_sync_complete),
-            )
-        } else {
-            notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name)
-        }
+        notifier.showRestoreComplete(
+            time,
+            errors.size,
+            logFile.parent,
+            logFile.name,
+            sync,
+        )
     }
 
     private fun writeErrorLog(): File {
@@ -137,7 +134,12 @@ class BackupRestorer(
         return File("")
     }
 
-    private suspend fun performRestore(uri: Uri, sync: Boolean) {
+    private fun prepareState() {
+        now = ZonedDateTime.now()
+        currentFetchWindow = fetchInterval.getWindow(now)
+    }
+
+    private suspend fun restoreFromFile(uri: Uri, sync: Boolean) {
         val backup = BackupUtil.decodeBackup(context, uri)
 
         restoreAmount = backup.backupManga.size + 4 // +4 for categories, app prefs, source prefs, saved searches
@@ -145,8 +147,6 @@ class BackupRestorer(
         // Store source mapping for error messages
         val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
-        now = ZonedDateTime.now()
-        currentFetchWindow = fetchInterval.getWindow(now)
 
         coroutineScope {
             ensureActive()
@@ -164,13 +164,26 @@ class BackupRestorer(
             restoreSourcePreferences(backup.backupSourcePreferences)
 
             // Restore individual manga
-            backup.backupManga/* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
-                ensureActive()
-                restoreManga(it, backup.backupCategories, sync)
-            }
+            backup.backupManga.sortByNew()
+                /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */
+                .forEach {
+                    ensureActive()
+                    restoreManga(it, backup.backupCategories, sync)
+                }
 
             // TODO: optionally trigger online library + tracker update
         }
+    }
+
+    private suspend fun List<BackupManga>.sortByNew(): List<BackupManga> {
+        val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
+            .groupBy({ it.source }, { it.url })
+
+        return this
+            .sortedWith(
+                compareBy<BackupManga> { it.url in urlsBySource[it.source].orEmpty() }
+                    .then(compareByDescending { it.lastModifiedAt }),
+            )
     }
 
     private suspend fun restoreCategories(backupCategories: List<BackupCategory>) {
@@ -194,11 +207,11 @@ class BackupRestorer(
         }
 
         restoreProgress += 1
-        showRestoreProgress(
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.categories),
             restoreProgress,
             restoreAmount,
-            context.stringResource(MR.strings.categories),
-            context.stringResource(MR.strings.restoring_backup),
+            false,
         )
     }
 
@@ -225,105 +238,83 @@ class BackupRestorer(
         }
 
         restoreProgress += 1
-        showRestoreProgress(
+        notifier.showRestoreProgress(
+            context.stringResource(SYMR.strings.saved_searches),
             restoreProgress,
             restoreAmount,
-            context.stringResource(SYMR.strings.saved_searches),
-            context.stringResource(MR.strings.restoring_backup),
+            false,
         )
     }
     // SY <--
 
-    private suspend fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>, sync: Boolean) {
-        var manga = backupManga.getMangaImpl()
-        val chapters = backupManga.getChaptersImpl()
-        val categories = backupManga.categories.map { it.toInt() }
-        val history =
-            backupManga.brokenHistory.map { BackupHistory(it.url, it.lastRead, it.readDuration) } + backupManga.history
-        val tracks = backupManga.getTrackingImpl()
-        // SY -->
-        val mergedMangaReferences = backupManga.mergedMangaReferences
-        val flatMetadata = backupManga.flatMetadata
-        val customManga = backupManga.getCustomMangaInfo()
-        // SY <--
-
-        // SY -->
-        manga = EXHMigrations.migrateBackupEntry(manga)
-        // SY <--
-
+    private suspend fun restoreManga(
+        backupManga: BackupManga,
+        backupCategories: List<BackupCategory>,
+        sync: Boolean,
+    ) {
         try {
-            val dbManga = getMangaFromDatabase(manga.url, manga.source)
+            val dbManga = findExistingManga(backupManga)
+            var manga = backupManga.getMangaImpl()
+            // SY -->
+            manga = EXHMigrations.migrateBackupEntry(manga)
+            // SY <--
             val restoredManga = if (dbManga == null) {
-                // Manga not in database
-                restoreExistingManga(
-                    manga = manga,
-                    chapters = chapters,
-                    categories = categories,
-                    history = history,
-                    tracks = tracks,
-                    backupCategories = backupCategories/* SY --> */,
-                    mergedMangaReferences = mergedMangaReferences,
-                    flatMetadata = flatMetadata,
-                    customManga = customManga, /* SY <-- */
-                )
+                restoreNewManga(manga)
             } else {
-                // Manga in database
-                // Copy information from manga already in database
-                val updatedManga = restoreExistingManga(manga, dbManga)
-                // Fetch rest of manga information
-                restoreNewManga(
-                    backupManga = updatedManga,
-                    chapters = chapters,
-                    categories = categories,
-                    history = history,
-                    tracks = tracks,
-                    backupCategories = backupCategories/* SY --> */,
-                    mergedMangaReferences = mergedMangaReferences,
-                    flatMetadata = flatMetadata,
-                    customManga = customManga, /* SY <-- */
-                )
+                restoreExistingManga(manga, dbManga)
             }
-            updateManga.awaitUpdateFetchInterval(restoredManga, now, currentFetchWindow)
+
+            restoreMangaDetails(
+                manga = restoredManga,
+                chapters = backupManga.getChaptersImpl(),
+                categories = backupManga.categories,
+                backupCategories = backupCategories,
+                history = backupManga.brokenHistory.map { BackupHistory(it.url, it.lastRead, it.readDuration) } +
+                    backupManga.history,
+                tracks = backupManga.getTrackingImpl(),
+                // SY -->
+                mergedMangaReferences = backupManga.mergedMangaReferences,
+                flatMetadata = backupManga.flatMetadata,
+                customManga = backupManga.getCustomMangaInfo()
+                // SY <--
+            )
         } catch (e: Exception) {
-            val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
-            errors.add(Date() to "${manga.title} [$sourceName]: ${e.message}")
+            val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
+            errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")
         }
 
         restoreProgress += 1
-        if (sync) {
-            showRestoreProgress(
-                restoreProgress,
-                restoreAmount,
-                manga.title,
-                context.stringResource(MR.strings.syncing_library),
-            )
+        notifier.showRestoreProgress(backupManga.title, restoreProgress, restoreAmount, sync)
+    }
+
+    private suspend fun findExistingManga(backupManga: BackupManga): Manga? {
+        return getMangaByUrlAndSourceId.await(backupManga.url, backupManga.source)
+    }
+
+    private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
+        return if (manga.lastModifiedAt > dbManga.lastModifiedAt) {
+            updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
         } else {
-            showRestoreProgress(
-                restoreProgress,
-                restoreAmount,
-                manga.title,
-                context.stringResource(MR.strings.restoring_backup),
-            )
+            updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
         }
     }
 
-    /**
-     * Returns manga
-     *
-     * @return [Manga], null if not found
-     */
-    private suspend fun getMangaFromDatabase(url: String, source: Long): Mangas? {
-        return handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(url, source) }
+    private fun Manga.copyFrom(newer: Manga): Manga {
+        return this.copy(
+            favorite = this.favorite || newer.favorite,
+            // SY -->
+            ogAuthor = newer.author,
+            ogArtist = newer.artist,
+            ogDescription = newer.description,
+            ogGenre = newer.genre,
+            thumbnailUrl = newer.thumbnailUrl,
+            ogStatus = newer.status,
+            // SY <--
+            initialized = this.initialized || newer.initialized,
+        )
     }
 
-    private suspend fun restoreExistingManga(manga: Manga, dbManga: Mangas): Manga {
-        var updatedManga = manga.copy(id = dbManga._id)
-        updatedManga = updatedManga.copyFrom(dbManga)
-        updateManga(updatedManga)
-        return updatedManga
-    }
-
-    private suspend fun updateManga(manga: Manga): Long {
+    private suspend fun updateManga(manga: Manga): Manga {
         handler.await(true) {
             mangasQueries.update(
                 source = manga.source,
@@ -348,42 +339,16 @@ class BackupRestorer(
                 updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
             )
         }
-        return manga.id
+        return manga
     }
 
-    /**
-     * Fetches manga information
-     *
-     * @param manga manga that needs updating
-     * @param chapters chapters of manga that needs updating
-     * @param categories categories that need updating
-     */
-    private suspend fun restoreExistingManga(
+    private suspend fun restoreNewManga(
         manga: Manga,
-        chapters: List<Chapter>,
-        categories: List<Int>,
-        history: List<BackupHistory>,
-        tracks: List<Track>,
-        backupCategories: List<BackupCategory>,
-        // SY -->
-        mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?,
-        customManga: CustomMangaInfo?,
-        // SY <--
     ): Manga {
-        val fetchedManga = restoreNewManga(manga)
-        restoreChapters(fetchedManga, chapters)
-        restoreExtras(
-            manga = fetchedManga,
-            categories = categories,
-            history = history,
-            tracks = tracks,
-            backupCategories = backupCategories/* SY --> */,
-            mergedMangaReferences = mergedMangaReferences,
-            flatMetadata = flatMetadata,
-            customManga = customManga, /* SY <-- */
+        return manga.copy(
+            initialized = manga.description != null,
+            id = insertManga(manga),
         )
-        return fetchedManga
     }
 
     private suspend fun restoreChapters(manga: Manga, chapters: List<Chapter>) {
@@ -417,13 +382,10 @@ class BackupRestorer(
         }
 
         val (existingChapters, newChapters) = processed.partition { it.id > 0 }
-        updateKnownChapters(existingChapters)
         insertChapters(newChapters)
+        updateKnownChapters(existingChapters)
     }
 
-    /**
-     * Inserts list of chapters
-     */
     private suspend fun insertChapters(chapters: List<Chapter>) {
         handler.await(true) {
             chapters.forEach { chapter ->
@@ -444,9 +406,6 @@ class BackupRestorer(
         }
     }
 
-    /**
-     * Updates a list of chapters with known database ids
-     */
     private suspend fun updateKnownChapters(chapters: List<Chapter>) {
         handler.await(true) {
             chapters.forEach { chapter ->
@@ -466,19 +425,6 @@ class BackupRestorer(
                 )
             }
         }
-    }
-
-    /**
-     * Fetches manga information
-     *
-     * @param manga manga that needs updating
-     * @return Updated manga info.
-     */
-    private suspend fun restoreNewManga(manga: Manga): Manga {
-        return manga.copy(
-            initialized = manga.description != null,
-            id = insertManga(manga),
-        )
     }
 
     /**
@@ -513,53 +459,31 @@ class BackupRestorer(
         }
     }
 
-    private suspend fun restoreNewManga(
-        backupManga: Manga,
+    private suspend fun restoreMangaDetails(
+        manga: Manga,
         chapters: List<Chapter>,
-        categories: List<Int>,
+        categories: List<Long>,
+        backupCategories: List<BackupCategory>,
         history: List<BackupHistory>,
         tracks: List<Track>,
-        backupCategories: List<BackupCategory>,
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
         flatMetadata: BackupFlatMetadata?,
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreChapters(backupManga, chapters)
-        restoreExtras(
-            manga = backupManga,
-            categories = categories,
-            history = history,
-            tracks = tracks,
-            backupCategories = backupCategories,
-            mergedMangaReferences = mergedMangaReferences,
-            flatMetadata = flatMetadata,
-            customManga = customManga,
-        )
-        return backupManga
-    }
-
-    private suspend fun restoreExtras(
-        manga: Manga,
-        categories: List<Int>,
-        history: List<BackupHistory>,
-        tracks: List<Track>,
-        backupCategories: List<BackupCategory>,
-        // SY -->
-        mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?,
-        customManga: CustomMangaInfo?,
-        // SY <--
-    ) {
+        restoreChapters(manga, chapters)
         restoreCategories(manga, categories, backupCategories)
         restoreHistory(history)
         restoreTracking(manga, tracks)
+        updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         // SY -->
         restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
         flatMetadata?.let { restoreFlatMetadata(manga.id, it) }
         restoreEditedInfo(customManga?.copy(id = manga.id))
         // SY <--
+
+        return manga
     }
 
     /**
@@ -568,23 +492,24 @@ class BackupRestorer(
      * @param manga the manga whose categories have to be restored.
      * @param categories the categories to restore.
      */
-    private suspend fun restoreCategories(manga: Manga, categories: List<Int>, backupCategories: List<BackupCategory>) {
+    private suspend fun restoreCategories(
+        manga: Manga,
+        categories: List<Long>,
+        backupCategories: List<BackupCategory>,
+    ) {
         val dbCategories = getCategories.await()
-        val mangaCategoriesToUpdate = mutableListOf<Pair<Long, Long>>()
+        val dbCategoriesByName = dbCategories.associateBy { it.name }
 
-        categories.forEach { backupCategoryOrder ->
-            backupCategories.firstOrNull {
-                it.order == backupCategoryOrder.toLong()
-            }?.let { backupCategory ->
-                dbCategories.firstOrNull { dbCategory ->
-                    dbCategory.name == backupCategory.name
-                }?.let { dbCategory ->
-                    mangaCategoriesToUpdate.add(Pair(manga.id, dbCategory.id))
+        val backupCategoriesByOrder = backupCategories.associateBy { it.order }
+
+        val mangaCategoriesToUpdate = categories.mapNotNull { backupCategoryOrder ->
+            backupCategoriesByOrder[backupCategoryOrder]?.let { backupCategory ->
+                dbCategoriesByName[backupCategory.name]?.let { dbCategory ->
+                    Pair(manga.id, dbCategory.id)
                 }
             }
         }
 
-        // Update database
         if (mangaCategoriesToUpdate.isNotEmpty()) {
             handler.await(true) {
                 mangas_categoriesQueries.deleteMangaCategoryByMangaId(manga.id)
@@ -595,11 +520,6 @@ class BackupRestorer(
         }
     }
 
-    /**
-     * Restore history from Json
-     *
-     * @param history list containing history to be restored
-     */
     private suspend fun restoreHistory(history: List<BackupHistory>) {
         // List containing history to be updated
         val toUpdate = mutableListOf<HistoryUpdate>()
@@ -619,7 +539,7 @@ class BackupRestorer(
                     ),
                 )
             } else {
-                // If not in database create
+                // If not in database, create
                 handler
                     .awaitOneOrNull { chaptersQueries.getChapterByUrl(url) }
                     ?.let {
@@ -644,12 +564,6 @@ class BackupRestorer(
         }
     }
 
-    /**
-     * Restores the sync of a manga.
-     *
-     * @param manga the manga whose sync have to be restored.
-     * @param tracks the track list to restore.
-     */
     private suspend fun restoreTracking(manga: Manga, tracks: List<Track>) {
         // Get tracks from database
         val dbTracks = handler.awaitList { manga_syncQueries.getTracksByMangaId(manga.id) }
@@ -800,11 +714,11 @@ class BackupRestorer(
         BackupCreateJob.setupTask(context)
 
         restoreProgress += 1
-        showRestoreProgress(
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.app_settings),
             restoreProgress,
             restoreAmount,
-            context.stringResource(MR.strings.app_settings),
-            context.stringResource(MR.strings.restoring_backup),
+            false,
         )
     }
 
@@ -815,11 +729,11 @@ class BackupRestorer(
         }
 
         restoreProgress += 1
-        showRestoreProgress(
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.source_settings),
             restoreProgress,
             restoreAmount,
-            context.stringResource(MR.strings.source_settings),
-            context.stringResource(MR.strings.restoring_backup),
+            false,
         )
     }
 
@@ -862,9 +776,5 @@ class BackupRestorer(
                 }
             }
         }
-    }
-
-    private fun showRestoreProgress(progress: Int, amount: Int, title: String, contentTitle: String) {
-        notifier.showRestoreProgress(title, contentTitle, progress, amount)
     }
 }
