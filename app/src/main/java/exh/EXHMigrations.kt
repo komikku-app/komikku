@@ -650,9 +650,8 @@ object EXHMigrations {
                         newKey = { Preference.privateKey(it) },
                     )
 
-                    File(context.cacheDir, "dl_index_cache")
-                        .takeIf { it.exists() }
-                        ?.delete()
+                    // Deleting old download cache index files, but might as well clear it all out
+                    context.cacheDir.deleteRecursively()
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

@@ -42,7 +42,6 @@ import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
-import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -100,7 +99,6 @@ object SettingsDataScreen : SearchableSettings {
                 UniFile.fromUri(context, uri)?.let {
                     storageDirPref.set(it.uri.toString())
                 }
-                Injekt.get<DownloadCache>().invalidateCache()
             }
         }
     }
