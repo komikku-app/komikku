@@ -1,7 +1,5 @@
-package eu.kanade.tachiyomi.data.backup
+package eu.kanade.tachiyomi.data.backup.restore
 
-import android.content.Context
-import android.net.Uri
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
@@ -9,29 +7,8 @@ import eu.kanade.tachiyomi.data.backup.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.models.BackupHistory
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
-import eu.kanade.tachiyomi.data.backup.models.BackupPreference
-import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
-import eu.kanade.tachiyomi.data.backup.models.BackupSource
-import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
-import eu.kanade.tachiyomi.data.backup.models.BooleanPreferenceValue
-import eu.kanade.tachiyomi.data.backup.models.FloatPreferenceValue
-import eu.kanade.tachiyomi.data.backup.models.IntPreferenceValue
-import eu.kanade.tachiyomi.data.backup.models.LongPreferenceValue
-import eu.kanade.tachiyomi.data.backup.models.StringPreferenceValue
-import eu.kanade.tachiyomi.data.backup.models.StringSetPreferenceValue
-import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.source.sourcePreferences
-import eu.kanade.tachiyomi.util.BackupUtil
-import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.EXHMigrations
-import exh.source.MERGED_SOURCE_ID
-import exh.util.nullIfBlank
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.ensureActive
-import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.preference.AndroidPreferenceStore
-import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
@@ -39,7 +16,6 @@ import tachiyomi.data.manga.MergedMangaMapper
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetMangaByUrlAndSourceId
@@ -50,21 +26,13 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
-import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
-import java.text.SimpleDateFormat
 import java.time.ZonedDateTime
 import java.util.Date
-import java.util.Locale
 import kotlin.math.max
 
-class BackupRestorer(
-    private val context: Context,
-    private val notifier: BackupNotifier,
-
+class MangaRestorer(
     private val handler: DatabaseHandler = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getMangaByUrlAndSourceId: GetMangaByUrlAndSourceId = Injekt.get(),
@@ -72,11 +40,7 @@ class BackupRestorer(
     private val updateManga: UpdateManga = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
-    private val fetchInterval: FetchInterval = Injekt.get(),
-
-    private val preferenceStore: PreferenceStore = Injekt.get(),
-    private val libraryPreferences: LibraryPreferences = Injekt.get(),
-
+    fetchInterval: FetchInterval = Injekt.get(),
     // SY -->
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
@@ -84,208 +48,53 @@ class BackupRestorer(
     // SY <--
 ) {
 
-    private var restoreAmount = 0
-    private var restoreProgress = 0
-
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
 
-    /**
-     * Mapping of source ID to source name from backup data
-     */
-    private var sourceMapping: Map<Long, String> = emptyMap()
-
-    private val errors = mutableListOf<Pair<Date, String>>()
-
-    suspend fun syncFromBackup(uri: Uri, sync: Boolean) {
-        val startTime = System.currentTimeMillis()
-
-        prepareState()
-        restoreFromFile(uri, sync)
-
-        val endTime = System.currentTimeMillis()
-        val time = endTime - startTime
-
-        val logFile = writeErrorLog()
-
-        notifier.showRestoreComplete(
-            time,
-            errors.size,
-            logFile.parent,
-            logFile.name,
-            sync,
-        )
-    }
-
-    private fun writeErrorLog(): File {
-        try {
-            if (errors.isNotEmpty()) {
-                val file = context.createFileInCacheDir("tachiyomi_restore.txt")
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
-
-                file.bufferedWriter().use { out ->
-                    errors.forEach { (date, message) ->
-                        out.write("[${sdf.format(date)}] $message\n")
-                    }
-                }
-                return file
-            }
-        } catch (e: Exception) {
-            // Empty
-        }
-        return File("")
-    }
-
-    private fun prepareState() {
+    init {
         now = ZonedDateTime.now()
         currentFetchWindow = fetchInterval.getWindow(now)
     }
 
-    private suspend fun restoreFromFile(uri: Uri, sync: Boolean) {
-        val backup = BackupUtil.decodeBackup(context, uri)
-
-        restoreAmount = backup.backupManga.size + 4 // +4 for categories, app prefs, source prefs, saved searches
-
-        // Store source mapping for error messages
-        val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
-        sourceMapping = backupMaps.associate { it.sourceId to it.name }
-
-        coroutineScope {
-            ensureActive()
-            restoreCategories(backup.backupCategories)
-
-            // SY -->
-            ensureActive()
-            restoreSavedSearches(backup.backupSavedSearches)
-            // SY <--
-
-            ensureActive()
-            restoreAppPreferences(backup.backupPreferences)
-
-            ensureActive()
-            restoreSourcePreferences(backup.backupSourcePreferences)
-
-            // Restore individual manga
-            backup.backupManga.sortByNew()
-                /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */
-                .forEach {
-                    ensureActive()
-                    restoreManga(it, backup.backupCategories, sync)
-                }
-
-            // TODO: optionally trigger online library + tracker update
-        }
-    }
-
-    private suspend fun List<BackupManga>.sortByNew(): List<BackupManga> {
+    suspend fun sortByNew(backupMangas: List<BackupManga>): List<BackupManga> {
         val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
             .groupBy({ it.source }, { it.url })
 
-        return this
+        return backupMangas
             .sortedWith(
                 compareBy<BackupManga> { it.url in urlsBySource[it.source].orEmpty() }
                     .then(compareByDescending { it.lastModifiedAt }),
             )
     }
 
-    private suspend fun restoreCategories(backupCategories: List<BackupCategory>) {
-        if (backupCategories.isNotEmpty()) {
-            val dbCategories = getCategories.await()
-            val dbCategoriesByName = dbCategories.associateBy { it.name }
-
-            val categories = backupCategories.map {
-                dbCategoriesByName[it.name]
-                    ?: handler.awaitOneExecutable {
-                        categoriesQueries.insert(it.name, it.order, it.flags)
-                        categoriesQueries.selectLastInsertedRowId()
-                    }.let { id -> it.toCategory(id) }
-            }
-
-            libraryPreferences.categorizedDisplaySettings().set(
-                (dbCategories + categories)
-                    .distinctBy { it.flags }
-                    .size > 1,
-            )
-        }
-
-        restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.categories),
-            restoreProgress,
-            restoreAmount,
-            false,
-        )
-    }
-
-    // SY -->
-    private suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        if (backupSavedSearches.isEmpty()) return
-
-        val currentSavedSearches = handler.awaitList {
-            saved_searchQueries.selectNamesAndSources()
-        }
-
-        handler.await {
-            backupSavedSearches.filter { backupSavedSearch ->
-                currentSavedSearches.none { it.source == backupSavedSearch.source && it.name == backupSavedSearch.name }
-            }.forEach {
-                saved_searchQueries.insert(
-                    source = it.source,
-                    name = it.name,
-                    query = it.query.nullIfBlank(),
-                    filtersJson = it.filterList.nullIfBlank()
-                        ?.takeUnless { it == "[]" },
-                )
-            }
-        }
-
-        restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(SYMR.strings.saved_searches),
-            restoreProgress,
-            restoreAmount,
-            false,
-        )
-    }
-    // SY <--
-
-    private suspend fun restoreManga(
+    suspend fun restoreManga(
         backupManga: BackupManga,
         backupCategories: List<BackupCategory>,
-        sync: Boolean,
     ) {
-        try {
-            val dbManga = findExistingManga(backupManga)
-            var manga = backupManga.getMangaImpl()
-            // SY -->
-            manga = EXHMigrations.migrateBackupEntry(manga)
-            // SY <--
-            val restoredManga = if (dbManga == null) {
-                restoreNewManga(manga)
-            } else {
-                restoreExistingManga(manga, dbManga)
-            }
-
-            restoreMangaDetails(
-                manga = restoredManga,
-                chapters = backupManga.chapters,
-                categories = backupManga.categories,
-                backupCategories = backupCategories,
-                history = backupManga.history + backupManga.brokenHistory.map { it.toBackupHistory() },
-                tracks = backupManga.tracking,
-                // SY -->
-                mergedMangaReferences = backupManga.mergedMangaReferences,
-                flatMetadata = backupManga.flatMetadata,
-                customManga = backupManga.getCustomMangaInfo()
-                // SY <--
-            )
-        } catch (e: Exception) {
-            val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
-            errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")
+        val dbManga = findExistingManga(backupManga)
+        var manga = backupManga.getMangaImpl()
+        // SY -->
+        manga = EXHMigrations.migrateBackupEntry(manga)
+        // SY <--
+        val restoredManga = if (dbManga == null) {
+            restoreNewManga(manga)
+        } else {
+            restoreExistingManga(manga, dbManga)
         }
 
-        restoreProgress += 1
-        notifier.showRestoreProgress(backupManga.title, restoreProgress, restoreAmount, sync)
+        restoreMangaDetails(
+            manga = restoredManga,
+            chapters = backupManga.chapters,
+            categories = backupManga.categories,
+            backupCategories = backupCategories,
+            history = backupManga.history + backupManga.brokenHistory.map { it.toBackupHistory() },
+            tracks = backupManga.tracking,
+            // SY -->
+            mergedMangaReferences = backupManga.mergedMangaReferences,
+            flatMetadata = backupManga.flatMetadata,
+            customManga = backupManga.getCustomMangaInfo()
+            // SY <--
+        )
     }
 
     private suspend fun findExistingManga(backupManga: BackupManga): Manga? {
@@ -631,7 +440,7 @@ class BackupRestorer(
      * @param manga the merge manga for the references
      * @param backupMergedMangaReferences the list of backup manga references for the merged manga
      */
-    internal suspend fun restoreMergedMangaReferencesForManga(
+    private suspend fun restoreMergedMangaReferencesForManga(
         mergeMangaId: Long,
         backupMergedMangaReferences: List<BackupMergedMangaReference>,
     ) {
@@ -678,88 +487,17 @@ class BackupRestorer(
         }
     }
 
-    internal suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {
+    private suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {
         if (getFlatMetadataById.await(mangaId) == null) {
             insertFlatMetadata.await(backupFlatMetadata.getFlatMetadata(mangaId))
         }
     }
 
-    internal fun restoreEditedInfo(mangaJson: CustomMangaInfo?) {
+    private fun restoreEditedInfo(mangaJson: CustomMangaInfo?) {
         mangaJson ?: return
         setCustomMangaInfo.set(mangaJson)
     }
     // SY <--
 
     private fun Track.forComparison() = this.copy(id = 0L, mangaId = 0L)
-
-    private fun restoreAppPreferences(preferences: List<BackupPreference>) {
-        restorePreferences(preferences, preferenceStore)
-
-        LibraryUpdateJob.setupTask(context)
-        BackupCreateJob.setupTask(context)
-
-        restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.app_settings),
-            restoreProgress,
-            restoreAmount,
-            false,
-        )
-    }
-
-    private fun restoreSourcePreferences(preferences: List<BackupSourcePreferences>) {
-        preferences.forEach {
-            val sourcePrefs = AndroidPreferenceStore(context, sourcePreferences(it.sourceKey))
-            restorePreferences(it.prefs, sourcePrefs)
-        }
-
-        restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.source_settings),
-            restoreProgress,
-            restoreAmount,
-            false,
-        )
-    }
-
-    private fun restorePreferences(
-        toRestore: List<BackupPreference>,
-        preferenceStore: PreferenceStore,
-    ) {
-        val prefs = preferenceStore.getAll()
-        toRestore.forEach { (key, value) ->
-            when (value) {
-                is IntPreferenceValue -> {
-                    if (prefs[key] is Int?) {
-                        preferenceStore.getInt(key).set(value.value)
-                    }
-                }
-                is LongPreferenceValue -> {
-                    if (prefs[key] is Long?) {
-                        preferenceStore.getLong(key).set(value.value)
-                    }
-                }
-                is FloatPreferenceValue -> {
-                    if (prefs[key] is Float?) {
-                        preferenceStore.getFloat(key).set(value.value)
-                    }
-                }
-                is StringPreferenceValue -> {
-                    if (prefs[key] is String?) {
-                        preferenceStore.getString(key).set(value.value)
-                    }
-                }
-                is BooleanPreferenceValue -> {
-                    if (prefs[key] is Boolean?) {
-                        preferenceStore.getBoolean(key).set(value.value)
-                    }
-                }
-                is StringSetPreferenceValue -> {
-                    if (prefs[key] is Set<*>?) {
-                        preferenceStore.getStringSet(key).set(value.value)
-                    }
-                }
-            }
-        }
-    }
 }
