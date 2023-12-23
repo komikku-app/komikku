@@ -3,12 +3,11 @@ package eu.kanade.presentation.manga.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,11 +17,17 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -40,12 +45,25 @@ fun PagePreviews(
 ) {
     when (pagePreviewState) {
         PagePreviewState.Loading -> {
-            Box(modifier = Modifier.height(60.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier
+                .height(60.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
         is PagePreviewState.Success -> {
-            BoxWithConstraints(Modifier.fillMaxWidth()) {
+            var maxWidth by remember {
+                mutableStateOf(Dp.Hairline)
+            }
+            val density = LocalDensity.current
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned {
+                        maxWidth = with(density) { it.size.width.toDp() }
+                    },
+            ) {
+                if (maxWidth == Dp.Hairline) return@Box
                 val itemPerRowCount = (maxWidth / 120.dp).floor()
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -54,7 +72,9 @@ fun PagePreviews(
                 ) {
                     pagePreviewState.pagePreviews.take(4 * itemPerRowCount).chunked(itemPerRowCount).forEach {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
                         ) {
@@ -94,23 +114,27 @@ fun PagePreview(
             model = page,
             contentDescription = null,
             loading = {
-                val progress by page.progress.collectAsState()
-                if (progress < 0) {
-                    CircularProgressIndicator()
-                } else {
-                    CircularProgressIndicator(progress / 0.01F)
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    val progress by page.progress.collectAsState()
+                    if (progress < 0) {
+                        CircularProgressIndicator()
+                    } else {
+                        CircularProgressIndicator(progress / 0.01F)
+                    }
                 }
             },
             success = {
                 SubcomposeAsyncImageContent(
                     contentDescription = null,
                     modifier = Modifier
-                        .width(120.dp)
-                        .heightIn(max = 200.dp)
+                        .fillMaxSize()
                         .clip(MaterialTheme.shapes.small),
                     contentScale = ContentScale.FillWidth,
                 )
             },
+            modifier = Modifier
+                .height(200.dp)
+                .width(120.dp),
         )
         Text(page.index.toString())
     }
