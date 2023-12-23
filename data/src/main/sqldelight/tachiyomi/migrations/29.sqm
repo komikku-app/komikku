@@ -42,3 +42,7 @@ ON M._id = C.manga_id
 LEFT JOIN mangas_categories AS MC
 ON MC.manga_id = M._id
 WHERE M.favorite = 1;
+
+UPDATE chapters
+SET scanlator = trim(scanlator)
+WHERE scanlator IS NOT NULL;
