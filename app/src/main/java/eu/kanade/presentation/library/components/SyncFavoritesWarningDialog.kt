@@ -23,7 +23,10 @@ fun SyncFavoritesWarningDialog(
 ) {
     val context = LocalContext.current
     val text = remember {
-        HtmlCompat.fromHtml(context.getString(R.string.favorites_sync_notes_message), HtmlCompat.FROM_HTML_MODE_LEGACY).toAnnotatedString()
+        HtmlCompat.fromHtml(
+            context.getString(R.string.favorites_sync_notes_message),
+            HtmlCompat.FROM_HTML_MODE_LEGACY
+        ).toAnnotatedString()
     }
     AlertDialog(
         onDismissRequest = onDismissRequest,

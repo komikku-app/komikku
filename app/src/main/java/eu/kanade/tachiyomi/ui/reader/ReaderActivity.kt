@@ -818,7 +818,7 @@ class ReaderActivity : BaseActivity() {
         }
 
         val defaultReaderType = manga.defaultReaderType(
-            manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)
+            manga.mangaType(sourceName = sourceManager.get(manga.source)?.name),
         )
         if (
             readerPreferences.useAutoWebtoon().get() &&

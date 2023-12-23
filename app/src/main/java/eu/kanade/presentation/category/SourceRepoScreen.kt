@@ -52,7 +52,8 @@ fun SourceRepoScreen(
         SourceRepoContent(
             repos = state.repos,
             lazyListState = lazyListState,
-            paddingValues = paddingValues + topSmallPaddingValues + PaddingValues(horizontal = MaterialTheme.padding.medium),
+            paddingValues = paddingValues + topSmallPaddingValues +
+                PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickDelete = onClickDelete,
         )
     }

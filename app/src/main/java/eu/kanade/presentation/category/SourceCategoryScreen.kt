@@ -53,7 +53,8 @@ fun SourceCategoryScreen(
         SourceCategoryContent(
             categories = state.categories,
             lazyListState = lazyListState,
-            paddingValues = paddingValues + topSmallPaddingValues + PaddingValues(horizontal = MaterialTheme.padding.medium),
+            paddingValues = paddingValues + topSmallPaddingValues +
+                PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickRename = onClickRename,
             onClickDelete = onClickDelete,
         )

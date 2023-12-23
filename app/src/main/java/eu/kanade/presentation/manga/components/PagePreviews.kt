@@ -45,9 +45,12 @@ fun PagePreviews(
 ) {
     when (pagePreviewState) {
         PagePreviewState.Loading -> {
-            Box(modifier = Modifier
-                .height(60.dp)
-                .fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .height(60.dp)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
                 CircularProgressIndicator()
             }
         }

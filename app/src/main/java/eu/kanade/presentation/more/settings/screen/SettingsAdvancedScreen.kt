@@ -262,7 +262,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 clearSslPreferences()
                             }
                             WebStorage.getInstance().deleteAllData()
-                            context.applicationInfo?.dataDir?.let { File("$it/app_webview/").deleteRecursively() }
+                            context.applicationInfo?.dataDir?.let {
+                                File("$it/app_webview/").deleteRecursively()
+                            }
                             context.toast(R.string.webview_data_deleted)
                         } catch (e: Throwable) {
                             logcat(LogPriority.ERROR, e)
@@ -487,7 +489,9 @@ object SettingsAdvancedScreen : SearchableSettings {
 
                             mangaFolders.forEach mangaFolder@{ mangaFolder ->
                                 val manga =
-                                    sourceManga.find { (_, folderName) -> folderName == mangaFolder.name }?.first
+                                    sourceManga.find { (_, folderName) ->
+                                        folderName == mangaFolder.name
+                                    }?.first
                                 if (manga == null) {
                                     // download is orphaned delete it
                                     foldersCleared += 1 + (
@@ -591,7 +595,8 @@ object SettingsAdvancedScreen : SearchableSettings {
                     enabled = dataSaver != DataSaver.NONE,
                 ),
                 kotlin.run {
-                    val dataSaverImageFormatJpeg by sourcePreferences.dataSaverImageFormatJpeg().collectAsState()
+                    val dataSaverImageFormatJpeg by sourcePreferences.dataSaverImageFormatJpeg()
+                        .collectAsState()
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.dataSaverImageFormatJpeg(),
                         title = stringResource(R.string.data_saver_image_format),
@@ -677,8 +682,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                             text = {
                                 Text(
                                     text = remember {
-                                        HtmlCompat.fromHtml(context.getString(R.string.encrypt_database_message), HtmlCompat.FROM_HTML_MODE_COMPACT)
-                                            .toAnnotatedString()
+                                        HtmlCompat.fromHtml(
+                                            context.getString(R.string.encrypt_database_message),
+                                            HtmlCompat.FROM_HTML_MODE_COMPACT
+                                        ).toAnnotatedString()
                                     },
                                 )
                             },
@@ -716,8 +723,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(R.string.open_debug_menu),
                     subtitle = remember {
-                        HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_COMPACT)
-                            .toAnnotatedString()
+                        HtmlCompat.fromHtml(
+                            context.getString(R.string.open_debug_menu_summary),
+                            HtmlCompat.FROM_HTML_MODE_COMPACT
+                        ).toAnnotatedString()
                     },
                     onClick = { navigator.push(SettingsDebugScreen()) },
                 ),

@@ -110,7 +110,12 @@ fun BrowseSourceEHentaiListItem(
             )
             val pageCount = metadata.length
             if (locale != null && pageCount != null) {
-                resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().uppercase())
+                resources.getQuantityString(
+                    R.plurals.browse_language_and_pages,
+                    pageCount,
+                    pageCount,
+                    locale.toLanguageTag().uppercase()
+                )
             } else if (pageCount != null) {
                 resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
             } else {

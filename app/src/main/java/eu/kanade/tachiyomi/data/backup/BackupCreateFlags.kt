@@ -7,6 +7,7 @@ internal object BackupCreateFlags {
     const val BACKUP_TRACK = 0x8
     const val BACKUP_APP_PREFS = 0x10
     const val BACKUP_SOURCE_PREFS = 0x20
+
     // SY -->
     const val BACKUP_CUSTOM_INFO = 0x40
     const val BACKUP_READ_MANGA = 0x80

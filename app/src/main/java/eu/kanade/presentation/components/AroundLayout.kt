@@ -41,7 +41,8 @@ fun AroundLayout(
             }
         }.fastMap { it.measure(looseConstraints.copy(maxWidth = bodyContentWidth)) }
 
-        val height = (startLayoutPlaceables + endLayoutPlaceables + bodyContentPlaceables).maxOfOrNull { it.height } ?: 0
+        val height = (startLayoutPlaceables + endLayoutPlaceables + bodyContentPlaceables)
+            .maxOfOrNull { it.height } ?: 0
 
         layout(constraints.maxWidth, height) {
             // Placing to control drawing order to match default elevation of each placeable

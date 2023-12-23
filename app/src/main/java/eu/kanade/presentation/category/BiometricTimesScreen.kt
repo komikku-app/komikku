@@ -53,7 +53,8 @@ fun BiometricTimesScreen(
         BiometricTimesContent(
             timeRanges = state.timeRanges,
             lazyListState = lazyListState,
-            paddingValues = paddingValues + topSmallPaddingValues + PaddingValues(horizontal = MaterialTheme.padding.medium),
+            paddingValues = paddingValues + topSmallPaddingValues +
+                PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickDelete = onClickDelete,
         )
     }

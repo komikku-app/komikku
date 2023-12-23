@@ -54,7 +54,8 @@ fun SortTagScreen(
         SortTagContent(
             tags = state.tags,
             lazyListState = lazyListState,
-            paddingValues = paddingValues + topSmallPaddingValues + PaddingValues(horizontal = MaterialTheme.padding.medium),
+            paddingValues = paddingValues + topSmallPaddingValues +
+                PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickDelete = onClickDelete,
             onMoveUp = onClickMoveUp,
             onMoveDown = onClickMoveDown,

@@ -159,13 +159,13 @@ class MangaScreen(
                     openMangaInWebView(
                         navigator,
                         screenModel.manga,
-                        screenModel.source
+                        screenModel.source,
                     )
                 } else {
                     openMergedMangaWebview(
                         context,
                         navigator,
-                        successState.mergedData
+                        successState.mergedData,
                     )
                 }
             }.takeIf { isHttpSource },

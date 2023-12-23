@@ -117,7 +117,12 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
                 Text(text = stringResource(R.string.eh_settings_configuration_failed))
             },
             text = {
-                Text(text = stringResource(R.string.eh_settings_configuration_failed_message, configureFailedDialogOpen?.message.orEmpty()))
+                Text(
+                    text = stringResource(
+                        R.string.eh_settings_configuration_failed_message,
+                        configureFailedDialogOpen?.message.orEmpty()
+                    )
+                )
             },
         )
     }

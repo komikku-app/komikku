@@ -215,7 +215,11 @@ private fun ColumnScope.SortPage(
             onClick = {
                 val isTogglingDirection = sortingMode == mode
                 val direction = when {
-                    isTogglingDirection -> if (sortDescending) LibrarySort.Direction.Ascending else LibrarySort.Direction.Descending
+                    isTogglingDirection -> if (sortDescending) {
+                        LibrarySort.Direction.Ascending
+                    } else {
+                        LibrarySort.Direction.Descending
+                    }
                     else -> if (sortDescending) LibrarySort.Direction.Descending else LibrarySort.Direction.Ascending
                 }
                 screenModel.setSort(category, mode, direction)

@@ -29,7 +29,11 @@ fun SourceRepoListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = MaterialTheme.padding.medium, top = MaterialTheme.padding.medium, end = MaterialTheme.padding.medium),
+                .padding(
+                    start = MaterialTheme.padding.medium,
+                    top = MaterialTheme.padding.medium,
+                    end = MaterialTheme.padding.medium
+                ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(imageVector = Icons.Outlined.Label, contentDescription = "")
