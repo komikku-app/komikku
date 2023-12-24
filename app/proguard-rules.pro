@@ -270,3 +270,6 @@
 -dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
 -dontwarn org.graalvm.nativeimage.hosted.Feature
 -dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn java.lang.Module
+-dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
+-dontwarn org.jspecify.annotations.NullMarked
