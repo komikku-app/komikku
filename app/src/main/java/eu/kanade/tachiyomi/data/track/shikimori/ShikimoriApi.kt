@@ -27,6 +27,7 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
+import tachiyomi.domain.track.model.Track as DomainTrack
 
 class ShikimoriApi(
     private val trackId: Long,
@@ -44,7 +45,7 @@ class ShikimoriApi(
                 val payload = buildJsonObject {
                     putJsonObject("user_rate") {
                         put("user_id", userId)
-                        put("target_id", track.media_id)
+                        put("target_id", track.remote_id)
                         put("target_type", "Manga")
                         put("chapters", track.last_chapter_read.toInt())
                         put("score", track.score.toInt())
@@ -68,14 +69,11 @@ class ShikimoriApi(
 
     suspend fun updateLibManga(track: Track, userId: String): Track = addLibManga(track, userId)
 
-    suspend fun deleteLibManga(track: Track): Track {
-        return withIOContext {
-            authClient.newCall(
-                DELETE(
-                    "$apiUrl/v2/user_rates/${track.library_id}",
-                ),
-            ).awaitSuccess()
-            track
+    suspend fun deleteLibManga(track: DomainTrack) {
+        withIOContext {
+            authClient
+                .newCall(DELETE("$apiUrl/v2/user_rates/${track.libraryId}"))
+                .awaitSuccess()
         }
     }
 
@@ -101,7 +99,7 @@ class ShikimoriApi(
 
     private fun jsonToSearch(obj: JsonObject): TrackSearch {
         return TrackSearch.create(trackId).apply {
-            media_id = obj["id"]!!.jsonPrimitive.long
+            remote_id = obj["id"]!!.jsonPrimitive.long
             title = obj["name"]!!.jsonPrimitive.content
             total_chapters = obj["chapters"]!!.jsonPrimitive.int
             cover_url = baseUrl + obj["image"]!!.jsonObject["preview"]!!.jsonPrimitive.content
@@ -117,7 +115,7 @@ class ShikimoriApi(
     private fun jsonToTrack(obj: JsonObject, mangas: JsonObject): Track {
         return Track.create(trackId).apply {
             title = mangas["name"]!!.jsonPrimitive.content
-            media_id = obj["id"]!!.jsonPrimitive.long
+            remote_id = obj["id"]!!.jsonPrimitive.long
             total_chapters = mangas["chapters"]!!.jsonPrimitive.int
             library_id = obj["id"]!!.jsonPrimitive.long
             last_chapter_read = obj["chapters"]!!.jsonPrimitive.float
@@ -130,7 +128,7 @@ class ShikimoriApi(
     suspend fun findLibManga(track: Track, userId: String): Track? {
         return withIOContext {
             val urlMangas = "$apiUrl/mangas".toUri().buildUpon()
-                .appendPath(track.media_id.toString())
+                .appendPath(track.remote_id.toString())
                 .build()
             val mangas = with(json) {
                 authClient.newCall(GET(urlMangas.toString()))
@@ -140,7 +138,7 @@ class ShikimoriApi(
 
             val url = "$apiUrl/v2/user_rates".toUri().buildUpon()
                 .appendQueryParameter("user_id", userId)
-                .appendQueryParameter("target_id", track.media_id.toString())
+                .appendQueryParameter("target_id", track.remote_id.toString())
                 .appendQueryParameter("target_type", "Manga")
                 .build()
             with(json) {
