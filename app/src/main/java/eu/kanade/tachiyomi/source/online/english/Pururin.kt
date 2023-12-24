@@ -50,6 +50,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
         }
 
         return urlImportFetchSearchManga(context, newQuery) {
+            @Suppress("DEPRECATION")
             super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
         }
     }

@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.system.overridePendingTransitionCompat
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.GalleryAddEvent
 import exh.GalleryAdder
@@ -39,7 +40,6 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
-import tachiyomi.presentation.core.i18n.stringResource
 
 class InterceptActivity : BaseActivity() {
     private var statusJob: Job? = null
@@ -47,7 +47,7 @@ class InterceptActivity : BaseActivity() {
     private val status: MutableStateFlow<InterceptResult> = MutableStateFlow(InterceptResult.Idle)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
+        overridePendingTransitionCompat(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
         super.onCreate(savedInstanceState)
 
         setComposeContent {
@@ -63,7 +63,7 @@ class InterceptActivity : BaseActivity() {
             topBar = { scrollBehavior ->
                 AppBar(
                     title = stringResource(MR.strings.app_name),
-                    navigateUp = ::onBackPressed,
+                    navigateUp = ::finish,
                     scrollBehavior = scrollBehavior,
                 )
             },
@@ -109,7 +109,7 @@ class InterceptActivity : BaseActivity() {
             .onEach {
                 when (it) {
                     is InterceptResult.Success -> {
-                        onBackPressed()
+                        finish()
                         startActivity(
                             if (it.chapter != null) {
                                 ReaderActivity.newIntent(this, it.manga.id, it.chapter.id)
@@ -126,8 +126,8 @@ class InterceptActivity : BaseActivity() {
                             .setTitle(MR.strings.chapter_error.getString(this))
                             .setMessage(stringResource(SYMR.strings.could_not_open_entry, it.reason))
                             .setPositiveButton(MR.strings.action_ok.getString(this), null)
-                            .setOnCancelListener { onBackPressed() }
-                            .setOnDismissListener { onBackPressed() }
+                            .setOnCancelListener { finish() }
+                            .setOnDismissListener { finish() }
                             .show()
                     }
                     else -> Unit
@@ -143,7 +143,7 @@ class InterceptActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
+        overridePendingTransitionCompat(R.anim.shared_axis_x_pop_enter, R.anim.shared_axis_x_pop_exit)
     }
 
     private val galleryAdder = GalleryAdder()

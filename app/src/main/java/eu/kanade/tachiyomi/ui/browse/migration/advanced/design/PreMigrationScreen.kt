@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.Icon
@@ -114,7 +114,7 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     text = { Text(text = stringResource(MR.strings.action_migrate)) },
                     icon = {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowForward,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                             contentDescription = stringResource(MR.strings.action_migrate),
                         )
                     },

@@ -51,8 +51,10 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
 
     // Support direct URL importing
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
+            @Suppress("DEPRECATION")
             super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
         }
 

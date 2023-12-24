@@ -474,6 +474,7 @@ class EHentai(
             this
         }
 
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         return super<HttpSource>.fetchLatestUpdates(page).checkValid()
     }
@@ -482,6 +483,7 @@ class EHentai(
         return super<HttpSource>.getLatestUpdates(page).checkValid()
     }
 
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return super<HttpSource>.fetchPopularManga(page).checkValid()
     }
@@ -491,6 +493,7 @@ class EHentai(
     }
 
     // Support direct URL importing
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             super<HttpSource>.fetchSearchManga(page, query, filters).checkValid()

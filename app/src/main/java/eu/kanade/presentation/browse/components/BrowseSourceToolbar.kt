@@ -2,6 +2,7 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material.icons.outlined.Public
@@ -84,7 +85,7 @@ fun BrowseSourceToolbar(
                                 add(
                                     AppBar.Action(
                                         title = stringResource(MR.strings.label_help),
-                                        icon = Icons.Outlined.Help,
+                                        icon = Icons.AutoMirrored.Outlined.Help,
                                         onClick = onHelpClick,
                                     ),
                                 )

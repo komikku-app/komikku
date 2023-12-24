@@ -106,8 +106,8 @@ class BatchAddScreen : Screen() {
                                         val realProgress = progress / state.progressTotal
                                         if (!realProgress.isNaN()) {
                                             LinearProgressIndicator(
-                                                progress = realProgress,
-                                                Modifier
+                                                progress = { realProgress },
+                                                modifier = Modifier
                                                     .padding(top = 2.dp)
                                                     .weight(1f),
                                             )

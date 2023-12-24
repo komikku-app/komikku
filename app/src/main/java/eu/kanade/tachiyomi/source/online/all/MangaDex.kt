@@ -112,10 +112,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         MangaPlusHandler(network.client)
     }
     private val comikeyHandler by lazy {
-        ComikeyHandler(network.cloudflareClient, network.defaultUserAgentProvider())
+        ComikeyHandler(network.client, network.defaultUserAgentProvider())
     }
     private val bilibiliHandler by lazy {
-        BilibiliHandler(network.cloudflareClient)
+        BilibiliHandler(network.client)
     }
     private val azukHandler by lazy {
         AzukiHandler(network.client, network.defaultUserAgentProvider())

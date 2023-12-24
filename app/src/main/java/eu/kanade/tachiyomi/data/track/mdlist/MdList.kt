@@ -12,8 +12,6 @@ import exh.md.network.MangaDexAuthInterceptor
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import kotlinx.collections.immutable.toImmutableList
-import tachiyomi.core.util.lang.awaitSingle
-import tachiyomi.core.util.lang.runAsObservable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -146,15 +144,12 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
     override suspend fun search(query: String): List<TrackSearch> {
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
-            mdex.fetchSearchManga(1, query, FilterList())
-                .flatMap { page ->
-                    runAsObservable {
-                        page.mangas.map {
-                            toTrackSearch(mdex.getMangaDetails(it))
-                        }.distinct()
-                    }
+            mdex.getSearchManga(1, query, FilterList())
+                .mangas
+                .map {
+                    toTrackSearch(mdex.getMangaDetails(it))
                 }
-                .awaitSingle()
+                .distinct()
         }
     }
 
