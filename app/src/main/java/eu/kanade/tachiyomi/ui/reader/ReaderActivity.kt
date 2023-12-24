@@ -830,12 +830,13 @@ class ReaderActivity : BaseActivity() {
             viewModel.state.value.lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
         }
 
-        val defaultReaderType = manga.defaultReaderType(
+        val manga = viewModel.state.value.manga
+        val defaultReaderType = manga?.defaultReaderType(
             manga.mangaType(sourceName = sourceManager.get(manga.source)?.name),
         )
         if (
             readerPreferences.useAutoWebtoon().get() &&
-            manga.readingMode.toInt() == ReadingMode.DEFAULT.flagValue &&
+            (manga?.readingMode?.toInt() ?: ReadingMode.DEFAULT.flagValue) == ReadingMode.DEFAULT.flagValue &&
             defaultReaderType != null &&
             defaultReaderType == ReadingMode.WEBTOON.flagValue
         ) {
