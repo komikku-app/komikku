@@ -1,5 +1,6 @@
 package eu.kanade.presentation.manga.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -32,7 +33,6 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.util.SourceTagsUtil
-import androidx.compose.material3.ChipBorder as ChipBorderM3
 import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
 @Immutable
@@ -123,8 +123,8 @@ fun NamespaceTags(
                                 SuggestionChipDefaults.suggestionChipBorder(borderWidth = it)
                             } ?: SuggestionChipDefaults.suggestionChipBorder(),
                             borderM3 = borderDp?.let {
-                                SuggestionChipDefaultsM3.suggestionChipBorder(borderWidth = it)
-                            } ?: SuggestionChipDefaultsM3.suggestionChipBorder(),
+                                SuggestionChipDefaultsM3.suggestionChipBorder(enabled = true, borderWidth = it)
+                            } ?: SuggestionChipDefaultsM3.suggestionChipBorder(enabled = true),
                         )
                     }
                 }
@@ -135,11 +135,11 @@ fun NamespaceTags(
 
 @Composable
 fun TagsChip(
-    modifier: Modifier = Modifier,
     text: String,
     onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
     border: ChipBorder? = SuggestionChipDefaults.suggestionChipBorder(),
-    borderM3: ChipBorderM3? = SuggestionChipDefaultsM3.suggestionChipBorder(),
+    borderM3: BorderStroke? = SuggestionChipDefaultsM3.suggestionChipBorder(enabled = true),
 ) {
     CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
         if (onClick != null) {
