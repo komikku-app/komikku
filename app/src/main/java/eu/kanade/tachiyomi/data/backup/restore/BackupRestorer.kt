@@ -8,6 +8,10 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
+import eu.kanade.tachiyomi.data.backup.restore.restorers.CategoriesRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.util.BackupUtil
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.source.MERGED_SOURCE_ID
@@ -200,34 +204,5 @@ class BackupRestorer(
             // Empty
         }
         return File("")
-    }
-}
-
-data class RestoreOptions(
-    val appSettings: Boolean = true,
-    val sourceSettings: Boolean = true,
-    val library: Boolean = true,
-    // SY -->
-    val savedSearches: Boolean = true,
-    // SY <--
-) {
-    fun toBooleanArray() = booleanArrayOf(
-        appSettings,
-        sourceSettings,
-        library,
-        // SY -->
-        savedSearches,
-        // SY <--
-    )
-
-    companion object {
-        fun fromBooleanArray(booleanArray: BooleanArray) = RestoreOptions(
-            appSettings = booleanArray[0],
-            sourceSettings = booleanArray[1],
-            library = booleanArray[2],
-            // SY -->
-            savedSearches = booleanArray[3],
-            // SY <--
-        )
     }
 }
