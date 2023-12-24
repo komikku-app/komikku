@@ -25,7 +25,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
 import eu.kanade.presentation.manga.DownloadAction
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -55,9 +54,11 @@ import exh.source.nHentaiSourceIds
 import exh.util.cancellable
 import exh.util.isLewd
 import exh.util.nullIfBlank
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -73,6 +74,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.core.preference.TriState
 import tachiyomi.core.util.lang.compareToWithCollator
@@ -107,6 +109,8 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerManga
 import tachiyomi.domain.track.model.Track
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -549,7 +553,7 @@ class LibraryScreenModel(
                 mapOf(
                     Category(
                         0,
-                        preferences.context.getString(R.string.ungrouped),
+                        preferences.context.stringResource(SYMR.strings.ungrouped),
                         0,
                         0,
                     ) to
@@ -845,24 +849,24 @@ class LibraryScreenModel(
     ): String {
         return when (groupType) {
             LibraryGroup.BY_STATUS -> when (category?.id) {
-                SManga.ONGOING.toLong() -> context.getString(R.string.ongoing)
-                SManga.LICENSED.toLong() -> context.getString(R.string.licensed)
-                SManga.CANCELLED.toLong() -> context.getString(R.string.cancelled)
-                SManga.ON_HIATUS.toLong() -> context.getString(R.string.on_hiatus)
-                SManga.PUBLISHING_FINISHED.toLong() -> context.getString(R.string.publishing_finished)
-                SManga.COMPLETED.toLong() -> context.getString(R.string.completed)
-                else -> context.getString(R.string.unknown)
+                SManga.ONGOING.toLong() -> context.stringResource(MR.strings.ongoing)
+                SManga.LICENSED.toLong() -> context.stringResource(MR.strings.licensed)
+                SManga.CANCELLED.toLong() -> context.stringResource(MR.strings.cancelled)
+                SManga.ON_HIATUS.toLong() -> context.stringResource(MR.strings.on_hiatus)
+                SManga.PUBLISHING_FINISHED.toLong() -> context.stringResource(MR.strings.publishing_finished)
+                SManga.COMPLETED.toLong() -> context.stringResource(MR.strings.completed)
+                else -> context.stringResource(MR.strings.unknown)
             }
             LibraryGroup.BY_SOURCE -> if (category?.id == LocalSource.ID) {
-                context.getString(R.string.local_source)
+                context.stringResource(MR.strings.local_source)
             } else {
                 categoryName
             }
             LibraryGroup.BY_TRACK_STATUS -> TrackStatus.values()
                 .find { it.int.toLong() == category?.id }
                 .let { it ?: TrackStatus.OTHER }
-                .let { context.getString(it.res) }
-            LibraryGroup.UNGROUPED -> context.getString(R.string.ungrouped)
+                .let { context.stringResource(it.res) }
+            LibraryGroup.UNGROUPED -> context.stringResource(SYMR.strings.ungrouped)
             else -> categoryName
         }
     }
@@ -1003,7 +1007,7 @@ class LibraryScreenModel(
             val trackService = trackerManager.get(track.syncId)
             if (trackService != null) {
                 val status = trackService.getStatus(track.status.toInt())?.let {
-                    context.getString(it)
+                    context.stringResource(it)
                 }
                 val name = trackerManager.get(track.syncId)?.name
                 status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
@@ -1119,7 +1123,7 @@ class LibraryScreenModel(
                     in mix -> CheckboxState.TriState.Exclude(it)
                     else -> CheckboxState.State.None(it)
                 }
-            }
+            }.toImmutableList()
             mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
         }
     }
@@ -1135,7 +1139,10 @@ class LibraryScreenModel(
 
     sealed interface Dialog {
         data object SettingsSheet : Dialog
-        data class ChangeCategory(val manga: List<Manga>, val initialSelection: List<CheckboxState<Category>>) : Dialog
+        data class ChangeCategory(
+            val manga: List<Manga>,
+            val initialSelection: ImmutableList<CheckboxState<Category>>,
+        ) : Dialog
         data class DeleteManga(val manga: List<Manga>) : Dialog
         object SyncFavoritesWarning : Dialog
         object SyncFavoritesConfirm : Dialog
@@ -1167,7 +1174,7 @@ class LibraryScreenModel(
                         name = TrackStatus.values()
                             .find { it.int == id }
                             .let { it ?: TrackStatus.OTHER }
-                            .let { context.getString(it.res) },
+                            .let { context.stringResource(it.res) },
                         order = TrackStatus.values().indexOfFirst {
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
@@ -1190,7 +1197,7 @@ class LibraryScreenModel(
                     Category(
                         id = it.key,
                         name = if (it.key == LocalSource.ID) {
-                            context.getString(R.string.local_source)
+                            context.stringResource(MR.strings.local_source)
                         } else {
                             val source = sourceManager.getOrStub(it.key)
                             source.name.ifBlank { source.id.toString() }
@@ -1207,13 +1214,13 @@ class LibraryScreenModel(
                     Category(
                         id = it.key + 1,
                         name = when (it.key) {
-                            SManga.ONGOING.toLong() -> context.getString(R.string.ongoing)
-                            SManga.LICENSED.toLong() -> context.getString(R.string.licensed)
-                            SManga.CANCELLED.toLong() -> context.getString(R.string.cancelled)
-                            SManga.ON_HIATUS.toLong() -> context.getString(R.string.on_hiatus)
-                            SManga.PUBLISHING_FINISHED.toLong() -> context.getString(R.string.publishing_finished)
-                            SManga.COMPLETED.toLong() -> context.getString(R.string.completed)
-                            else -> context.getString(R.string.unknown)
+                            SManga.ONGOING.toLong() -> context.stringResource(MR.strings.ongoing)
+                            SManga.LICENSED.toLong() -> context.stringResource(MR.strings.licensed)
+                            SManga.CANCELLED.toLong() -> context.stringResource(MR.strings.cancelled)
+                            SManga.ON_HIATUS.toLong() -> context.stringResource(MR.strings.on_hiatus)
+                            SManga.PUBLISHING_FINISHED.toLong() -> context.stringResource(MR.strings.publishing_finished)
+                            SManga.COMPLETED.toLong() -> context.stringResource(MR.strings.completed)
+                            else -> context.stringResource(MR.strings.unknown)
                         },
                         order = when (it.key) {
                             SManga.ONGOING.toLong() -> 1

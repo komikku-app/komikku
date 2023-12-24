@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,8 +32,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.manga.components.MangaCover
-import eu.kanade.tachiyomi.R
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
@@ -42,11 +41,15 @@ import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.core.i18n.pluralStringResource
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import java.util.Date
 
 @Composable
@@ -100,7 +103,7 @@ fun BrowseSourceEHentaiListItem(
     if (metadata !is EHentaiSearchMetadata) return
     val overlayColor = MaterialTheme.colorScheme.background.copy(alpha = 0.66f)
 
-    val resources = LocalContext.current.resources
+    val context = LocalContext.current
     val languageText by produceState("", metadata) {
         value = withIOContext {
             val locale = SourceTagsUtil.getLocaleSourceUtil(
@@ -110,14 +113,14 @@ fun BrowseSourceEHentaiListItem(
             )
             val pageCount = metadata.length
             if (locale != null && pageCount != null) {
-                resources.getQuantityString(
-                    R.plurals.browse_language_and_pages,
+                context.pluralStringResource(
+                    SYMR.plurals.browse_language_and_pages,
                     pageCount,
                     pageCount,
-                    locale.toLanguageTag().uppercase()
+                    locale.toLanguageTag().uppercase(),
                 )
             } else if (pageCount != null) {
-                resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
+                context.pluralStringResource(SYMR.plurals.num_pages, pageCount, pageCount)
             } else {
                 locale?.toLanguageTag()?.uppercase().orEmpty()
             }
@@ -130,19 +133,19 @@ fun BrowseSourceEHentaiListItem(
                 .orEmpty()
         }
     }
-    val genre by produceState<Pair<GenreColor, Int>?>(null, metadata) {
+    val genre by produceState<Pair<GenreColor, StringResource>?>(null, metadata) {
         value = withIOContext {
             when (metadata.genre) {
-                "doujinshi" -> GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
-                "manga" -> GenreColor.MANGA_COLOR to R.string.entry_type_manga
-                "artistcg" -> GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
-                "gamecg" -> GenreColor.GAME_CG_COLOR to R.string.game_cg
-                "western" -> GenreColor.WESTERN_COLOR to R.string.western
-                "non-h" -> GenreColor.NON_H_COLOR to R.string.non_h
-                "imageset" -> GenreColor.IMAGE_SET_COLOR to R.string.image_set
-                "cosplay" -> GenreColor.COSPLAY_COLOR to R.string.cosplay
-                "asianporn" -> GenreColor.ASIAN_PORN_COLOR to R.string.asian_porn
-                "misc" -> GenreColor.MISC_COLOR to R.string.misc
+                "doujinshi" -> GenreColor.DOUJINSHI_COLOR to SYMR.strings.doujinshi
+                "manga" -> GenreColor.MANGA_COLOR to SYMR.strings.entry_type_manga
+                "artistcg" -> GenreColor.ARTIST_CG_COLOR to SYMR.strings.artist_cg
+                "gamecg" -> GenreColor.GAME_CG_COLOR to SYMR.strings.game_cg
+                "western" -> GenreColor.WESTERN_COLOR to SYMR.strings.western
+                "non-h" -> GenreColor.NON_H_COLOR to SYMR.strings.non_h
+                "imageset" -> GenreColor.IMAGE_SET_COLOR to SYMR.strings.image_set
+                "cosplay" -> GenreColor.COSPLAY_COLOR to SYMR.strings.cosplay
+                "asianporn" -> GenreColor.ASIAN_PORN_COLOR to SYMR.strings.asian_porn
+                "misc" -> GenreColor.MISC_COLOR to SYMR.strings.misc
                 else -> null
             }
         }
@@ -182,7 +185,7 @@ fun BrowseSourceEHentaiListItem(
                         .padding(4.dp)
                         .align(Alignment.TopStart),
                 ) {
-                    Badge(stringResource(R.string.in_library))
+                    Badge(stringResource(MR.strings.in_library))
                 }
             }
         }

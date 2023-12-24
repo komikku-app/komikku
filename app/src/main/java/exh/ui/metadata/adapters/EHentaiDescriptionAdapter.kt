@@ -14,6 +14,10 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
 @Composable
 fun EHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
@@ -35,25 +39,25 @@ fun EHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit, sea
                         it.second
                     }
                     ?: meta.genre
-                    ?: context.getString(R.string.unknown)
+                    ?: context.stringResource(MR.strings.unknown)
 
-            binding.visible.text = context.getString(R.string.is_visible, meta.visible ?: context.getString(R.string.unknown))
+            binding.visible.text = context.stringResource(SYMR.strings.is_visible, meta.visible ?: context.stringResource(MR.strings.unknown))
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
             binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp)
 
-            binding.uploader.text = meta.uploader ?: context.getString(R.string.unknown)
+            binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
 
             binding.size.text = MetadataUtil.humanReadableByteCount(meta.size ?: 0, true)
             binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24)
 
             val length = meta.length ?: 0
-            binding.pages.text = context.resources.getQuantityString(R.plurals.num_pages, length, length)
+            binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, length, length)
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24)
 
-            val language = meta.language ?: context.getString(R.string.unknown)
+            val language = meta.language ?: context.stringResource(MR.strings.unknown)
             binding.language.text = if (meta.translated == true) {
-                context.getString(R.string.language_translated, language)
+                context.stringResource(SYMR.strings.language_translated, language)
             } else {
                 language
             }

@@ -17,19 +17,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.util.system.toast
 import exh.source.MERGED_SOURCE_ID
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MergedMangaReference
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Stable
 class EditMergedSettingsState(
@@ -50,7 +51,7 @@ class EditMergedSettingsState(
         mergedReferences: List<MergedMangaReference>,
     ) {
         if (mergedReferences.isEmpty() || mergedReferences.size == 1) {
-            context.toast(R.string.merged_references_invalid)
+            context.toast(SYMR.strings.merged_references_invalid)
             onDismissRequest()
         }
         mergedMangas += mergedReferences.filter {
@@ -91,24 +92,24 @@ class EditMergedSettingsState(
         val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
 
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.delete_merged_entry)
-            .setMessage(R.string.delete_merged_entry_desc)
-            .setPositiveButton(R.string.action_ok) { _, _ ->
+            .setTitle(SYMR.strings.delete_merged_entry.getString(context))
+            .setMessage(SYMR.strings.delete_merged_entry_desc.getString(context))
+            .setPositiveButton(MR.strings.action_ok.getString(context)) { _, _ ->
                 onDeleteClick(mergeMangaReference)
                 onDismissRequest()
             }
-            .setNegativeButton(R.string.action_cancel, null)
+            .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
     }
 
     override fun onToggleChapterUpdatesClicked(position: Int) {
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.chapter_updates_merged_entry)
-            .setMessage(R.string.chapter_updates_merged_entry_desc)
-            .setPositiveButton(R.string.action_ok) { _, _ ->
+            .setTitle(SYMR.strings.chapter_updates_merged_entry.getString(context))
+            .setMessage(SYMR.strings.chapter_updates_merged_entry_desc.getString(context))
+            .setPositiveButton(MR.strings.action_ok.getString(context)) { _, _ ->
                 toggleChapterUpdates(position)
             }
-            .setNegativeButton(R.string.action_cancel, null)
+            .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
     }
 
@@ -125,7 +126,7 @@ class EditMergedSettingsState(
                 if (it is EditMergedMangaHolder) {
                     it.updateChapterUpdatesIcon(!reference.getChapterUpdates)
                 }
-            } ?: context.toast(R.string.merged_chapter_updates_error)
+            } ?: context.toast(SYMR.strings.merged_chapter_updates_error)
 
             manga to reference.copy(getChapterUpdates = !reference.getChapterUpdates)
         }
@@ -133,12 +134,12 @@ class EditMergedSettingsState(
 
     override fun onToggleChapterDownloadsClicked(position: Int) {
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.download_merged_entry)
-            .setMessage(R.string.download_merged_entry_desc)
-            .setPositiveButton(R.string.action_ok) { _, _ ->
+            .setTitle(SYMR.strings.download_merged_entry.getString(context))
+            .setMessage(SYMR.strings.download_merged_entry_desc.getString(context))
+            .setPositiveButton(MR.strings.action_ok.getString(context)) { _, _ ->
                 toggleChapterDownloads(position)
             }
-            .setNegativeButton(R.string.action_cancel, null)
+            .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
     }
 
@@ -155,7 +156,7 @@ class EditMergedSettingsState(
                 if (it is EditMergedMangaHolder) {
                     it.updateDownloadChaptersIcon(!reference.downloadChapters)
                 }
-            } ?: context.toast(R.string.merged_toggle_download_chapters_error)
+            } ?: context.toast(SYMR.strings.merged_toggle_download_chapters_error)
 
             manga to reference.copy(downloadChapters = !reference.downloadChapters)
         }
@@ -182,12 +183,12 @@ fun EditMergedSettingsDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = state::onPositiveButtonClick) {
-                Text(stringResource(R.string.action_save))
+                Text(stringResource(MR.strings.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.action_cancel))
+                Text(stringResource(MR.strings.action_cancel))
             }
         },
         text = {

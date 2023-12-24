@@ -28,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.google.accompanist.web.AccompanistWebViewClient
@@ -39,10 +38,12 @@ import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun EhLoginWebViewScreen(
@@ -81,9 +82,10 @@ fun EhLoginWebViewScreen(
                         val animatedProgress by animateFloatAsState(
                             (loadingState as? LoadingState.Loading)?.progress ?: 1f,
                             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+                            label = "webview_loading",
                         )
                         LinearProgressIndicator(
-                            progress = animatedProgress,
+                            progress = { animatedProgress },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter),
@@ -139,10 +141,10 @@ fun EhLoginWebViewScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Button(onClick = onUp, Modifier.weight(0.5F)) {
-                        Text(text = stringResource(R.string.action_cancel))
+                        Text(text = stringResource(MR.strings.action_cancel))
                     }
                     Button(onClick = { showAdvancedOptions = true }, Modifier.weight(0.5F)) {
-                        Text(text = stringResource(R.string.pref_category_advanced))
+                        Text(text = stringResource(MR.strings.pref_category_advanced))
                     }
                 }
             }
@@ -164,7 +166,7 @@ fun EhLoginWebViewScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text(text = stringResource(R.string.recheck_login_status))
+                                Text(text = stringResource(SYMR.strings.recheck_login_status))
                             }
                             Button(
                                 onClick = {
@@ -173,7 +175,7 @@ fun EhLoginWebViewScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text(text = stringResource(R.string.alternative_login_page))
+                                Text(text = stringResource(SYMR.strings.alternative_login_page))
                             }
                             Button(
                                 onClick = {
@@ -182,7 +184,7 @@ fun EhLoginWebViewScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text(text = stringResource(R.string.skip_page_restyling))
+                                Text(text = stringResource(SYMR.strings.skip_page_restyling))
                             }
                             Button(
                                 onClick = {
@@ -191,10 +193,10 @@ fun EhLoginWebViewScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text(text = stringResource(R.string.custom_igneous_cookie))
+                                Text(text = stringResource(SYMR.strings.custom_igneous_cookie))
                             }
                             Button(onClick = { showAdvancedOptions = false }, Modifier.fillMaxWidth()) {
-                                Text(text = stringResource(R.string.action_cancel))
+                                Text(text = stringResource(MR.strings.action_cancel))
                             }
                         }
                     }

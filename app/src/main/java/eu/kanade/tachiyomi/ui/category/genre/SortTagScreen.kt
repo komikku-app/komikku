@@ -5,16 +5,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class SortTagScreen : Screen() {
@@ -49,17 +49,17 @@ class SortTagScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createTag(it) },
                     categories = successState.tags,
-                    title = stringResource(R.string.add_tag),
-                    extraMessage = stringResource(R.string.action_add_tags_message),
-                    alreadyExistsError = R.string.error_tag_exists,
+                    title = stringResource(SYMR.strings.add_tag),
+                    extraMessage = stringResource(SYMR.strings.action_add_tags_message),
+                    alreadyExistsError = SYMR.strings.error_tag_exists,
                 )
             }
             is SortTagDialog.Delete -> {
                 CategoryDeleteDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.delete(dialog.tag) },
-                    title = stringResource(R.string.delete_tag),
-                    text = stringResource(R.string.delete_tag_confirmation, dialog.tag),
+                    title = stringResource(SYMR.strings.delete_tag),
+                    text = stringResource(SYMR.strings.delete_tag_confirmation, dialog.tag),
                 )
             }
         }

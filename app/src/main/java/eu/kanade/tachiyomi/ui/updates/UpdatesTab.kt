@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -31,6 +30,9 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.Event
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -43,7 +45,7 @@ object UpdatesTab : Tab {
             val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_updates_enter)
             return TabOptions(
                 index = 1u,
-                title = stringResource(R.string.label_recent_updates),
+                title = stringResource(MR.strings.label_recent_updates),
                 icon = rememberAnimatedVectorPainter(image, isSelected),
             )
         }
@@ -107,15 +109,15 @@ object UpdatesTab : Tab {
             screenModel.events.collectLatest { event ->
                 when (event) {
                     Event.InternalError -> screenModel.snackbarHostState.showSnackbar(
-                        context.getString(R.string.internal_error),
+                        context.stringResource(MR.strings.internal_error),
                     )
                     is Event.LibraryUpdateTriggered -> {
                         val msg = if (event.started) {
-                            R.string.updating_library
+                            MR.strings.updating_library
                         } else {
-                            R.string.update_already_running
+                            MR.strings.update_already_running
                         }
-                        screenModel.snackbarHostState.showSnackbar(context.getString(msg))
+                        screenModel.snackbarHostState.showSnackbar(context.stringResource(msg))
                     }
                 }
             }

@@ -4,9 +4,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.pluralStringResource
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationMangaDialog(
@@ -29,21 +30,21 @@ fun MigrationMangaDialog(
                     }
                 },
             ) {
-                Text(text = stringResource(if (copy) R.string.copy else R.string.migrate))
+                Text(text = stringResource(if (copy) MR.strings.copy else MR.strings.migrate))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         text = {
             Text(
                 text = pluralStringResource(
-                    if (copy) R.plurals.copy_entry else R.plurals.migrate_entry,
+                    if (copy) SYMR.plurals.copy_entry else SYMR.plurals.migrate_entry,
                     count = mangaSet,
                     mangaSet,
-                    (if (mangaSkipped > 0) " " + stringResource(R.string.skipping_, mangaSkipped) else ""),
+                    (if (mangaSkipped > 0) " " + stringResource(SYMR.strings.skipping_, mangaSkipped) else ""),
                 ),
             )
         },

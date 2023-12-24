@@ -189,7 +189,9 @@ fun MangaChapterListItem(
                                     readProgress != null ||
                                     scanlator != null/* SY --> */ ||
                                     sourceName != null/* SY <-- */
-                                ) DotSeparatorText()
+                                ) {
+                                    DotSeparatorText()
+                                }
                             }
                             if (readProgress != null) {
                                 Text(

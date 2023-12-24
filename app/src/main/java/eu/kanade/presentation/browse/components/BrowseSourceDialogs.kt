@@ -12,13 +12,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.window.DialogProperties
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -63,7 +63,7 @@ fun SavedSearchDeleteDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         dismissButton = {
@@ -73,14 +73,14 @@ fun SavedSearchDeleteDialog(
                     onDismissRequest()
                 },
             ) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         title = {
-            Text(text = stringResource(R.string.save_search_delete))
+            Text(text = stringResource(SYMR.strings.save_search_delete))
         },
         text = {
-            Text(text = stringResource(R.string.save_search_delete_message, name))
+            Text(text = stringResource(SYMR.strings.save_search_delete_message, name))
         },
     )
 }
@@ -88,7 +88,7 @@ fun SavedSearchDeleteDialog(
 @Composable
 fun SavedSearchCreateDialog(
     onDismissRequest: () -> Unit,
-    currentSavedSearches: List<String>,
+    currentSavedSearches: ImmutableList<String>,
     saveSearch: (String) -> Unit,
 ) {
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -97,7 +97,7 @@ fun SavedSearchCreateDialog(
     val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = stringResource(R.string.save_search)) },
+        title = { Text(text = stringResource(SYMR.strings.save_search)) },
         text = {
             OutlinedTextField(
                 value = textFieldValue,
@@ -105,7 +105,7 @@ fun SavedSearchCreateDialog(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text(text = stringResource(R.string.save_search_hint))
+                    Text(text = stringResource(SYMR.strings.save_search_hint))
                 },
             )
         },
@@ -120,16 +120,16 @@ fun SavedSearchCreateDialog(
                         saveSearch(searchName)
                         onDismissRequest()
                     } else {
-                        context.toast(R.string.save_search_invalid_name)
+                        context.toast(SYMR.strings.save_search_invalid_name)
                     }
                 },
             ) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
     )

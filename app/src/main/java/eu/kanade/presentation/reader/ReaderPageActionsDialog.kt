@@ -18,12 +18,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ActionButton
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun ReaderPageActionsDialog(
@@ -54,9 +55,9 @@ fun ReaderPageActionsDialog(
                     title = stringResource(
                         // SY -->
                         if (hasExtraPage) {
-                            R.string.action_set_first_page_cover
+                            SYMR.strings.action_set_first_page_cover
                         } else {
-                            R.string.set_as_cover
+                            MR.strings.set_as_cover
                         },
                         // SY <--
                     ),
@@ -68,9 +69,9 @@ fun ReaderPageActionsDialog(
                     title = stringResource(
                         // SY -->
                         if (hasExtraPage) {
-                            R.string.action_share_first_page
+                            SYMR.strings.action_share_first_page
                         } else {
-                            R.string.action_share
+                            MR.strings.action_share
                         },
                         // SY <--
                     ),
@@ -88,9 +89,9 @@ fun ReaderPageActionsDialog(
                     title = stringResource(
                         // SY -->
                         if (hasExtraPage) {
-                            R.string.action_save_first_page
+                            SYMR.strings.action_save_first_page
                         } else {
-                            R.string.action_save
+                            MR.strings.action_save
                         },
                         // SY <--
                     ),
@@ -109,7 +110,7 @@ fun ReaderPageActionsDialog(
                 ) {
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.action_set_second_page_cover),
+                        title = stringResource(SYMR.strings.action_set_second_page_cover),
                         icon = Icons.Outlined.Photo,
                         onClick = {
                             showSetCoverDialog = true
@@ -117,7 +118,7 @@ fun ReaderPageActionsDialog(
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.action_share_second_page),
+                        title = stringResource(SYMR.strings.action_share_second_page),
                         icon = Icons.Outlined.Share,
                         onClick = {
                             onShare(true)
@@ -126,7 +127,7 @@ fun ReaderPageActionsDialog(
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.action_save_second_page),
+                        title = stringResource(SYMR.strings.action_save_second_page),
                         icon = Icons.Outlined.Save,
                         onClick = {
                             onSave(true)
@@ -139,7 +140,7 @@ fun ReaderPageActionsDialog(
                 ) {
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.action_share_combined_page),
+                        title = stringResource(SYMR.strings.action_share_combined_page),
                         icon = Icons.Outlined.Share,
                         onClick = {
                             onShareCombined()
@@ -148,7 +149,7 @@ fun ReaderPageActionsDialog(
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.action_save_combined_page),
+                        title = stringResource(SYMR.strings.action_save_combined_page),
                         icon = Icons.Outlined.Save,
                         onClick = {
                             onSaveCombined()
@@ -181,16 +182,16 @@ private fun SetCoverDialog(
 ) {
     AlertDialog(
         text = {
-            Text(stringResource(R.string.confirm_set_image_as_cover))
+            Text(stringResource(MR.strings.confirm_set_image_as_cover))
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.action_ok))
+                Text(stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel))
+                Text(stringResource(MR.strings.action_cancel))
             }
         },
         onDismissRequest = onDismiss,

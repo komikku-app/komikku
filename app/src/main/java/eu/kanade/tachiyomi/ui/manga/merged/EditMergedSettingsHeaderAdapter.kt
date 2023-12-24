@@ -6,11 +6,12 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.RecyclerView
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import exh.log.xLogD
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {
@@ -42,10 +43,10 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 itemView.context,
                 android.R.layout.simple_spinner_item,
                 listOfNotNull(
-                    itemView.context.getString(R.string.no_dedupe),
-                    itemView.context.getString(R.string.dedupe_priority),
-                    itemView.context.getString(R.string.dedupe_most_chapters),
-                    itemView.context.getString(R.string.dedupe_highest_chapter),
+                    itemView.context.stringResource(SYMR.strings.no_dedupe),
+                    itemView.context.stringResource(SYMR.strings.dedupe_priority),
+                    itemView.context.stringResource(SYMR.strings.dedupe_most_chapters),
+                    itemView.context.stringResource(SYMR.strings.dedupe_highest_chapter),
                 ),
             )
             dedupeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

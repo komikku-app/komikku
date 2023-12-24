@@ -1,11 +1,13 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
 @Serializable
 class EightMusesSearchMetadata : RaisedSearchMetadata() {
@@ -41,9 +43,9 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(title) { getString(R.string.title) },
-                getItem(path.nullIfEmpty(), { it.joinToString("/", prefix = "/") }) { getString(R.string.path) },
-                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
+                getItem(title) { stringResource(MR.strings.title) },
+                getItem(path.nullIfEmpty(), { it.joinToString("/", prefix = "/") }) { stringResource(SYMR.strings.path) },
+                getItem(thumbnailUrl) { stringResource(SYMR.strings.thumbnail_url) },
             )
         }
     }

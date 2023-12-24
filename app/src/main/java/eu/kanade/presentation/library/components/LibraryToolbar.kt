@@ -21,6 +21,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
@@ -130,9 +131,9 @@ private fun LibraryRegularToolbar(
                     if (onClickSyncExh != null) {
                         add(
                             AppBar.OverflowAction(
-                                title = stringResource(R.string.sync_favorites),
+                                title = stringResource(SYMR.strings.sync_favorites),
                                 onClick = onClickSyncExh,
-                            )
+                            ),
                         )
                     }
                     // SY <--

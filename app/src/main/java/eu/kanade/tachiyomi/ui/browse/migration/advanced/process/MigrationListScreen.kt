@@ -16,14 +16,16 @@ import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.util.overEq
 import exh.util.underEq
+import kotlinx.collections.immutable.persistentListOf
+import tachiyomi.core.i18n.pluralStringResource
 import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.i18n.sy.SYMR
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
 
@@ -44,8 +46,8 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             if (items?.isEmpty() == true) {
                 val manualMigrations = screenModel.manualMigrations.value
                 context.toast(
-                    context.resources.getQuantityString(
-                        R.plurals.entry_migrated,
+                    context.pluralStringResource(
+                        SYMR.plurals.entry_migrated,
                         manualMigrations,
                         manualMigrations,
                     ),
@@ -93,7 +95,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             }
         }
         MigrationListScreen(
-            items = items.orEmpty(),
+            items = items ?: persistentListOf(),
             migrationDone = migrationDone,
             unfinishedCount = unfinishedCount,
             getManga = screenModel::getManga,

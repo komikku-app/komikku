@@ -1,7 +1,6 @@
 package exh.uconfig
 
 import android.content.Context
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.asJsoup
@@ -12,8 +11,10 @@ import exh.source.EXH_SOURCE_ID
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
@@ -108,7 +109,7 @@ class EHConfigurator(val context: Context) {
 
         // No profile slots left :(
         if (availableProfiles.isEmpty()) {
-            throw IllegalStateException(context.getString(R.string.eh_settings_out_of_slots_error, source.name))
+            throw IllegalStateException(context.stringResource(SYMR.strings.eh_settings_out_of_slots_error, source.name))
         }
         // Create profile in available slot
 

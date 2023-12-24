@@ -63,6 +63,7 @@ import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -191,7 +192,7 @@ object LibraryTab : Tab {
                                 selectedMangaIds,
                             )
                         } else {
-                            context.toast(R.string.no_valid_entry)
+                            context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },

@@ -23,8 +23,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -52,8 +52,8 @@ class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) 
         ) { paddingValues ->
             when (val state = state) {
                 MetadataViewState.Loading -> LoadingScreen()
-                MetadataViewState.MetadataNotFound -> EmptyScreen(R.string.no_results_found)
-                MetadataViewState.SourceNotFound -> EmptyScreen(R.string.source_empty_screen)
+                MetadataViewState.MetadataNotFound -> EmptyScreen(MR.strings.no_results_found)
+                MetadataViewState.SourceNotFound -> EmptyScreen(MR.strings.source_empty_screen)
                 is MetadataViewState.Success -> {
                     val context = LocalContext.current
                     val items = remember(state.meta) { state.meta.getExtraInfoPairs(context) }

@@ -33,7 +33,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableSet
 
 private val animationSpec = tween<IntOffset>(200)
 
@@ -106,7 +106,7 @@ fun ReaderAppBars(
     onClickBoostPageHelp: () -> Unit,
     navBarType: NavBarType,
     currentPageText: String,
-    enabledButtons: Set<String>,
+    enabledButtons: ImmutableSet<String>,
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
@@ -215,20 +215,20 @@ fun ReaderAppBars(
                                 listOfNotNull(
                                     AppBar.Action(
                                         title = stringResource(
-                                            if (bookmarked) R.string.action_remove_bookmark else R.string.action_bookmark
+                                            if (bookmarked) MR.strings.action_remove_bookmark else MR.strings.action_bookmark
                                         ),
                                         icon = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
                                         onClick = onToggleBookmarked,
                                     ),
                                     onOpenInWebView?.let {
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.action_open_in_web_view),
+                                            title = stringResource(MR.strings.action_open_in_web_view),
                                             onClick = it,
                                         )
                                     },
                                     onShare?.let {
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.action_share),
+                                            title = stringResource(MR.strings.action_share),
                                             onClick = it,
                                         )
                                     },

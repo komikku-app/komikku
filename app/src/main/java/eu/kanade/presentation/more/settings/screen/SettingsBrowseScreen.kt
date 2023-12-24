@@ -1,24 +1,25 @@
 package eu.kanade.presentation.more.settings.screen
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.category.repos.RepoScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.pluralStringResource
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -27,8 +28,7 @@ object SettingsBrowseScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    @StringRes
-    override fun getTitleRes() = R.string.browse
+    override fun getTitleRes() = MR.strings.browse
 
     @Composable
     override fun getPreferences(): List<Preference> {
@@ -41,14 +41,14 @@ object SettingsBrowseScreen : SearchableSettings {
         return listOf(
             // SY -->
             Preference.PreferenceGroup(
-                title = stringResource(R.string.label_sources),
+                title = stringResource(MR.strings.label_sources),
                 preferenceItems = listOf(
                     kotlin.run {
                         val navigator = LocalNavigator.currentOrThrow
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(
-                            title = stringResource(R.string.action_edit_categories),
-                            subtitle = pluralStringResource(R.plurals.num_categories, count.size, count.size),
+                            title = stringResource(MR.strings.action_edit_categories),
+                            subtitle = pluralStringResource(MR.plurals.num_categories, count.size, count.size),
                             onClick = {
                                 navigator.push(SourceCategoryScreen())
                             },
@@ -56,40 +56,40 @@ object SettingsBrowseScreen : SearchableSettings {
                     },
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.sourcesTabCategoriesFilter(),
-                        title = stringResource(R.string.pref_source_source_filtering),
-                        subtitle = stringResource(R.string.pref_source_source_filtering_summery),
+                        title = stringResource(SYMR.strings.pref_source_source_filtering),
+                        subtitle = stringResource(SYMR.strings.pref_source_source_filtering_summery),
                     ),
                     Preference.PreferenceItem.SwitchPreference(
                         pref = uiPreferences.useNewSourceNavigation(),
-                        title = stringResource(R.string.pref_source_navigation),
-                        subtitle = stringResource(R.string.pref_source_navigation_summery),
+                        title = stringResource(SYMR.strings.pref_source_navigation),
+                        subtitle = stringResource(SYMR.strings.pref_source_navigation_summery),
                     ),
                     Preference.PreferenceItem.SwitchPreference(
                         pref = unsortedPreferences.allowLocalSourceHiddenFolders(),
-                        title = stringResource(R.string.pref_local_source_hidden_folders),
-                        subtitle = stringResource(R.string.pref_local_source_hidden_folders_summery),
+                        title = stringResource(SYMR.strings.pref_local_source_hidden_folders),
+                        subtitle = stringResource(SYMR.strings.pref_local_source_hidden_folders_summery),
                     ),
                 ),
             ),
             Preference.PreferenceGroup(
-                title = stringResource(R.string.feed),
+                title = stringResource(SYMR.strings.feed),
                 preferenceItems = listOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = uiPreferences.feedTabInFront(),
-                        title = stringResource(R.string.pref_feed_position),
-                        subtitle = stringResource(R.string.pref_feed_position_summery),
+                        title = stringResource(SYMR.strings.pref_feed_position),
+                        subtitle = stringResource(SYMR.strings.pref_feed_position_summery),
                     ),
                 ),
             ),
             Preference.PreferenceGroup(
-                title = stringResource(R.string.label_extensions),
+                title = stringResource(MR.strings.label_extensions),
                 preferenceItems = listOf(
                     kotlin.run {
                         val navigator = LocalNavigator.currentOrThrow
                         val count by unsortedPreferences.extensionRepos().collectAsState()
                         Preference.PreferenceItem.TextPreference(
-                            title = stringResource(R.string.action_edit_repos),
-                            subtitle = pluralStringResource(R.plurals.num_repos, count.size, count.size),
+                            title = stringResource(SYMR.strings.action_edit_repos),
+                            subtitle = pluralStringResource(SYMR.plurals.num_repos, count.size, count.size),
                             onClick = {
                                 navigator.push(RepoScreen())
                             },
@@ -99,28 +99,28 @@ object SettingsBrowseScreen : SearchableSettings {
             ),
             // SY <--
             Preference.PreferenceGroup(
-                title = stringResource(R.string.label_sources),
+                title = stringResource(MR.strings.label_sources),
                 preferenceItems = listOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.hideInLibraryItems(),
-                        title = stringResource(R.string.pref_hide_in_library_items),
+                        title = stringResource(MR.strings.pref_hide_in_library_items),
                     ),
                 ),
             ),
             Preference.PreferenceGroup(
-                title = stringResource(R.string.pref_category_nsfw_content),
+                title = stringResource(MR.strings.pref_category_nsfw_content),
                 preferenceItems = listOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.showNsfwSource(),
-                        title = stringResource(R.string.pref_show_nsfw_source),
-                        subtitle = stringResource(R.string.requires_app_restart),
+                        title = stringResource(MR.strings.pref_show_nsfw_source),
+                        subtitle = stringResource(MR.strings.requires_app_restart),
                         onValueChanged = {
                             (context as FragmentActivity).authenticate(
-                                title = context.getString(R.string.pref_category_nsfw_content),
+                                title = context.stringResource(MR.strings.pref_category_nsfw_content),
                             )
                         },
                     ),
-                    Preference.PreferenceItem.InfoPreference(stringResource(R.string.parental_controls_info)),
+                    Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.parental_controls_info)),
                 ),
             ),
         )

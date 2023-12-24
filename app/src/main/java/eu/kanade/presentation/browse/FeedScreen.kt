@@ -27,22 +27,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
@@ -71,7 +75,7 @@ fun FeedScreen(
     when {
         state.isLoading -> LoadingScreen()
         state.isEmpty -> EmptyScreen(
-            textResource = R.string.feed_tab_empty,
+            SYMR.strings.feed_tab_empty,
             modifier = Modifier.padding(contentPadding),
         )
         else -> {
@@ -137,7 +141,7 @@ fun FeedItem(
             GlobalSearchLoadingResultItem()
         }
         item.results.isEmpty() -> {
-            GlobalSearchErrorResultItem(message = stringResource(R.string.no_results_found))
+            GlobalSearchErrorResultItem(message = stringResource(MR.strings.no_results_found))
         }
         else -> {
             GlobalSearchCardRow(
@@ -152,14 +156,14 @@ fun FeedItem(
 
 @Composable
 fun FeedAddDialog(
-    sources: List<CatalogueSource>,
+    sources: ImmutableList<CatalogueSource>,
     onDismiss: () -> Unit,
     onClickAdd: (CatalogueSource?) -> Unit,
 ) {
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(
         title = {
-            Text(text = stringResource(R.string.feed))
+            Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
             RadioSelector(options = sources, selected = selected) {
@@ -169,7 +173,7 @@ fun FeedAddDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = { onClickAdd(selected?.let { sources[it] }) }) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
     )
@@ -178,7 +182,7 @@ fun FeedAddDialog(
 @Composable
 fun FeedAddSearchDialog(
     source: CatalogueSource,
-    savedSearches: List<SavedSearch?>,
+    savedSearches: ImmutableList<SavedSearch?>,
     onDismiss: () -> Unit,
     onClickAdd: (CatalogueSource, SavedSearch?) -> Unit,
 ) {
@@ -191,8 +195,8 @@ fun FeedAddSearchDialog(
             val context = LocalContext.current
             val savedSearchStrings = remember {
                 savedSearches.map {
-                    it?.name ?: context.getString(R.string.latest)
-                }
+                    it?.name ?: context.stringResource(MR.strings.latest)
+                }.toImmutableList()
             }
             RadioSelector(
                 options = savedSearches,
@@ -205,7 +209,7 @@ fun FeedAddSearchDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) }) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
     )
@@ -213,8 +217,8 @@ fun FeedAddSearchDialog(
 
 @Composable
 fun <T> RadioSelector(
-    options: List<T>,
-    optionStrings: List<String> = remember { options.map { it.toString() } },
+    options: ImmutableList<T>,
+    optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
     selected: Int?,
     onSelectOption: (Int) -> Unit,
 ) {
@@ -243,15 +247,15 @@ fun FeedDeleteConfirmDialog(
 ) {
     AlertDialog(
         title = {
-            Text(text = stringResource(R.string.feed))
+            Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            Text(text = stringResource(R.string.feed_delete))
+            Text(text = stringResource(SYMR.strings.feed_delete))
         },
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = { onClickDeleteConfirm(feed) }) {
-                Text(text = stringResource(R.string.action_delete))
+                Text(text = stringResource(MR.strings.action_delete))
             }
         },
     )

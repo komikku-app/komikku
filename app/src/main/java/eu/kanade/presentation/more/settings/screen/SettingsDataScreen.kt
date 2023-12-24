@@ -51,6 +51,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -292,19 +293,19 @@ object SettingsDataScreen : SearchableSettings {
                 ),
                 // SY -->
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_clear_page_preview_cache),
-                    subtitle = stringResource(R.string.used_cache, pagePreviewReadableSize),
+                    title = stringResource(SYMR.strings.pref_clear_page_preview_cache),
+                    subtitle = stringResource(MR.strings.used_cache, pagePreviewReadableSize),
                     onClick = {
                         scope.launchNonCancellable {
                             try {
                                 val deletedFiles = pagePreviewCache.clear()
                                 withUIContext {
-                                    context.toast(context.getString(R.string.cache_deleted, deletedFiles))
+                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
                                     pagePreviewReadableSizeSema++
                                 }
                             } catch (e: Throwable) {
                                 logcat(LogPriority.ERROR, e)
-                                withUIContext { context.toast(R.string.cache_delete_error) }
+                                withUIContext { context.toast(MR.strings.cache_delete_error) }
                             }
                         }
                     },

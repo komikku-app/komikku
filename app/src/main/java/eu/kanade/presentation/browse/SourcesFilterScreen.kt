@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesFilterScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -141,7 +142,7 @@ fun SourcesFilterToggle(
 ) {
     SwitchPreferenceWidget(
         modifier = modifier,
-        title = stringResource(R.string.pref_category_all_sources),
+        title = stringResource(SYMR.strings.pref_category_all_sources),
         checked = isEnabled,
         onCheckedChanged = { onClickItem() },
     )

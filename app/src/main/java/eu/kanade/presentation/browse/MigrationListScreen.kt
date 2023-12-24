@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.CopyAll
@@ -21,26 +22,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.MigrationActionIcon
 import eu.kanade.presentation.browse.components.MigrationItem
 import eu.kanade.presentation.browse.components.MigrationItemResult
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
 
 @Composable
 fun MigrationListScreen(
-    items: List<MigratingManga>,
+    items: ImmutableList<MigratingManga>,
     migrationDone: Boolean,
     unfinishedCount: Int,
     getManga: suspend (MigratingManga.SearchResult.Result) -> Manga?,
@@ -55,7 +58,7 @@ fun MigrationListScreen(
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            val titleString = stringResource(R.string.migration)
+            val titleString = stringResource(SYMR.strings.migration)
             val title by produceState(initialValue = titleString, items, unfinishedCount, titleString) {
                 withIOContext {
                     value = "$titleString ($unfinishedCount/${items.size})"
@@ -67,13 +70,13 @@ fun MigrationListScreen(
                     AppBarActions(
                         persistentListOf(
                             AppBar.Action(
-                                title = stringResource(R.string.copy),
+                                title = stringResource(MR.strings.copy),
                                 icon = if (items.size == 1) Icons.Outlined.ContentCopy else Icons.Outlined.CopyAll,
                                 onClick = { openMigrationDialog(false) },
                                 enabled = migrationDone,
                             ),
                             AppBar.Action(
-                                title = stringResource(R.string.migrate),
+                                title = stringResource(MR.strings.migrate),
                                 icon = if (items.size == 1) Icons.Outlined.Done else Icons.Outlined.DoneAll,
                                 onClick = { openMigrationDialog(false) },
                                 enabled = migrationDone,
@@ -112,8 +115,8 @@ fun MigrationListScreen(
                     )
 
                     Icon(
-                        Icons.Outlined.ArrowForward,
-                        contentDescription = stringResource(R.string.migrating_to),
+                        Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = stringResource(SYMR.strings.migrating_to),
                         modifier = Modifier.weight(0.2f),
                     )
 

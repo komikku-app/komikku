@@ -8,7 +8,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -21,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.presentation.core.components.Badge
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
 
 @Composable
@@ -105,7 +105,7 @@ private fun BrowseSourceListItem(
                 }
                 metadata.relation?.let {
                     Badge(
-                        text = stringResource(it.resId),
+                        text = stringResource(it.res),
                         color = MaterialTheme.colorScheme.tertiary,
                         textColor = MaterialTheme.colorScheme.onTertiary,
                     )

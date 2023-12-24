@@ -30,7 +30,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -60,6 +59,10 @@ import exh.source.isEhBasedManga
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfEmpty
 import exh.util.trimOrNull
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -74,6 +77,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.core.preference.TriState
 import tachiyomi.core.preference.mapAsCheckboxState
@@ -120,6 +124,8 @@ import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -326,7 +332,7 @@ class MangaScreenModel(
                 .distinctUntilChanged()
                 .collectLatest { excludedScanlators ->
                     updateSuccessState {
-                        it.copy(excludedScanlators = excludedScanlators)
+                        it.copy(excludedScanlators = excludedScanlators.toImmutableSet())
                     }
                 }
         }
@@ -336,7 +342,7 @@ class MangaScreenModel(
                 .distinctUntilChanged()
                 .collectLatest { availableScanlators ->
                     updateSuccessState {
-                        it.copy(availableScanlators = availableScanlators)
+                        it.copy(availableScanlators = availableScanlators.toImmutableSet())
                     }
                 }
         }
@@ -374,8 +380,8 @@ class MangaScreenModel(
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
-                    availableScanlators = getAvailableScanlators.await(mangaId),
-                    excludedScanlators = getExcludedScanlators.await(mangaId),
+                    availableScanlators = getAvailableScanlators.await(mangaId).toImmutableSet(),
+                    excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     // SY -->
@@ -522,11 +528,11 @@ class MangaScreenModel(
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
         val originalManga = getManga.await(originalMangaId)
-            ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_entry, originalMangaId))
+            ?: throw IllegalArgumentException(context.stringResource(SYMR.strings.merge_unknown_entry, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
             val children = getMergedReferencesById.await(originalMangaId)
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
-                throw IllegalArgumentException(context.getString(R.string.merged_already))
+                throw IllegalArgumentException(context.stringResource(SYMR.strings.merged_already))
             }
 
             val mangaReferences = mutableListOf(
@@ -567,7 +573,7 @@ class MangaScreenModel(
             return originalManga
         } else {
             if (manga.id == originalMangaId) {
-                throw IllegalArgumentException(context.getString(R.string.merged_already))
+                throw IllegalArgumentException(context.stringResource(SYMR.strings.merged_already))
             }
             var mergedManga = Manga.create()
                 .copy(
@@ -587,7 +593,7 @@ class MangaScreenModel(
             var existingManga = getManga.await(mergedManga.url, mergedManga.source)
             while (existingManga != null) {
                 if (existingManga.favorite) {
-                    throw IllegalArgumentException(context.getString(R.string.merge_duplicate))
+                    throw IllegalArgumentException(context.stringResource(SYMR.strings.merge_duplicate))
                 } else {
                     withNonCancellableContext {
                         existingManga?.id?.let {
@@ -688,8 +694,8 @@ class MangaScreenModel(
                 screenModelScope.launch {
                     if (!hasDownloads()) return@launch
                     val result = snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.delete_downloads_for_manga),
-                        actionLabel = context.getString(R.string.action_delete),
+                        message = context.stringResource(MR.strings.delete_downloads_for_manga),
+                        actionLabel = context.stringResource(MR.strings.action_delete),
                         withDismissAction = true,
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -770,7 +776,7 @@ class MangaScreenModel(
                 successState.copy(
                     dialog = Dialog.ChangeCategory(
                         manga = manga,
-                        initialSelection = categories.mapAsCheckboxState { it.id in selection },
+                        initialSelection = categories.mapAsCheckboxState { it.id in selection }.toImmutableList(),
                     ),
                 )
             }
@@ -1018,7 +1024,7 @@ class MangaScreenModel(
             }
         } catch (e: Throwable) {
             val message = if (e is NoChaptersException) {
-                context.getString(R.string.no_chapters_error)
+                context.stringResource(MR.strings.no_chapters_error)
             } else {
                 logcat(LogPriority.ERROR, e)
                 with(context) { e.formattedMessage }
@@ -1120,8 +1126,8 @@ class MangaScreenModel(
             }
             screenModelScope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.snack_add_to_library),
-                    actionLabel = context.getString(R.string.action_add),
+                    message = context.stringResource(MR.strings.snack_add_to_library),
+                    actionLabel = context.stringResource(MR.strings.action_add),
                     withDismissAction = true,
                 )
                 if (result == SnackbarResult.ActionPerformed && !isFavorited) {
@@ -1345,7 +1351,7 @@ class MangaScreenModel(
             if (applyToExisting) {
                 setMangaDefaultChapterFlags.awaitAll()
             }
-            snackbarHostState.showSnackbar(message = context.getString(R.string.chapter_settings_updated))
+            snackbarHostState.showSnackbar(message = context.stringResource(MR.strings.chapter_settings_updated))
         }
     }
 
@@ -1506,7 +1512,10 @@ class MangaScreenModel(
     // Track sheet - end
 
     sealed interface Dialog {
-        data class ChangeCategory(val manga: Manga, val initialSelection: List<CheckboxState<Category>>) : Dialog
+        data class ChangeCategory(
+            val manga: Manga,
+            val initialSelection: ImmutableList<CheckboxState<Category>>,
+        ) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
         data class SetFetchInterval(val manga: Manga) : Dialog
@@ -1582,8 +1591,8 @@ class MangaScreenModel(
             val source: Source,
             val isFromSource: Boolean,
             val chapters: List<ChapterList.Item>,
-            val availableScanlators: Set<String>,
-            val excludedScanlators: Set<String>,
+            val availableScanlators: ImmutableSet<String>,
+            val excludedScanlators: ImmutableSet<String>,
             val trackItems: List<TrackItem> = emptyList(),
             val isRefreshingData: Boolean = false,
             val dialog: MangaScreenModel.Dialog? = null,

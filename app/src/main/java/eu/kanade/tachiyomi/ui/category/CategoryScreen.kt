@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastMap
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -16,9 +15,11 @@ import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
 import eu.kanade.presentation.category.components.CategorySortAlphabeticallyDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class CategoryScreen : Screen() {
@@ -56,8 +57,8 @@ class CategoryScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = screenModel::createCategory,
                     // SY -->
-                    categories = successState.categories.fastMap { it.name },
-                    title = stringResource(R.string.action_add_category),
+                    categories = successState.categories.fastMap { it.name }.toImmutableList(),
+                    title = stringResource(MR.strings.action_add_category),
                     // SY <--
                 )
             }
@@ -66,7 +67,7 @@ class CategoryScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onRename = { screenModel.renameCategory(dialog.category, it) },
                     // SY -->
-                    categories = successState.categories.fastMap { it.name },
+                    categories = successState.categories.fastMap { it.name }.toImmutableList(),
                     category = dialog.category.name,
                     // SY <--
                 )
@@ -76,8 +77,8 @@ class CategoryScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteCategory(dialog.category.id) },
                     // SY -->
-                    title = stringResource(R.string.delete_category),
-                    text = stringResource(R.string.delete_category_confirmation, dialog.category.name),
+                    title = stringResource(MR.strings.delete_category),
+                    text = stringResource(MR.strings.delete_category_confirmation, dialog.category.name),
                     // SY <--
                 )
             }

@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.Constants
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -112,7 +113,7 @@ data class SourceSearchScreen(
                     // SY -->
                     startExpanded = screenModel.startExpanded,
                     onSave = {},
-                    savedSearches = emptyList(),
+                    savedSearches = persistentListOf(),
                     onSavedSearch = {},
                     onSavedSearchPress = {},
                     openMangaDexRandom = null,

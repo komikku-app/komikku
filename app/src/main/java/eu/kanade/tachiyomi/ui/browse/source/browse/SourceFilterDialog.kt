@@ -18,14 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.core.preference.TriState
 import tachiyomi.domain.source.model.EXHSavedSearch
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.CollapsibleBox
 import tachiyomi.presentation.core.components.HeadingItem
@@ -34,6 +35,7 @@ import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TextItem
 import tachiyomi.presentation.core.components.TriStateItem
 import tachiyomi.presentation.core.components.material.Button
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun SourceFilterDialog(
@@ -44,7 +46,7 @@ fun SourceFilterDialog(
     onUpdate: (FilterList) -> Unit,
     // SY -->
     startExpanded: Boolean,
-    savedSearches: List<EXHSavedSearch>,
+    savedSearches: ImmutableList<EXHSavedSearch>,
     onSave: () -> Unit,
     onSavedSearch: (EXHSavedSearch) -> Unit,
     onSavedSearchPress: (EXHSavedSearch) -> Unit,
@@ -66,7 +68,7 @@ fun SourceFilterDialog(
                 ) {
                     TextButton(onClick = onReset) {
                         Text(
-                            text = stringResource(R.string.action_reset),
+                            text = stringResource(MR.strings.action_reset),
                             style = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.primary,
                             ),
@@ -79,7 +81,7 @@ fun SourceFilterDialog(
                     IconButton(onClick = onSave) {
                         Icon(
                             Icons.Default.Save,
-                            contentDescription = stringResource(R.string.action_save),
+                            contentDescription = stringResource(MR.strings.action_save),
                             tint = MaterialTheme.colorScheme.onBackground,
                         )
                     }
@@ -88,7 +90,7 @@ fun SourceFilterDialog(
                         onFilter()
                         onDismissRequest()
                     }) {
-                        Text(stringResource(R.string.action_filter))
+                        Text(stringResource(MR.strings.action_filter))
                     }
                 }
                 HorizontalDivider()
@@ -125,11 +127,11 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
         is Filter.AutoComplete -> {
             AutoCompleteItem(
                 name = filter.name,
-                state = filter.state,
+                state = filter.state.toImmutableList(),
                 hint = filter.hint,
-                values = filter.values,
-                skipAutoFillTags = filter.skipAutoFillTags,
-                validPrefixes = filter.validPrefixes,
+                values = filter.values.toImmutableList(),
+                skipAutoFillTags = filter.skipAutoFillTags.toImmutableList(),
+                validPrefixes = filter.validPrefixes.toImmutableList(),
             ) {
                 filter.state = it
                 onUpdate()

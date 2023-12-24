@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -13,9 +12,10 @@ import eu.kanade.presentation.category.SourceRepoScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class RepoScreen : Screen() {
@@ -48,17 +48,17 @@ class RepoScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createRepo(it) },
                     categories = successState.repos,
-                    title = stringResource(R.string.action_add_repo),
-                    extraMessage = stringResource(R.string.action_add_repo_message),
-                    alreadyExistsError = R.string.error_repo_exists,
+                    title = stringResource(SYMR.strings.action_add_repo),
+                    extraMessage = stringResource(SYMR.strings.action_add_repo_message),
+                    alreadyExistsError = SYMR.strings.error_repo_exists,
                 )
             }
             is RepoDialog.Delete -> {
                 CategoryDeleteDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteRepos(listOf(dialog.repo)) },
-                    title = stringResource(R.string.delete_repo),
-                    text = stringResource(R.string.delete_repo_confirmation, dialog.repo),
+                    title = stringResource(SYMR.strings.delete_repo),
+                    text = stringResource(SYMR.strings.delete_repo_confirmation, dialog.repo),
                 )
             }
         }

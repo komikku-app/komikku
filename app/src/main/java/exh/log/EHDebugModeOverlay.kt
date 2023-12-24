@@ -35,7 +35,8 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.R
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.DecimalFormat
@@ -103,7 +104,7 @@ private fun EHDebugModeOverlay() {
 private fun buildInfo(context: Context, sourceBlacklist: Boolean) = buildAnnotatedString {
     withStyle(SpanStyle(color = Color.Green)) {
         append("===[ ")
-        append(context.getString(R.string.app_name))
+        append(context.stringResource(MR.strings.app_name))
         append(" ]===")
     }
     append('\n')

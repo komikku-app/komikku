@@ -2,28 +2,23 @@ package eu.kanade.presentation.manga.components
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
-import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.domain.manga.interactor.FetchInterval
-import tachiyomi.presentation.core.components.LabeledCheckbox
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.WheelTextPicker
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun DeleteChaptersDialog(
@@ -34,7 +29,7 @@ fun DeleteChaptersDialog(
         onDismissRequest = onDismissRequest,
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         confirmButton = {
@@ -44,14 +39,14 @@ fun DeleteChaptersDialog(
                     onConfirm()
                 },
             ) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         title = {
-            Text(text = stringResource(R.string.are_you_sure))
+            Text(text = stringResource(MR.strings.are_you_sure))
         },
         text = {
-            Text(text = stringResource(R.string.confirm_delete_chapters))
+            Text(text = stringResource(MR.strings.confirm_delete_chapters))
         },
     )
 }
@@ -66,7 +61,7 @@ fun SetIntervalDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = stringResource(R.string.manga_modify_calculated_interval_title)) },
+        title = { Text(text = stringResource(MR.strings.manga_modify_calculated_interval_title)) },
         text = {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(),
@@ -76,7 +71,7 @@ fun SetIntervalDialog(
                 val items = (0..FetchInterval.MAX_INTERVAL)
                     .map {
                         if (it == 0) {
-                            stringResource(R.string.label_default)
+                            stringResource(MR.strings.label_default)
                         } else {
                             it.toString()
                         }
@@ -92,7 +87,7 @@ fun SetIntervalDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         confirmButton = {
@@ -100,68 +95,8 @@ fun SetIntervalDialog(
                 onValueChanged(selectedInterval)
                 onDismissRequest()
             }) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
     )
 }
-
-// SY -->
-@Composable
-fun SelectScanlatorsDialog(
-    onDismissRequest: () -> Unit,
-    availableScanlators: List<String>,
-    initialSelectedScanlators: List<String>,
-    onSelectScanlators: (List<String>) -> Unit,
-) {
-    val selected = remember {
-        initialSelectedScanlators.toMutableStateList()
-    }
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(text = stringResource(R.string.select_scanlators)) },
-        text = {
-            LazyColumn {
-                availableScanlators.forEach { current ->
-                    item {
-                        val isSelected = selected.contains(current)
-                        LabeledCheckbox(
-                            label = current,
-                            checked = isSelected,
-                            onCheckedChange = {
-                                when (it) {
-                                    true -> selected.add(current)
-                                    false -> selected.remove(current)
-                                }
-                            },
-                        )
-                    }
-                }
-            }
-        },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = true,
-        ),
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onSelectScanlators(selected.toList())
-                    onDismissRequest()
-                },
-            ) {
-                Text(text = stringResource(R.string.action_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onSelectScanlators(availableScanlators)
-                    onDismissRequest()
-                },
-            ) {
-                Text(text = stringResource(R.string.action_reset))
-            }
-        },
-    )
-}
-// SY <--

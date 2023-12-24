@@ -8,9 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationProgressDialog(
@@ -21,7 +21,7 @@ fun MigrationProgressDialog(
         onDismissRequest = {},
         confirmButton = {
             TextButton(onClick = exitMigration) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         text = {
@@ -29,8 +29,11 @@ fun MigrationProgressDialog(
                 val progressAnimated by animateFloatAsState(
                     targetValue = progress,
                     animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+                    label = "migration_progress",
                 )
-                LinearProgressIndicator(progressAnimated)
+                LinearProgressIndicator(
+                    progress = { progressAnimated },
+                )
             }
         },
         properties = DialogProperties(

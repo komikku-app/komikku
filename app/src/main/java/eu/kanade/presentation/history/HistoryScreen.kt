@@ -21,6 +21,7 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.preference.InMemoryPreferenceStore
 import tachiyomi.domain.history.model.HistoryWithRelations
@@ -97,7 +98,7 @@ fun HistoryScreen(
 
 @Composable
 private fun HistoryScreenContent(
-    history: List<HistoryUiModel>,
+    history: ImmutableList<HistoryUiModel>,
     contentPadding: PaddingValues,
     onClickCover: (HistoryWithRelations) -> Unit,
     onClickResume: (HistoryWithRelations) -> Unit,

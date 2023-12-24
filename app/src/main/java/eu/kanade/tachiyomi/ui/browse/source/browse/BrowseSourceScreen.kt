@@ -65,7 +65,7 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.i18n.localize
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.LocalSource
 
 data class BrowseSourceScreen(
@@ -174,7 +174,7 @@ data class BrowseSourceScreen(
                                 )
                             },
                             label = {
-                                Text(text = localize(MR.strings.popular))
+                                Text(text = stringResource(MR.strings.popular))
                             },
                         )
                         if ((screenModel.source as CatalogueSource).supportsLatest) {
@@ -193,7 +193,7 @@ data class BrowseSourceScreen(
                                     )
                                 },
                                 label = {
-                                    Text(text = localize(MR.strings.latest))
+                                    Text(text = stringResource(MR.strings.latest))
                                 },
                             )
                         }
@@ -213,9 +213,9 @@ data class BrowseSourceScreen(
                                     // SY -->
                                     Text(
                                         text = if (state.filters.isNotEmpty()) {
-                                            stringResource(R.string.action_filter)
+                                            stringResource(MR.strings.action_filter)
                                         } else {
-                                            stringResource(R.string.action_search)
+                                            stringResource(MR.strings.action_search)
                                         },
                                     )
                                     // SY <--

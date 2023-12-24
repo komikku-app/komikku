@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
 import eu.kanade.presentation.components.AdaptiveSheet
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.util.lang.toLong
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 
 @Composable
@@ -77,7 +77,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 binding.root.context.toast(
-                    R.string.pre_migration_skip_toast,
+                    SYMR.strings.pre_migration_skip_toast,
                     Toast.LENGTH_LONG,
                 )
             }

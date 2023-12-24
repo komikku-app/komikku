@@ -35,7 +35,8 @@ class GetEnabledSources(
         ) { pinnedSourceIds,
             (enabledLanguages, disabledSources, lastUsedSource),
             (excludedFromDataSaver, sourcesInCategories, sourceCategoriesFilter),
-            sources ->
+            sources,
+            ->
 
             val sourcesAndCategories = sourcesInCategories.map {
                 it.split('|').let { (source, test) -> source.toLong() to test }

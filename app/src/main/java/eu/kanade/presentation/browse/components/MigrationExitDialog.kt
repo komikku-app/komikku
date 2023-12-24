@@ -4,8 +4,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationExitDialog(
@@ -16,16 +17,16 @@ fun MigrationExitDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = exitMigration) {
-                Text(text = stringResource(R.string.action_stop))
+                Text(text = stringResource(SYMR.strings.action_stop))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.stop_migrating))
+            Text(text = stringResource(SYMR.strings.stop_migrating))
         },
     )
 }

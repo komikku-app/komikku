@@ -1,14 +1,14 @@
 package exh.log
 
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.preference.PreferenceManager
-import eu.kanade.tachiyomi.core.R
+import dev.icerock.moko.resources.StringResource
+import tachiyomi.i18n.sy.SYMR
 
-enum class EHLogLevel(@StringRes val nameRes: Int, @StringRes val description: Int) {
-    MINIMAL(R.string.log_minimal, R.string.log_minimal_desc),
-    EXTRA(R.string.log_extra, R.string.log_extra_desc),
-    EXTREME(R.string.log_extreme, R.string.log_extreme_desc),
+enum class EHLogLevel(val nameRes: StringResource, val description: StringResource) {
+    MINIMAL(SYMR.strings.log_minimal, SYMR.strings.log_minimal_desc),
+    EXTRA(SYMR.strings.log_extra, SYMR.strings.log_extra_desc),
+    EXTREME(SYMR.strings.log_extreme, SYMR.strings.log_extreme_desc),
     ;
 
     companion object {

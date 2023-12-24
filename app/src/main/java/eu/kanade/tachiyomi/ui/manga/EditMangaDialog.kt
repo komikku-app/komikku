@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -36,7 +35,11 @@ import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineScope
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
 
 @Composable
@@ -83,12 +86,12 @@ fun EditMangaDialog(
                     onDismissRequest()
                 },
             ) {
-                Text(stringResource(R.string.action_save))
+                Text(stringResource(MR.strings.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.action_cancel))
+                Text(stringResource(MR.strings.action_cancel))
             }
         },
         text = {
@@ -120,14 +123,14 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
         context,
         android.R.layout.simple_spinner_dropdown_item,
         listOf(
-            R.string.label_default,
-            R.string.ongoing,
-            R.string.completed,
-            R.string.licensed,
-            R.string.publishing_finished,
-            R.string.cancelled,
-            R.string.on_hiatus,
-        ).map { context.getString(it) },
+            MR.strings.label_default,
+            MR.strings.ongoing,
+            MR.strings.completed,
+            MR.strings.licensed,
+            MR.strings.publishing_finished,
+            MR.strings.cancelled,
+            MR.strings.on_hiatus,
+        ).map { context.stringResource(it) },
     )
 
     binding.status.adapter = statusAdapter
@@ -151,7 +154,7 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
             binding.title.setText(manga.title)
         }
 
-        binding.title.hint = context.getString(R.string.title_hint, manga.url)
+        binding.title.hint = context.stringResource(SYMR.strings.title_hint, manga.url)
         binding.mangaAuthor.setText(manga.author.orEmpty())
         binding.mangaArtist.setText(manga.artist.orEmpty())
         binding.mangaDescription.setText(manga.description.orEmpty())
@@ -171,17 +174,17 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
         }
         binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope)
 
-        binding.title.hint = context.getString(R.string.title_hint, manga.ogTitle)
+        binding.title.hint = context.stringResource(SYMR.strings.title_hint, manga.ogTitle)
         if (manga.ogAuthor != null) {
-            binding.mangaAuthor.hint = context.getString(R.string.author_hint, manga.ogAuthor)
+            binding.mangaAuthor.hint = context.stringResource(SYMR.strings.author_hint, manga.ogAuthor!!)
         }
         if (manga.ogArtist != null) {
-            binding.mangaArtist.hint = context.getString(R.string.artist_hint, manga.ogArtist)
+            binding.mangaArtist.hint = context.stringResource(SYMR.strings.artist_hint, manga.ogArtist!!)
         }
         if (!manga.ogDescription.isNullOrBlank()) {
             binding.mangaDescription.hint =
-                context.getString(
-                    R.string.description_hint,
+                context.stringResource(
+                    SYMR.strings.description_hint,
                     manga.ogDescription!!.replace("\n", " ").chop(20),
                 )
         }
@@ -223,7 +226,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
     }
 
     val addTagChip = Chip(context).apply {
-        setText(R.string.add_tag)
+        setText(SYMR.strings.add_tag.getString(context))
 
         chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)?.apply {
             isChipIconVisible = true
@@ -233,14 +236,14 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
         setOnClickListener {
             var newTag: String? = null
             MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.add_tag)
+                .setTitle(SYMR.strings.add_tag.getString(context))
                 .setTextInput {
                     newTag = it.trimOrNull()
                 }
-                .setPositiveButton(R.string.action_ok) { _, _ ->
+                .setPositiveButton(MR.strings.action_ok.getString(context)) { _, _ ->
                     if (newTag != null) setChips(items + listOfNotNull(newTag), scope)
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(MR.strings.action_cancel.getString(context), null)
                 .show()
         }
     }
@@ -248,7 +251,7 @@ private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {
 }
 
 private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
-    if (it is Chip && !it.text.toString().contains(context.getString(R.string.add_tag), ignoreCase = true)) {
+    if (it is Chip && !it.text.toString().contains(context.stringResource(SYMR.strings.add_tag), ignoreCase = true)) {
         it.text.toString()
     } else {
         null

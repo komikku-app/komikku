@@ -104,7 +104,7 @@ fun BrowseSourceContent(
                     // SY -->
                     if (onWebViewClick != null) {
                         EmptyScreenAction(
-                            stringResId = R.string.action_open_in_web_view,
+                            MR.strings.action_open_in_web_view,
                             icon = Icons.Outlined.Public,
                             onClick = onWebViewClick,
                         )
@@ -113,7 +113,7 @@ fun BrowseSourceContent(
                     },
                     if (onHelpClick != null) {
                         EmptyScreenAction(
-                            stringResId = R.string.label_help,
+                            MR.strings.label_help,
                             icon = Icons.AutoMirrored.Outlined.HelpOutline,
                             onClick = onHelpClick,
                         )

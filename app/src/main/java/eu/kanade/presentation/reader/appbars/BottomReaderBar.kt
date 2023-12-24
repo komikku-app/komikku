@@ -22,13 +22,15 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import kotlinx.collections.immutable.ImmutableSet
 import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.i18n.localize
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun BottomReaderBar(
     // SY -->
-    enabledButtons: Set<String>,
+    enabledButtons: ImmutableSet<String>,
     // SY <--
     backgroundColor: Color,
     readingMode: ReadingMode,
@@ -61,7 +63,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickChapterList) {
                 Icon(
                     imageVector = Icons.Outlined.FormatListNumbered,
-                    contentDescription = localize(MR.strings.chapters),
+                    contentDescription = stringResource(MR.strings.chapters),
                 )
             }
         }
@@ -70,7 +72,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickWebView) {
                 Icon(
                     imageVector = Icons.Outlined.Public,
-                    contentDescription = localize(MR.strings.action_open_in_web_view),
+                    contentDescription = stringResource(MR.strings.action_open_in_web_view),
                 )
             }
         }
@@ -79,7 +81,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickShare) {
                 Icon(
                     imageVector = Icons.Outlined.Share,
-                    contentDescription = localize(MR.strings.action_share),
+                    contentDescription = stringResource(MR.strings.action_share),
                 )
             }
         }
@@ -88,7 +90,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickReadingMode) {
                 Icon(
                     painter = painterResource(readingMode.iconRes),
-                    contentDescription = localize(MR.strings.viewer),
+                    contentDescription = stringResource(MR.strings.viewer),
                 )
             }
         }
@@ -97,7 +99,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickOrientation) {
                 Icon(
                     painter = painterResource(orientation.iconRes),
-                    contentDescription = localize(MR.strings.pref_rotation_type),
+                    contentDescription = stringResource(MR.strings.pref_rotation_type),
                 )
             }
         }
@@ -111,7 +113,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickCropBorder) {
                 Icon(
                     painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
-                    contentDescription = localize(MR.strings.pref_crop_borders),
+                    contentDescription = stringResource(MR.strings.pref_crop_borders),
                 )
             }
         }
@@ -124,7 +126,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickPageLayout) {
                 Icon(
                     painter = painterResource(R.drawable.ic_book_open_variant_24dp),
-                    contentDescription = localize(MR.strings.page_layout),
+                    contentDescription = stringResource(SYMR.strings.page_layout),
                 )
             }
         }
@@ -133,7 +135,7 @@ fun BottomReaderBar(
             IconButton(onClick = onClickShiftPage) {
                 Icon(
                     painter = painterResource(R.drawable.ic_page_next_outline_24dp),
-                    contentDescription = localize(MR.strings.shift_double_pages),
+                    contentDescription = stringResource(SYMR.strings.shift_double_pages),
                 )
             }
         }
@@ -141,7 +143,7 @@ fun BottomReaderBar(
         IconButton(onClick = onClickSettings) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = localize(MR.stringss.action_settings),
+                contentDescription = stringResource(MR.strings.action_settings),
             )
         }
         // SY <--

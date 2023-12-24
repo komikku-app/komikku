@@ -1,6 +1,5 @@
 package eu.kanade.presentation.more.settings.screen
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,8 +34,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -46,14 +43,19 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesScreen
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.pluralStringResource
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -62,8 +64,7 @@ object SettingsSecurityScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    @StringRes
-    override fun getTitleRes() = R.string.pref_category_security
+    override fun getTitleRes() = MR.strings.pref_category_security
 
     @Composable
     override fun getPreferences(): List<Preference> {
@@ -81,54 +82,54 @@ object SettingsSecurityScreen : SearchableSettings {
         return listOf(
             Preference.PreferenceItem.SwitchPreference(
                 pref = useAuthPref,
-                title = stringResource(R.string.lock_with_biometrics),
+                title = stringResource(MR.strings.lock_with_biometrics),
                 enabled = authSupported,
                 onValueChanged = {
                     (context as FragmentActivity).authenticate(
-                        title = context.getString(R.string.lock_with_biometrics),
+                        title = context.stringResource(MR.strings.lock_with_biometrics),
                     )
                 },
             ),
             Preference.PreferenceItem.ListPreference(
                 pref = securityPreferences.lockAppAfter(),
-                title = stringResource(R.string.lock_when_idle),
+                title = stringResource(MR.strings.lock_when_idle),
                 enabled = authSupported && useAuth,
                 entries = LockAfterValues
                     .associateWith {
                         when (it) {
-                            -1 -> stringResource(R.string.lock_never)
-                            0 -> stringResource(R.string.lock_always)
-                            else -> pluralStringResource(id = R.plurals.lock_after_mins, count = it, it)
+                            -1 -> stringResource(MR.strings.lock_never)
+                            0 -> stringResource(MR.strings.lock_always)
+                            else -> pluralStringResource(MR.plurals.lock_after_mins, count = it, it)
                         }
                     },
                 onValueChanged = {
                     (context as FragmentActivity).authenticate(
-                        title = context.getString(R.string.lock_when_idle),
+                        title = context.stringResource(MR.strings.lock_when_idle),
                     )
                 },
             ),
             Preference.PreferenceItem.SwitchPreference(
                 pref = securityPreferences.hideNotificationContent(),
-                title = stringResource(R.string.hide_notification_content),
+                title = stringResource(MR.strings.hide_notification_content),
             ),
             Preference.PreferenceItem.ListPreference(
                 pref = securityPreferences.secureScreen(),
-                title = stringResource(R.string.secure_screen),
+                title = stringResource(MR.strings.secure_screen),
                 entries = SecurityPreferences.SecureScreenMode.entries
-                    .associateWith { stringResource(it.titleResId) },
+                    .associateWith { stringResource(it.titleRes) },
             ),
             // SY -->
             Preference.PreferenceItem.SwitchPreference(
                 pref = securityPreferences.passwordProtectDownloads(),
-                title = stringResource(R.string.password_protect_downloads),
-                subtitle = stringResource(R.string.password_protect_downloads_summary),
+                title = stringResource(SYMR.strings.password_protect_downloads),
+                subtitle = stringResource(SYMR.strings.password_protect_downloads_summary),
                 enabled = isCbzPasswordSet,
             ),
             Preference.PreferenceItem.ListPreference(
                 pref = securityPreferences.encryptionType(),
-                title = stringResource(R.string.encryption_type),
-                entries = SecurityPreferences.EncryptionType.values()
-                    .associateWith { stringResource(it.titleResId) },
+                title = stringResource(SYMR.strings.encryption_type),
+                entries = SecurityPreferences.EncryptionType.entries
+                    .associateWith { stringResource(it.titleRes) },
                 enabled = passwordProtectDownloads,
 
             ),
@@ -146,14 +147,14 @@ object SettingsSecurityScreen : SearchableSettings {
                     )
                 }
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.set_cbz_zip_password),
+                    title = stringResource(SYMR.strings.set_cbz_zip_password),
                     onClick = {
                         dialogOpen = true
                     },
                 )
             },
             Preference.PreferenceItem.TextPreference(
-                title = stringResource(R.string.delete_cbz_archive_password),
+                title = stringResource(SYMR.strings.delete_cbz_archive_password),
                 onClick = {
                     CbzCrypto.deleteKeyCbz()
                     securityPreferences.cbzPassword().set("")
@@ -164,9 +165,9 @@ object SettingsSecurityScreen : SearchableSettings {
                 val navigator = LocalNavigator.currentOrThrow
                 val count by securityPreferences.authenticatorTimeRanges().collectAsState()
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.action_edit_biometric_lock_times),
+                    title = stringResource(SYMR.strings.action_edit_biometric_lock_times),
                     subtitle = pluralStringResource(
-                        R.plurals.num_lock_times,
+                        SYMR.plurals.num_lock_times,
                         count.size,
                         count.size,
                     ),
@@ -190,26 +191,26 @@ object SettingsSecurityScreen : SearchableSettings {
                     )
                 }
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.biometric_lock_days),
-                    subtitle = stringResource(R.string.biometric_lock_days_summary),
+                    title = stringResource(SYMR.strings.biometric_lock_days),
+                    subtitle = stringResource(SYMR.strings.biometric_lock_days_summary),
                     onClick = { dialogOpen = true },
                     enabled = useAuth,
                 )
             },
             // SY <--
-            Preference.PreferenceItem.InfoPreference(stringResource(R.string.secure_screen_summary)),
+            Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.secure_screen_summary)),
         )
     }
 
     // SY -->
-    enum class DayOption(val day: Int, val stringRes: Int) {
-        Sunday(SecureActivityDelegate.LOCK_SUNDAY, R.string.sunday),
-        Monday(SecureActivityDelegate.LOCK_MONDAY, R.string.monday),
-        Tuesday(SecureActivityDelegate.LOCK_TUESDAY, R.string.tuesday),
-        Wednesday(SecureActivityDelegate.LOCK_WEDNESDAY, R.string.wednesday),
-        Thursday(SecureActivityDelegate.LOCK_THURSDAY, R.string.thursday),
-        Friday(SecureActivityDelegate.LOCK_FRIDAY, R.string.friday),
-        Saturday(SecureActivityDelegate.LOCK_SATURDAY, R.string.saturday),
+    enum class DayOption(val day: Int, val stringRes: StringResource) {
+        Sunday(SecureActivityDelegate.LOCK_SUNDAY, SYMR.strings.sunday),
+        Monday(SecureActivityDelegate.LOCK_MONDAY, SYMR.strings.monday),
+        Tuesday(SecureActivityDelegate.LOCK_TUESDAY, SYMR.strings.tuesday),
+        Wednesday(SecureActivityDelegate.LOCK_WEDNESDAY, SYMR.strings.wednesday),
+        Thursday(SecureActivityDelegate.LOCK_THURSDAY, SYMR.strings.thursday),
+        Friday(SecureActivityDelegate.LOCK_FRIDAY, SYMR.strings.friday),
+        Saturday(SecureActivityDelegate.LOCK_SATURDAY, SYMR.strings.saturday),
     }
 
     @Composable
@@ -224,7 +225,7 @@ object SettingsSecurityScreen : SearchableSettings {
         }
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(text = stringResource(R.string.biometric_lock_days)) },
+            title = { Text(text = stringResource(SYMR.strings.biometric_lock_days)) },
             text = {
                 LazyColumn {
                     DayOption.values().forEach { day ->
@@ -269,12 +270,12 @@ object SettingsSecurityScreen : SearchableSettings {
                         )
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )
@@ -290,15 +291,15 @@ object SettingsSecurityScreen : SearchableSettings {
         AlertDialog(
             onDismissRequest = onDismissRequest,
 
-            title = { Text(text = stringResource(R.string.cbz_archive_password)) },
+            title = { Text(text = stringResource(SYMR.strings.cbz_archive_password)) },
             text = {
                 TextField(
                     value = password,
                     onValueChange = { password = it },
 
                     maxLines = 1,
-                    placeholder = { Text(text = stringResource(R.string.password)) },
-                    label = { Text(text = stringResource(R.string.password)) },
+                    placeholder = { Text(text = stringResource(MR.strings.password)) },
+                    label = { Text(text = stringResource(MR.strings.password)) },
                     trailingIcon = {
                         IconButton(
                             onClick = {
@@ -344,12 +345,12 @@ object SettingsSecurityScreen : SearchableSettings {
                         onReturnPassword(password)
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )

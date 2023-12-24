@@ -13,6 +13,7 @@ import androidx.paging.filter
 import androidx.paging.map
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -22,7 +23,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -32,6 +32,9 @@ import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,7 +50,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -75,6 +77,7 @@ import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.repository.SourcePagingSourceType
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -171,7 +174,7 @@ open class BrowseSourceScreenModel(
             getExhSavedSearch.subscribe(source.id, source::getFilterList)
                 .map { it.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name)) }
                 .onEach { savedSearches ->
-                    mutableState.update { it.copy(savedSearches = savedSearches) }
+                    mutableState.update { it.copy(savedSearches = savedSearches.toImmutableList()) }
                 }
                 .launchIn(screenModelScope)
         }
@@ -368,7 +371,7 @@ open class BrowseSourceScreenModel(
                 else -> {
                     val preselectedIds = getCategories.await(manga.id).map { it.id }
                     setDialog(
-                        Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }),
+                        Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }.toImmutableList()),
                     )
                 }
             }
@@ -447,13 +450,13 @@ open class BrowseSourceScreenModel(
         data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
         data class ChangeMangaCategory(
             val manga: Manga,
-            val initialSelection: List<CheckboxState.State<Category>>,
+            val initialSelection: ImmutableList<CheckboxState.State<Category>>,
         ) : Dialog
         data class Migrate(val newManga: Manga) : Dialog
 
         // SY -->
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog
-        data class CreateSavedSearch(val currentSavedSearches: List<String>) : Dialog
+        data class CreateSavedSearch(val currentSavedSearches: ImmutableList<String>) : Dialog
         // SY <--
     }
 
@@ -464,7 +467,7 @@ open class BrowseSourceScreenModel(
         val toolbarQuery: String? = null,
         val dialog: Dialog? = null,
         // SY -->
-        val savedSearches: List<EXHSavedSearch> = emptyList(),
+        val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
     ) {
@@ -474,21 +477,21 @@ open class BrowseSourceScreenModel(
     // EXH -->
     fun onSaveSearch() {
         screenModelScope.launchIO {
-            val names = state.value.savedSearches.map { it.name }
+            val names = state.value.savedSearches.map { it.name }.toImmutableList()
             mutableState.update { it.copy(dialog = Dialog.CreateSavedSearch(names)) }
         }
     }
 
     fun onSavedSearch(
         search: EXHSavedSearch,
-        onToast: (Int) -> Unit,
+        onToast: (StringResource) -> Unit,
     ) {
         screenModelScope.launchIO {
             if (source !is CatalogueSource) return@launchIO
 
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
-                    onToast(R.string.save_search_invalid)
+                    onToast(SYMR.strings.save_search_invalid)
                 }
                 return@launchIO
             }

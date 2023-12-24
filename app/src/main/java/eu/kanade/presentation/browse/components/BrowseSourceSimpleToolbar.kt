@@ -12,13 +12,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
-import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun BrowseSourceSimpleToolbar(
@@ -37,7 +37,7 @@ fun BrowseSourceSimpleToolbar(
                 // SY -->
                 actions = persistentListOf(
                     AppBar.Action(
-                        title = stringResource(id = R.string.action_display_mode),
+                        title = stringResource(MR.strings.action_display_mode),
                         icon = Icons.Outlined.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ),
@@ -48,7 +48,7 @@ fun BrowseSourceSimpleToolbar(
                 onDismissRequest = { selectingDisplayMode = false },
             ) {
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.action_display_comfortable_grid)) },
+                    text = { Text(text = stringResource(MR.strings.action_display_comfortable_grid)) },
                     onClick = { onDisplayModeChange(LibraryDisplayMode.ComfortableGrid) },
                     trailingIcon = {
                         if (displayMode == LibraryDisplayMode.ComfortableGrid) {
@@ -60,7 +60,7 @@ fun BrowseSourceSimpleToolbar(
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.action_display_grid)) },
+                    text = { Text(text = stringResource(MR.strings.action_display_grid)) },
                     onClick = { onDisplayModeChange(LibraryDisplayMode.CompactGrid) },
                     trailingIcon = {
                         if (displayMode == LibraryDisplayMode.CompactGrid) {
@@ -72,7 +72,7 @@ fun BrowseSourceSimpleToolbar(
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.action_display_list)) },
+                    text = { Text(text = stringResource(MR.strings.action_display_list)) },
                     onClick = { onDisplayModeChange(LibraryDisplayMode.List) },
                     trailingIcon = {
                         if (displayMode == LibraryDisplayMode.List) {

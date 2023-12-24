@@ -4,8 +4,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun SourceFeedAddDialog(
@@ -17,19 +18,19 @@ fun SourceFeedAddDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = addFeed) {
-                Text(text = stringResource(R.string.action_add))
+                Text(text = stringResource(MR.strings.action_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.feed))
+            Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            Text(text = stringResource(R.string.feed_add, name))
+            Text(text = stringResource(SYMR.strings.feed_add, name))
         },
     )
 }
@@ -43,19 +44,19 @@ fun SourceFeedDeleteDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = deleteFeed) {
-                Text(text = stringResource(R.string.action_delete))
+                Text(text = stringResource(MR.strings.action_delete))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.feed))
+            Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            Text(text = stringResource(R.string.feed_delete))
+            Text(text = stringResource(SYMR.strings.feed_delete))
         },
     )
 }

@@ -10,7 +10,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -21,12 +20,13 @@ import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
 
@@ -43,7 +43,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         Scaffold(
             topBar = { scrollBehavior ->
                 BrowseSourceSimpleToolbar(
-                    title = stringResource(R.string.mangadex_follows),
+                    title = stringResource(SYMR.strings.mangadex_follows),
                     displayMode = screenModel.displayMode,
                     onDisplayModeChange = { screenModel.displayMode = it },
                     navigateUp = navigator::pop,

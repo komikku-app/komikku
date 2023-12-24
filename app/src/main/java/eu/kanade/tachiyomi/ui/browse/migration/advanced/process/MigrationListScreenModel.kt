@@ -8,7 +8,6 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -20,6 +19,8 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
 import exh.source.MERGED_SOURCE_ID
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -55,6 +56,7 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger
@@ -84,7 +86,7 @@ class MigrationListScreenModel(
     private val smartSearchEngine = SmartSearchEngine(config.extraSearchParams)
     private val throttleManager = EHentaiThrottleManager()
 
-    val migratingItems = MutableStateFlow<List<MigratingManga>?>(null)
+    val migratingItems = MutableStateFlow<ImmutableList<MigratingManga>?>(null)
     val migrationDone = MutableStateFlow(false)
     val unfinishedCount = MutableStateFlow(0)
 
@@ -125,7 +127,7 @@ class MigrationListScreenModel(
                     .awaitAll()
                     .filterNotNull()
                     .also {
-                        migratingItems.value = it
+                        migratingItems.value = it.toImmutableList()
                     },
             )
         }
@@ -431,7 +433,7 @@ class MigrationListScreenModel(
             } else {
                 migratingManga.searchResult.value = SearchResult.NotFound
                 withUIContext {
-                    context.toast(R.string.no_chapters_found_for_migration, Toast.LENGTH_LONG)
+                    context.toast(SYMR.strings.no_chapters_found_for_migration, Toast.LENGTH_LONG)
                 }
             }
         }
@@ -527,7 +529,7 @@ class MigrationListScreenModel(
             ids.removeAt(index)
             config.mangaIds = ids
             val index2 = migratingItems.value.orEmpty().indexOf(item)
-            if (index2 > -1) migratingItems.value = migratingItems.value.orEmpty() - item
+            if (index2 > -1) migratingItems.value = (migratingItems.value.orEmpty() - item).toImmutableList()
         }
     }
 

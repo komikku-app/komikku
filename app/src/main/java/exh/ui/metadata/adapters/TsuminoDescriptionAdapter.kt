@@ -13,6 +13,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import java.util.Date
 import kotlin.math.round
 
@@ -32,16 +36,16 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.genre.text = meta.category?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
                 binding.genre.setBackgroundColor(it.first)
                 it.second
-            } ?: meta.category ?: context.getString(R.string.unknown)
+            } ?: meta.category ?: context.stringResource(MR.strings.unknown)
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
             binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp)
 
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
 
-            binding.uploader.text = meta.uploader ?: context.getString(R.string.unknown)
+            binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
 
-            binding.pages.text = context.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24)
 
             binding.ratingBar.rating = meta.averageRating ?: 0F

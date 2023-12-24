@@ -17,6 +17,7 @@ import eu.kanade.presentation.category.components.CategoryListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.tachiyomi.ui.category.CategoryScreenState
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
@@ -88,7 +89,7 @@ fun CategoryScreen(
 
 @Composable
 private fun CategoryContent(
-    categories: List<Category>,
+    categories: ImmutableList<Category>,
     lazyListState: LazyListState,
     paddingValues: PaddingValues,
     onClickRename: (Category) -> Unit,

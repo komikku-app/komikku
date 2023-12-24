@@ -7,7 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -15,10 +14,11 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 
 class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
 
@@ -38,7 +38,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
             topBar = { scrollBehavior ->
                 BrowseSourceSimpleToolbar(
                     navigateUp = navigator::pop,
-                    title = stringResource(R.string.similar, screenModel.manga.title),
+                    title = stringResource(SYMR.strings.similar, screenModel.manga.title),
                     displayMode = screenModel.displayMode,
                     onDisplayModeChange = { screenModel.displayMode = it },
                     scrollBehavior = scrollBehavior,

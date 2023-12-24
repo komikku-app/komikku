@@ -25,14 +25,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.res.stringResource
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
-import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.domain.category.model.Category
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -40,10 +43,10 @@ fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
     onCreate: (String) -> Unit,
     // SY -->
-    categories: List<String>,
+    categories: ImmutableList<String>,
     title: String,
     extraMessage: String? = null,
-    alreadyExistsError: Int = R.string.error_category_exists,
+    alreadyExistsError: StringResource = MR.strings.error_category_exists,
     // SY <--
 ) {
     var name by remember { mutableStateOf("") }
@@ -61,12 +64,12 @@ fun CategoryCreateDialog(
                     onDismissRequest()
                 },
             ) {
-                Text(text = stringResource(R.string.action_add))
+                Text(text = stringResource(MR.strings.action_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
@@ -85,13 +88,13 @@ fun CategoryCreateDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = {
-                        Text(text = stringResource(R.string.name))
+                        Text(text = stringResource(MR.strings.name))
                     },
                     supportingText = {
                         val msgRes = if (name.isNotEmpty() && nameAlreadyExists) {
                             alreadyExistsError
                         } else {
-                            R.string.information_required_plain
+                            MR.strings.information_required_plain
                         }
                         Text(text = stringResource(msgRes))
                     },
@@ -116,9 +119,9 @@ fun CategoryRenameDialog(
     onDismissRequest: () -> Unit,
     onRename: (String) -> Unit,
     // SY -->
-    categories: List<String>,
+    categories: ImmutableList<String>,
     category: String,
-    alreadyExistsError: Int = R.string.error_category_exists,
+    alreadyExistsError: StringResource = MR.strings.error_category_exists,
     // SY <--
 ) {
     var name by remember { mutableStateOf(category) }
@@ -136,16 +139,16 @@ fun CategoryRenameDialog(
                     onDismissRequest()
                 },
             ) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.action_rename_category))
+            Text(text = stringResource(MR.strings.action_rename_category))
         },
         text = {
             OutlinedTextField(
@@ -155,12 +158,12 @@ fun CategoryRenameDialog(
                     valueHasChanged = name != it
                     name = it
                 },
-                label = { Text(text = stringResource(R.string.name)) },
+                label = { Text(text = stringResource(MR.strings.name)) },
                 supportingText = {
                     val msgRes = if (valueHasChanged && nameAlreadyExists) {
                         alreadyExistsError
                     } else {
-                        R.string.information_required_plain
+                        MR.strings.information_required_plain
                     }
                     Text(text = stringResource(msgRes))
                 },
@@ -193,12 +196,12 @@ fun CategoryDeleteDialog(
                 onDelete()
                 onDismissRequest()
             }) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
@@ -222,26 +225,26 @@ fun CategorySortAlphabeticallyDialog(
                 onSort()
                 onDismissRequest()
             }) {
-                Text(text = stringResource(R.string.action_ok))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.action_sort_category))
+            Text(text = stringResource(MR.strings.action_sort_category))
         },
         text = {
-            Text(text = stringResource(R.string.sort_category_confirmation))
+            Text(text = stringResource(MR.strings.sort_category_confirmation))
         },
     )
 }
 
 @Composable
 fun ChangeCategoryDialog(
-    initialSelection: List<CheckboxState<Category>>,
+    initialSelection: ImmutableList<CheckboxState<Category>>,
     onDismissRequest: () -> Unit,
     onEditCategories: () -> Unit,
     onConfirm: (List<Long>, List<Long>) -> Unit,
@@ -256,14 +259,14 @@ fun ChangeCategoryDialog(
                         onEditCategories()
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_edit_categories))
+                    Text(text = stringResource(MR.strings.action_edit_categories))
                 }
             },
             title = {
-                Text(text = stringResource(R.string.action_move_category))
+                Text(text = stringResource(MR.strings.action_move_category))
             },
             text = {
-                Text(text = stringResource(R.string.information_empty_category_dialog))
+                Text(text = stringResource(MR.strings.information_empty_category_dialog))
             },
         )
         return
@@ -277,11 +280,11 @@ fun ChangeCategoryDialog(
                     onDismissRequest()
                     onEditCategories()
                 }) {
-                    Text(text = stringResource(R.string.action_edit))
+                    Text(text = stringResource(MR.strings.action_edit))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 tachiyomi.presentation.core.components.material.TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
                 tachiyomi.presentation.core.components.material.TextButton(
                     onClick = {
@@ -296,12 +299,12 @@ fun ChangeCategoryDialog(
                         )
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             }
         },
         title = {
-            Text(text = stringResource(R.string.action_move_category))
+            Text(text = stringResource(MR.strings.action_move_category))
         },
         text = {
             Column(
@@ -313,7 +316,7 @@ fun ChangeCategoryDialog(
                         if (index != -1) {
                             val mutableList = selection.toMutableList()
                             mutableList[index] = it.next()
-                            selection = mutableList.toList()
+                            selection = mutableList.toList().toImmutableList()
                         }
                     }
                     Row(

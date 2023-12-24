@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.SettingsChipRow
@@ -98,7 +99,7 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
 
     // SY -->
     val pageLayout by screenModel.preferences.pageLayout().collectAsState()
-    SettingsChipRow(R.string.page_layout) {
+    SettingsChipRow(SYMR.strings.page_layout) {
         ReaderPreferences.PageLayouts.mapIndexed { index, it ->
             FilterChip(
                 selected = pageLayout == index,
@@ -152,17 +153,17 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
 
     // SY -->
     CheckboxItem(
-        label = stringResource(R.string.pref_page_transitions),
+        label = stringResource(MR.strings.pref_page_transitions),
         pref = screenModel.preferences.pageTransitionsPager(),
     )
 
     CheckboxItem(
-        label = stringResource(R.string.invert_double_pages),
+        label = stringResource(SYMR.strings.invert_double_pages),
         pref = screenModel.preferences.invertDoublePages(),
     )
 
     val centerMarginType by screenModel.preferences.centerMarginType().collectAsState()
-    SettingsChipRow(R.string.pref_center_margin) {
+    SettingsChipRow(SYMR.strings.pref_center_margin) {
         ReaderPreferences.CenterMarginTypes.mapIndexed { index, it ->
             FilterChip(
                 selected = centerMarginType == index,
@@ -208,17 +209,17 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
 
     // SY -->
     CheckboxItem(
-        label = stringResource(R.string.pref_smooth_scroll),
+        label = stringResource(SYMR.strings.pref_smooth_scroll),
         pref = screenModel.preferences.smoothAutoScroll(),
     )
 
     CheckboxItem(
-        label = stringResource(R.string.pref_page_transitions),
+        label = stringResource(MR.strings.pref_page_transitions),
         pref = screenModel.preferences.pageTransitionsWebtoon(),
     )
 
     CheckboxItem(
-        label = stringResource(R.string.enable_zoom_out),
+        label = stringResource(SYMR.strings.enable_zoom_out),
         pref = screenModel.preferences.webtoonEnableZoomOut(),
     )
     // SY <--
@@ -245,10 +246,10 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
 // SY -->
 @Composable
 private fun ColumnScope.WebtoonWithGapsViewerSettings(screenModel: ReaderSettingsScreenModel) {
-    HeadingItem(R.string.vertical_plus_viewer)
+    HeadingItem(MR.strings.vertical_plus_viewer)
 
     CheckboxItem(
-        label = stringResource(R.string.pref_crop_borders),
+        label = stringResource(MR.strings.pref_crop_borders),
         pref = screenModel.preferences.cropBordersContinuousVertical(),
     )
 }

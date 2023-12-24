@@ -1,22 +1,23 @@
 package exh.util
 
 import android.content.Context
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
 
 fun Manga.mangaType(context: Context): String {
-    return context.getString(
+    return context.stringResource(
         when (mangaType()) {
-            MangaType.TYPE_WEBTOON -> R.string.entry_type_webtoon
-            MangaType.TYPE_MANHWA -> R.string.entry_type_manhwa
-            MangaType.TYPE_MANHUA -> R.string.entry_type_manhua
-            MangaType.TYPE_COMIC -> R.string.entry_type_comic
-            else -> R.string.entry_type_manga
+            MangaType.TYPE_WEBTOON -> SYMR.strings.entry_type_webtoon
+            MangaType.TYPE_MANHWA -> SYMR.strings.entry_type_manhwa
+            MangaType.TYPE_MANHUA -> SYMR.strings.entry_type_manhua
+            MangaType.TYPE_COMIC -> SYMR.strings.entry_type_comic
+            else -> SYMR.strings.entry_type_manga
         },
     ).lowercase(Locale.getDefault())
 }

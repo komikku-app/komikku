@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import androidx.core.net.toUri
@@ -94,6 +93,9 @@ import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -108,12 +110,16 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.Constants
+import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -386,7 +392,8 @@ class ReaderActivity : BaseActivity() {
             } else {
                 cropBorderContinuousVertical
             }
-            val readerBottomButtons by readerPreferences.readerBottomButtons().collectAsState()
+            val readerBottomButtons by readerPreferences.readerBottomButtons().changes().map { it.toImmutableSet() }
+                .collectAsState(persistentSetOf())
             val dualPageSplitPaged by readerPreferences.dualPageSplitPaged().collectAsState()
 
             val forceHorizontalSeekbar by readerPreferences.forceHorizontalSeekbar().collectAsState()
@@ -441,7 +448,7 @@ class ReaderActivity : BaseActivity() {
                 onClickCropBorder = {
                     val enabled = viewModel.toggleCropBorders()
                     menuToggleToast?.cancel()
-                    menuToggleToast = toast(if (enabled) R.string.on else R.string.off)
+                    menuToggleToast = toast(if (enabled) MR.strings.on else MR.strings.off)
                 },
                 onClickSettings = viewModel::openSettingsDialog,
                 // SY -->
@@ -499,7 +506,7 @@ class ReaderActivity : BaseActivity() {
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 CircularProgressIndicator()
-                                Text(stringResource(R.string.loading))
+                                Text(stringResource(MR.strings.loading))
                             }
                         },
                     )
@@ -547,7 +554,7 @@ class ReaderActivity : BaseActivity() {
                 }
                 is ReaderViewModel.Dialog.ChapterList -> {
                     var chapters by remember {
-                        mutableStateOf(viewModel.getChapters())
+                        mutableStateOf(viewModel.getChapters().toImmutableList())
                     }
                     ChapterListDialog(
                         onDismissRequest = onDismissRequest,
@@ -565,7 +572,7 @@ class ReaderActivity : BaseActivity() {
                                 } else {
                                     it
                                 }
-                            }
+                            }.toImmutableList()
                         },
                         state.dateRelativeTime,
                     )
@@ -575,31 +582,31 @@ class ReaderActivity : BaseActivity() {
                     onDismissRequest = onDismissRequest,
                     confirmButton = {
                         TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(R.string.action_ok))
+                            Text(text = stringResource(MR.strings.action_ok))
                         }
                     },
-                    title = { Text(text = stringResource(R.string.eh_autoscroll_help)) },
-                    text = { Text(text = stringResource(R.string.eh_autoscroll_help_message)) },
+                    title = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help_message)) },
                 )
                 ReaderViewModel.Dialog.BoostPageHelp -> AlertDialog(
                     onDismissRequest = onDismissRequest,
                     confirmButton = {
                         TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(R.string.action_ok))
+                            Text(text = stringResource(MR.strings.action_ok))
                         }
                     },
-                    title = { Text(text = stringResource(R.string.eh_boost_page_help)) },
-                    text = { Text(text = stringResource(R.string.eh_boost_page_help_message)) },
+                    title = { Text(text = stringResource(SYMR.strings.eh_boost_page_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_boost_page_help_message)) },
                 )
                 ReaderViewModel.Dialog.RetryAllHelp -> AlertDialog(
                     onDismissRequest = onDismissRequest,
                     confirmButton = {
                         TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(R.string.action_ok))
+                            Text(text = stringResource(MR.strings.action_ok))
                         }
                     },
-                    title = { Text(text = stringResource(R.string.eh_retry_all_help)) },
-                    text = { Text(text = stringResource(R.string.eh_retry_all_help_message)) },
+                    title = { Text(text = stringResource(SYMR.strings.eh_retry_all_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_retry_all_help_message)) },
                 )
                 // SY <--
                 null -> {}
@@ -693,29 +700,29 @@ class ReaderActivity : BaseActivity() {
                 retried++
             }
 
-        toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
+        toast(pluralStringResource(SYMR.plurals.eh_retry_toast, retried, retried))
     }
 
     private fun exhBoostPage() {
         viewModel.state.value.viewer ?: return
         val curPage = exhCurrentpage() ?: run {
-            toast(R.string.eh_boost_page_invalid)
+            toast(SYMR.strings.eh_boost_page_invalid)
             return
         }
 
         if (curPage.status == Page.State.ERROR) {
-            toast(R.string.eh_boost_page_errored)
+            toast(SYMR.strings.eh_boost_page_errored)
         } else if (curPage.status == Page.State.LOAD_PAGE || curPage.status == Page.State.DOWNLOAD_IMAGE) {
-            toast(R.string.eh_boost_page_downloading)
+            toast(SYMR.strings.eh_boost_page_downloading)
         } else if (curPage.status == Page.State.READY) {
-            toast(R.string.eh_boost_page_downloaded)
+            toast(SYMR.strings.eh_boost_page_downloaded)
         } else {
             val loader = (viewModel.state.value.viewerChapters?.currChapter?.pageLoader as? HttpPageLoader)
             if (loader != null) {
                 loader.boostPage(curPage)
-                toast(R.string.eh_boost_boosted)
+                toast(SYMR.strings.eh_boost_boosted)
             } else {
-                toast(R.string.eh_boost_invalid_loader)
+                toast(SYMR.strings.eh_boost_invalid_loader)
             }
         }
     }
@@ -827,7 +834,7 @@ class ReaderActivity : BaseActivity() {
             defaultReaderType == ReadingMode.WEBTOON.flagValue
         ) {
             readingModeToast?.cancel()
-            readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
+            readingModeToast = toast(SYMR.strings.eh_auto_webtoon_snack)
         } else if (readerPreferences.showReadingMode().get()) {
             // SY <--
             showReadingModeToast(viewModel.getMangaReadingMode())
@@ -863,7 +870,7 @@ class ReaderActivity : BaseActivity() {
     private fun shareChapter() {
         assistUrl?.let {
             val intent = it.toUri().toShareIntent(this, type = "text/plain")
-            startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
+            startActivity(Intent.createChooser(intent, stringResource(MR.strings.action_share)))
         }
     }
 
@@ -1043,9 +1050,9 @@ class ReaderActivity : BaseActivity() {
 
         // SY -->
         val text = if (secondPage != null) {
-            getString(R.string.share_pages_info, manga.title, chapter.name, if (resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_LTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}")
+            stringResource(SYMR.strings.share_pages_info, manga.title, chapter.name, if (resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_LTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}")
         } else {
-            getString(R.string.share_page_info, manga.title, chapter.name, page.number)
+            stringResource(MR.strings.share_page_info, manga.title, chapter.name, page.number)
         }
         // SY <--
 
@@ -1053,7 +1060,7 @@ class ReaderActivity : BaseActivity() {
             context = applicationContext,
             message = /* SY --> */ text, // SY <--
         )
-        startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
+        startActivity(Intent.createChooser(intent, stringResource(MR.strings.action_share)))
     }
 
     /**
@@ -1063,7 +1070,7 @@ class ReaderActivity : BaseActivity() {
     private fun onSaveImageResult(result: ReaderViewModel.SaveImageResult) {
         when (result) {
             is ReaderViewModel.SaveImageResult.Success -> {
-                toast(R.string.picture_saved)
+                toast(MR.strings.picture_saved)
             }
             is ReaderViewModel.SaveImageResult.Error -> {
                 logcat(LogPriority.ERROR, result.error)
@@ -1078,9 +1085,9 @@ class ReaderActivity : BaseActivity() {
     private fun onSetAsCoverResult(result: ReaderViewModel.SetAsCoverResult) {
         toast(
             when (result) {
-                Success -> R.string.cover_updated
-                AddToLibraryFirst -> R.string.notification_first_add_to_library
-                Error -> R.string.notification_cover_update_failed
+                Success -> MR.strings.cover_updated
+                AddToLibraryFirst -> MR.strings.notification_first_add_to_library
+                Error -> MR.strings.notification_cover_update_failed
             },
         )
     }

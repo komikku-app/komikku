@@ -24,7 +24,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
@@ -37,13 +36,15 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import kotlinx.collections.immutable.persistentListOf
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.math.roundToInt
 
 class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
@@ -79,28 +80,28 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
         Scaffold(
             topBar = {
                 AppBar(
-                    title = stringResource(R.string.select_sources),
+                    title = stringResource(SYMR.strings.select_sources),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                     actions = {
                         AppBarActions(
                             persistentListOf(
                                 AppBar.Action(
-                                    title = stringResource(R.string.select_none),
+                                    title = stringResource(SYMR.strings.select_none),
                                     icon = Icons.Outlined.Deselect,
                                     onClick = { screenModel.massSelect(false) },
                                 ),
                                 AppBar.Action(
-                                    title = stringResource(R.string.action_select_all),
+                                    title = stringResource(MR.strings.action_select_all),
                                     icon = Icons.Outlined.SelectAll,
                                     onClick = { screenModel.massSelect(true) },
                                 ),
                                 AppBar.OverflowAction(
-                                    title = stringResource(R.string.match_enabled_sources),
+                                    title = stringResource(SYMR.strings.match_enabled_sources),
                                     onClick = { screenModel.matchSelection(true) },
                                 ),
                                 AppBar.OverflowAction(
-                                    title = stringResource(R.string.match_pinned_sources),
+                                    title = stringResource(SYMR.strings.match_pinned_sources),
                                     onClick = { screenModel.matchSelection(false) },
                                 ),
                             ),
@@ -110,11 +111,11 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
             },
             floatingActionButton = {
                 ExtendedFloatingActionButton(
-                    text = { Text(text = stringResource(R.string.action_migrate)) },
+                    text = { Text(text = stringResource(MR.strings.action_migrate)) },
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.ArrowForward,
-                            contentDescription = stringResource(R.string.action_migrate),
+                            contentDescription = stringResource(MR.strings.action_migrate),
                         )
                     },
                     onClick = {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material.icons.outlined.Delete
@@ -38,11 +39,11 @@ fun SortTagListItem(
                 .padding(
                     start = MaterialTheme.padding.medium,
                     top = MaterialTheme.padding.medium,
-                    end = MaterialTheme.padding.medium
+                    end = MaterialTheme.padding.medium,
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = Icons.Outlined.Label, contentDescription = "")
+            Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = "")
             Text(text = tag, modifier = Modifier.padding(start = MaterialTheme.padding.medium))
         }
         Row {

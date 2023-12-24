@@ -30,6 +30,7 @@ import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
 
@@ -158,7 +159,7 @@ fun MangaToolbar(
                                 if (onClickMerge != null) {
                                     add(
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.merge),
+                                            title = stringResource(SYMR.strings.merge),
                                             onClick = onClickMerge,
                                         ),
                                     )
@@ -166,7 +167,7 @@ fun MangaToolbar(
                                 if (onClickEditInfo != null) {
                                     add(
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.action_edit_info),
+                                            title = stringResource(SYMR.strings.action_edit_info),
                                             onClick = onClickEditInfo,
                                         ),
                                     )
@@ -174,7 +175,7 @@ fun MangaToolbar(
                                 if (onClickRecommend != null) {
                                     add(
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.az_recommends),
+                                            title = stringResource(SYMR.strings.az_recommends),
                                             onClick = onClickRecommend,
                                         ),
                                     )
@@ -182,7 +183,7 @@ fun MangaToolbar(
                                 if (onClickMergedSettings != null) {
                                     add(
                                         AppBar.OverflowAction(
-                                            title = stringResource(R.string.merge_settings),
+                                            title = stringResource(SYMR.strings.merge_settings),
                                             onClick = onClickMergedSettings,
                                         ),
                                     )

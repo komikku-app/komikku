@@ -1,12 +1,14 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.content.Context
-import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import java.text.DecimalFormat
 import kotlin.coroutines.CoroutineContext
 
@@ -24,8 +26,8 @@ class MigratingManga(
     val progress = MutableStateFlow(1 to 0)
 
     sealed class SearchResult {
-        object Searching : SearchResult()
-        object NotFound : SearchResult()
+        data object Searching : SearchResult()
+        data object NotFound : SearchResult()
         data class Result(val id: Long) : SearchResult()
     }
 
@@ -35,14 +37,14 @@ class MigratingManga(
     ) {
         fun getFormattedLatestChapter(context: Context): String {
             return if (latestChapter != null && latestChapter > 0.0) {
-                context.getString(
-                    R.string.latest_,
+                context.stringResource(
+                    SYMR.strings.latest_,
                     DecimalFormat("#.#").format(latestChapter),
                 )
             } else {
-                context.getString(
-                    R.string.latest_,
-                    context.getString(R.string.unknown),
+                context.stringResource(
+                    SYMR.strings.latest_,
+                    context.stringResource(MR.strings.unknown),
                 )
             }
         }

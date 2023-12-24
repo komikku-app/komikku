@@ -37,13 +37,13 @@ class EditMergedMangaItem(val mergedManga: Manga?, val mergedMangaReference: Mer
     }
 
     override fun hashCode(): Int {
-        return mergedMangaReference.id!!.hashCode()
+        return mergedMangaReference.id.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other is EditMergedMangaItem) {
-            return mergedMangaReference.id!! == other.mergedMangaReference.id!!
+            return mergedMangaReference.id == other.mergedMangaReference.id
         }
         return false
     }

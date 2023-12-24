@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.CallMerge
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HourglassEmpty
@@ -78,6 +79,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -226,8 +228,8 @@ fun MangaActionRow(
         // SY -->
         if (onMergeClicked != null) {
             MangaActionButton(
-                title = stringResource(R.string.merge),
-                icon = Icons.Outlined.CallMerge,
+                title = stringResource(SYMR.strings.merge),
+                icon = Icons.AutoMirrored.Outlined.CallMerge,
                 color = defaultActionButtonColor,
                 onClick = onMergeClicked,
             )
@@ -292,7 +294,7 @@ fun ExpandableMangaDescription(
                     )
                     // SY -->
                     DropdownMenuItem(
-                        text = { Text(text = stringResource(R.string.action_global_search)) },
+                        text = { Text(text = stringResource(MR.strings.action_global_search)) },
                         onClick = {
                             doSearch(tagSelected, true)
                             showMenu = false

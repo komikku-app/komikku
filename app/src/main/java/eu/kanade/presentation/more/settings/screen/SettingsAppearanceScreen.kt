@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.merge
 import org.xmlpull.v1.XmlPullParser
 import tachiyomi.core.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -214,21 +215,21 @@ object SettingsAppearanceScreen : SearchableSettings {
     @Composable
     fun getForkGroup(uiPreferences: UiPreferences): Preference.PreferenceGroup {
         return Preference.PreferenceGroup(
-            stringResource(R.string.pref_category_fork),
+            stringResource(SYMR.strings.pref_category_fork),
             preferenceItems = listOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.expandFilters(),
-                    title = stringResource(R.string.toggle_expand_search_filters),
+                    title = stringResource(SYMR.strings.toggle_expand_search_filters),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.recommendsInOverflow(),
-                    title = stringResource(R.string.put_recommends_in_overflow),
-                    subtitle = stringResource(R.string.put_recommends_in_overflow_summary),
+                    title = stringResource(SYMR.strings.put_recommends_in_overflow),
+                    subtitle = stringResource(SYMR.strings.put_recommends_in_overflow_summary),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.mergeInOverflow(),
-                    title = stringResource(R.string.put_merge_in_overflow),
-                    subtitle = stringResource(R.string.put_merge_in_overflow_summary),
+                    title = stringResource(SYMR.strings.put_merge_in_overflow),
+                    subtitle = stringResource(SYMR.strings.put_merge_in_overflow_summary),
                 ),
             ),
         )
@@ -237,19 +238,19 @@ object SettingsAppearanceScreen : SearchableSettings {
     @Composable
     fun getNavbarGroup(uiPreferences: UiPreferences): Preference.PreferenceGroup {
         return Preference.PreferenceGroup(
-            stringResource(R.string.pref_category_navbar),
+            stringResource(SYMR.strings.pref_category_navbar),
             preferenceItems = listOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.showNavUpdates(),
-                    title = stringResource(R.string.pref_hide_updates_button),
+                    title = stringResource(SYMR.strings.pref_hide_updates_button),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.showNavHistory(),
-                    title = stringResource(R.string.pref_hide_history_button),
+                    title = stringResource(SYMR.strings.pref_hide_history_button),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.bottomBarLabels(),
-                    title = stringResource(R.string.pref_show_bottom_bar_labels),
+                    title = stringResource(SYMR.strings.pref_show_bottom_bar_labels),
                 ),
             ),
         )

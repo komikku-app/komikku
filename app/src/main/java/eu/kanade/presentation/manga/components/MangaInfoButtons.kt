@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Button
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MangaInfoButtons(
@@ -27,7 +27,7 @@ fun MangaInfoButtons(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                 ) {
-                    Text(stringResource(R.string.merge_with_another_source))
+                    Text(stringResource(SYMR.strings.merge_with_another_source))
                 }
             }
             if (showRecommendsButton) {
@@ -37,7 +37,7 @@ fun MangaInfoButtons(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                 ) {
-                    Text(stringResource(R.string.az_recommends))
+                    Text(stringResource(SYMR.strings.az_recommends))
                 }
             }
         }

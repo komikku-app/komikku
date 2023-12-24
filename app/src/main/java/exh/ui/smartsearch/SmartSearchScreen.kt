@@ -15,19 +15,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 
 class SmartSearchScreen(
     private val sourceId: Long,
@@ -48,9 +48,9 @@ class SmartSearchScreen(
                     navigator.replace(MangaScreen(results.manga.id, true, smartSearchConfig))
                 } else {
                     if (results is SmartSearchScreenModel.SearchResults.NotFound) {
-                        context.toast(R.string.could_not_find_entry)
+                        context.toast(SYMR.strings.could_not_find_entry)
                     } else {
-                        context.toast(R.string.automatic_search_error)
+                        context.toast(SYMR.strings.automatic_search_error)
                     }
                     navigator.replace(
                         BrowseSourceScreen(
@@ -80,7 +80,7 @@ class SmartSearchScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
             ) {
                 Text(
-                    text = stringResource(R.string.searching_source),
+                    text = stringResource(SYMR.strings.searching_source),
                     style = MaterialTheme.typography.titleLarge,
                 )
                 CircularProgressIndicator(modifier = Modifier.size(56.dp))

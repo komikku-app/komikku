@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.data.track.mdlist
 
 import android.graphics.Color
-import androidx.annotation.StringRes
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
@@ -16,6 +16,8 @@ import tachiyomi.core.util.lang.awaitSingle
 import tachiyomi.core.util.lang.runAsObservable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -43,15 +45,14 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         return FollowStatus.values().map { it.int }
     }
 
-    @StringRes
-    override fun getStatus(status: Int): Int? = when (status) {
-        0 -> R.string.md_follows_unfollowed
-        1 -> R.string.reading
-        2 -> R.string.completed
-        3 -> R.string.on_hold
-        4 -> R.string.plan_to_read
-        5 -> R.string.dropped
-        6 -> R.string.repeating
+    override fun getStatus(status: Int): StringResource? = when (status) {
+        0 -> SYMR.strings.md_follows_unfollowed
+        1 -> MR.strings.reading
+        2 -> MR.strings.completed
+        3 -> MR.strings.on_hold
+        4 -> MR.strings.plan_to_read
+        5 -> MR.strings.dropped
+        6 -> MR.strings.repeating
         else -> null
     }
 

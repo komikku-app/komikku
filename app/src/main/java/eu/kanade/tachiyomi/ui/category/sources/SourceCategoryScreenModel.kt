@@ -1,19 +1,22 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.source.interactor.CreateSourceCategory
 import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.RenameSourceCategory
-import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -33,7 +36,7 @@ class SourceCategoryScreenModel(
                 .collectLatest { categories ->
                     mutableState.update {
                         SourceCategoryScreenState.Success(
-                            categories = categories,
+                            categories = categories.toImmutableList(),
                         )
                     }
                 }
@@ -100,9 +103,9 @@ class SourceCategoryScreenModel(
 }
 
 sealed class SourceCategoryEvent {
-    sealed class LocalizedMessage(@StringRes val stringRes: Int) : SourceCategoryEvent()
-    object InvalidName : LocalizedMessage(R.string.invalid_category_name)
-    object InternalError : LocalizedMessage(R.string.internal_error)
+    sealed class LocalizedMessage(val stringRes: StringResource) : SourceCategoryEvent()
+    object InvalidName : LocalizedMessage(SYMR.strings.invalid_category_name)
+    object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 
 sealed class SourceCategoryDialog {
@@ -118,7 +121,7 @@ sealed class SourceCategoryScreenState {
 
     @Immutable
     data class Success(
-        val categories: List<String>,
+        val categories: ImmutableList<String>,
         val dialog: SourceCategoryDialog? = null,
     ) : SourceCategoryScreenState() {
 

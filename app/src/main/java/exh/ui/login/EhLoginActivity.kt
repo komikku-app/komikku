@@ -20,6 +20,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.log.xLogD
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
 import java.util.Locale
@@ -35,7 +36,7 @@ class EhLoginActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         if (!WebViewUtil.supportsWebView(this)) {
-            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
+            toast(MR.strings.information_webview_required, Toast.LENGTH_LONG)
             finish()
             return
         }

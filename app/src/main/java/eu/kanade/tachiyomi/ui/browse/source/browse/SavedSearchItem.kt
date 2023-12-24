@@ -9,18 +9,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.SuggestionChip
 import eu.kanade.presentation.components.SuggestionChipDefaults
-import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.EXHSavedSearch
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun SavedSearchItem(
-    savedSearches: List<EXHSavedSearch>,
+    savedSearches: ImmutableList<EXHSavedSearch>,
     onSavedSearch: (EXHSavedSearch) -> Unit,
     onSavedSearchPress: (EXHSavedSearch) -> Unit,
 ) {
@@ -34,7 +35,7 @@ fun SavedSearchItem(
             ),
     ) {
         Text(
-            text = stringResource(R.string.saved_searches),
+            text = stringResource(SYMR.strings.saved_searches),
             style = MaterialTheme.typography.bodySmall,
         )
         FlowRow(

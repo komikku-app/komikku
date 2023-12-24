@@ -3,7 +3,6 @@ package exh.ui.batchadd
 import android.content.Context
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.tachiyomi.R
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.log.xLogE
@@ -13,8 +12,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -86,8 +87,8 @@ class BatchAddScreenModel(
                         progress = i + 1,
                         events = state.events.plus(
                             when (result) {
-                                is GalleryAddEvent.Success -> context.getString(R.string.batch_add_ok)
-                                is GalleryAddEvent.Fail -> context.getString(R.string.batch_add_error)
+                                is GalleryAddEvent.Success -> context.stringResource(SYMR.strings.batch_add_ok)
+                                is GalleryAddEvent.Fail -> context.stringResource(SYMR.strings.batch_add_error)
                             } + " " + result.logMessage,
                         ),
                     )
@@ -95,7 +96,7 @@ class BatchAddScreenModel(
             }
 
             // Show report
-            val summary = context.getString(R.string.batch_add_summary, succeeded.size, failed.size)
+            val summary = context.stringResource(SYMR.strings.batch_add_summary, succeeded.size, failed.size)
             mutableState.update { state ->
                 state.copy(
                     events = state.events + summary,

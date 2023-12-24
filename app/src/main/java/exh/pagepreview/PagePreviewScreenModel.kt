@@ -92,7 +92,7 @@ class PagePreviewScreenModel(
 }
 
 sealed class PagePreviewState {
-    object Loading : PagePreviewState()
+    data object Loading : PagePreviewState()
 
     data class Success(
         val page: Int,

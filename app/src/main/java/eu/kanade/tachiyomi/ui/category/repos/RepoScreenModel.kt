@@ -1,11 +1,12 @@
 package eu.kanade.tachiyomi.ui.category.repos
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.source.interactor.CreateSourceRepo
-import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.update
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.source.interactor.DeleteSourceRepos
 import tachiyomi.domain.source.interactor.GetSourceRepos
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -31,7 +34,7 @@ class RepoScreenModel(
                 .collectLatest { repos ->
                     mutableState.update {
                         RepoScreenState.Success(
-                            repos = repos,
+                            repos = repos.toImmutableList(),
                         )
                     }
                 }
@@ -83,9 +86,9 @@ class RepoScreenModel(
 }
 
 sealed class RepoEvent {
-    sealed class LocalizedMessage(@StringRes val stringRes: Int) : RepoEvent()
-    object InvalidName : LocalizedMessage(R.string.invalid_repo_name)
-    object InternalError : LocalizedMessage(R.string.internal_error)
+    sealed class LocalizedMessage(val stringRes: StringResource) : RepoEvent()
+    data object InvalidName : LocalizedMessage(SYMR.strings.invalid_repo_name)
+    data object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 
 sealed class RepoDialog {
@@ -96,11 +99,11 @@ sealed class RepoDialog {
 sealed class RepoScreenState {
 
     @Immutable
-    object Loading : RepoScreenState()
+    data object Loading : RepoScreenState()
 
     @Immutable
     data class Success(
-        val repos: List<String>,
+        val repos: ImmutableList<String>,
         val dialog: RepoDialog? = null,
     ) : RepoScreenState() {
 

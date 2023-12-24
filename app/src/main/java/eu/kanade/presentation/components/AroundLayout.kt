@@ -11,10 +11,10 @@ import androidx.compose.ui.util.fastMaxBy
 
 @Composable
 fun AroundLayout(
-    modifier: Modifier = Modifier,
     startLayout: @Composable () -> Unit,
     endLayout: @Composable () -> Unit,
     content: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     SubcomposeLayout(modifier) { constraints ->
         val layoutWidth = constraints.maxWidth

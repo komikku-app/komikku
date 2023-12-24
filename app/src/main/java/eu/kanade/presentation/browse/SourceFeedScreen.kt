@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -16,13 +15,15 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.tachiyomi.R
+import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
 
@@ -43,7 +44,7 @@ sealed class SourceFeedUI {
         override val title: String
             @Composable
             @ReadOnlyComposable
-            get() = stringResource(R.string.latest)
+            get() = stringResource(MR.strings.latest)
 
         override fun withResults(results: List<Manga>?): SourceFeedUI {
             return copy(results = results)
@@ -54,7 +55,7 @@ sealed class SourceFeedUI {
         override val title: String
             @Composable
             @ReadOnlyComposable
-            get() = stringResource(R.string.browse)
+            get() = stringResource(MR.strings.browse)
 
         override fun withResults(results: List<Manga>?): SourceFeedUI {
             return copy(results = results)
@@ -83,7 +84,7 @@ sealed class SourceFeedUI {
 fun SourceFeedScreen(
     name: String,
     isLoading: Boolean,
-    items: List<SourceFeedUI>,
+    items: ImmutableList<SourceFeedUI>,
     hasFilters: Boolean,
     onFabClick: () -> Unit,
     onClickBrowse: () -> Unit,
@@ -113,7 +114,7 @@ fun SourceFeedScreen(
             )
         },
     ) { paddingValues ->
-        Crossfade(targetState = isLoading) { state ->
+        Crossfade(targetState = isLoading, label = "source_feed") { state ->
             when (state) {
                 true -> LoadingScreen()
                 false -> {
@@ -135,7 +136,7 @@ fun SourceFeedScreen(
 
 @Composable
 fun SourceFeedList(
-    items: List<SourceFeedUI>,
+    items: ImmutableList<SourceFeedUI>,
     paddingValues: PaddingValues,
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickBrowse: () -> Unit,
@@ -192,7 +193,7 @@ fun SourceFeedItem(
             GlobalSearchLoadingResultItem()
         }
         results.isEmpty() -> {
-            GlobalSearchErrorResultItem(message = stringResource(R.string.no_results_found))
+            GlobalSearchErrorResultItem(message = stringResource(MR.strings.no_results_found))
         }
         else -> {
             GlobalSearchCardRow(
@@ -220,6 +221,6 @@ fun SourceFeedToolbar(
         onSearch = onClickSearch,
         onClickCloseSearch = { onSearchQueryChange(null) },
         scrollBehavior = scrollBehavior,
-        placeholderText = stringResource(R.string.action_search_hint),
+        placeholderText = stringResource(MR.strings.action_search_hint),
     )
 }

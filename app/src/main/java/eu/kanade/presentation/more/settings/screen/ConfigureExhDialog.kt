@@ -10,9 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogE
 import exh.uconfig.EHConfigurator
@@ -22,6 +20,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import tachiyomi.core.util.lang.launchUI
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.seconds
@@ -61,14 +62,14 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
                         warnDialogOpen = false
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             title = {
-                Text(text = stringResource(R.string.settings_profile_note))
+                Text(text = stringResource(SYMR.strings.settings_profile_note))
             },
             text = {
-                Text(text = stringResource(R.string.settings_profile_note_message))
+                Text(text = stringResource(SYMR.strings.settings_profile_note_message))
             },
         )
     }
@@ -80,7 +81,7 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
                     delay(0.2.seconds)
                     EHConfigurator(context).configureAll()
                     launchUI {
-                        context.toast(R.string.eh_settings_successfully_uploaded)
+                        context.toast(SYMR.strings.eh_settings_successfully_uploaded)
                     }
                 } catch (e: Exception) {
                     configureFailedDialogOpen = e
@@ -98,10 +99,10 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
             ),
             confirmButton = {},
             title = {
-                Text(text = stringResource(R.string.eh_settings_uploading_to_server))
+                Text(text = stringResource(SYMR.strings.eh_settings_uploading_to_server))
             },
             text = {
-                Text(text = stringResource(R.string.eh_settings_uploading_to_server_message))
+                Text(text = stringResource(SYMR.strings.eh_settings_uploading_to_server_message))
             },
         )
     }
@@ -110,18 +111,18 @@ fun ConfigureExhDialog(run: Boolean, onRunning: () -> Unit) {
             onDismissRequest = { configureFailedDialogOpen = null },
             confirmButton = {
                 TextButton(onClick = { configureFailedDialogOpen = null }) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             title = {
-                Text(text = stringResource(R.string.eh_settings_configuration_failed))
+                Text(text = stringResource(SYMR.strings.eh_settings_configuration_failed))
             },
             text = {
                 Text(
                     text = stringResource(
-                        R.string.eh_settings_configuration_failed_message,
-                        configureFailedDialogOpen?.message.orEmpty()
-                    )
+                        SYMR.strings.eh_settings_configuration_failed_message,
+                        configureFailedDialogOpen?.message.orEmpty(),
+                    ),
                 )
             },
         )

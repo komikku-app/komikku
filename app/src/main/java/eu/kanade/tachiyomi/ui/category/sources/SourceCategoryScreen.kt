@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -14,9 +13,10 @@ import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class SourceCategoryScreen : Screen() {
@@ -52,7 +52,7 @@ class SourceCategoryScreen : Screen() {
                     onCreate = { screenModel.createCategory(it) },
                     // SY -->
                     categories = successState.categories,
-                    title = stringResource(R.string.action_add_category),
+                    title = stringResource(MR.strings.action_add_category),
                     // SY <--
                 )
             }
@@ -71,8 +71,8 @@ class SourceCategoryScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteCategory(dialog.category) },
                     // SY -->
-                    title = stringResource(R.string.delete_category),
-                    text = stringResource(R.string.delete_category_confirmation, dialog.category),
+                    title = stringResource(MR.strings.delete_category),
+                    text = stringResource(MR.strings.delete_category_confirmation, dialog.category),
                     // SY <--
                 )
             }

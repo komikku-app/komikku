@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -32,10 +31,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
 
 class BatchAddScreen : Screen() {
@@ -50,7 +51,7 @@ class BatchAddScreen : Screen() {
         Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
-                    title = stringResource(R.string.batch_add),
+                    title = stringResource(SYMR.strings.batch_add),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                 )
@@ -64,7 +65,7 @@ class BatchAddScreen : Screen() {
                             .verticalScroll(rememberScrollState())
                             .padding(MaterialTheme.padding.medium),
                     ) {
-                        Text(text = stringResource(R.string.eh_batch_add_title), style = MaterialTheme.typography.titleLarge)
+                        Text(text = stringResource(SYMR.strings.eh_batch_add_title), style = MaterialTheme.typography.titleLarge)
                         Spacer(Modifier.height(8.dp))
                         TextField(
                             value = state.galleries,
@@ -72,7 +73,7 @@ class BatchAddScreen : Screen() {
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = stringResource(R.string.eh_batch_add_description),
+                                    text = stringResource(SYMR.strings.eh_batch_add_description),
                                 )
                             },
                             keyboardOptions = KeyboardOptions(autoCorrect = false),
@@ -84,7 +85,7 @@ class BatchAddScreen : Screen() {
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { screenModel.addGalleries(context) },
                         ) {
-                            Text(text = stringResource(R.string.eh_batch_add_button))
+                            Text(text = stringResource(SYMR.strings.eh_batch_add_button))
                         }
                     }
                 }
@@ -94,7 +95,7 @@ class BatchAddScreen : Screen() {
                     ) {
                         item(key = "top") {
                             Column {
-                                Text(text = stringResource(R.string.eh_batch_add_adding_galleries), style = MaterialTheme.typography.titleLarge)
+                                Text(text = stringResource(SYMR.strings.eh_batch_add_adding_galleries), style = MaterialTheme.typography.titleLarge)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     Modifier.fillMaxWidth(),
@@ -141,7 +142,7 @@ class BatchAddScreen : Screen() {
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = screenModel::finish,
                                     ) {
-                                        Text(text = stringResource(R.string.eh_batch_add_finish))
+                                        Text(text = stringResource(SYMR.strings.eh_batch_add_finish))
                                     }
                                 }
                             }
@@ -157,14 +158,14 @@ class BatchAddScreen : Screen() {
                 onDismissRequest = onDismissRequest,
                 confirmButton = {
                     TextButton(onClick = onDismissRequest) {
-                        Text(text = stringResource(R.string.action_ok))
+                        Text(text = stringResource(MR.strings.action_ok))
                     }
                 },
                 title = {
-                    Text(text = stringResource(R.string.batch_add_no_valid_galleries))
+                    Text(text = stringResource(SYMR.strings.batch_add_no_valid_galleries))
                 },
                 text = {
-                    Text(text = stringResource(R.string.batch_add_no_valid_galleries_message))
+                    Text(text = stringResource(SYMR.strings.batch_add_no_valid_galleries_message))
                 },
             )
             null -> Unit

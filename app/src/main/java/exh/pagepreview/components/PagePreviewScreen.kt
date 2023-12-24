@@ -26,20 +26,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AroundLayout
 import eu.kanade.presentation.manga.components.PagePreview
-import eu.kanade.tachiyomi.R
 import exh.pagepreview.PagePreviewState
 import exh.util.floor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
@@ -59,7 +60,7 @@ fun PagePreviewScreen(
         topBar = { scrollBehavior ->
             PagePreviewTopAppBar(
                 navigateUp = navigateUp,
-                title = stringResource(R.string.page_previews),
+                title = stringResource(SYMR.strings.page_previews),
                 onOpenPageDialog = onOpenPageDialog,
                 showOpenPageDialog = state is PagePreviewState.Success &&
                     (state.pageCount != null && state.pageCount > 1 /* TODO support unknown pageCount || state.hasNextPage*/),
@@ -137,39 +138,40 @@ fun PagePreviewPageDialog(
                 onPageSelected(page.roundToInt())
                 onDismissPageDialog()
             }) {
-                Text(stringResource(R.string.action_ok))
+                Text(stringResource(MR.strings.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissPageDialog) {
-                Text(stringResource(R.string.action_cancel))
+                Text(stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(stringResource(R.string.page_preview_page_go_to))
+            Text(stringResource(SYMR.strings.page_preview_page_go_to))
         },
         text = {
             AroundLayout(
                 startLayout = { Text(text = page.roundToInt().toString()) },
                 endLayout = { Text(text = pageCount.toString()) },
-            ) {
-                Slider(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = page,
-                    onValueChange = { page = it },
-                    onValueChangeFinished = {
-                        scope.launch {
-                            val newPage = page
-                            AnimationState(
-                                newPage,
-                            ).animateTo(newPage.roundToInt().toFloat()) {
-                                page = value
+                content = {
+                    Slider(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = page,
+                        onValueChange = { page = it },
+                        onValueChangeFinished = {
+                            scope.launch {
+                                val newPage = page
+                                AnimationState(
+                                    newPage,
+                                ).animateTo(newPage.roundToInt().toFloat()) {
+                                    page = value
+                                }
                             }
-                        }
-                    },
-                    valueRange = 1F..pageCount.toFloat(),
-                )
-            }
+                        },
+                        valueRange = 1F..pageCount.toFloat(),
+                    )
+                },
+            )
         },
     )
 }
@@ -189,7 +191,7 @@ fun PagePreviewTopAppBar(
                 if (showOpenPageDialog) {
                     persistentListOf(
                         AppBar.Action(
-                            title = stringResource(R.string.page_preview_page_go_to),
+                            title = stringResource(SYMR.strings.page_preview_page_go_to),
                             icon = Icons.Outlined.UTurnRight,
                             onClick = onOpenPageDialog,
                         ),

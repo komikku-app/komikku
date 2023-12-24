@@ -13,6 +13,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import kotlin.math.round
 
 @Composable
@@ -32,15 +36,15 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                 genre?.let { MetadataUIUtil.getGenreAndColour(context, it.name) }?.let {
                     binding.genre.setBackgroundColor(it.first)
                     it.second
-                } ?: genre?.name ?: context.getString(R.string.unknown)
+                } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
             }
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
 
-            binding.size.text = meta.fileSize ?: context.getString(R.string.unknown)
+            binding.size.text = meta.fileSize ?: context.stringResource(MR.strings.unknown)
             binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24)
 
-            binding.pages.text = context.resources.getQuantityString(R.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
+            binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24)
 
             val ratingFloat = meta.averageRating?.toFloat()

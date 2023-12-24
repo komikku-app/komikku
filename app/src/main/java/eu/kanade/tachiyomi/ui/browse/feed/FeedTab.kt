@@ -7,7 +7,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
@@ -19,13 +18,15 @@ import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
 import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tachiyomi.domain.source.interactor.GetRemoteManga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun Screen.feedTab(): TabContent {
@@ -48,10 +49,10 @@ fun Screen.feedTab(): TabContent {
     }
 
     return TabContent(
-        titleRes = R.string.feed,
+        titleRes = SYMR.strings.feed,
         actions = persistentListOf(
             AppBar.Action(
-                title = stringResource(R.string.action_add),
+                title = stringResource(MR.strings.action_add),
                 icon = Icons.Outlined.Add,
                 onClick = {
                     screenModel.openAddDialog()
@@ -127,8 +128,8 @@ fun Screen.feedTab(): TabContent {
                 }
             }
 
-            val internalErrString = stringResource(R.string.internal_error)
-            val tooManyFeedsString = stringResource(R.string.too_many_in_feed)
+            val internalErrString = stringResource(MR.strings.internal_error)
+            val tooManyFeedsString = stringResource(SYMR.strings.too_many_in_feed)
             LaunchedEffect(Unit) {
                 screenModel.events.collectLatest { event ->
                     when (event) {

@@ -251,7 +251,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
         val logFolder = File(
             Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                getString(R.string.app_name),
+                stringResource(MR.strings.app_name),
             "logs",
         )
 

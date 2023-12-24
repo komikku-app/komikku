@@ -1,10 +1,12 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
 @Serializable
 class PururinSearchMetadata : RaisedSearchMetadata() {
@@ -56,16 +58,16 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(prId) { getString(R.string.id) },
-                getItem(title) { getString(R.string.title) },
-                getItem(altTitle) { getString(R.string.alt_title) },
-                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
-                getItem(uploaderDisp) { getString(R.string.uploader_capital) },
-                getItem(uploader) { getString(R.string.uploader) },
-                getItem(pages) { getString(R.string.page_count) },
-                getItem(fileSize) { getString(R.string.gallery_size) },
-                getItem(ratingCount) { getString(R.string.total_ratings) },
-                getItem(averageRating) { getString(R.string.average_rating) },
+                getItem(prId) { stringResource(SYMR.strings.id) },
+                getItem(title) { stringResource(MR.strings.title) },
+                getItem(altTitle) { stringResource(SYMR.strings.alt_title) },
+                getItem(thumbnailUrl) { stringResource(SYMR.strings.thumbnail_url) },
+                getItem(uploaderDisp) { stringResource(SYMR.strings.uploader_capital) },
+                getItem(uploader) { stringResource(SYMR.strings.uploader) },
+                getItem(pages) { stringResource(SYMR.strings.page_count) },
+                getItem(fileSize) { stringResource(SYMR.strings.gallery_size) },
+                getItem(ratingCount) { stringResource(SYMR.strings.total_ratings) },
+                getItem(averageRating) { stringResource(SYMR.strings.average_rating) },
             )
         }
     }

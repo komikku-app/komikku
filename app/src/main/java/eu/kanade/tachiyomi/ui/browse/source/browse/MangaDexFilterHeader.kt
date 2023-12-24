@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
 import tachiyomi.presentation.core.components.material.TextButton
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MangaDexFilterHeader(
@@ -23,10 +23,10 @@ fun MangaDexFilterHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         TextButton(onClick = openMangaDexRandom) {
-            Text(stringResource(R.string.random))
+            Text(stringResource(SYMR.strings.random))
         }
         TextButton(onClick = openMangaDexFollows) {
-            Text(stringResource(R.string.mangadex_follows))
+            Text(stringResource(SYMR.strings.mangadex_follows))
         }
     }
 }

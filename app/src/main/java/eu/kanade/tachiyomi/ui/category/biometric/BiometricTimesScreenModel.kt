@@ -1,18 +1,21 @@
 package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.app.Application
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.tachiyomi.R
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.preference.plusAssign
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -33,7 +36,8 @@ class BiometricTimesScreenModel(
                         BiometricTimesScreenState.Success(
                             timeRanges = times.toList()
                                 .mapNotNull(TimeRange::fromPreferenceString)
-                                .map { TimeRangeItem(it, it.getFormattedString(context)) },
+                                .map { TimeRangeItem(it, it.getFormattedString(context)) }
+                                .toImmutableList(),
                         )
                     }
                 }
@@ -101,9 +105,9 @@ class BiometricTimesScreenModel(
 }
 
 sealed class BiometricTimesEvent {
-    sealed class LocalizedMessage(@StringRes val stringRes: Int) : BiometricTimesEvent()
-    object TimeConflicts : LocalizedMessage(R.string.biometric_lock_time_conflicts)
-    object InternalError : LocalizedMessage(R.string.internal_error)
+    sealed class LocalizedMessage(val stringRes: StringResource) : BiometricTimesEvent()
+    data object TimeConflicts : LocalizedMessage(SYMR.strings.biometric_lock_time_conflicts)
+    data object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 
 sealed class BiometricTimesDialog {
@@ -114,11 +118,11 @@ sealed class BiometricTimesDialog {
 sealed class BiometricTimesScreenState {
 
     @Immutable
-    object Loading : BiometricTimesScreenState()
+    data object Loading : BiometricTimesScreenState()
 
     @Immutable
     data class Success(
-        val timeRanges: List<TimeRangeItem>,
+        val timeRanges: ImmutableList<TimeRangeItem>,
         val dialog: BiometricTimesDialog? = null,
     ) : BiometricTimesScreenState() {
 

@@ -12,6 +12,8 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
 
 @Composable
 fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) {
@@ -26,7 +28,7 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
             if (meta == null || meta !is EightMusesSearchMetadata) return@AndroidView
             val binding = DescriptionAdapter8mBinding.bind(it)
 
-            binding.title.text = meta.title ?: context.getString(R.string.unknown)
+            binding.title.text = meta.title ?: context.stringResource(MR.strings.unknown)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
 

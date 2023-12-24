@@ -7,19 +7,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -46,6 +49,7 @@ import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -125,20 +129,23 @@ open class SourceFeedScreenModel(
         }
     }
 
-    private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<SourceFeedUI> {
-        if (source !is CatalogueSource) return emptyList()
+    private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): ImmutableList<SourceFeedUI> {
+        if (source !is CatalogueSource) return persistentListOf()
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
             .associateBy { it.id }
 
-        return listOfNotNull(
-            if (source.supportsLatest) {
-                SourceFeedUI.Latest(null)
-            } else {
-                null
-            },
-            SourceFeedUI.Browse(null),
-        ) + feedSavedSearch
-            .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
+        return (
+            listOfNotNull(
+                if (source.supportsLatest) {
+                    SourceFeedUI.Latest(null)
+                } else {
+                    null
+                },
+                SourceFeedUI.Browse(null),
+            ) + feedSavedSearch
+                .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
+            )
+            .toImmutableList()
     }
 
     /**
@@ -175,7 +182,7 @@ open class SourceFeedScreenModel(
                         state.copy(
                             items = state.items.map { item ->
                                 if (item.id == sourceFeed.id) sourceFeed.withResults(titles) else item
-                            },
+                            }.toImmutableList(),
                         )
                     }
                 }
@@ -210,6 +217,7 @@ open class SourceFeedScreenModel(
     private suspend fun loadSearches() =
         getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
+            .toImmutableList()
 
     fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
         if (source !is CatalogueSource) return
@@ -233,13 +241,13 @@ open class SourceFeedScreenModel(
     fun onSavedSearch(
         search: EXHSavedSearch,
         onBrowseClick: (query: String?, searchId: Long) -> Unit,
-        onToast: (Int) -> Unit,
+        onToast: (StringResource) -> Unit,
     ) {
         if (source !is CatalogueSource) return
         screenModelScope.launchIO {
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
-                    onToast(R.string.save_search_invalid)
+                    onToast(SYMR.strings.save_search_invalid)
                 }
                 return@launchIO
             }
@@ -258,12 +266,12 @@ open class SourceFeedScreenModel(
 
     fun onSavedSearchAddToFeed(
         search: EXHSavedSearch,
-        onToast: (Int) -> Unit,
+        onToast: (StringResource) -> Unit,
     ) {
         screenModelScope.launchIO {
             if (hasTooManyFeeds()) {
                 withUIContext {
-                    onToast(R.string.too_many_in_feed)
+                    onToast(SYMR.strings.too_many_in_feed)
                 }
                 return@launchIO
             }
@@ -314,9 +322,9 @@ open class SourceFeedScreenModel(
 @Immutable
 data class SourceFeedState(
     val searchQuery: String? = null,
-    val items: List<SourceFeedUI> = emptyList(),
+    val items: ImmutableList<SourceFeedUI> = persistentListOf(),
     val filters: FilterList = FilterList(),
-    val savedSearches: List<EXHSavedSearch> = emptyList(),
+    val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
     val dialog: SourceFeedScreenModel.Dialog? = null,
 ) {
     val isLoading

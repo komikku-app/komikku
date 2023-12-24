@@ -1,18 +1,19 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
-import androidx.annotation.StringRes
-import eu.kanade.tachiyomi.R
+import dev.icerock.moko.resources.StringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
-enum class ReaderBottomButton(val value: String, @StringRes val stringRes: Int) {
-    ViewChapters("vc", R.string.action_view_chapters),
-    WebView("wb", R.string.action_open_in_web_view),
-    Share("sh", R.string.action_share),
-    ReadingMode("rm", R.string.viewer),
-    Rotation("rot", R.string.rotation_type),
-    CropBordersPager("cbp", R.string.pref_crop_borders_pager),
-    CropBordersContinuesVertical("cbc", R.string.pref_crop_borders_continuous_vertical),
-    CropBordersWebtoon("cbw", R.string.pref_crop_borders_webtoon),
-    PageLayout("pl", R.string.page_layout),
+enum class ReaderBottomButton(val value: String, val stringRes: StringResource) {
+    ViewChapters("vc", MR.strings.action_view_chapters),
+    WebView("wb", MR.strings.action_open_in_web_view),
+    Share("sh", MR.strings.action_share),
+    ReadingMode("rm", MR.strings.viewer),
+    Rotation("rot", MR.strings.rotation_type),
+    CropBordersPager("cbp", SYMR.strings.pref_crop_borders_pager),
+    CropBordersContinuesVertical("cbc", SYMR.strings.pref_crop_borders_continuous_vertical),
+    CropBordersWebtoon("cbw", SYMR.strings.pref_crop_borders_webtoon),
+    PageLayout("pl", SYMR.strings.page_layout),
     ;
 
     fun isIn(buttons: Collection<String>) = value in buttons

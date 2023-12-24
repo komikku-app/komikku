@@ -2,12 +2,14 @@ package exh.metadata.metadata
 
 import android.content.Context
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
@@ -90,28 +92,28 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(gId) { getString(R.string.id) },
-                getItem(gToken) { getString(R.string.token) },
-                getItem(exh) { getString(R.string.is_exhentai_gallery) },
-                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
-                getItem(title) { getString(R.string.title) },
-                getItem(altTitle) { getString(R.string.alt_title) },
-                getItem(genre) { getString(R.string.genre) },
+                getItem(gId) { stringResource(SYMR.strings.id) },
+                getItem(gToken) { stringResource(SYMR.strings.token) },
+                getItem(exh) { stringResource(SYMR.strings.is_exhentai_gallery) },
+                getItem(thumbnailUrl) { stringResource(SYMR.strings.thumbnail_url) },
+                getItem(title) { stringResource(MR.strings.title) },
+                getItem(altTitle) { stringResource(SYMR.strings.alt_title) },
+                getItem(genre) { stringResource(SYMR.strings.genre) },
                 getItem(datePosted, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
-                    getString(R.string.date_posted)
+                    stringResource(SYMR.strings.date_posted)
                 },
-                getItem(parent) { getString(R.string.parent) },
-                getItem(visible) { getString(R.string.visible) },
-                getItem(language) { getString(R.string.language) },
-                getItem(translated) { getString(R.string.translated) },
-                getItem(size, { MetadataUtil.humanReadableByteCount(it, true) }) { getString(R.string.gallery_size) },
-                getItem(length) { getString(R.string.page_count) },
-                getItem(favorites) { getString(R.string.total_favorites) },
-                getItem(ratingCount) { getString(R.string.total_ratings) },
-                getItem(averageRating) { getString(R.string.average_rating) },
-                getItem(aged) { getString(R.string.aged) },
+                getItem(parent) { stringResource(SYMR.strings.parent) },
+                getItem(visible) { stringResource(SYMR.strings.visible) },
+                getItem(language) { stringResource(SYMR.strings.language) },
+                getItem(translated) { stringResource(SYMR.strings.translated) },
+                getItem(size, { MetadataUtil.humanReadableByteCount(it, true) }) { stringResource(SYMR.strings.gallery_size) },
+                getItem(length) { stringResource(SYMR.strings.page_count) },
+                getItem(favorites) { stringResource(SYMR.strings.total_favorites) },
+                getItem(ratingCount) { stringResource(SYMR.strings.total_ratings) },
+                getItem(averageRating) { stringResource(SYMR.strings.average_rating) },
+                getItem(aged) { stringResource(SYMR.strings.aged) },
                 getItem(lastUpdateCheck, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
-                    getString(R.string.last_update_check)
+                    stringResource(SYMR.strings.last_update_check)
                 },
             )
         }

@@ -2,13 +2,14 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.app.Application
 import android.os.Build
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.system.ImageUtil
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -43,7 +44,7 @@ internal class ZipPageLoader(file: File) : PageLoader() {
             if (zip.isEncrypted) {
                 if (!CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())) {
                     this.recycle()
-                    throw IllegalStateException(context.getString(R.string.wrong_cbz_archive_password))
+                    throw IllegalStateException(context.stringResource(SYMR.strings.wrong_cbz_archive_password))
                 }
                 zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
                 if (readerPreferences.cacheArchiveMangaOnDisk().get()) {

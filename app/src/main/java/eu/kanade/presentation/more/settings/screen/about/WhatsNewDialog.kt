@@ -17,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,7 +30,10 @@ import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun WhatsNewDialog(onDismissRequest: () -> Unit) {
@@ -39,11 +41,11 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(R.string.whats_new))
+            Text(text = stringResource(MR.strings.whats_new))
         },
         text = {
             Column {
@@ -67,7 +69,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                         items(changelog.orEmpty()) { changelog ->
                             Column(Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = stringResource(R.string.changelog_version, changelog.version),
+                                    text = stringResource(SYMR.strings.changelog_version, changelog.version),
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.titleSmall,

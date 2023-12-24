@@ -36,12 +36,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.util.isTabletUi
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.math.roundToInt
 
 @Composable
@@ -104,7 +104,7 @@ fun ChapterNavigator(
                 Icon(
                     imageVector = Icons.Outlined.SkipPrevious,
                     contentDescription = stringResource(
-                        if (isRtl) R.string.action_next_chapter else R.string.action_previous_chapter,
+                        if (isRtl) MR.strings.action_next_chapter else MR.strings.action_previous_chapter,
                     ),
                 )
             }
@@ -158,7 +158,7 @@ fun ChapterNavigator(
                 Icon(
                     imageVector = Icons.Outlined.SkipNext,
                     contentDescription = stringResource(
-                        if (isRtl) R.string.action_previous_chapter else R.string.action_next_chapter,
+                        if (isRtl) MR.strings.action_previous_chapter else MR.strings.action_next_chapter,
                     ),
                 )
             }
@@ -206,7 +206,7 @@ fun ChapterNavigatorVert(
         ) {
             Icon(
                 imageVector = Icons.Outlined.SkipPrevious,
-                contentDescription = stringResource(R.string.action_previous_chapter),
+                contentDescription = stringResource(MR.strings.action_previous_chapter),
                 modifier = Modifier.rotate(90f),
             )
         }
@@ -274,7 +274,7 @@ fun ChapterNavigatorVert(
         ) {
             Icon(
                 imageVector = Icons.Outlined.SkipNext,
-                contentDescription = stringResource(R.string.action_next_chapter),
+                contentDescription = stringResource(MR.strings.action_next_chapter),
                 modifier = Modifier.rotate(90f),
             )
         }

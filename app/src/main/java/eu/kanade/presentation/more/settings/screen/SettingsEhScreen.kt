@@ -5,7 +5,6 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,14 +40,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.startActivity
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiUpdateWorker
@@ -59,6 +56,8 @@ import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withUIContext
@@ -69,6 +68,9 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY
 import tachiyomi.domain.manga.interactor.DeleteFavoriteEntries
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -83,8 +85,7 @@ object SettingsEhScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    @StringRes
-    override fun getTitleRes() = R.string.pref_category_eh
+    override fun getTitleRes() = SYMR.strings.pref_category_eh
 
     override fun isEnabled(): Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
 
@@ -136,7 +137,7 @@ object SettingsEhScreen : SearchableSettings {
 
         return listOf(
             Preference.PreferenceGroup(
-                stringResource(R.string.ehentai_prefs_account_settings),
+                stringResource(SYMR.strings.ehentai_prefs_account_settings),
                 preferenceItems = listOf(
                     getLoginPreference(unsortedPreferences, openWarnConfigureDialogController),
                     useHentaiAtHome(exhentaiEnabled, unsortedPreferences),
@@ -153,7 +154,7 @@ object SettingsEhScreen : SearchableSettings {
                 ),
             ),
             Preference.PreferenceGroup(
-                stringResource(R.string.favorites_sync),
+                stringResource(SYMR.strings.favorites_sync),
                 preferenceItems = listOf(
                     readOnlySync(unsortedPreferences),
                     syncFavoriteNotes(),
@@ -162,7 +163,7 @@ object SettingsEhScreen : SearchableSettings {
                 ),
             ),
             Preference.PreferenceGroup(
-                stringResource(R.string.gallery_update_checker),
+                stringResource(SYMR.strings.gallery_update_checker),
                 preferenceItems = listOf(
                     updateCheckerFrequency(unsortedPreferences),
                     autoUpdateRequirements(unsortedPreferences),
@@ -192,9 +193,9 @@ object SettingsEhScreen : SearchableSettings {
         val value by unsortedPreferences.enableExhentai().collectAsState()
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.enableExhentai(),
-            title = stringResource(R.string.enable_exhentai),
+            title = stringResource(SYMR.strings.enable_exhentai),
             subtitle = if (!value) {
-                stringResource(R.string.requires_login)
+                stringResource(SYMR.strings.requires_login)
             } else {
                 null
             },
@@ -217,11 +218,11 @@ object SettingsEhScreen : SearchableSettings {
     ): Preference.PreferenceItem.ListPreference<Int> {
         return Preference.PreferenceItem.ListPreference(
             pref = unsortedPreferences.useHentaiAtHome(),
-            title = stringResource(R.string.use_hentai_at_home),
-            subtitle = stringResource(R.string.use_hentai_at_home_summary),
+            title = stringResource(SYMR.strings.use_hentai_at_home),
+            subtitle = stringResource(SYMR.strings.use_hentai_at_home_summary),
             entries = mapOf(
-                0 to stringResource(R.string.use_hentai_at_home_option_1),
-                1 to stringResource(R.string.use_hentai_at_home_option_2),
+                0 to stringResource(SYMR.strings.use_hentai_at_home_option_1),
+                1 to stringResource(SYMR.strings.use_hentai_at_home_option_2),
             ),
             enabled = exhentaiEnabled,
         )
@@ -235,11 +236,11 @@ object SettingsEhScreen : SearchableSettings {
         val value by unsortedPreferences.useJapaneseTitle().collectAsState()
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.useJapaneseTitle(),
-            title = stringResource(R.string.show_japanese_titles),
+            title = stringResource(SYMR.strings.show_japanese_titles),
             subtitle = if (value) {
-                stringResource(R.string.show_japanese_titles_option_1)
+                stringResource(SYMR.strings.show_japanese_titles_option_1)
             } else {
-                stringResource(R.string.show_japanese_titles_option_2)
+                stringResource(SYMR.strings.show_japanese_titles_option_2)
             },
             enabled = exhentaiEnabled,
         )
@@ -253,11 +254,11 @@ object SettingsEhScreen : SearchableSettings {
         val value by unsortedPreferences.exhUseOriginalImages().collectAsState()
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.exhUseOriginalImages(),
-            title = stringResource(R.string.use_original_images),
+            title = stringResource(SYMR.strings.use_original_images),
             subtitle = if (value) {
-                stringResource(R.string.use_original_images_on)
+                stringResource(SYMR.strings.use_original_images_on)
             } else {
-                stringResource(R.string.use_original_images_off)
+                stringResource(SYMR.strings.use_original_images_off)
             },
             enabled = exhentaiEnabled,
         )
@@ -267,15 +268,15 @@ object SettingsEhScreen : SearchableSettings {
     fun watchedTags(exhentaiEnabled: Boolean): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.watched_tags),
-            subtitle = stringResource(R.string.watched_tags_summary),
+            title = stringResource(SYMR.strings.watched_tags),
+            subtitle = stringResource(SYMR.strings.watched_tags_summary),
             onClick = {
                 startActivity(
                     context,
                     WebViewActivity.newIntent(
                         context,
                         url = "https://exhentai.org/mytags",
-                        title = context.getString(R.string.watched_tags_exh),
+                        title = context.stringResource(SYMR.strings.watched_tags_exh),
                     ),
                     null,
                 )
@@ -304,12 +305,12 @@ object SettingsEhScreen : SearchableSettings {
                     onClick = { onValueChange(value.toIntOrNull() ?: return@TextButton) },
                     enabled = isValid,
                 ) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
             title = {
@@ -357,10 +358,10 @@ object SettingsEhScreen : SearchableSettings {
         if (dialogOpen) {
             TagThresholdDialog(
                 onDismissRequest = { dialogOpen = false },
-                title = stringResource(R.string.tag_filtering_threshold),
+                title = stringResource(SYMR.strings.tag_filtering_threshold),
                 initialValue = value,
                 valueRange = -9999..0,
-                outsideRangeError = stringResource(R.string.tag_filtering_threshhold_error),
+                outsideRangeError = stringResource(SYMR.strings.tag_filtering_threshhold_error),
                 onValueChange = {
                     dialogOpen = false
                     unsortedPreferences.ehTagFilterValue().set(it)
@@ -368,8 +369,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.tag_filtering_threshold),
-            subtitle = stringResource(R.string.tag_filtering_threshhold_summary, value),
+            title = stringResource(SYMR.strings.tag_filtering_threshold),
+            subtitle = stringResource(SYMR.strings.tag_filtering_threshhold_summary, value),
             onClick = {
                 dialogOpen = true
             },
@@ -387,10 +388,10 @@ object SettingsEhScreen : SearchableSettings {
         if (dialogOpen) {
             TagThresholdDialog(
                 onDismissRequest = { dialogOpen = false },
-                title = stringResource(R.string.tag_watching_threshhold),
+                title = stringResource(SYMR.strings.tag_watching_threshhold),
                 initialValue = value,
                 valueRange = 0..9999,
-                outsideRangeError = stringResource(R.string.tag_watching_threshhold_error),
+                outsideRangeError = stringResource(SYMR.strings.tag_watching_threshhold_error),
                 onValueChange = {
                     dialogOpen = false
                     unsortedPreferences.ehTagWatchingValue().set(it)
@@ -398,8 +399,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.tag_watching_threshhold),
-            subtitle = stringResource(R.string.tag_watching_threshhold_summary, value),
+            title = stringResource(SYMR.strings.tag_watching_threshhold),
+            subtitle = stringResource(SYMR.strings.tag_watching_threshhold_summary, value),
             onClick = {
                 dialogOpen = true
             },
@@ -549,14 +550,14 @@ object SettingsEhScreen : SearchableSettings {
         val state = remember(initialValue) { LanguageDialogState(initialValue) }
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(stringResource(R.string.language_filtering)) },
+            title = { Text(stringResource(SYMR.strings.language_filtering)) },
             text = {
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    Text(stringResource(R.string.language_filtering_summary))
+                    Text(stringResource(SYMR.strings.language_filtering_summary))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -589,12 +590,12 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onValueChange(state.toPreference()) }) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )
@@ -618,8 +619,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.language_filtering),
-            subtitle = stringResource(R.string.language_filtering_summary),
+            title = stringResource(SYMR.strings.language_filtering),
+            subtitle = stringResource(SYMR.strings.language_filtering_summary),
             onClick = {
                 dialogOpen = true
             },
@@ -684,14 +685,14 @@ object SettingsEhScreen : SearchableSettings {
         val state = remember(initialValue) { FrontPageCategoriesDialogState(initialValue) }
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(stringResource(R.string.frong_page_categories)) },
+            title = { Text(stringResource(SYMR.strings.frong_page_categories)) },
             text = {
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    Text(stringResource(R.string.fromt_page_categories_summary))
+                    Text(stringResource(SYMR.strings.fromt_page_categories_summary))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -755,12 +756,12 @@ object SettingsEhScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onValueChange(state.toPreference()) }) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )
@@ -784,8 +785,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.frong_page_categories),
-            subtitle = stringResource(R.string.fromt_page_categories_summary),
+            title = stringResource(SYMR.strings.frong_page_categories),
+            subtitle = stringResource(SYMR.strings.fromt_page_categories_summary),
             onClick = {
                 dialogOpen = true
             },
@@ -800,8 +801,8 @@ object SettingsEhScreen : SearchableSettings {
     ): Preference.PreferenceItem.SwitchPreference {
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.exhWatchedListDefaultState(),
-            title = stringResource(R.string.watched_list_default),
-            subtitle = stringResource(R.string.watched_list_state_summary),
+            title = stringResource(SYMR.strings.watched_list_default),
+            subtitle = stringResource(SYMR.strings.watched_list_state_summary),
             enabled = exhentaiEnabled,
         )
     }
@@ -813,15 +814,15 @@ object SettingsEhScreen : SearchableSettings {
     ): Preference.PreferenceItem.ListPreference<String> {
         return Preference.PreferenceItem.ListPreference(
             pref = unsortedPreferences.imageQuality(),
-            title = stringResource(R.string.eh_image_quality_summary),
-            subtitle = stringResource(R.string.eh_image_quality),
+            title = stringResource(SYMR.strings.eh_image_quality_summary),
+            subtitle = stringResource(SYMR.strings.eh_image_quality),
             entries = mapOf(
-                "auto" to stringResource(R.string.eh_image_quality_auto),
-                "ovrs_2400" to stringResource(R.string.eh_image_quality_2400),
-                "ovrs_1600" to stringResource(R.string.eh_image_quality_1600),
-                "high" to stringResource(R.string.eh_image_quality_1280),
-                "med" to stringResource(R.string.eh_image_quality_980),
-                "low" to stringResource(R.string.eh_image_quality_780),
+                "auto" to stringResource(SYMR.strings.eh_image_quality_auto),
+                "ovrs_2400" to stringResource(SYMR.strings.eh_image_quality_2400),
+                "ovrs_1600" to stringResource(SYMR.strings.eh_image_quality_1600),
+                "high" to stringResource(SYMR.strings.eh_image_quality_1280),
+                "med" to stringResource(SYMR.strings.eh_image_quality_980),
+                "low" to stringResource(SYMR.strings.eh_image_quality_780),
             ),
             enabled = exhentaiEnabled,
         )
@@ -831,8 +832,8 @@ object SettingsEhScreen : SearchableSettings {
     fun enhancedEhentaiView(unsortedPreferences: UnsortedPreferences): Preference.PreferenceItem.SwitchPreference {
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.enhancedEHentaiView(),
-            title = stringResource(R.string.pref_enhanced_e_hentai_view),
-            subtitle = stringResource(R.string.pref_enhanced_e_hentai_view_summary),
+            title = stringResource(SYMR.strings.pref_enhanced_e_hentai_view),
+            subtitle = stringResource(SYMR.strings.pref_enhanced_e_hentai_view_summary),
         )
     }
 
@@ -840,8 +841,8 @@ object SettingsEhScreen : SearchableSettings {
     fun readOnlySync(unsortedPreferences: UnsortedPreferences): Preference.PreferenceItem.SwitchPreference {
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.exhReadOnlySync(),
-            title = stringResource(R.string.disable_favorites_uploading),
-            subtitle = stringResource(R.string.disable_favorites_uploading_summary),
+            title = stringResource(SYMR.strings.disable_favorites_uploading),
+            subtitle = stringResource(SYMR.strings.disable_favorites_uploading_summary),
         )
     }
 
@@ -855,8 +856,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.show_favorite_sync_notes),
-            subtitle = stringResource(R.string.show_favorite_sync_notes_summary),
+            title = stringResource(SYMR.strings.show_favorite_sync_notes),
+            subtitle = stringResource(SYMR.strings.show_favorite_sync_notes_summary),
             onClick = { dialogOpen = true },
         )
     }
@@ -865,8 +866,8 @@ object SettingsEhScreen : SearchableSettings {
     fun lenientSync(unsortedPreferences: UnsortedPreferences): Preference.PreferenceItem.SwitchPreference {
         return Preference.PreferenceItem.SwitchPreference(
             pref = unsortedPreferences.exhLenientSync(),
-            title = stringResource(R.string.ignore_sync_errors),
-            subtitle = stringResource(R.string.ignore_sync_errors_summary),
+            title = stringResource(SYMR.strings.ignore_sync_errors),
+            subtitle = stringResource(SYMR.strings.ignore_sync_errors_summary),
         )
     }
 
@@ -878,19 +879,19 @@ object SettingsEhScreen : SearchableSettings {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             title = {
-                Text(text = stringResource(R.string.favorites_sync_reset))
+                Text(text = stringResource(SYMR.strings.favorites_sync_reset))
             },
             text = {
-                Text(text = stringResource(R.string.favorites_sync_reset_message))
+                Text(text = stringResource(SYMR.strings.favorites_sync_reset_message))
             },
             confirmButton = {
                 TextButton(onClick = onStartReset) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
             properties = DialogProperties(
@@ -914,7 +915,7 @@ object SettingsEhScreen : SearchableSettings {
                         try {
                             deleteFavoriteEntries.await()
                             withUIContext {
-                                context.toast(context.getString(R.string.sync_state_reset), Toast.LENGTH_LONG)
+                                context.toast(context.stringResource(SYMR.strings.sync_state_reset), Toast.LENGTH_LONG)
                             }
                         } catch (e: Exception) {
                             this@SettingsEhScreen.logcat(LogPriority.ERROR, e)
@@ -924,8 +925,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.force_sync_state_reset),
-            subtitle = stringResource(R.string.force_sync_state_reset_summary),
+            title = stringResource(SYMR.strings.force_sync_state_reset),
+            subtitle = stringResource(SYMR.strings.force_sync_state_reset_summary),
             onClick = {
                 dialogOpen = true
             },
@@ -940,26 +941,26 @@ object SettingsEhScreen : SearchableSettings {
         val context = LocalContext.current
         return Preference.PreferenceItem.ListPreference(
             pref = unsortedPreferences.exhAutoUpdateFrequency(),
-            title = stringResource(R.string.time_between_batches),
+            title = stringResource(SYMR.strings.time_between_batches),
             subtitle = if (value == 0) {
-                stringResource(R.string.time_between_batches_summary_1, stringResource(R.string.app_name))
+                stringResource(SYMR.strings.time_between_batches_summary_1, stringResource(MR.strings.app_name))
             } else {
                 stringResource(
-                    R.string.time_between_batches_summary_2,
-                    stringResource(R.string.app_name),
+                    SYMR.strings.time_between_batches_summary_2,
+                    stringResource(MR.strings.app_name),
                     value,
                     EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION,
                 )
             },
             entries = mapOf(
-                0 to stringResource(R.string.time_between_batches_never),
-                1 to stringResource(R.string.time_between_batches_1_hour),
-                2 to stringResource(R.string.time_between_batches_2_hours),
-                3 to stringResource(R.string.time_between_batches_3_hours),
-                6 to stringResource(R.string.time_between_batches_6_hours),
-                12 to stringResource(R.string.time_between_batches_12_hours),
-                24 to stringResource(R.string.time_between_batches_24_hours),
-                48 to stringResource(R.string.time_between_batches_48_hours),
+                0 to stringResource(SYMR.strings.time_between_batches_never),
+                1 to stringResource(SYMR.strings.time_between_batches_1_hour),
+                2 to stringResource(SYMR.strings.time_between_batches_2_hours),
+                3 to stringResource(SYMR.strings.time_between_batches_3_hours),
+                6 to stringResource(SYMR.strings.time_between_batches_6_hours),
+                12 to stringResource(SYMR.strings.time_between_batches_12_hours),
+                24 to stringResource(SYMR.strings.time_between_batches_24_hours),
+                48 to stringResource(SYMR.strings.time_between_batches_48_hours),
             ),
             onValueChanged = { interval ->
                 EHentaiUpdateWorker.scheduleBackground(context, prefInterval = interval)
@@ -976,27 +977,27 @@ object SettingsEhScreen : SearchableSettings {
         val context = LocalContext.current
         return Preference.PreferenceItem.MultiSelectListPreference(
             pref = unsortedPreferences.exhAutoUpdateRequirements(),
-            title = stringResource(R.string.auto_update_restrictions),
+            title = stringResource(SYMR.strings.auto_update_restrictions),
             subtitle = remember(value) {
-                context.getString(
-                    R.string.restrictions,
+                context.stringResource(
+                    MR.strings.restrictions,
                     value.sorted()
                         .map {
                             when (it) {
-                                DEVICE_ONLY_ON_WIFI -> context.getString(R.string.connected_to_wifi)
-                                DEVICE_CHARGING -> context.getString(R.string.charging)
+                                DEVICE_ONLY_ON_WIFI -> context.stringResource(MR.strings.connected_to_wifi)
+                                DEVICE_CHARGING -> context.stringResource(MR.strings.charging)
                                 else -> it
                             }
                         }
                         .ifEmpty {
-                            listOf(context.getString(R.string.none))
+                            listOf(context.stringResource(MR.strings.none))
                         }
                         .joinToString(),
                 )
             },
             entries = mapOf(
-                DEVICE_ONLY_ON_WIFI to stringResource(R.string.connected_to_wifi),
-                DEVICE_CHARGING to stringResource(R.string.charging),
+                DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
+                DEVICE_CHARGING to stringResource(MR.strings.charging),
             ),
             onValueChanged = { restrictions ->
                 EHentaiUpdateWorker.scheduleBackground(context, prefRestrictions = restrictions)
@@ -1019,7 +1020,7 @@ object SettingsEhScreen : SearchableSettings {
                 shape = MaterialTheme.shapes.medium,
             ) {
                 Text(
-                    text = stringResource(R.string.gallery_updater_statistics_collection),
+                    text = stringResource(SYMR.strings.gallery_updater_statistics_collection),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(40.dp),
                 )
@@ -1035,14 +1036,14 @@ object SettingsEhScreen : SearchableSettings {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             title = {
-                Text(text = stringResource(R.string.gallery_updater_statistics))
+                Text(text = stringResource(SYMR.strings.gallery_updater_statistics))
             },
             text = {
                 Text(text = updateInfo)
             },
             confirmButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
         )
@@ -1109,20 +1110,20 @@ object SettingsEhScreen : SearchableSettings {
     }
 
     private fun getRelativeTimeString(relativeTime: RelativeTime, context: Context): String {
-        return relativeTime.years?.let { context.resources.getQuantityString(R.plurals.humanize_year, it.toInt(), it) }
+        return relativeTime.years?.let { context.pluralStringResource(SYMR.plurals.humanize_year, it.toInt(), it) }
             ?: relativeTime.months?.let {
-                context.resources.getQuantityString(R.plurals.humanize_month, it.toInt(), it)
+                context.pluralStringResource(SYMR.plurals.humanize_month, it.toInt(), it)
             }
-            ?: relativeTime.weeks?.let { context.resources.getQuantityString(R.plurals.humanize_week, it.toInt(), it) }
-            ?: relativeTime.days?.let { context.resources.getQuantityString(R.plurals.humanize_day, it.toInt(), it) }
-            ?: relativeTime.hours?.let { context.resources.getQuantityString(R.plurals.humanize_hour, it.toInt(), it) }
+            ?: relativeTime.weeks?.let { context.pluralStringResource(SYMR.plurals.humanize_week, it.toInt(), it) }
+            ?: relativeTime.days?.let { context.pluralStringResource(SYMR.plurals.humanize_day, it.toInt(), it) }
+            ?: relativeTime.hours?.let { context.pluralStringResource(SYMR.plurals.humanize_hour, it.toInt(), it) }
             ?: relativeTime.minutes?.let {
-                context.resources.getQuantityString(R.plurals.humanize_minute, it.toInt(), it)
+                context.pluralStringResource(SYMR.plurals.humanize_minute, it.toInt(), it)
             }
             ?: relativeTime.seconds?.let {
-                context.resources.getQuantityString(R.plurals.humanize_second, it.toInt(), it)
+                context.pluralStringResource(SYMR.plurals.humanize_second, it.toInt(), it)
             }
-            ?: context.getString(R.string.humanize_fallback)
+            ?: context.stringResource(SYMR.strings.humanize_fallback)
     }
 
     data class RelativeTime(
@@ -1154,14 +1155,14 @@ object SettingsEhScreen : SearchableSettings {
                             }
 
                         val statsText = if (stats != null) {
-                            context.getString(
-                                R.string.gallery_updater_stats_text,
+                            context.stringResource(
+                                SYMR.strings.gallery_updater_stats_text,
                                 getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context),
                                 stats.updateCount,
                                 stats.possibleUpdates,
                             )
                         } else {
-                            context.getString(R.string.gallery_updater_not_ran_yet)
+                            context.stringResource(SYMR.strings.gallery_updater_not_ran_yet)
                         }
 
                         val allMeta = getExhFavoriteMangaWithMetadata.await()
@@ -1177,8 +1178,8 @@ object SettingsEhScreen : SearchableSettings {
                             }.count()
                         }
 
-                        statsText + "\n\n" + context.getString(
-                            R.string.gallery_updater_stats_time,
+                        statsText + "\n\n" + context.stringResource(
+                            SYMR.strings.gallery_updater_stats_time,
                             metaInRelativeDuration(1.hours),
                             metaInRelativeDuration(6.hours),
                             metaInRelativeDuration(12.hours),
@@ -1204,7 +1205,7 @@ object SettingsEhScreen : SearchableSettings {
             }
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.show_updater_statistics),
+            title = stringResource(SYMR.strings.show_updater_statistics),
             onClick = {
                 dialogOpen = true
             },

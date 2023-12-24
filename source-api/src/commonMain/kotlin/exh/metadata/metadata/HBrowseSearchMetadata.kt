@@ -1,10 +1,12 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
 @Serializable
 class HBrowseSearchMetadata : RaisedSearchMetadata() {
@@ -50,11 +52,11 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(hbId) { getString(R.string.id) },
-                getItem(hbUrl) { getString(R.string.url) },
-                getItem(thumbnail) { getString(R.string.thumbnail_url) },
-                getItem(title) { getString(R.string.title) },
-                getItem(length) { getString(R.string.page_count) },
+                getItem(hbId) { stringResource(SYMR.strings.id) },
+                getItem(hbUrl) { stringResource(SYMR.strings.url) },
+                getItem(thumbnail) { stringResource(SYMR.strings.thumbnail_url) },
+                getItem(title) { stringResource(MR.strings.title) },
+                getItem(length) { stringResource(SYMR.strings.page_count) },
             )
         }
     }

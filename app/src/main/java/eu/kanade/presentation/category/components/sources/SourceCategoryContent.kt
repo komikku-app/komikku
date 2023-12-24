@@ -8,11 +8,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.presentation.core.components.material.padding
 
 @Composable
 fun SourceCategoryContent(
-    categories: List<String>,
+    categories: ImmutableList<String>,
     lazyListState: LazyListState,
     paddingValues: PaddingValues,
     onClickRename: (String) -> Unit,

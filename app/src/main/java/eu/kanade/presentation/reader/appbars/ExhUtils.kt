@@ -32,18 +32,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.kanade.tachiyomi.R
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun ExhUtils(
-    modifier: Modifier = Modifier,
     isVisible: Boolean,
     onSetExhUtilsVisibility: (Boolean) -> Unit,
     backgroundColor: Color,
@@ -57,6 +56,7 @@ fun ExhUtils(
     onClickRetryAllHelp: () -> Unit,
     onClickBoostPage: () -> Unit,
     onClickBoostPageHelp: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier
@@ -80,7 +80,7 @@ fun ExhUtils(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = stringResource(R.string.eh_autoscroll),
+                            text = stringResource(SYMR.strings.eh_autoscroll),
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             fontFamily = FontFamily.SansSerif,
@@ -123,7 +123,7 @@ fun ExhUtils(
                             )
                             AnimatedVisibility(!isAutoScrollEnabled) {
                                 Text(
-                                    text = stringResource(R.string.eh_autoscroll_freq_invalid),
+                                    text = stringResource(SYMR.strings.eh_autoscroll_freq_invalid),
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.labelSmall,
                                 )
@@ -156,7 +156,7 @@ fun ExhUtils(
                             modifier = Modifier.weight(3f),
                         ) {
                             Text(
-                                text = stringResource(R.string.eh_retry_all),
+                                text = stringResource(SYMR.strings.eh_retry_all),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
                                 fontFamily = FontFamily.SansSerif,
@@ -184,7 +184,7 @@ fun ExhUtils(
                             modifier = Modifier.weight(3f),
                         ) {
                             Text(
-                                text = stringResource(R.string.eh_boost_page),
+                                text = stringResource(SYMR.strings.eh_boost_page),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
                                 fontFamily = FontFamily.SansSerif,

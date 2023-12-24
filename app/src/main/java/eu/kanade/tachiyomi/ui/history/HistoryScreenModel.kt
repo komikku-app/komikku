@@ -6,6 +6,8 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.insertSeparators
 import eu.kanade.presentation.history.HistoryUiModel
 import eu.kanade.tachiyomi.util.lang.toDateKey
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +52,7 @@ class HistoryScreenModel(
                             logcat(LogPriority.ERROR, error)
                             _events.send(Event.InternalError)
                         }
-                        .map { it.toHistoryUiModels() }
+                        .map { it.toHistoryUiModels().toImmutableList() }
                         .flowOn(Dispatchers.IO)
                 }
                 .collect { newList -> mutableState.update { it.copy(list = newList) } }
@@ -116,7 +118,7 @@ class HistoryScreenModel(
     @Immutable
     data class State(
         val searchQuery: String? = null,
-        val list: List<HistoryUiModel>? = null,
+        val list: ImmutableList<HistoryUiModel>? = null,
         val dialog: Dialog? = null,
     )
 

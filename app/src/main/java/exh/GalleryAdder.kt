@@ -6,17 +6,18 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.log.xLogStack
 import exh.source.getMainSource
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -61,7 +62,7 @@ class GalleryAdder(
         throttleFunc: suspend () -> Unit = {},
         retry: Int = 1,
     ): GalleryAddEvent {
-        logger.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
+        logger.d(context.stringResource(SYMR.strings.gallery_adder_importing_gallery, url, fav.toString(), forceSource?.toString().orEmpty()))
         try {
             val uri = url.toUri()
 
@@ -74,7 +75,7 @@ class GalleryAdder(
                         return GalleryAddEvent.Fail.UnknownSource(url, context)
                     }
                 } catch (e: Exception) {
-                    logger.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
+                    logger.e(context.stringResource(SYMR.strings.gallery_adder_source_uri_must_match), e)
                     return GalleryAddEvent.Fail.UnknownType(url, context)
                 }
             } else {
@@ -92,7 +93,7 @@ class GalleryAdder(
             val realChapterUrl = try {
                 source.mapUrlToChapterUrl(uri)
             } catch (e: Exception) {
-                logger.e(context.getString(R.string.gallery_adder_uri_map_to_chapter_error), e)
+                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_chapter_error), e)
                 null
             }
 
@@ -100,7 +101,7 @@ class GalleryAdder(
                 try {
                     source.cleanChapterUrl(realChapterUrl)
                 } catch (e: Exception) {
-                    logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
+                    logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
                     null
                 }
             } else {
@@ -117,7 +118,7 @@ class GalleryAdder(
             val realMangaUrl = try {
                 chapterMangaUrl ?: source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
-                logger.e(context.getString(R.string.gallery_adder_uri_map_to_gallery_error), e)
+                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_gallery_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -125,7 +126,7 @@ class GalleryAdder(
             val cleanedMangaUrl = try {
                 source.cleanMangaUrl(realMangaUrl)
             } catch (e: Exception) {
-                logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
+                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -162,8 +163,8 @@ class GalleryAdder(
                     syncChaptersWithSource.await(chapterList, manga, source)
                 }
             } catch (e: Exception) {
-                logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
-                return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))
+                logger.w(context.stringResource(SYMR.strings.gallery_adder_chapter_fetch_error, manga.title), e)
+                return GalleryAddEvent.Fail.Error(url, context.stringResource(SYMR.strings.gallery_adder_chapter_fetch_error, url))
             }
 
             return if (cleanedChapterUrl != null) {
@@ -171,13 +172,13 @@ class GalleryAdder(
                 if (chapter != null) {
                     GalleryAddEvent.Success(url, manga, context, chapter)
                 } else {
-                    GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_could_not_identify_chapter, url))
+                    GalleryAddEvent.Fail.Error(url, context.stringResource(SYMR.strings.gallery_adder_could_not_identify_chapter, url))
                 }
             } else {
                 GalleryAddEvent.Success(url, manga, context)
             }
         } catch (e: Exception) {
-            logger.w(context.getString(R.string.gallery_adder_could_not_add_gallery, url), e)
+            logger.w(context.stringResource(SYMR.strings.gallery_adder_could_not_add_gallery, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
                 return GalleryAddEvent.Fail.NotFound(url, context)
@@ -226,12 +227,12 @@ sealed class GalleryAddEvent {
         val chapter: Chapter? = null,
     ) : GalleryAddEvent() {
         override val galleryTitle = manga.title
-        override val logMessage = context.getString(R.string.batch_add_success_log_message, galleryTitle)
+        override val logMessage = context.stringResource(SYMR.strings.batch_add_success_log_message, galleryTitle)
     }
 
     sealed class Fail : GalleryAddEvent() {
         class UnknownType(override val galleryUrl: String, val context: Context) : Fail() {
-            override val logMessage = context.getString(R.string.batch_add_unknown_type_log_message, galleryUrl)
+            override val logMessage = context.stringResource(SYMR.strings.batch_add_unknown_type_log_message, galleryUrl)
         }
 
         open class Error(
@@ -240,10 +241,10 @@ sealed class GalleryAddEvent {
         ) : Fail()
 
         class NotFound(galleryUrl: String, context: Context) :
-            Error(galleryUrl, context.getString(R.string.batch_add_not_exist_log_message, galleryUrl))
+            Error(galleryUrl, context.stringResource(SYMR.strings.batch_add_not_exist_log_message, galleryUrl))
 
         class UnknownSource(override val galleryUrl: String, val context: Context) : Fail() {
-            override val logMessage = context.getString(R.string.batch_add_unknown_source_log_message, galleryUrl)
+            override val logMessage = context.stringResource(SYMR.strings.batch_add_unknown_source_log_message, galleryUrl)
         }
     }
 }

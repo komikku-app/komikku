@@ -15,11 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationActionIcon(
@@ -38,14 +39,14 @@ fun MigrationActionIcon(
             IconButton(onClick = skipManga) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
-                    contentDescription = stringResource(R.string.action_stop),
+                    contentDescription = stringResource(SYMR.strings.action_stop),
                 )
             }
         } else if (result is MigratingManga.SearchResult.Result || result is MigratingManga.SearchResult.NotFound) {
             IconButton(onClick = { moreExpanded = !moreExpanded }) {
                 Icon(
                     imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = stringResource(R.string.abc_action_menu_overflow_description),
+                    contentDescription = stringResource(MR.strings.action_menu_overflow_description),
                 )
             }
             DropdownMenu(
@@ -54,14 +55,14 @@ fun MigrationActionIcon(
                 offset = DpOffset(8.dp, (-56).dp),
             ) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.action_search_manually)) },
+                    text = { Text(stringResource(SYMR.strings.action_search_manually)) },
                     onClick = {
                         searchManually()
                         closeMenu()
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.action_skip_entry)) },
+                    text = { Text(stringResource(SYMR.strings.action_skip_entry)) },
                     onClick = {
                         skipManga()
                         closeMenu()
@@ -69,14 +70,14 @@ fun MigrationActionIcon(
                 )
                 if (result is MigratingManga.SearchResult.Result) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_migrate_now)) },
+                        text = { Text(stringResource(SYMR.strings.action_migrate_now)) },
                         onClick = {
                             migrateNow()
                             closeMenu()
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_copy_now)) },
+                        text = { Text(stringResource(SYMR.strings.action_copy_now)) },
                         onClick = {
                             copyNow()
                             closeMenu()

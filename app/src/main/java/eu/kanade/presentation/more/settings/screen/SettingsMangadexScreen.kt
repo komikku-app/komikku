@@ -1,6 +1,5 @@
 package eu.kanade.presentation.more.settings.screen
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +26,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
@@ -46,7 +44,10 @@ import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
@@ -56,8 +57,7 @@ object SettingsMangadexScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    @StringRes
-    override fun getTitleRes() = R.string.pref_category_mangadex
+    override fun getTitleRes() = SYMR.strings.pref_category_mangadex
 
     override fun isEnabled(): Boolean = MdUtil.getEnabledMangaDexs(Injekt.get()).isNotEmpty()
 
@@ -84,16 +84,16 @@ object SettingsMangadexScreen : SearchableSettings {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             title = {
-                Text(text = stringResource(R.string.logout))
+                Text(text = stringResource(MR.strings.logout))
             },
             confirmButton = {
                 TextButton(onClick = onLogoutRequest) {
-                    Text(text = stringResource(R.string.logout))
+                    Text(text = stringResource(MR.strings.logout))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )
@@ -117,17 +117,17 @@ object SettingsMangadexScreen : SearchableSettings {
                         try {
                             if (mdex.logout()) {
                                 withUIContext {
-                                    context.toast(R.string.logout_success)
+                                    context.toast(MR.strings.logout_success)
                                 }
                             } else {
                                 withUIContext {
-                                    context.toast(R.string.unknown_error)
+                                    context.toast(MR.strings.unknown_error)
                                 }
                             }
                         } catch (e: Exception) {
                             logcat(LogPriority.ERROR, e) { "Logout error" }
                             withUIContext {
-                                context.toast(R.string.unknown_error)
+                                context.toast(MR.strings.unknown_error)
                             }
                         }
                     }
@@ -178,8 +178,8 @@ object SettingsMangadexScreen : SearchableSettings {
     ): Preference.PreferenceItem.ListPreference<String> {
         return Preference.PreferenceItem.ListPreference(
             pref = unsortedPreferences.preferredMangaDexId(),
-            title = stringResource(R.string.mangadex_preffered_source),
-            subtitle = stringResource(R.string.mangadex_preffered_source_summary),
+            title = stringResource(SYMR.strings.mangadex_preffered_source),
+            subtitle = stringResource(SYMR.strings.mangadex_preffered_source_summary),
             entries = MdUtil.getEnabledMangaDexs(sourcePreferences)
                 .associate { it.id.toString() to it.toString() },
         )
@@ -203,7 +203,7 @@ object SettingsMangadexScreen : SearchableSettings {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             title = {
-                Text(text = stringResource(R.string.mangadex_sync_follows_to_library))
+                Text(text = stringResource(SYMR.strings.mangadex_sync_follows_to_library))
             },
             text = {
                 Column(
@@ -236,12 +236,12 @@ object SettingsMangadexScreen : SearchableSettings {
             },
             confirmButton = {
                 TextButton(onClick = { onSelectionConfirmed(items.filterIndexed { index, _ -> selection[index] }) }) {
-                    Text(text = stringResource(R.string.action_ok))
+                    Text(text = stringResource(MR.strings.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
             },
         )
@@ -267,8 +267,8 @@ object SettingsMangadexScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.mangadex_sync_follows_to_library),
-            subtitle = stringResource(R.string.mangadex_sync_follows_to_library_summary),
+            title = stringResource(SYMR.strings.mangadex_sync_follows_to_library),
+            subtitle = stringResource(SYMR.strings.mangadex_sync_follows_to_library_summary),
             onClick = { dialogOpen = true },
         )
     }
@@ -277,8 +277,8 @@ object SettingsMangadexScreen : SearchableSettings {
     fun syncLibraryToMangaDex(): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(R.string.mangadex_push_favorites_to_mangadex),
-            subtitle = stringResource(R.string.mangadex_push_favorites_to_mangadex_summary),
+            title = stringResource(SYMR.strings.mangadex_push_favorites_to_mangadex),
+            subtitle = stringResource(SYMR.strings.mangadex_push_favorites_to_mangadex_summary),
             onClick = {
                 LibraryUpdateJob.startNow(
                     context,

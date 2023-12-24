@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.track
 
-import androidx.annotation.StringRes
-import eu.kanade.tachiyomi.R
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
@@ -10,15 +9,17 @@ import eu.kanade.tachiyomi.data.track.mangaupdates.MangaUpdates
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import exh.md.utils.FollowStatus
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 
-enum class TrackStatus(val int: Int, @StringRes val res: Int) {
-    READING(1, R.string.reading),
-    REPEATING(2, R.string.repeating),
-    PLAN_TO_READ(3, R.string.plan_to_read),
-    PAUSED(4, R.string.on_hold),
-    COMPLETED(5, R.string.completed),
-    DROPPED(6, R.string.dropped),
-    OTHER(7, R.string.not_tracked),
+enum class TrackStatus(val int: Int, val res: StringResource) {
+    READING(1, MR.strings.reading),
+    REPEATING(2, MR.strings.repeating),
+    PLAN_TO_READ(3, MR.strings.plan_to_read),
+    PAUSED(4, MR.strings.on_hold),
+    COMPLETED(5, MR.strings.completed),
+    DROPPED(6, MR.strings.dropped),
+    OTHER(7, SYMR.strings.not_tracked),
     ;
 
     companion object {

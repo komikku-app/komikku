@@ -1,11 +1,13 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import java.util.Date
 
 @Serializable
@@ -89,19 +91,19 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(nhId) { getString(R.string.id) },
+                getItem(nhId) { stringResource(SYMR.strings.id) },
                 getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }) {
-                    getString(R.string.date_posted)
+                    stringResource(SYMR.strings.date_posted)
                 },
-                getItem(favoritesCount) { getString(R.string.total_favorites) },
-                getItem(mediaId) { getString(R.string.media_id) },
-                getItem(japaneseTitle) { getString(R.string.japanese_title) },
-                getItem(englishTitle) { getString(R.string.english_title) },
-                getItem(shortTitle) { getString(R.string.short_title) },
-                getItem(coverImageType) { getString(R.string.cover_image_file_type) },
-                getItem(pageImageTypes.size) { getString(R.string.page_count) },
-                getItem(thumbnailImageType) { getString(R.string.thumbnail_image_file_type) },
-                getItem(scanlator) { getString(R.string.scanlator) },
+                getItem(favoritesCount) { stringResource(SYMR.strings.total_favorites) },
+                getItem(mediaId) { stringResource(SYMR.strings.media_id) },
+                getItem(japaneseTitle) { stringResource(SYMR.strings.japanese_title) },
+                getItem(englishTitle) { stringResource(SYMR.strings.english_title) },
+                getItem(shortTitle) { stringResource(SYMR.strings.short_title) },
+                getItem(coverImageType) { stringResource(SYMR.strings.cover_image_file_type) },
+                getItem(pageImageTypes.size) { stringResource(SYMR.strings.page_count) },
+                getItem(thumbnailImageType) { stringResource(SYMR.strings.thumbnail_image_file_type) },
+                getItem(scanlator) { stringResource(MR.strings.scanlator) },
             )
         }
     }

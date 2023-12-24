@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
@@ -41,11 +42,11 @@ import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 @Composable
 fun AutoCompleteItem(
     name: String,
-    state: List<String>,
+    state: ImmutableList<String>,
     hint: String,
-    values: List<String>,
-    skipAutoFillTags: List<String>,
-    validPrefixes: List<String>,
+    values: ImmutableList<String>,
+    skipAutoFillTags: ImmutableList<String>,
+    validPrefixes: ImmutableList<String>,
     onChange: (List<String>) -> Unit,
 ) {
     Column(
@@ -114,7 +115,7 @@ fun AutoCompleteItem(
 fun AutoCompleteTextField(
     label: String? = null,
     placeholder: String? = null,
-    values: List<String>,
+    values: ImmutableList<String>,
     onValueFilter: ((String) -> (Pair<(String) -> Boolean, String?>)),
     onSubmit: (String) -> Boolean,
 ) {

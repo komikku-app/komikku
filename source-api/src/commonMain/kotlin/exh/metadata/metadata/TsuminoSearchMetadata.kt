@@ -2,12 +2,14 @@ package exh.metadata.metadata
 
 import android.content.Context
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
+import tachiyomi.core.i18n.stringResource
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -68,22 +70,22 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                getItem(tmId) { getString(R.string.id) },
-                getItem(title) { getString(R.string.title) },
-                getItem(uploader) { getString(R.string.uploader) },
+                getItem(tmId) { stringResource(SYMR.strings.id) },
+                getItem(title) { stringResource(MR.strings.title) },
+                getItem(uploader) { stringResource(SYMR.strings.uploader) },
                 getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
-                    getString(R.string.date_posted)
+                    stringResource(SYMR.strings.date_posted)
                 },
-                getItem(length) { getString(R.string.page_count) },
-                getItem(ratingString) { getString(R.string.rating_string) },
-                getItem(averageRating) { getString(R.string.average_rating) },
-                getItem(userRatings) { getString(R.string.total_ratings) },
-                getItem(favorites) { getString(R.string.total_favorites) },
-                getItem(category) { getString(R.string.genre) },
-                getItem(collection) { getString(R.string.collection) },
-                getItem(group) { getString(R.string.group) },
-                getItem(parody.nullIfEmpty(), { it.joinToString() }) { getString(R.string.parodies) },
-                getItem(character.nullIfEmpty(), { it.joinToString() }) { getString(R.string.characters) },
+                getItem(length) { stringResource(SYMR.strings.page_count) },
+                getItem(ratingString) { stringResource(SYMR.strings.rating_string) },
+                getItem(averageRating) { stringResource(SYMR.strings.average_rating) },
+                getItem(userRatings) { stringResource(SYMR.strings.total_ratings) },
+                getItem(favorites) { stringResource(SYMR.strings.total_favorites) },
+                getItem(category) { stringResource(SYMR.strings.genre) },
+                getItem(collection) { stringResource(SYMR.strings.collection) },
+                getItem(group) { stringResource(SYMR.strings.group) },
+                getItem(parody.nullIfEmpty(), { it.joinToString() }) { stringResource(SYMR.strings.parodies) },
+                getItem(character.nullIfEmpty(), { it.joinToString() }) { stringResource(SYMR.strings.characters) },
             )
         }
     }

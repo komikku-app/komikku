@@ -180,7 +180,7 @@ private fun MigrateSourceItem(
             // SY -->
             TextButton(onClick = onClickAll) {
                 Text(
-                    text = stringResource(id = R.string.all),
+                    text = stringResource(MR.strings.all),
                     style = LocalTextStyle.current.copy(
                         color = MaterialTheme.colorScheme.primary,
                     ),

@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
@@ -28,6 +27,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationItemResult(
@@ -66,7 +67,7 @@ fun MigrationItemResult(
                     contentScale = ContentScale.Crop,
                 )
                 Text(
-                    text = stringResource(R.string.no_alternatives_found),
+                    text = stringResource(SYMR.strings.no_alternatives_found),
                     modifier = Modifier.padding(top = 4.dp, bottom = 1.dp, start = 8.dp),
                     style = MaterialTheme.typography.titleSmall,
                 )

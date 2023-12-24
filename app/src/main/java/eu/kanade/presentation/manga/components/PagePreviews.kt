@@ -26,16 +26,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import eu.kanade.domain.manga.model.PagePreview
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.util.floor
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun PagePreviews(
@@ -91,7 +91,7 @@ fun PagePreviews(
                         }
                     }
                     TextButton(onClick = onMorePreviewsClicked) {
-                        Text(stringResource(R.string.more_previews))
+                        Text(stringResource(SYMR.strings.more_previews))
                     }
                 }
             }
@@ -122,7 +122,9 @@ fun PagePreview(
                     if (progress < 0) {
                         CircularProgressIndicator()
                     } else {
-                        CircularProgressIndicator(progress / 0.01F)
+                        CircularProgressIndicator(
+                            progress = { progress / 0.01F },
+                        )
                     }
                 }
             },

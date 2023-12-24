@@ -50,6 +50,7 @@ import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -247,8 +248,8 @@ class BackupRestorer(
         showRestoreProgress(
             restoreProgress,
             restoreAmount,
-            context.getString(R.string.saved_searches),
-            context.getString(R.string.restoring_backup),
+            context.stringResource(SYMR.strings.saved_searches),
+            context.stringResource(MR.strings.restoring_backup),
         )
     }
     // SY <--

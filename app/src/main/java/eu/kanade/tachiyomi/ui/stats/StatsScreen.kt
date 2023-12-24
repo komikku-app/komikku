@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.stats
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -12,9 +11,11 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.more.stats.StatsScreenContent
 import eu.kanade.presentation.more.stats.StatsScreenState
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.persistentListOf
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class StatsScreen : Screen() {
@@ -29,7 +30,7 @@ class StatsScreen : Screen() {
         Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
-                    title = stringResource(R.string.label_stats),
+                    title = stringResource(MR.strings.label_stats),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
                     // SY -->
@@ -39,9 +40,9 @@ class StatsScreen : Screen() {
                             persistentListOf(
                                 AppBar.OverflowAction(
                                     title = if (allRead) {
-                                        stringResource(R.string.ignore_non_library_entries)
+                                        stringResource(SYMR.strings.ignore_non_library_entries)
                                     } else {
-                                        stringResource(R.string.include_all_read_entries)
+                                        stringResource(SYMR.strings.include_all_read_entries)
                                     },
                                     onClick = screenModel::toggleReadManga,
                                 ),

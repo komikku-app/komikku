@@ -22,17 +22,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun MigrationItem(
@@ -77,7 +77,7 @@ fun MigrationItem(
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.BottomStart),
-                text = manga.title.ifBlank { stringResource(R.string.unknown) },
+                text = manga.title.ifBlank { stringResource(MR.strings.unknown) },
                 fontSize = 12.sp,
                 lineHeight = 18.sp,
                 maxLines = 2,

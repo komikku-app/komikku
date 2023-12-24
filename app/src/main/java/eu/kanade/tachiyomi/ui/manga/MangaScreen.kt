@@ -38,7 +38,6 @@ import eu.kanade.presentation.manga.components.SetIntervalDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
@@ -71,6 +70,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.lang.launchUI
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.lang.withNonCancellableContext
@@ -79,6 +79,8 @@ import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -360,7 +362,7 @@ class MangaScreen(
                 context.startActivity(
                     Intent.createChooser(
                         intent,
-                        context.getString(R.string.action_share),
+                        context.stringResource(MR.strings.action_share),
                     ),
                 )
             }
@@ -454,7 +456,7 @@ class MangaScreen(
         val mergedManga = mergedMangaData.manga.values.filterNot { it.source == MERGED_SOURCE_ID }
         val sources = mergedManga.map { sourceManager.getOrStub(it.source) }
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.action_open_in_web_view)
+            .setTitle(MR.strings.action_open_in_web_view.getString(context))
             .setSingleChoiceItems(
                 Array(mergedManga.size) { index -> sources[index].toString() },
                 -1,
@@ -462,7 +464,7 @@ class MangaScreen(
                 dialog.dismiss()
                 openMangaInWebView(navigator, mergedManga[index], sources[index] as? HttpSource)
             }
-            .setNegativeButton(R.string.action_cancel, null)
+            .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
     }
 
@@ -498,11 +500,11 @@ class MangaScreen(
                 navigator.popUntil { it is SourcesScreen }
                 navigator.pop()
                 navigator replace MangaScreen(mergedManga.id, true)
-                context.toast(R.string.entry_merged)
+                context.toast(SYMR.strings.entry_merged)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
 
-                context.toast(context.getString(R.string.failed_merge, e.message))
+                context.toast(context.stringResource(SYMR.strings.failed_merge, e.message.orEmpty()))
             }
         }
     }
@@ -513,11 +515,11 @@ class MangaScreen(
         source ?: return
         if (source.isMdBasedSource() && Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
             MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.az_recommends)
+                .setTitle(SYMR.strings.az_recommends.getString(context))
                 .setSingleChoiceItems(
                     arrayOf(
-                        context.getString(R.string.mangadex_similar),
-                        context.getString(R.string.community_recommendations),
+                        context.stringResource(SYMR.strings.mangadex_similar),
+                        context.stringResource(SYMR.strings.community_recommendations),
                     ),
                     -1,
                 ) { dialog, index ->
