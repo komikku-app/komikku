@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.os.Environment
 import android.os.Looper
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
@@ -68,13 +67,14 @@ import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
 import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.storage.toFile
 import tachiyomi.core.util.system.logcat
+import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import java.io.File
 import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -91,8 +91,6 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
     override fun onCreate() {
         super<Application>.onCreate()
         // if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
-        setupExhLogging() // EXH logging
-        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
 
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
 
@@ -114,6 +112,9 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         Injekt.importModule(SYPreferenceModule(this))
         Injekt.importModule(SYDomainModule())
         // SY <--
+
+        setupExhLogging() // EXH logging
+        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
 
         setupNotificationChannels()
 
@@ -248,30 +249,30 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
         val printers = mutableListOf<Printer>(AndroidPrinter())
 
-        val logFolder = File(
-            Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                stringResource(MR.strings.app_name),
-            "logs",
-        )
+        val logFolder = Injekt.get<StorageManager>().getLogsDirectory()
+            ?.toFile()
+            ?.absolutePath
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+        if (logFolder != null) {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
-        printers += EnhancedFilePrinter
-            .Builder(logFolder.absolutePath) {
-                fileNameGenerator = object : DateFileNameGenerator() {
-                    override fun generateFileName(logLevel: Int, timestamp: Long): String {
-                        return super.generateFileName(
-                            logLevel,
-                            timestamp,
-                        ) + "-${BuildConfig.BUILD_TYPE}.log"
+            printers += EnhancedFilePrinter
+                .Builder(logFolder) {
+                    fileNameGenerator = object : DateFileNameGenerator() {
+                        override fun generateFileName(logLevel: Int, timestamp: Long): String {
+                            return super.generateFileName(
+                                logLevel,
+                                timestamp,
+                            ) + "-${BuildConfig.BUILD_TYPE}.log"
+                        }
                     }
+                    flattener { timeMillis, level, tag, message ->
+                        "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
+                    }
+                    cleanStrategy = FileLastModifiedCleanStrategy(7.days.inWholeMilliseconds)
+                    backupStrategy = NeverBackupStrategy()
                 }
-                flattener { timeMillis, level, tag, message ->
-                    "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
-                }
-                cleanStrategy = FileLastModifiedCleanStrategy(7.days.inWholeMilliseconds)
-                backupStrategy = NeverBackupStrategy()
-            }
+        }
 
         // Install Crashlytics in prod
         if (!BuildConfig.DEBUG) {
