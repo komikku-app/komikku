@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -194,13 +195,15 @@ fun PagePreview(
                 }
             },
             success = {
-                SubcomposeAsyncImageContent(
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(MaterialTheme.shapes.small),
-                    contentScale = ContentScale.FillWidth,
-                )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    this@SubcomposeAsyncImage.SubcomposeAsyncImageContent(
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.small),
+                        contentScale = ContentScale.FillWidth,
+                    )
+                }
             },
             modifier = Modifier
                 .height(200.dp)
