@@ -28,10 +28,10 @@ class PreMigrationScreenModel(
     val migrationSheetOpen = _migrationSheetOpen.asStateFlow()
 
     lateinit var controllerBinding: PreMigrationListBinding
-    var adapter: MigrationSourceAdapter? = null
+    var adapter: MutableStateFlow<MigrationSourceAdapter?> = MutableStateFlow(null)
 
     val clickListener = FlexibleAdapter.OnItemClickListener { _, position ->
-        val adapter = adapter ?: return@OnItemClickListener false
+        val adapter = adapter.value ?: return@OnItemClickListener false
         adapter.getItem(position)?.let {
             it.sourceEnabled = !it.sourceEnabled
         }
@@ -95,7 +95,7 @@ class PreMigrationScreenModel(
     }
 
     fun massSelect(selectAll: Boolean) {
-        val adapter = adapter ?: return
+        val adapter = adapter.value ?: return
         adapter.currentItems.forEach {
             it.sourceEnabled = selectAll
         }
@@ -103,7 +103,7 @@ class PreMigrationScreenModel(
     }
 
     fun matchSelection(matchEnabled: Boolean) {
-        val adapter = adapter ?: return
+        val adapter = adapter.value ?: return
         val enabledSources = if (matchEnabled) {
             sourcePreferences.disabledSources().get().mapNotNull { it.toLongOrNull() }
         } else {
@@ -126,7 +126,7 @@ class PreMigrationScreenModel(
     }
 
     fun saveEnabledSources() {
-        val listOfSources = adapter?.currentItems
+        val listOfSources = adapter.value?.currentItems
             ?.filterIsInstance<MigrationSourceItem>()
             ?.filter {
                 it.sourceEnabled

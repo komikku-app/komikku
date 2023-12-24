@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,12 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         var fabExpanded by remember { mutableStateOf(true) }
         val items by screenModel.state.collectAsState()
+        val adapter by screenModel.adapter.collectAsState()
+        LaunchedEffect(items.isNotEmpty(), adapter != null) {
+            if (adapter != null && items.isNotEmpty()) {
+                adapter?.updateDataSet(items)
+            }
+        }
 
         val nestedScrollConnection = remember {
             // All this lines just for fab state :/
@@ -136,9 +143,9 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     modifier = Modifier.fillMaxWidth(),
                     factory = { context ->
                         screenModel.controllerBinding = PreMigrationListBinding.inflate(LayoutInflater.from(context))
-                        screenModel.adapter = MigrationSourceAdapter(screenModel.clickListener)
-                        screenModel.controllerBinding.root.adapter = screenModel.adapter
-                        screenModel.adapter?.isHandleDragEnabled = true
+                        screenModel.adapter.value = MigrationSourceAdapter(screenModel.clickListener)
+                        screenModel.controllerBinding.root.adapter = screenModel.adapter.value
+                        screenModel.adapter.value?.isHandleDragEnabled = true
                         screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(context)
 
                         ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
@@ -153,8 +160,6 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                                 right = right,
                                 bottom = bottom,
                             )
-
-                        screenModel.adapter?.updateDataSet(items)
                     },
                 )
             }
