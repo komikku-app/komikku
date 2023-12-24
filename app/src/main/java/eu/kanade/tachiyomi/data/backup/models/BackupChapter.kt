@@ -39,18 +39,32 @@ data class BackupChapter(
     }
 }
 
-val backupChapterMapper = { _: Long, _: Long, url: String, name: String, scanlator: String?, read: Boolean, bookmark: Boolean, lastPageRead: Long, chapterNumber: Double, source_order: Long, dateFetch: Long, dateUpload: Long, lastModifiedAt: Long ->
-    BackupChapter(
-        url = url,
-        name = name,
-        chapterNumber = chapterNumber.toFloat(),
-        scanlator = scanlator,
-        read = read,
-        bookmark = bookmark,
-        lastPageRead = lastPageRead,
-        dateFetch = dateFetch,
-        dateUpload = dateUpload,
-        sourceOrder = source_order,
-        lastModifiedAt = lastModifiedAt,
-    )
-}
+val backupChapterMapper =
+    { _: Long,
+            _: Long,
+            url: String,
+            name: String,
+            scanlator: String?,
+            read: Boolean,
+            bookmark: Boolean,
+            lastPageRead: Long,
+            chapterNumber: Double,
+            source_order: Long,
+            dateFetch: Long,
+            dateUpload: Long,
+            lastModifiedAt: Long,
+        ->
+        BackupChapter(
+            url = url,
+            name = name,
+            chapterNumber = chapterNumber.toFloat(),
+            scanlator = scanlator,
+            read = read,
+            bookmark = bookmark,
+            lastPageRead = lastPageRead,
+            dateFetch = dateFetch,
+            dateUpload = dateUpload,
+            sourceOrder = source_order,
+            lastModifiedAt = lastModifiedAt,
+        )
+    }

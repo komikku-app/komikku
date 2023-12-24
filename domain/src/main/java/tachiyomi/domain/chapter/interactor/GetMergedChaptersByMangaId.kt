@@ -21,7 +21,11 @@ class GetMergedChaptersByMangaId(
         dedupe: Boolean = true,
         applyScanlatorFilter: Boolean = false,
     ): List<Chapter> {
-        return transformMergedChapters(getMergedReferencesById.await(mangaId), getFromDatabase(mangaId, applyScanlatorFilter), dedupe)
+        return transformMergedChapters(
+            getMergedReferencesById.await(mangaId),
+            getFromDatabase(mangaId, applyScanlatorFilter),
+            dedupe,
+        )
     }
 
     suspend fun subscribe(

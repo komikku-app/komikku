@@ -112,7 +112,9 @@ fun BottomReaderBar(
         if (cropBorders.isIn(enabledButtons)) {
             IconButton(onClick = onClickCropBorder) {
                 Icon(
-                    painter = painterResource(if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp),
+                    painter = painterResource(
+                        if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp,
+                    ),
                     contentDescription = stringResource(MR.strings.pref_crop_borders),
                 )
             }

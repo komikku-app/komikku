@@ -88,7 +88,9 @@ class SettingsSearchScreen : Screen() {
             focusRequester.requestFocus()
         }
 
-        var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
+        var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(TextFieldValue())
+        }
         Scaffold(
             topBar = {
                 Column {
@@ -202,7 +204,11 @@ private fun SearchResult(
                         SearchResultItem(
                             route = settingsData.route,
                             title = p.title,
-                            breadcrumbs = getLocalizedBreadcrumb(path = settingsData.title, node = categoryTitle, isLtr = isLtr),
+                            breadcrumbs = getLocalizedBreadcrumb(
+                                path = settingsData.title,
+                                node = categoryTitle,
+                                isLtr = isLtr,
+                            ),
                             highlightKey = p.title,
                         )
                     }

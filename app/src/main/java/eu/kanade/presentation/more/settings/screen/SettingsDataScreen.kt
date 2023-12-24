@@ -210,7 +210,7 @@ object SettingsDataScreen : SearchableSettings {
 
         // SY -->
         val pagePreviewCache = remember { Injekt.get<PagePreviewCache>() }
-        var pagePreviewReadableSizeSema by remember { mutableStateOf(0) }
+        var pagePreviewReadableSizeSema by remember { mutableIntStateOf(0) }
         val pagePreviewReadableSize = remember(pagePreviewReadableSizeSema) { pagePreviewCache.readableSize }
         // SY <--
 

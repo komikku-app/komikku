@@ -32,7 +32,7 @@ class BackupRestorer(
     private val preferenceRestorer: PreferenceRestorer = PreferenceRestorer(context),
     private val mangaRestorer: MangaRestorer = MangaRestorer(),
     // SY -->
-    private val savedSearchRestorer: SavedSearchRestorer = SavedSearchRestorer()
+    private val savedSearchRestorer: SavedSearchRestorer = SavedSearchRestorer(),
     // SY <--
 ) {
 
@@ -208,7 +208,7 @@ data class RestoreOptions(
     val sourceSettings: Boolean = true,
     val library: Boolean = true,
     // SY -->
-    val savedSearches: Boolean = true
+    val savedSearches: Boolean = true,
     // SY <--
 ) {
     fun toBooleanArray() = booleanArrayOf(

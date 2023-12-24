@@ -92,7 +92,7 @@ class MangaRestorer(
             // SY -->
             mergedMangaReferences = backupManga.mergedMangaReferences,
             flatMetadata = backupManga.flatMetadata,
-            customManga = backupManga.getCustomMangaInfo()
+            customManga = backupManga.getCustomMangaInfo(),
             // SY <--
         )
     }

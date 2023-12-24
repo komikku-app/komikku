@@ -178,7 +178,9 @@ class DownloadCache(
 
         val sourceDir = rootDownloadsDir.sourceDirs[manga.source]
         if (sourceDir != null) {
-            val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(/* SY --> */ manga.ogTitle /* SY <-- */)]
+            val mangaDir = sourceDir.mangaDirs[
+                provider.getMangaDirName(/* SY --> */ manga.ogTitle /* SY <-- */),
+            ]
             if (mangaDir != null) {
                 return mangaDir.chapterDirs.size
             }
@@ -228,7 +230,11 @@ class DownloadCache(
     suspend fun removeChapter(chapter: Chapter, manga: Manga) {
         rootDownloadsDirLock.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
-            val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(/* SY --> */ manga.ogTitle /* SY <-- */)] ?: return
+            val mangaDir = sourceDir.mangaDirs[
+                provider.getMangaDirName(
+                    /* SY --> */ manga.ogTitle, /* SY <-- */
+                ),
+            ] ?: return
             provider.getValidChapterDirNames(chapter.name, chapter.scanlator).forEach {
                 if (it in mangaDir.chapterDirs) {
                     mangaDir.chapterDirs -= it
@@ -263,7 +269,11 @@ class DownloadCache(
     suspend fun removeChapters(chapters: List<Chapter>, manga: Manga) {
         rootDownloadsDirLock.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
-            val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(/* SY --> */ manga.ogTitle /* SY <-- */)] ?: return
+            val mangaDir = sourceDir.mangaDirs[
+                provider.getMangaDirName(
+                    /* SY --> */ manga.ogTitle, /* SY <-- */
+                ),
+            ] ?: return
             chapters.forEach { chapter ->
                 provider.getValidChapterDirNames(chapter.name, chapter.scanlator).forEach {
                     if (it in mangaDir.chapterDirs) {

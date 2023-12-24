@@ -278,7 +278,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             .filter {
                 when {
                     it.manga.updateStrategy != UpdateStrategy.ALWAYS_UPDATE -> {
-                        skippedUpdates.add(it.manga to context.stringResource(MR.strings.skipped_reason_not_always_update))
+                        skippedUpdates.add(
+                            it.manga to
+                                context.stringResource(MR.strings.skipped_reason_not_always_update),
+                        )
                         false
                     }
 
@@ -298,7 +301,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
 
                     MANGA_OUTSIDE_RELEASE_PERIOD in restrictions && it.manga.nextUpdate > fetchWindow.second -> {
-                        skippedUpdates.add(it.manga to context.stringResource(MR.strings.skipped_reason_not_in_release_period))
+                        skippedUpdates.add(
+                            it.manga to
+                                context.stringResource(MR.strings.skipped_reason_not_in_release_period),
+                        )
                         false
                     }
                     else -> true
@@ -320,7 +326,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             logcat {
                 skippedUpdates
                     .groupBy { it.second }
-                    .map { (reason, entries) -> "$reason: [${entries.map { it.first.title }.sorted().joinToString()}]" }
+                    .map { (reason, entries) ->
+                        "$reason: [${entries.map { it.first.title }.sorted().joinToString()}]"
+                    }
                     .joinToString()
             }
             notifier.showUpdateSkippedNotification(skippedUpdates.size)
@@ -357,7 +365,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 .map { mangaInSource ->
                     async {
                         semaphore.withPermit {
-                            if (mdlistLogged && mangaInSource.firstOrNull()?.let { it.manga.source in mangaDexSourceIds } == true) {
+                            if (
+                                mdlistLogged && mangaInSource.firstOrNull()
+                                    ?.let { it.manga.source in mangaDexSourceIds } == true
+                            ) {
                                 launch {
                                     mangaInSource.forEach { (manga) ->
                                         try {
@@ -405,8 +416,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                         }
                                     } catch (e: Throwable) {
                                         val errorMessage = when (e) {
-                                            is NoChaptersException -> context.stringResource(MR.strings.no_chapters_error)
-                                            // failedUpdates will already have the source, don't need to copy it into the message
+                                            is NoChaptersException ->
+                                                context.stringResource(MR.strings.no_chapters_error)
+                                            // failedUpdates will already have the source,
+                                            // don't need to copy it into the message
                                             is SourceNotInstalledException -> context.stringResource(
                                                 MR.strings.loader_not_implemented_error,
                                             )
@@ -513,7 +526,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     val source = sourceManager.get(manga.source) ?: return@withUpdateNotification
                                     try {
                                         val networkManga = source.getMangaDetails(manga.toSManga())
-                                        val updatedManga = manga.prepUpdateCover(coverCache, networkManga, true)
+                                        val updatedManga = manga.prepUpdateCover(
+                                            coverCache,
+                                            networkManga,
+                                            true,
+                                        )
                                             .copyFrom(networkManga)
                                         try {
                                             updateManga.await(updatedManga.toMangaUpdate())
@@ -542,7 +559,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private suspend fun syncFollows() = coroutineScope {
         val preferences = Injekt.get<UnsortedPreferences>()
         var count = 0
-        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager) ?: return@coroutineScope
+        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager)
+            ?: return@coroutineScope
         val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
         val size: Int
@@ -555,7 +573,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 ensureActive()
 
                 count++
-                notifier.showProgressNotification(listOf(Manga.create().copy(ogTitle = networkManga.title)), count, size)
+                notifier.showProgressNotification(
+                    listOf(Manga.create().copy(ogTitle = networkManga.title)), count, size,
+                )
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 

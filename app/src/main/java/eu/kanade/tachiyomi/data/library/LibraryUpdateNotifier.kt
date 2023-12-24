@@ -107,7 +107,9 @@ class LibraryUpdateNotifier(private val context: Context) {
             Notifications.CHANNEL_LIBRARY_PROGRESS,
         ) {
             setContentTitle(context.stringResource(MR.strings.label_warning))
-            setStyle(NotificationCompat.BigTextStyle().bigText(context.stringResource(MR.strings.notification_size_warning)))
+            setStyle(
+                NotificationCompat.BigTextStyle().bigText(context.stringResource(MR.strings.notification_size_warning)),
+            )
             setSmallIcon(R.drawable.ic_warning_white_24dp)
             setTimeoutAfter(Downloader.WARNING_NOTIF_TIMEOUT_MS)
             setContentIntent(NotificationHandler.openUrl(context, HELP_WARNING_URL))
@@ -338,7 +340,9 @@ class LibraryUpdateNotifier(private val context: Context) {
                 if (shouldTruncate) {
                     // "Chapters 1, 2.5, 3, 4, 5 and 10 more"
                     val remaining = displayableChapterNumbers.size - NOTIF_MAX_CHAPTERS
-                    val joinedChapterNumbers = displayableChapterNumbers.take(NOTIF_MAX_CHAPTERS).joinToString(", ")
+                    val joinedChapterNumbers = displayableChapterNumbers
+                        .take(NOTIF_MAX_CHAPTERS)
+                        .joinToString(", ")
                     context.pluralStringResource(
                         MR.plurals.notification_chapters_multiple_and_more,
                         remaining,

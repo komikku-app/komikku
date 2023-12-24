@@ -44,7 +44,9 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
         return with(context) {
             listOfNotNull(
                 getItem(title) { stringResource(MR.strings.title) },
-                getItem(path.nullIfEmpty(), { it.joinToString("/", prefix = "/") }) { stringResource(SYMR.strings.path) },
+                getItem(path.nullIfEmpty(), { it.joinToString("/", prefix = "/") }) {
+                    stringResource(SYMR.strings.path)
+                },
                 getItem(thumbnailUrl) { stringResource(SYMR.strings.thumbnail_url) },
             )
         }

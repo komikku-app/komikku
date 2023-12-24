@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -132,7 +132,7 @@ private fun Boolean.asEnabledString() = if (this) "enabled" else "disabled"
 private class FpsState(private val interval: Int) :
     Choreographer.FrameCallback,
     RememberObserver,
-    MutableState<Double> by mutableStateOf(0.0) {
+    MutableState<Double> by mutableDoubleStateOf(0.0) {
     private val choreographer = Choreographer.getInstance()
     private var startFrameTimeMillis: Long = 0
     private var numFramesRendered = 0

@@ -237,6 +237,7 @@ class EnhancedFilePrinter internal constructor(
          */
         var lastFileName: String? = null
             private set
+
         /**
          * Get the current log file.
          *

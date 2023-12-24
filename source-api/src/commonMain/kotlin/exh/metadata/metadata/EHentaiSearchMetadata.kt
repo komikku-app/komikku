@@ -106,7 +106,9 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(visible) { stringResource(SYMR.strings.visible) },
                 getItem(language) { stringResource(SYMR.strings.language) },
                 getItem(translated) { stringResource(SYMR.strings.translated) },
-                getItem(size, { MetadataUtil.humanReadableByteCount(it, true) }) { stringResource(SYMR.strings.gallery_size) },
+                getItem(size, { MetadataUtil.humanReadableByteCount(it, true) }) {
+                    stringResource(SYMR.strings.gallery_size)
+                },
                 getItem(length) { stringResource(SYMR.strings.page_count) },
                 getItem(favorites) { stringResource(SYMR.strings.total_favorites) },
                 getItem(ratingCount) { stringResource(SYMR.strings.total_ratings) },

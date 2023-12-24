@@ -208,8 +208,10 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_read_with_tapping_inverted),
                     entries = mapOf(
                         ReaderPreferences.TappingInvertMode.NONE to stringResource(MR.strings.none),
-                        ReaderPreferences.TappingInvertMode.HORIZONTAL to stringResource(MR.strings.tapping_inverted_horizontal),
-                        ReaderPreferences.TappingInvertMode.VERTICAL to stringResource(MR.strings.tapping_inverted_vertical),
+                        ReaderPreferences.TappingInvertMode.HORIZONTAL to
+                            stringResource(MR.strings.tapping_inverted_horizontal),
+                        ReaderPreferences.TappingInvertMode.VERTICAL to
+                            stringResource(MR.strings.tapping_inverted_vertical),
                         ReaderPreferences.TappingInvertMode.BOTH to stringResource(MR.strings.tapping_inverted_both),
                     ),
                     enabled = navMode != 5,
@@ -308,8 +310,10 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_read_with_tapping_inverted),
                     entries = mapOf(
                         ReaderPreferences.TappingInvertMode.NONE to stringResource(MR.strings.none),
-                        ReaderPreferences.TappingInvertMode.HORIZONTAL to stringResource(MR.strings.tapping_inverted_horizontal),
-                        ReaderPreferences.TappingInvertMode.VERTICAL to stringResource(MR.strings.tapping_inverted_vertical),
+                        ReaderPreferences.TappingInvertMode.HORIZONTAL to
+                            stringResource(MR.strings.tapping_inverted_horizontal),
+                        ReaderPreferences.TappingInvertMode.VERTICAL to
+                            stringResource(MR.strings.tapping_inverted_vertical),
                         ReaderPreferences.TappingInvertMode.BOTH to stringResource(MR.strings.tapping_inverted_both),
                     ),
                     enabled = navMode != 5,
