@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
@@ -57,6 +59,7 @@ import eu.kanade.presentation.manga.components.MangaInfoBox
 import eu.kanade.presentation.manga.components.MangaInfoButtons
 import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.MissingChapterCountListItem
+import eu.kanade.presentation.manga.components.PagePreviewItems
 import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.formatChapterNumber
@@ -339,6 +342,9 @@ private fun MangaScreenSmallImpl(
     }
     // SY -->
     val metadataDescription = metadataDescription(state.source)
+    var maxWidth by remember {
+        mutableStateOf(Dp.Hairline)
+    }
     // SY <--
 
     val internalOnBackPressed = {
@@ -546,16 +552,13 @@ private fun MangaScreenSmallImpl(
                     }
 
                     if (state.pagePreviewsState !is PagePreviewState.Unused) {
-                        item(
-                            key = MangaScreenItem.CHAPTER_PREVIEW,
-                            contentType = MangaScreenItem.CHAPTER_PREVIEW,
-                        ) {
-                            PagePreviews(
-                                pagePreviewState = state.pagePreviewsState,
-                                onOpenPage = onOpenPagePreview,
-                                onMorePreviewsClicked = onMorePreviewsClicked,
-                            )
-                        }
+                        PagePreviewItems(
+                            pagePreviewState = state.pagePreviewsState,
+                            onOpenPage = onOpenPagePreview,
+                            onMorePreviewsClicked = onMorePreviewsClicked,
+                            maxWidth = maxWidth,
+                            setMaxWidth = { maxWidth = it }
+                        )
                     }
                     // SY <--
 

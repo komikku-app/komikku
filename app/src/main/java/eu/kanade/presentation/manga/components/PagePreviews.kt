@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,11 +33,68 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import eu.kanade.domain.manga.model.PagePreview
+import eu.kanade.presentation.manga.MangaScreenItem
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.util.floor
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+
+@Composable
+private fun PagePreviewLoading(
+    setMaxWidth: (Dp) -> Unit
+) {
+    val density = LocalDensity.current
+    Box(
+        modifier = Modifier
+            .height(60.dp)
+            .fillMaxWidth()
+            .onGloballyPositioned {
+                setMaxWidth(with(density) { it.size.width.toDp() })
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun PagePreviewRow(
+    onOpenPage: (Int) -> Unit,
+    items: ImmutableList<PagePreview>
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+    ) {
+        items.forEach { page ->
+            PagePreview(
+                modifier = Modifier.weight(1F),
+                page = page,
+                onOpenPage = onOpenPage,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PagePreviewMore(
+    onMorePreviewsClicked: () -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        TextButton(onClick = onMorePreviewsClicked) {
+            Text(stringResource(SYMR.strings.more_previews))
+        }
+    }
+}
 
 @Composable
 fun PagePreviews(
@@ -43,57 +102,63 @@ fun PagePreviews(
     onOpenPage: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
 ) {
-    when (pagePreviewState) {
-        PagePreviewState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .height(60.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
+    Column(Modifier.fillMaxWidth()) {
+        var maxWidth by remember {
+            mutableStateOf(Dp.Hairline)
+        }
+        when {
+            pagePreviewState is PagePreviewState.Loading || maxWidth == Dp.Hairline -> {
+                PagePreviewLoading(setMaxWidth = { maxWidth = it })
+            }
+            pagePreviewState is PagePreviewState.Success -> {
+                val itemPerRowCount = (maxWidth / 120.dp).floor()
+                pagePreviewState.pagePreviews.take(4 * itemPerRowCount).chunked(itemPerRowCount).forEach {
+                    PagePreviewRow(
+                        onOpenPage = onOpenPage,
+                        items = remember(it) { it.toImmutableList() }
+                    )
+                }
+
+                PagePreviewMore(onMorePreviewsClicked)
+            }
+            else -> {}
+        }
+    }
+}
+
+fun LazyListScope.PagePreviewItems(
+    pagePreviewState: PagePreviewState,
+    onOpenPage: (Int) -> Unit,
+    onMorePreviewsClicked: () -> Unit,
+    maxWidth: Dp,
+    setMaxWidth: (Dp) -> Unit
+) {
+    when {
+        pagePreviewState is PagePreviewState.Loading || maxWidth == Dp.Hairline -> {
+            item(
+                key = MangaScreenItem.CHAPTER_PREVIEW_LOADING,
+                contentType = MangaScreenItem.CHAPTER_PREVIEW_LOADING,
             ) {
-                CircularProgressIndicator()
+                PagePreviewLoading(setMaxWidth = setMaxWidth)
             }
         }
-        is PagePreviewState.Success -> {
-            var maxWidth by remember {
-                mutableStateOf(Dp.Hairline)
-            }
-            val density = LocalDensity.current
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned {
-                        maxWidth = with(density) { it.size.width.toDp() }
-                    },
+        pagePreviewState is PagePreviewState.Success -> {
+            val itemPerRowCount = (maxWidth / 120.dp).floor()
+            items(
+                key = { "${MangaScreenItem.CHAPTER_PREVIEW_ROW}-$it" },
+                contentType = { MangaScreenItem.CHAPTER_PREVIEW_ROW },
+                items = pagePreviewState.pagePreviews.take(4 * itemPerRowCount).chunked(itemPerRowCount),
             ) {
-                if (maxWidth == Dp.Hairline) return@Box
-                val itemPerRowCount = (maxWidth / 120.dp).floor()
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                ) {
-                    pagePreviewState.pagePreviews.take(4 * itemPerRowCount).chunked(itemPerRowCount).forEach {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
-                        ) {
-                            it.forEach { page ->
-                                PagePreview(
-                                    modifier = Modifier.weight(1F),
-                                    page = page,
-                                    onOpenPage = onOpenPage,
-                                )
-                            }
-                        }
-                    }
-                    TextButton(onClick = onMorePreviewsClicked) {
-                        Text(stringResource(SYMR.strings.more_previews))
-                    }
-                }
+                PagePreviewRow(
+                    onOpenPage = onOpenPage,
+                    items = remember(it) { it.toImmutableList() }
+                )
+            }
+            item(
+                key = MangaScreenItem.CHAPTER_PREVIEW_MORE,
+                contentType = MangaScreenItem.CHAPTER_PREVIEW_MORE,
+            ) {
+                PagePreviewMore(onMorePreviewsClicked)
             }
         }
         else -> {}

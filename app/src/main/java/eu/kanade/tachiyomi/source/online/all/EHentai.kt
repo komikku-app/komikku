@@ -406,7 +406,6 @@ class EHentai(
     @Suppress("DEPRECATION")
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable {
         getChapterList(manga, throttleFunc)
@@ -476,6 +475,7 @@ class EHentai(
 
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        @Suppress("DEPRECATION")
         return super<HttpSource>.fetchLatestUpdates(page).checkValid()
     }
 
@@ -485,6 +485,7 @@ class EHentai(
 
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
+        @Suppress("DEPRECATION")
         return super<HttpSource>.fetchPopularManga(page).checkValid()
     }
 
@@ -496,6 +497,7 @@ class EHentai(
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
+            @Suppress("DEPRECATION")
             super<HttpSource>.fetchSearchManga(page, query, filters).checkValid()
         }
 
@@ -506,7 +508,7 @@ class EHentai(
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        val toplist = ToplistOption.values()[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]
+        val toplist = ToplistOption.entries[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]
         if (toplist != ToplistOption.NONE) {
             val uri = "https://e-hentai.org".toUri().buildUpon()
             uri.appendPath("toplist.php")
@@ -794,6 +796,7 @@ class EHentai(
     override fun pageListParse(response: Response) =
         throw UnsupportedOperationException("Unused method was called somehow!")
 
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
             .asObservableSuccess()
@@ -957,7 +960,7 @@ class EHentai(
 
     class ToplistOptions : Filter.Select<ToplistOption>(
         "Toplists",
-        ToplistOption.values(),
+        ToplistOption.entries.toTypedArray(),
     )
 
     class GenreOption(name: String, val genreId: Int) : Filter.CheckBox(name, false)
