@@ -7,7 +7,6 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
@@ -27,6 +26,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.backup.model.BackupSerializer
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetAllManga
@@ -339,5 +339,5 @@ object DebugFunctions {
         runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) } }
     }
 
-    fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(Backup.serializer().descriptor)
+    fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(BackupSerializer.descriptor)
 }

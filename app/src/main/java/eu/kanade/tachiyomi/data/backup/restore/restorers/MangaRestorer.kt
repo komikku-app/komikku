@@ -1,18 +1,18 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.tachiyomi.data.backup.models.BackupCategory
-import eu.kanade.tachiyomi.data.backup.models.BackupChapter
-import eu.kanade.tachiyomi.data.backup.models.BackupFlatMetadata
-import eu.kanade.tachiyomi.data.backup.models.BackupHistory
-import eu.kanade.tachiyomi.data.backup.models.BackupManga
-import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
-import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.EXHMigrations
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
 import tachiyomi.data.manga.MergedMangaMapper
+import tachiyomi.domain.backup.model.BackupCategory
+import tachiyomi.domain.backup.model.BackupChapter
+import tachiyomi.domain.backup.model.BackupFlatMetadata
+import tachiyomi.domain.backup.model.BackupHistory
+import tachiyomi.domain.backup.model.BackupManga
+import tachiyomi.domain.backup.model.BackupMergedMangaReference
+import tachiyomi.domain.backup.model.BackupTracking
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
@@ -496,6 +496,27 @@ class MangaRestorer(
     private fun restoreEditedInfo(mangaJson: CustomMangaInfo?) {
         mangaJson ?: return
         setCustomMangaInfo.set(mangaJson)
+    }
+
+    fun BackupManga.getCustomMangaInfo(): CustomMangaInfo? {
+        if (customTitle != null ||
+            customArtist != null ||
+            customAuthor != null ||
+            customDescription != null ||
+            customGenre != null ||
+            customStatus != 0
+        ) {
+            return CustomMangaInfo(
+                id = 0L,
+                title = customTitle,
+                author = customAuthor,
+                artist = customArtist,
+                description = customDescription,
+                genre = customGenre,
+                status = customStatus.takeUnless { it == 0 }?.toLong(),
+            )
+        }
+        return null
     }
     // SY <--
 

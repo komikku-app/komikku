@@ -1,7 +1,6 @@
-package eu.kanade.tachiyomi.data.backup.models
+package tachiyomi.domain.backup.model
 
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import tachiyomi.domain.manga.model.CustomMangaInfo
@@ -76,66 +75,7 @@ data class BackupManga(
             chapterFlags = this@BackupManga.chapterFlags.toLong(),
             updateStrategy = this@BackupManga.updateStrategy,
             lastModifiedAt = this@BackupManga.lastModifiedAt,
+            favoriteModifiedAt = this@BackupManga.favoriteModifiedAt,
         )
-    }
-
-    // SY -->
-    fun getCustomMangaInfo(): CustomMangaInfo? {
-        if (customTitle != null ||
-            customArtist != null ||
-            customAuthor != null ||
-            customDescription != null ||
-            customGenre != null ||
-            customStatus != 0
-        ) {
-            return CustomMangaInfo(
-                id = 0L,
-                title = customTitle,
-                author = customAuthor,
-                artist = customArtist,
-                description = customDescription,
-                genre = customGenre,
-                status = customStatus.takeUnless { it == 0 }?.toLong(),
-            )
-        }
-        return null
-    }
-    // SY <--
-
-    companion object {
-        fun copyFrom(manga: Manga /* SY --> */, customMangaInfo: CustomMangaInfo?/* SY <-- */): BackupManga {
-            return BackupManga(
-                url = manga.url,
-                // SY -->
-                title = manga.ogTitle,
-                artist = manga.ogArtist,
-                author = manga.ogAuthor,
-                description = manga.ogDescription,
-                genre = manga.ogGenre.orEmpty(),
-                status = manga.ogStatus.toInt(),
-                // SY <--
-                thumbnailUrl = manga.thumbnailUrl,
-                favorite = manga.favorite,
-                source = manga.source,
-                dateAdded = manga.dateAdded,
-                viewer = (manga.viewerFlags.toInt() and ReadingMode.MASK),
-                viewer_flags = manga.viewerFlags.toInt(),
-                chapterFlags = manga.chapterFlags.toInt(),
-                updateStrategy = manga.updateStrategy,
-                lastModifiedAt = manga.lastModifiedAt,
-                favoriteModifiedAt = manga.favoriteModifiedAt,
-                // SY -->
-            ).also { backupManga ->
-                customMangaInfo?.let {
-                    backupManga.customTitle = it.title
-                    backupManga.customArtist = it.artist
-                    backupManga.customAuthor = it.author
-                    backupManga.customDescription = it.description
-                    backupManga.customGenre = it.genre
-                    backupManga.customStatus = it.status?.toInt() ?: 0
-                }
-            }
-            // SY <--
-        }
     }
 }

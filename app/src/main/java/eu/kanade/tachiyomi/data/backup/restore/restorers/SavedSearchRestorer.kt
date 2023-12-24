@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
-import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import exh.util.nullIfBlank
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.backup.model.BackupSavedSearch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

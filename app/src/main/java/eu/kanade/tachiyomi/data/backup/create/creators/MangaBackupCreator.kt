@@ -2,21 +2,23 @@ package eu.kanade.tachiyomi.data.backup.create.creators
 
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateFlags
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateFlags.BACKUP_CUSTOM_INFO
-import eu.kanade.tachiyomi.data.backup.models.BackupChapter
-import eu.kanade.tachiyomi.data.backup.models.BackupFlatMetadata
-import eu.kanade.tachiyomi.data.backup.models.BackupHistory
-import eu.kanade.tachiyomi.data.backup.models.BackupManga
-import eu.kanade.tachiyomi.data.backup.models.backupChapterMapper
-import eu.kanade.tachiyomi.data.backup.models.backupMergedMangaReferenceMapper
-import eu.kanade.tachiyomi.data.backup.models.backupTrackMapper
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.backup.model.BackupChapter
+import tachiyomi.domain.backup.model.BackupFlatMetadata
+import tachiyomi.domain.backup.model.BackupHistory
+import tachiyomi.domain.backup.model.BackupManga
+import tachiyomi.domain.backup.model.backupChapterMapper
+import tachiyomi.domain.backup.model.backupMergedMangaReferenceMapper
+import tachiyomi.domain.backup.model.backupTrackMapper
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -41,8 +43,7 @@ class MangaBackupCreator(
 
     private suspend fun backupManga(manga: Manga, options: Int): BackupManga {
         // Entry for this manga
-        val mangaObject = BackupManga.copyFrom(
-            manga,
+        val mangaObject = manga.toBackupManga(
             // SY -->
             if (options and BACKUP_CUSTOM_INFO == BACKUP_CUSTOM_INFO) {
                 getCustomMangaInfo.get(manga.id)
@@ -114,3 +115,35 @@ class MangaBackupCreator(
         return mangaObject
     }
 }
+
+private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* SY <-- */) =
+    BackupManga(
+        url = this.url,
+        title = this.title,
+        artist = this.artist,
+        author = this.author,
+        description = this.description,
+        genre = this.genre.orEmpty(),
+        status = this.status.toInt(),
+        thumbnailUrl = this.thumbnailUrl,
+        favorite = this.favorite,
+        source = this.source,
+        dateAdded = this.dateAdded,
+        viewer = (this.viewerFlags.toInt() and ReadingMode.MASK),
+        viewer_flags = this.viewerFlags.toInt(),
+        chapterFlags = this.chapterFlags.toInt(),
+        updateStrategy = this.updateStrategy,
+        lastModifiedAt = this.lastModifiedAt,
+        favoriteModifiedAt = this.favoriteModifiedAt,
+        // SY -->
+    ).also { backupManga ->
+        customMangaInfo?.let {
+            backupManga.customTitle = it.title
+            backupManga.customArtist = it.artist
+            backupManga.customAuthor = it.author
+            backupManga.customDescription = it.description
+            backupManga.customGenre = it.genre
+            backupManga.customStatus = it.status?.toInt() ?: 0
+        }
+    }
+// SY <--

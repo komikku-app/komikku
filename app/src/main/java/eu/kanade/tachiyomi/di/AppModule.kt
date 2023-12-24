@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import exh.eh.EHentaiUpdateHelper
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
@@ -133,6 +134,9 @@ class AppModule(val app: Application) : InjektModule {
                 indent = 2
                 xmlVersion = XmlVersion.XML10
             }
+        }
+        addSingletonFactory<ProtoBuf> {
+            ProtoBuf
         }
 
         addSingletonFactory { ChapterCache(app) }

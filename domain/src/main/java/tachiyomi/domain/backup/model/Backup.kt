@@ -1,11 +1,11 @@
-package eu.kanade.tachiyomi.data.backup.models
+package tachiyomi.domain.backup.model
 
-import eu.kanade.tachiyomi.BuildConfig
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.protobuf.ProtoNumber
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
+@Serializer(forClass = Backup::class)
+object BackupSerializer
 
 @Serializable
 data class Backup(
@@ -17,14 +17,4 @@ data class Backup(
     @ProtoNumber(105) var backupSourcePreferences: List<BackupSourcePreferences> = emptyList(),
     // SY specific values
     @ProtoNumber(600) var backupSavedSearches: List<BackupSavedSearch> = emptyList(),
-) {
-
-    companion object {
-        val filenameRegex = """${BuildConfig.APPLICATION_ID}_\d+-\d+-\d+_\d+-\d+.tachibk""".toRegex()
-
-        fun getFilename(): String {
-            val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
-            return "${BuildConfig.APPLICATION_ID}_$date.tachibk"
-        }
-    }
-}
+)
