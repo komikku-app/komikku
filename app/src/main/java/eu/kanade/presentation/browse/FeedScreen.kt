@@ -92,7 +92,7 @@ fun FeedScreen(
                     refreshing = true
                     onRefresh()
                 },
-                enabled = !state.isLoadingItems,
+                enabled = { !state.isLoadingItems },
             ) {
                 ScrollbarLazyColumn(
                     contentPadding = contentPadding + topSmallPaddingValues,

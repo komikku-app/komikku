@@ -232,7 +232,13 @@ class WebtoonPageHolder(
     }
 
     private fun rotateDualPage(imageStream: BufferedInputStream): InputStream {
-        val isDoublePage = ImageUtil.isWideImage(imageStream)
+        val isDoublePage = ImageUtil.isWideImage(
+            imageStream,
+            // SY -->
+            page?.zip4jFile,
+            page?.zip4jEntry,
+            // SY <--
+        )
         return if (isDoublePage) {
             val rotation = if (viewer.config.dualPageRotateToFitInvert) -90f else 90f
             ImageUtil.rotateImage(imageStream, rotation)
