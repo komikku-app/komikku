@@ -241,7 +241,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                     libraryManga.filter { (manga) ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
-                            TrackStatus.parseTrackerStatus(trackerManager, track.syncId, track.status)
+                            TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
                         } ?: TrackStatus.OTHER
                         status.int == trackingExtra
                     }
@@ -373,7 +373,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     mangaInSource.forEach { (manga) ->
                                         try {
                                             val tracks = getTracks.await(manga.id)
-                                            if (tracks.isEmpty() || tracks.none { it.syncId == TrackerManager.MDLIST }) {
+                                            if (tracks.isEmpty() || tracks.none { it.trackerId == TrackerManager.MDLIST }) {
                                                 val track = mdList.createInitialTracker(manga)
                                                 insertTrack.await(mdList.refresh(track).toDomainTrack(false)!!)
                                             }
@@ -620,7 +620,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 val dbTracks = getTracks.await(manga.id)
 
                 // find the mdlist entry if its unfollowed the follow it
-                var tracker = dbTracks.firstOrNull { it.syncId == TrackerManager.MDLIST }
+                var tracker = dbTracks.firstOrNull { it.trackerId == TrackerManager.MDLIST }
                     ?: mdList.createInitialTracker(manga).toDomainTrack(idRequired = false)
 
                 if (tracker?.status == FollowStatus.UNFOLLOWED.int.toLong()) {

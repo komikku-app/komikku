@@ -381,12 +381,12 @@ class MangaRestorer(
     }
 
     private suspend fun restoreTracking(manga: Manga, backupTracks: List<BackupTracking>) {
-        val dbTrackBySyncId = getTracks.await(manga.id).associateBy { it.syncId }
+        val dbTrackByTrackerId = getTracks.await(manga.id).associateBy { it.trackerId }
 
         val (existingTracks, newTracks) = backupTracks
             .mapNotNull {
                 val track = it.getTrackImpl()
-                val dbTrack = dbTrackBySyncId[track.syncId]
+                val dbTrack = dbTrackByTrackerId[track.trackerId]
                     ?: // New track
                     return@mapNotNull track.copy(
                         id = 0, // Let DB assign new ID
@@ -415,7 +415,7 @@ class MangaRestorer(
                 existingTracks.forEach { track ->
                     manga_syncQueries.update(
                         track.mangaId,
-                        track.syncId,
+                        track.trackerId,
                         track.remoteId,
                         track.libraryId,
                         track.title,

@@ -18,6 +18,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import tachiyomi.domain.track.model.Track as DomainTrack
 
 class MdList(id: Long) : BaseTracker(id, "MDList") {
 
@@ -40,7 +41,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
     }
 
     override fun getStatusList(): List<Int> {
-        return FollowStatus.values().map { it.int }
+        return FollowStatus.entries.map { it.int }
     }
 
     override fun getStatus(status: Int): StringResource? = when (status) {
@@ -56,7 +57,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
 
     override fun getScoreList() = SCORE_LIST
 
-    override fun displayScore(track: Track) = track.score.toInt().toString()
+    override fun displayScore(track: DomainTrack) = track.score.toInt().toString()
 
     override suspend fun update(track: Track, didReadChapter: Boolean): Track {
         return withIOContext {

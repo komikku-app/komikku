@@ -281,8 +281,8 @@ open class RecommendsPagingSource(
         val recs = apiList.firstNotNullOfOrNull { (key, api) ->
             try {
                 val id = when (key) {
-                    API.MYANIMELIST -> tracks.find { it.syncId == trackerManager.myAnimeList.id }?.remoteId
-                    API.ANILIST -> tracks.find { it.syncId == trackerManager.aniList.id }?.remoteId
+                    API.MYANIMELIST -> tracks.find { it.trackerId == trackerManager.myAnimeList.id }?.remoteId
+                    API.ANILIST -> tracks.find { it.trackerId == trackerManager.aniList.id }?.remoteId
                 }
 
                 val recs = if (id != null) {

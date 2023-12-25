@@ -1465,7 +1465,7 @@ class MangaScreenModel(
                 .map { tracks ->
                     loggedInTrackers
                         // Map to TrackItem
-                        .map { service -> TrackItem(tracks.find { it.syncId == service.id }, service) }
+                        .map { service -> TrackItem(tracks.find { it.trackerId == service.id }, service) }
                         // Show only if the service supports this manga's source
                         .filter { (it.tracker as? EnhancedTracker)?.accept(source!!) ?: true }
                 }
@@ -1506,7 +1506,7 @@ class MangaScreenModel(
         val track = trackerManager.mdList.createInitialTracker(state.manga, mdManga)
             .toDomainTrack(false)!!
         insertTrack.await(track)
-        return TrackItem(getTracks.await(mangaId).first { it.syncId == trackerManager.mdList.id }, trackerManager.mdList)
+        return TrackItem(getTracks.await(mangaId).first { it.trackerId == trackerManager.mdList.id }, trackerManager.mdList)
     }
     // SY <--
 

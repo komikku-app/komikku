@@ -360,7 +360,7 @@ class MigrationListScreenModel(
             val tracks = getTracks.await(prevManga.id)
             if (tracks.isNotEmpty()) {
                 getTracks.await(manga.id).forEach {
-                    deleteTrack.await(manga.id, it.syncId)
+                    deleteTrack.await(manga.id, it.trackerId)
                 }
                 insertTrack.awaitAll(tracks.map { it.copy(mangaId = manga.id) })
             }

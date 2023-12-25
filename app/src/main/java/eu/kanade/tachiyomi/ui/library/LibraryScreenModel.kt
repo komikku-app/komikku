@@ -329,7 +329,7 @@ class LibraryScreenModel(
             if (isNotLoggedInAnyTrack || trackFiltersIsIgnored) return@tracking true
 
             val mangaTracks = trackMap
-                .mapValues { entry -> entry.value.map { it.syncId } }[item.libraryManga.id]
+                .mapValues { entry -> entry.value.map { it.trackerId } }[item.libraryManga.id]
                 .orEmpty()
 
             val isExcluded = excludedTracks.isNotEmpty() && mangaTracks.fastAny { it in excludedTracks }
@@ -388,7 +388,7 @@ class LibraryScreenModel(
                     entry.value.isEmpty() -> null
                     else ->
                         entry.value
-                            .mapNotNull { trackerMap[it.syncId]?.get10PointScore(it) }
+                            .mapNotNull { trackerMap[it.trackerId]?.get10PointScore(it) }
                             .average()
                 }
             }
@@ -1004,12 +1004,12 @@ class LibraryScreenModel(
 
     private fun filterTracks(constraint: String, tracks: List<Track>, context: Context): Boolean {
         return tracks.fastAny { track ->
-            val trackService = trackerManager.get(track.syncId)
+            val trackService = trackerManager.get(track.trackerId)
             if (trackService != null) {
                 val status = trackService.getStatus(track.status.toInt())?.let {
                     context.stringResource(it)
                 }
-                val name = trackerManager.get(track.syncId)?.name
+                val name = trackerManager.get(track.trackerId)?.name
                 status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
             } else {
                 false
@@ -1164,7 +1164,7 @@ class LibraryScreenModel(
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
                 libraryManga.groupBy { item ->
                     val status = tracks[item.libraryManga.manga.id]?.firstNotNullOfOrNull { track ->
-                        TrackStatus.parseTrackerStatus(trackerManager, track.syncId, track.status)
+                        TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
                     } ?: TrackStatus.OTHER
 
                     status.int
