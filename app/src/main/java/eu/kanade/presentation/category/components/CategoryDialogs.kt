@@ -29,7 +29,6 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.domain.category.model.Category
@@ -126,6 +125,7 @@ fun CategoryRenameDialog(
 ) {
     var name by remember { mutableStateOf(category) }
     var valueHasChanged by remember { mutableStateOf(false) }
+
     val focusRequester = remember { FocusRequester() }
     val nameAlreadyExists = remember(name) { categories.contains(name) }
 
@@ -290,12 +290,12 @@ fun ChangeCategoryDialog(
                     onClick = {
                         onDismissRequest()
                         onConfirm(
-                            selection.filter {
-                                it is CheckboxState.State.Checked || it is CheckboxState.TriState.Include
-                            }.map { it.value.id },
-                            selection.filter {
-                                it is CheckboxState.State.None || it is CheckboxState.TriState.None
-                            }.map { it.value.id },
+                            selection
+                                .filter { it is CheckboxState.State.Checked || it is CheckboxState.TriState.Include }
+                                .map { it.value.id },
+                            selection
+                                .filter { it is CheckboxState.State.None || it is CheckboxState.TriState.None }
+                                .map { it.value.id },
                         )
                     },
                 ) {

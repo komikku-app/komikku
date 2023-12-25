@@ -38,42 +38,6 @@ interface SManga : Serializable {
     val originalStatus: Int
     // SY <--
 
-    fun copyFrom(other: SManga) {
-        // EXH -->
-        if (other.title.isNotBlank() && originalTitle != other.title) {
-            title = other.originalTitle
-        }
-        // EXH <--
-
-        if (other.author != null) {
-            author = /* SY --> */ other.originalAuthor // SY <--
-        }
-
-        if (other.artist != null) {
-            artist = /* SY --> */ other.originalArtist // SY <--
-        }
-
-        if (other.description != null) {
-            description = /* SY --> */ other.originalDescription // SY <--
-        }
-
-        if (other.genre != null) {
-            genre = /* SY --> */ other.originalGenre // SY <--
-        }
-
-        if (other.thumbnail_url != null) {
-            thumbnail_url = other.thumbnail_url
-        }
-
-        status = other.status
-
-        update_strategy = other.update_strategy
-
-        if (!initialized) {
-            initialized = other.initialized
-        }
-    }
-
     fun copy() = create().also {
         it.url = url
         // SY -->
