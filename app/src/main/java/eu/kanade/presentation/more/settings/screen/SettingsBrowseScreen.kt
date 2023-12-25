@@ -14,6 +14,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.category.repos.RepoScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.i18n.stringResource
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
@@ -42,7 +43,7 @@ object SettingsBrowseScreen : SearchableSettings {
             // SY -->
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_sources),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     kotlin.run {
                         val navigator = LocalNavigator.currentOrThrow
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
@@ -73,7 +74,7 @@ object SettingsBrowseScreen : SearchableSettings {
             ),
             Preference.PreferenceGroup(
                 title = stringResource(SYMR.strings.feed),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = uiPreferences.feedTabInFront(),
                         title = stringResource(SYMR.strings.pref_feed_position),
@@ -83,7 +84,7 @@ object SettingsBrowseScreen : SearchableSettings {
             ),
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_extensions),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     kotlin.run {
                         val navigator = LocalNavigator.currentOrThrow
                         val count by unsortedPreferences.extensionRepos().collectAsState()
@@ -100,7 +101,7 @@ object SettingsBrowseScreen : SearchableSettings {
             // SY <--
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_sources),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.hideInLibraryItems(),
                         title = stringResource(MR.strings.pref_hide_in_library_items),
@@ -109,7 +110,7 @@ object SettingsBrowseScreen : SearchableSettings {
             ),
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.pref_category_nsfw_content),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.showNsfwSource(),
                         title = stringResource(MR.strings.pref_show_nsfw_source),

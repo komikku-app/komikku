@@ -54,6 +54,8 @@ import exh.eh.EHentaiUpdaterStats
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.i18n.pluralStringResource
@@ -138,7 +140,7 @@ object SettingsEhScreen : SearchableSettings {
         return listOf(
             Preference.PreferenceGroup(
                 stringResource(SYMR.strings.ehentai_prefs_account_settings),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     getLoginPreference(unsortedPreferences, openWarnConfigureDialogController),
                     useHentaiAtHome(exhentaiEnabled, unsortedPreferences),
                     useJapaneseTitle(exhentaiEnabled, unsortedPreferences),
@@ -155,7 +157,7 @@ object SettingsEhScreen : SearchableSettings {
             ),
             Preference.PreferenceGroup(
                 stringResource(SYMR.strings.favorites_sync),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     readOnlySync(unsortedPreferences),
                     syncFavoriteNotes(),
                     lenientSync(unsortedPreferences),
@@ -164,7 +166,7 @@ object SettingsEhScreen : SearchableSettings {
             ),
             Preference.PreferenceGroup(
                 stringResource(SYMR.strings.gallery_update_checker),
-                preferenceItems = listOf(
+                preferenceItems = persistentListOf(
                     updateCheckerFrequency(unsortedPreferences),
                     autoUpdateRequirements(unsortedPreferences),
                     updaterStatistics(
@@ -220,7 +222,7 @@ object SettingsEhScreen : SearchableSettings {
             pref = unsortedPreferences.useHentaiAtHome(),
             title = stringResource(SYMR.strings.use_hentai_at_home),
             subtitle = stringResource(SYMR.strings.use_hentai_at_home_summary),
-            entries = mapOf(
+            entries = persistentMapOf(
                 0 to stringResource(SYMR.strings.use_hentai_at_home_option_1),
                 1 to stringResource(SYMR.strings.use_hentai_at_home_option_2),
             ),
@@ -816,7 +818,7 @@ object SettingsEhScreen : SearchableSettings {
             pref = unsortedPreferences.imageQuality(),
             title = stringResource(SYMR.strings.eh_image_quality_summary),
             subtitle = stringResource(SYMR.strings.eh_image_quality),
-            entries = mapOf(
+            entries = persistentMapOf(
                 "auto" to stringResource(SYMR.strings.eh_image_quality_auto),
                 "ovrs_2400" to stringResource(SYMR.strings.eh_image_quality_2400),
                 "ovrs_1600" to stringResource(SYMR.strings.eh_image_quality_1600),
@@ -952,7 +954,7 @@ object SettingsEhScreen : SearchableSettings {
                     EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION,
                 )
             },
-            entries = mapOf(
+            entries = persistentMapOf(
                 0 to stringResource(SYMR.strings.time_between_batches_never),
                 1 to stringResource(SYMR.strings.time_between_batches_1_hour),
                 2 to stringResource(SYMR.strings.time_between_batches_2_hours),
@@ -995,7 +997,7 @@ object SettingsEhScreen : SearchableSettings {
                         .joinToString(),
                 )
             },
-            entries = mapOf(
+            entries = persistentMapOf(
                 DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
                 DEVICE_CHARGING to stringResource(MR.strings.charging),
             ),

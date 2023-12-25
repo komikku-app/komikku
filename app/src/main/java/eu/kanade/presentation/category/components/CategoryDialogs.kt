@@ -29,6 +29,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.domain.category.model.Category

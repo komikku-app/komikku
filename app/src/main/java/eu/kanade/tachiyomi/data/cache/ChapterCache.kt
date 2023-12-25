@@ -21,7 +21,6 @@ import okio.buffer
 import okio.sink
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
-import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.IOException
 
@@ -33,15 +32,16 @@ import java.io.IOException
  *
  * @param context the application context.
  */
-class ChapterCache(private val context: Context) {
-
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
-
-    /** Google Json class used for parsing JSON files.  */
-    private val json: Json by injectLazy()
+class ChapterCache(
+    private val context: Context,
+    private val json: Json,
+    // SY -->
+    readerPreferences: ReaderPreferences
+    //S Y <--
+) {
 
     // --> EH
-    private val readerPreferences: ReaderPreferences by injectLazy()
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     /** Cache class used for cache management.  */
     private var diskCache = setupDiskCache(readerPreferences.cacheSize().get().toLong())

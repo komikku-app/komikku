@@ -139,7 +139,7 @@ class AppModule(val app: Application) : InjektModule {
             ProtoBuf
         }
 
-        addSingletonFactory { ChapterCache(app) }
+        addSingletonFactory { ChapterCache(app, get(), get()) }
         addSingletonFactory { CoverCache(app) }
 
         addSingletonFactory { NetworkHelper(app, get(), BuildConfig.DEBUG) }

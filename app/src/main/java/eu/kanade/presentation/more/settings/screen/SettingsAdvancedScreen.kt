@@ -68,6 +68,9 @@ import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.util.toAnnotatedString
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -180,7 +183,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_background_activity),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_disable_battery_optimization),
                     subtitle = stringResource(MR.strings.pref_disable_battery_optimization_summary),
@@ -219,7 +222,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_data),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_invalidate_download_cache),
                     subtitle = stringResource(MR.strings.pref_invalidate_download_cache_summary),
@@ -249,7 +252,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_network),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_cookies),
                     onClick = {
@@ -282,7 +285,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = networkPreferences.dohProvider(),
                     title = stringResource(MR.strings.pref_dns_over_https),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         -1 to stringResource(MR.strings.disabled),
                         PREF_DOH_CLOUDFLARE to "Cloudflare",
                         PREF_DOH_GOOGLE to "Google",
@@ -335,7 +338,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_library),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_refresh_library_covers),
                     onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.COVERS) },
@@ -395,12 +398,13 @@ object SettingsAdvancedScreen : SearchableSettings {
         }
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_extensions),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = extensionInstallerPref,
                     title = stringResource(MR.strings.ext_installer_pref),
                     entries = extensionInstallerPref.entries
-                        .associateWith { stringResource(it.titleRes) },
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
                     onValueChanged = {
                         if (it == BasePreferences.ExtensionInstaller.SHIZUKU &&
                             !context.isShizukuInstalled
@@ -537,7 +541,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         }
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.download_notifier_downloader_title),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.clean_up_downloaded_chapters),
                     subtitle = stringResource(SYMR.strings.delete_unused_chapters),
@@ -553,12 +557,12 @@ object SettingsAdvancedScreen : SearchableSettings {
         val dataSaver by sourcePreferences.dataSaver().collectAsState()
         return Preference.PreferenceGroup(
             title = stringResource(SYMR.strings.data_saver),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = sourcePreferences.dataSaver(),
                     title = stringResource(SYMR.strings.data_saver),
                     subtitle = stringResource(SYMR.strings.data_saver_summary),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         DataSaver.NONE to stringResource(MR.strings.disabled),
                         DataSaver.BANDWIDTH_HERO to stringResource(SYMR.strings.bandwidth_hero),
                         DataSaver.WSRV_NL to stringResource(SYMR.strings.wsrv),
@@ -598,7 +602,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         "80%",
                         "90%",
                         "95%",
-                    ).associateBy { it.trimEnd('%').toInt() },
+                    ).associateBy { it.trimEnd('%').toInt() }.toImmutableMap(),
                     enabled = dataSaver != DataSaver.NONE,
                 ),
                 kotlin.run {
@@ -634,7 +638,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         val securityPreferences = remember { Injekt.get<SecurityPreferences>() }
         return Preference.PreferenceGroup(
             title = stringResource(SYMR.strings.developer_tools),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = unsortedPreferences.isHentaiEnabled(),
                     title = stringResource(SYMR.strings.toggle_hentai_features),
@@ -664,11 +668,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                     pref = unsortedPreferences.logLevel(),
                     title = stringResource(SYMR.strings.log_level),
                     subtitle = stringResource(SYMR.strings.log_level_summary),
-                    entries = EHLogLevel.values().mapIndexed { index, ehLogLevel ->
+                    entries = EHLogLevel.entries.mapIndexed { index, ehLogLevel ->
                         index to "${context.stringResource(ehLogLevel.nameRes)} (${
                             context.stringResource(ehLogLevel.description)
                         })"
-                    }.toMap(),
+                    }.toMap().toImmutableMap(),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = sourcePreferences.enableSourceBlacklist(),

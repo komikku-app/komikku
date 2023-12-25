@@ -51,6 +51,8 @@ import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesScreen
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.core.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -101,7 +103,8 @@ object SettingsSecurityScreen : SearchableSettings {
                             0 -> stringResource(MR.strings.lock_always)
                             else -> pluralStringResource(MR.plurals.lock_after_mins, count = it, it)
                         }
-                    },
+                    }
+                    .toImmutableMap(),
                 onValueChanged = {
                     (context as FragmentActivity).authenticate(
                         title = context.stringResource(MR.strings.lock_when_idle),
@@ -116,7 +119,8 @@ object SettingsSecurityScreen : SearchableSettings {
                 pref = securityPreferences.secureScreen(),
                 title = stringResource(MR.strings.secure_screen),
                 entries = SecurityPreferences.SecureScreenMode.entries
-                    .associateWith { stringResource(it.titleRes) },
+                    .associateWith { stringResource(it.titleRes) }
+                    .toImmutableMap(),
             ),
             // SY -->
             Preference.PreferenceItem.SwitchPreference(
@@ -129,7 +133,8 @@ object SettingsSecurityScreen : SearchableSettings {
                 pref = securityPreferences.encryptionType(),
                 title = stringResource(SYMR.strings.encryption_type),
                 entries = SecurityPreferences.EncryptionType.entries
-                    .associateWith { stringResource(it.titleRes) },
+                    .associateWith { stringResource(it.titleRes) }
+                    .toImmutableMap(),
                 enabled = passwordProtectDownloads,
 
             ),
@@ -358,7 +363,7 @@ object SettingsSecurityScreen : SearchableSettings {
     // SY <--
 }
 
-private val LockAfterValues = listOf(
+private val LockAfterValues = persistentListOf(
     0, // Always
     1,
     2,

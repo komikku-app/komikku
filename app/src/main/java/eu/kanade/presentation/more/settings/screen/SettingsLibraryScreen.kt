@@ -21,6 +21,9 @@ import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.UnsortedPreferences
@@ -92,7 +95,7 @@ object SettingsLibraryScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.categories),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.action_edit_categories),
                     subtitle = pluralStringResource(
@@ -106,7 +109,7 @@ object SettingsLibraryScreen : SearchableSettings {
                     pref = libraryPreferences.defaultCategory(),
                     title = stringResource(MR.strings.default_category),
                     subtitle = selectedCategory?.visualName ?: stringResource(MR.strings.default_category_summary),
-                    entries = ids.zip(labels).toMap(),
+                    entries = ids.zip(labels).toMap().toImmutableMap(),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = libraryPreferences.categorizedDisplaySettings(),
@@ -159,11 +162,11 @@ object SettingsLibraryScreen : SearchableSettings {
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_library_update),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = autoUpdateIntervalPref,
                     title = stringResource(MR.strings.pref_library_update_interval),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         0 to stringResource(MR.strings.update_never),
                         12 to stringResource(MR.strings.update_12hour),
                         24 to stringResource(MR.strings.update_24hour),
@@ -181,7 +184,7 @@ object SettingsLibraryScreen : SearchableSettings {
                     enabled = autoUpdateInterval > 0,
                     title = stringResource(MR.strings.pref_library_update_restriction),
                     subtitle = stringResource(MR.strings.restrictions),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
                         DEVICE_NETWORK_NOT_METERED to stringResource(MR.strings.network_not_metered),
                         DEVICE_CHARGING to stringResource(MR.strings.charging),
@@ -205,7 +208,7 @@ object SettingsLibraryScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = libraryPreferences.groupLibraryUpdateType(),
                     title = stringResource(SYMR.strings.library_group_updates),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         GroupLibraryMode.GLOBAL to stringResource(SYMR.strings.library_group_updates_global),
                         GroupLibraryMode.ALL_BUT_UNGROUPED to
                             stringResource(SYMR.strings.library_group_updates_all_but_ungrouped),
@@ -221,7 +224,7 @@ object SettingsLibraryScreen : SearchableSettings {
                 Preference.PreferenceItem.MultiSelectListPreference(
                     pref = libraryPreferences.autoUpdateMangaRestrictions(),
                     title = stringResource(MR.strings.pref_library_update_manga_restriction),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         MANGA_HAS_UNREAD to stringResource(MR.strings.pref_update_only_completely_read),
                         MANGA_NON_READ to stringResource(MR.strings.pref_update_only_started),
                         MANGA_NON_COMPLETED to stringResource(MR.strings.pref_update_only_non_completed),
@@ -242,11 +245,11 @@ object SettingsLibraryScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_chapter_swipe),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = libraryPreferences.swipeToStartAction(),
                     title = stringResource(MR.strings.pref_chapter_swipe_start),
-                    entries = mapOf(
+                    entries = persistentMapOf(
                         LibraryPreferences.ChapterSwipeAction.Disabled to
                             stringResource(MR.strings.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
@@ -260,13 +263,15 @@ object SettingsLibraryScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = libraryPreferences.swipeToEndAction(),
                     title = stringResource(MR.strings.pref_chapter_swipe_end),
-                    entries = mapOf(
-                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(MR.strings.disabled),
+                    entries = persistentMapOf(
+                        LibraryPreferences.ChapterSwipeAction.Disabled to
+                            stringResource(MR.strings.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
                             stringResource(MR.strings.action_bookmark),
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to
                             stringResource(MR.strings.action_mark_as_read),
-                        LibraryPreferences.ChapterSwipeAction.Download to stringResource(MR.strings.action_download),
+                        LibraryPreferences.ChapterSwipeAction.Download to
+                            stringResource(MR.strings.action_download),
                     ),
                 ),
             ),
@@ -279,7 +284,7 @@ object SettingsLibraryScreen : SearchableSettings {
         val tagCount by libraryPreferences.sortTagsForLibrary().collectAsState()
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_sorting_settings),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.pref_tag_sorting),
                     subtitle = pluralStringResource(SYMR.plurals.pref_tag_sorting_desc, tagCount.size, tagCount.size),
@@ -298,7 +303,7 @@ object SettingsLibraryScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.migration),
             enabled = skipPreMigration || migrationSources.isNotEmpty(),
-            preferenceItems = listOf(
+            preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = unsortedPreferences.skipPreMigration(),
                     title = stringResource(SYMR.strings.skip_pre_migration),
