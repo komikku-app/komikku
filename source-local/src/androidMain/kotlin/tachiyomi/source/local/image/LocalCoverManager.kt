@@ -61,7 +61,7 @@ actual class LocalCoverManager(
             // SY -->
             if (encrypted) {
                 val tempFile = File.createTempFile(
-                    targetFile.nameWithoutExtension.orEmpty(),
+                    targetFile.nameWithoutExtension.orEmpty().padEnd(3), // Prefix must be 3+ chars
                     null,
                 )
                 val zip4j = ZipFile(tempFile)
