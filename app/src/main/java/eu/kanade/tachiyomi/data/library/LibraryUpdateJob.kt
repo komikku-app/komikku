@@ -331,7 +331,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
                     .joinToString()
             }
-            notifier.showUpdateSkippedNotification(skippedUpdates.size)
         }
     }
 
