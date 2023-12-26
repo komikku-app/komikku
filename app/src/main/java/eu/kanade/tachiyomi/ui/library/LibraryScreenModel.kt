@@ -862,7 +862,7 @@ class LibraryScreenModel(
             } else {
                 categoryName
             }
-            LibraryGroup.BY_TRACK_STATUS -> TrackStatus.values()
+            LibraryGroup.BY_TRACK_STATUS -> TrackStatus.entries
                 .find { it.int.toLong() == category?.id }
                 .let { it ?: TrackStatus.OTHER }
                 .let { context.stringResource(it.res) }
@@ -1171,11 +1171,11 @@ class LibraryScreenModel(
                 }.mapKeys { (id) ->
                     Category(
                         id = id.toLong(),
-                        name = TrackStatus.values()
+                        name = TrackStatus.entries
                             .find { it.int == id }
                             .let { it ?: TrackStatus.OTHER }
                             .let { context.stringResource(it.res) },
-                        order = TrackStatus.values().indexOfFirst {
+                        order = TrackStatus.entries.indexOfFirst {
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,

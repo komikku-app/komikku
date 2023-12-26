@@ -225,7 +225,7 @@ object SettingsSecurityScreen : SearchableSettings {
         onDaysSelected: (Int) -> Unit,
     ) {
         val selected = remember(initialSelection) {
-            DayOption.values().filter { it.day and initialSelection == it.day }
+            DayOption.entries.filter { it.day and initialSelection == it.day }
                 .toMutableStateList()
         }
         AlertDialog(
@@ -233,7 +233,7 @@ object SettingsSecurityScreen : SearchableSettings {
             title = { Text(text = stringResource(SYMR.strings.biometric_lock_days)) },
             text = {
                 LazyColumn {
-                    DayOption.values().forEach { day ->
+                    DayOption.entries.forEach { day ->
                         item {
                             val isSelected = selected.contains(day)
                             val onSelectionChanged = {
