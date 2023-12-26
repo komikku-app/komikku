@@ -1,39 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="cleanup_done">
-        <item quantity="other">清理完成。清理了 %d 个文件夹</item>
+        <item quantity="other">清理完成。清理了 %d 個資料夾</item>
     </plurals>
     <plurals name="num_lock_times">
-        <item quantity="other">%d 个锁定时间表</item>
+        <item quantity="other">%d 個鎖定時間表</item>
     </plurals>
     <plurals name="eh_retry_toast">
-        <item quantity="other">重试 %1$d 个失败的页面……</item>
+        <item quantity="other">重試 %1$d 個失敗的頁面……</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="other">%1$d 个标签在排序列表中。 这在书架中增加了一个选项，以基于优先级的标签列表进行排序，这意味着作品将以你想要的标签优先的方式进行排序。</item>
+        <item quantity="other">%1$d 個標籤在排序列表中。 這在書架中增加了一個選項，以基於優先級的標籤列表進行排序，這意味著作品將以你想要的標籤優先的方式進行排序。</item>
     </plurals>
     <plurals name="num_repos">
-        <item quantity="other">%d 个额外的仓库</item>
+        <item quantity="other">%d 個額外的倉庫</item>
     </plurals>
 
     <plurals name="migrate_entry">
-        <item quantity="other">迁移 %1$d%2$s 作品？</item>
+        <item quantity="other">遷移 %1$d%2$s 作品？</item>
     </plurals>
     <plurals name="copy_entry">
-        <item quantity="other">复制 %1$d%2$s 作品？</item>
+        <item quantity="other">複製 %1$d%2$s 作品？</item>
     </plurals>
     <plurals name="entry_migrated">
-        <item quantity="other">%d 个作品已迁移</item>
+        <item quantity="other">%d 個作品已遷移</item>
     </plurals>
 
     <!-- Extra gallery info -->
     <plurals name="num_pages">
-        <item quantity="other">%1$d 页</item>
+        <item quantity="other">%1$d 頁</item>
     </plurals>
 
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="other">%2$s, %1$d 页</item>
+        <item quantity="other">%2$s, %1$d 頁</item>
     </plurals>
 
     <!-- Humanize time -->
@@ -50,10 +50,10 @@
         <item quantity="other">%1$d 天前</item>
     </plurals>
     <plurals name="humanize_hour">
-        <item quantity="other">%1$d 小时前</item>
+        <item quantity="other">%1$d 小時前</item>
     </plurals>
     <plurals name="humanize_minute">
-        <item quantity="other">%1$d 分钟前</item>
+        <item quantity="other">%1$d 分鐘前</item>
     </plurals>
     <plurals name="humanize_second">
         <item quantity="other">%1$d 秒前</item>
