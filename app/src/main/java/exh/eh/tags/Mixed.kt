@@ -6,6 +6,7 @@ object Mixed : TagList {
         "mixed:body swap",
         "mixed:ffm threesome",
         "mixed:frottage",
+        "mixed:gang rape",
         "mixed:group",
         "mixed:incest",
         "mixed:inseki",

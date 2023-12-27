@@ -4,6 +4,7 @@ object Other : TagList {
     override fun getTags1(): List<String> = listOf(
         "other:3d",
         "other:3d imageset",
+        "other:ai generated",
         "other:already uploaded",
         "other:anaglyph",
         "other:animated",
@@ -14,6 +15,7 @@ object Other : TagList {
         "other:compilation",
         "other:dakimakura",
         "other:defaced",
+        "other:extraneous ads",
         "other:figure",
         "other:forbidden content",
         "other:full censorship",
