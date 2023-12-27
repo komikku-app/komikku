@@ -37,5 +37,9 @@ interface ChapterRepository {
         mangaId: Long,
         applyScanlatorFilter: Boolean = false,
     ): Flow<List<Chapter>>
+
+    suspend fun getScanlatorsByMergeId(mangaId: Long): List<String>
+
+    fun getScanlatorsByMergeIdAsFlow(mangaId: Long): Flow<List<String>>
     // SY <--
 }

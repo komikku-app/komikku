@@ -151,5 +151,17 @@ class ChapterRepositoryImpl(
             )
         }
     }
+
+    override suspend fun getScanlatorsByMergeId(mangaId: Long): List<String> {
+        return handler.awaitList {
+            chaptersQueries.getScanlatorsByMergeId(mangaId) { it.orEmpty() }
+        }
+    }
+
+    override fun getScanlatorsByMergeIdAsFlow(mangaId: Long): Flow<List<String>> {
+        return handler.subscribeToList {
+            chaptersQueries.getScanlatorsByMergeId(mangaId) { it.orEmpty() }
+        }
+    }
     // SY <--
 }
