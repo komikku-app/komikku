@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.backup.create.creators
 
+import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
+import eu.kanade.tachiyomi.data.backup.models.backupSavedSearchMapper
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.domain.backup.model.BackupSavedSearch
-import tachiyomi.domain.backup.model.backupSavedSearchMapper
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

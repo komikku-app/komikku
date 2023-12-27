@@ -2,18 +2,18 @@ package eu.kanade.tachiyomi.data.backup.create.creators
 
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateFlags
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateFlags.BACKUP_CUSTOM_INFO
+import eu.kanade.tachiyomi.data.backup.models.BackupChapter
+import eu.kanade.tachiyomi.data.backup.models.BackupFlatMetadata
+import eu.kanade.tachiyomi.data.backup.models.BackupHistory
+import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import eu.kanade.tachiyomi.data.backup.models.backupChapterMapper
+import eu.kanade.tachiyomi.data.backup.models.backupMergedMangaReferenceMapper
+import eu.kanade.tachiyomi.data.backup.models.backupTrackMapper
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.domain.backup.model.BackupChapter
-import tachiyomi.domain.backup.model.BackupFlatMetadata
-import tachiyomi.domain.backup.model.BackupHistory
-import tachiyomi.domain.backup.model.BackupManga
-import tachiyomi.domain.backup.model.backupChapterMapper
-import tachiyomi.domain.backup.model.backupMergedMangaReferenceMapper
-import tachiyomi.domain.backup.model.backupTrackMapper
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo

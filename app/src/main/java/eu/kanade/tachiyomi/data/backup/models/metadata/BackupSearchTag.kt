@@ -1,4 +1,4 @@
-package tachiyomi.domain.backup.model.metadata
+package eu.kanade.tachiyomi.data.backup.models.metadata
 
 import exh.metadata.sql.models.SearchTag
 import kotlinx.serialization.Serializable
