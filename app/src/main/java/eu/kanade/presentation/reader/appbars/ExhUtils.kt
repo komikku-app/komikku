@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,12 +63,13 @@ fun ExhUtils(
         modifier
             .fillMaxWidth()
             .background(backgroundColor),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AnimatedVisibility(visible = isVisible) {
             Column {
                 Row(
                     Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.9f)
                         .height(IntrinsicSize.Min),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -75,30 +77,45 @@ fun ExhUtils(
                         Modifier
                             .fillMaxWidth(0.5f)
                             .fillMaxHeight()
+                            .padding(5.dp)
                             .clickable(enabled = isAutoScrollEnabled) { onToggleAutoscroll(!isAutoScroll) },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = stringResource(SYMR.strings.eh_autoscroll),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 13.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(start = 24.dp),
-                        )
-                        Switch(
-                            checked = isAutoScroll,
-                            onCheckedChange = null,
-                            enabled = isAutoScrollEnabled,
-                        )
+                        Column(
+                            Modifier.weight(3f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(SYMR.strings.eh_autoscroll),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.fillMaxWidth(0.75f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Column(
+                            Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Switch(
+                                checked = isAutoScroll,
+                                onCheckedChange = null,
+                                enabled = isAutoScrollEnabled
+                            )
+                        }
                     }
                     Row(
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(0.9f).padding(5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Column(Modifier.weight(3f)) {
+                        Column(
+                            Modifier.weight(3f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             var autoScrollFrequencyState by remember {
                                 mutableStateOf(autoScrollFrequency)
                             }
@@ -116,7 +133,7 @@ fun ExhUtils(
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 ),
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth(0.75f),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Decimal,
                                 ),
@@ -143,11 +160,11 @@ fun ExhUtils(
                     }
                 }
                 Row(
-                    Modifier.fillMaxWidth(),
+                    Modifier.fillMaxWidth(0.9f),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(
-                        Modifier.fillMaxWidth(0.5f),
+                        Modifier.fillMaxWidth(0.5f).padding(5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -175,7 +192,7 @@ fun ExhUtils(
                         }
                     }
                     Row(
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(0.9f).padding(5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
