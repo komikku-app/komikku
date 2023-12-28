@@ -41,6 +41,7 @@ fun BottomReaderBar(
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
     // SY -->
+    currentReadingMode: ReadingMode,
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
@@ -104,7 +105,7 @@ fun BottomReaderBar(
             }
         }
 
-        val cropBorders = when (readingMode) {
+        val cropBorders = when (currentReadingMode) {
             ReadingMode.WEBTOON -> ReaderBottomButton.CropBordersWebtoon
             ReadingMode.CONTINUOUS_VERTICAL -> ReaderBottomButton.CropBordersContinuesVertical
             else -> ReaderBottomButton.CropBordersPager
@@ -123,7 +124,7 @@ fun BottomReaderBar(
         if (
             !dualPageSplitEnabled &&
             ReaderBottomButton.PageLayout.isIn(enabledButtons) &&
-            ReadingMode.isPagerType(readingMode.flagValue)
+            ReadingMode.isPagerType(currentReadingMode.flagValue)
         ) {
             IconButton(onClick = onClickPageLayout) {
                 Icon(

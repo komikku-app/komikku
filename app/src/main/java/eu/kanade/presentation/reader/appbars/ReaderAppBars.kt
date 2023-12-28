@@ -107,6 +107,7 @@ fun ReaderAppBars(
     navBarType: NavBarType,
     currentPageText: String,
     enabledButtons: ImmutableSet<String>,
+    currentReadingMode: ReadingMode,
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
@@ -301,6 +302,7 @@ fun ReaderAppBars(
                         onClickCropBorder = onClickCropBorder,
                         onClickSettings = onClickSettings,
                         // SY -->
+                        currentReadingMode = currentReadingMode,
                         dualPageSplitEnabled = dualPageSplitEnabled,
                         doublePages = doublePages,
                         onClickChapterList = onClickChapterList,

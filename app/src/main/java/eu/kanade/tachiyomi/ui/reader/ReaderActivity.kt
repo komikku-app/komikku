@@ -478,6 +478,9 @@ class ReaderActivity : BaseActivity() {
                 currentPageText = state.currentPageText,
                 navBarType = navBarType,
                 enabledButtons = readerBottomButtons,
+                currentReadingMode = ReadingMode.fromPreference(
+                    viewModel.getMangaReadingMode(resolveDefault = true),
+                ),
                 dualPageSplitEnabled = dualPageSplitPaged,
                 doublePages = state.doublePages,
                 onClickChapterList = viewModel::openChapterListDialog,
