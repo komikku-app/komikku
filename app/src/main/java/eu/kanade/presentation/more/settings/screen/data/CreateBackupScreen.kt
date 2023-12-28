@@ -155,18 +155,6 @@ private class CreateBackupScreenModel : StateScreenModel<CreateBackupScreenModel
 
     @Immutable
     data class State(
-        val options: BackupOptions = BackupOptions(
-            libraryEntries = true,
-            categories = true,
-            chapters = true,
-            tracking = true,
-            history = true,
-            appSettings = false,
-            sourceSettings = false,
-            // SY -->
-            customInfo = true,
-            readEntries = true,
-            // SY <--
-        ),
+        val options: BackupOptions = BackupOptions(),
     )
 }
