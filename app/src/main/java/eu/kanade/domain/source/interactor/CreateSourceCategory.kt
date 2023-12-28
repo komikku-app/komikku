@@ -17,7 +17,7 @@ class CreateSourceCategory(private val preferences: SourcePreferences) {
     }
 
     sealed class Result {
-        object InvalidName : Result()
-        object Success : Result()
+        data object InvalidName : Result()
+        data object Success : Result()
     }
 }

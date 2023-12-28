@@ -41,7 +41,7 @@ class GetPagePreviews(
     }
 
     sealed class Result {
-        object Unused : Result()
+        data object Unused : Result()
         data class Success(
             val pagePreviews: List<PagePreview>,
             val hasNextPage: Boolean,

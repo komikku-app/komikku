@@ -305,8 +305,8 @@ open class FeedScreenModel(
     }
 
     sealed class Event {
-        object FailedFetchingSources : Event()
-        object TooManyFeeds : Event()
+        data object FailedFetchingSources : Event()
+        data object TooManyFeeds : Event()
     }
 }
 

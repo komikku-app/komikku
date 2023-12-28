@@ -308,7 +308,7 @@ open class SourceFeedScreenModel(
     }
 
     sealed class Dialog {
-        object Filter : Dialog()
+        data object Filter : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
         data class AddFeed(val feedId: Long, val name: String) : Dialog()
     }

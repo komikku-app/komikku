@@ -92,7 +92,7 @@ sealed class RepoEvent {
 }
 
 sealed class RepoDialog {
-    object Create : RepoDialog()
+    data object Create : RepoDialog()
     data class Delete(val repo: String) : RepoDialog()
 }
 

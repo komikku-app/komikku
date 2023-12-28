@@ -111,7 +111,7 @@ sealed class BiometricTimesEvent {
 }
 
 sealed class BiometricTimesDialog {
-    object Create : BiometricTimesDialog()
+    data object Create : BiometricTimesDialog()
     data class Delete(val timeRange: TimeRangeItem) : BiometricTimesDialog()
 }
 

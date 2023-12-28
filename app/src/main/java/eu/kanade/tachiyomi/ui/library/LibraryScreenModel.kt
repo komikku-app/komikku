@@ -1144,8 +1144,8 @@ class LibraryScreenModel(
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
         data class DeleteManga(val manga: List<Manga>) : Dialog
-        object SyncFavoritesWarning : Dialog
-        object SyncFavoritesConfirm : Dialog
+        data object SyncFavoritesWarning : Dialog
+        data object SyncFavoritesConfirm : Dialog
     }
 
     // SY -->

@@ -23,8 +23,8 @@ class CreateSortTag(
     }
 
     sealed class Result {
-        object TagExists : Result()
-        object Success : Result()
+        data object TagExists : Result()
+        data object Success : Result()
     }
 
     /**

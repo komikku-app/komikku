@@ -46,8 +46,8 @@ class MetadataViewScreenModel(
 }
 
 sealed class MetadataViewState {
-    object Loading : MetadataViewState()
+    data object Loading : MetadataViewState()
     data class Success(val meta: RaisedSearchMetadata) : MetadataViewState()
-    object MetadataNotFound : MetadataViewState()
-    object SourceNotFound : MetadataViewState()
+    data object MetadataNotFound : MetadataViewState()
+    data object SourceNotFound : MetadataViewState()
 }

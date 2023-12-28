@@ -1728,8 +1728,8 @@ sealed class ChapterList {
 
 // SY -->
 sealed interface PagePreviewState {
-    object Unused : PagePreviewState
-    object Loading : PagePreviewState
+    data object Unused : PagePreviewState
+    data object Loading : PagePreviewState
     data class Success(val pagePreviews: List<PagePreview>) : PagePreviewState
     data class Error(val error: Throwable) : PagePreviewState
 }

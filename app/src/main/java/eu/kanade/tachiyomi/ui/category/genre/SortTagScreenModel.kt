@@ -102,14 +102,14 @@ sealed class SortTagEvent {
 }
 
 sealed class SortTagDialog {
-    object Create : SortTagDialog()
+    data object Create : SortTagDialog()
     data class Delete(val tag: String) : SortTagDialog()
 }
 
 sealed class SortTagScreenState {
 
     @Immutable
-    object Loading : SortTagScreenState()
+    data object Loading : SortTagScreenState()
 
     @Immutable
     data class Success(

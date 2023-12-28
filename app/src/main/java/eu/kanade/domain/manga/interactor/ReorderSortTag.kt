@@ -33,8 +33,8 @@ class ReorderSortTag(
     }
 
     sealed class Result {
-        object Success : Result()
-        object Unchanged : Result()
-        object InternalError : Result()
+        data object Success : Result()
+        data object Unchanged : Result()
+        data object InternalError : Result()
     }
 }

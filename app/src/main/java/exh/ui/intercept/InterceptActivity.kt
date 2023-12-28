@@ -185,8 +185,8 @@ class InterceptActivity : BaseActivity() {
 }
 
 sealed class InterceptResult {
-    object Idle : InterceptResult()
-    object Loading : InterceptResult()
+    data object Idle : InterceptResult()
+    data object Loading : InterceptResult()
     data class Success(val mangaId: Long, val manga: Manga, val chapter: Chapter? = null) : InterceptResult()
     data class Failure(val reason: String) : InterceptResult()
 }

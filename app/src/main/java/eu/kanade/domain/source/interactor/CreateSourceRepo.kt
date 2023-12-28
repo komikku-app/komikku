@@ -17,8 +17,8 @@ class CreateSourceRepo(private val preferences: UnsortedPreferences) {
     }
 
     sealed class Result {
-        object InvalidName : Result()
-        object Success : Result()
+        data object InvalidName : Result()
+        data object Success : Result()
     }
 
     /**

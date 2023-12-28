@@ -104,12 +104,12 @@ class SourceCategoryScreenModel(
 
 sealed class SourceCategoryEvent {
     sealed class LocalizedMessage(val stringRes: StringResource) : SourceCategoryEvent()
-    object InvalidName : LocalizedMessage(SYMR.strings.invalid_category_name)
-    object InternalError : LocalizedMessage(MR.strings.internal_error)
+    data object InvalidName : LocalizedMessage(SYMR.strings.invalid_category_name)
+    data object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 
 sealed class SourceCategoryDialog {
-    object Create : SourceCategoryDialog()
+    data object Create : SourceCategoryDialog()
     data class Rename(val category: String) : SourceCategoryDialog()
     data class Delete(val category: String) : SourceCategoryDialog()
 }
@@ -117,7 +117,7 @@ sealed class SourceCategoryDialog {
 sealed class SourceCategoryScreenState {
 
     @Immutable
-    object Loading : SourceCategoryScreenState()
+    data object Loading : SourceCategoryScreenState()
 
     @Immutable
     data class Success(

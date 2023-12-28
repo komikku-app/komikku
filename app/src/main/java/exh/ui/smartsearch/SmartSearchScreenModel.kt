@@ -47,7 +47,7 @@ class SmartSearchScreenModel(
 
     sealed class SearchResults {
         data class Found(val manga: Manga) : SearchResults()
-        object NotFound : SearchResults()
-        object Error : SearchResults()
+        data object NotFound : SearchResults()
+        data object Error : SearchResults()
     }
 }
