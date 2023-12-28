@@ -515,4 +515,4 @@ abstract class HttpSource : CatalogueSource {
     // EXH <--
 }
 
-class LicensedMangaChaptersException : Exception("Licensed - No chapters to show")
+class LicensedMangaChaptersException : RuntimeException()
