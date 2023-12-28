@@ -57,6 +57,9 @@ import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.system.isDevFlavor
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
@@ -403,6 +406,14 @@ object SettingsAdvancedScreen : SearchableSettings {
                     pref = extensionInstallerPref,
                     title = stringResource(MR.strings.ext_installer_pref),
                     entries = extensionInstallerPref.entries
+                        .filter {
+                            // TODO: allow private option in stable versions once URL handling is more fleshed out
+                            if (isPreviewBuildType || isDevFlavor) {
+                                true
+                            } else {
+                                it != BasePreferences.ExtensionInstaller.PRIVATE
+                            }
+                        }
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     onValueChanged = {
