@@ -154,11 +154,10 @@ actual class LocalSource(
 
     // SY -->
     fun updateMangaInfo(manga: SManga) {
-        val directory = fileSystem.getFilesInBaseDirectory().map { it.createDirectory(manga.url) }.find {
-            it?.exists() == true
-        } ?: return
-        val existingFile = directory.listFiles()?.find { it.extension == "json" }
-        val file = existingFile ?: directory.createFile("info.json") ?: return
+        val existingFile = fileSystem.getFilesInMangaDirectory(manga.url).find { it.extension == "json" }
+        val file = existingFile
+            ?: fileSystem.getMangaDirectory(manga.url)?.createFile("info.json")
+            ?: return
         file.openOutputStream().use {
             json.encodeToStream(manga.toJson(), it)
         }
