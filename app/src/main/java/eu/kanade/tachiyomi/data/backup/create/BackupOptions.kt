@@ -21,8 +21,7 @@ data class BackupOptions(
 ) {
 
     companion object {
-
-        val entries = persistentListOf<Entry>(
+        val libraryOptions = persistentListOf(
             Entry(
                 label = MR.strings.categories,
                 getter = BackupOptions::categories,
@@ -43,6 +42,21 @@ data class BackupOptions(
                 getter = BackupOptions::history,
                 setter = { options, enabled -> options.copy(history = enabled) },
             ),
+            // SY -->
+            Entry(
+                label = SYMR.strings.custom_entry_info,
+                getter = BackupOptions::customInfo,
+                setter = { options, enabled -> options.copy(customInfo = enabled) },
+            ),
+            Entry(
+                label = SYMR.strings.all_read_entries,
+                getter = BackupOptions::readEntries,
+                setter = { options, enabled -> options.copy(readEntries = enabled) },
+            ),
+            // SY <--
+        )
+
+        val settingsOptions = persistentListOf(
             Entry(
                 label = MR.strings.app_settings,
                 getter = BackupOptions::appSettings,
@@ -58,18 +72,6 @@ data class BackupOptions(
                 getter = BackupOptions::privateSettings,
                 setter = { options, enabled -> options.copy(privateSettings = enabled) },
             ),
-            // SY -->
-            Entry(
-                label = SYMR.strings.custom_entry_info,
-                getter = BackupOptions::customInfo,
-                setter = { options, enabled -> options.copy(customInfo = enabled) },
-            ),
-            Entry(
-                label = SYMR.strings.all_read_entries,
-                getter = BackupOptions::readEntries,
-                setter = { options, enabled -> options.copy(readEntries = enabled) },
-            ),
-            // SY <--
         )
     }
 

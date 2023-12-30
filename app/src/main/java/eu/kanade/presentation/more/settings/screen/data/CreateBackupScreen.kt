@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,10 +35,12 @@ import eu.kanade.tachiyomi.data.backup.create.BackupCreator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -88,27 +91,25 @@ class CreateBackupScreen : Screen() {
                         }
                     }
 
-                    // TODO: separate sections for library and settings
+                    item {
+                        SectionCard(MR.strings.label_library) {
+                            Column {
+                                LabeledCheckbox(
+                                    label = stringResource(MR.strings.manga),
+                                    checked = true,
+                                    onCheckedChange = {},
+                                    enabled = false,
+                                    modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                )
+
+                                Options(BackupOptions.libraryOptions, state, model)
+                            }
+                        }
+                    }
 
                     item {
-                        LabeledCheckbox(
-                            label = stringResource(MR.strings.manga),
-                            checked = true,
-                            onCheckedChange = {},
-                            enabled = false,
-                            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                        )
-                    }
-                    BackupOptions.entries.forEach { option ->
-                        item {
-                            LabeledCheckbox(
-                                label = stringResource(option.label),
-                                checked = option.getter(state.options),
-                                onCheckedChange = {
-                                    model.toggle(option.setter, it)
-                                },
-                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            )
+                        SectionCard(MR.strings.label_settings) {
+                            Options(BackupOptions.settingsOptions, state, model)
                         }
                     }
                 }
@@ -137,6 +138,24 @@ class CreateBackupScreen : Screen() {
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.Options(
+        options: ImmutableList<BackupOptions.Entry>,
+        state: CreateBackupScreenModel.State,
+        model: CreateBackupScreenModel,
+    ) {
+        options.forEach { option ->
+            LabeledCheckbox(
+                label = stringResource(option.label),
+                checked = option.getter(state.options),
+                onCheckedChange = {
+                    model.toggle(option.setter, it)
+                },
+                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+            )
         }
     }
 }
