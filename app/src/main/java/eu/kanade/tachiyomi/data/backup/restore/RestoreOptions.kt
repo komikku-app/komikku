@@ -14,8 +14,6 @@ data class RestoreOptions(
     // SY <--
 ) {
 
-    fun anyEnabled() = library || appSettings || sourceSettings /* SY --> */ || savedSearches /* SY <-- */
-
     companion object {
         val options = persistentListOf(
             Entry(
