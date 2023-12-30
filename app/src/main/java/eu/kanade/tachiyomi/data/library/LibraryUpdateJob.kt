@@ -204,8 +204,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      *
      * @param categoryId the ID of the category to update, or -1 if no category specified.
      */
-    private fun addMangaToQueue(categoryId: Long, group: Int, groupExtra: String?) {
-        val libraryManga = runBlocking { getLibraryManga.await() }
+    private suspend fun addMangaToQueue(categoryId: Long, group: Int, groupExtra: String?) {
+        val libraryManga = getLibraryManga.await()
         // SY -->
         val groupLibraryUpdateType = libraryPreferences.groupLibraryUpdateType().get()
         // SY <--
@@ -237,7 +237,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
                     val trackingExtra = groupExtra?.toIntOrNull() ?: -1
-                    val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
+                    val tracks = getTracks.await().groupBy { it.mangaId }
 
                     libraryManga.filter { (manga) ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
@@ -269,7 +269,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
         val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
-        val fetchWindow = fetchInterval.getWindow(ZonedDateTime.now())
+        val (_, fetchWindowUpperBound) = fetchInterval.getWindow(ZonedDateTime.now())
 
         mangaToUpdate = listToUpdate
             // SY -->
@@ -300,7 +300,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                         false
                     }
 
-                    MANGA_OUTSIDE_RELEASE_PERIOD in restrictions && it.manga.nextUpdate > fetchWindow.second -> {
+                    MANGA_OUTSIDE_RELEASE_PERIOD in restrictions && it.manga.nextUpdate > fetchWindowUpperBound -> {
                         skippedUpdates.add(
                             it.manga to
                                 context.stringResource(MR.strings.skipped_reason_not_in_release_period),
@@ -312,14 +312,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             }
             .sortedBy { it.manga.title }
 
-        // Warn when excessively checking a single source
-        val maxUpdatesFromSource = mangaToUpdate
-            .groupBy { it.manga.source }
-            .filterKeys { sourceManager.get(it) !is UnmeteredSource }
-            .maxOfOrNull { it.value.size } ?: 0
-        if (maxUpdatesFromSource > MANGA_PER_SOURCE_QUEUE_WARNING_THRESHOLD) {
-            notifier.showQueueSizeWarningNotification()
-        }
+        notifier.showQueueSizeWarningNotificationIfNeeded(mangaToUpdate)
 
         if (skippedUpdates.isNotEmpty()) {
             // TODO: surface skipped reasons to user?

@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
+import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
@@ -77,7 +78,6 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterList
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
-import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.source.MERGED_SOURCE_ID
@@ -105,7 +105,6 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrollingUp
 import tachiyomi.source.local.isLocal
-import java.text.DateFormat
 import java.util.Date
 
 @Composable
@@ -113,8 +112,6 @@ fun MangaScreen(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     fetchInterval: Int?,
-    dateRelativeTime: Boolean,
-    dateFormat: DateFormat,
     isTabletUi: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -179,8 +176,6 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
-            dateRelativeTime = dateRelativeTime,
-            dateFormat = dateFormat,
             fetchInterval = fetchInterval,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
@@ -226,10 +221,8 @@ fun MangaScreen(
         MangaScreenLargeImpl(
             state = state,
             snackbarHostState = snackbarHostState,
-            dateRelativeTime = dateRelativeTime,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
-            dateFormat = dateFormat,
             fetchInterval = fetchInterval,
             onBackClicked = onBackClicked,
             onChapterClicked = onChapterClicked,
@@ -276,8 +269,6 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    dateRelativeTime: Boolean,
-    dateFormat: DateFormat,
     fetchInterval: Int?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -585,8 +576,6 @@ private fun MangaScreenSmallImpl(
                         manga = state.manga,
                         chapters = listItem,
                         isAnyChapterSelected = chapters.fastAny { it.selected },
-                        dateRelativeTime = dateRelativeTime,
-                        dateFormat = dateFormat,
                         chapterSwipeStartAction = chapterSwipeStartAction,
                         chapterSwipeEndAction = chapterSwipeEndAction,
                         // SY -->
@@ -607,8 +596,6 @@ private fun MangaScreenSmallImpl(
 fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    dateRelativeTime: Boolean,
-    dateFormat: DateFormat,
     fetchInterval: Int?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -892,8 +879,6 @@ fun MangaScreenLargeImpl(
                                 manga = state.manga,
                                 chapters = listItem,
                                 isAnyChapterSelected = chapters.fastAny { it.selected },
-                                dateRelativeTime = dateRelativeTime,
-                                dateFormat = dateFormat,
                                 chapterSwipeStartAction = chapterSwipeStartAction,
                                 chapterSwipeEndAction = chapterSwipeEndAction,
                                 // SY -->
@@ -958,8 +943,6 @@ private fun LazyListScope.sharedChapterItems(
     manga: Manga,
     chapters: List<ChapterList>,
     isAnyChapterSelected: Boolean,
-    dateRelativeTime: Boolean,
-    dateFormat: DateFormat,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     // SY -->
@@ -981,7 +964,6 @@ private fun LazyListScope.sharedChapterItems(
         contentType = { MangaScreenItem.CHAPTER },
     ) { item ->
         val haptic = LocalHapticFeedback.current
-        val context = LocalContext.current
 
         when (item) {
             is ChapterList.MissingCount -> {
@@ -1004,11 +986,7 @@ private fun LazyListScope.sharedChapterItems(
                             if (manga.isEhBasedManga()) {
                                 MetadataUtil.EX_DATE_FORMAT.format(Date(it))
                             } else {
-                                Date(it).toRelativeString(
-                                    context,
-                                    dateRelativeTime,
-                                    dateFormat,
-                                )
+                                relativeDateText(Date(item.chapter.dateUpload))
                             }
                             // SY <--
                         },
