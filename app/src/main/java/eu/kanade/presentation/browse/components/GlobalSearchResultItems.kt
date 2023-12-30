@@ -48,7 +48,7 @@ fun GlobalSearchResultItem(
             modifier = Modifier
                 .padding(
                     start = MaterialTheme.padding.medium,
-                    end = MaterialTheme.padding.tiny,
+                    end = MaterialTheme.padding.extraSmall,
                 )
                 .fillMaxWidth()
                 // SY -->

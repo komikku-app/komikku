@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import kotlinx.collections.immutable.ImmutableSet
+import tachiyomi.presentation.core.components.material.padding
 
 private val animationSpec = tween<IntOffset>(200)
 
@@ -272,7 +273,7 @@ fun ReaderAppBars(
             ) {
                 Column(
                     modifier = modifierWithInsetsPadding,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
                     if (navBarType == NavBarType.Bottom) {
                         ChapterNavigator(

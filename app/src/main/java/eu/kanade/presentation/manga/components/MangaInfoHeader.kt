@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -321,7 +322,7 @@ fun ExpandableMangaDescription(
                         // SY <--
                         FlowRow(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
                         ) {
                             tags.forEach {
                                 TagsChip(
@@ -338,7 +339,7 @@ fun ExpandableMangaDescription(
                 } else {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = MaterialTheme.padding.medium),
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.tiny),
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
                     ) {
                         items(items = tags) {
                             TagsChip(
@@ -441,7 +442,7 @@ private fun MangaAndSourceTitlesSmall(
 }
 
 @Composable
-private fun MangaContentInfo(
+private fun ColumnScope.MangaContentInfo(
     title: String,
     doSearch: (query: String, global: Boolean) -> Unit,
     author: String?,
@@ -473,7 +474,7 @@ private fun MangaContentInfo(
 
     Row(
         modifier = Modifier.secondaryItemAlpha(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -504,7 +505,7 @@ private fun MangaContentInfo(
     if (!artist.isNullOrBlank() && author != artist) {
         Row(
             modifier = Modifier.secondaryItemAlpha(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

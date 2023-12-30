@@ -230,7 +230,6 @@ private fun RowScope.Button(
 @Composable
 fun LibraryBottomActionMenu(
     visible: Boolean,
-    modifier: Modifier = Modifier,
     onChangeCategoryClicked: () -> Unit,
     onMarkAsReadClicked: () -> Unit,
     onMarkAsUnreadClicked: () -> Unit,
@@ -241,6 +240,7 @@ fun LibraryBottomActionMenu(
     onClickMigrate: (() -> Unit)?,
     onClickAddToMangaDex: (() -> Unit)?,
     // SY <--
+    modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = visible,

@@ -13,6 +13,7 @@ data class BackupOptions(
     val history: Boolean = true,
     val appSettings: Boolean = true,
     val sourceSettings: Boolean = true,
+    val privateSettings: Boolean = false,
     // SY -->
     val customInfo: Boolean = true,
     val readEntries: Boolean = true,
@@ -21,7 +22,7 @@ data class BackupOptions(
 
     companion object {
 
-        val entries = persistentListOf<BackupOptionEntry>(
+        val entries = persistentListOf<Entry>(
             Entry(
                 label = MR.strings.categories,
                 getter = BackupOptions::categories,
@@ -58,12 +59,12 @@ data class BackupOptions(
                 setter = { options, enabled -> options.copy(privateSettings = enabled) },
             ),
             // SY -->
-            BackupOptionEntry(
+            Entry(
                 label = SYMR.strings.custom_entry_info,
                 getter = BackupOptions::customInfo,
                 setter = { options, enabled -> options.copy(customInfo = enabled) },
             ),
-            BackupOptionEntry(
+            Entry(
                 label = SYMR.strings.all_read_entries,
                 getter = BackupOptions::readEntries,
                 setter = { options, enabled -> options.copy(readEntries = enabled) },
