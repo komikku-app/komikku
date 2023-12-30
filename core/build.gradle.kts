@@ -37,6 +37,7 @@ dependencies {
 
     implementation(libs.unifile)
 
+    implementation(kotlinx.reflect)
     api(kotlinx.coroutines.core)
     api(kotlinx.serialization.json)
     api(kotlinx.serialization.json.okio)
@@ -50,6 +51,8 @@ dependencies {
 
     // JavaScript engine
     implementation(libs.bundles.js.engine)
+
+    testImplementation(libs.bundles.test)
 
     // SY -->
     implementation(sylibs.xlog)
