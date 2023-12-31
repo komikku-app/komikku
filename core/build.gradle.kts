@@ -37,7 +37,6 @@ dependencies {
 
     implementation(libs.unifile)
 
-    implementation(kotlinx.reflect)
     api(kotlinx.coroutines.core)
     api(kotlinx.serialization.json)
     api(kotlinx.serialization.json.okio)

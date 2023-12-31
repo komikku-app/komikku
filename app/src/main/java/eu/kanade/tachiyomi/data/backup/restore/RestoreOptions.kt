@@ -14,6 +14,17 @@ data class RestoreOptions(
     // SY <--
 ) {
 
+    fun asBooleanArray() = booleanArrayOf(
+        library,
+        appSettings,
+        sourceSettings,
+        // SY -->
+        savedSearches
+        // SY <--
+    )
+
+    fun anyEnabled() = library || appSettings || sourceSettings /* SY --> */ || savedSearches /* SY <-- */
+
     companion object {
         val options = persistentListOf(
             Entry(
@@ -37,6 +48,15 @@ data class RestoreOptions(
                 getter = RestoreOptions::savedSearches,
                 setter = { options, enabled -> options.copy(savedSearches = enabled) },
             ),
+            // SY <--
+        )
+
+        fun fromBooleanArray(array: BooleanArray) = RestoreOptions(
+            library = array[0],
+            appSettings = array[1],
+            sourceSettings = array[2],
+            // SY -->
+            savedSearches = array[3]
             // SY <--
         )
     }
