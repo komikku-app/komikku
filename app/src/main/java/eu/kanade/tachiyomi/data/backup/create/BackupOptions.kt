@@ -35,6 +35,8 @@ data class BackupOptions(
         // SY <--
     )
 
+    fun anyEnabled() = libraryEntries || appSettings || sourceSettings
+
     companion object {
         val libraryOptions = persistentListOf(
             Entry(
