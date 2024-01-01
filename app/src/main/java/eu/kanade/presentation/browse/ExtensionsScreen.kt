@@ -72,7 +72,7 @@ fun ExtensionScreen(
     searchQuery: String?,
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
-    onClickItemWebView: (Extension.Available) -> Unit,
+    onOpenWebView: (Extension.Available) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
     onUninstallExtension: (Extension) -> Unit,
     onUpdateExtension: (Extension.Installed) -> Unit,
@@ -105,7 +105,7 @@ fun ExtensionScreen(
                     contentPadding = contentPadding,
                     onLongClickItem = onLongClickItem,
                     onClickItemCancel = onClickItemCancel,
-                    onClickItemWebView = onClickItemWebView,
+                    onOpenWebView = onOpenWebView,
                     onInstallExtension = onInstallExtension,
                     onUninstallExtension = onUninstallExtension,
                     onUpdateExtension = onUpdateExtension,
@@ -123,8 +123,8 @@ private fun ExtensionContent(
     state: ExtensionsScreenModel.State,
     contentPadding: PaddingValues,
     onLongClickItem: (Extension) -> Unit,
-    onClickItemWebView: (Extension.Available) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
+    onOpenWebView: (Extension.Available) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
     onUninstallExtension: (Extension) -> Unit,
     onUpdateExtension: (Extension.Installed) -> Unit,
@@ -203,7 +203,13 @@ private fun ExtensionContent(
                         }
                     },
                     onLongClickItem = onLongClickItem,
-                    onClickItemWebView = onClickItemWebView,
+                    onClickItemSecondaryAction = {
+                        when (it) {
+                            is Extension.Available -> onOpenWebView(it)
+                            is Extension.Installed -> onOpenExtension(it)
+                            else -> {}
+                        }
+                    },
                     onClickItemCancel = onClickItemCancel,
                     onClickItemAction = {
                         when (it) {
@@ -244,9 +250,9 @@ private fun ExtensionItem(
     item: ExtensionUiModel.Item,
     onClickItem: (Extension) -> Unit,
     onLongClickItem: (Extension) -> Unit,
-    onClickItemWebView: (Extension.Available) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
     onClickItemAction: (Extension) -> Unit,
+    onClickItemSecondaryAction: (Extension) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (extension, installStep) = item
@@ -285,9 +291,9 @@ private fun ExtensionItem(
             ExtensionItemActions(
                 extension = extension,
                 installStep = installStep,
-                onClickItemWebView = onClickItemWebView,
                 onClickItemCancel = onClickItemCancel,
                 onClickItemAction = onClickItemAction,
+                onClickItemSecondaryAction = onClickItemSecondaryAction,
             )
         },
     ) {
@@ -374,9 +380,9 @@ private fun ExtensionItemActions(
     extension: Extension,
     installStep: InstallStep,
     modifier: Modifier = Modifier,
-    onClickItemWebView: (Extension.Available) -> Unit = {},
     onClickItemCancel: (Extension) -> Unit = {},
     onClickItemAction: (Extension) -> Unit = {},
+    onClickItemSecondaryAction: (Extension) -> Unit = {},
 ) {
     val isIdle = installStep.isCompleted()
 
@@ -404,7 +410,7 @@ private fun ExtensionItemActions(
             installStep == InstallStep.Idle -> {
                 when (extension) {
                     is Extension.Installed -> {
-                        IconButton(onClick = { onClickItemAction(extension) }) {
+                        IconButton(onClick = { onClickItemSecondaryAction(extension) }) {
                             Icon(
                                 imageVector = Icons.Outlined.Settings,
                                 contentDescription = stringResource(MR.strings.action_settings),
@@ -431,7 +437,7 @@ private fun ExtensionItemActions(
                     is Extension.Available -> {
                         if (extension.sources.isNotEmpty()) {
                             IconButton(
-                                onClick = { onClickItemWebView(extension) },
+                                onClick = { onClickItemSecondaryAction(extension) },
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Public,
