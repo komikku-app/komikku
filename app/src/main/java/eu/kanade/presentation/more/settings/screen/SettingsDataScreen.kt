@@ -43,6 +43,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import logcat.LogPriority
 import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.storage.displayablePath
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.lang.withUIContext
 import tachiyomi.core.util.system.logcat
@@ -113,7 +114,7 @@ object SettingsDataScreen : SearchableSettings {
 
         return remember(storageDir) {
             val file = UniFile.fromUri(context, storageDir.toUri())
-            file?.filePath ?: file?.uri?.toString()
+            file?.displayablePath
         } ?: stringResource(MR.strings.invalid_location, storageDir)
     }
 
