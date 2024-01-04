@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.storage.toTempFile
+import tachiyomi.core.storage.UniFileTempFileManager
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
@@ -28,6 +28,7 @@ class ChapterLoader(
     private val context: Context,
     private val downloadManager: DownloadManager,
     private val downloadProvider: DownloadProvider,
+    private val tempFileManager: UniFileTempFileManager,
     private val manga: Manga,
     private val source: Source,
     // SY -->
@@ -125,13 +126,13 @@ class ChapterLoader(
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {
                             is Format.Directory -> DirectoryPageLoader(format.file)
-                            is Format.Zip -> ZipPageLoader(format.file.toTempFile(context))
+                            is Format.Zip -> ZipPageLoader(tempFileManager.createTempFile(format.file))
                             is Format.Rar -> try {
-                                RarPageLoader(format.file.toTempFile(context))
+                                RarPageLoader(tempFileManager.createTempFile(format.file))
                             } catch (e: UnsupportedRarV5Exception) {
                                 error(context.stringResource(MR.strings.loader_rar5_error))
                             }
-                            is Format.Epub -> EpubPageLoader(format.file.toTempFile(context))
+                            is Format.Epub -> EpubPageLoader(tempFileManager.createTempFile(format.file))
                         }
                     }
                     else -> error(context.stringResource(MR.strings.loader_not_implemented_error))
@@ -142,13 +143,13 @@ class ChapterLoader(
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {
                     is Format.Directory -> DirectoryPageLoader(format.file)
-                    is Format.Zip -> ZipPageLoader(format.file.toTempFile(context))
+                    is Format.Zip -> ZipPageLoader(tempFileManager.createTempFile(format.file))
                     is Format.Rar -> try {
-                        RarPageLoader(format.file.toTempFile(context))
+                        RarPageLoader(tempFileManager.createTempFile(format.file))
                     } catch (e: UnsupportedRarV5Exception) {
                         error(context.stringResource(MR.strings.loader_rar5_error))
                     }
-                    is Format.Epub -> EpubPageLoader(format.file.toTempFile(context))
+                    is Format.Epub -> EpubPageLoader(tempFileManager.createTempFile(format.file))
                 }
             }
             source is HttpSource -> HttpPageLoader(chapter, source)
