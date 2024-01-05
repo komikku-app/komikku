@@ -18,10 +18,6 @@
         <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
         <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
     </plurals>
-    <plurals name="num_repos">
-        <item quantity="one">%d additional repo</item>
-        <item quantity="other">%d additional repos</item>
-    </plurals>
     <plurals name="migrate_entry">
         <item quantity="one">Migrate %1$d%2$s entry?</item>
         <item quantity="other">Migrate %1$d%2$s entries?</item>

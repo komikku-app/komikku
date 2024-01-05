@@ -29,10 +29,10 @@ sealed class Extension {
         val isObsolete: Boolean = false,
         val isUnofficial: Boolean = false,
         val isShared: Boolean,
-        // SY -->
-        val isRedundant: Boolean = false,
         val repoUrl: String? = null,
         val isRepoSource: Boolean = false,
+        // SY -->
+        val isRedundant: Boolean = false,
         // SY <--
     ) : Extension()
 
@@ -47,10 +47,8 @@ sealed class Extension {
         val sources: List<Source>,
         val apkName: String,
         val iconUrl: String,
-        // SY -->
         val repoUrl: String,
         val isRepoSource: Boolean,
-        // SY <--
     ) : Extension() {
 
         data class Source(

@@ -13,10 +13,6 @@
         <item quantity="one">%1$d tag na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
         <item quantity="other">%1$d tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
     </plurals>
-    <plurals name="num_repos">
-        <item quantity="one">%d repositório adicional</item>
-        <item quantity="other">%d repositórios adicionais</item>
-    </plurals>
 
     <plurals name="migrate_entry">
         <item quantity="one">Migrar %1$d%2$s mangá?</item>

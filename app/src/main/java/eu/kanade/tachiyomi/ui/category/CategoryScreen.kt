@@ -56,30 +56,24 @@ class CategoryScreen : Screen() {
                 CategoryCreateDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = screenModel::createCategory,
-                    // SY -->
                     categories = successState.categories.fastMap { it.name }.toImmutableList(),
                     title = stringResource(MR.strings.action_add_category),
-                    // SY <--
                 )
             }
             is CategoryDialog.Rename -> {
                 CategoryRenameDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onRename = { screenModel.renameCategory(dialog.category, it) },
-                    // SY -->
                     categories = successState.categories.fastMap { it.name }.toImmutableList(),
                     category = dialog.category.name,
-                    // SY <--
                 )
             }
             is CategoryDialog.Delete -> {
                 CategoryDeleteDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteCategory(dialog.category.id) },
-                    // SY -->
                     title = stringResource(MR.strings.delete_category),
                     text = stringResource(MR.strings.delete_category_confirmation, dialog.category.name),
-                    // SY <--
                 )
             }
             is CategoryDialog.SortAlphabetically -> {

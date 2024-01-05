@@ -7,7 +7,6 @@ import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.GetSortTag
 import eu.kanade.domain.manga.interactor.ReorderSortTag
 import eu.kanade.domain.source.interactor.CreateSourceCategory
-import eu.kanade.domain.source.interactor.CreateSourceRepo
 import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetShowLatest
@@ -61,14 +60,12 @@ import tachiyomi.domain.source.interactor.CountFeedSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchGlobal
 import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.DeleteSavedSearchById
-import tachiyomi.domain.source.interactor.DeleteSourceRepos
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
 import tachiyomi.domain.source.interactor.GetSavedSearchById
 import tachiyomi.domain.source.interactor.GetSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
-import tachiyomi.domain.source.interactor.GetSourceRepos
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.repository.FeedSavedSearchRepository
@@ -94,9 +91,6 @@ class SYDomainModule : InjektModule {
         addFactory { FilterSerializer() }
         addFactory { GetHistoryByMangaId(get()) }
         addFactory { GetChapterByUrl(get()) }
-        addFactory { CreateSourceRepo(get()) }
-        addFactory { DeleteSourceRepos(get()) }
-        addFactory { GetSourceRepos(get()) }
         addFactory { GetSourceCategories(get()) }
         addFactory { CreateSourceCategory(get()) }
         addFactory { RenameSourceCategory(get(), get()) }

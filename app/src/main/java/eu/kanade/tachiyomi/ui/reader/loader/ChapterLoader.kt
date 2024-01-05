@@ -121,6 +121,7 @@ class ChapterLoader(
                         source = source,
                         downloadManager = downloadManager,
                         downloadProvider = downloadProvider,
+                        tempFileManager = tempFileManager,
                     )
                     source is HttpSource -> HttpPageLoader(chapter, source)
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
@@ -139,7 +140,7 @@ class ChapterLoader(
                 }
             }
             // SY <--
-            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
+            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider, tempFileManager)
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {
                     is Format.Directory -> DirectoryPageLoader(format.file)

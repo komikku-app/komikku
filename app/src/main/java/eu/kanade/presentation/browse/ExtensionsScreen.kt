@@ -340,13 +340,11 @@ private fun ExtensionItemContent(
 
                 val warning = when {
                     extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                    // SY -->
-                    extension is Extension.Installed && extension.isRepoSource -> SYMR.strings.repo_source
-                    extension is Extension.Available && extension.isRepoSource -> SYMR.strings.repo_source
-                    // SY <--
                     extension is Extension.Installed && extension.isUnofficial -> MR.strings.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
+                    // SY -->
                     extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant
+                    // SY <--
                     extension.isNsfw -> MR.strings.ext_nsfw_short
                     else -> null
                 }

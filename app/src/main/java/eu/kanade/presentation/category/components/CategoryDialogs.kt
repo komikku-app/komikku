@@ -42,12 +42,10 @@ import kotlin.time.Duration.Companion.seconds
 fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
     onCreate: (String) -> Unit,
-    // SY -->
     categories: ImmutableList<String>,
     title: String,
     extraMessage: String? = null,
     alreadyExistsError: StringResource = MR.strings.error_category_exists,
-    // SY <--
 ) {
     var name by remember { mutableStateOf("") }
 
@@ -76,12 +74,9 @@ fun CategoryCreateDialog(
             Text(text = title)
         },
         text = {
-            // SY -->
             Column {
-                if (extraMessage != null) {
-                    Text(extraMessage)
-                }
-                // SY <--
+                extraMessage?.let { Text(it) }
+
                 OutlinedTextField(
                     modifier = Modifier
                         .focusRequester(focusRequester),
@@ -101,9 +96,7 @@ fun CategoryCreateDialog(
                     isError = name.isNotEmpty() && nameAlreadyExists,
                     singleLine = true,
                 )
-                // SY -->
             }
-            // SY <--
         },
     )
 
@@ -118,11 +111,9 @@ fun CategoryCreateDialog(
 fun CategoryRenameDialog(
     onDismissRequest: () -> Unit,
     onRename: (String) -> Unit,
-    // SY -->
     categories: ImmutableList<String>,
     category: String,
     alreadyExistsError: StringResource = MR.strings.error_category_exists,
-    // SY <--
 ) {
     var name by remember { mutableStateOf(category) }
     var valueHasChanged by remember { mutableStateOf(false) }
@@ -185,10 +176,8 @@ fun CategoryRenameDialog(
 fun CategoryDeleteDialog(
     onDismissRequest: () -> Unit,
     onDelete: () -> Unit,
-    // SY -->
     title: String,
     text: String,
-    // SY <--
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -350,8 +339,4 @@ fun ChangeCategoryDialog(
             }
         },
     )
-}
-
-private fun List<Category>.anyWithName(name: String): Boolean {
-    return any { name == it.name }
 }

@@ -376,18 +376,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">废弃</string>
     <string name="redundant_extension_message">此插件已废弃，将不会在此版本的 Tachiyomi 上工作。</string>
-    <string name="repo_extension_message">此插件来自外部仓库。点击以浏览其仓库。</string>
-
-    <!-- Extension Repos -->
-    <string name="information_empty_repos">你没有额外的仓库。点击加号按钮以创建一个用于添加外部插件。</string>
-    <string name="action_add_repo">添加仓库</string>
-    <string name="action_add_repo_message">在 Tachiyomi 中添加额外的仓库，仓库的格式是 \'username/repo\'，username是仓库所有者，repo是仓库名称。</string>
-    <string name="action_edit_repos">编辑仓库</string>
-    <string name="error_repo_exists">此仓库已存在！</string>
-    <string name="invalid_repo_name">无效的仓库名称</string>
-    <string name="repo_source">仓库来源</string>
-    <string name="delete_repo">删除仓库</string>
-    <string name="delete_repo_confirmation">你想要删除仓库 %s 吗？</string>
 
     <!-- Migration -->
     <string name="select_sources">选择来源</string>

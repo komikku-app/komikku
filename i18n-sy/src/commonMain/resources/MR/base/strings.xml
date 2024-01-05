@@ -391,18 +391,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
     <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Tachiyomi.</string>
-    <string name="repo_extension_message">This extension is from an external repo. Tap to view the repo.</string>
-
-    <!-- Extension Repos -->
-    <string name="information_empty_repos">You have no additional repos. Tap the plus button to create one for adding external extensions.</string>
-    <string name="action_add_repo">Add repo</string>
-    <string name="action_add_repo_message">Add additional repos to Tachiyomi, the format of a repo is \'username/repo\' , with username being the repo owner, and repo being the repo name</string>
-    <string name="action_edit_repos">Edit repos</string>
-    <string name="error_repo_exists">This repo already exists!</string>
-    <string name="invalid_repo_name">Invalid repo name</string>
-    <string name="repo_source">Repo source</string>
-    <string name="delete_repo">Delete repo</string>
-    <string name="delete_repo_confirmation">Do you wish to delete the repo %s?</string>
 
     <!-- Migration -->
     <string name="select_sources">Select sources</string>

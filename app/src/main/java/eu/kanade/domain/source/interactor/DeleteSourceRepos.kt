@@ -1,8 +1,8 @@
-package tachiyomi.domain.source.interactor
+package eu.kanade.domain.source.interactor
 
-import tachiyomi.domain.UnsortedPreferences
+import eu.kanade.domain.source.service.SourcePreferences
 
-class DeleteSourceRepos(private val preferences: UnsortedPreferences) {
+class DeleteSourceRepos(private val preferences: SourcePreferences) {
 
     fun await(repos: List<String>) {
         preferences.extensionRepos().set(

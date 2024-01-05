@@ -1,10 +1,12 @@
-package eu.kanade.tachiyomi.ui.category.repos
+package eu.kanade.presentation.category.repos
 
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.source.interactor.CreateSourceRepo
+import eu.kanade.domain.source.interactor.DeleteSourceRepos
+import eu.kanade.domain.source.interactor.GetSourceRepos
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
@@ -12,10 +14,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.util.lang.launchIO
-import tachiyomi.domain.source.interactor.DeleteSourceRepos
-import tachiyomi.domain.source.interactor.GetSourceRepos
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -87,7 +86,7 @@ class RepoScreenModel(
 
 sealed class RepoEvent {
     sealed class LocalizedMessage(val stringRes: StringResource) : RepoEvent()
-    data object InvalidName : LocalizedMessage(SYMR.strings.invalid_repo_name)
+    data object InvalidName : LocalizedMessage(MR.strings.invalid_repo_name)
     data object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 

@@ -18,7 +18,6 @@ import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.lang.withIOContext
 import tachiyomi.core.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
@@ -27,17 +26,13 @@ internal class ExtensionGithubApi {
 
     private val networkService: NetworkHelper by injectLazy()
     private val preferenceStore: PreferenceStore by injectLazy()
+    private val sourcePreferences: SourcePreferences by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
     private val json: Json by injectLazy()
 
     private val lastExtCheck: Preference<Long> by lazy {
         preferenceStore.getLong(Preference.appStateKey("last_ext_check"), 0)
     }
-
-    // SY -->
-    private val sourcePreferences: SourcePreferences by injectLazy()
-    private val unsortedPreferences: UnsortedPreferences by injectLazy()
-    // SY <--
 
     private var requiresFallbackSource = false
 
@@ -66,7 +61,7 @@ internal class ExtensionGithubApi {
             val extensions = with(json) {
                 response
                     .parseAs<List<ExtensionJsonObject>>()
-                    .toExtensions() /* SY --> */ + unsortedPreferences.extensionRepos()
+                    .toExtensions() + sourcePreferences.extensionRepos()
                     .get()
                     .flatMap { repoPath ->
                         val url = if (requiresFallbackSource) {
@@ -80,7 +75,6 @@ internal class ExtensionGithubApi {
                             .parseAs<List<ExtensionJsonObject>>()
                             .toExtensions(url, repoSource = true)
                     }
-                // SY <--
             }
 
             // Sanity check - a small number of extensions probably means something broke
@@ -138,10 +132,8 @@ internal class ExtensionGithubApi {
     }
 
     private fun List<ExtensionJsonObject>.toExtensions(
-        // SY -->
         repoUrl: String = getUrlPrefix(),
         repoSource: Boolean = false,
-        // SY <--
     ): List<Extension.Available> {
         return this
             .filter {
@@ -159,17 +151,15 @@ internal class ExtensionGithubApi {
                     isNsfw = it.nsfw == 1,
                     sources = it.sources?.map(extensionSourceMapper).orEmpty(),
                     apkName = it.apk,
-                    iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.pkg}.png",
-                    // SY -->
+                    iconUrl = "${repoUrl}icon/${it.pkg}.png",
                     repoUrl = repoUrl,
                     isRepoSource = repoSource,
-                    // SY <--
                 )
             }
     }
 
     fun getApkUrl(extension: Extension.Available): String {
-        return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" // SY <--
+        return "${extension.repoUrl}/apk/${extension.apkName}"
     }
 
     private fun getUrlPrefix(): String {

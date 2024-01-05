@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.category.components.CategoryFloatingActionButton
 import eu.kanade.presentation.category.components.repo.SourceRepoContent
+import eu.kanade.presentation.category.repos.RepoScreenState
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.tachiyomi.ui.category.repos.RepoScreenState
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -30,7 +30,7 @@ fun SourceRepoScreen(
         topBar = { scrollBehavior ->
             AppBar(
                 navigateUp = navigateUp,
-                title = stringResource(SYMR.strings.action_edit_repos),
+                title = stringResource(MR.strings.label_extension_repos),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -43,7 +43,7 @@ fun SourceRepoScreen(
     ) { paddingValues ->
         if (state.isEmpty) {
             EmptyScreen(
-                SYMR.strings.information_empty_repos,
+                MR.strings.information_empty_repos,
                 modifier = Modifier.padding(paddingValues),
             )
             return@Scaffold

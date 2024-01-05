@@ -371,7 +371,10 @@ open class BrowseSourceScreenModel(
                 else -> {
                     val preselectedIds = getCategories.await(manga.id).map { it.id }
                     setDialog(
-                        Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }.toImmutableList()),
+                        Dialog.ChangeMangaCategory(
+                            manga,
+                            categories.mapAsCheckboxState { it.id in preselectedIds }.toImmutableList(),
+                        ),
                     )
                 }
             }

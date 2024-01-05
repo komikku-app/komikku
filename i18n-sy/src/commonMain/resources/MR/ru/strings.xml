@@ -380,18 +380,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
-    <string name="repo_extension_message">Это расширение из внешнего репозитория. Нажмите, чтобы просмотреть репозиторий.</string>
-
-    <!-- Extension Repos -->
-    <string name="information_empty_repos">У вас нет дополнительных репозиториев. Нажмите кнопку «Добавить» чтобы создать репозиторий для добавления внешних расширений.</string>
-    <string name="action_add_repo">Добавить репозиторий</string>
-    <string name="action_add_repo_message">Добавить дополнительные репозиторий в TachiyomiSY (Формат username/repo). Username - является владельцем репозитория, а repo - имя репозитория</string>
-    <string name="action_edit_repos">Редактировать репозитории</string>
-    <string name="error_repo_exists">Этот репозиторий уже существует!</string>
-    <string name="invalid_repo_name">Недопустимое имя репозитория</string>
-    <string name="repo_source">Источник репозитория</string>
-    <string name="delete_repo">Удалить репозиторий</string>
-    <string name="delete_repo_confirmation">Хотите ли вы удалить репозиторий %s?</string>
 
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>

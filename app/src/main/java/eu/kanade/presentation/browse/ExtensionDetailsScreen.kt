@@ -156,11 +156,12 @@ private fun ExtensionDetails(
                 item {
                     WarningBanner(SYMR.strings.redundant_extension_message)
                 }
+            // SY <--
             extension.isRepoSource ->
                 item {
                     val uriHandler = LocalUriHandler.current
                     WarningBanner(
-                        SYMR.strings.repo_extension_message,
+                        MR.strings.repo_extension_message,
                         modifier = Modifier.clickable {
                             extension.repoUrl ?: return@clickable
                             uriHandler.openUri(
@@ -171,7 +172,6 @@ private fun ExtensionDetails(
                         },
                     )
                 }
-            // SY <--
             extension.isUnofficial ->
                 item {
                     WarningBanner(MR.strings.unofficial_extension_message)

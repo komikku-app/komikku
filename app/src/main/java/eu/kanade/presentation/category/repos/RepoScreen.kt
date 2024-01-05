@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.category.repos
+package eu.kanade.presentation.category.repos
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,11 +14,12 @@ import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class RepoScreen : Screen() {
+
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -48,17 +49,17 @@ class RepoScreen : Screen() {
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createRepo(it) },
                     categories = successState.repos,
-                    title = stringResource(SYMR.strings.action_add_repo),
-                    extraMessage = stringResource(SYMR.strings.action_add_repo_message),
-                    alreadyExistsError = SYMR.strings.error_repo_exists,
+                    title = stringResource(MR.strings.action_add_repo),
+                    extraMessage = stringResource(MR.strings.action_add_repo_message),
+                    alreadyExistsError = MR.strings.error_repo_exists,
                 )
             }
             is RepoDialog.Delete -> {
                 CategoryDeleteDialog(
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteRepos(listOf(dialog.repo)) },
-                    title = stringResource(SYMR.strings.delete_repo),
-                    text = stringResource(SYMR.strings.delete_repo_confirmation, dialog.repo),
+                    title = stringResource(MR.strings.action_delete_repo),
+                    text = stringResource(MR.strings.delete_repo_confirmation, dialog.repo),
                 )
             }
         }

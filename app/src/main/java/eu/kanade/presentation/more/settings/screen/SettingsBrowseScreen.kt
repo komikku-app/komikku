@@ -10,8 +10,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.category.repos.RepoScreen
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.ui.category.repos.RepoScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import kotlinx.collections.immutable.persistentListOf
@@ -34,7 +34,11 @@ object SettingsBrowseScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
+
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
+        val reposCount by sourcePreferences.extensionRepos().collectAsState()
+
         // SY -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
@@ -45,7 +49,6 @@ object SettingsBrowseScreen : SearchableSettings {
                 title = stringResource(MR.strings.label_sources),
                 preferenceItems = persistentListOf(
                     kotlin.run {
-                        val navigator = LocalNavigator.currentOrThrow
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(
                             title = stringResource(MR.strings.action_edit_categories),
@@ -82,22 +85,6 @@ object SettingsBrowseScreen : SearchableSettings {
                     ),
                 ),
             ),
-            Preference.PreferenceGroup(
-                title = stringResource(MR.strings.label_extensions),
-                preferenceItems = persistentListOf(
-                    kotlin.run {
-                        val navigator = LocalNavigator.currentOrThrow
-                        val count by unsortedPreferences.extensionRepos().collectAsState()
-                        Preference.PreferenceItem.TextPreference(
-                            title = stringResource(SYMR.strings.action_edit_repos),
-                            subtitle = pluralStringResource(SYMR.plurals.num_repos, count.size, count.size),
-                            onClick = {
-                                navigator.push(RepoScreen())
-                            },
-                        )
-                    },
-                ),
-            ),
             // SY <--
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_sources),
@@ -105,6 +92,13 @@ object SettingsBrowseScreen : SearchableSettings {
                     Preference.PreferenceItem.SwitchPreference(
                         pref = sourcePreferences.hideInLibraryItems(),
                         title = stringResource(MR.strings.pref_hide_in_library_items),
+                    ),
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(MR.strings.label_extension_repos),
+                        subtitle = pluralStringResource(MR.plurals.num_repos, reposCount.size, reposCount.size),
+                        onClick = {
+                            navigator.push(RepoScreen())
+                        },
                     ),
                 ),
             ),
