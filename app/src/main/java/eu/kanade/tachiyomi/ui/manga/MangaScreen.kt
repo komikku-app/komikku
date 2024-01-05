@@ -143,7 +143,7 @@ class MangaScreen(
         MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
-            fetchInterval = successState.manga.fetchInterval,
+            nextUpdate = successState.manga.expectedNextUpdate,
             isTabletUi = isTabletUi(),
             chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
@@ -195,7 +195,7 @@ class MangaScreen(
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
-                screenModel.isUpdateIntervalEnabled && successState.manga.favorite
+                successState.manga.favorite
             },
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
@@ -302,9 +302,10 @@ class MangaScreen(
             is MangaScreenModel.Dialog.SetFetchInterval -> {
                 SetIntervalDialog(
                     interval = dialog.manga.fetchInterval,
-                    nextUpdate = dialog.manga.nextUpdate,
+                    nextUpdate = dialog.manga.expectedNextUpdate,
                     onDismissRequest = onDismissRequest,
-                    onValueChanged = { screenModel.setFetchInterval(dialog.manga, it) },
+                    onValueChanged = { interval: Int -> screenModel.setFetchInterval(dialog.manga, interval) }
+                        .takeIf { screenModel.isUpdateIntervalEnabled },
                 )
             }
             // SY -->

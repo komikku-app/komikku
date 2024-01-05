@@ -105,13 +105,14 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrollingUp
 import tachiyomi.source.local.isLocal
+import java.time.Instant
 import java.util.Date
 
 @Composable
 fun MangaScreen(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    fetchInterval: Int?,
+    nextUpdate: Instant?,
     isTabletUi: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
@@ -176,7 +177,7 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
-            fetchInterval = fetchInterval,
+            nextUpdate = nextUpdate,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             onBackClicked = onBackClicked,
@@ -223,7 +224,7 @@ fun MangaScreen(
             snackbarHostState = snackbarHostState,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
-            fetchInterval = fetchInterval,
+            nextUpdate = nextUpdate,
             onBackClicked = onBackClicked,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
@@ -269,7 +270,7 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    fetchInterval: Int?,
+    nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onBackClicked: () -> Unit,
@@ -482,7 +483,7 @@ private fun MangaScreenSmallImpl(
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
-                            fetchInterval = fetchInterval,
+                            nextUpdate = nextUpdate,
                             isUserIntervalMode = state.manga.fetchInterval < 0,
                             onAddToLibraryClicked = onAddToLibraryClicked,
                             onWebViewClicked = onWebViewClicked,
@@ -596,7 +597,7 @@ private fun MangaScreenSmallImpl(
 fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
-    fetchInterval: Int?,
+    nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onBackClicked: () -> Unit,
@@ -795,7 +796,7 @@ fun MangaScreenLargeImpl(
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
-                            fetchInterval = fetchInterval,
+                            nextUpdate = nextUpdate,
                             isUserIntervalMode = state.manga.fetchInterval < 0,
                             onAddToLibraryClicked = onAddToLibraryClicked,
                             onWebViewClicked = onWebViewClicked,
