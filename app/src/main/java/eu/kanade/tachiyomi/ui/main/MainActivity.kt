@@ -12,6 +12,7 @@ import android.os.Looper
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -276,13 +277,14 @@ class MainActivity : BaseActivity() {
                     contentWindowInsets = scaffoldInsets,
                 ) { contentPadding ->
                     // Consume insets already used by app state banners
-                    // Shows current screen
-                    DefaultNavigatorScreenTransition(
-                        navigator = navigator,
+                    Box(
                         modifier = Modifier
                             .padding(contentPadding)
                             .consumeWindowInsets(contentPadding),
-                    )
+                    ) {
+                        // Shows current screen
+                        DefaultNavigatorScreenTransition(navigator = navigator)
+                    }
                 }
 
                 // Pop source-related screens when incognito mode is turned off
