@@ -158,55 +158,62 @@ class PagerPageHolder(
         val streamFn = page.stream ?: return
         val streamFn2 = extraPage?.stream
 
-        val (bais, isAnimated, background) = withIOContext {
-            streamFn().buffered(16).use { stream ->
-                // SY -->
-                (
-                    if (extraPage != null) {
-                        streamFn2?.invoke()
-                            ?.buffered(16)
-                    } else {
-                        null
-                    }
-                    ).use { stream2 ->
-                    if (viewer.config.dualPageSplit) {
-                        process(item.first, stream)
-                    } else {
-                        mergePages(stream, stream2)
-                    }.use { itemStream ->
-                        // SY <--
-                        val bais = ByteArrayInputStream(itemStream.readBytes())
-                        val isAnimated = ImageUtil.isAnimatedAndSupported(bais)
-                        bais.reset()
-                        val background = if (!isAnimated && viewer.config.automaticBackground) {
-                            ImageUtil.chooseBackground(context, bais)
+        try {
+            val (bais, isAnimated, background) = withIOContext {
+                streamFn().buffered(16).use { stream ->
+                    // SY -->
+                    (
+                        if (extraPage != null) {
+                            streamFn2?.invoke()
+                                ?.buffered(16)
                         } else {
                             null
                         }
-                        bais.reset()
-                        Triple(bais, isAnimated, background)
+                        ).use { stream2 ->
+                            if (viewer.config.dualPageSplit) {
+                                process(item.first, stream)
+                            } else {
+                                mergePages(stream, stream2)
+                            }.use { itemStream ->
+                                // SY <--
+                                val bais = ByteArrayInputStream(itemStream.readBytes())
+                                val isAnimated = ImageUtil.isAnimatedAndSupported(bais)
+                                bais.reset()
+                                val background = if (!isAnimated && viewer.config.automaticBackground) {
+                                    ImageUtil.chooseBackground(context, bais)
+                                } else {
+                                    null
+                                }
+                                bais.reset()
+                                Triple(bais, isAnimated, background)
+                            }
+                        }
+                }
+            }
+            withUIContext {
+                bais.use {
+                    setImage(
+                        it,
+                        isAnimated,
+                        Config(
+                            zoomDuration = viewer.config.doubleTapAnimDuration,
+                            minimumScaleType = viewer.config.imageScaleType,
+                            cropBorders = viewer.config.imageCropBorders,
+                            zoomStartPosition = viewer.config.imageZoomType,
+                            landscapeZoom = viewer.config.landscapeZoom,
+                        ),
+                    )
+                    if (!isAnimated) {
+                        pageBackground = background
                     }
                 }
+                removeErrorLayout()
             }
-        }
-        withUIContext {
-            bais.use {
-                setImage(
-                    it,
-                    isAnimated,
-                    Config(
-                        zoomDuration = viewer.config.doubleTapAnimDuration,
-                        minimumScaleType = viewer.config.imageScaleType,
-                        cropBorders = viewer.config.imageCropBorders,
-                        zoomStartPosition = viewer.config.imageZoomType,
-                        landscapeZoom = viewer.config.landscapeZoom,
-                    ),
-                )
-                if (!isAnimated) {
-                    pageBackground = background
-                }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+            withUIContext {
+                setError()
             }
-            removeErrorLayout()
         }
     }
 
