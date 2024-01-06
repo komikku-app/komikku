@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
+import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import exh.log.CrashlyticsPrinter
@@ -92,7 +93,9 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         super<Application>.onCreate()
 
         // SY -->
-        Firebase.crashlytics.setCrashlyticsCollectionEnabled(isReleaseBuildType)
+        if (!isDevFlavor) {
+            Firebase.crashlytics.setCrashlyticsCollectionEnabled(isReleaseBuildType)
+        }
         // SY <--
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
 
