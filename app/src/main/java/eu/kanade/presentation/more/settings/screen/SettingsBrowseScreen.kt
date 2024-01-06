@@ -10,8 +10,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.presentation.category.repos.RepoScreen
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import kotlinx.collections.immutable.persistentListOf
@@ -97,7 +97,7 @@ object SettingsBrowseScreen : SearchableSettings {
                         title = stringResource(MR.strings.label_extension_repos),
                         subtitle = pluralStringResource(MR.plurals.num_repos, reposCount.size, reposCount.size),
                         onClick = {
-                            navigator.push(RepoScreen())
+                            navigator.push(ExtensionReposScreen())
                         },
                     ),
                 ),

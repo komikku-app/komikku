@@ -91,6 +91,4 @@ class UnsortedPreferences(
     )
 
     fun allowLocalSourceHiddenFolders() = preferenceStore.getBoolean("allow_local_source_hidden_folders", false)
-
-    fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
 }

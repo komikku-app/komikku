@@ -653,6 +653,11 @@ object EXHMigrations {
                     // Deleting old download cache index files, but might as well clear it all out
                     context.cacheDir.deleteRecursively()
                 }
+                if (oldVersion under 60) {
+                    sourcePreferences.extensionRepos().getAndSet {
+                        it.map { "https://raw.githubusercontent.com/$it/repo" }.toSet()
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
