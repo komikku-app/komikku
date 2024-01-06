@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.util.lang.Hash
 import eu.kanade.tachiyomi.util.storage.copyAndSetReadOnlyTo
-import eu.kanade.tachiyomi.util.system.isDevFlavor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -121,9 +120,9 @@ internal object ExtensionLoader {
     fun loadExtensions(context: Context): List<LoadResult> {
         // Always make users trust unknown extensions on cold starts in non-dev builds
         // due to inherent security risks
-        if (!isDevFlavor) {
-            preferences.trustedSignatures().delete()
-        }
+        // SY --> if (!isDevFlavor) {
+        //     preferences.trustedSignatures().delete()
+        // } SY <--
 
         val pkgManager = context.packageManager
 
