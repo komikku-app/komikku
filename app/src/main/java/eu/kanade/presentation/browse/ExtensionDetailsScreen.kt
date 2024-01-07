@@ -167,7 +167,10 @@ private fun ExtensionDetails(
                             uriHandler.openUri(
                                 extension.repoUrl
                                     .replace("https://raw.githubusercontent.com", "https://github.com")
-                                    .removeSuffix("/repo/"),
+                                    .removeSuffix("/repo/")
+                                    // SY -->
+                                    .removeSuffix("/repo"),
+                                // SY <--
                             )
                         },
                     )
