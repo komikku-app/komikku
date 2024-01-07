@@ -591,18 +591,6 @@ object EXHMigrations {
                             logcat(LogPriority.WARN, e) { "Failed to remove file from cache" }
                         }
                     }
-
-                    preferenceStore.getAll()
-                        .filter { it.key.startsWith("pref_mangasync_") || it.key.startsWith("track_token_") }
-                        .forEach { (key, value) ->
-                            if (value is String) {
-                                preferenceStore
-                                    .getString(Preference.privateKey(key))
-                                    .set(value)
-
-                                preferenceStore.getString(key).delete()
-                            }
-                        }
                 }
                 if (oldVersion under 59) {
                     val prefsToReplace = listOf(
@@ -656,6 +644,14 @@ object EXHMigrations {
                 if (oldVersion under 60) {
                     sourcePreferences.extensionRepos().getAndSet {
                         it.map { "https://raw.githubusercontent.com/$it/repo" }.toSet()
+                    }
+                    replacePreferences(
+                        preferenceStore = preferenceStore,
+                        filterPredicate = { it.key.startsWith("pref_mangasync_") || it.key.startsWith("track_token_") },
+                        newKey = { Preference.privateKey(it) },
+                    )
+                    prefs.edit {
+                        remove(Preference.appStateKey("trusted_signatures"))
                     }
                 }
 
