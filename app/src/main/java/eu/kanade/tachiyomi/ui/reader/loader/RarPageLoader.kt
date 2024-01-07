@@ -40,7 +40,7 @@ internal class RarPageLoader(file: File) : PageLoader() {
                         val pageOutputStream = File(tmpDir, header.fileName.substringAfterLast("/"))
                             .also { it.createNewFile() }
                             .outputStream()
-                        getStream(rar, header).use {
+                        getStream(header).use {
                             it.copyTo(pageOutputStream)
                         }
                     }

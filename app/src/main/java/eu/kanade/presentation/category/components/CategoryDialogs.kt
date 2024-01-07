@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
@@ -42,6 +43,11 @@ fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
     onCreate: (String) -> Unit,
     categories: ImmutableList<String>,
+    // SY -->
+    title: String = stringResource(MR.strings.action_add_category),
+    extraMessage: String? = null,
+    alreadyExistsError: StringResource = MR.strings.error_category_exists,
+    // SY <--
 ) {
     var name by remember { mutableStateOf("") }
 
@@ -67,28 +73,40 @@ fun CategoryCreateDialog(
             }
         },
         title = {
-            Text(text = stringResource(MR.strings.action_add_category))
+            // SY -->
+            Text(text = title)
+            // SY <--
         },
         text = {
-            OutlinedTextField(
-                modifier = Modifier
-                    .focusRequester(focusRequester),
-                value = name,
-                onValueChange = { name = it },
-                label = {
-                    Text(text = stringResource(MR.strings.name))
-                },
-                supportingText = {
-                    val msgRes = if (name.isNotEmpty() && nameAlreadyExists) {
-                        MR.strings.error_category_exists
-                    } else {
-                        MR.strings.information_required_plain
-                    }
-                    Text(text = stringResource(msgRes))
-                },
-                isError = name.isNotEmpty() && nameAlreadyExists,
-                singleLine = true,
-            )
+            // SY -->
+            Column {
+                extraMessage?.let { Text(it) }
+                // SY <--
+
+                OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
+                    value = name,
+                    onValueChange = { name = it },
+                    label = {
+                        Text(text = stringResource(MR.strings.name))
+                    },
+                    supportingText = {
+                        val msgRes = if (name.isNotEmpty() && nameAlreadyExists) {
+                            // SY -->
+                            alreadyExistsError
+                            // SY <--
+                        } else {
+                            MR.strings.information_required_plain
+                        }
+                        Text(text = stringResource(msgRes))
+                    },
+                    isError = name.isNotEmpty() && nameAlreadyExists,
+                    singleLine = true,
+                )
+                // SY -->
+            }
+            // SY <--
         },
     )
 
@@ -167,7 +185,11 @@ fun CategoryRenameDialog(
 fun CategoryDeleteDialog(
     onDismissRequest: () -> Unit,
     onDelete: () -> Unit,
-    category: String,
+    // SY -->
+    category: String = "",
+    title: String = stringResource(MR.strings.delete_category),
+    text: String = stringResource(MR.strings.delete_category_confirmation, category),
+    // SY <--
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -185,10 +207,14 @@ fun CategoryDeleteDialog(
             }
         },
         title = {
-            Text(text = stringResource(MR.strings.delete_category))
+            // SY -->
+            Text(text = title)
+            // SY <--
         },
         text = {
-            Text(text = stringResource(MR.strings.delete_category_confirmation, category))
+            // SY -->
+            Text(text = text)
+            // SY <--
         },
     )
 }

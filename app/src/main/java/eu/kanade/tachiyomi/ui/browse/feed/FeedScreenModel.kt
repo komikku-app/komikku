@@ -214,7 +214,7 @@ open class FeedScreenModel(
             if (savedSearch != null) {
                 source?.name ?: feed.source.toString()
             } else {
-                LocaleHelper.getDisplayName(source?.lang)
+                LocaleHelper.getLocalizedDisplayName(source?.lang)
             },
             results,
         )
