@@ -58,6 +58,7 @@ import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
 import eu.kanade.presentation.components.IndexingBannerBackgroundColor
 import eu.kanade.presentation.more.settings.screen.ConfigureExhDialog
 import eu.kanade.presentation.more.settings.screen.about.WhatsNewDialog
+import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.tachiyomi.BuildConfig
@@ -506,6 +507,13 @@ class MainActivity : BaseActivity() {
                     val filter = intent.getStringExtra(INTENT_SEARCH_FILTER)
                     navigator.popUntilRoot()
                     navigator.push(GlobalSearchScreen(query, filter))
+                }
+                null
+            }
+            Intent.ACTION_VIEW -> {
+                if (intent.data.toString().endsWith(".tachibk")) {
+                    navigator.popUntilRoot()
+                    navigator.push(RestoreBackupScreen(intent.data.toString()))
                 }
                 null
             }
