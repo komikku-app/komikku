@@ -29,6 +29,7 @@ import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.source.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.presentation.more.settings.Preference
@@ -375,6 +376,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         val uriHandler = LocalUriHandler.current
         val extensionInstallerPref = basePreferences.extensionInstaller()
         var shizukuMissing by rememberSaveable { mutableStateOf(false) }
+        val trustExtension = remember { Injekt.get<TrustExtension>() }
 
         if (shizukuMissing) {
             val dismiss = { shizukuMissing = false }
@@ -425,6 +427,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                         } else {
                             true
                         }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.ext_revoke_trust),
+                    onClick = {
+                        trustExtension.revokeAll()
+                        context.toast(MR.strings.requires_app_restart)
                     },
                 ),
             ),
