@@ -67,27 +67,37 @@ class LibraryPreferences(
 
     fun filterUnread() = preferenceStore.getEnum("pref_filter_library_unread_v2", TriState.DISABLED)
 
-    fun filterStarted() = preferenceStore.getEnum("pref_filter_library_started_v2", TriState.DISABLED)
+    fun filterStarted() = preferenceStore.getEnum(
+        "pref_filter_library_started_v2",
+        TriState.DISABLED,
+    )
 
-    fun filterBookmarked() = preferenceStore.getEnum("pref_filter_library_bookmarked_v2", TriState.DISABLED)
+    fun filterBookmarked() = preferenceStore.getEnum(
+        "pref_filter_library_bookmarked_v2",
+        TriState.DISABLED,
+    )
 
-    fun filterCompleted() = preferenceStore.getEnum("pref_filter_library_completed_v2", TriState.DISABLED)
+    fun filterCompleted() = preferenceStore.getEnum(
+        "pref_filter_library_completed_v2",
+        TriState.DISABLED,
+    )
 
-    fun filterIntervalCustom() = preferenceStore.getEnum("pref_filter_library_interval_custom", TriState.DISABLED)
-
-    fun filterIntervalLong() = preferenceStore.getEnum("pref_filter_library_interval_long", TriState.DISABLED)
-
-    fun filterIntervalLate() = preferenceStore.getEnum("pref_filter_library_interval_late", TriState.DISABLED)
-
-    fun filterIntervalDropped() = preferenceStore.getEnum("pref_filter_library_interval_dropped", TriState.DISABLED)
-
-    fun filterIntervalPassed() = preferenceStore.getEnum("pref_filter_library_interval_passed", TriState.DISABLED)
+    fun filterIntervalCustom() = preferenceStore.getEnum(
+        "pref_filter_library_interval_custom",
+        TriState.DISABLED,
+    )
 
     // SY -->
-    fun filterLewd() = preferenceStore.getEnum("pref_filter_library_lewd_v2", TriState.DISABLED)
+    fun filterLewd() = preferenceStore.getEnum(
+        "pref_filter_library_lewd_v2",
+        TriState.DISABLED,
+    )
     // SY <--
 
-    fun filterTracking(id: Int) = preferenceStore.getEnum("pref_filter_library_tracked_${id}_v2", TriState.DISABLED)
+    fun filterTracking(id: Int) = preferenceStore.getEnum(
+        "pref_filter_library_tracked_${id}_v2",
+        TriState.DISABLED,
+    )
 
     // endregion
 
