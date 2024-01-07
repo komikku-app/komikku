@@ -141,7 +141,7 @@ internal class ExtensionApi {
                     apkName = it.apk,
                     iconUrl = "$repoUrl/icon/${it.pkg}.png",
                     repoUrl = repoUrl,
-                    isRepoSource = isRepoSource,
+                    isFromExternalRepo = isRepoSource,
                 )
             }
     }

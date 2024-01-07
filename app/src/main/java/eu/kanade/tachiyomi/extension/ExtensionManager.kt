@@ -234,17 +234,22 @@ class ExtensionManager(
                 changed = true
                 // SY <--
             } else if (availableExt != null) {
-                // SY -->
                 val hasUpdate = installedExt.updateExists(availableExt)
 
                 if (installedExt.hasUpdate != hasUpdate) {
-                    mutInstalledExtensions[index] = installedExt.copy(hasUpdate = hasUpdate, isRepoSource = availableExt.isRepoSource, repoUrl = availableExt.repoUrl)
+                    mutInstalledExtensions[index] = installedExt.copy(
+                        hasUpdate = hasUpdate,
+                        isFromExternalRepo = availableExt.isFromExternalRepo,
+                        repoUrl = availableExt.repoUrl,
+                    )
                     changed = true
-                } else if (availableExt.isRepoSource) {
-                    mutInstalledExtensions[index] = installedExt.copy(isRepoSource = true, repoUrl = availableExt.repoUrl)
+                } else if (availableExt.isFromExternalRepo) {
+                    mutInstalledExtensions[index] = installedExt.copy(
+                        isFromExternalRepo = true,
+                        repoUrl = availableExt.repoUrl,
+                    )
                     changed = true
                 }
-                // SY <--
             }
         }
         if (changed) {
