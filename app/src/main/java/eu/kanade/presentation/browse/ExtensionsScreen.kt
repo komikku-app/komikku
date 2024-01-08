@@ -340,7 +340,6 @@ private fun ExtensionItemContent(
 
                 val warning = when {
                     extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                    extension is Extension.Installed && extension.isUnofficial -> MR.strings.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
                     // SY -->
                     extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant

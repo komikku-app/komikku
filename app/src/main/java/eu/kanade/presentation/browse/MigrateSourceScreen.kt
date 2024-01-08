@@ -28,6 +28,7 @@ import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Badge
@@ -83,7 +84,7 @@ fun MigrateSourceScreen(
 
 @Composable
 private fun MigrateSourceList(
-    list: List<Pair<Source, Long>>,
+    list: ImmutableList<Pair<Source, Long>>,
     contentPadding: PaddingValues,
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,

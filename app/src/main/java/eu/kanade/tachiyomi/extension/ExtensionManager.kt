@@ -225,7 +225,7 @@ class ExtensionManager(
             val availableExt = _availableExtensionsFlow.value.find { it.pkgName == pkgName }
             // SY <--
 
-            if (!installedExt.isUnofficial && availableExt == null && !installedExt.isObsolete) {
+            if (availableExt == null && !installedExt.isObsolete) {
                 mutInstalledExtensions[index] = installedExt.copy(isObsolete = true)
                 changed = true
                 // SY -->
@@ -239,13 +239,11 @@ class ExtensionManager(
                 if (installedExt.hasUpdate != hasUpdate) {
                     mutInstalledExtensions[index] = installedExt.copy(
                         hasUpdate = hasUpdate,
-                        isFromExternalRepo = availableExt.isFromExternalRepo,
                         repoUrl = availableExt.repoUrl,
                     )
                     changed = true
-                } else if (availableExt.isFromExternalRepo) {
+                } else {
                     mutInstalledExtensions[index] = installedExt.copy(
-                        isFromExternalRepo = true,
                         repoUrl = availableExt.repoUrl,
                     )
                     changed = true
@@ -429,7 +427,7 @@ class ExtensionManager(
 
     private fun Extension.Installed.updateExists(availableExtension: Extension.Available? = null): Boolean {
         val availableExt = availableExtension ?: _availableExtensionsFlow.value.find { it.pkgName == pkgName }
-        if ((isUnofficial && availableExt?.isRepoSource != true) || availableExt == null) return false
+            ?: return false
 
         return (availableExt.versionCode > versionCode || availableExt.libVersion > libVersion)
     }
