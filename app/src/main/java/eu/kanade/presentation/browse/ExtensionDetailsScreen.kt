@@ -168,6 +168,7 @@ private fun ExtensionDetails(
             item {
                 WarningBanner(SYMR.strings.redundant_extension_message)
             }
+        }
         // SY <--
         if (extension.isObsolete) {
             item {
