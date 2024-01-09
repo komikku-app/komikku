@@ -30,7 +30,6 @@
         <item quantity="many">%d дополнительных репозиториев</item>
         <item quantity="other">%d дополнительных репозиториев</item>
     </plurals>
-
     <plurals name="migrate_entry">
         <item quantity="one">Перенести %1$d%2$s серию?</item>
         <item quantity="few">Перенести %1$d%2$s серии?</item>
@@ -43,7 +42,6 @@
         <item quantity="many">Копировать %1$d%2$s серий?</item>
         <item quantity="other">Копировать %1$d%2$s серий?</item>
     </plurals>
-    <string name="skipping_">(Исключая %1$d)</string>
     <plurals name="entry_migrated">
         <item quantity="one">%d серию перемещена</item>
         <item quantity="few">%d серии перемещены</item>
@@ -58,7 +56,6 @@
         <item quantity="many">%1$d страниц</item>
         <item quantity="other">%1$d страниц</item>
     </plurals>
-
 
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
