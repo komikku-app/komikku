@@ -129,6 +129,15 @@ class ExtensionsScreenModel(
         basePreferences.extensionInstaller().changes()
             .onEach { mutableState.update { state -> state.copy(installer = it) } }
             .launchIn(screenModelScope)
+
+        // SY -->
+        preferences.extensionRepos()
+            .changes()
+            .onEach { repos ->
+                mutableState.update { it.copy(hasExtensionRepos = repos.isNotEmpty()) }
+            }
+            .launchIn(screenModelScope)
+        // SY <--
     }
 
     fun search(query: String?) {
@@ -206,6 +215,9 @@ class ExtensionsScreenModel(
         val updates: Int = 0,
         val installer: BasePreferences.ExtensionInstaller? = null,
         val searchQuery: String? = null,
+        // SY -->
+        val hasExtensionRepos: Boolean = false,
+        // SY <--
     ) {
         val isEmpty = items.isEmpty()
     }
