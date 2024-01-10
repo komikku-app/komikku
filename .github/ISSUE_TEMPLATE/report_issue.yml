@@ -100,7 +100,7 @@ body:
           required: true
         - label: I have gone through the [FAQ](https://tachiyomi.org/docs/faq/general) and [troubleshooting guide](https://tachiyomi.org/docs/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.9.4](https://github.com/jobobby04/tachiyomisy/releases/latest)**.
+        - label: I have updated the app to version **[1.10.0](https://github.com/jobobby04/tachiyomisy/releases/latest)**.
           required: true
         - label: I have updated all installed extensions.
           required: true

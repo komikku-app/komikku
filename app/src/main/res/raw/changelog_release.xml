@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.10.0" changeDate="Jan 09,2024">
+        <changelogtext>[b]Based on Tachiyomi stable 0.15.2(from 0.14.7)[/b]</changelogtext>
+        <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
+        <changelogtext>Add Exh source icon</changelogtext>
+        <changelogtext>Allow seeing all read manga statistics</changelogtext>
+        <changelogtext>Add exceeded page quota error</changelogtext>
+        <changelogtext>Add encrypted database(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Add encrypted local covers(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Add encrypted cbz archives(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Center the Exh Utils(Thanks @Koranir)</changelogtext>
+        <changelogtext>Shorter chapter list in reader(Thanks @Riztard)</changelogtext>
+        <changelogtext>So much other stuff that I give up, I'm just going to make the release</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.9.4" changeDate="Oct 29,2023">
         <changelogtext>[b]Based on Tachiyomi stable 0.14.7(from 0.14.6)[/b]</changelogtext>
         <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
