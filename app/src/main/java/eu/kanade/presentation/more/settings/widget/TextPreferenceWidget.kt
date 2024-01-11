@@ -17,7 +17,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import eu.kanade.presentation.theme.TachiyomiTheme
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
@@ -79,7 +79,7 @@ fun TextPreferenceWidget(
 @PreviewLightDark
 @Composable
 private fun TextPreferenceWidgetPreview() {
-    TachiyomiTheme {
+    TachiyomiPreviewTheme {
         Surface {
             Column {
                 TextPreferenceWidget(

@@ -19,12 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.ChipBorder
 import eu.kanade.presentation.components.SuggestionChip
 import eu.kanade.presentation.components.SuggestionChipDefaults
-import eu.kanade.presentation.theme.TachiyomiTheme
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.EHentaiSearchMetadata
@@ -173,10 +173,10 @@ fun TagsChip(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun NamespaceTagsPreview() {
-    TachiyomiTheme {
+    TachiyomiPreviewTheme {
         Surface {
             val context = LocalContext.current
             NamespaceTags(
