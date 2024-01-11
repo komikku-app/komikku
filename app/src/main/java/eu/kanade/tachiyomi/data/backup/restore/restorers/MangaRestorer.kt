@@ -71,30 +71,32 @@ class MangaRestorer(
         backupManga: BackupManga,
         backupCategories: List<BackupCategory>,
     ) {
-        val dbManga = findExistingManga(backupManga)
-        var manga = backupManga.getMangaImpl()
-        // SY -->
-        manga = EXHMigrations.migrateBackupEntry(manga)
-        // SY <--
-        val restoredManga = if (dbManga == null) {
-            restoreNewManga(manga)
-        } else {
-            restoreExistingManga(manga, dbManga)
-        }
-
-        restoreMangaDetails(
-            manga = restoredManga,
-            chapters = backupManga.chapters,
-            categories = backupManga.categories,
-            backupCategories = backupCategories,
-            history = backupManga.history + backupManga.brokenHistory.map { it.toBackupHistory() },
-            tracks = backupManga.tracking,
+        handler.await(inTransaction = true) {
+            val dbManga = findExistingManga(backupManga)
+            var manga = backupManga.getMangaImpl()
             // SY -->
-            mergedMangaReferences = backupManga.mergedMangaReferences,
-            flatMetadata = backupManga.flatMetadata,
-            customManga = backupManga.getCustomMangaInfo(),
+            manga = EXHMigrations.migrateBackupEntry(manga)
             // SY <--
-        )
+            val restoredManga = if (dbManga == null) {
+                restoreNewManga(manga)
+            } else {
+                restoreExistingManga(manga, dbManga)
+            }
+
+            restoreMangaDetails(
+                manga = restoredManga,
+                chapters = backupManga.chapters,
+                categories = backupManga.categories,
+                backupCategories = backupCategories,
+                history = backupManga.history + backupManga.brokenHistory.map { it.toBackupHistory() },
+                tracks = backupManga.tracking,
+                // SY -->
+                mergedMangaReferences = backupManga.mergedMangaReferences,
+                flatMetadata = backupManga.flatMetadata,
+                customManga = backupManga.getCustomMangaInfo(),
+                // SY <--
+            )
+        }
     }
 
     private suspend fun findExistingManga(backupManga: BackupManga): Manga? {
