@@ -42,7 +42,7 @@ class UiPreferences(
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)
 
-    fun mergeInOverflow() = preferenceStore.getBoolean("merge_in_overflow", false)
+    fun mergeInOverflow() = preferenceStore.getBoolean("merge_in_overflow", true)
 
     fun useNewSourceNavigation() = preferenceStore.getBoolean("use_new_source_navigation", true)
 
