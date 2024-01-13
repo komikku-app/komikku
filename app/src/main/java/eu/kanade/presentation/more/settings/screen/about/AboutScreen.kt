@@ -50,10 +50,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.CustomIcons
 import tachiyomi.presentation.core.icons.Discord
-import tachiyomi.presentation.core.icons.Facebook
 import tachiyomi.presentation.core.icons.Github
-import tachiyomi.presentation.core.icons.Reddit
-import tachiyomi.presentation.core.icons.X
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.DateFormat
@@ -153,12 +150,12 @@ object AboutScreen : Screen() {
                     }
                 }
 
-                item {
-                    TextPreferenceWidget(
-                        title = stringResource(MR.strings.help_translate),
-                        onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/docs/contribute#translation") },
-                    )
-                }
+                // item {
+                //     TextPreferenceWidget(
+                //         title = stringResource(MR.strings.help_translate),
+                //         onPreferenceClick = { uriHandler.openUri("https://tachiyomi.org/docs/contribute#translation") },
+                //     )
+                // }
 
                 item {
                     TextPreferenceWidget(
@@ -191,21 +188,21 @@ object AboutScreen : Screen() {
                             icon = CustomIcons.Discord,
                             url = "https://discord.gg/mihon",
                         )
-                        LinkIcon(
-                            label = "X",
-                            icon = CustomIcons.X,
-                            url = "https://x.com/tachiyomiorg",
-                        )
-                        LinkIcon(
-                            label = "Facebook",
-                            icon = CustomIcons.Facebook,
-                            url = "https://facebook.com/tachiyomiorg",
-                        )
-                        LinkIcon(
-                            label = "Reddit",
-                            icon = CustomIcons.Reddit,
-                            url = "https://www.reddit.com/r/Tachiyomi",
-                        )
+                        // LinkIcon(
+                        //     label = "X",
+                        //     icon = CustomIcons.X,
+                        //     url = "https://x.com/tachiyomiorg",
+                        // )
+                        // LinkIcon(
+                        //     label = "Facebook",
+                        //     icon = CustomIcons.Facebook,
+                        //     url = "https://facebook.com/tachiyomiorg",
+                        // )
+                        // LinkIcon(
+                        //     label = "Reddit",
+                        //     icon = CustomIcons.Reddit,
+                        //     url = "https://www.reddit.com/r/Tachiyomi",
+                        // )
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
