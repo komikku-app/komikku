@@ -189,7 +189,7 @@ object AboutScreen : Screen() {
                         LinkIcon(
                             label = "Discord",
                             icon = CustomIcons.Discord,
-                            url = "https://discord.gg/tachiyomi",
+                            url = "https://discord.gg/mihon",
                         )
                         LinkIcon(
                             label = "X",
