@@ -9,6 +9,7 @@ import exh.md.utils.MdUtil
 import exh.util.nullIfBlank
 import okhttp3.Interceptor
 import okhttp3.Response
+import tachiyomi.core.util.system.logcat
 import java.io.IOException
 
 class MangaDexAuthInterceptor(
@@ -50,10 +51,11 @@ class MangaDexAuthInterceptor(
         // Retry the request once with a new token in case it was not already refreshed
         // by the is expired check before.
         if (response.code == 401 && tokenIsExpired) {
-            response.close()
-
             val newToken = refreshToken(chain)
             setAuth(newToken)
+
+            newToken ?: return response
+            response.close()
 
             val newRequest = originalRequest.newBuilder()
                 .addHeader("Authorization", "Bearer ${newToken.access_token}")
@@ -75,7 +77,7 @@ class MangaDexAuthInterceptor(
         MdUtil.saveOAuth(trackPreferences, mdList, oauth)
     }
 
-    private fun refreshToken(chain: Interceptor.Chain): OAuth {
+    private fun refreshToken(chain: Interceptor.Chain): OAuth? {
         val newOauth = runCatching {
             val oauthResponse = chain.proceed(MdUtil.refreshTokenRequest(oauth!!))
 
@@ -87,10 +89,8 @@ class MangaDexAuthInterceptor(
             }
         }
 
-        if (newOauth.getOrNull() == null) {
-            throw IOException("Failed to refresh the access token", newOauth.exceptionOrNull())
-        }
+        logcat(throwable = newOauth.exceptionOrNull()) { "Fetched new mangadex oauth" }
 
-        return newOauth.getOrNull()!!
+        return newOauth.getOrNull()
     }
 }
