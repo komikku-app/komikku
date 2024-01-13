@@ -13,11 +13,13 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
@@ -58,12 +60,9 @@ fun MoreScreen(
     onClickDataAndStorage: () -> Unit,
     onClickSettings: () -> Unit,
     onClickAbout: () -> Unit,
-    // SY -->
     onClickBatchAdd: () -> Unit,
     onClickUpdates: () -> Unit,
     onClickHistory: () -> Unit,
-    onClickRepos: () -> Unit,
-    // SY <--
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -164,15 +163,6 @@ fun MoreScreen(
                     onPreferenceClick = onClickDownloadQueue,
                 )
             }
-            // SY -->
-            item {
-                TextPreferenceWidget(
-                    title = stringResource(MR.strings.label_extension_repos),
-                    icon = Icons.Outlined.Extension,
-                    onPreferenceClick = onClickRepos
-                )
-            }
-            // SY <--
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.categories),
