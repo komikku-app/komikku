@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.10.1" changeDate="Jan 13,2024">
+        <changelogtext>[b]Based on Tachiyomi stable 0.15.3(from 0.15.2)[/b]</changelogtext>
+        <changelogtext>Fix MangaDex auth spamming the refresh login endpoint</changelogtext>
+        <changelogtext>Cleanup links to Tachiyomi and change some to Mihon</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.10.0" changeDate="Jan 09,2024">
         <changelogtext>[b]Based on Tachiyomi stable 0.15.2(from 0.14.7)[/b]</changelogtext>
         <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
