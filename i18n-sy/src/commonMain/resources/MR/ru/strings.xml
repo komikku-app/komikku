@@ -380,6 +380,7 @@
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
+    <string name="no_repos_found">Репозитории расширений не найдены. Пожалуйста, добавьте парочку, перейдя по "Больше → Репозитории расширений"!</string>
 
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
