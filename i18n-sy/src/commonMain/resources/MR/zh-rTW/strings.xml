@@ -9,11 +9,11 @@
     <string name="action_start_reading">開始閱讀</string>
     <string name="action_edit_info">編輯資訊</string>
     <!-- Entry Type -->
-    <string name="entry_type_manga">日漫</string>
-    <string name="entry_type_manhwa">韓漫</string>
-    <string name="entry_type_manhua">陸漫</string>
-    <string name="entry_type_comic">美漫</string>
-    <string name="entry_type_webtoon">條漫</string>
+    <string name="entry_type_manga">漫畫（日本）</string>
+    <string name="entry_type_manhwa">漫畫（韓國）</string>
+    <string name="entry_type_manhua">漫畫（中國）</string>
+    <string name="entry_type_comic">漫畫（美國）</string>
+    <string name="entry_type_webtoon">網漫（條漫）</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -494,16 +494,16 @@
     <string name="page_preview_page_go_to">跳轉到</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
-    <string name="rating10">傑作</string>
-    <string name="rating9">驚人</string>
-    <string name="rating8">優秀</string>
-    <string name="rating7">很好</string>
-    <string name="rating6">好</string>
-    <string name="rating5">中等</string>
-    <string name="rating4">差</string>
-    <string name="rating3">糟糕</string>
-    <string name="rating2">痛苦</string>
-    <string name="rating1">無法忍受</string>
+    <string name="rating10">超神作</string>
+    <string name="rating9">神作</string>
+    <string name="rating8">力薦</string>
+    <string name="rating7">推薦</string>
+    <string name="rating6">還行</string>
+    <string name="rating5">不過不失</string>
+    <string name="rating4">較差</string>
+    <string name="rating3">差</string>
+    <string name="rating2">很差</string>
+    <string name="rating1">不忍直視</string>
     <string name="rating0">災難</string>
     <string name="no_rating">沒有評分</string>
 
@@ -512,12 +512,12 @@
     <string name="artist_cg">藝術 CG</string>
     <string name="game_cg">遊戲 CG</string>
     <string name="western">歐美</string>
-    <string name="non_h">Non-H</string>
+    <string name="non_h">非色情</string>
     <string name="image_set">圖片集</string>
     <string name="cosplay">角色扮演</string>
     <string name="asian_porn">亞洲色情</string>
     <string name="misc">雜項</string>
-    <string name="artbook">Artbook</string>
+    <string name="artbook">畫集</string>
     <string name="video">影片</string>
 
     <!-- More Info Menu -->
@@ -542,7 +542,7 @@
     <string name="group">團體</string>
     <string name="media_id">媒體 id</string>
     <string name="japanese_title">日文標題</string>
-    <string name="english_title">英語標題</string>
+    <string name="english_title">英文標題</string>
     <string name="short_title">短標題</string>
     <string name="cover_image_file_type">轉換圖片類型</string>
     <string name="thumbnail_image_file_type">快取圖片類型</string>
