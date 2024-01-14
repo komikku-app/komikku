@@ -41,9 +41,21 @@ class FetchInterval(
     }
 
     internal fun calculateInterval(chapters: List<Chapter>, zone: ZoneId): Int {
-        val chapterWindow = if (chapters.size <= 8) 3 else 10
+        var latestChapterNumber = chapters.maxBy { it.chapterNumber }.chapterNumber.toInt()
+        val consecutiveChapters = chapters.asSequence()
+            .filter { it.chapterNumber > 0 }
+            .sortedByDescending { it.chapterNumber }
+            .takeWhile {
+                val testVal = it.chapterNumber.toInt()
+                val isConsecutive = latestChapterNumber - testVal <= 1
+                latestChapterNumber = testVal
+                isConsecutive
+            }
+            .toList()
 
-        val uploadDates = chapters.asSequence()
+        val chapterWindow = if (consecutiveChapters.size <= 8) 3 else 10
+
+        val uploadDates = consecutiveChapters.asSequence()
             .filter { it.dateUpload > 0L }
             .sortedByDescending { it.dateUpload }
             .map {
@@ -55,7 +67,7 @@ class FetchInterval(
             .take(chapterWindow)
             .toList()
 
-        val fetchDates = chapters.asSequence()
+        val fetchDates = consecutiveChapters.asSequence()
             .sortedByDescending { it.dateFetch }
             .map {
                 ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.dateFetch), zone)
