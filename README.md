@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
-Mihon/Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Mihon/Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
+Mihon/Tachiyomi is a free and open source manga reader for Android 8.0 and above. This version of Mihon/Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
 
 ![screenshots of app](./.github/readme-images/screens.png)
 

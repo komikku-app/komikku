@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.coil
 
 import android.graphics.Bitmap
-import android.os.Build
 import coil3.ImageLoader
 import coil3.asCoilImage
 import coil3.decode.DecodeResult
@@ -68,7 +67,6 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
         check(bitmap != null) { "Failed to decode image" }
 
         if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
             options.bitmapConfig == Bitmap.Config.HARDWARE &&
             maxOf(bitmap.width, bitmap.height) <= GLUtil.maxTextureSize
         ) {
@@ -105,8 +103,7 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
             }
             // SY <--
             return when (type) {
-                ImageUtil.ImageType.AVIF, ImageUtil.ImageType.JXL -> true
-                ImageUtil.ImageType.HEIF -> Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                ImageUtil.ImageType.AVIF, ImageUtil.ImageType.JXL, ImageUtil.ImageType.HEIF -> true
                 else -> false
             }
         }
