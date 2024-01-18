@@ -110,8 +110,8 @@
 
     <!-- Advanced Settings -->
     <string name="developer_tools">開發者工具</string>
-    <string name="toggle_hentai_features">啟用集成的 hentai 特性</string>
-    <string name="toggle_hentai_features_summary">這是一個試驗性功能，如果關閉則關閉所有 hentai 特性</string>
+    <string name="toggle_hentai_features">啟用集成的 Hentai 特性</string>
+    <string name="toggle_hentai_features_summary">這是一個試驗性功能，如果關閉則關閉所有 Hentai 特性</string>
     <string name="toggle_delegated_sources">啟用代理來源</string>
     <string name="toggle_delegated_sources_summary">下列來源如果已安裝則應用 %1$s 代理: %2$s</string>
     <string name="log_level">日誌級別</string>
