@@ -204,6 +204,8 @@
     <string name="biometric_lock_time_conflicts">A lock time conflicts with one that already exists!</string>
     <string name="biometric_lock_start_time">Enter starting time</string>
     <string name="biometric_lock_end_time">Enter end time</string>
+    <string name="delete_time_range">Delete time range</string>
+    <string name="delete_time_range_confirmation">Do you wish to delete the time range %s?</string>
     <string name="biometric_lock_days">Biometric lock days</string>
     <string name="biometric_lock_days_summary">Days to have the app locked</string>
     <string name="sunday">Sunday</string>
@@ -385,8 +387,6 @@
     <string name="error_tag_exists">This tag exists!</string>
     <string name="delete_tag">Delete tag</string>
     <string name="delete_tag_confirmation">Do you wish to delete the tag %s?</string>
-    <string name="delete_time_range">Delete time range</string>
-    <string name="delete_time_range_confirmation">Do you wish to delete the time range %s?</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
