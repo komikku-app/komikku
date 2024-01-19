@@ -64,6 +64,8 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
@@ -426,8 +428,13 @@ private fun SourcePinButton(
 private fun SourceSettingsButton(
     source: Source,
 ) {
+    // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
+    if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) return
     val navigator = LocalNavigator.currentOrThrow
-    IconButton(onClick = { navigator.push(ExtensionDetailsScreen(source.installedExtension.pkgName)) }) {
+    IconButton(onClick = {
+        if (source.installedExtension !== null)
+            navigator.push(ExtensionDetailsScreen(source.installedExtension!!.pkgName))
+    }) {
         Icon(
             imageVector = Icons.Outlined.Settings,
             tint = MaterialTheme.colorScheme.primary,
