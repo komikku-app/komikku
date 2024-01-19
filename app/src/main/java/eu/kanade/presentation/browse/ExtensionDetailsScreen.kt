@@ -170,6 +170,11 @@ private fun ExtensionDetails(
             }
         }
         // SY <--
+        if (extension.isUnofficial) {
+            item {
+                WarningBanner(MR.strings.unofficial_extension_message)
+            }
+        }
         if (extension.isObsolete) {
             item {
                 WarningBanner(MR.strings.obsolete_extension_message)

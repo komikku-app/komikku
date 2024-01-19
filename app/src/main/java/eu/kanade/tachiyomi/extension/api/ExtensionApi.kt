@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
+import eu.kanade.domain.extension.interactor.OFFICIAL_REPO_BASE_URL
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -36,7 +37,13 @@ internal class ExtensionApi {
 
     suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
-            sourcePreferences.extensionRepos().get().flatMap { getExtensions(it) }
+            // Combine built-in OFFICIAL repo's extensions list with repo's list
+            val extensions = buildList {
+                addAll(getExtensions(OFFICIAL_REPO_BASE_URL))
+                sourcePreferences.extensionRepos().get().map { addAll(getExtensions(it)) }
+            }
+
+            extensions
         }
     }
 

@@ -6,8 +6,8 @@ import tachiyomi.core.preference.plusAssign
 class CreateExtensionRepo(private val preferences: SourcePreferences) {
 
     fun await(name: String): Result {
-        // Do not allow invalid formats
-        if (!name.matches(repoRegex)) {
+        // Do not allow invalid formats & avoid adding duplicating official repo
+        if (!name.matches(repoRegex) || name.startsWith(OFFICIAL_REPO_BASE_URL)) {
             return Result.InvalidUrl
         }
 
@@ -22,4 +22,5 @@ class CreateExtensionRepo(private val preferences: SourcePreferences) {
     }
 }
 
+const val OFFICIAL_REPO_BASE_URL = "https://raw.githubusercontent.com/cuong-tran/tachiyomi-extensions/repo"
 private val repoRegex = """^https://.*/index\.min\.json$""".toRegex()

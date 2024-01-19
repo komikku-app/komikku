@@ -59,6 +59,9 @@ internal object ExtensionLoader {
         PackageManager.GET_SIGNATURES or
         (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)
 
+    // cuong-tran's key
+    private const val officialSignature = "cbec121aa82ebb02aaa73806992e0368a97d47b5451ed6524816d03084c45905"
+
     private const val PRIVATE_EXTENSION_EXTENSION = "ext"
 
     private fun getPrivateExtensionDir(context: Context) = File(context.filesDir, "exts")
@@ -252,7 +255,8 @@ internal object ExtensionLoader {
         if (signatures.isNullOrEmpty()) {
             logcat(LogPriority.WARN) { "Package $pkgName isn't signed" }
             return LoadResult.Error
-        } else if (!trustExtension.isTrusted(pkgInfo, signatures.last())) {
+        } else if (!isTrusted(pkgInfo, signatures.last())) {
+            // If not trusted then will load it as Untrusted extension to force use to Trust it
             val extension = Extension.Untrusted(
                 extName,
                 pkgName,
@@ -320,6 +324,7 @@ internal object ExtensionLoader {
             isNsfw = isNsfw,
             sources = sources,
             pkgFactory = appInfo.metaData.getString(METADATA_SOURCE_FACTORY),
+            isUnofficial = !isOfficiallySigned(signatures),
             icon = appInfo.loadIcon(pkgManager),
             isShared = extensionInfo.isShared,
         )
@@ -377,6 +382,20 @@ internal object ExtensionLoader {
         }
             ?.map { Hash.sha256(it.toByteArray()) }
             ?.toList()
+    }
+
+    private fun isTrusted(pkgInfo: PackageInfo, signatureHash: String): Boolean {
+        if (officialSignature == signatureHash) {
+            return true
+        }
+        return trustExtension.isTrusted(pkgInfo, signatureHash)
+    }
+
+    /**
+     * Showing UNOFFICIAL text on extension
+     */
+    private fun isOfficiallySigned(signatures: List<String>): Boolean {
+        return signatures.all { it == officialSignature }
     }
 
     /**
