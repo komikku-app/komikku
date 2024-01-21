@@ -87,7 +87,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
             // SY -->
             if (pager.isRestoring) return
             // SY <--
-            if (activity.isScrollingThroughPages.not()) {
+            if (!activity.isScrollingThroughPages) {
                 activity.hideMenu()
             }
             onPageChange(position)
