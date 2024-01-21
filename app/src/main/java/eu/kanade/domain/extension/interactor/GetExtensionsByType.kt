@@ -24,8 +24,9 @@ class GetExtensionsByType(
             val (updates, installed) = _installed
                 .filter { (showNsfwSources || !it.isNsfw) }
                 .sortedWith(
-                    compareBy<Extension.Installed> { !it.isObsolete /* SY --> */ && !it.isRedundant /* SY <-- */
-                        }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name },
+                    compareBy<Extension.Installed> {
+                        !it.isObsolete /* SY --> */ && !it.isRedundant /* SY <-- */
+                    }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name },
                 )
                 .partition { it.hasUpdate }
 
