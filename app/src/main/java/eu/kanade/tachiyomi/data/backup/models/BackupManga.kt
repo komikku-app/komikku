@@ -39,6 +39,7 @@ data class BackupManga(
     @ProtoNumber(105) var updateStrategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE,
     @ProtoNumber(106) var lastModifiedAt: Long = 0,
     @ProtoNumber(107) var favoriteModifiedAt: Long? = null,
+    @ProtoNumber(108) var excludedScanlators: List<String> = emptyList(),
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -52,9 +53,6 @@ data class BackupManga(
     // skipping 803 due to using duplicate value in previous builds
     @ProtoNumber(804) var customDescription: String? = null,
     @ProtoNumber(805) var customGenre: List<String>? = null,
-
-    // Neko specific values
-    @ProtoNumber(901) var filtered_scanlators: String? = null,
 ) {
     fun getMangaImpl(): Manga {
         return Manga.create().copy(
