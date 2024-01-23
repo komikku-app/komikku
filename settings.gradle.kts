@@ -38,6 +38,8 @@ dependencyResolutionManagement {
     }
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "Komikku"
 include(":app")
 include(":i18n")

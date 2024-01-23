@@ -21,10 +21,10 @@ android {
 }
 
 dependencies {
-    api(project(":core"))
-    api(project(":i18n"))
+    api(projects.core)
+    api(projects.i18n)
     // SY -->
-    api(project(":i18n-sy"))
+    api(projects.i18nSy)
     // SY <--
 
     // Compose
