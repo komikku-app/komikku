@@ -1,14 +1,17 @@
-| Preview Builds | Release Builds | Tachiyomi Support Server |
-|-------|----------|----------|
-| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
+| Preview Builds | Build | Releases | Tachiyomi Support Server |
+| -------------- |-------|----------|--------------------------|
+| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_push.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_push.yml) | [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
 
 
-# ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
-Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Tachiyomi, TachiyomiSY was based off TachiyomiAZ. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like J2K and Neko.
+# ![app icon](./.github/readme-images/app-icon.png) Komikku
+Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
 ## Features
+
+Features of Komikku include:
+* Built-in & official extensions repository
 
 Features of Tachiyomi(original) include:
 * Online reading from a variety of sources
@@ -64,7 +67,7 @@ Additional features for some extensions, features include custom description, op
 * Tsumino
 
 ## Download
-Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases/latest).
+Get the app from our [releases page](https://github.com/cuong-tran/komikku/releases/latest).
 
 If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/jobobby04/tachiyomisypreview/releases).
 
@@ -74,7 +77,7 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 
 <details><summary>Issues</summary>
 
-1. **Before reporting a new issue, take a look at the [FAQ](https://tachiyomi.org/docs/faq/general), the [changelog](https://github.com/jobobby04/tachiyomisy/releases) and the already opened [issues](https://github.com/jobobby04/tachiyomisy/issues).**
+1. **Before reporting a new issue, take a look at the [FAQ](https://tachiyomi.org/docs/faq/general), the [changelog](https://github.com/cuong-tran/komikku/releases) and the already opened [issues](https://github.com/cuong-tran/komikku/issues).**
 2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg)](https://discord.gg/mihon)
 
 </details>
@@ -82,15 +85,14 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 <details><summary>Bugs</summary>
 
 * Include version (More → About → Version)
-* If not latest, try updating, it may have already been solved
-* Preview version is equal to the number of commits as seen on the main page
+ * If not latest, try updating, it may have already been solved
+ * Preview version is equal to the number of commits as seen on the main page
 * Include steps to reproduce (if not obvious from description)
 * Include screenshot (if needed)
 * If it could be device-dependent, try reproducing on another device (if possible)
 * Don't group unrelated requests into one issue
 
 DO: https://github.com/tachiyomiorg/tachiyomi/issues/24 https://github.com/tachiyomiorg/tachiyomi/issues/71
-
 DON'T: https://github.com/tachiyomiorg/tachiyomi/issues/75
 
 </details>
@@ -117,3 +119,23 @@ See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 
 [See our website.](https://tachiyomi.org/)
 You can also reach out to us on [Discord](https://discord.gg/mihon).
+
+## License
+
+    Copyright 2015 Javier Tomás
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+## Disclaimer
+
+The developer of this application does not have any affiliation with the content providers available.
