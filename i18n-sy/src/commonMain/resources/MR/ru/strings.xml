@@ -222,7 +222,7 @@
     <!-- Reader Settings -->
     <string name="page_downloading">Загрузка страниц</string>
     <string name="download_threads">Потоки загрузки</string>
-    <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут спровоцировать блокировку источников для TachiyomiSY. Рекомендуемое значение - 2 или 3. Текущее значение: %s</string>
+    <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут спровоцировать блокировку источников для Komikku. Рекомендуемое значение - 2 или 3. Текущее значение: %s</string>
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
     <string name="aggressively_load_pages_summary">Медленно загружать всю главу во время чтения вместо загрузки в текущий момент просматреваемых страниц</string>
     <string name="skip_queue_on_retry">Пропускать очередь при повторной попытке</string>
