@@ -1,5 +1,5 @@
 name: 🐞 Issue report
-description: Report an issue in Tachiyomi
+description: Report an issue in Komikku
 labels: [Bug]
 body:
 
@@ -48,10 +48,10 @@ body:
         You can paste the crash logs in plain text or upload it as an attachment.
 
   - type: input
-    id: tachiyomi-version
+    id: komikku-version
     attributes:
-      label: Tachiyomi version
-      description: You can find your Tachiyomi version in **More → About**.
+      label: Komikku version
+      description: You can find your Komikku version in **More → About**.
       placeholder: |
         Example: "1.10.2"
     validations:
@@ -94,11 +94,11 @@ body:
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: If this is an issue with an extension, I should be opening an issue in the extension's repository.
+        - label: If this is an issue with an official extension, I should be opening an issue in the [extensions repository](https://github.com/cuong-tran/tachiyomi-extensions/issues/new/choose).
           required: true
         - label: I have gone through the [FAQ](https://tachiyomi.org/docs/faq/general) and [troubleshooting guide](https://tachiyomi.org/docs/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.10.2](https://github.com/jobobby04/tachiyomisy/releases/latest)**.
+        - label: I have updated the app to version **[1.10.2](https://github.com/cuong-tran/komikku/releases/latest)**.
           required: true
         - label: I have updated all installed extensions.
           required: true
