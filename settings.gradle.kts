@@ -38,7 +38,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TachiyomiSY"
+rootProject.name = "Komikku"
 include(":app")
 include(":i18n")
 // SY -->
