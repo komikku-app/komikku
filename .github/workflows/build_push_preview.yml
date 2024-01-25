@@ -3,12 +3,12 @@ name: Remote Dispatch Action Initiator
 on:
   push:
    branches: 
-    - 'master'
+    - 'preview'
  
 jobs:
   trigger_preview_build:
     name: Trigger preview build
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.ref == 'refs/heads/preview' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          RELEASE_BRANCHES: master
+          RELEASE_BRANCHES: preview
           DEFAULT_BUMP: patch
 
       - name: PING - Dispatch initiating repository event
