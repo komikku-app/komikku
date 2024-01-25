@@ -2,7 +2,8 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:maxHeight="72dp"
+        android:width="72dp"
+        android:height="72dp"
         android:drawable="@drawable/splash_icon"
         android:gravity="center" />
 
