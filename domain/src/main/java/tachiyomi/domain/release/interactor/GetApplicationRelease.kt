@@ -58,7 +58,7 @@ class GetApplicationRelease(
             val currentInt = syDebugVersion.toIntOrNull()
             currentInt != null && newVersion.toInt() > currentInt
         } else {
-            // Release builds: based on releases in "jobobby04/TachiyomiSY" repo
+            // Release builds: based on releases in "cuong-tran/komikku" repo
             // tagged as something like "0.1.2"
             val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
 
