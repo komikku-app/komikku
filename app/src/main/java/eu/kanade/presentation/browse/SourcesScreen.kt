@@ -33,8 +33,8 @@ import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.LabeledCheckbox
-import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -60,7 +60,12 @@ fun SourcesScreen(
             modifier = Modifier.padding(contentPadding),
         )
         else -> {
+            // KMK -->
+            FastScrollLazyColumn(
+            /*
             ScrollbarLazyColumn(
+            // KMK <--
+            */
                 contentPadding = contentPadding + topSmallPaddingValues,
             ) {
                 items(
