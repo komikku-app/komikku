@@ -1,17 +1,23 @@
 package eu.kanade.presentation.browse.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.source.model.Source
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
@@ -54,14 +60,35 @@ private val defaultContent: @Composable RowScope.(Source, String?) -> Unit = { s
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
         )
-        if (sourceLangString != null) {
-            Text(
-                modifier = Modifier.secondaryItemAlpha(),
-                text = sourceLangString,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-            )
+        // KMK -->
+        // Won't look good but it's not like we can ellipsize overflowing content
+        FlowRow(
+            modifier = Modifier.secondaryItemAlpha(),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+        ) {
+            ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
+                // KMK <--
+                if (sourceLangString != null) {
+                    Text(
+                        modifier = Modifier.secondaryItemAlpha(),
+                        text = sourceLangString,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                // KMK -->
+                if (source.installedExtension?.isNsfw == true) {
+                    Text(
+                        text = stringResource(MR.strings.ext_nsfw_short).uppercase(),
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
         }
+        // KMK <--
     }
 }
