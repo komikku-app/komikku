@@ -127,7 +127,7 @@ See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 
 ## FAQ
 
-[See our website.](https://tachiyomi.org/)
+[See our website.](https://mihon.app/)
 You can also reach out to us on [Discord](https://discord.gg/mihon).
 
 ## License
