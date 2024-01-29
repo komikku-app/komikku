@@ -16,6 +16,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceUiModel
+import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -23,9 +24,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -60,6 +64,9 @@ class SourcesScreenModel(
     init {
         // SY -->
         combine(
+            // KMK -->
+            state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+            // KMK <--
             getEnabledSources.subscribe(),
             getSourceCategories.subscribe(),
             getShowLatest.subscribe(smartSearchConfig != null),
@@ -85,7 +92,27 @@ class SourcesScreenModel(
         // SY <--
     }
 
-    private fun collectLatestSources(sources: List<Source>, categories: List<String>, showLatest: Boolean, showPin: Boolean) {
+    private fun collectLatestSources(
+        // KMK -->
+        searchQuery: String?,
+        @Suppress("LocalVariableName") _sources: List<Source>,
+        // KMK <--
+        categories: List<String>, showLatest: Boolean, showPin: Boolean
+    ) {
+        // KMK -->
+        val queryFilter: (String?) -> ((Source) -> Boolean) = { query ->
+            filter@{ source ->
+                if (query.isNullOrBlank()) return@filter true
+                query.split(",").any {
+                    val input = it.trim()
+                    if (input.isEmpty()) return@any false
+                    source.name.contains(input, ignoreCase = true) ||
+                        source.id == input.toLongOrNull()
+                }
+            }
+        }
+        val sources = _sources.filter(queryFilter(searchQuery))
+        // KMK <--
         mutableState.update { state ->
             val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
                 // Sources without a lang defined will be placed at the end
@@ -159,6 +186,14 @@ class SourcesScreenModel(
     }
     // SY <--
 
+    // KMK -->
+    fun search(query: String?) {
+        mutableState.update {
+            it.copy(searchQuery = query)
+        }
+    }
+    // KMK <--
+
     fun showSourceDialog(source: Source) {
         mutableState.update { it.copy(dialog = Dialog.SourceLongClick(source)) }
     }
@@ -187,6 +222,9 @@ class SourcesScreenModel(
         val showLatest: Boolean = false,
         val dataSaverEnabled: Boolean = false,
         // SY <--
+        // KMK -->
+        val searchQuery: String? = null,
+        // KMK <--
     ) {
         val isEmpty = items.isEmpty()
     }

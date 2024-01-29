@@ -72,6 +72,7 @@
     <string name="action_search_hint">Search…</string>
     <string name="action_search_settings">Search settings</string>
     <string name="action_global_search">Global search</string>
+    <string name="action_source_search">Search for source</string>
     <string name="action_select_all">Select all</string>
     <string name="action_select_inverse">Select inverse</string>
     <string name="action_mark_as_read">Mark as read</string>
