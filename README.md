@@ -1,6 +1,6 @@
 | Preview Builds | Build | Releases | Tachiyomi Support Server |
 | -------------- |-------|----------|--------------------------|
-| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_push.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_push.yml) | [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
+| [![Preview Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml) | [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
