@@ -41,8 +41,8 @@ import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
-import tachiyomi.core.i18n.pluralStringResource
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.i18n.pluralStringResource
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR

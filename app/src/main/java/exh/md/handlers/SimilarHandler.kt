@@ -9,7 +9,7 @@ import exh.md.service.SimilarService
 import exh.md.utils.MangaDexRelation
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.withIOContext
 
 class SimilarHandler(
     private val lang: String,

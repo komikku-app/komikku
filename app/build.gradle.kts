@@ -144,7 +144,7 @@ dependencies {
     // SY -->
     implementation(projects.i18nSy)
     // SY <--
-    implementation(projects.core)
+    implementation(projects.core.common)
     implementation(projects.coreMetadata)
     implementation(projects.sourceApi)
     implementation(projects.sourceLocal)

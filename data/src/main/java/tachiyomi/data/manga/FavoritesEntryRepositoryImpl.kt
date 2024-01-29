@@ -1,7 +1,7 @@
 package tachiyomi.data.manga
 
 import logcat.LogPriority
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.FavoriteEntryAlternative

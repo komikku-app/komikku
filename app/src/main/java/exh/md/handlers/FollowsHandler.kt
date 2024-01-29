@@ -15,7 +15,7 @@ import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.under
 import kotlinx.coroutines.async
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.withIOContext
 
 class FollowsHandler(
     private val lang: String,

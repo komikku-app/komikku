@@ -21,7 +21,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
-import tachiyomi.core.util.lang.awaitSingle
+import tachiyomi.core.common.util.lang.awaitSingle
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI

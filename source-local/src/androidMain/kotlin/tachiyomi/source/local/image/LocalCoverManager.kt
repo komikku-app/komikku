@@ -7,8 +7,8 @@ import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
-import tachiyomi.core.storage.nameWithoutExtension
-import tachiyomi.core.util.system.ImageUtil
+import tachiyomi.core.common.storage.nameWithoutExtension
+import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import java.io.File
 import java.io.InputStream

@@ -23,8 +23,8 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.util.overEq
 import exh.util.underEq
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.core.i18n.pluralStringResource
-import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.common.i18n.pluralStringResource
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
 
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {

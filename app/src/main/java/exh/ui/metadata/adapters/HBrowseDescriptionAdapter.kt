@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
-import tachiyomi.core.i18n.pluralStringResource
+import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.i18n.sy.SYMR
 
 @Composable

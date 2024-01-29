@@ -2,7 +2,7 @@ package exh.debug
 
 import eu.kanade.core.preference.PreferenceMutableState
 import kotlinx.coroutines.CoroutineScope
-import tachiyomi.core.preference.PreferenceStore
+import tachiyomi.core.common.preference.PreferenceStore
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 

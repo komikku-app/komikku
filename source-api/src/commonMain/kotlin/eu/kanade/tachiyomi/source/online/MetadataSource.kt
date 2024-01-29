@@ -6,8 +6,8 @@ import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
 import rx.Completable
 import rx.Single
-import tachiyomi.core.util.lang.awaitSingle
-import tachiyomi.core.util.lang.runAsObservable
+import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.core.common.util.lang.runAsObservable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.reflect.KClass

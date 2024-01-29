@@ -14,8 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import rx.Observable
-import tachiyomi.core.util.lang.runAsObservable
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.runAsObservable
+import tachiyomi.core.common.util.lang.withIOContext
 
 class MangaHandler(
     private val lang: String,

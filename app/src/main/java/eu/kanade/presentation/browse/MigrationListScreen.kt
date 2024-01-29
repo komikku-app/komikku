@@ -31,7 +31,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR

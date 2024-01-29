@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.Response
-import tachiyomi.core.preference.Preference
+import tachiyomi.core.common.preference.Preference
 
 interface DataSaver {
 

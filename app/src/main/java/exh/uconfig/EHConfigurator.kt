@@ -11,7 +11,7 @@ import exh.source.EXH_SOURCE_ID
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.sy.SYMR

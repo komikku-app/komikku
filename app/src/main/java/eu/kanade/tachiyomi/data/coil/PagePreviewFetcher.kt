@@ -23,7 +23,7 @@ import okhttp3.Response
 import okhttp3.internal.http.HTTP_NOT_MODIFIED
 import okio.Path.Companion.toOkioPath
 import okio.Source
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File

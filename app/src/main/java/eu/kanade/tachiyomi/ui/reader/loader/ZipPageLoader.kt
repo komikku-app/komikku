@@ -8,8 +8,8 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
-import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.util.system.ImageUtil
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 import java.io.File

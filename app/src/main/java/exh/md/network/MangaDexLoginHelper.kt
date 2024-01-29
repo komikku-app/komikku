@@ -13,7 +13,7 @@ import logcat.LogPriority
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 
 class MangaDexLoginHelper(
     private val client: OkHttpClient,

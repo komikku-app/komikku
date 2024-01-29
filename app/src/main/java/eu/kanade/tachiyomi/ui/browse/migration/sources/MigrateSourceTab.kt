@@ -16,8 +16,8 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreen
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.core.util.lang.launchIO
-import tachiyomi.core.util.lang.withUIContext
+import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.i18n.MR

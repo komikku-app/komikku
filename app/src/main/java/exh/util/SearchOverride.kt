@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import rx.Observable
-import tachiyomi.core.util.lang.runAsObservable
+import tachiyomi.core.common.util.lang.runAsObservable
 
 private val galleryAdder by lazy {
     GalleryAdder()

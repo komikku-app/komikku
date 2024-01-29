@@ -21,7 +21,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import rx.Observable
-import tachiyomi.core.util.lang.runAsObservable
+import tachiyomi.core.common.util.lang.runAsObservable
 import uy.kohesive.injekt.injectLazy
 import kotlin.time.Duration.Companion.seconds
 

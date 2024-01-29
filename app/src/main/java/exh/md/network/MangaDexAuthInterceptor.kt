@@ -9,7 +9,7 @@ import exh.md.utils.MdUtil
 import exh.util.nullIfBlank
 import okhttp3.Interceptor
 import okhttp3.Response
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 import java.io.IOException
 
 class MangaDexAuthInterceptor(

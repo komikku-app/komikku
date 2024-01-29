@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import exh.log.xLogD
-import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.sy.SYMR

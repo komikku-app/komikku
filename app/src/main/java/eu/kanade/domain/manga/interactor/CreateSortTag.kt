@@ -1,6 +1,6 @@
 package eu.kanade.domain.manga.interactor
 
-import tachiyomi.core.preference.plusAssign
+import tachiyomi.core.common.preference.plusAssign
 import tachiyomi.domain.library.service.LibraryPreferences
 
 class CreateSortTag(

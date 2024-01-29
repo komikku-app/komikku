@@ -12,7 +12,7 @@ import logcat.LogPriority
 import okio.Source
 import okio.buffer
 import okio.sink
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.injectLazy
 import java.io.File

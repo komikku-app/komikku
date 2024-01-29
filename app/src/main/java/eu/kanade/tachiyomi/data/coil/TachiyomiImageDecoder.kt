@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.FileHeader
 import okio.BufferedSource
-import tachiyomi.core.util.system.ImageUtil
+import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.decoder.ImageDecoder
 
 /**

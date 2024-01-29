@@ -15,7 +15,7 @@ import exh.md.utils.MdUtil
 import okhttp3.Call
 import okhttp3.Headers
 import rx.Observable
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.withIOContext
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 

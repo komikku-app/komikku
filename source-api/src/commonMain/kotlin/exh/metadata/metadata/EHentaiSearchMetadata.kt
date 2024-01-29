@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.Serializable
-import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt

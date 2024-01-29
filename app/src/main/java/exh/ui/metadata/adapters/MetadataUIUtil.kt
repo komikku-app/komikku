@@ -15,7 +15,7 @@ import androidx.core.graphics.red
 import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.util.SourceTagsUtil
-import tachiyomi.core.i18n.stringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.sy.SYMR
 import kotlin.math.roundToInt
 

@@ -82,8 +82,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import rx.Observable
-import tachiyomi.core.util.lang.runAsObservable
-import tachiyomi.core.util.lang.withIOContext
+import tachiyomi.core.common.util.lang.runAsObservable
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream

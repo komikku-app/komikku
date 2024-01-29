@@ -18,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import tachiyomi.core.util.lang.launchUI
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR

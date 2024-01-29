@@ -2,7 +2,7 @@ package tachiyomi.domain.source.interactor
 
 import logcat.LogPriority
 import logcat.asLog
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.repository.SavedSearchRepository
 

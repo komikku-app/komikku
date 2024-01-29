@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.ui.setting.track.BaseOAuthLoginActivity
 import exh.md.utils.MdUtil
-import tachiyomi.core.util.lang.launchIO
+import tachiyomi.core.common.util.lang.launchIO
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
