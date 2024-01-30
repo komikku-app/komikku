@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -21,11 +20,14 @@ import tachiyomi.source.local.LocalSource
 // KMK -->
 @Composable
 fun SourceSettingsButton(
-    source: Source,
+    id: Long,
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
 ) {
     // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
-    if (source.id == LocalSource.ID || source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) return
+    if (id == LocalSource.ID || id == EH_SOURCE_ID || id == EXH_SOURCE_ID) return
+
+    // Create a fake source
+    val source = Source(id,"", "", supportsLatest = false, isStub = false)
     val navigator = LocalNavigator.currentOrThrow
     IconButton(onClick = {
         if (source.installedExtension !== null)
@@ -33,9 +35,15 @@ fun SourceSettingsButton(
     }) {
         Icon(
             imageVector = Icons.Outlined.Settings,
-            tint = MaterialTheme.colorScheme.primary,
             contentDescription = stringResource(MR.strings.label_settings),
         )
     }
+}
+@Composable
+fun SourceSettingsButton(
+    source: Source,
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
+) {
+    SourceSettingsButton(id = source.id)
 }
 // KMK <--

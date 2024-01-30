@@ -56,7 +56,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.BaseSourceItem
-import eu.kanade.presentation.browse.components.SourceSettingsButton
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -382,9 +381,6 @@ private fun SourceItem(
                 )
             }
             // SY <--
-            // KMK -->
-            SourceSettingsButton(source = source)
-            // KMK <--
         },
     )
 }

@@ -48,6 +48,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             searchQuery = state.searchQuery,
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
+            // KMK -->
+            id = screenModel.source.id,
+            // KMK <--
         )
 
         val onDismissRequest = screenModel::dismissDialog

@@ -13,9 +13,11 @@ import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.presentation.browse.components.SourceSettingsButton
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
@@ -96,6 +98,9 @@ fun SourceFeedScreen(
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     getMangaState: @Composable (Manga) -> State<Manga>,
+    // KMK -->
+    id: Long,
+    // KMK <--
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
@@ -105,6 +110,9 @@ fun SourceFeedScreen(
                 onSearchQueryChange = onSearchQueryChange,
                 scrollBehavior = scrollBehavior,
                 onClickSearch = onClickSearch,
+                // KMK -->
+                id = id,
+                // KMK <--
             )
         },
         floatingActionButton = {
@@ -213,6 +221,9 @@ fun SourceFeedToolbar(
     onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     onClickSearch: (String) -> Unit,
+    // KMK -->
+    id: Long
+    // KMK <--
 ) {
     SearchToolbar(
         titleContent = { AppBarTitle(title) },
@@ -222,5 +233,12 @@ fun SourceFeedToolbar(
         onClickCloseSearch = { onSearchQueryChange(null) },
         scrollBehavior = scrollBehavior,
         placeholderText = stringResource(MR.strings.action_search_hint),
+        // KMK -->
+        actions = {
+            persistentListOf(
+                SourceSettingsButton(id)
+            )
+        }
+        // KMK <--
     )
 }
