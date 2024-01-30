@@ -12,6 +12,9 @@ Tachiyomi is a free and open source manga reader for Android 6.0 and above. This
 
 Features of Komikku include:
 * Built-in & official extensions repository
+* Search for sources when too many sources installed
+* Show which source is NSFW
+* Button to jump to source's package settings page (to uninstall unwanted sources)
 
 Features of Tachiyomi(original) include:
 * Online reading from a variety of sources
