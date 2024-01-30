@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,16 +55,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
-import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
+import eu.kanade.presentation.browse.components.SourceSettingsButton
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
@@ -83,7 +77,6 @@ import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
 import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
-import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 
 @Composable
@@ -389,13 +382,9 @@ private fun SourceItem(
                 )
             }
             // SY <--
-            // AM (BROWSE) -->
-            if (source.id != LocalSource.ID) {
-                SourceSettingsButton(
-                    source = source,
-                )
-            }
-            // <-- AM (BROWSE)
+            // KMK -->
+            SourceSettingsButton(source = source)
+            // KMK <--
         },
     )
 }
@@ -422,27 +411,6 @@ private fun SourcePinButton(
         )
     }
 }
-
-// AM (BROWSE) -->
-@Composable
-private fun SourceSettingsButton(
-    source: Source,
-) {
-    // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
-    if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) return
-    val navigator = LocalNavigator.currentOrThrow
-    IconButton(onClick = {
-        if (source.installedExtension !== null)
-            navigator.push(ExtensionDetailsScreen(source.installedExtension!!.pkgName))
-    }) {
-        Icon(
-            imageVector = Icons.Outlined.Settings,
-            tint = MaterialTheme.colorScheme.primary,
-            contentDescription = stringResource(MR.strings.label_settings),
-        )
-    }
-}
-// <-- AM (BROWSE)
 
 @Composable
 fun SourceOptionsDialog(
