@@ -150,7 +150,7 @@ open class FeedScreenModel(
     }
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchGlobal.await() > 10
+        return countFeedSavedSearchGlobal.await() > MAX_FEED_ITEMS
     }
 
     fun getEnabledSources(): ImmutableList<CatalogueSource> {
@@ -323,3 +323,5 @@ data class FeedScreenState(
     val isLoadingItems
         get() = items?.fastAny { it.results == null } != false
 }
+
+const val MAX_FEED_ITEMS = 20
