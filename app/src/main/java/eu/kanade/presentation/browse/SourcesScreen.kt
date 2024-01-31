@@ -112,7 +112,7 @@ fun SourcesScreen(
 
             FastScrollLazyColumn(
                 state = lazyListState,
-            // KMK <--
+                // KMK <--
                 contentPadding = contentPadding + topSmallPaddingValues,
             ) {
                 items(
