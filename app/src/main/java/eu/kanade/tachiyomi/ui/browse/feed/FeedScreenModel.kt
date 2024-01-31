@@ -130,7 +130,9 @@ open class FeedScreenModel(
                     dialog = Dialog.AddFeedSearch(
                         source,
                         (
-                            (if (source.supportsLatest) persistentListOf(null) else persistentListOf()) +
+                            // KMK -->
+                            persistentListOf(null) +
+                            // KMK <-->
                                 getSourceSavedSearches(source.id)
                             ).toImmutableList(),
                     ),
@@ -231,7 +233,12 @@ open class FeedScreenModel(
                         if (itemUI.source != null) {
                             withContext(coroutineDispatcher) {
                                 if (itemUI.savedSearch == null) {
-                                    itemUI.source.getLatestUpdates(1)
+                                    // KMK -->
+                                    if (itemUI.source.supportsLatest)
+                                        itemUI.source.getLatestUpdates(1)
+                                    else
+                                        itemUI.source.getPopularManga(1)
+                                    // KMK <--
                                 } else {
                                     itemUI.source.getSearchManga(
                                         1,

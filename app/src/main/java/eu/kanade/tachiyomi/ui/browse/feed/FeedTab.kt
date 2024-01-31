@@ -78,7 +78,12 @@ fun Screen.feedTab(): TabContent {
                     navigator.push(
                         BrowseSourceScreen(
                             source.id,
-                            GetRemoteManga.QUERY_LATEST,
+                            // KMK -->
+                            listingQuery = if (!source.supportsLatest)
+                                GetRemoteManga.QUERY_POPULAR
+                            else
+                                GetRemoteManga.QUERY_LATEST,
+                            // KMK <--
                         ),
                     )
                 },

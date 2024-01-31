@@ -195,7 +195,12 @@ fun FeedAddSearchDialog(
             val context = LocalContext.current
             val savedSearchStrings = remember {
                 savedSearches.map {
-                    it?.name ?: context.stringResource(MR.strings.latest)
+                    // KMK -->
+                    it?.name ?: if (source.supportsLatest)
+                        context.stringResource(MR.strings.latest)
+                    else
+                        context.stringResource(MR.strings.popular)
+                    // KMK <--
                 }.toImmutableList()
             }
             RadioSelector(
