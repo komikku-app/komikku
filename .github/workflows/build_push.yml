@@ -53,7 +53,7 @@ jobs:
           echo "CHANGELOG=$changelog" >> $GITHUB_ENV
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v2
 
       - name: Setup Android SDK
         run: |
@@ -65,6 +65,9 @@ jobs:
           java-version: 17
           distribution: adopt
 
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v3
+          
       # SY <--
       - name: Write google-services.json
         uses: DamianReeves/write-file-action@v1.2
@@ -76,9 +79,7 @@ jobs:
 
       - name: Build app and run unit tests
         if: startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku'
-        uses: gradle/gradle-command-action@v2
-        with:
-          arguments: assembleStandardRelease testStandardReleaseUnitTest --stacktrace
+        run: ./gradlew assembleStandardRelease testStandardReleaseUnitTest --stacktrace
 
       # Sign APK and create release for tags
       - name: Get tag name
