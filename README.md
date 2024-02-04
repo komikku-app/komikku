@@ -1,6 +1,6 @@
-| Preview Builds | Build | Releases | Tachiyomi Support Server |
-| -------------- |-------|----------|--------------------------|
-| [![Preview Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml) | [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
+| Releases | Preview builds | Dev builds | PR builds | Mihon Support Server |
+|----------|----------------|------------|-----------|----------------------|
+| [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Preview Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml) | [![Development Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_develop.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_develop.yml) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
@@ -11,10 +11,16 @@ Tachiyomi is a free and open source manga reader for Android 6.0 and above. This
 ## Features
 
 Features of Komikku include:
-* Built-in & official extensions repository
-* Search for sources when too many sources installed
-* Show which source is NSFW
-* Button to jump to source's package settings page (to uninstall unwanted sources)
+- [x] Built-in & official extensions repository
+- [x] Search for sources when too many sources installed
+- [x] Show which source is NSFW
+- [x] Filter to show 18+ only sources/extensions browse
+- [x] Button to jump to source's package settings page (to uninstall unwanted sources)
+- [x] More Feed items (20 for now)
+- [x] Feed now supports all extensions
+- [ ] Show photo’s size so you can compare which source has better quality
+- [ ] Support other sources just like E-Hentai: Lucious...
+- [ ] History of searched query
 
 Features of Tachiyomi(original) include:
 * Online reading from a variety of sources
