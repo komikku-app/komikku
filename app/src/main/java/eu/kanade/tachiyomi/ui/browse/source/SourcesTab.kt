@@ -55,7 +55,7 @@ fun Screen.sourcesTab(
                 ),
                 // KMK -->
                 AppBar.Action(
-                    title = stringResource(SYMR.strings.label_source_nsfw),
+                    title = stringResource(MR.strings.action_toggle_nsfw_only),
                     icon = Icons.Outlined._18UpRating,
                     iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
                     onClick = { screenModel.toggleNsfwOnly() },

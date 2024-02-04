@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -35,7 +34,7 @@ fun extensionsTab(
         actions = persistentListOf(
             // KMK -->
             AppBar.Action(
-                title = stringResource(SYMR.strings.label_extension_nsfw),
+                title = stringResource(MR.strings.action_toggle_nsfw_only),
                 icon = Icons.Outlined._18UpRating,
                 iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
                 onClick = { extensionsScreenModel.toggleNsfwOnly() },
