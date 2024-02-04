@@ -277,8 +277,8 @@ class MyAnimeListApi(
     }
 
     companion object {
-        // Registered under arkon's MAL account
-        private const val clientId = "8fd3313bc138e8b890551aa1de1a2589"
+        // Registered under KMK's MAL account
+        private const val clientId = "6aa6df85b5f386a4328e01299ad74c75"
 
         private const val baseOAuthUrl = "https://myanimelist.net/v1/oauth2"
         private const val baseApiUrl = "https://api.myanimelist.net/v2"
