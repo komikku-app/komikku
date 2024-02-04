@@ -3,6 +3,9 @@ package eu.kanade.tachiyomi.ui.browse.source
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.TravelExplore
+import androidx.compose.material.icons.outlined._18UpRating
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,6 +53,14 @@ fun Screen.sourcesTab(
                     icon = Icons.Outlined.TravelExplore,
                     onClick = { navigator.push(GlobalSearchScreen()) },
                 ),
+                // KMK -->
+                AppBar.Action(
+                    title = stringResource(SYMR.strings.label_source_nsfw),
+                    icon = Icons.Outlined._18UpRating,
+                    iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                    onClick = { screenModel.toggleNsfwOnly() },
+                ),
+                // KMK <--
                 AppBar.Action(
                     title = stringResource(MR.strings.action_filter),
                     icon = Icons.Outlined.FilterList,

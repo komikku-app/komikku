@@ -12,6 +12,7 @@ import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.domain.ui.UiPreferences
@@ -22,6 +23,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -66,6 +68,7 @@ class SourcesScreenModel(
         combine(
             // KMK -->
             state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+            state.map { it.nsfwOnly }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
             // KMK <--
             getEnabledSources.subscribe(),
             getSourceCategories.subscribe(),
@@ -95,13 +98,17 @@ class SourcesScreenModel(
     private fun collectLatestSources(
         // KMK -->
         searchQuery: String?,
+        nsfwOnly: Boolean,
         @Suppress("LocalVariableName") _sources: List<Source>,
         // KMK <--
-        categories: List<String>, showLatest: Boolean, showPin: Boolean
+        categories: List<String>,
+        showLatest: Boolean,
+        showPin: Boolean
     ) {
         // KMK -->
         val queryFilter: (String?) -> ((Source) -> Boolean) = { query ->
             filter@{ source ->
+                if (nsfwOnly && source.installedExtension != null && !source.installedExtension!!.isNsfw) return@filter false
                 if (query.isNullOrBlank()) return@filter true
                 query.split(",").any {
                     val input = it.trim()
@@ -192,6 +199,32 @@ class SourcesScreenModel(
             it.copy(searchQuery = query)
         }
     }
+
+    fun toggleNsfwOnly() {
+        mutableState.update {
+            it.copy(nsfwOnly = !it.nsfwOnly)
+        }
+    }
+
+    private fun <T1, T2, T3, T4, T5, T6, R> combine(
+        flow: Flow<T1>,
+        flow2: Flow<T2>,
+        flow3: Flow<T3>,
+        flow4: Flow<T4>,
+        flow5: Flow<T5>,
+        flow6: Flow<T6>,
+        transform: suspend (T1, T2, T3, T4, T5, T6) -> R
+    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6) { args: Array<*> ->
+        @Suppress("UNCHECKED_CAST")
+        transform(
+            args[0] as T1,
+            args[1] as T2,
+            args[2] as T3,
+            args[3] as T4,
+            args[4] as T5,
+            args[5] as T6,
+        )
+    }
     // KMK <--
 
     fun showSourceDialog(source: Source) {
@@ -224,6 +257,7 @@ class SourcesScreenModel(
         // SY <--
         // KMK -->
         val searchQuery: String? = null,
+        val nsfwOnly: Boolean = false,
         // KMK <--
     ) {
         val isEmpty = items.isEmpty()

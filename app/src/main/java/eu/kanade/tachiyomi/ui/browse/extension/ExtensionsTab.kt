@@ -1,5 +1,9 @@
 package eu.kanade.tachiyomi.ui.browse.extension
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined._18UpRating
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,6 +18,7 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -28,6 +33,14 @@ fun extensionsTab(
         badgeNumber = state.updates.takeIf { it > 0 },
         searchEnabled = true,
         actions = persistentListOf(
+            // KMK -->
+            AppBar.Action(
+                title = stringResource(SYMR.strings.label_extension_nsfw),
+                icon = Icons.Outlined._18UpRating,
+                iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                onClick = { extensionsScreenModel.toggleNsfwOnly() },
+            ),
+            // KMK <--
             AppBar.OverflowAction(
                 title = stringResource(MR.strings.action_filter),
                 onClick = { navigator.push(ExtensionFilterScreen()) },

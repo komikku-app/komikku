@@ -49,8 +49,11 @@ class ExtensionsScreenModel(
                 ExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
             }
         }
-        val queryFilter: (String) -> ((Extension) -> Boolean) = { query ->
+        val queryFilter: (String/* KMK --> */, Boolean/* KMK <-- */) -> ((Extension) -> Boolean) = { query/* KMK --> */, nsfwOnly/* KMK <-- */ ->
             filter@{ extension ->
+                // KMK -->
+                if (nsfwOnly && !extension.isNsfw) return@filter false
+                // KMK <--
                 if (query.isEmpty()) return@filter true
                 query.split(",").any { _input ->
                     val input = _input.trim()
@@ -79,26 +82,29 @@ class ExtensionsScreenModel(
         screenModelScope.launchIO {
             combine(
                 state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                // KMK -->
+                state.map { it.nsfwOnly }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                // KMK <--
                 _currentDownloads,
                 getExtensions.subscribe(),
-            ) { query, downloads, (_updates, _installed, _available, _untrusted) ->
+            ) { query/* KMK --> */, nsfwOnly/* KMK <-- */, downloads, (_updates, _installed, _available, _untrusted) ->
                 val searchQuery = query ?: ""
 
                 val itemsGroups: ItemGroups = mutableMapOf()
 
-                val updates = _updates.filter(queryFilter(searchQuery)).map(extensionMapper(downloads))
+                val updates = _updates.filter(queryFilter(searchQuery/* KMK --> */, nsfwOnly/* KMK <-- */)).map(extensionMapper(downloads))
                 if (updates.isNotEmpty()) {
                     itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.ext_updates_pending)] = updates
                 }
 
-                val installed = _installed.filter(queryFilter(searchQuery)).map(extensionMapper(downloads))
-                val untrusted = _untrusted.filter(queryFilter(searchQuery)).map(extensionMapper(downloads))
+                val installed = _installed.filter(queryFilter(searchQuery/* KMK --> */, nsfwOnly/* KMK <-- */)).map(extensionMapper(downloads))
+                val untrusted = _untrusted.filter(queryFilter(searchQuery/* KMK --> */, nsfwOnly/* KMK <-- */)).map(extensionMapper(downloads))
                 if (installed.isNotEmpty() || untrusted.isNotEmpty()) {
                     itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.ext_installed)] = untrusted + installed
                 }
 
                 val languagesWithExtensions = _available
-                    .filter(queryFilter(searchQuery))
+                    .filter(queryFilter(searchQuery/* KMK --> */, nsfwOnly/* KMK <-- */))
                     .groupBy { it.lang }
                     .toSortedMap(LocaleHelper.comparator)
                     .map { (lang, exts) ->
@@ -198,6 +204,14 @@ class ExtensionsScreenModel(
         extensionManager.trust(extension)
     }
 
+    // KMK -->
+    fun toggleNsfwOnly() {
+        mutableState.update {
+            it.copy(nsfwOnly = !it.nsfwOnly)
+        }
+    }
+    // KMK <--
+
     @Immutable
     data class State(
         val isLoading: Boolean = true,
@@ -206,6 +220,9 @@ class ExtensionsScreenModel(
         val updates: Int = 0,
         val installer: BasePreferences.ExtensionInstaller? = null,
         val searchQuery: String? = null,
+        // KMK -->
+        val nsfwOnly: Boolean = false,
+        // KMK <--
     ) {
         val isEmpty = items.isEmpty()
     }
