@@ -55,7 +55,12 @@ private val defaultContent: @Composable RowScope.(Source, String?) -> Unit = { s
             .weight(1f),
     ) {
         Text(
-            text = source.name,
+            text = source.name +
+                // KMK -->
+                (source.installedExtension?.let { extension ->
+                    " (${extension.name})".takeIf {extension.name != source.name }
+                } ?: ""),
+            // KMK <--
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,

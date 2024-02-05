@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
@@ -16,6 +17,7 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableMap
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.Source as DomainSource
 import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
@@ -74,10 +76,24 @@ internal fun GlobalSearchContent(
     ) {
         items.forEach { (source, result) ->
             item(key = source.id) {
+                // KMK -->
+                val domainSource = DomainSource(
+                    source.id,
+                    "", "",
+                    supportsLatest = false,
+                    isStub = false
+                )
+                // KMK <--
+
                 GlobalSearchResultItem(
-                    title = fromSourceId?.let {
+                    title = (fromSourceId?.let {
                         "▶ ${source.name}".takeIf { source.id == fromSourceId }
-                    } ?: source.name,
+                    } ?: source.name) +
+                        // KMK -->
+                        (domainSource.installedExtension?.let { extension ->
+                            " (${extension.name})".takeIf { extension.name != source.name }
+                        } ?: ""),
+                    // KMK <--
                     subtitle = LocaleHelper.getLocalizedDisplayName(source.lang),
                     onClick = { onClickSource(source) },
                 ) {
