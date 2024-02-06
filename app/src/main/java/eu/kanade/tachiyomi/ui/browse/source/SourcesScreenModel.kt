@@ -108,12 +108,13 @@ class SourcesScreenModel(
         // KMK -->
         val queryFilter: (String?) -> ((Source) -> Boolean) = { query ->
             filter@{ source ->
-                if (nsfwOnly && source.installedExtension != null && !source.installedExtension!!.isNsfw) return@filter false
+                if (nsfwOnly && source.installedExtension?.isNsfw == true) return@filter false
                 if (query.isNullOrBlank()) return@filter true
                 query.split(",").any {
                     val input = it.trim()
                     if (input.isEmpty()) return@any false
                     source.name.contains(input, ignoreCase = true) ||
+                    source.installedExtension?.name?.contains(input, ignoreCase = true) == true ||
                         source.id == input.toLongOrNull()
                 }
             }
