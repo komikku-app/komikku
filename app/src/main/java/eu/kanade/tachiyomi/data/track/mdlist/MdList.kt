@@ -40,18 +40,18 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         return Color.rgb(43, 48, 53)
     }
 
-    override fun getStatusList(): List<Int> {
-        return FollowStatus.entries.map { it.int }
+    override fun getStatusList(): List<Long> {
+        return FollowStatus.entries.map { it.long }
     }
 
-    override fun getStatus(status: Int): StringResource? = when (status) {
-        0 -> SYMR.strings.md_follows_unfollowed
-        1 -> MR.strings.reading
-        2 -> MR.strings.completed
-        3 -> MR.strings.on_hold
-        4 -> MR.strings.plan_to_read
-        5 -> MR.strings.dropped
-        6 -> MR.strings.repeating
+    override fun getStatus(status: Long): StringResource? = when (status) {
+        0L -> SYMR.strings.md_follows_unfollowed
+        1L -> MR.strings.reading
+        2L -> MR.strings.completed
+        3L -> MR.strings.on_hold
+        4L -> MR.strings.plan_to_read
+        5L -> MR.strings.dropped
+        6L -> MR.strings.repeating
         else -> null
     }
 
@@ -64,13 +64,13 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
             val mdex = mdex ?: throw MangaDexNotFoundException()
 
             val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
-            val followStatus = FollowStatus.fromInt(track.status)
+            val followStatus = FollowStatus.fromLong(track.status)
 
             // this updates the follow status in the metadata
             // allow follow status to update
-            if (remoteTrack.status != followStatus.int) {
+            if (remoteTrack.status != followStatus.long) {
                 if (mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)) {
-                    remoteTrack.status = followStatus.int
+                    remoteTrack.status = followStatus.long
                 } else {
                     track.status = remoteTrack.status
                 }
@@ -103,19 +103,19 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         }
     }
 
-    override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
+    override fun getCompletionStatus(): Long = FollowStatus.COMPLETED.long
 
-    override fun getReadingStatus(): Int = FollowStatus.READING.int
+    override fun getReadingStatus(): Long = FollowStatus.READING.long
 
-    override fun getRereadingStatus(): Int = FollowStatus.RE_READING.int
+    override fun getRereadingStatus(): Long = FollowStatus.RE_READING.long
 
     override suspend fun bind(track: Track, hasReadChapters: Boolean): Track = update(
         refresh(track).also {
-            if (it.status == FollowStatus.UNFOLLOWED.int) {
+            if (it.status == FollowStatus.UNFOLLOWED.long) {
                 it.status = if (hasReadChapters) {
-                    FollowStatus.READING.int
+                    FollowStatus.READING.long
                 } else {
-                    FollowStatus.PLAN_TO_READ.int
+                    FollowStatus.PLAN_TO_READ.long
                 }
             }
         },
@@ -136,7 +136,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
     fun createInitialTracker(dbManga: Manga, mdManga: Manga = dbManga): Track {
         return Track.create(id).apply {
             manga_id = dbManga.id
-            status = FollowStatus.UNFOLLOWED.int
+            status = FollowStatus.UNFOLLOWED.long
             tracking_url = MdUtil.baseUrl + mdManga.url
             title = mdManga.title
         }

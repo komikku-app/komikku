@@ -12,22 +12,21 @@ import exh.md.utils.FollowStatus
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 
-enum class TrackStatus(val int: Int, val res: StringResource) {
-    READING(1, MR.strings.reading),
-    REPEATING(2, MR.strings.repeating),
-    PLAN_TO_READ(3, MR.strings.plan_to_read),
-    PAUSED(4, MR.strings.on_hold),
-    COMPLETED(5, MR.strings.completed),
-    DROPPED(6, MR.strings.dropped),
-    OTHER(7, SYMR.strings.not_tracked),
+enum class TrackStatus(val long: Long, val res: StringResource) {
+    READING(1L, MR.strings.reading),
+    REPEATING(2L, MR.strings.repeating),
+    PLAN_TO_READ(3L, MR.strings.plan_to_read),
+    PAUSED(4L, MR.strings.on_hold),
+    COMPLETED(5L, MR.strings.completed),
+    DROPPED(6L, MR.strings.dropped),
+    OTHER(7L, SYMR.strings.not_tracked),
     ;
 
     companion object {
-        fun parseTrackerStatus(trackerManager: TrackerManager, tracker: Long, statusLong: Long): TrackStatus? {
-            val status = statusLong.toInt()
+        fun parseTrackerStatus(trackerManager: TrackerManager, tracker: Long, status: Long): TrackStatus? {
             return when (tracker) {
                 trackerManager.mdList.id -> {
-                    when (FollowStatus.fromInt(status)) {
+                    when (FollowStatus.fromLong(status)) {
                         FollowStatus.UNFOLLOWED -> null
                         FollowStatus.READING -> READING
                         FollowStatus.COMPLETED -> COMPLETED

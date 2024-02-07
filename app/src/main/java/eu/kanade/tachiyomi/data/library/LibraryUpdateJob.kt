@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -236,14 +235,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         } else {
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
-                    val trackingExtra = groupExtra?.toIntOrNull() ?: -1
+                    val trackingExtra = groupExtra?.toLongOrNull() ?: -1L
                     val tracks = getTracks.await().groupBy { it.mangaId }
 
                     libraryManga.filter { (manga) ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
                             TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
                         } ?: TrackStatus.OTHER
-                        status.int == trackingExtra
+                        status.long == trackingExtra
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
@@ -553,12 +552,12 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         var count = 0
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager)
             ?: return@coroutineScope
-        val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
+        val syncFollowStatusLongs = preferences.mangadexSyncToLibraryIndexes().get().map { it.toLong() }
 
         val size: Int
         mangaDex.fetchAllFollows()
             .filter { (_, metadata) ->
-                syncFollowStatusInts.contains(metadata.followStatus)
+                syncFollowStatusLongs.contains(metadata.followStatus)
             }
             .also { size = it.size }
             .forEach { (networkManga, metadata) ->
@@ -615,9 +614,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 var tracker = dbTracks.firstOrNull { it.trackerId == TrackerManager.MDLIST }
                     ?: mdList.createInitialTracker(manga).toDomainTrack(idRequired = false)
 
-                if (tracker?.status == FollowStatus.UNFOLLOWED.int.toLong()) {
+                if (tracker?.status == FollowStatus.UNFOLLOWED.long) {
                     tracker = tracker.copy(
-                        status = FollowStatus.READING.int.toLong(),
+                        status = FollowStatus.READING.long,
                     )
                     val updatedTrack = mdList.update(tracker.toDbTrack())
                     insertTrack.await(updatedTrack.toDomainTrack(false)!!)

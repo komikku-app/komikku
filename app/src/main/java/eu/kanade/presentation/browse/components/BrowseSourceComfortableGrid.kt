@@ -102,7 +102,7 @@ private fun BrowseSourceComfortableGridItem(
                         .let {
                             remember {
                                 it.getStringArray(R.array.md_follows_options)
-                                    .getOrNull(followStatus)
+                                    .getOrNull(followStatus.toInt())
                             }
                         }
                         ?: return@let

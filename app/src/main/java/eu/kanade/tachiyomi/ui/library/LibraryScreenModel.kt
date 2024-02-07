@@ -877,7 +877,7 @@ class LibraryScreenModel(
                 categoryName
             }
             LibraryGroup.BY_TRACK_STATUS -> TrackStatus.entries
-                .find { it.int.toLong() == category?.id }
+                .find { it.long.toLong() == category?.id }
                 .let { it ?: TrackStatus.OTHER }
                 .let { context.stringResource(it.res) }
             LibraryGroup.UNGROUPED -> context.stringResource(SYMR.strings.ungrouped)
@@ -1020,7 +1020,7 @@ class LibraryScreenModel(
         return tracks.fastAny { track ->
             val trackService = trackerManager.get(track.trackerId)
             if (trackService != null) {
-                val status = trackService.getStatus(track.status.toInt())?.let {
+                val status = trackService.getStatus(track.status)?.let {
                     context.stringResource(it)
                 }
                 val name = trackerManager.get(track.trackerId)?.name
@@ -1183,16 +1183,16 @@ class LibraryScreenModel(
                         TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
                     } ?: TrackStatus.OTHER
 
-                    status.int
+                    status.long
                 }.mapKeys { (id) ->
                     Category(
                         id = id.toLong(),
                         name = TrackStatus.entries
-                            .find { it.int == id }
+                            .find { it.long == id }
                             .let { it ?: TrackStatus.OTHER }
                             .let { context.stringResource(it.res) },
                         order = TrackStatus.entries.indexOfFirst {
-                            it.int == id
+                            it.long == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,
                     )

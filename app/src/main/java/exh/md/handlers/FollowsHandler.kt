@@ -57,7 +57,7 @@ class FollowsHandler(
                 it,
                 lang,
             ) to MangaDexSearchMetadata().apply {
-                followStatus = FollowStatus.fromDex(statuses[it.id]).int
+                followStatus = FollowStatus.fromDex(statuses[it.id]).long
             }
         }.sortedWith(comparator)
     }
@@ -116,7 +116,7 @@ class FollowsHandler(
         return withIOContext {
             val mangaId = MdUtil.getMangaId(track.tracking_url)
             val result = runCatching {
-                if (track.score == 0f) {
+                if (track.score == 0.0) {
                     service.deleteMangaRating(mangaId)
                 } else {
                     service.updateMangaRating(mangaId, track.score.toInt())
@@ -155,9 +155,9 @@ class FollowsHandler(
             val (followStatus, rating) = followStatusDef.await() to ratingDef.await()
             Track.create(TrackerManager.MDLIST).apply {
                 title = ""
-                status = followStatus.int
+                status = followStatus.long
                 tracking_url = url
-                score = rating?.rating?.toFloat() ?: 0F
+                score = rating?.rating?.toDouble() ?: 0.0
             }
         }
     }
