@@ -181,6 +181,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="komikku" />
+                <data android:scheme="mihon" />
 
                 <data android:host="anilist-auth" />
                 <data android:host="bangumi-auth" />
