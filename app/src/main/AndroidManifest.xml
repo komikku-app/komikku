@@ -180,7 +180,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="tachiyomi" />
+                <data android:scheme="komikku" />
 
                 <data android:host="anilist-auth" />
                 <data android:host="bangumi-auth" />
