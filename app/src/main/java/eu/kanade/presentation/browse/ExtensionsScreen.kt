@@ -340,7 +340,7 @@ private fun ExtensionItemContent(
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
         ) {
             ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
-                if (extension is Extension.Installed && extension.lang.isNotEmpty()) {
+                if (extension.lang?.isNotEmpty() == true) {
                     Text(
                         text = LocaleHelper.getSourceDisplayName(extension.lang, LocalContext.current),
                     )
