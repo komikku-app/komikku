@@ -55,10 +55,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
@@ -76,6 +79,7 @@ import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
 import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 
 @Composable
@@ -418,6 +422,9 @@ fun SourceOptionsDialog(
     onClickToggleDataSaver: (() -> Unit)?,
     // SY <--
     onDismiss: () -> Unit,
+    // KMK -->
+    onClickSettings: (() -> Unit)? = null,
+    // KMK <--
 ) {
     AlertDialog(
         title = {
@@ -466,6 +473,18 @@ fun SourceOptionsDialog(
                     )
                 }
                 // SY <--
+                // KMK -->
+                if (onClickSettings != null && source.installedExtension !== null &&
+                    !(source.id == LocalSource.ID || source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID)) {
+                    Text(
+                        text =  stringResource(MR.strings.label_extension_info),
+                        modifier = Modifier
+                            .clickable(onClick = onClickSettings)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                    )
+                }
+                // KMK <--
             }
         },
         onDismissRequest = onDismiss,

@@ -14,11 +14,13 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.SourceCategoriesDialog
 import eu.kanade.presentation.browse.SourceOptionsDialog
 import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
+import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen.SmartSearchConfig
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
@@ -113,7 +115,15 @@ fun Screen.sourcesTab(
                             screenModel.toggleExcludeFromDataSaver(source)
                             screenModel.closeDialog()
                         }.takeIf { state.dataSaverEnabled },
+                        // SY <--
                         onDismiss = screenModel::closeDialog,
+                        // KMK -->
+                        onClickSettings = {
+                            if (source.installedExtension !== null)
+                                navigator.push(ExtensionDetailsScreen(source.installedExtension!!.pkgName))
+                            screenModel.closeDialog()
+                        },
+                        // KMK <--
                     )
                 }
                 is SourcesScreenModel.Dialog.SourceCategories -> {

@@ -23,11 +23,19 @@ fun SourceSettingsButton(
     id: Long,
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
 ) {
-    // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
-    if (id == LocalSource.ID || id == EH_SOURCE_ID || id == EXH_SOURCE_ID) return
-
     // Create a fake source
     val source = Source(id,"", "", supportsLatest = false, isStub = false)
+    SourceSettingsButton(source = source)
+}
+
+@Composable
+fun SourceSettingsButton(
+    source: Source,
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
+) {
+    // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
+    if (source.id == LocalSource.ID || source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) return
+
     val navigator = LocalNavigator.currentOrThrow
     IconButton(onClick = {
         if (source.installedExtension !== null)
@@ -38,12 +46,5 @@ fun SourceSettingsButton(
             contentDescription = stringResource(MR.strings.label_settings),
         )
     }
-}
-@Composable
-fun SourceSettingsButton(
-    source: Source,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
-) {
-    SourceSettingsButton(id = source.id)
 }
 // KMK <--
