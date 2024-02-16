@@ -16,7 +16,7 @@ import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
-import eu.kanade.tachiyomi.util.lang.toRelativeSting
+import eu.kanade.tachiyomi.util.lang.toRelativeString
 import exh.metadata.MetadataUtil
 import exh.source.isEhBasedManga
 import kotlinx.collections.immutable.ImmutableList
@@ -65,7 +65,7 @@ fun ChapterListDialog(
                                 LocalDate.ofInstant(
                                     Instant.ofEpochMilli(it),
                                     ZoneId.systemDefault(),
-                                ).toRelativeSting(context, dateRelativeTime, chapterItem.dateFormat)
+                                ).toRelativeString(context, dateRelativeTime, chapterItem.dateFormat)
                             }
                             // SY <--
                         },
