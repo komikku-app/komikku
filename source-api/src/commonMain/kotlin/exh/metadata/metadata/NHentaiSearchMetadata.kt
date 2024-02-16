@@ -8,7 +8,9 @@ import kotlinx.serialization.Serializable
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Serializable
 class NHentaiSearchMetadata : RaisedSearchMetadata() {
@@ -92,7 +94,13 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         return with(context) {
             listOfNotNull(
                 getItem(nhId) { stringResource(SYMR.strings.id) },
-                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }) {
+                getItem(
+                    uploadDate,
+                    {
+                        MetadataUtil.EX_DATE_FORMAT
+                            .format(ZonedDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneId.systemDefault()))
+                    },
+                ) {
                     stringResource(SYMR.strings.date_posted)
                 },
                 getItem(favoritesCount) { stringResource(SYMR.strings.total_favorites) },

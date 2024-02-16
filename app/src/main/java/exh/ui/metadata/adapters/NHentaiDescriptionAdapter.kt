@@ -18,7 +18,9 @@ import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Composable
 fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
@@ -50,7 +52,11 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                 binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp)
             }
 
-            binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
+            binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT
+                .format(
+                    ZonedDateTime
+                        .ofInstant(Instant.ofEpochSecond(meta.uploadDate ?: 0), ZoneId.systemDefault())
+                )
 
             binding.pages.text = context.pluralStringResource(
                 SYMR.plurals.num_pages,

@@ -11,7 +11,9 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Locale
 
 @Serializable
@@ -73,7 +75,13 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
                 getItem(tmId) { stringResource(SYMR.strings.id) },
                 getItem(title) { stringResource(MR.strings.title) },
                 getItem(uploader) { stringResource(SYMR.strings.uploader) },
-                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
+                getItem(
+                    uploadDate,
+                    {
+                        MetadataUtil.EX_DATE_FORMAT
+                            .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()))
+                    },
+                ) {
                     stringResource(SYMR.strings.date_posted)
                 },
                 getItem(length) { stringResource(SYMR.strings.page_count) },

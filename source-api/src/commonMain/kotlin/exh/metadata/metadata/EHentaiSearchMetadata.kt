@@ -12,7 +12,9 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Serializable
 class EHentaiSearchMetadata : RaisedSearchMetadata() {
@@ -99,7 +101,13 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(title) { stringResource(MR.strings.title) },
                 getItem(altTitle) { stringResource(SYMR.strings.alt_title) },
                 getItem(genre) { stringResource(SYMR.strings.genre) },
-                getItem(datePosted, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
+                getItem(
+                    datePosted,
+                    {
+                        MetadataUtil.EX_DATE_FORMAT
+                            .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()))
+                    },
+                ) {
                     stringResource(SYMR.strings.date_posted)
                 },
                 getItem(parent) { stringResource(SYMR.strings.parent) },
@@ -114,9 +122,13 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(ratingCount) { stringResource(SYMR.strings.total_ratings) },
                 getItem(averageRating) { stringResource(SYMR.strings.average_rating) },
                 getItem(aged) { stringResource(SYMR.strings.aged) },
-                getItem(lastUpdateCheck, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) {
-                    stringResource(SYMR.strings.last_update_check)
-                },
+                getItem(
+                    lastUpdateCheck,
+                    {
+                        MetadataUtil.EX_DATE_FORMAT
+                            .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()))
+                    },
+                ) { stringResource(SYMR.strings.last_update_check) },
             )
         }
     }

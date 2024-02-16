@@ -106,7 +106,8 @@ import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrollingUp
 import tachiyomi.source.local.isLocal
 import java.time.Instant
-import java.util.Date
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Composable
 fun MangaScreen(
@@ -986,9 +987,10 @@ private fun LazyListScope.sharedChapterItems(
                         ?.let {
                             // SY -->
                             if (manga.isEhBasedManga()) {
-                                MetadataUtil.EX_DATE_FORMAT.format(Date(it))
+                                MetadataUtil.EX_DATE_FORMAT
+                                    .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()))
                             } else {
-                                relativeDateText(Date(item.chapter.dateUpload))
+                                relativeDateText(item.chapter.dateUpload)
                             }
                             // SY <--
                         },

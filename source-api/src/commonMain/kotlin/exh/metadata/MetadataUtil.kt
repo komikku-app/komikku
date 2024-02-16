@@ -1,7 +1,6 @@
 package exh.metadata
 
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.time.format.DateTimeFormatter
 import kotlin.math.ln
 import kotlin.math.pow
 
@@ -55,5 +54,5 @@ object MetadataUtil {
         "wip",
     )
 
-    val EX_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+    val EX_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 }

@@ -29,7 +29,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
-import java.util.Date
+import java.time.LocalDate
 
 @Composable
 fun HistoryScreen(
@@ -134,7 +134,7 @@ private fun HistoryScreenContent(
 }
 
 sealed interface HistoryUiModel {
-    data class Header(val date: Date) : HistoryUiModel
+    data class Header(val date: LocalDate) : HistoryUiModel
     data class Item(val item: HistoryWithRelations) : HistoryUiModel
 }
 

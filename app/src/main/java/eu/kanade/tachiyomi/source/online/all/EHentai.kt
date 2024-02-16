@@ -89,6 +89,8 @@ import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.URLEncoder
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 // TODO Consider gallery updating when doing tabbed browsing
 class EHentai(
@@ -271,8 +273,9 @@ class EHentai(
     private fun getDateTag(element: Element?): Long? {
         val text = element?.text()?.nullIfBlank()
         return if (text != null) {
-            val date = MetadataUtil.EX_DATE_FORMAT.parse(text)
-            date?.time
+            println(text)
+            val date = ZonedDateTime.parse(text, MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC))
+            date?.toInstant()?.toEpochMilli()
         } else {
             null
         }
@@ -376,11 +379,12 @@ class EHentai(
             url = EHentaiSearchMetadata.normalizeUrl(location),
             name = "v1: " + doc.selectFirst("#gn")!!.text(),
             chapter_number = 1f,
-            date_upload = MetadataUtil.EX_DATE_FORMAT.parse(
+            date_upload = ZonedDateTime.parse(
                 doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "posted:"
                 }!!.nextElementSibling()!!.text(),
-            )!!.time,
+                MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+            )!!.toInstant().toEpochMilli(),
             scanlator = EHentaiSearchMetadata.galleryId(location),
         )
         // Build and append the rest of the galleries
@@ -395,7 +399,10 @@ class EHentai(
                     url = EHentaiSearchMetadata.normalizeUrl(link),
                     name = "v${index + 2}: $name",
                     chapter_number = index + 2f,
-                    date_upload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time,
+                    date_upload = ZonedDateTime.parse(
+                        posted,
+                        MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+                    ).toInstant().toEpochMilli(),
                     scanlator = EHentaiSearchMetadata.galleryId(link),
                 )
             }.reversed() + self
@@ -706,7 +713,10 @@ class EHentai(
                     if (left != null && right != null) {
                         ignore {
                             when (left.removeSuffix(":").lowercase()) {
-                                "posted" -> datePosted = MetadataUtil.EX_DATE_FORMAT.parse(right)!!.time
+                                "posted" -> datePosted = ZonedDateTime.parse(
+                                    right,
+                                    MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+                                ).toInstant().toEpochMilli()
                                 // Example gallery with parent: https://e-hentai.org/g/1390451/7f181c2426/
                                 // Example JP gallery: https://exhentai.org/g/1375385/03519d541b/
                                 // Parent is older variation of the gallery

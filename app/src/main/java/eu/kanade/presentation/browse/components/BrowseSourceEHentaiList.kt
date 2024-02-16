@@ -50,7 +50,8 @@ import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun BrowseSourceEHentaiList(
@@ -128,9 +129,11 @@ fun BrowseSourceEHentaiListItem(
     }
     val datePosted by produceState("", metadata) {
         value = withIOContext {
-            runCatching { metadata.datePosted?.let { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) } }
-                .getOrNull()
-                .orEmpty()
+            runCatching {
+                metadata.datePosted?.let {
+                    MetadataUtil.EX_DATE_FORMAT.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
+                }
+            }.getOrNull().orEmpty()
         }
     }
     val genre by produceState<Pair<GenreColor, StringResource>?>(null, metadata) {
