@@ -16,7 +16,12 @@ data class MangaCover(
     val lastModified: Long,
 ) {
     // SY -->
-    val url: String = getCustomMangaInfo.get(mangaId)?.thumbnailUrl ?: ogUrl!!
+    private val customThumbnailUrl = if (isMangaFavorite) {
+        getCustomMangaInfo.get(mangaId)?.thumbnailUrl
+    } else {
+        null
+    }
+    val url: String? = customThumbnailUrl ?: ogUrl
 
     companion object {
         private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
