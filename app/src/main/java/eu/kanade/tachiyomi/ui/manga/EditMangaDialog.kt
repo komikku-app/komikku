@@ -175,19 +175,13 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
         binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope)
 
         binding.title.hint = context.stringResource(SYMR.strings.title_hint, manga.ogTitle)
-        if (manga.ogAuthor != null) {
-            binding.mangaAuthor.hint = context.stringResource(SYMR.strings.author_hint, manga.ogAuthor!!)
-        }
-        if (manga.ogArtist != null) {
-            binding.mangaArtist.hint = context.stringResource(SYMR.strings.artist_hint, manga.ogArtist!!)
-        }
-        if (!manga.ogDescription.isNullOrBlank()) {
-            binding.mangaDescription.hint =
-                context.stringResource(
-                    SYMR.strings.description_hint,
-                    manga.ogDescription!!.replace("\n", " ").chop(20),
-                )
-        }
+        binding.mangaAuthor.hint = context.stringResource(SYMR.strings.author_hint, manga.ogAuthor ?: "")
+        binding.mangaArtist.hint = context.stringResource(SYMR.strings.artist_hint, manga.ogArtist ?: "")
+        binding.mangaDescription.hint =
+            context.stringResource(
+                SYMR.strings.description_hint,
+                manga.ogDescription?.takeIf { it.isNotBlank() }?.let { it.replace("\n", " ").chop(20) } ?: ""
+            )
     }
     binding.mangaGenresTags.clearFocus()
 
