@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.10.3" changeDate="Feb 17,2024">
+        <changelogtext>[b]Based on Mihon stable 0.16.3(from 0.16.1)[/b]</changelogtext>
+        <changelogtext>Use Mihon.app website</changelogtext>
+        <changelogtext>Add hide feed tab option(Thanks @Riztard)</changelogtext>
+        <changelogtext>Add mark dupes as read option(Thanks @Riztard)</changelogtext>
+        <changelogtext>Add custom Thumbnail url(Thanks @Riztard)</changelogtext>
+        <changelogtext>Improve Chinese translation(Thanks @ouovouo)</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.10.2" changeDate="Jan 17,2024">
         <changelogtext>[b]Based on Mihon stable 0.16.1(from Tachiyomi 0.15.3)[/b]</changelogtext>
     </changelogversion>
