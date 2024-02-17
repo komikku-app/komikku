@@ -9,11 +9,11 @@
     <string name="action_start_reading">開始閱讀</string>
     <string name="action_edit_info">編輯資訊</string>
     <!-- Entry Type -->
-    <string name="entry_type_manga">漫畫（日本）</string>
-    <string name="entry_type_manhwa">漫畫（韓國）</string>
-    <string name="entry_type_manhua">漫畫（中國）</string>
-    <string name="entry_type_comic">漫畫（美國）</string>
-    <string name="entry_type_webtoon">網漫（條漫）</string>
+    <string name="entry_type_manga">日本漫畫</string>
+    <string name="entry_type_manhwa">韓國漫畫</string>
+    <string name="entry_type_manhua">中國漫畫</string>
+    <string name="entry_type_comic">美國漫畫</string>
+    <string name="entry_type_webtoon">條漫</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
@@ -30,28 +30,28 @@
     <string name="enable_exhentai">啟用 ExHentai</string>
     <string name="requires_login">需要登入</string>
     <string name="use_hentai_at_home">使用 Hentai@Home 網路</string>
-    <string name="use_hentai_at_home_summary">如果可用，您是否希望通過 Hentai@Home 網路載入圖片？禁用此選項將減少您能夠瀏覽的頁面數量。\n選項：\n- 任何客戶端（推薦）\n- 使用預設通訊埠的客戶端（可能會比較慢。如果防火牆或代理阻止非標準通訊埠的出站，則應啟用）</string>
-    <string name="use_hentai_at_home_option_1">任何客戶端（推薦）</string>
-    <string name="use_hentai_at_home_option_2">僅使用預設通訊埠的客戶端</string>
+    <string name="use_hentai_at_home_summary">如果可用，您是否希望透過 Hentai@Home 網路載入圖片？停用此選項將減少您能夠瀏覽的頁面數量。\n選項：\n- 任何用戶端（建議）\n- 使用預設通訊埠的用戶端（可能會稍慢。如果防火牆或代理阻止非標準的流量時啟用此選項）</string>
+    <string name="use_hentai_at_home_option_1">任何用戶端（建議）</string>
+    <string name="use_hentai_at_home_option_2">僅使用預設通訊埠的用戶端</string>
     <string name="show_japanese_titles">在搜尋結果中顯示日文標題</string>
-    <string name="show_japanese_titles_option_1">目前在搜尋結果中顯示日文標題。更改後請到高級設定清除章節快取。</string>
-    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬化的標題。更改後請到高級設定清除章節快取。</string>
+    <string name="show_japanese_titles_option_1">目前在搜尋結果中顯示日文標題。變更後請到進階設定清除章節快取。</string>
+    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬拼音的標題。變更後請到進階設定清除章節快取。</string>
     <string name="use_original_images">使用原圖</string>
-    <string name="use_original_images_on">目前使用的是原圖</string>
-    <string name="use_original_images_off">目前使用的是重取樣圖片</string>
+    <string name="use_original_images_on">目前使用的是原始圖片</string>
+    <string name="use_original_images_off">目前使用的是重新取樣圖片</string>
     <string name="watched_tags">檢視標籤</string>
     <string name="watched_tags_summary">在網頁中檢視 E/ExHentai 收藏的標籤</string>
     <string name="watched_tags_exh">ExHentai 收藏的標籤</string>
-    <string name="tag_filtering_threshold">標籤過濾閾值</string>
+    <string name="tag_filtering_threshold">標籤過濾臨界值</string>
     <string name="tag_filtering_threshhold_error">必須介於 -9999 和 0！</string>
-    <string name="tag_filtering_threshhold_summary">你可以通過在 "我的 Tags E/ExHentai" 頁面新增負的權重來軟過濾標籤。如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉。這個閾值可以在 -9999 和 0 之間設定。 目前：%1$d</string>
-    <string name="tag_watching_threshhold">標籤收藏閾值</string>
+    <string name="tag_filtering_threshhold_summary">你可以透過在 "我的 Tags E/ExHentai" 頁面新增負的權重來軟過濾標籤。如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉。這個臨界值可以在 -9999 和 0 之間設定。 目前：%1$d</string>
+    <string name="tag_watching_threshhold">標籤收藏臨界值</string>
     <string name="tag_watching_threshhold_error">必須介於 0 和 9999！</string>
-    <string name="tag_watching_threshhold_summary">如果最近上傳的畫廊至少有一個權重為正的已收藏標籤，並且其已收藏標籤的權重之和達到這個值或更高，就會被列入已收藏頁面。這個閾值可以在 0 到 9999 之間設定。目前：%1$d</string>
+    <string name="tag_watching_threshhold_summary">如果最近上傳的畫廊至少有一個權重為正的已收藏標籤，並且其已收藏標籤的權重之和達到這個值或更高，就會被列入已收藏頁面。這個臨界值可以在 0 到 9999 之間設定。目前：%1$d</string>
     <string name="language_filtering">語言過濾</string>
     <string name="language_filtering_summary">如果您想在畫廊列表和搜尋中隱藏某些語言的畫廊，請在彈出的對話框中選擇它們。\n請注意，無論您的搜尋條件為何，匹配的畫廊都不會出現。\n勾選 = 排除</string>
     <string name="frong_page_categories">首頁類別</string>
-    <string name="fromt_page_categories_summary">你希望在首頁和搜尋中預設顯示哪些類別？它們仍然可以通過啟用它們的過濾器而被啟用</string>
+    <string name="fromt_page_categories_summary">你希望在首頁和搜尋中預設顯示哪些類別？它們仍然可以透過啟用它們的過濾器而被啟用</string>
     <string name="watched_list_default">監視列表過濾器預設狀態</string>
     <string name="watched_list_state_summary">在瀏覽 ExHentai/E-Hentai 時，是否預設啟用監視列表過濾器</string>
     <string name="eh_image_quality_summary">下載圖片品質</string>
@@ -59,22 +59,22 @@
     <string name="eh_image_quality_auto">自動</string>
     <!-- EH Settings 2 -->
     <string name="pref_enhanced_e_hentai_view">增強的 E/ExHentai 瀏覽</string>
-    <string name="pref_enhanced_e_hentai_view_summary">啟用或禁用為 E/ExHentai 製作的增強型瀏覽選單。</string>
+    <string name="pref_enhanced_e_hentai_view_summary">啟用或停用為 E/ExHentai 製作的增強型瀏覽選單。</string>
     <string name="favorites_sync">E-Hentai 收藏同步</string>
-    <string name="disable_favorites_uploading">禁用收藏上傳</string>
-    <string name="disable_favorites_uploading_summary">僅從 ExHentai 下載收藏夾。應用中對收藏夾的任何變更都不會被上傳。防止 ExHentai 上的收藏夾意外丟失。請注意，刪除的變更仍會被應用（如果您在 ExHentai 上刪除了一個收藏夾，它也會在本應用中刪除）。</string>
+    <string name="disable_favorites_uploading">停用收藏上傳</string>
+    <string name="disable_favorites_uploading_summary">僅從 ExHentai 下載收藏夾。應用程式中對收藏夾的任何變更都不會被上傳。防止 ExHentai 上的收藏夾意外遺失。請注意，刪除的變更仍會被應用（如果您在 ExHentai 上刪除了一個收藏夾，它也會在本應用程式中刪除）。</string>
     <string name="show_favorite_sync_notes">顯示收藏夾同步注意事項</string>
     <string name="show_favorite_sync_notes_summary">顯示一些關於收藏夾同步功能的注意事項</string>
-    <string name="please_login">請登錄！</string>
+    <string name="please_login">請登入！</string>
     <string name="ignore_sync_errors">儘可能忽略同步錯誤</string>
-    <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止。當同步完成時，錯誤仍然會顯示。在某些情況下可能會導致收藏夾的丟失。在同步大型資料庫時很有用。</string>
+    <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止。當同步完成時，錯誤仍然會顯示。在某些情況下可能會導致收藏夾的遺失。在同步大型資料庫時很有用。</string>
     <string name="force_sync_state_reset">強制重置同步狀態</string>
-    <string name="force_sync_state_reset_summary">在下次同步時執行完全的重新同步。刪除的內容將不會被同步。應用中所有收藏夾將被重新上傳到 ExHentai，ExHentai 上的所有收藏夾將被重新下載。有助於在同步被中斷後修復同步。</string>
+    <string name="force_sync_state_reset_summary">在下次同步時執行完全的重新同步。刪除的內容將不會被同步。應用程式中所有收藏夾將被重新上傳到 ExHentai，ExHentai 上的所有收藏夾將被重新下載。有助於在同步被中斷後修復同步。</string>
     <string name="sync_state_reset">同步狀態重置</string>
     <string name="gallery_update_checker">畫廊更新檢查器</string>
     <string name="auto_update_restrictions">自動更新限制</string>
     <string name="time_between_batches">更新批次之間的間隔時間</string>
-    <string name="time_between_batches_never">從不更新畫廊</string>
+    <string name="time_between_batches_never">永不更新畫廊</string>
     <string name="time_between_batches_1_hour">1 小時</string>
     <string name="time_between_batches_2_hours">2 小時</string>
     <string name="time_between_batches_3_hours">3 小時</string>
@@ -83,42 +83,42 @@
     <string name="time_between_batches_24_hours">24 小時</string>
     <string name="time_between_batches_48_hours">48 小時</string>
     <string name="time_between_batches_summary_1">在 %1$s 以內不會檢查您書櫃中的畫廊是否有更新。</string>
-    <string name="time_between_batches_summary_2">%1$s 會分批檢查/更新畫廊。這意味著它將等待 %2$d 小時，檢查 %3$d 畫廊，等待 %2$d 小時，檢查 %3$d ……</string>
+    <string name="time_between_batches_summary_2">%1$s 會分批檢查/更新畫廊。這代表它將等待 %2$d 小時，檢查 %3$d 畫廊，等待 %2$d 小時，檢查 %3$d ……</string>
     <string name="show_updater_statistics">顯示更新器的統計資料</string>
     <string name="gallery_updater_statistics_collection">收集統計資料中……</string>
     <string name="gallery_updater_statistics">畫廊更新器統計</string>
-    <string name="gallery_updater_stats_text">更新器最後運行於 %1$s，檢查了可檢查的 %3$d 個畫廊中的 %2$d 個。</string>
-    <string name="gallery_updater_not_ran_yet">更新器從未運行。</string>
+    <string name="gallery_updater_stats_text">更新器最後執行於 %1$s，檢查了可檢查的 %3$d 個畫廊中的 %2$d 個。</string>
+    <string name="gallery_updater_not_ran_yet">更新器從未執行。</string>
     <string name="gallery_updater_stats_time">\n上一次檢查的畫廊：\n- 1 小時: %1$d\n- 6 小時: %2$d\n- 12 小時: %3$d\n- 1 天: %4$d\n- 2 天: %5$d\n- 1 周: %6$d\n- 1 個月: %7$d\n- 1 年: %8$d</string>
 
     <!-- EH Settings Upload Dialogs -->
-    <string name="settings_profile_note">設定組態檔案說明</string>
-    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上新增一個新的設定組態檔案，以優化應用程式的性能。請確保您在這兩個網站上擁有少於三個組態檔案。\n\n如果你不知道什麼是組態檔案，那麼對你無影響，只需點擊“確定”。</string>
-    <string name="eh_settings_successfully_uploaded">組態上傳成功！</string>
-    <string name="eh_settings_configuration_failed">組態失敗！</string>
-    <string name="eh_settings_configuration_failed_message">在組態過程中出現錯誤：%1$s</string>
-    <string name="eh_settings_uploading_to_server">組態上傳中</string>
+    <string name="settings_profile_note">建立設定檔說明</string>
+    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的性能。請確保您在這兩個網站上擁有的設定檔少於三個。\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊“確定”。</string>
+    <string name="eh_settings_successfully_uploaded">設定檔上傳成功！</string>
+    <string name="eh_settings_configuration_failed">設定失敗！</string>
+    <string name="eh_settings_configuration_failed_message">在設定過程中出現錯誤：%1$s</string>
+    <string name="eh_settings_uploading_to_server">設定檔上傳中</string>
     <string name="eh_settings_uploading_to_server_message">請稍後，這可能需要一些時間……</string>
-    <string name="eh_settings_out_of_slots_error">您在 %1$s 上的組態數量已用完，請刪除一個組態!</string>
+    <string name="eh_settings_out_of_slots_error">您在 %1$s 上的設定檔數量已用完，請刪除一個設定檔!</string>
 
     <!-- EH Settings Login Activity -->
-    <string name="recheck_login_status">重新檢查登錄狀態</string>
-    <string name="alternative_login_page">備選登錄頁面</string>
+    <string name="recheck_login_status">重新檢查登入狀態</string>
+    <string name="alternative_login_page">備用登入頁面</string>
     <string name="skip_page_restyling">跳過頁面重排</string>
     <string name="custom_igneous_cookie">自定義 igneous cookie</string>
-    <string name="custom_igneous_cookie_message">某些用戶無法正常存取 ExHentai，必須輸入特定的 igneous cookie，此選項為這些用戶設計。</string>
+    <string name="custom_igneous_cookie_message">某些使用者無法正常存取 ExHentai，必須輸入特定的 igneous cookie，此選項為這些使用者設計。</string>
 
     <!-- Advanced Settings -->
     <string name="developer_tools">開發者工具</string>
-    <string name="toggle_hentai_features">啟用集成的 Hentai 特性</string>
-    <string name="toggle_hentai_features_summary">這是一個試驗性功能，如果關閉則關閉所有 Hentai 特性</string>
+    <string name="toggle_hentai_features">啟用整合的 Hentai 功能</string>
+    <string name="toggle_hentai_features_summary">這是一個實驗性功能，如果關閉則會停用所有 Hentai 功能</string>
     <string name="toggle_delegated_sources">啟用代理來源</string>
-    <string name="toggle_delegated_sources_summary">下列來源如果已安裝則應用 %1$s 代理: %2$s</string>
-    <string name="log_level">日誌級別</string>
-    <string name="log_level_summary">更改此選項會影響應用性能。變更需要完全重啟應用才能生效。現在的值：%s</string>
+    <string name="toggle_delegated_sources_summary">下列來源如果已安裝則應用程式 %1$s 代理: %2$s</string>
+    <string name="log_level">日誌等級</string>
+    <string name="log_level_summary">變更此選項會影響應用程式性能。變更需要完全重啟應用程式才能生效。現在的值：%s</string>
     <string name="enable_source_blacklist">啟用來源黑名單</string>
-    <string name="enable_source_blacklist_summary">如果與 %1$s 不兼容則隱藏插件或來源。變更需要完全重啟應用才能生效。</string>
-    <string name="open_debug_menu">打開 Debug 選單</string>
+    <string name="enable_source_blacklist_summary">如果與 %1$s 不相容則隱藏擴充套件或來源。變更需要完全重啟應用程式才能生效。</string>
+    <string name="open_debug_menu">開啟 Debug 選單</string>
     <string name="open_debug_menu_summary"><![CDATA[如果你不知道你在幹什麼不要點擊此選單！<font color=\'red\'>這會汙染你的書櫃！</font>]]></string>
     <string name="starting_cleanup">開始清理</string>
     <string name="clean_up_downloaded_chapters">清理已下載的章節</string>
@@ -127,20 +127,20 @@
     <string name="clean_orphaned_downloads">清理孤立的下載</string>
     <string name="clean_read_downloads">清理已讀</string>
     <string name="clean_read_entries_not_in_library">清理不在書櫃中的作品</string>
-    <string name="data_saver">流量節省程式</string>
+    <string name="data_saver">數據節省模式</string>
     <string name="data_saver_summary">在閱讀器下載圖片前壓縮</string>
-    <string name="data_saver_downloader">在下載器中使用流量節省程式</string>
+    <string name="data_saver_downloader">在下載器中使用數據節省模式</string>
     <string name="data_saver_ignore_jpeg">忽略 JPEG 圖片</string>
     <string name="data_saver_ignore_gif">忽略 Gif 動畫</string>
     <string name="data_saver_image_quality">圖片品質</string>
-    <string name="data_saver_image_quality_summary">更高值意味著更高的儲存的圖片品質，但這意味著更大的檔案大小，80% 可以很好地平衡圖片品質和檔案大小</string>
+    <string name="data_saver_image_quality_summary">更高值代表更佳的儲存的圖片品質，但這代表更大的檔案大小，80% 可以很好地平衡圖片品質和檔案大小</string>
     <string name="data_saver_image_format">壓縮為 JPEG</string>
-    <string name="data_saver_image_format_summary_on">JPEG 檔案的大小要比 Webp 小得多（意味著節省了更多的流量），但它也會使圖片損失更多的品質。\n目前壓縮為 JPEG</string>
-    <string name="data_saver_image_format_summary_off">JPEG 檔案的大小要比 Webp 小得多（意味著節省了更多的流量），但它也會使圖片損失更多的品質。\n目前壓縮為 Webp</string>
+    <string name="data_saver_image_format_summary_on">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的數據），但它也會使圖片損失更多的品質。\n目前壓縮為 JPEG</string>
+    <string name="data_saver_image_format_summary_off">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的數據），但它也會使圖片損失更多的品質。\n目前壓縮為 Webp</string>
     <string name="data_saver_color_bw">轉換為黑白</string>
     <string name="bandwidth_hero">Bandwidth Hero（需要一個 Bandwidth Hero 代理伺服器）</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero 代理伺服器</string>
-    <string name="data_saver_server_summary">填寫 Bandwidth Hero 代理伺服器位址到此</string>
+    <string name="data_saver_server_summary">填寫 Bandwidth Hero 代理伺服器網址到此</string>
     <string name="clear_db_exclude_read">保留有已閱讀章節的作品</string>
 
     <!-- Log Level -->
@@ -174,13 +174,13 @@
 
     <!-- Browse settings -->
     <string name="pref_feed_position">訂閱標籤位置</string>
-    <string name="pref_feed_position_summery">你想讓訂閱標籤成為瀏覽中的第一個標籤嗎？這將使它成為打開瀏覽時的預設標籤，如果你使用的是資料或計費網路，則不建議使用。</string>
+    <string name="pref_feed_position_summery">你想讓訂閱標籤成為瀏覽中的第一個標籤嗎？這將使它成為開啟瀏覽時的預設標籤，如果你使用的是資料或計費網路，則不建議使用。</string>
     <string name="pref_source_source_filtering">在目錄中過濾來源</string>
     <string name="pref_source_source_filtering_summery">篩選屬於類別的來源，使屬於某個類別的來源不會被放在語言下</string>
     <string name="pref_source_navigation">替換最新按鈕</string>
     <string name="pref_source_navigation_summery">用一個包括最新和瀏覽的自定義瀏覽檢視取代最新按鈕</string>
-    <string name="pref_local_source_hidden_folders">本地來源隱藏資料夾</string>
-    <string name="pref_local_source_hidden_folders_summery">允許本地源讀取隱藏資料夾</string>
+    <string name="pref_local_source_hidden_folders">本機來源隱藏資料夾</string>
+    <string name="pref_local_source_hidden_folders_summery">允許本機源讀取隱藏資料夾</string>
 
     <!-- Backup settings -->
     <string name="custom_entry_info">自定義作品資訊</string>
@@ -189,12 +189,12 @@
     <!-- Security settings -->
     <string name="biometric_lock_times">生物識別鎖定時間表</string>
     <string name="action_edit_biometric_lock_times">編輯鎖定時間表</string>
-    <string name="biometric_lock_times_empty">你未設定生物識別鎖時間表，點擊加號創建一個。</string>
+    <string name="biometric_lock_times_empty">你未設定生物識別鎖時間表，點擊加號建立一個。</string>
     <string name="biometric_lock_time_conflicts">鎖定時間與已經存在的時間衝突!</string>
     <string name="biometric_lock_start_time">輸入開始時間</string>
     <string name="biometric_lock_end_time">輸入結束時間</string>
     <string name="biometric_lock_days">生物識別鎖週期</string>
-    <string name="biometric_lock_days_summary">需要鎖定應用的週期</string>
+    <string name="biometric_lock_days_summary">需要鎖定應用程式的週期</string>
 
     <string name="sunday">週日</string>
     <string name="monday">週一</string>
@@ -204,13 +204,13 @@
     <string name="friday">週五</string>
     <string name="saturday">週六</string>
     <string name="encrypt_database">加密資料庫</string>
-    <string name="encrypt_database_subtitle">變更需要重啟應用才能生效</string>
+    <string name="encrypt_database_subtitle">變更需要重新啟動應用程式才能生效</string>
     <string name="encrypt_database_message">
-        <![CDATA[<font color=\'red\'>啟用此選項會創建一個新資料庫。使用以下步驟以保留你的資料<br>1、設定 -> 備份和還原 -> 創建備份<br>2、系統設定 -> 清除應用資料<br>3、打開應用然後啟用此選項<br>4、系統設定 -> 強行停止應用<br>5、設定 -> 備份和還原 -> 還原備份</font>]]>
+        <![CDATA[<font color=\'red\'>啟用此選項會建立一個新資料庫。使用以下步驟以保留你的資料<br>1、設定 -> 備份和還原 -> 建立備份<br>2、系統設定 -> 清除應用程式資料<br>3、開啟應用程式然後啟用此選項<br>4、系統設定 -> 強行停止應用程式<br>5、設定 -> 備份和還原 -> 還原備份</font>]]>
     </string>
     <string name="set_cbz_zip_password">設定 CBZ 檔案密碼</string>
     <string name="password_protect_downloads">使用密碼保護下載的檔案</string>
-    <string name="password_protect_downloads_summary">使用提供的密碼加密 CBZ 檔案。\n警告：如果你忘記密碼，檔案中的資料將會丟失</string>
+    <string name="password_protect_downloads_summary">使用提供的密碼加密 CBZ 檔案。\n警告：如果你忘記密碼，檔案中的資料將會遺失</string>
     <string name="delete_cbz_archive_password">移除 CBZ 檔案密碼</string>
     <string name="cbz_archive_password">CBZ 檔案密碼</string>
     <string name="wrong_cbz_archive_password">CBZ 檔案密碼錯誤</string>
@@ -220,9 +220,9 @@
     <!-- Reader Settings -->
     <string name="page_downloading">頁面下載</string>
     <string name="download_threads">下載執行緒</string>
-    <string name="download_threads_summary">較高的值可以明顯加快頁面載入速度，同時容易觸發封禁。推薦值為 2 或 3。現在的值為：%s</string>
+    <string name="download_threads_summary">較高的值可以明顯加快頁面載入速度，同時容易被停權。建議值為 2 或 3。現在的值為：%s</string>
     <string name="aggressively_load_pages">積極地載入頁面</string>
-    <string name="aggressively_load_pages_summary">在閱讀時緩慢地下載整個章節，而不是隻載入你正在閱讀的頁面。</string>
+    <string name="aggressively_load_pages_summary">在閱讀時緩慢地下載整個章節，而不是只載入你正在閱讀的頁面。</string>
     <string name="skip_queue_on_retry">重試時跳過隊列</string>
     <string name="skip_queue_on_retry_summary">通常情況下，在下載失敗時按下重試按鈕，將等待下載器完成最後一頁的下載，然後開始重新下載失敗的頁面。啟用此功能將迫使下載器在你按下重試按鈕後立即開始重新下載失敗的頁面。</string>
     <string name="reader_preload_amount">預載入頁面數量</string>
@@ -234,9 +234,9 @@
     <string name="reader_preload_amount_14_pages">14 頁</string>
     <string name="reader_preload_amount_16_pages">16 頁</string>
     <string name="reader_preload_amount_20_pages">20 頁</string>
-    <string name="reader_preload_amount_summary">要預讀的的頁面數量。更高的值將帶來更流暢的閱讀體驗，但代價是更高的快取使用量，建議在使用更大的值時增加你分配的快取量。</string>
+    <string name="reader_preload_amount_summary">要預載入的的頁面數量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的快取使用量，建議在使用更大的值時增加你分配的快取量。</string>
     <string name="reader_cache_size">閱讀器快取大小</string>
-    <string name="reader_cache_size_summary">閱讀時儲存在裝置上的圖片量。更高的值將帶來更流暢的閱讀體驗，但代價是更高的存儲空間使用率。</string>
+    <string name="reader_cache_size_summary">閱讀時儲存在裝置上的圖片量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的存儲空間使用率。</string>
     <string name="preserve_reading_position">保留已閱讀作品的閱讀位置</string>
     <string name="auto_webtoon_mode">自動 Webtoon 模式</string>
     <string name="auto_webtoon_mode_summary">檢測到可能為長條形格式的作品時自動使用 Webtoon 模式</string>
@@ -248,7 +248,7 @@
     <string name="pref_show_vert_seekbar_landscape">橫向畫面時顯示垂直進度條</string>
     <string name="pref_show_vert_seekbar_landscape_summary">在橫向畫面時啟用垂直進度條</string>
     <string name="pref_left_handed_vertical_seekbar">將垂直進度條放在左側</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">更改進度條的方位</string>
+    <string name="pref_left_handed_vertical_seekbar_summary">變更進度條的方位</string>
     <string name="pref_force_horz_seekbar">強制使用水平進度條</string>
     <string name="pref_force_horz_seekbar_summary">完全刪除垂直進度條，改用水平進度條。</string>
     <string name="pref_smooth_scroll">平滑自動翻頁</string>
@@ -260,11 +260,11 @@
     <string name="eh_boost_page">加速頁面</string>
     <string name="eh_autoscroll_help">自動翻頁說明</string>
     <string name="eh_autoscroll_help_message">在指定的時間間隔內自動翻到下一頁。間隔的單位是秒。</string>
-    <string name="eh_autoscroll_freq_invalid">無效頻次</string>
+    <string name="eh_autoscroll_freq_invalid">無效頻率</string>
     <string name="eh_retry_all_help">重試所有說明</string>
     <string name="eh_retry_all_help_message">重新新增失敗的頁面到下載隊列</string>
     <string name="eh_boost_page_help">加速頁面說明</string>
-    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這意味著你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。激活“加速頁面”將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
+    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用“加速頁面”將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
     <string name="eh_boost_page_invalid">此頁面無法加速（無效頁面）！</string>
     <string name="eh_boost_page_errored">頁面載入失敗，請按重試按鈕！</string>
     <string name="eh_boost_page_downloading">此頁面已經在下載了！</string>
@@ -290,12 +290,12 @@
     <string name="eh_auto_webtoon_snack">正處於 Webtoon 樣式</string>
 
     <!-- Double page spread -->
-    <string name="page_layout">頁面佈局</string>
+    <string name="page_layout">頁面版面配置</string>
     <string name="shift_double_pages">位移一頁</string>
     <string name="double_pages">雙頁</string>
     <string name="single_page">單頁</string>
     <string name="automatic_orientation">自動（基於方向）</string>
-    <string name="automatic_can_still_switch">在使用自動頁面佈局時，你仍然可以在閱讀時更改佈局，而不需要重設這一設定</string>
+    <string name="automatic_can_still_switch">在使用自動頁面版面配置時，你仍然可以在閱讀時變更版面配置，而不需要重設這一設定</string>
     <string name="invert_double_pages">反向雙頁</string>
 
     <!-- Center margin -->
@@ -305,7 +305,7 @@
     <string name="center_margin_wide_page">新增到寬螢幕檢視</string>
     <string name="center_margin_double_and_wide_page">兩個都新增</string>
     <string name="pref_center_margin">中間空白類型</string>
-    <string name="pref_center_margin_summary">插入空白以適應可摺疊裝置的螢幕盲區。</string>
+    <string name="pref_center_margin_summary">插入空白以適應可摺疊裝置的螢幕死角。</string>
 
     <!-- Cache archived manga to disk -->
     <string name="cache_archived_manga_to_disk">快取 CBZ/CBR 檔案中的圖片</string>
@@ -332,12 +332,12 @@
 
     <!-- Browse -->
     <!-- Sources Tab -->
-    <string name="find_in_another_source">查找其他來源</string>
-    <string name="data_saver_exclude">排除在流量節省程式之外</string>
-    <string name="data_saver_stop_exclude">停止排除在流量節省程式之外</string>
+    <string name="find_in_another_source">搜尋其他來源</string>
+    <string name="data_saver_exclude">排除在數據節省模式之外</string>
+    <string name="data_saver_stop_exclude">停止排除在數據節省模式之外</string>
 
     <!-- Smart Search -->
-    <string name="searching_source">查找來源中……</string>
+    <string name="searching_source">搜尋來源中……</string>
     <string name="could_not_find_entry">未能在來源中找到此作品！</string>
     <string name="automatic_search_error">進行自動搜尋過程中出現錯誤！</string>
 
@@ -366,28 +366,28 @@
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">標籤排序標籤</string>
     <string name="tag_sorting">標籤排序</string>
-    <string name="action_add_tags_message">看這裡！標籤必須是精確的，不支援模糊匹配，你不能用類似 netorare 過濾 female:netorare！\n命名空間標籤的風格是\n“female: sole female”\n不需要引號！\n支援新增同一標籤的多個變體，所以隨意為 NHentai 新增 \"tag: netorare\" 或者為 E-Hentai 新增 \"female: netorare\" ！</string>
+    <string name="action_add_tags_message">看這裡！標籤必須是完整的，不能是部分相符，你不能用類似 netorare 過濾 female:netorare！\n命名空間標籤的樣式是\n“female: sole female”\n不需要引號！\n支援新增同一標籤的多個變體，所以隨意為 NHentai 新增 \"tag: netorare\" 或者為 E-Hentai 新增 \"female: netorare\" ！</string>
     <string name="action_edit_tags">編輯標籤</string>
-    <string name="information_empty_tags">你沒有標籤。點按+按鈕以創建一個標籤用來將書櫃排序</string>
+    <string name="information_empty_tags">你沒有標籤。點按+按鈕以建立一個標籤用來將書櫃排序</string>
     <string name="error_tag_exists">此標籤已存在！</string>
     <string name="delete_tag">刪除標籤</string>
     <string name="delete_tag_confirmation">你想要刪除標籤 %s 嗎？</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">廢棄</string>
-    <string name="redundant_extension_message">此插件已廢棄，將不會在此版本的 Tachiyomi 上工作。</string>
+    <string name="redundant_extension_message">此擴充套件已廢棄，將不會在此版本的 TachiyomiSY 上執行。</string>
 
     <!-- Migration -->
     <string name="select_sources">選擇來源</string>
     <string name="select_none">未選擇</string>
     <string name="migration">遷移</string>
     <string name="skip_pre_migration">跳過預遷移</string>
-    <string name="pre_migration_skip_toast">要重新顯示此頁面，請到設定 -> 書櫃.</string>
+    <string name="pre_migration_skip_toast">要重新顯示此頁面，請到設定 -> 書櫃。</string>
     <string name="use_intelligent_search">搜尋標題 +標題關鍵詞</string>
     <string name="data_to_include_in_migration">遷移中包含的資料</string>
     <string name="include_extra_search_parameter">搜尋時包含額外的搜尋參數</string>
     <string name="use_most_chapters">使用具有最多章節的來源（較慢）。</string>
-    <string name="use_first_source">使用第一個來源的備選方案</string>
+    <string name="use_first_source">使用第一個來源的備用方案</string>
     <string name="skip_this_step_next_time">下次跳過此步驟</string>
     <string name="hide_not_found_entries">隱藏未找到的作品</string>
     <string name="search_parameter">搜尋參數（例如：language:chinese）</string>
@@ -422,13 +422,13 @@
     <string name="favorites_sync_error_string">同步過程中出現問題：%1$s</string>
     <string name="favorites_sync_done_errors">收藏品同步完成，但有錯誤</string>
     <string name="favorites_sync_done_errors_message">同步過程中被忽略的錯誤：\n%1$s</string>
-    <string name="favorites_sync_verifying_library">本地書櫃驗證中</string>
+    <string name="favorites_sync_verifying_library">本機書櫃驗證中</string>
     <string name="favorites_sync_gallery_multiple_categories_error">畫廊 %1$d 在多個類別中！</string>
     <string name="favorites_sync_downloading">從遠端伺服器下載收藏夾中</string>
-    <string name="favorites_sync_failed_to_featch">從遠端伺服器獲取收藏夾失敗！</string>
-    <string name="favorites_sync_could_not_fetch">無法獲取收藏夾！</string>
+    <string name="favorites_sync_failed_to_featch">從遠端伺服器取得收藏夾失敗！</string>
+    <string name="favorites_sync_could_not_fetch">無法取得收藏夾！</string>
     <string name="favorites_sync_calculating_remote_changes">計算遠端變更中</string>
-    <string name="favorites_sync_calculating_local_changes">計算本地變更中</string>
+    <string name="favorites_sync_calculating_local_changes">計算本機變更中</string>
     <string name="favorites_sync_syncing_category_names">更新分類名稱</string>
     <string name="favorites_sync_cleaning_up">清理中</string>
     <string name="favorites_sync_complete">同步完成！</string>
@@ -440,9 +440,9 @@
     <string name="favorites_sync_unable_to_delete">無法從遠端伺服器上刪除畫廊！</string>
     <string name="favorites_sync_adding_to_remote">新增 %1$d 個畫廊（已完成 %2$d 個） 到遠端伺服器</string>
     <string name="favorites_sync_remove_from_local">從遠端伺服器移除 %1$d 個畫廊（已移除 %2$d 個）</string>
-    <string name="favorites_sync_add_to_local">新增 %1$d 個畫廊（已完成 %2$d 個） 到本地資料庫</string>
+    <string name="favorites_sync_add_to_local">新增 %1$d 個畫廊（已完成 %2$d 個） 到本機資料庫</string>
     <string name="favorites_sync_remote_not_exist">遠端畫廊不存在，跳過：%1$s！</string>
-    <string name="favorites_sync_failed_to_add_to_local">向本地資料庫新增畫廊失敗：</string>
+    <string name="favorites_sync_failed_to_add_to_local">向本機資料庫新增畫廊失敗：</string>
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) 不是一個有效的畫廊！</string>
     <string name="favorites_sync_waiting_for_start">等待同步開始</string>
@@ -450,7 +450,7 @@
     <string name="favorites_sync_initializing">初始化同步</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\n同步工作目前正在限速（以避免被ExHentai禁止），可能需要很長時間才能完成。</string>
     <string name="favorites_sync_notes">重要的收藏夾同步注意事項</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. 在應用中更改分類名稱是<b>不</b>同步的！請<i>在 ExHentai 上更改名稱</i>。分類名稱會在每次同步時從 ExHentai 伺服器上覆制<br><br>2. <b>應用中前10個類別與</b> ExHentai 上的最愛類別相對應（除了 \'預設\' 類別）。<i>在其他類別的畫廊將<b>不會</b>被同步！</i><br><br>3. <font color=\'red\'><b>在同步過程中請確保有穩定的網路連接！</b></font>如果在同步過程中網路連接中斷，你的收藏夾可能會停留在<i>部分同步狀態</i>。<br><br>4. 當在同步時保持應用在前臺。Android 有時會關閉後臺應用，如果正在同步這會很糟糕。<br><br>5. <b>不要將收藏夾放到多個類別</b>（本應用支援這樣做）。 這可能會導致同步算法混亂，因為 ExHentai 只允許每個收藏夾在一個類別中。<br><br>此對話框僅會彈出一次。你可以到 \'設定 > E-Hentai > 顯示收藏夾同步注意事項\' 閱讀多次。]]></string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. 在應用程式中變更分類名稱是<b>不</b>同步的！請<i>在 ExHentai 上變更名稱</i>。分類名稱會在每次同步時從 ExHentai 伺服器上複製<br><br>2. <b>應用程式中前10個類別與</b> ExHentai 上的最愛類別相對應（除了 \'預設\' 類別）。<i>在其他類別的畫廊將<b>不會</b>被同步！</i><br><br>3. <font color=\'red\'><b>在同步過程中請確保有穩定的網路連線！</b></font>如果在同步過程中網路連線中斷，你的收藏夾可能會停留在<i>部分同步狀態</i>。<br><br>4. 當在同步時應保持應用程式開啟。Android 有時會關閉背景應用程式，如果正在同步這會很糟糕。<br><br>5. <b>不要將收藏夾放到多個類別</b>（本應用程式支援這樣做）。 這可能會導致同步演算法混亂，因為 ExHentai 只允許每個收藏夾在一個類別中。<br><br>此對話框僅會彈出一次。你可以到 \'設定 > E-Hentai > 顯示收藏夾同步注意事項\' 閱讀多次。]]></string>
     <string name="favorites_sync_reset">你確定嗎？</string>
     <string name="favorites_sync_reset_message">重置同步狀態會導致下一次同步變得非常慢。</string>
     <string name="favorites_sync_conformation_message">你確定要與 E-Hentai 同步收藏嗎？</string>
@@ -464,26 +464,26 @@
     <string name="eh_batch_add_adding_galleries">新增畫廊中……</string>
     <string name="eh_batch_add_finish">完成</string>
     <string name="batch_add_no_valid_galleries">沒有可新增的畫廊！</string>
-    <string name="batch_add_no_valid_galleries_message">你必須選擇至少一個畫廊以新增！</string>
+    <string name="batch_add_no_valid_galleries_message">你必須選擇至少一個要新增的畫廊！</string>
     <string name="batch_add">批次匯入</string>
     <string name="batch_add_summary">\n摘要：\n已新增：%1$d 個畫廊\n失敗：%2$d 個畫廊</string>
     <string name="batch_add_success_log_message">已新增畫廊：%1$s</string>
     <string name="batch_add_unknown_type_log_message">未知作品類型的畫廊：%1$s</string>
     <string name="batch_add_unknown_source_log_message">未知來源的畫廊：%1$s</string>
     <string name="batch_add_not_exist_log_message">畫廊不存在：%1$s</string>
-    <string name="gallery_adder_importing_gallery">匯入畫廊（位址：%1$s，收藏夾：%2$s，強制使用來源：%3$s）……</string>
+    <string name="gallery_adder_importing_gallery">匯入畫廊（網址：%1$s，收藏夾：%2$s，強制使用來源：%3$s）……</string>
     <string name="gallery_adder_source_uri_must_match">來源 URI 匹配檢查錯誤！</string>
     <string name="gallery_adder_uri_map_to_gallery_error">來源 URI 映射到畫廊錯誤！</string>
     <string name="gallery_adder_uri_map_to_chapter_error">來源 URI 映射到章節錯誤！</string>
     <string name="gallery_adder_uri_clean_error">來源 URI 清理錯誤！</string>
     <string name="gallery_adder_chapter_fetch_error">未能更新章節的畫廊：%1$s！</string>
-    <string name="gallery_adder_could_not_add_gallery">無法新增畫廊（位址：%1$s）！</string>
-    <string name="gallery_adder_could_not_identify_chapter">無法識別章節（位址：%1$s）！</string>
+    <string name="gallery_adder_could_not_add_gallery">無法新增畫廊（網址：%1$s）！</string>
+    <string name="gallery_adder_could_not_identify_chapter">無法識別章節（網址：%1$s）！</string>
 
     <!-- Intercept Activity -->
-    <string name="launching_app">應用啟動中……</string>
+    <string name="launching_app">應用程式啟動中……</string>
     <string name="error_with_reason">錯誤：%1$s</string>
-    <string name="could_not_open_entry">無法打開此作品：\n\n%1$s</string>
+    <string name="could_not_open_entry">無法開啟此作品：\n\n%1$s</string>
     <string name="entry_id_is_null">作品 ID 為空！</string>
     <string name="loading_entry">作品載入中……</string>
 
@@ -494,17 +494,17 @@
     <string name="page_preview_page_go_to">跳轉到</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
-    <string name="rating10">超神作</string>
-    <string name="rating9">神作</string>
-    <string name="rating8">力薦</string>
-    <string name="rating7">推薦</string>
-    <string name="rating6">還行</string>
-    <string name="rating5">不過不失</string>
-    <string name="rating4">較差</string>
-    <string name="rating3">差</string>
-    <string name="rating2">很差</string>
-    <string name="rating1">不忍直視</string>
-    <string name="rating0">災難</string>
+    <string name="rating10">太神啦!</string>
+    <string name="rating9">根本把持不住</string>
+    <string name="rating8">很棒</string>
+    <string name="rating7">不錯</string>
+    <string name="rating6">還好</string>
+    <string name="rating5">普通</string>
+    <string name="rating4">不行</string>
+    <string name="rating3">超爛</string>
+    <string name="rating2">快瞎了</string>
+    <string name="rating1">快要窒息了</string>
+    <string name="rating0">下去!</string>
     <string name="no_rating">沒有評分</string>
 
     <!-- Gallery types -->
@@ -524,17 +524,17 @@
     <string name="more_info">更多資訊</string>
     <string name="alt_title">其他標題</string>
     <string name="is_exhentai_gallery">Exhentai 畫廊</string>
-    <string name="thumbnail_url">預覽位址</string>
-    <string name="genre">類型</string>
-    <string name="date_posted">發佈日期</string>
+    <string name="thumbnail_url">縮圖</string>
+    <string name="genre">分類</string>
+    <string name="date_posted">上傳時間</string>
     <string name="page_count">頁數</string>
-    <string name="parent">父鏈接</string>
+    <string name="parent">上層圖庫</string>
     <string name="visible">可見性</string>
     <string name="language">語言</string>
-    <string name="gallery_size">畫廊大小</string>
-    <string name="total_favorites">總收藏數</string>
-    <string name="total_ratings">總評分數</string>
-    <string name="average_rating">平均評分</string>
+    <string name="gallery_size">大小</string>
+    <string name="total_favorites">收藏次數</string>
+    <string name="total_ratings">評分次數</string>
+    <string name="average_rating">分數</string>
     <string name="last_update_check">最近一次更新檢查</string>
     <string name="path">路徑</string>
     <string name="artist">藝術家</string>
@@ -563,21 +563,21 @@
 
     <!-- Merged entry -->
     <string name="merge_settings">合併設定</string>
-    <string name="fetch_chapter_updates">獲取章節更新</string>
+    <string name="fetch_chapter_updates">取得章節更新</string>
     <string name="delete_merged_entry">你確定嗎？</string>
-    <string name="delete_merged_entry_desc">這將從合併中刪除此作品，使用這個選項會丟失任何應用於合併後的作品的未儲存的變更。</string>
+    <string name="delete_merged_entry_desc">這將從合併中刪除此作品，使用這個選項會遺失任何應用程式於合併後的作品的未儲存的變更。</string>
     <string name="chapter_updates_merged_entry">變更章節更新</string>
-    <string name="chapter_updates_merged_entry_desc">更改此項將禁用或啟用此已合併的漫畫的章節更新</string>
+    <string name="chapter_updates_merged_entry_desc">變更此項將停用或啟用此已合併的漫畫的章節更新</string>
     <string name="download_merged_entry">變更新章節下載</string>
-    <string name="download_merged_entry_desc">更改此項將禁用或啟用此合併作品的章節下載</string>
+    <string name="download_merged_entry_desc">變更此項將停用或啟用此合併作品的章節下載</string>
     <string name="merged_references_invalid">合併後的引用無效</string>
-    <string name="merged_chapter_updates_error">更改章節更新錯誤</string>
-    <string name="merged_toggle_download_chapters_error">更改下載章節錯誤</string>
+    <string name="merged_chapter_updates_error">變更章節更新錯誤</string>
+    <string name="merged_toggle_download_chapters_error">變更下載章節錯誤</string>
     <string name="allow_deduplication">允許刪除重複資料：</string>
-    <string name="deduplication_mode">去重模式：</string>
+    <string name="deduplication_mode">刪除重複模式：</string>
     <string name="deduplication_entry_info">作品資訊：</string>
     <string name="no_dedupe">無重複</string>
-    <string name="dedupe_priority">按優先級去重</string>
+    <string name="dedupe_priority">按優先度刪除重複</string>
     <string name="dedupe_most_chapters">顯示有最多章節的來源</string>
     <string name="dedupe_highest_chapter">顯示章數最多的來源</string>
 
@@ -585,15 +585,15 @@
     <string name="md_follows_unfollowed">取消收藏</string>
     <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的作品到書櫃</string>
     <string name="mangadex_sync_follows_to_library_summary">從 MangaDex 拉取未新增的作品到你的書櫃</string>
-    <string name="mangadex_preffered_source">首選 MangaDex 來源</string>
-    <string name="mangadex_preffered_source_summary">設定你所選擇的 MangaDex 來源，這將用於收藏和應用中一系列其他功能。</string>
+    <string name="mangadex_preffered_source">偏好 MangaDex 來源</string>
+    <string name="mangadex_preffered_source_summary">設定你所選擇的 MangaDex 來源，這將用於收藏和應用程式中一系列其他功能。</string>
     <string name="mangadex_add_to_follows">新增到 MangaDex 收藏</string>
     <string name="mangadex_follows">MangaDex 收藏</string>
     <string name="random">隨機</string>
     <string name="mangadex_push_favorites_to_mangadex">同步書櫃中的作品到 MangaDex</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">將未在 MdList 上跟蹤的作品同步到 MangaDex 並標記為閱讀中。</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">將未在 MdList 上追蹤的作品同步到 MangaDex 並標記為閱讀中。</string>
     <string name="mangadex_similar">MangaDex 相似</string>
-    <string name="community_recommendations">社區建議</string>
+    <string name="community_recommendations">社群推薦</string>
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">掃譯組展示</string>
@@ -617,7 +617,7 @@
     <string name="relation_spin_off">衍生作品</string>
     <string name="relation_alternate_story">備用故事</string>
     <string name="relation_preserialization">預連載</string>
-    <string name="relation_colored">全綵</string>
+    <string name="relation_colored">全彩</string>
     <string name="relation_serialization">系列</string>
     <string name="relation_alternate_version">不同演繹</string>
 
@@ -626,6 +626,6 @@
     <string name="ignore_non_library_entries">忽略不在書櫃的作品</string>
 
     <!-- Humanize time -->
-    <string name="humanize_fallback">前不久</string>
+    <string name="humanize_fallback">不久前</string>
 </resources>
 
