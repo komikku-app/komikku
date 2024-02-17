@@ -184,6 +184,7 @@
     <string name="library_group_updates_all">Launch category updates all the time</string>
 
     <!-- Browse settings -->
+    <string name="pref_hide_feed">Hide Feed tab</string>
     <string name="pref_feed_position">Feed tab position</string>
     <string name="pref_feed_position_summery">Do you want the feed tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if you\'re on data or a metered network</string>
     <string name="pref_source_source_filtering">Filter sources in categories</string>

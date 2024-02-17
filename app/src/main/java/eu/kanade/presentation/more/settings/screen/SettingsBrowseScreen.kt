@@ -4,10 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
@@ -40,6 +42,8 @@ object SettingsBrowseScreen : SearchableSettings {
         val reposCount by sourcePreferences.extensionRepos().collectAsState()
 
         // SY -->
+        val scope = rememberCoroutineScope()
+        val hideFeedTab by remember { Injekt.get<UiPreferences>().hideFeedTab().asState(scope) }
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         // SY <--
@@ -79,9 +83,14 @@ object SettingsBrowseScreen : SearchableSettings {
                 title = stringResource(SYMR.strings.feed),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.SwitchPreference(
+                        pref = uiPreferences.hideFeedTab(),
+                        title = stringResource(SYMR.strings.pref_hide_feed),
+                    ),
+                    Preference.PreferenceItem.SwitchPreference(
                         pref = uiPreferences.feedTabInFront(),
                         title = stringResource(SYMR.strings.pref_feed_position),
                         subtitle = stringResource(SYMR.strings.pref_feed_position_summery),
+                        enabled = hideFeedTab.not()
                     ),
                 ),
             ),

@@ -57,9 +57,8 @@ data class BrowseTab(
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         // SY -->
-        val feedTabInFront by remember {
-            Injekt.get<UiPreferences>().feedTabInFront().asState(scope)
-        }
+        val hideFeedTab by remember { Injekt.get<UiPreferences>().hideFeedTab().asState(scope) }
+        val feedTabInFront by remember { Injekt.get<UiPreferences>().feedTabInFront().asState(scope) }
         // SY <--
 
         // Hoisted for extensions tab's search bar
@@ -69,7 +68,13 @@ data class BrowseTab(
         TabbedScreen(
             titleRes = MR.strings.browse,
             // SY -->
-            tabs = if (feedTabInFront) {
+            tabs = if (hideFeedTab) {
+                persistentListOf(
+                    sourcesTab(),
+                    extensionsTab(extensionsScreenModel),
+                    migrateSourceTab(),
+                )
+            } else if (feedTabInFront) {
                 persistentListOf(
                     feedTab(),
                     sourcesTab(),

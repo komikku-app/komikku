@@ -38,6 +38,8 @@ class UiPreferences(
 
     fun expandFilters() = preferenceStore.getBoolean("eh_expand_filters", false)
 
+    fun hideFeedTab() = preferenceStore.getBoolean("hide_latest_tab", false)
+
     fun feedTabInFront() = preferenceStore.getBoolean("latest_tab_position", false)
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)
