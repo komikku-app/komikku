@@ -663,7 +663,8 @@ class Downloader(
         dirname: String,
         tmpDir: UniFile,
     ) {
-        val zip = ZipFile("${mangaDir.filePath}/$dirname.cbz$TMP_DIR_SUFFIX")
+        val zipFile = File(context.externalCacheDir, "$dirname.cbz$TMP_DIR_SUFFIX")
+        val zip = ZipFile(zipFile)
         val zipParameters = ZipParameters()
 
         CbzCrypto.setZipParametersEncrypted(zipParameters)
@@ -676,9 +677,17 @@ class Downloader(
             tmpDir.listFiles()?.map { img -> img.filePath?.let { File(it) } },
             zipParameters,
         )
+        zip.close()
 
+        val realZip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")!!
+        realZip.openOutputStream().use { out ->
+            zipFile.inputStream().use {
+                it.copyTo(out)
+            }
+        }
         mangaDir.findFile("$dirname.cbz$TMP_DIR_SUFFIX")?.renameTo("$dirname.cbz")
         tmpDir.delete()
+        zipFile.delete()
     }
 
     private fun addPaddingToImage(imageDir: File) {
