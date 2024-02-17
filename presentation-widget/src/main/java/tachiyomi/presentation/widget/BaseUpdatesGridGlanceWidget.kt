@@ -124,7 +124,7 @@ abstract class BaseUpdatesGridGlanceWidget(
                                 mangaId = updatesView.mangaId,
                                 sourceId = updatesView.sourceId,
                                 isMangaFavorite = true,
-                                url = updatesView.coverData.url,
+                                ogUrl = updatesView.coverData.url,
                                 lastModified = updatesView.coverData.lastModified,
                             ),
                         )

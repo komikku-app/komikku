@@ -344,6 +344,7 @@
     <string name="description_hint">Description: %1$s</string>
     <string name="author_hint">Author: %1$s</string>
     <string name="artist_hint">Artist: %1$s</string>
+    <string name="thumbnail_url_hint">Thumbnail Url: %1$s</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->

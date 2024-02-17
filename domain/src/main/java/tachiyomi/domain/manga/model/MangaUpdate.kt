@@ -45,11 +45,11 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         title = ogTitle,
         artist = ogArtist,
         author = ogAuthor,
+        thumbnailUrl = ogThumbnailUrl,
         description = ogDescription,
         genre = ogGenre,
         status = ogStatus,
         // SY <--
-        thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,
         initialized = initialized,
     )

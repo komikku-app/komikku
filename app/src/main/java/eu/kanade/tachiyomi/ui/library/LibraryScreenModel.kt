@@ -729,6 +729,7 @@ class LibraryScreenModel(
                 title = editedTitle.nullIfBlank(),
                 author = manga.author.takeUnless { it == manga.ogAuthor },
                 artist = manga.artist.takeUnless { it == manga.ogArtist },
+                thumbnailUrl = manga.thumbnailUrl.takeUnless { it == manga.ogThumbnailUrl },
                 description = manga.description.takeUnless { it == manga.ogDescription },
                 genre = manga.genre.takeUnless { it == manga.ogGenre },
                 status = manga.status.takeUnless { it == manga.ogStatus }?.toLong(),

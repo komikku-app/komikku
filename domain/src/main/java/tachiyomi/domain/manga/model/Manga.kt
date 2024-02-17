@@ -24,11 +24,11 @@ data class Manga(
     val ogTitle: String,
     val ogArtist: String?,
     val ogAuthor: String?,
+    val ogThumbnailUrl: String?,
     val ogDescription: String?,
     val ogGenre: List<String>?,
     val ogStatus: Long,
     // SY <--
-    val thumbnailUrl: String?,
     val updateStrategy: UpdateStrategy,
     val initialized: Boolean,
     val lastModifiedAt: Long,
@@ -50,6 +50,9 @@ data class Manga(
 
     val artist: String?
         get() = customMangaInfo?.artist ?: ogArtist
+
+    val thumbnailUrl: String?
+        get() = customMangaInfo?.thumbnailUrl ?: ogThumbnailUrl
 
     val description: String?
         get() = customMangaInfo?.description ?: ogDescription
@@ -147,11 +150,11 @@ data class Manga(
             // SY -->
             ogArtist = null,
             ogAuthor = null,
+            ogThumbnailUrl = null,
             ogDescription = null,
             ogGenre = null,
             ogStatus = 0L,
             // SY <--
-            thumbnailUrl = null,
             updateStrategy = UpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
             lastModifiedAt = 0L,

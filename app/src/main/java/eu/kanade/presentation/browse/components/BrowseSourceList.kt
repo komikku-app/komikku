@@ -79,7 +79,7 @@ private fun BrowseSourceListItem(
             mangaId = manga.id,
             sourceId = manga.source,
             isMangaFavorite = manga.favorite,
-            url = manga.thumbnailUrl,
+            ogUrl = manga.thumbnailUrl,
             lastModified = manga.coverLastModified,
         ),
         coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,

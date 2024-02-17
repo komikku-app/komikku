@@ -20,7 +20,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
             mangaId = 3L,
             sourceId = 4L,
             isMangaFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )
@@ -39,7 +39,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
             mangaId = 3L,
             sourceId = 4L,
             isMangaFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )
@@ -58,7 +58,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
             mangaId = 3L,
             sourceId = 4L,
             isMangaFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )

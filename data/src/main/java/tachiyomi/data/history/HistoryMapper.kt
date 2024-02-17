@@ -44,7 +44,7 @@ object HistoryMapper {
             mangaId = mangaId,
             sourceId = sourceId,
             isMangaFavorite = isFavorite,
-            url = thumbnailUrl,
+            ogUrl = thumbnailUrl,
             lastModified = coverLastModified,
         ),
     )

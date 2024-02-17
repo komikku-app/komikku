@@ -86,7 +86,7 @@ class UpdatesRepositoryImpl(
             mangaId = mangaId,
             sourceId = sourceId,
             isMangaFavorite = favorite,
-            url = thumbnailUrl,
+            ogUrl = thumbnailUrl,
             lastModified = coverLastModified,
         ),
     )
@@ -107,7 +107,7 @@ class UpdatesRepositoryImpl(
                 mangaId = updatesView.mangaId,
                 sourceId = updatesView.source,
                 isMangaFavorite = updatesView.favorite,
-                url = updatesView.thumbnailUrl,
+                ogUrl = updatesView.thumbnailUrl,
                 lastModified = updatesView.coverLastModified,
             ),
         )

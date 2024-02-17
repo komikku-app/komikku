@@ -33,6 +33,7 @@ interface SManga : Serializable {
     val originalTitle: String
     val originalAuthor: String?
     val originalArtist: String?
+    val originalThumbnailUrl: String?
     val originalDescription: String?
     val originalGenre: String?
     val originalStatus: Int
@@ -44,11 +45,11 @@ interface SManga : Serializable {
         it.title = originalTitle
         it.artist = originalArtist
         it.author = originalAuthor
+        it.thumbnail_url = originalThumbnailUrl
         it.description = originalDescription
         it.genre = originalGenre
         it.status = originalStatus
         // SY <--
-        it.thumbnail_url = thumbnail_url
         it.update_strategy = update_strategy
         it.initialized = initialized
     }
@@ -103,7 +104,7 @@ fun SManga.copy(
     description: String? = this.originalDescription,
     genre: String? = this.originalGenre,
     status: Int = this.status,
-    thumbnail_url: String? = this.thumbnail_url,
+    thumbnail_url: String? = this.originalThumbnailUrl,
     initialized: Boolean = this.initialized,
 ) = SManga.create().also {
     it.url = url

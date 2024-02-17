@@ -31,6 +31,8 @@ class SMangaImpl : SManga {
         get() = author
     override val originalArtist: String?
         get() = artist
+    override val originalThumbnailUrl: String?
+        get() = thumbnail_url
     override val originalDescription: String?
         get() = description
     override val originalGenre: String?

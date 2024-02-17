@@ -42,7 +42,7 @@ internal fun LibraryCompactGrid(
                     mangaId = manga.id,
                     sourceId = manga.source,
                     isMangaFavorite = manga.favorite,
-                    url = manga.thumbnailUrl,
+                    ogUrl = manga.thumbnailUrl,
                     lastModified = manga.coverLastModified,
                 ),
                 coverBadgeStart = {

@@ -95,6 +95,22 @@
         android:layout_marginEnd="16dp">
 
         <eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText
+            android:id="@+id/thumbnail_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text|textMultiLine"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
+
+        <eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText
             android:id="@+id/manga_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

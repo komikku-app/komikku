@@ -103,7 +103,7 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
                             mangaId = Random.nextLong(),
                             sourceId = Random.nextLong(),
                             isMangaFavorite = Random.nextBoolean(),
-                            url = "https://example.com/cover.png",
+                            ogUrl = "https://example.com/cover.png",
                             lastModified = Random.nextLong(),
                         ),
                     ),
