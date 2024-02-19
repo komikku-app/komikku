@@ -34,7 +34,7 @@ class TrackChapter(
                     service == null ||
                     !service.isLoggedIn ||
                     chapterNumber <= track.lastChapterRead /* SY --> */ ||
-                    (service is MdList && track.status == FollowStatus.UNFOLLOWED.long.toLong())/* SY <-- */
+                    (service is MdList && track.status == FollowStatus.UNFOLLOWED.long)/* SY <-- */
                 ) {
                     return@mapNotNull null
                 }

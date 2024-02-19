@@ -235,14 +235,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         } else {
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
-                    val trackingExtra = groupExtra?.toLongOrNull() ?: -1L
+                    val trackingExtra = groupExtra?.toIntOrNull() ?: -1
                     val tracks = getTracks.await().groupBy { it.mangaId }
 
                     libraryManga.filter { (manga) ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
                             TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
                         } ?: TrackStatus.OTHER
-                        status.long == trackingExtra
+                        status.int == trackingExtra
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
@@ -552,12 +552,12 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         var count = 0
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager)
             ?: return@coroutineScope
-        val syncFollowStatusLongs = preferences.mangadexSyncToLibraryIndexes().get().map { it.toLong() }
+        val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
         val size: Int
         mangaDex.fetchAllFollows()
             .filter { (_, metadata) ->
-                syncFollowStatusLongs.contains(metadata.followStatus)
+                syncFollowStatusInts.contains(metadata.followStatus)
             }
             .also { size = it.size }
             .forEach { (networkManga, metadata) ->

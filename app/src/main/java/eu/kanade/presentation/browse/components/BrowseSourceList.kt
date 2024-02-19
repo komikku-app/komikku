@@ -93,7 +93,7 @@ private fun BrowseSourceListItem(
                         .let {
                             remember {
                                 it.getStringArray(R.array.md_follows_options)
-                                    .getOrNull(followStatus.toInt())
+                                    .getOrNull(followStatus)
                             }
                         }
                         ?: return@let

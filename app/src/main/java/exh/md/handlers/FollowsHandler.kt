@@ -57,7 +57,7 @@ class FollowsHandler(
                 it,
                 lang,
             ) to MangaDexSearchMetadata().apply {
-                followStatus = FollowStatus.fromDex(statuses[it.id]).long
+                followStatus = FollowStatus.fromDex(statuses[it.id]).long.toInt()
             }
         }.sortedWith(comparator)
     }

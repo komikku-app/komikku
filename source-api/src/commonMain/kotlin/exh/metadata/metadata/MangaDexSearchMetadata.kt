@@ -41,7 +41,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
     // var missing_chapters: String? = null
 
-    var followStatus: Long? = null
+    var followStatus: Int? = null
     var relation: MangaDexRelation? = null
 
     // var maxChapterNumber: Int? = null
