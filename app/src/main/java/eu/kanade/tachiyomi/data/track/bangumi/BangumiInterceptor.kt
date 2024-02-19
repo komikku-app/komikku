@@ -33,7 +33,7 @@ class BangumiInterceptor(private val bangumi: Bangumi) : Interceptor {
         return originalRequest.newBuilder()
             .header(
                 "User-Agent",
-                "antsylich/Komikku/v${BuildConfig.VERSION_NAME} (Android) (http://github.com/mihonapp/mihon)",
+                "Komikku v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})",
             )
             .apply {
                 if (originalRequest.method == "GET") {
