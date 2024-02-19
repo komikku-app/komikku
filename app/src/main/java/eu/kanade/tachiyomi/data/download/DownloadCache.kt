@@ -173,6 +173,8 @@ class DownloadCache(
 
     /**
      * Returns the amount of downloaded chapters for a manga.
+     * This method is quick, but might count other junk files
+     * It's still maybe useful while developing the clean-up features
      *
      * @param manga the manga to check.
      */
@@ -320,6 +322,15 @@ class DownloadCache(
         diskCacheFile.delete()
         renewCache()
     }
+
+    // KMK -->
+    fun cleanInvalidDownloads() {
+        lastRenew = 0L
+        renewalJob?.cancel()
+        diskCacheFile.delete()
+        renewCache()
+    }
+    // KMK <--
 
     /**
      * Renews the downloads cache.

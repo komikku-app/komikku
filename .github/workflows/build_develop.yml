@@ -37,7 +37,7 @@ jobs:
           write-mode: overwrite
 
       - name: Build app
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'cuong-tran/komikku' }}
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
         uses: gradle/gradle-command-action@v2
         with:
           arguments: assembleStandardRelease -x ktlintFormat --stacktrace

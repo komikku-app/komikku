@@ -33,7 +33,7 @@ jobs:
           
           echo "COMMIT_LOGS<<{delimiter}
           $(curl -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/cuong-tran/komikku/compare/$prev_release_sha...$current_sha" \
+            "https://api.github.com/repos/komikku-app/komikku/compare/$prev_release_sha...$current_sha" \
             | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
             | jq -r '.[]|"- \(.message | first) (@\(.username))"')
           {delimiter}" >> $GITHUB_ENV
@@ -84,13 +84,13 @@ jobs:
           write-mode: overwrite
 
       - name: Build app
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'cuong-tran/komikku' }}
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
         uses: gradle/gradle-command-action@v2
         with:
           arguments: assembleStandardRelease -x ktlintFormat --stacktrace
 
       - name: Sign Android Release
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'cuong-tran/komikku' }}
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/standard/release
@@ -100,7 +100,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Clean up build artifacts
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'cuong-tran/komikku' }}
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
         run: |
           set -e
 
@@ -125,7 +125,7 @@ jobs:
           echo "APK_X86_64_SHA=$sha" >> $GITHUB_ENV
 
       - name: Create release
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'cuong-tran/komikku' }}
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: pre-release-${{ github.run_number }}

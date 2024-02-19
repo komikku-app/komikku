@@ -94,11 +94,11 @@ body:
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: If this is an issue with an official extension, I should be opening an issue in the [extensions repository](https://github.com/cuong-tran/komikku-extensions/issues/new/choose).
+        - label: If this is an issue with an official extension, I should be opening an issue in the [extensions repository](https://github.com/komikku-app/komikku-extensions/issues/new/choose).
           required: true
         - label: I have gone through the [FAQ](https://tachiyomi.org/docs/faq/general) and [troubleshooting guide](https://tachiyomi.org/docs/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.10.2](https://github.com/cuong-tran/komikku/releases/latest)**.
+        - label: I have updated the app to version **[1.10.2](https://github.com/komikku-app/komikku/releases/latest)**.
           required: true
         - label: I have updated all installed extensions.
           required: true

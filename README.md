@@ -1,6 +1,6 @@
 | Releases | Preview builds | Dev builds | PR builds | Mihon Support Server |
 |----------|----------------|------------|-----------|----------------------|
-| [![stable release](https://img.shields.io/github/release/cuong-tran/komikku.svg?maxAge=3600&label=download)](https://github.com/cuong-tran/komikku/releases/latest) | [![Preview Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_preview.yml) | [![Development Builder](https://github.com/cuong-tran/komikku/actions/workflows/build_develop.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_develop.yml) | [![CI](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml/badge.svg)](https://github.com/cuong-tran/komikku/actions/workflows/build_check.yml) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
+| [![stable release](https://img.shields.io/github/release/komikku-app/komikku.svg?maxAge=3600&label=download)](https://github.com/komikku-app/komikku/releases/latest) | [![Preview Builder](https://github.com/komikku-app/komikku/actions/workflows/build_preview.yml/badge.svg)](https://github.com/komikku-app/komikku/actions/workflows/build_preview.yml) | [![Development Builder](https://github.com/komikku-app/komikku/actions/workflows/build_develop.yml/badge.svg)](https://github.com/komikku-app/komikku/actions/workflows/build_develop.yml) | [![CI](https://github.com/komikku-app/komikku/actions/workflows/build_check.yml/badge.svg)](https://github.com/komikku-app/komikku/actions/workflows/build_check.yml) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
@@ -76,7 +76,7 @@ Additional features for some extensions, features include custom description, op
 * Tsumino
 
 ## Download
-Get the app from our [releases page](https://github.com/cuong-tran/komikku/releases/latest).
+Get the app from our [releases page](https://github.com/komikku-app/komikku/releases/latest).
 
 If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/jobobby04/tachiyomisypreview/releases).
 
@@ -86,7 +86,7 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 
 <details><summary>Issues</summary>
 
-1. **Before reporting a new issue, take a look at the [FAQ](https://tachiyomi.org/docs/faq/general), the [changelog](https://github.com/cuong-tran/komikku/releases) and the already opened [issues](https://github.com/cuong-tran/komikku/issues).**
+1. **Before reporting a new issue, take a look at the [FAQ](https://tachiyomi.org/docs/faq/general), the [changelog](https://github.com/komikku-app/komikku/releases) and the already opened [issues](https://github.com/komikku-app/komikku/issues).**
 2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg)](https://discord.gg/mihon)
 
 </details>

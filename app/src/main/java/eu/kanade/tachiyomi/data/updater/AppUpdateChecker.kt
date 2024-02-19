@@ -52,9 +52,9 @@ class AppUpdateChecker {
 val GITHUB_REPO: String by lazy {
     // SY -->
     if (isPreviewBuildType) {
-        "cuong-tran/komikku"
+        "komikku-app/komikku"
     } else {
-        "cuong-tran/komikku"
+        "komikku-app/komikku"
     }
     // SY <--
 }
