@@ -62,6 +62,9 @@ jobs:
           java-version: 17
           distribution: adopt
 
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Write Version.kt
         uses: DamianReeves/write-file-action@v1.2
         with:
@@ -85,9 +88,7 @@ jobs:
 
       - name: Build app
         if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
-        uses: gradle/gradle-command-action@v2
-        with:
-          arguments: assembleStandardRelease -x ktlintFormat --stacktrace
+        run: ./gradlew assembleStandardRelease testStandardReleaseUnitTest --stacktrace
 
       - name: Sign Android Release
         if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
