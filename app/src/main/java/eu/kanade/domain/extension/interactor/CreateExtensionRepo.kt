@@ -22,5 +22,5 @@ class CreateExtensionRepo(private val preferences: SourcePreferences) {
     }
 }
 
-const val OFFICIAL_REPO_BASE_URL = "https://raw.githubusercontent.com/komikku-app/komikku-extensions/repo"
+const val OFFICIAL_REPO_BASE_URL = "https://raw.githubusercontent.com/komikku-app/extensions/repo"
 private val repoRegex = """^https://.*/index\.min\.json$""".toRegex()
