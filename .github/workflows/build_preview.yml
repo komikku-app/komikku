@@ -134,7 +134,7 @@ jobs:
           body: |
             ### Commits
 
-            https://github.com/cuongtran/komikku/compare/${{ env.PREV_RELEASE_SHA }}...${{ env.CURRENT_SHA }}
+            https://github.com/komikku-app/komikku/compare/${{ env.PREV_RELEASE_SHA }}...${{ env.CURRENT_SHA }}
 
             ${{ env.COMMIT_LOGS }}
 
