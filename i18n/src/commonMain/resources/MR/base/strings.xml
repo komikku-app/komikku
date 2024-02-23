@@ -489,6 +489,14 @@
     <string name="save_chapter_as_cbz">Save as CBZ archive</string>
     <string name="split_tall_images">Split tall images</string>
     <string name="split_tall_images_summary">Improves reader performance</string>
+    <string name="download_cache_renew_interval">Download cache renew interval</string>
+    <string name="download_cache_renew_interval_manual">Manual</string>
+    <string name="download_cache_renew_interval_1hour">1 hour</string>
+    <string name="download_cache_renew_interval_2hour">2 hours</string>
+    <string name="download_cache_renew_interval_6hour">6 hours</string>
+    <string name="download_cache_renew_interval_12hour">12 hours</string>
+    <string name="download_cache_renew_interval_24hour">1 day</string>
+    <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
 
     <!-- Tracking section -->
     <string name="tracking_guide">Tracking guide</string>

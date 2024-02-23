@@ -61,6 +61,9 @@ object SettingsDownloadScreen : SearchableSettings {
                 allCategories = allCategories,
             ),
             getDownloadAheadGroup(downloadPreferences = downloadPreferences),
+            // KMK -->
+            getDownloadCacheRenewInterval(downloadPreferences = downloadPreferences),
+            // KMK <--
         )
     }
 
@@ -190,4 +193,30 @@ object SettingsDownloadScreen : SearchableSettings {
             ),
         )
     }
+
+    // KMK -->
+    @Composable
+    private fun getDownloadCacheRenewInterval(
+        downloadPreferences: DownloadPreferences,
+    ): Preference.PreferenceGroup {
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.download_cache_renew_interval),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.ListPreference(
+                    pref = downloadPreferences.downloadCacheRenewInterval(),
+                    title = stringResource(MR.strings.download_cache_renew_interval),
+                    entries = persistentMapOf(
+                        -1 to stringResource(MR.strings.download_cache_renew_interval_manual),
+                        1 to stringResource(MR.strings.download_cache_renew_interval_1hour),
+                        2 to stringResource(MR.strings.download_cache_renew_interval_2hour),
+                        6 to stringResource(MR.strings.download_cache_renew_interval_6hour),
+                        12 to stringResource(MR.strings.download_cache_renew_interval_12hour),
+                        24 to stringResource(MR.strings.download_cache_renew_interval_24hour),
+                    ),
+                ),
+                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.download_cache_renew_interval_info)),
+            ),
+        )
+    }
+    // KMK <--
 }
