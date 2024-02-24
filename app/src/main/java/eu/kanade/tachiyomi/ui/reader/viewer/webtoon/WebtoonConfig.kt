@@ -29,6 +29,11 @@ class WebtoonConfig(
     var imageCropBorders = false
         private set
 
+    var zoomOutDisabled = false
+        private set
+
+    var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
+
     var sidePadding = 0
         private set
 
@@ -42,13 +47,8 @@ class WebtoonConfig(
     // SY -->
     var usePageTransitions = false
 
-    var enableZoomOut = false
-        private set
-
     var continuousCropBorders = false
         private set
-
-    var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
 
     // SY <--
     init {
@@ -86,6 +86,12 @@ class WebtoonConfig(
                 { imagePropertyChangedListener?.invoke() },
             )
 
+        readerPreferences.webtoonDisableZoomOut()
+            .register(
+                { zoomOutDisabled = it },
+                { zoomPropertyChangedListener?.invoke(it) }
+            )
+
         readerPreferences.webtoonDoubleTapZoomEnabled()
             .register(
                 { doubleTapZoom = it },
@@ -99,9 +105,6 @@ class WebtoonConfig(
             .launchIn(scope)
 
         // SY -->
-        readerPreferences.webtoonEnableZoomOut()
-            .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })
-
         readerPreferences.cropBordersContinuousVertical()
             .register({ continuousCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 

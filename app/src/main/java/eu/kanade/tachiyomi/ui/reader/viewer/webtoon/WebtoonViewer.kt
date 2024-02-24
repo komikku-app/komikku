@@ -159,16 +159,14 @@ class WebtoonViewer(
             frame.doubleTapZoom = it
         }
 
+        config.zoomPropertyChangedListener = {
+            frame.zoomOutDisabled = it
+        }
+
         config.navigationModeChangedListener = {
             val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
-
-        // SY -->
-        config.zoomPropertyChangedListener = {
-            frame.enableZoomOut = it
-        }
-        // SY <--
 
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)

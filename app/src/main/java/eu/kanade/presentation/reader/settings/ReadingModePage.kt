@@ -217,11 +217,6 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         label = stringResource(MR.strings.pref_page_transitions),
         pref = screenModel.preferences.pageTransitionsWebtoon(),
     )
-
-    CheckboxItem(
-        label = stringResource(SYMR.strings.enable_zoom_out),
-        pref = screenModel.preferences.webtoonEnableZoomOut(),
-    )
     // SY <--
 
     val dualPageSplitWebtoon by screenModel.preferences.dualPageSplitWebtoon().collectAsState()
@@ -253,6 +248,10 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
     CheckboxItem(
         label = stringResource(MR.strings.pref_double_tap_zoom),
         pref = screenModel.preferences.webtoonDoubleTapZoomEnabled(),
+    )
+    CheckboxItem(
+        label = stringResource(MR.strings.pref_webtoon_disable_zoom_out),
+        pref = screenModel.preferences.webtoonDisableZoomOut(),
     )
 }
 

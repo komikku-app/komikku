@@ -78,7 +78,7 @@ class ReaderPreferences(
 
     fun skipDupe() = preferenceStore.getBoolean("skip_dupe", false)
 
-    fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
+    fun webtoonDisableZoomOut() = preferenceStore.getBoolean("webtoon_disable_zoom_out", false)
 
     // endregion
 
@@ -162,8 +162,6 @@ class ReaderPreferences(
 
     fun useAutoWebtoon() = preferenceStore.getBoolean("eh_use_auto_webtoon", true)
 
-    fun webtoonEnableZoomOut() = preferenceStore.getBoolean("webtoon_enable_zoom_out", false)
-
     fun continuousVerticalTappingByPage() = preferenceStore.getBoolean("continuous_vertical_tapping_by_page", false)
 
     fun cropBordersContinuousVertical() = preferenceStore.getBoolean("crop_borders_continues_vertical", false)
@@ -183,6 +181,8 @@ class ReaderPreferences(
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
 
     fun cacheArchiveMangaOnDisk() = preferenceStore.getBoolean("cache_archive_manga_on_disk", false)
+
+        fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
     // SY <--
 
     enum class TappingInvertMode(
