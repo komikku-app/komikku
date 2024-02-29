@@ -7,6 +7,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
@@ -33,6 +35,9 @@ fun Screen.feedTab(): TabContent {
     val navigator = LocalNavigator.currentOrThrow
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
+    // KMK -->
+    val haptic = LocalHapticFeedback.current
+    // KMK <--
 
     DisposableEffect(navigator.lastEvent) {
         if (navigator.lastEvent == StackEvent.Push) {
@@ -91,6 +96,12 @@ fun Screen.feedTab(): TabContent {
                 onClickManga = { manga ->
                     navigator.push(MangaScreen(manga.id, true))
                 },
+                // KMK -->
+                onLongClickManga = {
+                    screenModel.toggleSelection(it)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
+                // KMK <--
                 onRefresh = screenModel::init,
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )

@@ -26,7 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -69,6 +71,9 @@ fun FeedScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    // KMK <--
     onRefresh: () -> Unit,
     getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
 ) {
@@ -121,6 +126,9 @@ fun FeedScreen(
                                 item = item,
                                 getMangaState = { getMangaState(it, item.source) },
                                 onClickManga = onClickManga,
+                                // KMK -->
+                                onLongClickManga = onLongClickManga,
+                                // KMK <--
                             )
                         }
                     }
@@ -135,6 +143,9 @@ fun FeedItem(
     item: FeedItemUI,
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    // KMK <--
 ) {
     when {
         item.results == null -> {
@@ -148,7 +159,9 @@ fun FeedItem(
                 titles = item.results,
                 getManga = getMangaState,
                 onClick = onClickManga,
-                onLongClick = onClickManga,
+                // KMK -->
+                onLongClick = onLongClickManga,
+                // KMK <--
             )
         }
     }

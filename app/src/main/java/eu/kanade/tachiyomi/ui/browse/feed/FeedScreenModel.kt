@@ -14,6 +14,8 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -305,6 +307,25 @@ open class FeedScreenModel(
         mutableState.update { it.copy(dialog = null) }
     }
 
+    // KMK -->
+    fun clearSelection() {
+        mutableState.update { it.copy(selection = persistentListOf()) }
+    }
+
+    fun toggleSelection(manga: DomainManga) {
+        mutableState.update { state ->
+            val newSelection = state.selection.mutate { list ->
+                if (list.fastAny { it.id == manga.id }) {
+                    list.removeAll { it.id == manga.id }
+                } else {
+                    list.add(manga)
+                }
+            }
+            state.copy(selection = newSelection)
+        }
+    }
+    // KMK <--
+
     sealed class Dialog {
         data class AddFeed(val options: ImmutableList<CatalogueSource>) : Dialog()
         data class AddFeedSearch(val source: CatalogueSource, val options: ImmutableList<SavedSearch?>) : Dialog()
@@ -320,6 +341,9 @@ open class FeedScreenModel(
 data class FeedScreenState(
     val dialog: FeedScreenModel.Dialog? = null,
     val items: List<FeedItemUI>? = null,
+    // KMK -->
+    val selection: PersistentList<DomainManga> = persistentListOf(),
+    // KMK <--
 ) {
     val isLoading
         get() = items == null
