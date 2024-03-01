@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SnackbarHost
@@ -139,7 +139,7 @@ private fun FeedSelectionToolbar(
                 persistentListOf(
                     AppBar.Action(
                         title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Outlined.Bookmark,
+                        icon = Icons.Outlined.BookmarkAdd,
                         // TODO: method to add bookmark goes here
                         onClick = { },
                     ),

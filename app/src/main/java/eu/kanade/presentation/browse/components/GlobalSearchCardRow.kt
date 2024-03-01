@@ -14,6 +14,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaComfortableGridItem
 import tachiyomi.domain.manga.model.Manga
@@ -29,6 +30,9 @@ fun GlobalSearchCardRow(
     getManga: @Composable (Manga) -> State<Manga>,
     onClick: (Manga) -> Unit,
     onLongClick: (Manga) -> Unit,
+    // KMK -->
+    selection: List<Manga>? = null,
+    // KMK <--
 ) {
     if (titles.isEmpty()) {
         EmptyResultItem()
@@ -47,6 +51,9 @@ fun GlobalSearchCardRow(
                 isFavorite = title.favorite,
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
+                // KMK -->
+                isSelected = selection?.fastAny { selected -> selected.id == title.id } ?: false,
+                // KMK <--
             )
         }
     }
@@ -59,6 +66,9 @@ private fun MangaItem(
     isFavorite: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    // KMK -->
+    isSelected: Boolean = false,
+    // KMK <--
 ) {
     Box(modifier = Modifier.width(96.dp)) {
         MangaComfortableGridItem(
@@ -68,7 +78,13 @@ private fun MangaItem(
             coverBadgeStart = {
                 InLibraryBadge(enabled = isFavorite)
             },
-            coverAlpha = if (isFavorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+            coverAlpha = when {
+                // KMK -->
+                isSelected -> CommonMangaItemDefaults.BrowseSelectedCoverAlpha
+                // KMK <--
+                isFavorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
+                else -> 1f
+            },
             onClick = onClick,
             onLongClick = onLongClick,
         )

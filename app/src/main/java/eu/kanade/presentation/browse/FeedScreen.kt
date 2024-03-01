@@ -126,6 +126,7 @@ fun FeedScreen(
                                 onClickManga = onClickManga,
                                 // KMK -->
                                 onLongClickManga = onLongClickManga,
+                                selection = state.selection,
                                 // KMK <--
                             )
                         }
@@ -143,6 +144,7 @@ fun FeedItem(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    selection: List<Manga>,
     // KMK <--
 ) {
     when {
@@ -161,6 +163,7 @@ fun FeedItem(
                 onLongClick = onClickManga,
                  */
                 onLongClick = onLongClickManga,
+                selection = selection,
                 // KMK <--
             )
         }
