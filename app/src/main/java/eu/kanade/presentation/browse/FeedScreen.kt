@@ -26,9 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -159,7 +157,9 @@ fun FeedItem(
                 titles = item.results,
                 getManga = getMangaState,
                 onClick = onClickManga,
-                // KMK -->
+                /* KMK -->
+                onLongClick = onClickManga,
+                 */
                 onLongClick = onLongClickManga,
                 // KMK <--
             )

@@ -1,7 +1,9 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -9,7 +11,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -31,9 +32,15 @@ import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun Screen.feedTab(): TabContent {
+fun Screen.feedTab(
+    // KMK -->
+    screenModel: FeedScreenModel
+    // KMK <--
+): TabContent {
     val navigator = LocalNavigator.currentOrThrow
+    /* KMK -->
     val screenModel = rememberScreenModel { FeedScreenModel() }
+    KMK <-- */
     val state by screenModel.state.collectAsState()
     // KMK -->
     val haptic = LocalHapticFeedback.current
@@ -55,15 +62,32 @@ fun Screen.feedTab(): TabContent {
 
     return TabContent(
         titleRes = SYMR.strings.feed,
-        actions = persistentListOf(
-            AppBar.Action(
-                title = stringResource(MR.strings.action_add),
-                icon = Icons.Outlined.Add,
-                onClick = {
-                    screenModel.openAddDialog()
-                },
+        actions =
+        // KMK -->
+        if (state.selection.isNotEmpty())
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_select_all),
+                    icon = Icons.Outlined.Bookmark,
+                    onClick = { },
+                ),
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_select_inverse),
+                    icon = Icons.Filled.Bookmark,
+                    onClick = { },
+                ),
+            )
+        else
+            // KMK <--
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_add),
+                    icon = Icons.Outlined.Add,
+                    onClick = {
+                        screenModel.openAddDialog()
+                    },
+                ),
             ),
-        ),
         content = { contentPadding, snackbarHostState ->
             FeedScreen(
                 state = state,
@@ -94,12 +118,21 @@ fun Screen.feedTab(): TabContent {
                 },
                 onClickDelete = screenModel::openDeleteDialog,
                 onClickManga = { manga ->
-                    navigator.push(MangaScreen(manga.id, true))
+                    // KMK -->
+                    if (state.selection.isNotEmpty())
+                        screenModel.toggleSelection(manga)
+                    else
+                        // KMK <--
+                        navigator.push(MangaScreen(manga.id, true))
                 },
                 // KMK -->
-                onLongClickManga = {
-                    screenModel.toggleSelection(it)
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLongClickManga = { manga ->
+                    if (state.selection.isNotEmpty()) {
+                        navigator.push(MangaScreen(manga.id, true))
+                    } else {
+                        screenModel.toggleSelection(manga)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
                 },
                 // KMK <--
                 onRefresh = screenModel::init,

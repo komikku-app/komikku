@@ -2,19 +2,25 @@ package eu.kanade.presentation.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,9 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
@@ -36,6 +44,9 @@ fun TabbedScreen(
     startIndex: Int? = null,
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
+    // KMK -->
+    feedScreenModel: FeedScreenModel,
+    // KMK <--
 ) {
     val scope = rememberCoroutineScope()
     val state = rememberPagerState { tabs.size }
@@ -51,14 +62,23 @@ fun TabbedScreen(
         topBar = {
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
-
-            SearchToolbar(
-                titleContent = { AppBarTitle(stringResource(titleRes)) },
-                searchEnabled = searchEnabled,
-                searchQuery = if (searchEnabled) searchQuery else null,
-                onChangeSearchQuery = onChangeSearchQuery,
-                actions = { AppBarActions(tab.actions) },
-            )
+            // KMK -->
+            val feedScreenState by feedScreenModel.state.collectAsState()
+            if (feedScreenState.selection.isNotEmpty())
+                FeedSelectionToolbar(
+                    selectedCount = feedScreenState.selection.size,
+                    onClickClearSelection = { feedScreenModel.clearSelection() },
+                    actions = { AppBarActions(tab.actions) },
+                )
+            else
+                // KMK <--
+                SearchToolbar(
+                    titleContent = { AppBarTitle(stringResource(titleRes)) },
+                    searchEnabled = searchEnabled,
+                    searchQuery = if (searchEnabled) searchQuery else null,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    actions = { AppBarActions(tab.actions) },
+                )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->
@@ -104,3 +124,30 @@ data class TabContent(
     val actions: ImmutableList<AppBar.AppBarAction> = persistentListOf(),
     val content: @Composable (contentPadding: PaddingValues, snackbarHostState: SnackbarHostState) -> Unit,
 )
+
+// KMK -->
+@Composable
+private fun FeedSelectionToolbar(
+    selectedCount: Int,
+    onClickClearSelection: () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    AppBar(
+        titleContent = { Text(text = "$selectedCount") },
+        actions = {
+            AppBarActions(
+                persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_bookmark),
+                        icon = Icons.Outlined.Bookmark,
+                        // TODO: method to add bookmark goes here
+                        onClick = { },
+                    ),
+                ),
+            )
+        },
+        isActionMode = true,
+        onCancelActionMode = onClickClearSelection,
+    )
+}
+// KMK <--
