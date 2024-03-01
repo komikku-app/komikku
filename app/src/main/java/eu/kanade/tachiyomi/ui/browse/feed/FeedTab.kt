@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.Add
@@ -59,6 +60,14 @@ fun Screen.feedTab(
             }
         }
     }
+
+    // KMK -->
+    BackHandler(enabled = state.selection.isNotEmpty()) {
+        when {
+            state.selection.isNotEmpty() -> screenModel.clearSelection()
+        }
+    }
+    // KMK <--
 
     return TabContent(
         titleRes = SYMR.strings.feed,
