@@ -34,6 +34,7 @@ import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
+import java.io.IOException
 
 /**
  * A [Fetcher] that fetches cover image for [Manga] object.
@@ -174,7 +175,7 @@ class MangaCoverFetcher(
         val response = client.newCall(newRequest()).await()
         if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
             response.close()
-            throw Exception(response.message)
+            throw IOException(response.message)
         }
         return response
     }
