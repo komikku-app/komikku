@@ -418,6 +418,7 @@ class MangaScreenModel(
                         PagePreviewState.Unused
                     },
                     alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
+                    previewsRowCount = uiPreferences.previewsRowCount().get(),
                     // SY <--
                 )
             }
@@ -1634,6 +1635,7 @@ class MangaScreenModel(
             val showMergeWithAnother: Boolean,
             val pagePreviewsState: PagePreviewState,
             val alwaysShowReadingProgress: Boolean,
+            val previewsRowCount: Int,
             // SY <--
         ) : State {
             val processedChapters by lazy {
