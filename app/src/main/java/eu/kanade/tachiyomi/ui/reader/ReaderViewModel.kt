@@ -693,13 +693,15 @@ class ReaderViewModel @JvmOverloads constructor(
                 // SY <--
                 readerChapter.chapter.read = true
                 // SY -->
-                if (readerPreferences.markReadDupe().get()) {
+                if (readerChapter.chapter.chapter_number > 0 && readerPreferences.markReadDupe().get()) {
                     getChaptersByMangaId.await(manga!!.id).sortedByDescending { it.sourceOrder }
                         .filter { 
-                            !it.read && it.chapterNumber > 0.0 &&
+                            it.id != readerChapter.chapter.id &&
+                                !it.read &&
                                 it.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
                         }
-                        .also { setReadStatus.await(true, *it.toTypedArray()) }
+                        .ifEmpty { null }
+                        ?.also { setReadStatus.await(true, *it.toTypedArray()) }
                 }
                 if (manga?.isEhBasedManga() == true) {
                     viewModelScope.launchNonCancellable {
