@@ -78,6 +78,8 @@ class ReaderPreferences(
 
     fun skipDupe() = preferenceStore.getBoolean("skip_dupe", false)
 
+    fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
+
     // endregion
 
     // region Split two page spread

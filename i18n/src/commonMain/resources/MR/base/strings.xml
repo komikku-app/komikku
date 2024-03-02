@@ -388,6 +388,8 @@
     <string name="pref_skip_read_chapters">Skip chapters marked read</string>
     <string name="pref_skip_filtered_chapters">Skip filtered chapters</string>
     <string name="pref_skip_dupe_chapters">Skip duplicate chapters</string>
+    <string name="pref_mark_read_dupe_chapters">Mark duplicate chapters as read</string>
+    <string name="pref_mark_read_dupe_chapters_summary">Mark duplicate chapters as read after reading</string>
     <string name="pref_reader_navigation">Navigation</string>
     <string name="pref_read_with_volume_keys">Volume keys</string>
     <string name="pref_read_with_volume_keys_inverted">Invert volume keys</string>
