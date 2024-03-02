@@ -26,6 +26,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
+import java.io.IOException
 
 /**
  * A [Fetcher] that fetches page preview image for [PagePreview] object.
@@ -128,7 +129,7 @@ class PagePreviewFetcher(
         ) ?: callFactoryLazy.value.newCall(newRequest()).await()
         if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
             response.close()
-            throw Exception(response.message)
+            throw IOException(response.message)
         }
         return response
     }
