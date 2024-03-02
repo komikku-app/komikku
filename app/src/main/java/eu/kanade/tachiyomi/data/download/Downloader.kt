@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
-import android.os.Build
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.model.getComicInfo
@@ -14,6 +13,7 @@ import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
+import eu.kanade.tachiyomi.util.storage.CbzCrypto.addFilesToZip
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.NOMEDIA_FILE
 import eu.kanade.tachiyomi.util.storage.saveTo
@@ -43,8 +43,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.ZipParameters
 import nl.adaptivity.xmlutil.serialization.XML
 import okhttp3.Response
 import tachiyomi.core.common.i18n.stringResource
@@ -66,7 +64,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.BufferedOutputStream
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.zip.CRC32
 import java.util.zip.ZipEntry
@@ -663,31 +660,15 @@ class Downloader(
         dirname: String,
         tmpDir: UniFile,
     ) {
-        val zipFile = File(context.externalCacheDir, "$dirname.cbz$TMP_DIR_SUFFIX")
-        val zip = ZipFile(zipFile)
-        val zipParameters = ZipParameters()
-
-        CbzCrypto.setZipParametersEncrypted(zipParameters)
-        zip.setPassword(CbzCrypto.getDecryptedPasswordCbz())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) zip.charset = StandardCharsets.ISO_8859_1
-
         tmpDir.filePath?.let { addPaddingToImage(File(it)) }
 
-        zip.addFiles(
-            tmpDir.listFiles()?.map { img -> img.filePath?.let { File(it) } },
-            zipParameters,
-        )
-        zip.close()
-
-        val realZip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")!!
-        realZip.openOutputStream().use { out ->
-            zipFile.inputStream().use {
-                it.copyTo(out)
-            }
+        tmpDir.listFiles()?.toList()?.let { files ->
+            mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")
+                ?.addFilesToZip(files, CbzCrypto.getDecryptedPasswordCbz())
         }
+
         mangaDir.findFile("$dirname.cbz$TMP_DIR_SUFFIX")?.renameTo("$dirname.cbz")
         tmpDir.delete()
-        zipFile.delete()
     }
 
     private fun addPaddingToImage(imageDir: File) {

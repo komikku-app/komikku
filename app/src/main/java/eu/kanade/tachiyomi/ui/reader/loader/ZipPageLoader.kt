@@ -37,10 +37,6 @@ internal class ZipPageLoader(file: File) : PageLoader() {
         }
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            zip4j.charset = StandardCharsets.ISO_8859_1
-        }
-
         Zip4jFile(file).use { zip ->
             if (zip.isEncrypted) {
                 if (!CbzCrypto.checkCbzPassword(zip, CbzCrypto.getDecryptedPasswordCbz())) {

@@ -4,13 +4,11 @@ import android.content.Context
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
+import eu.kanade.tachiyomi.util.storage.CbzCrypto.addStreamToZip
 import eu.kanade.tachiyomi.util.storage.DiskUtil
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.ZipParameters
 import tachiyomi.core.common.storage.nameWithoutExtension
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
-import java.io.File
 import java.io.InputStream
 
 private const val DEFAULT_COVER_NAME = "cover.jpg"
@@ -60,23 +58,7 @@ actual class LocalCoverManager(
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
-                val tempFile = File.createTempFile(
-                    targetFile.nameWithoutExtension.orEmpty().padEnd(3), // Prefix must be 3+ chars
-                    null,
-                )
-                val zip4j = ZipFile(tempFile)
-                val zipParameters = ZipParameters()
-                zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
-                CbzCrypto.setZipParametersEncrypted(zipParameters)
-                zipParameters.fileNameInZip = DEFAULT_COVER_NAME
-                zip4j.addStream(input, zipParameters)
-                zip4j.close()
-                targetFile.openOutputStream().use { output ->
-                    tempFile.inputStream().use { input ->
-                        input.copyTo(output)
-                    }
-                }
-
+                targetFile.addStreamToZip(inputStream, DEFAULT_COVER_NAME, CbzCrypto.getDecryptedPasswordCbz())
                 DiskUtil.createNoMediaFile(directory, context)
 
                 manga.thumbnail_url = targetFile.uri.toString()
