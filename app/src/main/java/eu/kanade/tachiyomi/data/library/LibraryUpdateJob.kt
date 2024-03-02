@@ -404,7 +404,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                                             readChapters.any { it.chapterNumber == chapter.chapterNumber }
                                                     }
 
-                                                    setReadStatus.await(true, *newReadChapters.toTypedArray())
+                                                    if (newReadChapters.isNotEmpty()) {
+                                                        setReadStatus.await(true, *newReadChapters.toTypedArray())
+                                                    }
 
                                                     this.filterNot { newReadChapters.contains(it) }
                                                 } else {
