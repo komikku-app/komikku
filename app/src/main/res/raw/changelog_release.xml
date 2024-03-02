@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.10.5" changeDate="Mar 2,2024">
+        <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
+        <changelogtext>Minor fix for mark duplicate chapters as read</changelogtext>
+        <changelogtext>Include the delayed tracker update fix</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.10.4" changeDate="Jan 17,2024">
         <changelogtext>Hotfix for 1.10.3</changelogtext>
     </changelogversion>
