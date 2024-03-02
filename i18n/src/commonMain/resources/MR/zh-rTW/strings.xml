@@ -798,4 +798,6 @@
     <string name="ext_revoke_trust">撤銷對不明擴充套件的信任</string>
     <string name="manga_interval_expected_update_soon">即將出刊</string>
     <string name="action_open_repo">開啟來源儲存庫</string>
+    <string name="pref_mark_read_dupe_chapters">將重複章節標記為已讀</string>
+    <string name="pref_mark_read_dupe_chapters_summary">讀完後也將重複章節標記為已讀</string>
 </resources>

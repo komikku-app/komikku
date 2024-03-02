@@ -9,10 +9,10 @@
     <string name="action_start_reading">開始閱讀</string>
     <string name="action_edit_info">編輯資訊</string>
     <!-- Entry Type -->
-    <string name="entry_type_manga">日本漫畫</string>
-    <string name="entry_type_manhwa">韓國漫畫</string>
-    <string name="entry_type_manhua">中國漫畫</string>
-    <string name="entry_type_comic">美國漫畫</string>
+    <string name="entry_type_manga">漫畫(日本)</string>
+    <string name="entry_type_manhwa">漫畫(韓國)</string>
+    <string name="entry_type_manhua">漫畫(中國)</string>
+    <string name="entry_type_comic">漫畫(美國)</string>
     <string name="entry_type_webtoon">條漫</string>
 
     <!-- Preferences -->
@@ -173,6 +173,7 @@
     <string name="library_group_updates_all">每次啟動後載入目錄更新</string>
 
     <!-- Browse settings -->
+    <string name="pref_hide_feed">隱藏訂閱標籤</string>
     <string name="pref_feed_position">訂閱標籤位置</string>
     <string name="pref_feed_position_summery">你想讓訂閱標籤成為瀏覽中的第一個標籤嗎？這將使它成為開啟瀏覽時的預設標籤，如果你使用的是資料或計費網路，則不建議使用。</string>
     <string name="pref_source_source_filtering">在目錄中過濾來源</string>
@@ -193,6 +194,8 @@
     <string name="biometric_lock_time_conflicts">鎖定時間與已經存在的時間衝突!</string>
     <string name="biometric_lock_start_time">輸入開始時間</string>
     <string name="biometric_lock_end_time">輸入結束時間</string>
+    <string name="delete_time_range">刪除時間範圍</string>
+    <string name="delete_time_range_confirmation">您是否要刪除時間範圍%s？</string>
     <string name="biometric_lock_days">生物識別鎖週期</string>
     <string name="biometric_lock_days_summary">需要鎖定應用程式的週期</string>
 
@@ -328,7 +331,8 @@
     <string name="title_hint">標題：%1$s</string>
     <string name="description_hint">描述：%1$s</string>
     <string name="author_hint">作者：%1$s</string>
-    <string name="artist_hint">藝術家：%1$s</string>
+    <string name="artist_hint">畫家：%1$s</string>
+    <string name="thumbnail_url_hint">縮圖網址: %1$s</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
