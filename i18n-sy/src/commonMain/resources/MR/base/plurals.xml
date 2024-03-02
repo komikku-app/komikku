@@ -71,4 +71,9 @@
         <item quantity="one">%1$d second ago</item>
         <item quantity="other">%1$d seconds ago</item>
     </plurals>
+
+    <plurals name="row_count">
+        <item quantity="one">%d row</item>
+        <item quantity="other">%d rows</item>
+    </plurals>
 </resources>

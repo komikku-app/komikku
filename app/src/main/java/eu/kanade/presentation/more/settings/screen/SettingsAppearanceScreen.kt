@@ -23,6 +23,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -157,6 +158,8 @@ object SettingsAppearanceScreen : SearchableSettings {
     // SY -->
     @Composable
     fun getForkGroup(uiPreferences: UiPreferences): Preference.PreferenceGroup {
+        val previewsRowCount by uiPreferences.previewsRowCount().collectAsState()
+
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_category_fork),
             preferenceItems = persistentListOf(
@@ -173,6 +176,21 @@ object SettingsAppearanceScreen : SearchableSettings {
                     pref = uiPreferences.mergeInOverflow(),
                     title = stringResource(SYMR.strings.put_merge_in_overflow),
                     subtitle = stringResource(SYMR.strings.put_merge_in_overflow_summary),
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = previewsRowCount,
+                    title = stringResource(SYMR.strings.pref_previews_row_count),
+                    subtitle = if (previewsRowCount > 0) pluralStringResource(
+                        SYMR.plurals.row_count,
+                        previewsRowCount,
+                        previewsRowCount,
+                    ) else stringResource(MR.strings.disabled),
+                    min = 0,
+                    max = 10,
+                    onValueChanged = {
+                        uiPreferences.previewsRowCount().set(it)
+                        true
+                    },
                 ),
             ),
         )

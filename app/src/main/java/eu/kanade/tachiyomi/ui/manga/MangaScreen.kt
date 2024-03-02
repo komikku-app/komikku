@@ -23,8 +23,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.ChapterSettingsDialog
@@ -115,6 +117,12 @@ class MangaScreen(
         val successState = state as MangaScreenModel.State.Success
         val isHttpSource = remember { successState.source is HttpSource }
 
+        // SY -->
+        val previewsRowCount by remember {
+            Injekt.get<UiPreferences>().previewsRowCount().asState(scope)
+        }
+        // SY <--
+
         LaunchedEffect(successState.manga, screenModel.source) {
             if (isHttpSource) {
                 try {
@@ -197,6 +205,7 @@ class MangaScreen(
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
+            previewsRowCount = previewsRowCount,
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },

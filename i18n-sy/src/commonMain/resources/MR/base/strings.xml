@@ -168,6 +168,7 @@
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the entry page</string>
     <string name="put_merge_in_overflow">Merge in overflow</string>
     <string name="put_merge_in_overflow_summary">Put the merge button in the overflow menu instead of on the entry page</string>
+    <string name="pref_previews_row_count">Previews row count</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Navbar</string>

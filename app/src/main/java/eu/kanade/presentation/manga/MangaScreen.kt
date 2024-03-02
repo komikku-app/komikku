@@ -150,6 +150,7 @@ fun MangaScreen(
     onMergeWithAnotherClicked: () -> Unit,
     onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
+    previewsRowCount: Int,
     // SY <--
 
     // For bottom action menu
@@ -208,6 +209,7 @@ fun MangaScreen(
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
             onOpenPagePreview = onOpenPagePreview,
             onMorePreviewsClicked = onMorePreviewsClicked,
+            previewsRowCount = previewsRowCount,
             // SY <--
             onMultiBookmarkClicked = onMultiBookmarkClicked,
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
@@ -253,6 +255,7 @@ fun MangaScreen(
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
             onOpenPagePreview = onOpenPagePreview,
             onMorePreviewsClicked = onMorePreviewsClicked,
+            previewsRowCount = previewsRowCount,
             // SY <--
             onMultiBookmarkClicked = onMultiBookmarkClicked,
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
@@ -308,6 +311,7 @@ private fun MangaScreenSmallImpl(
     onMergeWithAnotherClicked: () -> Unit,
     onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
+    previewsRowCount: Int,
     // SY <--
 
     // For bottom action menu
@@ -544,13 +548,14 @@ private fun MangaScreenSmallImpl(
                         }
                     }
 
-                    if (state.pagePreviewsState !is PagePreviewState.Unused) {
+                    if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {
                         PagePreviewItems(
                             pagePreviewState = state.pagePreviewsState,
                             onOpenPage = onOpenPagePreview,
                             onMorePreviewsClicked = onMorePreviewsClicked,
                             maxWidth = maxWidth,
-                            setMaxWidth = { maxWidth = it }
+                            setMaxWidth = { maxWidth = it },
+                            rowCount = previewsRowCount,
                         )
                     }
                     // SY <--
@@ -632,6 +637,7 @@ fun MangaScreenLargeImpl(
     onMergeWithAnotherClicked: () -> Unit,
     onOpenPagePreview: (Int) -> Unit,
     onMorePreviewsClicked: () -> Unit,
+    previewsRowCount: Int,
     // SY <--
 
     // For bottom action menu
@@ -832,11 +838,12 @@ fun MangaScreenLargeImpl(
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
                             )
                         }
-                        if (state.pagePreviewsState !is PagePreviewState.Unused) {
+                        if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {
                             PagePreviews(
                                 pagePreviewState = state.pagePreviewsState,
                                 onOpenPage = onOpenPagePreview,
                                 onMorePreviewsClicked = onMorePreviewsClicked,
+                                rowCount = previewsRowCount,
                             )
                         }
                         // SY <--
