@@ -176,6 +176,7 @@
     <string name="library_group_updates_all">Постоянно запускать обновления категорий</string>
 
     <!-- Browse settings -->
+    <string name="pref_hide_feed">Скрыть вкладку «Лента»</string>
     <string name="pref_feed_position">Позиция вкладки (Лента)</string>
     <string name="pref_feed_position_summery">Поместить вкладку «Лента» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик». Не рекомендуется, если вы используете ограниченные сети(Моб. данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
@@ -196,6 +197,8 @@
     <string name="biometric_lock_time_conflicts">Биометрическое время блокировки конфликтует с тем, которое уже существует!</string>
     <string name="biometric_lock_start_time">Ввести время начала</string>
     <string name="biometric_lock_end_time">Ввести время окончания</string>
+    <string name="delete_time_range">Удалить время блокировки</string>
+    <string name="delete_time_range_confirmation">Хотите ли вы удалить время блокировки %s?</string>
     <string name="biometric_lock_days">Дни биометрической блокировки</string>
     <string name="biometric_lock_days_summary">Выбрать дни биометрической блокировки приложения</string>
     <string name="sunday">Воскресенье</string>
@@ -331,6 +334,7 @@
     <string name="description_hint">Описание: %1$s</string>
     <string name="author_hint">Автор: %1$s</string>
     <string name="artist_hint">Художник: %1$s</string>
+    <string name="thumbnail_url_hint">URL-адрес миниатюры: %1$s</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -374,13 +378,10 @@
     <string name="error_tag_exists">Этот тэг уже существует!</string>
     <string name="delete_tag">Удалить тэг</string>
     <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
-    <string name="delete_time_range">Удалить время блокировки</string>
-    <string name="delete_time_range_confirmation">Хотите ли вы удалить время блокировки %s?</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
-    <string name="no_repos_found">Репозитории расширений не найдены. Пожалуйста, добавьте парочку, перейдя по "Больше → Репозитории расширений"!</string>
 
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
