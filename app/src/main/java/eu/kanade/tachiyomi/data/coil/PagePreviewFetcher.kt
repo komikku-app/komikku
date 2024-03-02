@@ -1,15 +1,13 @@
 package eu.kanade.tachiyomi.data.coil
 
-import coil.ImageLoader
-import coil.decode.DataSource
-import coil.decode.ImageSource
-import coil.disk.DiskCache
-import coil.fetch.FetchResult
-import coil.fetch.Fetcher
-import coil.fetch.SourceResult
-import coil.network.HttpException
-import coil.request.Options
-import coil.request.Parameters
+import coil3.ImageLoader
+import coil3.decode.DataSource
+import coil3.decode.ImageSource
+import coil3.disk.DiskCache
+import coil3.fetch.FetchResult
+import coil3.fetch.Fetcher
+import coil3.fetch.SourceFetchResult
+import coil3.request.Options
 import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.network.await
@@ -21,6 +19,7 @@ import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.internal.http.HTTP_NOT_MODIFIED
+import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import okio.Source
 import tachiyomi.core.common.util.system.logcat
@@ -54,8 +53,12 @@ class PagePreviewFetcher(
     }
 
     private fun fileLoader(file: File): FetchResult {
-        return SourceResult(
-            source = ImageSource(file = file.toOkioPath(), diskCacheKey = diskCacheKey),
+        return SourceFetchResult(
+            source = ImageSource(
+                file = file.toOkioPath(),
+                fileSystem = FileSystem.SYSTEM,
+                diskCacheKey = diskCacheKey
+            ),
             mimeType = "image/*",
             dataSource = DataSource.DISK,
         )
@@ -76,7 +79,7 @@ class PagePreviewFetcher(
                 }
 
                 // Read from snapshot
-                return SourceResult(
+                return SourceFetchResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
                     dataSource = DataSource.DISK,
@@ -96,7 +99,7 @@ class PagePreviewFetcher(
                 // Read from disk cache
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
-                    return SourceResult(
+                    return SourceFetchResult(
                         source = snapshot.toImageSource(),
                         mimeType = "image/*",
                         dataSource = DataSource.NETWORK,
@@ -104,8 +107,8 @@ class PagePreviewFetcher(
                 }
 
                 // Read from response if cache is unused or unusable
-                return SourceResult(
-                    source = ImageSource(source = responseBody.source(), context = options.context),
+                return SourceFetchResult(
+                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
@@ -125,7 +128,7 @@ class PagePreviewFetcher(
         ) ?: callFactoryLazy.value.newCall(newRequest()).await()
         if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
             response.close()
-            throw HttpException(response)
+            throw Exception(response.message)
         }
         return response
     }
@@ -144,11 +147,14 @@ class PagePreviewFetcher(
     }
 
     private fun newRequest(): Request {
-        val request = Request.Builder()
-            .url(page.imageUrl)
-            .headers((sourceLazy.value as? HttpSource)?.headers ?: options.headers)
-            // Support attaching custom data to the network request.
-            .tag(Parameters::class.java, options.parameters)
+        val request = Request.Builder().apply {
+            url(page.imageUrl)
+
+            val sourceHeaders = (sourceLazy.value as? HttpSource)?.headers
+            if (sourceHeaders != null) {
+                headers(sourceHeaders)
+            }
+        }
 
         request.cacheControl(getCacheControl())
 
@@ -218,7 +224,12 @@ class PagePreviewFetcher(
     }
 
     private fun DiskCache.Snapshot.toImageSource(): ImageSource {
-        return ImageSource(file = data, diskCacheKey = diskCacheKey, closeable = this)
+        return ImageSource(
+            file = data,
+            fileSystem = FileSystem.SYSTEM,
+            diskCacheKey = diskCacheKey,
+            closeable = this
+        )
     }
 
     class Factory(
