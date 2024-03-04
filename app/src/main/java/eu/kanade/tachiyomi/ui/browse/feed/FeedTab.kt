@@ -20,9 +20,11 @@ import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
 import eu.kanade.presentation.browse.FeedScreen
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
@@ -62,9 +64,9 @@ fun Screen.feedTab(
     }
 
     // KMK -->
-    BackHandler(enabled = state.selection.isNotEmpty()) {
+    BackHandler(enabled = state.selectionMode) {
         when {
-            state.selection.isNotEmpty() -> screenModel.clearSelection()
+            state.selectionMode -> screenModel.clearSelection()
         }
     }
     // KMK <--
@@ -73,7 +75,7 @@ fun Screen.feedTab(
         titleRes = SYMR.strings.feed,
         actions =
         // KMK -->
-        if (state.selection.isNotEmpty())
+        if (state.selectionMode)
             persistentListOf(
                 AppBar.Action(
                     title = stringResource(MR.strings.action_select_all),
@@ -128,7 +130,7 @@ fun Screen.feedTab(
                 onClickDelete = screenModel::openDeleteDialog,
                 onClickManga = { manga ->
                     // KMK -->
-                    if (state.selection.isNotEmpty())
+                    if (state.selectionMode)
                         screenModel.toggleSelection(manga)
                     else
                         // KMK <--
@@ -136,7 +138,7 @@ fun Screen.feedTab(
                 },
                 // KMK -->
                 onLongClickManga = { manga ->
-                    if (state.selection.isNotEmpty()) {
+                    if (state.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
                         screenModel.toggleSelection(manga)
@@ -148,6 +150,9 @@ fun Screen.feedTab(
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )
 
+            // KMK -->
+            val onDismissRequest = screenModel::closeDialog
+            // KMK <--
             state.dialog?.let { dialog ->
                 when (dialog) {
                     is FeedScreenModel.Dialog.AddFeed -> {
@@ -183,6 +188,23 @@ fun Screen.feedTab(
                             },
                         )
                     }
+                    // KMK -->
+                    is FeedScreenModel.Dialog.ChangeCategory -> {
+                        ChangeCategoryDialog(
+                            initialSelection = dialog.initialSelection,
+                            onDismissRequest = onDismissRequest,
+                            onEditCategories = {
+                                screenModel.clearSelection()
+                                navigator.push(CategoryScreen())
+                            },
+                            onConfirm = { include, exclude ->
+                                screenModel.clearSelection()
+                                screenModel.setMangaFavoriteCategories(dialog.manga, include, exclude)
+                            },
+                            setFavorite = true
+                        )
+                    }
+                    // KMK <--
                 }
             }
 

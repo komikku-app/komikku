@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.ui.browse.feed.feedTab
 import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.sourcesTab
+import eu.kanade.tachiyomi.ui.library.LibraryScreenModel
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
@@ -68,6 +69,7 @@ data class BrowseTab(
 
         // KMK -->
         val feedScreenModel = rememberScreenModel { FeedScreenModel() }
+        val libraryScreenModel = rememberScreenModel { LibraryScreenModel() }
         // KMK <--
 
         TabbedScreen(
@@ -99,7 +101,8 @@ data class BrowseTab(
             searchQuery = extensionsState.searchQuery,
             onChangeSearchQuery = extensionsScreenModel::search,
             // KMK -->
-            feedScreenModel = feedScreenModel
+            feedScreenModel = feedScreenModel,
+            libraryScreenModel = libraryScreenModel,
             // KMK <--
         )
 
