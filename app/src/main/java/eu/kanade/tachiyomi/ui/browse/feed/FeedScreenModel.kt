@@ -384,6 +384,7 @@ open class FeedScreenModel(
                 moveMangaToCategoriesAndAddToLibrary(manga, categoryIds)
             }
         }
+        clearSelection()
     }
 
     private fun moveMangaToCategoriesAndAddToLibrary(manga: DomainManga, categories: List<Long>) {

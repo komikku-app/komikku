@@ -281,7 +281,6 @@ object LibraryTab : Tab {
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = {
-                        screenModel.clearSelection()
                         navigator.push(CategoryScreen())
                     },
                     onConfirm = { include, exclude ->

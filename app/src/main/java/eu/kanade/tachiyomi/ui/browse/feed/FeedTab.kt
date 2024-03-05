@@ -193,12 +193,8 @@ fun Screen.feedTab(
                         ChangeCategoryDialog(
                             initialSelection = dialog.initialSelection,
                             onDismissRequest = onDismissRequest,
-                            onEditCategories = {
-                                screenModel.clearSelection()
-                                navigator.push(CategoryScreen())
-                            },
+                            onEditCategories = { navigator.push(CategoryScreen()) },
                             onConfirm = { include, exclude ->
-                                screenModel.clearSelection()
                                 screenModel.setMangaCategories(dialog.mangas, include, exclude)
                             },
                         )
