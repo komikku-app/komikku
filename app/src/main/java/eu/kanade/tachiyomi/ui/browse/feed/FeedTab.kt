@@ -25,6 +25,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
@@ -68,6 +69,10 @@ fun Screen.feedTab(
         when {
             state.selectionMode -> screenModel.clearSelection()
         }
+    }
+
+    LaunchedEffect(state.selectionMode, state.dialog) {
+        HomeScreen.showBottomNav(!state.selectionMode)
     }
     // KMK <--
 
