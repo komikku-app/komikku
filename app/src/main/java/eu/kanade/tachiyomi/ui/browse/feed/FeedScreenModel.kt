@@ -41,6 +41,7 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchGlobal
@@ -76,6 +77,7 @@ open class FeedScreenModel(
     // KMK -->
     private val getCategories: GetCategories = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
 
@@ -339,12 +341,21 @@ open class FeedScreenModel(
         screenModelScope.launchIO {
             val mangaList = state.value.selection
             val categories = getCategories()
+            val defaultCategoryId = libraryPreferences.defaultCategory().get()
+            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
 
             when {
-                categories.isEmpty() -> {
+                // Default category set
+                defaultCategory != null -> {
+                    setMangaCategories(mangaList, listOf(defaultCategory.id), emptyList())
+                }
+
+                // Automatic 'Default' or no categories
+                defaultCategoryId == 0 || categories.isEmpty() -> {
                     // Automatic 'Default' or no categories
                     setMangaCategories(mangaList, emptyList(), emptyList())
                 }
+
                 else -> {
                     // Get indexes of the common categories to preselect.
                     val common = getCommonCategories(mangaList)
@@ -359,7 +370,7 @@ open class FeedScreenModel(
                             }
                         }
                         .toImmutableList()
-                    mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
+                    setDialog(Dialog.ChangeCategory(mangaList, preselected))
                 }
             }
         }
@@ -438,8 +449,8 @@ open class FeedScreenModel(
         return mangaCategories.flatten().distinct().subtract(common)
     }
 
-    fun closeDialog() {
-        mutableState.update { it.copy(dialog = null) }
+    fun setDialog(dialog: Dialog?) {
+        mutableState.update { it.copy(dialog = dialog) }
     }
     // KMK <--
 

@@ -156,7 +156,7 @@ fun Screen.feedTab(
             )
 
             // KMK -->
-            val onDismissRequest = screenModel::closeDialog
+            val onDismissRequest = screenModel::dismissDialog
             // KMK <--
             state.dialog?.let { dialog ->
                 when (dialog) {
