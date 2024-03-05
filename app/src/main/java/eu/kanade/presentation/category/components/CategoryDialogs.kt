@@ -254,11 +254,8 @@ fun ChangeCategoryDialog(
     onDismissRequest: () -> Unit,
     onEditCategories: () -> Unit,
     onConfirm: (List<Long>, List<Long>) -> Unit,
-    // KMK -->
-    setFavorite: Boolean = false,
-    // KMK <--
 ) {
-    if (initialSelection.isEmpty()/* KMK --> */ && !setFavorite/* KMK <-- */) {
+    if (initialSelection.isEmpty()) {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = {

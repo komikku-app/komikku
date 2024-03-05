@@ -199,9 +199,8 @@ fun Screen.feedTab(
                             },
                             onConfirm = { include, exclude ->
                                 screenModel.clearSelection()
-                                screenModel.setMangaFavoriteCategories(dialog.manga, include, exclude)
+                                screenModel.setMangaCategories(dialog.mangas, include, exclude)
                             },
-                            setFavorite = true
                         )
                     }
                     // KMK <--

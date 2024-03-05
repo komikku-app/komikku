@@ -59,7 +59,6 @@ fun TabbedScreen(
 
     // KMK -->
     val feedScreenState by feedScreenModel.state.collectAsState()
-    val libraryScreenState by libraryScreenModel.state.collectAsState()
     // KMK <--
 
     LaunchedEffect(startIndex) {
@@ -93,7 +92,7 @@ fun TabbedScreen(
         bottomBar = {
             LibraryBottomActionMenu(
                 visible = feedScreenState.selectionMode,
-                onChangeCategoryClicked = { feedScreenModel.openChangeCategoryDialog(libraryScreenModel) },
+                onChangeCategoryClicked = { feedScreenModel.addFavorite() },
                 onMarkAsReadClicked = { libraryScreenModel.markReadSelection(true) },
                 onMarkAsUnreadClicked = { libraryScreenModel.markReadSelection(false) },
                 onDownloadClicked = libraryScreenModel::runDownloadActionSelection,

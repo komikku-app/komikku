@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastForEach
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -12,7 +13,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.ui.library.LibraryScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -26,6 +26,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -42,7 +43,6 @@ import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
-import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchGlobal
 import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
@@ -335,31 +335,82 @@ open class FeedScreenModel(
         }
     }
 
-    fun openChangeCategoryDialog(libraryScreenModel: LibraryScreenModel) {
+    fun addFavorite() {
         screenModelScope.launchIO {
-            // Create a copy of selected manga
             val mangaList = state.value.selection
+            val categories = getCategories()
 
-            // Hide the default category because it has a different behavior than the ones from db.
-            // SY -->
-            val categories = libraryScreenModel.state.value.categories.filter { it.id != 0L }
-            // SY <--
-
-            // Get indexes of the common categories to preselect.
-            val common = getCommonCategories(mangaList)
-            // Get indexes of the mix categories to preselect.
-            val mix = getMixCategories(mangaList)
-            val preselected = categories
-                .map {
-                    when (it) {
-                        in common -> CheckboxState.State.Checked(it)
-                        in mix -> CheckboxState.TriState.Exclude(it)
-                        else -> CheckboxState.State.None(it)
-                    }
+            when {
+                categories.isEmpty() -> {
+                    // Automatic 'Default' or no categories
+                    setMangaCategories(mangaList, emptyList(), emptyList())
                 }
-                .toImmutableList()
-            mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
+                else -> {
+                    // Get indexes of the common categories to preselect.
+                    val common = getCommonCategories(mangaList)
+                    // Get indexes of the mix categories to preselect.
+                    val mix = getMixCategories(mangaList)
+                    val preselected = categories
+                        .map {
+                            when (it) {
+                                in common -> CheckboxState.State.Checked(it)
+                                in mix -> CheckboxState.TriState.Exclude(it)
+                                else -> CheckboxState.State.None(it)
+                            }
+                        }
+                        .toImmutableList()
+                    mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
+                }
+            }
         }
+    }
+
+    /**
+     * Bulk update categories of manga using old and new common categories.
+     *
+     * @param mangaList the list of manga to move.
+     * @param addCategories the categories to add for all mangas.
+     * @param removeCategories the categories to remove in all mangas.
+     */
+    fun setMangaCategories(mangaList: List<DomainManga>, addCategories: List<Long>, removeCategories: List<Long>) {
+        screenModelScope.launchNonCancellable {
+            mangaList.fastForEach { manga ->
+                val categoryIds = getCategories.await(manga.id)
+                    .map { it.id }
+                    .subtract(removeCategories.toSet())
+                    .plus(addCategories)
+                    .toList()
+
+                moveMangaToCategoriesAndAddToLibrary(manga, categoryIds)
+            }
+        }
+    }
+
+    private fun moveMangaToCategoriesAndAddToLibrary(manga: DomainManga, categories: List<Long>) {
+        moveMangaToCategory(manga.id, categories)
+        if (manga.favorite) return
+
+        screenModelScope.launchIO {
+            updateManga.awaitUpdateFavorite(manga.id, true)
+        }
+    }
+
+    private fun moveMangaToCategory(mangaId: Long, categoryIds: List<Long>) {
+        screenModelScope.launchIO {
+            setMangaCategories.await(mangaId, categoryIds)
+        }
+    }
+
+    /**
+     * Get user categories.
+     *
+     * @return List of categories, not including the default category
+     */
+    suspend fun getCategories(): List<Category> {
+        return getCategories.subscribe()
+            .firstOrNull()
+            ?.filterNot { it.isSystemCategory }
+            .orEmpty()
     }
 
     /**
@@ -367,7 +418,7 @@ open class FeedScreenModel(
      *
      * @param mangas the list of manga.
      */
-    private suspend fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
+    private suspend fun getCommonCategories(mangas: List<DomainManga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
         return mangas
             .map { getCategories.await(it.id).toSet() }
@@ -379,7 +430,7 @@ open class FeedScreenModel(
      *
      * @param mangas the list of manga.
      */
-    private suspend fun getMixCategories(mangas: List<Manga>): Collection<Category> {
+    private suspend fun getMixCategories(mangas: List<DomainManga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
         val mangaCategories = mangas.map { getCategories.await(it.id).toSet() }
         val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
@@ -389,29 +440,6 @@ open class FeedScreenModel(
     fun closeDialog() {
         mutableState.update { it.copy(dialog = null) }
     }
-
-    /**
-     * Bulk update categories of manga using old and new common categories.
-     *
-     * @param mangaList the list of manga to move.
-     * @param addCategories the categories to add for all mangas.
-     * @param removeCategories the categories to remove in all mangas.
-     */
-    fun setMangaFavoriteCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
-        screenModelScope.launchNonCancellable {
-            mangaList.forEach { manga ->
-                val categoryIds = getCategories.await(manga.id)
-                    .map { it.id }
-                    .subtract(removeCategories.toSet())
-                    .plus(addCategories)
-                    .toList()
-
-                setMangaCategories.await(manga.id, categoryIds)
-                if (!manga.favorite)
-                    updateManga.awaitUpdateFavorite(manga.id, true)
-            }
-        }
-    }
     // KMK <--
 
     sealed class Dialog {
@@ -420,7 +448,7 @@ open class FeedScreenModel(
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
         // KMK -->
         data class ChangeCategory(
-            val manga: List<Manga>,
+            val mangas: List<DomainManga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog()
         // KMK <--
