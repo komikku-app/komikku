@@ -45,6 +45,7 @@ import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.browse.components.SelectionToolbar
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.manga.AllowDuplicateDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
@@ -392,6 +393,17 @@ data class BrowseSourceScreen(
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, exclude ->
                         screenModel.setMangaCategories(dialog.mangas, include, exclude)
+                    },
+                )
+            }
+            is BrowseSourceScreenModel.Dialog.AllowDuplicate -> {
+                AllowDuplicateDialog(
+                    onDismissRequest = onDismissRequest,
+                    onAllowDuplicate = {
+                        screenModel.addFavoriteDuplicate()
+                    },
+                    onSkipDuplicate = {
+                        screenModel.addFavoriteDuplicate(skipDuplicate = true)
                     },
                 )
             }

@@ -689,6 +689,8 @@
     <string name="source_not_installed">Source not installed: %1$s</string>
     <string name="snack_add_to_library">Add to library?</string>
     <string name="description_placeholder">No description</string>
+    <string name="action_allow_duplicate_manga">Allow duplicate</string>
+    <string name="action_skip_duplicate_manga">Skip duplicate</string>
 
     <!-- Manga chapters -->
     <string name="display_mode_chapter">Chapter %1$s</string>

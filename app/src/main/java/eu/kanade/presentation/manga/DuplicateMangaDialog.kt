@@ -57,3 +57,60 @@ fun DuplicateMangaDialog(
         },
     )
 }
+
+// KMK -->
+@Composable
+fun AllowDuplicateDialog(
+    onDismissRequest: () -> Unit,
+    onAllowDuplicate: () -> Unit,
+    onSkipDuplicate: () -> Unit,
+    onOpenManga: () -> Unit = { },
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+        title = {
+            Text(text = stringResource(MR.strings.are_you_sure))
+        },
+        text = {
+            Text(text = stringResource(MR.strings.confirm_add_duplicate_manga))
+        },
+        confirmButton = {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+            ) {
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        onOpenManga()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_show_manga))
+                }
+
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        onSkipDuplicate()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_skip_duplicate_manga))
+                }
+
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        onAllowDuplicate()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_allow_duplicate_manga))
+                }
+            }
+        },
+    )
+}
+// KMK <--

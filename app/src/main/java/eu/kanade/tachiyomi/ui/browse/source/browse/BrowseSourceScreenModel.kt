@@ -477,7 +477,16 @@ open class BrowseSourceScreenModel(
 
     fun addFavorite() {
         screenModelScope.launch {
-            val mangaList = state.value.selection
+            if (hasDuplicateLibraryMangas(state.value.selection))
+                setDialog(Dialog.AllowDuplicate)
+            else
+                addFavoriteDuplicate()
+        }
+    }
+
+    fun addFavoriteDuplicate(skipDuplicate: Boolean = false) {
+        screenModelScope.launch {
+            val mangaList = if (skipDuplicate) getNotDuplicateLibraryMangas() else state.value.selection
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
@@ -574,6 +583,18 @@ open class BrowseSourceScreenModel(
         val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
         return mangaCategories.flatten().distinct().subtract(common)
     }
+
+    private suspend fun getNotDuplicateLibraryMangas(): List<Manga> {
+        return state.value.selection.filterNot { manga ->
+            getDuplicateLibraryManga.await(manga).isNotEmpty()
+        }
+    }
+
+    private suspend fun hasDuplicateLibraryMangas(mangas: List<Manga>): Boolean {
+        return mangas.fastAny { manga ->
+            getDuplicateLibraryManga.await(manga).isNotEmpty()
+        }
+    }
     // KMK <--
 
     sealed interface Dialog {
@@ -595,6 +616,7 @@ open class BrowseSourceScreenModel(
             val mangas: List<Manga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
+        data object AllowDuplicate : Dialog
         // KMK <--
     }
 
