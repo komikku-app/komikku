@@ -99,7 +99,7 @@ fun SourceFeedScreen(
     onSearchQueryChange: (String?) -> Unit,
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
-    id: Long,
+    sourceId: Long,
     // KMK <--
 ) {
     Scaffold(
@@ -111,7 +111,7 @@ fun SourceFeedScreen(
                 scrollBehavior = scrollBehavior,
                 onClickSearch = onClickSearch,
                 // KMK -->
-                id = id,
+                sourceId = sourceId,
                 // KMK <--
             )
         },
@@ -222,7 +222,7 @@ fun SourceFeedToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     onClickSearch: (String) -> Unit,
     // KMK -->
-    id: Long
+    sourceId: Long,
     // KMK <--
 ) {
     SearchToolbar(
@@ -236,9 +236,9 @@ fun SourceFeedToolbar(
         // KMK -->
         actions = {
             persistentListOf(
-                SourceSettingsButton(id)
+                SourceSettingsButton(sourceId),
             )
-        }
+        },
         // KMK <--
     )
 }

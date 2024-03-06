@@ -49,7 +49,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
-            id = screenModel.source.id,
+            sourceId = screenModel.source.id,
             // KMK <--
         )
 

@@ -449,7 +449,7 @@ open class FeedScreenModel(
         return mangaCategories.flatten().distinct().subtract(common)
     }
 
-    fun setDialog(dialog: Dialog?) {
+    private fun setDialog(dialog: Dialog?) {
         mutableState.update { it.copy(dialog = dialog) }
     }
     // KMK <--

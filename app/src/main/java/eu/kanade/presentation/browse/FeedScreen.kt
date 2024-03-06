@@ -159,9 +159,7 @@ fun FeedItem(
                 titles = item.results,
                 getManga = getMangaState,
                 onClick = onClickManga,
-                /* KMK -->
-                onLongClick = onClickManga,
-                 */
+                // KMK -->
                 onLongClick = onLongClickManga,
                 selection = selection,
                 // KMK <--

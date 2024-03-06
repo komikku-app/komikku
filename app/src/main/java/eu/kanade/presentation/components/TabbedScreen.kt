@@ -2,7 +2,6 @@ package eu.kanade.presentation.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,13 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
-import eu.kanade.tachiyomi.ui.library.LibraryScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -48,17 +44,15 @@ fun TabbedScreen(
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
     // KMK -->
-    feedScreenModel: FeedScreenModel,
-    libraryScreenModel: LibraryScreenModel,
+    screenModel: FeedScreenModel,
     // KMK <--
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val state = rememberPagerState { tabs.size }
     val snackbarHostState = remember { SnackbarHostState() }
 
     // KMK -->
-    val feedScreenState by feedScreenModel.state.collectAsState()
+    val screenState by screenModel.state.collectAsState()
     // KMK <--
 
     LaunchedEffect(startIndex) {
@@ -72,11 +66,11 @@ fun TabbedScreen(
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
             // KMK -->
-            if (feedScreenState.selection.isNotEmpty())
-                FeedSelectionToolbar(
-                    selectedCount = feedScreenState.selection.size,
-                    onClickClearSelection = feedScreenModel::clearSelection,
-                    actions = { AppBarActions(tab.actions) },
+            if (screenState.selectionMode)
+                SelectionToolbar(
+                    selectedCount = screenState.selection.size,
+                    onClickClearSelection = screenModel::clearSelection,
+                    onChangeCategoryClicked = screenModel::addFavorite,
                 )
             else
                 // KMK <--
@@ -88,21 +82,6 @@ fun TabbedScreen(
                     actions = { AppBarActions(tab.actions) },
                 )
         },
-        // KMK -->
-        bottomBar = {
-            LibraryBottomActionMenu(
-                visible = feedScreenState.selectionMode,
-                onChangeCategoryClicked = { feedScreenModel.addFavorite() },
-                onMarkAsReadClicked = { libraryScreenModel.markReadSelection(true) },
-                onMarkAsUnreadClicked = { libraryScreenModel.markReadSelection(false) },
-                onDownloadClicked = libraryScreenModel::runDownloadActionSelection,
-                onDeleteClicked = libraryScreenModel::openDeleteMangaDialog,
-                onClickCleanTitles = null,
-                onClickMigrate = null,
-                onClickAddToMangaDex = null,
-            )
-        },
-        // KMK <--
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->
         Column(
@@ -150,10 +129,10 @@ data class TabContent(
 
 // KMK -->
 @Composable
-private fun FeedSelectionToolbar(
+private fun SelectionToolbar(
     selectedCount: Int,
     onClickClearSelection: () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {},
+    onChangeCategoryClicked: () -> Unit = {},
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
@@ -163,8 +142,7 @@ private fun FeedSelectionToolbar(
                     AppBar.Action(
                         title = stringResource(MR.strings.action_bookmark),
                         icon = Icons.Outlined.BookmarkAdd,
-                        // TODO: method to add bookmark goes here
-                        onClick = { },
+                        onClick = onChangeCategoryClicked,
                     ),
                 ),
             )
