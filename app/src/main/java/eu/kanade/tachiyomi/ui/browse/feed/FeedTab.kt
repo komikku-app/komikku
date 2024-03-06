@@ -194,7 +194,7 @@ fun Screen.feedTab(
                         )
                     }
                     // KMK -->
-                    is FeedScreenModel.Dialog.ChangeCategory -> {
+                    is FeedScreenModel.Dialog.ChangeMangasCategory -> {
                         ChangeCategoryDialog(
                             initialSelection = dialog.initialSelection,
                             onDismissRequest = onDismissRequest,

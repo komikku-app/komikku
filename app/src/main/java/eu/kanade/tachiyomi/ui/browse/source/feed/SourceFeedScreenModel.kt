@@ -342,7 +342,7 @@ open class SourceFeedScreenModel(
     }
 
     fun addFavorite() {
-        screenModelScope.launchIO {
+        screenModelScope.launch {
             val mangaList = state.value.selection
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
@@ -374,7 +374,7 @@ open class SourceFeedScreenModel(
                             }
                         }
                         .toImmutableList()
-                    setDialog(Dialog.ChangeCategory(mangaList, preselected))
+                    setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
                 }
             }
         }
@@ -463,7 +463,7 @@ open class SourceFeedScreenModel(
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
         data class AddFeed(val feedId: Long, val name: String) : Dialog()
         // KMK -->
-        data class ChangeCategory(
+        data class ChangeMangasCategory(
             val mangas: List<DomainManga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog()

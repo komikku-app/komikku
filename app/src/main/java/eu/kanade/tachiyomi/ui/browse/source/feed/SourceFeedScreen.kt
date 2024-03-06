@@ -99,7 +99,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 )
             }
             // KMK -->
-            is SourceFeedScreenModel.Dialog.ChangeCategory -> {
+            is SourceFeedScreenModel.Dialog.ChangeMangasCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
