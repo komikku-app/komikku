@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,7 @@ import eu.kanade.presentation.browse.components.BrowseSourceToolbar
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
+import eu.kanade.presentation.browse.components.SelectionToolbar
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
@@ -133,6 +135,14 @@ data class BrowseSourceScreen(
             )
         }
 
+        // KMK -->
+        BackHandler(enabled = state.selectionMode) {
+            when {
+                state.selectionMode -> screenModel.toggleSelectionMode()
+            }
+        }
+        // KMK <--
+
         LaunchedEffect(screenModel.source) {
             assistUrl = (screenModel.source as? HttpSource)?.baseUrl
         }
@@ -140,18 +150,30 @@ data class BrowseSourceScreen(
         Scaffold(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
-                    BrowseSourceToolbar(
-                        searchQuery = state.toolbarQuery,
-                        onSearchQueryChange = screenModel::setToolbarQuery,
-                        source = screenModel.source,
-                        displayMode = screenModel.displayMode,
-                        onDisplayModeChange = { screenModel.displayMode = it },
-                        navigateUp = navigateUp,
-                        onWebViewClick = onWebViewClick,
-                        onHelpClick = onHelpClick,
-                        onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
-                        onSearch = screenModel::search,
-                    )
+                    // KMK -->
+                    if (state.selectionMode)
+                        SelectionToolbar(
+                            selectedCount = state.selection.size,
+                            onClickClearSelection = screenModel::toggleSelectionMode,
+                            onChangeCategoryClicked = screenModel::addFavorite,
+                        )
+                    else
+                    // KMK <--
+                        BrowseSourceToolbar(
+                            searchQuery = state.toolbarQuery,
+                            onSearchQueryChange = screenModel::setToolbarQuery,
+                            source = screenModel.source,
+                            displayMode = screenModel.displayMode,
+                            onDisplayModeChange = { screenModel.displayMode = it },
+                            navigateUp = navigateUp,
+                            onWebViewClick = onWebViewClick,
+                            onHelpClick = onHelpClick,
+                            onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
+                            onSearch = screenModel::search,
+                            // KMK -->
+                            toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                            // KMK <--
+                        )
 
                     Row(
                         modifier = Modifier
@@ -244,23 +266,39 @@ data class BrowseSourceScreen(
                 onWebViewClick = onWebViewClick,
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = onHelpClick,
-                onMangaClick = { navigator.push(MangaScreen(it.id, true, smartSearchConfig)) },
+                onMangaClick = {
+                    // KMK -->
+                    if (state.selectionMode)
+                        screenModel.toggleSelection(it)
+                    else
+                    // KMK <--
+                        navigator.push(MangaScreen(it.id, true, smartSearchConfig))
+                },
                 onMangaLongClick = { manga ->
-                    scope.launchIO {
-                        val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
-                        when {
-                            manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
-                            duplicateManga != null -> screenModel.setDialog(
-                                BrowseSourceScreenModel.Dialog.AddDuplicateManga(
-                                    manga,
-                                    duplicateManga,
-                                ),
-                            )
-                            else -> screenModel.addFavorite(manga)
+                    // KMK -->
+                    if (state.selectionMode) {
+                        navigator.push(MangaScreen(manga.id, true))
+                    } else {
+                        // KMK <--
+                        scope.launchIO {
+                            val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
+                            when {
+                                manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                                duplicateManga != null -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(
+                                        manga,
+                                        duplicateManga,
+                                    ),
+                                )
+                                else -> screenModel.addFavorite(manga)
+                            }
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 },
+                // KMK -->
+                selection = state.selection,
+                // KMK <--
             )
         }
 
@@ -346,6 +384,18 @@ data class BrowseSourceScreen(
                     screenModel.deleteSearch(dialog.idToDelete)
                 },
             )
+            // KMK -->
+            is BrowseSourceScreenModel.Dialog.ChangeMangasCategory -> {
+                ChangeCategoryDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onDismissRequest,
+                    onEditCategories = { navigator.push(CategoryScreen()) },
+                    onConfirm = { include, exclude ->
+                        screenModel.setMangaCategories(dialog.mangas, include, exclude)
+                    },
+                )
+            }
+            // KMK <--
             else -> {}
         }
 

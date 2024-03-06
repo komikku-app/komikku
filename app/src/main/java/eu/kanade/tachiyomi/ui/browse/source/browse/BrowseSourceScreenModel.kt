@@ -6,6 +6,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastForEach
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -33,6 +35,8 @@ import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
@@ -447,6 +451,131 @@ open class BrowseSourceScreenModel(
         }
     }
 
+    // KMK -->
+    fun toggleSelectionMode() {
+        if (state.value.selectionMode)
+            clearSelection()
+        mutableState.update { it.copy(selectionMode = !it.selectionMode) }
+    }
+
+    private fun clearSelection() {
+        mutableState.update { it.copy(selection = persistentListOf()) }
+    }
+
+    fun toggleSelection(manga: Manga) {
+        mutableState.update { state ->
+            val newSelection = state.selection.mutate { list ->
+                if (list.fastAny { it.id == manga.id }) {
+                    list.removeAll { it.id == manga.id }
+                } else {
+                    list.add(manga)
+                }
+            }
+            state.copy(selection = newSelection)
+        }
+    }
+
+    fun addFavorite() {
+        screenModelScope.launch {
+            val mangaList = state.value.selection
+            val categories = getCategories()
+            val defaultCategoryId = libraryPreferences.defaultCategory().get()
+            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
+
+            when {
+                // Default category set
+                defaultCategory != null -> {
+                    setMangaCategories(mangaList, listOf(defaultCategory.id), emptyList())
+                }
+
+                // Automatic 'Default' or no categories
+                defaultCategoryId == 0 || categories.isEmpty() -> {
+                    // Automatic 'Default' or no categories
+                    setMangaCategories(mangaList, emptyList(), emptyList())
+                }
+
+                else -> {
+                    // Get indexes of the common categories to preselect.
+                    val common = getCommonCategories(mangaList)
+                    // Get indexes of the mix categories to preselect.
+                    val mix = getMixCategories(mangaList)
+                    val preselected = categories
+                        .map {
+                            when (it) {
+                                in common -> CheckboxState.State.Checked(it)
+                                in mix -> CheckboxState.TriState.Exclude(it)
+                                else -> CheckboxState.State.None(it)
+                            }
+                        }
+                        .toImmutableList()
+                    setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
+                }
+            }
+        }
+    }
+
+    /**
+     * Bulk update categories of manga using old and new common categories.
+     *
+     * @param mangaList the list of manga to move.
+     * @param addCategories the categories to add for all mangas.
+     * @param removeCategories the categories to remove in all mangas.
+     */
+    fun setMangaCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
+        screenModelScope.launchNonCancellable {
+            mangaList.fastForEach { manga ->
+                val categoryIds = getCategories.await(manga.id)
+                    .map { it.id }
+                    .subtract(removeCategories.toSet())
+                    .plus(addCategories)
+                    .toList()
+
+                moveMangaToCategoriesAndAddToLibrary(manga, categoryIds)
+            }
+        }
+        toggleSelectionMode()
+    }
+
+    private fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
+        moveMangaToCategory(manga.id, categories)
+        if (manga.favorite) return
+
+        screenModelScope.launchIO {
+            updateManga.awaitUpdateFavorite(manga.id, true)
+        }
+    }
+
+    private fun moveMangaToCategory(mangaId: Long, categoryIds: List<Long>) {
+        screenModelScope.launchIO {
+            setMangaCategories.await(mangaId, categoryIds)
+        }
+    }
+
+    /**
+     * Returns the common categories for the given list of manga.
+     *
+     * @param mangas the list of manga.
+     */
+    private suspend fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
+        if (mangas.isEmpty()) return emptyList()
+        return mangas
+            .map { getCategories.await(it.id).toSet() }
+            .reduce { set1, set2 -> set1.intersect(set2) }
+    }
+
+    /**
+     * Returns the mix (non-common) categories for the given list of manga.
+     *
+     * @param mangas the list of manga.
+     */
+    private suspend fun getMixCategories(mangas: List<Manga>): Collection<Category> {
+        if (mangas.isEmpty()) return emptyList()
+        val mangaCategories = mangas.map { getCategories.await(it.id).toSet() }
+        val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
+        return mangaCategories.flatten().distinct().subtract(common)
+    }
+    // KMK <--
+
     sealed interface Dialog {
         data object Filter : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
@@ -461,6 +590,12 @@ open class BrowseSourceScreenModel(
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog
         data class CreateSavedSearch(val currentSavedSearches: ImmutableList<String>) : Dialog
         // SY <--
+        // KMK -->
+        data class ChangeMangasCategory(
+            val mangas: List<Manga>,
+            val initialSelection: ImmutableList<CheckboxState<Category>>,
+        ) : Dialog
+        // KMK <--
     }
 
     @Immutable
@@ -473,6 +608,10 @@ open class BrowseSourceScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
+        // KMK -->
+        val selection: PersistentList<Manga> = persistentListOf(),
+        val selectionMode: Boolean = false,
+        // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }

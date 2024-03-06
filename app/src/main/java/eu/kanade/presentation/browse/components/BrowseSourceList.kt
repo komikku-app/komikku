@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
@@ -29,6 +30,9 @@ fun BrowseSourceList(
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    // KMK -->
+    selection: List<Manga>? = null,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
@@ -53,6 +57,9 @@ fun BrowseSourceList(
                 // SY <--
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
+                // KMK -->
+                isSelected = selection?.fastAny { selected -> selected.id == manga.id } ?: false,
+                // KMK <--
             )
         }
 
@@ -72,6 +79,9 @@ private fun BrowseSourceListItem(
     // SY <--
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
+    // KMK -->
+    isSelected: Boolean = false,
+    // KMK <--
 ) {
     MangaListItem(
         title = manga.title,
@@ -82,7 +92,13 @@ private fun BrowseSourceListItem(
             ogUrl = manga.thumbnailUrl,
             lastModified = manga.coverLastModified,
         ),
-        coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+        coverAlpha = when {
+            // KMK -->
+            isSelected -> CommonMangaItemDefaults.BrowseSelectedCoverAlpha
+            // KMK <--
+            manga.favorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
+            else -> 1f
+        },
         badge = {
             InLibraryBadge(enabled = manga.favorite)
             // SY -->
