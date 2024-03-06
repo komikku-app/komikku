@@ -399,12 +399,23 @@ data class BrowseSourceScreen(
             is BrowseSourceScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onDismissRequest,
-                    onAllowDuplicate = {
+                    onAllowAllDuplicate = {
                         screenModel.addFavoriteDuplicate()
                     },
-                    onSkipDuplicate = {
-                        screenModel.addFavoriteDuplicate(skipDuplicate = true)
+                    onSkipAllDuplicate = {
+                        screenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },
+                    onOpenManga = {
+                        navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
+                    },
+                    onAllowDuplicate = {
+                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+                    },
+                    onSkipDuplicate = {
+                        screenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+                    },
+                    duplicatedName = dialog.duplicatedManga.second.title,
                 )
             }
             // KMK <--

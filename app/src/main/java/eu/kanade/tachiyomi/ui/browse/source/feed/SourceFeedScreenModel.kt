@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
@@ -49,6 +50,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchBySourceId
@@ -84,6 +86,7 @@ open class SourceFeedScreenModel(
     private val getCategories: GetCategories = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
@@ -341,9 +344,19 @@ open class SourceFeedScreenModel(
         }
     }
 
-    fun addFavorite() {
+    fun addFavorite(startIdx: Int = 0) {
         screenModelScope.launch {
-            val mangaList = state.value.selection
+            val mangaWithDup = getDuplicateLibraryManga(startIdx)
+            if (mangaWithDup != null)
+                setDialog(Dialog.AllowDuplicate(mangaWithDup))
+            else
+                addFavoriteDuplicate()
+        }
+    }
+
+    fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
+        screenModelScope.launch {
+            val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
@@ -377,6 +390,32 @@ open class SourceFeedScreenModel(
                     setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
                 }
             }
+        }
+    }
+
+    private suspend fun getNotDuplicateLibraryMangas(): List<DomainManga> {
+        return state.value.selection.filterNot { manga ->
+            getDuplicateLibraryManga.await(manga).isNotEmpty()
+        }
+    }
+
+    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Pair<Int, DomainManga>? {
+        val mangas = state.value.selection
+        mangas.fastForEachIndexed { index, manga ->
+            if (index < startIdx) return@fastForEachIndexed
+            val dup = getDuplicateLibraryManga.await(manga)
+            if (dup.isEmpty()) return@fastForEachIndexed
+            return Pair(index, dup.first())
+        }
+        return null
+    }
+
+    fun removeDuplicateSelectedManga(index: Int) {
+        mutableState.update { state ->
+            val newSelection = state.selection.mutate { list ->
+                list.removeAt(index)
+            }
+            state.copy(selection = newSelection)
         }
     }
 
@@ -467,6 +506,7 @@ open class SourceFeedScreenModel(
             val mangas: List<DomainManga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog()
+        data class AllowDuplicate(val duplicatedManga: Pair<Int, DomainManga>) : Dialog()
         // KMK <--
     }
 

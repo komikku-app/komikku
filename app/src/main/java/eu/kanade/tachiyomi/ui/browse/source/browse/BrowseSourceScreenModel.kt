@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -475,18 +476,19 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    fun addFavorite() {
+    fun addFavorite(startIdx: Int = 0) {
         screenModelScope.launch {
-            if (hasDuplicateLibraryMangas(state.value.selection))
-                setDialog(Dialog.AllowDuplicate)
+            val mangaWithDup = getDuplicateLibraryManga(startIdx)
+            if (mangaWithDup != null)
+                setDialog(Dialog.AllowDuplicate(mangaWithDup))
             else
                 addFavoriteDuplicate()
         }
     }
 
-    fun addFavoriteDuplicate(skipDuplicate: Boolean = false) {
+    fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
         screenModelScope.launch {
-            val mangaList = if (skipDuplicate) getNotDuplicateLibraryMangas() else state.value.selection
+            val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
@@ -520,6 +522,32 @@ open class BrowseSourceScreenModel(
                     setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
                 }
             }
+        }
+    }
+
+    private suspend fun getNotDuplicateLibraryMangas(): List<Manga> {
+        return state.value.selection.filterNot { manga ->
+            getDuplicateLibraryManga.await(manga).isNotEmpty()
+        }
+    }
+
+    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Pair<Int, Manga>? {
+        val mangas = state.value.selection
+        mangas.fastForEachIndexed { index, manga ->
+            if (index < startIdx) return@fastForEachIndexed
+            val dup = getDuplicateLibraryManga.await(manga)
+            if (dup.isEmpty()) return@fastForEachIndexed
+            return Pair(index, dup.first())
+        }
+        return null
+    }
+
+    fun removeDuplicateSelectedManga(index: Int) {
+        mutableState.update { state ->
+            val newSelection = state.selection.mutate { list ->
+                list.removeAt(index)
+            }
+            state.copy(selection = newSelection)
         }
     }
 
@@ -583,18 +611,6 @@ open class BrowseSourceScreenModel(
         val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
         return mangaCategories.flatten().distinct().subtract(common)
     }
-
-    private suspend fun getNotDuplicateLibraryMangas(): List<Manga> {
-        return state.value.selection.filterNot { manga ->
-            getDuplicateLibraryManga.await(manga).isNotEmpty()
-        }
-    }
-
-    private suspend fun hasDuplicateLibraryMangas(mangas: List<Manga>): Boolean {
-        return mangas.fastAny { manga ->
-            getDuplicateLibraryManga.await(manga).isNotEmpty()
-        }
-    }
     // KMK <--
 
     sealed interface Dialog {
@@ -616,7 +632,7 @@ open class BrowseSourceScreenModel(
             val mangas: List<Manga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
-        data object AllowDuplicate : Dialog
+        data class AllowDuplicate(val duplicatedManga: Pair<Int, Manga>) : Dialog
         // KMK <--
     }
 

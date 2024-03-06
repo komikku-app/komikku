@@ -15,6 +15,7 @@ import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.manga.AllowDuplicateDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -107,6 +108,28 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     onConfirm = { include, exclude ->
                         screenModel.setMangaCategories(dialog.mangas, include, exclude)
                     },
+                )
+            }
+            is SourceFeedScreenModel.Dialog.AllowDuplicate -> {
+                AllowDuplicateDialog(
+                    onDismissRequest = onDismissRequest,
+                    onAllowAllDuplicate = {
+                        screenModel.addFavoriteDuplicate()
+                    },
+                    onSkipAllDuplicate = {
+                        screenModel.addFavoriteDuplicate(skipAllDuplicates = true)
+                    },
+                    onOpenManga = {
+                        navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
+                    },
+                    onAllowDuplicate = {
+                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+                    },
+                    onSkipDuplicate = {
+                        screenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+                    },
+                    duplicatedName = dialog.duplicatedManga.second.title,
                 )
             }
             // KMK <--

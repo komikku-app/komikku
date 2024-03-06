@@ -23,6 +23,7 @@ import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
+import eu.kanade.presentation.manga.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -202,6 +203,28 @@ fun Screen.feedTab(
                             onConfirm = { include, exclude ->
                                 screenModel.setMangaCategories(dialog.mangas, include, exclude)
                             },
+                        )
+                    }
+                    is FeedScreenModel.Dialog.AllowDuplicate -> {
+                        AllowDuplicateDialog(
+                            onDismissRequest = onDismissRequest,
+                            onAllowAllDuplicate = {
+                                screenModel.addFavoriteDuplicate()
+                            },
+                            onSkipAllDuplicate = {
+                                screenModel.addFavoriteDuplicate(skipAllDuplicates = true)
+                            },
+                            onOpenManga = {
+                                navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
+                            },
+                            onAllowDuplicate = {
+                                screenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+                            },
+                            onSkipDuplicate = {
+                                screenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+                                screenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+                            },
+                            duplicatedName = dialog.duplicatedManga.second.title,
                         )
                     }
                     // KMK <--
