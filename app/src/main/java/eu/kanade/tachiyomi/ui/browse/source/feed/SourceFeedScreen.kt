@@ -4,7 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -12,10 +14,12 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
@@ -32,6 +36,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
+        // KMK -->
+        val haptic = LocalHapticFeedback.current
+        // KMK <--
 
         SourceFeedScreen(
             name = screenModel.source.name,
@@ -43,13 +50,30 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onClickLatest = { onLatestClick(navigator, screenModel.source) },
             onClickSavedSearch = { onSavedSearchClick(navigator, screenModel.source, it) },
             onClickDelete = screenModel::openDeleteFeed,
-            onClickManga = { onMangaClick(navigator, it) },
+            onClickManga = {
+                // KMK -->
+                if (state.selectionMode)
+                    screenModel.toggleSelection(it)
+                else
+                // KMK <--
+                    onMangaClick(navigator, it)
+            },
             onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
             searchQuery = state.searchQuery,
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
             sourceId = screenModel.source.id,
+            onLongClickManga = { manga ->
+                if (state.selectionMode) {
+                    navigator.push(MangaScreen(manga.id, true))
+                } else {
+                    screenModel.toggleSelection(manga)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+            },
+            screenModel = screenModel,
+            screenState = state,
             // KMK <--
         )
 
@@ -74,6 +98,18 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                 )
             }
+            // KMK -->
+            is SourceFeedScreenModel.Dialog.ChangeCategory -> {
+                ChangeCategoryDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onDismissRequest,
+                    onEditCategories = { navigator.push(CategoryScreen()) },
+                    onConfirm = { include, exclude ->
+                        screenModel.setMangaCategories(dialog.mangas, include, exclude)
+                    },
+                )
+            }
+            // KMK <--
             SourceFeedScreenModel.Dialog.Filter -> {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,

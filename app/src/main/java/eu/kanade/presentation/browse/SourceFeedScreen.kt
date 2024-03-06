@@ -3,6 +3,9 @@ package eu.kanade.presentation.browse
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -14,8 +17,12 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceSettingsButton
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.manga.model.Manga
@@ -100,20 +107,32 @@ fun SourceFeedScreen(
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
     sourceId: Long,
+    onLongClickManga: (Manga) -> Unit,
+    screenModel: SourceFeedScreenModel,
+    screenState: SourceFeedState,
     // KMK <--
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            SourceFeedToolbar(
-                title = name,
-                searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange,
-                scrollBehavior = scrollBehavior,
-                onClickSearch = onClickSearch,
-                // KMK -->
-                sourceId = sourceId,
-                // KMK <--
-            )
+            // KMK -->
+            if (screenState.selectionMode)
+                SelectionToolbar(
+                    selectedCount = screenState.selection.size,
+                    onClickClearSelection = screenModel::clearSelection,
+                    onChangeCategoryClicked = screenModel::addFavorite,
+                )
+            else
+            // KMK <--
+                SourceFeedToolbar(
+                    title = name,
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = onSearchQueryChange,
+                    scrollBehavior = scrollBehavior,
+                    onClickSearch = onClickSearch,
+                    // KMK -->
+                    sourceId = sourceId,
+                    // KMK <--
+                )
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(
@@ -135,6 +154,10 @@ fun SourceFeedScreen(
                         onClickSavedSearch = onClickSavedSearch,
                         onClickDelete = onClickDelete,
                         onClickManga = onClickManga,
+                        // KMK -->
+                        onLongClickManga = onLongClickManga,
+                        screenState = screenState,
+                        // KMK <--
                     )
                 }
             }
@@ -152,6 +175,10 @@ fun SourceFeedList(
     onClickSavedSearch: (SavedSearch) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    screenState: SourceFeedState,
+    // KMK <--
 ) {
     ScrollbarLazyColumn(
         contentPadding = paddingValues + topSmallPaddingValues,
@@ -183,6 +210,10 @@ fun SourceFeedList(
                     item = item,
                     getMangaState = { getMangaState(it) },
                     onClickManga = onClickManga,
+                    // KMK -->
+                    onLongClickManga = onLongClickManga,
+                    selection = screenState.selection,
+                    // KMK <--
                 )
             }
         }
@@ -194,6 +225,10 @@ fun SourceFeedItem(
     item: SourceFeedUI,
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    selection: List<Manga>,
+    // KMK <--
 ) {
     val results = item.results
     when {
@@ -208,7 +243,10 @@ fun SourceFeedItem(
                 titles = item.results.orEmpty(),
                 getManga = getMangaState,
                 onClick = onClickManga,
-                onLongClick = onClickManga,
+                // KMK -->
+                onLongClick = onLongClickManga,
+                selection = selection,
+                // KMK <--
             )
         }
     }
@@ -242,3 +280,29 @@ fun SourceFeedToolbar(
         // KMK <--
     )
 }
+
+// KMK -->
+@Composable
+private fun SelectionToolbar(
+    selectedCount: Int,
+    onClickClearSelection: () -> Unit = {},
+    onChangeCategoryClicked: () -> Unit = {},
+) {
+    AppBar(
+        titleContent = { Text(text = "$selectedCount") },
+        actions = {
+            AppBarActions(
+                persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_bookmark),
+                        icon = Icons.Outlined.BookmarkAdd,
+                        onClick = onChangeCategoryClicked,
+                    ),
+                ),
+            )
+        },
+        isActionMode = true,
+        onCancelActionMode = onClickClearSelection,
+    )
+}
+// KMK <--
