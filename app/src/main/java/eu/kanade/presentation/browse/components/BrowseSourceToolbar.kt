@@ -195,7 +195,7 @@ fun SelectionToolbar(
                         title = stringResource(MR.strings.action_bookmark),
                         icon = Icons.Outlined.BookmarkAdd,
                         onClick = {
-//                            if (selectedCount > 0)
+                            if (selectedCount > 0)
                                 onChangeCategoryClicked()
                         },
                     ),
