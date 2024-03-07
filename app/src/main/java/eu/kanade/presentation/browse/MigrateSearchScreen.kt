@@ -3,6 +3,7 @@ package eu.kanade.presentation.browse
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
@@ -31,7 +32,7 @@ fun MigrateSearchScreen(
         topBar = { scrollBehavior ->
             // KMK -->
             if (state.selectionMode)
-                eu.kanade.presentation.components.SelectionToolbar(
+                SelectionToolbar(
                     selectedCount = state.selection.size,
                     onClickClearSelection = screenModel::toggleSelectionMode,
                     onChangeCategoryClicked = screenModel::addFavorite,

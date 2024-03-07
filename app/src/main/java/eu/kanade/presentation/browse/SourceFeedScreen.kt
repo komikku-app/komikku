@@ -3,9 +3,6 @@ package eu.kanade.presentation.browse
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BookmarkAdd
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -17,10 +14,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceSettingsButton
-import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
 import kotlinx.collections.immutable.ImmutableList
@@ -280,29 +276,3 @@ fun SourceFeedToolbar(
         // KMK <--
     )
 }
-
-// KMK -->
-@Composable
-private fun SelectionToolbar(
-    selectedCount: Int,
-    onClickClearSelection: () -> Unit = {},
-    onChangeCategoryClicked: () -> Unit = {},
-) {
-    AppBar(
-        titleContent = { Text(text = "$selectedCount") },
-        actions = {
-            AppBarActions(
-                persistentListOf(
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Outlined.BookmarkAdd,
-                        onClick = onChangeCategoryClicked,
-                    ),
-                ),
-            )
-        },
-        isActionMode = true,
-        onCancelActionMode = onClickClearSelection,
-    )
-}
-// KMK <--
