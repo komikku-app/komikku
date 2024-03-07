@@ -10,7 +10,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
@@ -22,6 +24,9 @@ import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun GlobalSearchScreen(
+    // KMK -->
+    screenModel: GlobalSearchScreenModel,
+    // KMK <--
     state: SearchScreenModel.State,
     navigateUp: () -> Unit,
     onChangeSearchQuery: (String?) -> Unit,
@@ -35,19 +40,31 @@ fun GlobalSearchScreen(
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            GlobalSearchToolbar(
-                searchQuery = state.searchQuery,
-                progress = state.progress,
-                total = state.total,
-                navigateUp = navigateUp,
-                onChangeSearchQuery = onChangeSearchQuery,
-                onSearch = onSearch,
-                sourceFilter = state.sourceFilter,
-                onChangeSearchFilter = onChangeSearchFilter,
-                onlyShowHasResults = state.onlyShowHasResults,
-                onToggleResults = onToggleResults,
-                scrollBehavior = scrollBehavior,
-            )
+            // KMK -->
+            if (state.selectionMode)
+                SelectionToolbar(
+                    selectedCount = state.selection.size,
+                    onClickClearSelection = screenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = screenModel::addFavorite,
+                )
+            else
+            // KMK <--
+                GlobalSearchToolbar(
+                    searchQuery = state.searchQuery,
+                    progress = state.progress,
+                    total = state.total,
+                    navigateUp = navigateUp,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    onSearch = onSearch,
+                    sourceFilter = state.sourceFilter,
+                    onChangeSearchFilter = onChangeSearchFilter,
+                    onlyShowHasResults = state.onlyShowHasResults,
+                    onToggleResults = onToggleResults,
+                    scrollBehavior = scrollBehavior,
+                    // KMK -->
+                    toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                    // KMK <--
+                )
         },
     ) { paddingValues ->
         GlobalSearchContent(
@@ -57,6 +74,9 @@ fun GlobalSearchScreen(
             onClickSource = onClickSource,
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
+            // KMK -->
+            selection = state.selection,
+            // KMK <--
         )
     }
 }
@@ -70,6 +90,9 @@ internal fun GlobalSearchContent(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     fromSourceId: Long? = null,
+    // KMK -->
+    selection: List<Manga>,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = contentPadding,
@@ -107,6 +130,9 @@ internal fun GlobalSearchContent(
                                 getManga = getManga,
                                 onClick = onClickItem,
                                 onLongClick = onLongClickItem,
+                                // KMK -->
+                                selection = selection,
+                                // KMK <--
                             )
                         }
                         is SearchItemResult.Error -> {

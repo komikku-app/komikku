@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import tachiyomi.domain.manga.model.Manga
@@ -11,6 +12,9 @@ import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun MigrateSearchScreen(
+    // KMK -->
+    screenModel: MigrateSearchScreenModel,
+    // KMK <--
     state: SearchScreenModel.State,
     fromSourceId: Long?,
     navigateUp: () -> Unit,
@@ -25,19 +29,31 @@ fun MigrateSearchScreen(
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            GlobalSearchToolbar(
-                searchQuery = state.searchQuery,
-                progress = state.progress,
-                total = state.total,
-                navigateUp = navigateUp,
-                onChangeSearchQuery = onChangeSearchQuery,
-                onSearch = onSearch,
-                sourceFilter = state.sourceFilter,
-                onChangeSearchFilter = onChangeSearchFilter,
-                onlyShowHasResults = state.onlyShowHasResults,
-                onToggleResults = onToggleResults,
-                scrollBehavior = scrollBehavior,
-            )
+            // KMK -->
+            if (state.selectionMode)
+                eu.kanade.presentation.components.SelectionToolbar(
+                    selectedCount = state.selection.size,
+                    onClickClearSelection = screenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = screenModel::addFavorite,
+                )
+            else
+            // KMK <--
+                GlobalSearchToolbar(
+                    searchQuery = state.searchQuery,
+                    progress = state.progress,
+                    total = state.total,
+                    navigateUp = navigateUp,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    onSearch = onSearch,
+                    sourceFilter = state.sourceFilter,
+                    onChangeSearchFilter = onChangeSearchFilter,
+                    onlyShowHasResults = state.onlyShowHasResults,
+                    onToggleResults = onToggleResults,
+                    scrollBehavior = scrollBehavior,
+                    // KMK -->
+                    toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                    // KMK <--
+                )
         },
     ) { paddingValues ->
         GlobalSearchContent(
@@ -48,6 +64,9 @@ fun MigrateSearchScreen(
             onClickSource = onClickSource,
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
+            // KMK -->
+            selection = state.selection,
+            // KMK <--
         )
     }
 }
