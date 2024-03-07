@@ -67,10 +67,10 @@ fun AllowDuplicateDialog(
     onDismissRequest: () -> Unit,
     onAllowAllDuplicate: () -> Unit,
     onSkipAllDuplicate: () -> Unit,
-    onOpenManga: () -> Unit = {},
-    onAllowDuplicate: () -> Unit = {},
-    onSkipDuplicate: () -> Unit = {},
-    duplicatedName: String = "",
+    onOpenManga: () -> Unit,
+    onAllowDuplicate: () -> Unit,
+    onSkipDuplicate: () -> Unit,
+    duplicatedName: String,
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,

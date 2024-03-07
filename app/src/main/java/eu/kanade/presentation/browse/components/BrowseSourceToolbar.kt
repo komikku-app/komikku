@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ViewModule
-import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.Text
@@ -178,32 +177,3 @@ fun BrowseSourceToolbar(
         scrollBehavior = scrollBehavior,
     )
 }
-
-// KMK -->
-@Composable
-fun SelectionToolbar(
-    selectedCount: Int,
-    onClickClearSelection: () -> Unit = {},
-    onChangeCategoryClicked: () -> Unit = {},
-) {
-    AppBar(
-        titleContent = { Text(text = "$selectedCount") },
-        actions = {
-            AppBarActions(
-                persistentListOf(
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Outlined.BookmarkAdd,
-                        onClick = {
-                            if (selectedCount > 0)
-                                onChangeCategoryClicked()
-                        },
-                    ),
-                ),
-            )
-        },
-        isActionMode = true,
-        onCancelActionMode = onClickClearSelection,
-    )
-}
-// KMK <--

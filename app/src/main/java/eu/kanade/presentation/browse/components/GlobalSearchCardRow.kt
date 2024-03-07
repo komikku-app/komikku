@@ -31,7 +31,7 @@ fun GlobalSearchCardRow(
     onClick: (Manga) -> Unit,
     onLongClick: (Manga) -> Unit,
     // KMK -->
-    selection: List<Manga>? = null,
+    selection: List<Manga>,
     // KMK <--
 ) {
     if (titles.isEmpty()) {
@@ -52,7 +52,7 @@ fun GlobalSearchCardRow(
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
                 // KMK -->
-                isSelected = selection?.fastAny { selected -> selected.id == title.id } ?: false,
+                isSelected = selection.fastAny { selected -> selected.id == title.id },
                 // KMK <--
             )
         }
