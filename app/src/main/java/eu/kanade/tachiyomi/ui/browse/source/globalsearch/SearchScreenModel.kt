@@ -249,6 +249,9 @@ abstract class SearchScreenModel(
                 }
             }
             state.copy(selection = newSelection)
+        }.also {
+            if (state.value.selection.isEmpty())
+                toggleSelectionMode()
         }
     }
 

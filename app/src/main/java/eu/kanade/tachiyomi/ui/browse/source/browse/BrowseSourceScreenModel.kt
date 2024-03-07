@@ -473,6 +473,9 @@ open class BrowseSourceScreenModel(
                 }
             }
             state.copy(selection = newSelection)
+        }.also {
+            if (state.value.selection.isEmpty())
+                toggleSelectionMode()
         }
     }
 
