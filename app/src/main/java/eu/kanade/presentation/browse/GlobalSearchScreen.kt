@@ -62,7 +62,7 @@ fun GlobalSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                    toggleBulkSelectionMode = screenModel::toggleSelectionMode,
                     // KMK <--
                 )
         },
