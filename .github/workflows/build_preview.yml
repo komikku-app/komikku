@@ -52,6 +52,9 @@ jobs:
           changelog="<?xml version=\"1.0\" encoding=\"utf-8\"?><changelog bulletedList=\"true\"><changelogversion versionName=\"${{ github.run_number }}\" changeDate=\"\">$changelog</changelogversion></changelog>"
           echo "CHANGELOG=$changelog" >> $GITHUB_ENV
 
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+
       - name: Setup Android SDK
         run: |
           ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
@@ -86,9 +89,9 @@ jobs:
           contents: ${{ secrets.GOOGLE_SERVICES_TEXT }}
           write-mode: overwrite
 
-      - name: Build app
+      - name: Build app and run unit tests
         if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
-        run: ./gradlew assembleStandardRelease testStandardReleaseUnitTest --stacktrace
+        run: ./gradlew detekt assembleStandardRelease testStandardReleaseUnitTest --stacktrace
 
       - name: Sign Android Release
         if: ${{ ! startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku' }}
