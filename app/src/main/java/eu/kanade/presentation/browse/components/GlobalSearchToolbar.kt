@@ -50,7 +50,7 @@ fun GlobalSearchToolbar(
     onToggleResults: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
-    toggleBulkSelectionMode: () -> Unit,
+    toggleSelectionMode: () -> Unit,
     // KMK <--
 ) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -71,7 +71,7 @@ fun GlobalSearchToolbar(
                                     AppBar.Action(
                                         title = stringResource(MR.strings.action_bulk_select),
                                         icon = Icons.Outlined.Checklist,
-                                        onClick = toggleBulkSelectionMode,
+                                        onClick = toggleSelectionMode,
                                     ),
                                 )
                             }

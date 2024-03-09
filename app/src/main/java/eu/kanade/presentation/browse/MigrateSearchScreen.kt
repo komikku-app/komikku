@@ -2,6 +2,8 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -25,19 +27,21 @@ fun MigrateSearchScreen(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
-    bulkFavoriteState: BulkFavoriteScreenModel.State,
-    toggleSelectionMode: () -> Unit,
-    addFavorite: () -> Unit,
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    // KMK <--
+
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
             if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
-                    onClickClearSelection = toggleSelectionMode,
-                    onChangeCategoryClicked = addFavorite,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
             else
             // KMK <--
@@ -54,7 +58,7 @@ fun MigrateSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleBulkSelectionMode = toggleSelectionMode
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode
                     // KMK <--
                 )
         },

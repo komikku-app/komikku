@@ -42,7 +42,7 @@ fun BrowseSourceToolbar(
     onSearch: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     // KMK -->
-    toggleBulkSelectionMode: () -> Unit,
+    toggleSelectionMode: () -> Unit,
     // KMK <--
 ) {
     // Avoid capturing unstable source in actions lambda
@@ -81,7 +81,7 @@ fun BrowseSourceToolbar(
                             AppBar.Action(
                                 title = stringResource(MR.strings.action_bulk_select),
                                 icon = Icons.Outlined.Checklist,
-                                onClick = toggleBulkSelectionMode,
+                                onClick = toggleSelectionMode,
                             ),
                         )
                         // KMK <--

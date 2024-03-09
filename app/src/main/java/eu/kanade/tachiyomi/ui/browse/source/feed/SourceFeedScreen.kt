@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -12,12 +13,15 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.SourceFeedScreen
+import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.manga.AllowDuplicateDialog
+import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -25,6 +29,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
 import exh.util.nullIfBlank
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
@@ -37,7 +42,12 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
+
         // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
         // KMK <--
 
@@ -53,8 +63,8 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onClickDelete = screenModel::openDeleteFeed,
             onClickManga = {
                 // KMK -->
-                if (state.selectionMode)
-                    screenModel.toggleSelection(it)
+                if (bulkFavoriteState.selectionMode)
+                    bulkFavoriteScreenModel.toggleSelection(it)
                 else
                 // KMK <--
                     onMangaClick(navigator, it)
@@ -66,15 +76,25 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             // KMK -->
             sourceId = screenModel.source.id,
             onLongClickManga = { manga ->
-                if (state.selectionMode) {
+                if (!bulkFavoriteState.selectionMode)
+                    scope.launchIO {
+                        val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
+                        when {
+                            manga.favorite -> bulkFavoriteScreenModel.setDialog(BulkFavoriteScreenModel.Dialog.RemoveManga(manga))
+                            duplicateManga != null -> bulkFavoriteScreenModel.setDialog(
+                                BulkFavoriteScreenModel.Dialog.AddDuplicateManga(
+                                    manga,
+                                    duplicateManga,
+                                ),
+                            )
+                            else -> bulkFavoriteScreenModel.addFavorite(manga)
+                        }
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                else
                     navigator.push(MangaScreen(manga.id, true))
-                } else {
-                    screenModel.toggleSelection(manga)
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }
             },
-            screenModel = screenModel,
-            screenState = state,
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             // KMK <--
         )
 
@@ -99,40 +119,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                 )
             }
-            // KMK -->
-            is SourceFeedScreenModel.Dialog.ChangeMangasCategory -> {
-                ChangeCategoryDialog(
-                    initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
-                    onEditCategories = { navigator.push(CategoryScreen()) },
-                    onConfirm = { include, exclude ->
-                        screenModel.setMangaCategories(dialog.mangas, include, exclude)
-                    },
-                )
-            }
-            is SourceFeedScreenModel.Dialog.AllowDuplicate -> {
-                AllowDuplicateDialog(
-                    onDismissRequest = onDismissRequest,
-                    onAllowAllDuplicate = {
-                        screenModel.addFavoriteDuplicate()
-                    },
-                    onSkipAllDuplicate = {
-                        screenModel.addFavoriteDuplicate(skipAllDuplicates = true)
-                    },
-                    onOpenManga = {
-                        navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
-                    },
-                    onAllowDuplicate = {
-                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
-                    },
-                    onSkipDuplicate = {
-                        screenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
-                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
-                    },
-                    duplicatedName = dialog.duplicatedManga.second.title,
-                )
-            }
-            // KMK <--
             SourceFeedScreenModel.Dialog.Filter -> {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
@@ -199,8 +185,79 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             null -> Unit
         }
 
-        BackHandler(state.searchQuery != null) {
-            screenModel.search(null)
+        // KMK -->
+        val onBulkDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
+        when (val dialog = bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga -> {
+                DuplicateMangaDialog(
+                    onDismissRequest = onBulkDismissRequest,
+                    onConfirm = { bulkFavoriteScreenModel.addFavorite(dialog.manga) },
+                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                )
+            }
+            is BulkFavoriteScreenModel.Dialog.RemoveManga -> {
+                RemoveMangaDialog(
+                    onDismissRequest = onBulkDismissRequest,
+                    onConfirm = {
+                        bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
+                    },
+                    mangaToRemove = dialog.manga,
+                )
+            }
+            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory -> {
+                ChangeCategoryDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onBulkDismissRequest,
+                    onEditCategories = { navigator.push(CategoryScreen()) },
+                    onConfirm = { include, _ ->
+                        bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
+                        bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
+                    },
+                )
+            }
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> {
+                ChangeCategoryDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onBulkDismissRequest,
+                    onEditCategories = { navigator.push(CategoryScreen()) },
+                    onConfirm = { include, exclude ->
+                        bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
+                    },
+                )
+            }
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
+                AllowDuplicateDialog(
+                    onDismissRequest = onBulkDismissRequest,
+                    onAllowAllDuplicate = {
+                        bulkFavoriteScreenModel.addFavoriteDuplicate()
+                    },
+                    onSkipAllDuplicate = {
+                        bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
+                    },
+                    onOpenManga = {
+                        navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
+                    },
+                    onAllowDuplicate = {
+                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+                    },
+                    onSkipDuplicate = {
+                        bulkFavoriteScreenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+                    },
+                    duplicatedName = dialog.duplicatedManga.second.title,
+                )
+            }
+            else -> {}
+        }
+        // KMK <--
+
+        BackHandler(state.searchQuery != null/* KMK --> */ || bulkFavoriteState.selectionMode /* KMK <-- */) {
+            // KMK -->
+            if(bulkFavoriteState.selectionMode)
+                bulkFavoriteScreenModel.backHandler()
+            else
+                // KMK <--
+                screenModel.search(null)
         }
     }
 

@@ -4,8 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -16,8 +14,6 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -27,7 +23,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -35,15 +30,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.category.interactor.SetMangaCategories
-import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.interactor.CountFeedSavedSearchGlobal
@@ -76,12 +65,6 @@ open class FeedScreenModel(
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
-    // KMK -->
-    private val getCategories: GetCategories = Injekt.get(),
-    private val setMangaCategories: SetMangaCategories = Injekt.get(),
-    private val libraryPreferences: LibraryPreferences = Injekt.get(),
-    private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
-    // KMK <--
 ) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
@@ -322,188 +305,10 @@ open class FeedScreenModel(
         mutableState.update { it.copy(dialog = null) }
     }
 
-    // KMK -->
-    fun clearSelection() {
-        mutableState.update { it.copy(selection = persistentListOf()) }
-    }
-
-    fun toggleSelection(manga: DomainManga) {
-        mutableState.update { state ->
-            val newSelection = state.selection.mutate { list ->
-                if (list.fastAny { it.id == manga.id }) {
-                    list.removeAll { it.id == manga.id }
-                } else {
-                    list.add(manga)
-                }
-            }
-            state.copy(selection = newSelection)
-        }
-    }
-
-    fun addFavorite(startIdx: Int = 0) {
-        screenModelScope.launch {
-            val mangaWithDup = getDuplicateLibraryManga(startIdx)
-            if (mangaWithDup != null)
-                setDialog(Dialog.AllowDuplicate(mangaWithDup))
-            else
-                addFavoriteDuplicate()
-        }
-    }
-
-    fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
-        screenModelScope.launch {
-            val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
-            val categories = getCategories()
-            val defaultCategoryId = libraryPreferences.defaultCategory().get()
-            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
-
-            when {
-                // Default category set
-                defaultCategory != null -> {
-                    setMangaCategories(mangaList, listOf(defaultCategory.id), emptyList())
-                }
-
-                // Automatic 'Default' or no categories
-                defaultCategoryId == 0 || categories.isEmpty() -> {
-                    // Automatic 'Default' or no categories
-                    setMangaCategories(mangaList, emptyList(), emptyList())
-                }
-
-                else -> {
-                    // Get indexes of the common categories to preselect.
-                    val common = getCommonCategories(mangaList)
-                    // Get indexes of the mix categories to preselect.
-                    val mix = getMixCategories(mangaList)
-                    val preselected = categories
-                        .map {
-                            when (it) {
-                                in common -> CheckboxState.State.Checked(it)
-                                in mix -> CheckboxState.TriState.Exclude(it)
-                                else -> CheckboxState.State.None(it)
-                            }
-                        }
-                        .toImmutableList()
-                    setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
-                }
-            }
-        }
-    }
-
-    private suspend fun getNotDuplicateLibraryMangas(): List<DomainManga> {
-        return state.value.selection.filterNot { manga ->
-            getDuplicateLibraryManga.await(manga).isNotEmpty()
-        }
-    }
-
-    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Pair<Int, DomainManga>? {
-        val mangas = state.value.selection
-        mangas.fastForEachIndexed { index, manga ->
-            if (index < startIdx) return@fastForEachIndexed
-            val dup = getDuplicateLibraryManga.await(manga)
-            if (dup.isEmpty()) return@fastForEachIndexed
-            return Pair(index, dup.first())
-        }
-        return null
-    }
-
-    fun removeDuplicateSelectedManga(index: Int) {
-        mutableState.update { state ->
-            val newSelection = state.selection.mutate { list ->
-                list.removeAt(index)
-            }
-            state.copy(selection = newSelection)
-        }
-    }
-
-    /**
-     * Bulk update categories of manga using old and new common categories.
-     *
-     * @param mangaList the list of manga to move.
-     * @param addCategories the categories to add for all mangas.
-     * @param removeCategories the categories to remove in all mangas.
-     */
-    fun setMangaCategories(mangaList: List<DomainManga>, addCategories: List<Long>, removeCategories: List<Long>) {
-        screenModelScope.launchNonCancellable {
-            mangaList.fastForEach { manga ->
-                val categoryIds = getCategories.await(manga.id)
-                    .map { it.id }
-                    .subtract(removeCategories.toSet())
-                    .plus(addCategories)
-                    .toList()
-
-                moveMangaToCategoriesAndAddToLibrary(manga, categoryIds)
-            }
-        }
-        clearSelection()
-    }
-
-    private fun moveMangaToCategoriesAndAddToLibrary(manga: DomainManga, categories: List<Long>) {
-        moveMangaToCategory(manga.id, categories)
-        if (manga.favorite) return
-
-        screenModelScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
-        }
-    }
-
-    private fun moveMangaToCategory(mangaId: Long, categoryIds: List<Long>) {
-        screenModelScope.launchIO {
-            setMangaCategories.await(mangaId, categoryIds)
-        }
-    }
-
-    /**
-     * Get user categories.
-     *
-     * @return List of categories, not including the default category
-     */
-    suspend fun getCategories(): List<Category> {
-        return getCategories.subscribe()
-            .firstOrNull()
-            ?.filterNot { it.isSystemCategory }
-            .orEmpty()
-    }
-
-    /**
-     * Returns the common categories for the given list of manga.
-     *
-     * @param mangas the list of manga.
-     */
-    private suspend fun getCommonCategories(mangas: List<DomainManga>): Collection<Category> {
-        if (mangas.isEmpty()) return emptyList()
-        return mangas
-            .map { getCategories.await(it.id).toSet() }
-            .reduce { set1, set2 -> set1.intersect(set2) }
-    }
-
-    /**
-     * Returns the mix (non-common) categories for the given list of manga.
-     *
-     * @param mangas the list of manga.
-     */
-    private suspend fun getMixCategories(mangas: List<DomainManga>): Collection<Category> {
-        if (mangas.isEmpty()) return emptyList()
-        val mangaCategories = mangas.map { getCategories.await(it.id).toSet() }
-        val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
-        return mangaCategories.flatten().distinct().subtract(common)
-    }
-
-    private fun setDialog(dialog: Dialog?) {
-        mutableState.update { it.copy(dialog = dialog) }
-    }
-    // KMK <--
-
     sealed class Dialog {
         data class AddFeed(val options: ImmutableList<CatalogueSource>) : Dialog()
         data class AddFeedSearch(val source: CatalogueSource, val options: ImmutableList<SavedSearch?>) : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
-        // KMK -->
-        data class ChangeMangasCategory(
-            val mangas: List<DomainManga>,
-            val initialSelection: ImmutableList<CheckboxState<Category>>,
-        ) : Dialog()
-        data class AllowDuplicate(val duplicatedManga: Pair<Int, DomainManga>) : Dialog()
-        // KMK <--
     }
 
     sealed class Event {
@@ -515,9 +320,6 @@ open class FeedScreenModel(
 data class FeedScreenState(
     val dialog: FeedScreenModel.Dialog? = null,
     val items: List<FeedItemUI>? = null,
-    // KMK -->
-    val selection: PersistentList<DomainManga> = persistentListOf(),
-    // KMK <--
 ) {
     val isLoading
         get() = items == null
@@ -527,10 +329,6 @@ data class FeedScreenState(
 
     val isLoadingItems
         get() = items?.fastAny { it.results == null } != false
-
-    // KMK -->
-    val selectionMode = selection.isNotEmpty()
-    // KMK <--
 }
 
 const val MAX_FEED_ITEMS = 20

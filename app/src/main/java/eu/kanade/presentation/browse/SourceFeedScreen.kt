@@ -3,10 +3,14 @@ package eu.kanade.presentation.browse
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
@@ -14,11 +18,12 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceSettingsButton
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.components.SelectionToolbar
-import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreenModel
-import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.manga.model.Manga
@@ -104,18 +109,21 @@ fun SourceFeedScreen(
     // KMK -->
     sourceId: Long,
     onLongClickManga: (Manga) -> Unit,
-    screenModel: SourceFeedScreenModel,
-    screenState: SourceFeedState,
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    // KMK <--
+
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (screenState.selectionMode)
+            if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
-                    selectedCount = screenState.selection.size,
-                    onClickClearSelection = screenModel::clearSelection,
-                    onChangeCategoryClicked = screenModel::addFavorite,
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
             else
             // KMK <--
@@ -127,6 +135,7 @@ fun SourceFeedScreen(
                     onClickSearch = onClickSearch,
                     // KMK -->
                     sourceId = sourceId,
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
         },
@@ -152,7 +161,7 @@ fun SourceFeedScreen(
                         onClickManga = onClickManga,
                         // KMK -->
                         onLongClickManga = onLongClickManga,
-                        screenState = screenState,
+                        selection = bulkFavoriteState.selection,
                         // KMK <--
                     )
                 }
@@ -173,7 +182,7 @@ fun SourceFeedList(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
-    screenState: SourceFeedState,
+    selection: List<Manga>,
     // KMK <--
 ) {
     ScrollbarLazyColumn(
@@ -208,7 +217,7 @@ fun SourceFeedList(
                     onClickManga = onClickManga,
                     // KMK -->
                     onLongClickManga = onLongClickManga,
-                    selection = screenState.selection,
+                    selection = selection,
                     // KMK <--
                 )
             }
@@ -257,6 +266,7 @@ fun SourceFeedToolbar(
     onClickSearch: (String) -> Unit,
     // KMK -->
     sourceId: Long,
+    toggleSelectionMode: () -> Unit,
     // KMK <--
 ) {
     SearchToolbar(
@@ -269,6 +279,19 @@ fun SourceFeedToolbar(
         placeholderText = stringResource(MR.strings.action_search_hint),
         // KMK -->
         actions = {
+            AppBarActions(
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_bulk_select),
+                                icon = Icons.Outlined.Checklist,
+                                onClick = toggleSelectionMode,
+                            ),
+                        )
+                    }
+                    .build(),
+            )
             persistentListOf(
                 SourceSettingsButton(sourceId),
             )

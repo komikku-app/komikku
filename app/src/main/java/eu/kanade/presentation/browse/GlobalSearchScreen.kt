@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -35,19 +37,21 @@ fun GlobalSearchScreen(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
-    bulkFavoriteState: BulkFavoriteScreenModel.State,
-    toggleSelectionMode: () -> Unit,
-    addFavorite: () -> Unit,
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    // KMK <--
+
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
             if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
-                    onClickClearSelection = toggleSelectionMode,
-                    onChangeCategoryClicked = addFavorite,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
             else
             // KMK <--
@@ -64,7 +68,7 @@ fun GlobalSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleBulkSelectionMode = toggleSelectionMode,
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
         },

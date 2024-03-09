@@ -53,12 +53,10 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             },
             onClickItem = {
                 // KMK -->
-                if (bulkFavoriteState.selectionMode) {
+                if (bulkFavoriteState.selectionMode)
                     bulkFavoriteScreenModel.toggleSelection(it)
-                }
-                else
-                // KMK <--
-                {
+                else {
+                    // KMK <--
                     // SY -->
                     navigator.items
                         .filterIsInstance<MigrationListScreen>()
@@ -70,9 +68,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
             // KMK -->
-            bulkFavoriteState = bulkFavoriteState,
-            toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
-            addFavorite = bulkFavoriteScreenModel::addFavorite,
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             // KMK <--
         )
 

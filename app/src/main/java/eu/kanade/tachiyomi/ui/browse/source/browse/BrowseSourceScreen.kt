@@ -51,6 +51,7 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
@@ -137,10 +138,11 @@ data class BrowseSourceScreen(
         }
 
         // KMK -->
-        BackHandler(enabled = state.selectionMode) {
-            when {
-                state.selectionMode -> screenModel.toggleSelectionMode()
-            }
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        BackHandler(enabled = bulkFavoriteState.selectionMode) {
+            bulkFavoriteScreenModel.backHandler()
         }
         // KMK <--
 
@@ -152,11 +154,11 @@ data class BrowseSourceScreen(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                     // KMK -->
-                    if (state.selectionMode)
+                    if (bulkFavoriteState.selectionMode)
                         SelectionToolbar(
-                            selectedCount = state.selection.size,
-                            onClickClearSelection = screenModel::toggleSelectionMode,
-                            onChangeCategoryClicked = screenModel::addFavorite,
+                            selectedCount = bulkFavoriteState.selection.size,
+                            onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                            onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                         )
                     else
                     // KMK <--
@@ -172,7 +174,7 @@ data class BrowseSourceScreen(
                             onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
                             onSearch = screenModel::search,
                             // KMK -->
-                            toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                            toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode
                             // KMK <--
                         )
 
@@ -269,18 +271,18 @@ data class BrowseSourceScreen(
                 onLocalSourceHelpClick = onHelpClick,
                 onMangaClick = {
                     // KMK -->
-                    if (state.selectionMode)
-                        screenModel.toggleSelection(it)
+                    if (bulkFavoriteState.selectionMode)
+                        bulkFavoriteScreenModel.toggleSelection(it)
                     else
                     // KMK <--
                         navigator.push(MangaScreen(it.id, true, smartSearchConfig))
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
-                    if (state.selectionMode) {
+                    if (bulkFavoriteState.selectionMode)
                         navigator.push(MangaScreen(manga.id, true))
-                    } else {
-                        // KMK <--
+                    else
+                    // KMK <--
                         scope.launchIO {
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
@@ -294,11 +296,10 @@ data class BrowseSourceScreen(
                                 else -> screenModel.addFavorite(manga)
                             }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    }
+                        }   
                 },
                 // KMK -->
-                selection = state.selection,
+                selection = bulkFavoriteState.selection,
                 // KMK <--
             )
         }
@@ -385,42 +386,47 @@ data class BrowseSourceScreen(
                     screenModel.deleteSearch(dialog.idToDelete)
                 },
             )
-            // KMK -->
-            is BrowseSourceScreenModel.Dialog.ChangeMangasCategory -> {
+            else -> {}
+        }
+
+        // KMK -->
+        val onBulkDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
+        when (val dialog = bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, exclude ->
-                        screenModel.setMangaCategories(dialog.mangas, include, exclude)
+                        bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
                     },
                 )
             }
-            is BrowseSourceScreenModel.Dialog.AllowDuplicate -> {
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onAllowAllDuplicate = {
-                        screenModel.addFavoriteDuplicate()
+                        bulkFavoriteScreenModel.addFavoriteDuplicate()
                     },
                     onSkipAllDuplicate = {
-                        screenModel.addFavoriteDuplicate(skipAllDuplicates = true)
+                        bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },
                     onOpenManga = {
                         navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
                     },
                     onAllowDuplicate = {
-                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
                     },
                     onSkipDuplicate = {
-                        screenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
-                        screenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+                        bulkFavoriteScreenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
                     },
                     duplicatedName = dialog.duplicatedManga.second.title,
                 )
             }
-            // KMK <--
             else -> {}
         }
+        // KMK <--
 
         LaunchedEffect(Unit) {
             queryEvent.receiveAsFlow()

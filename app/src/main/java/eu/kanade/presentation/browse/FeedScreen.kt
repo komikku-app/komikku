@@ -71,6 +71,7 @@ fun FeedScreen(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    selection: List<Manga>,
     // KMK <--
     onRefresh: () -> Unit,
     getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
@@ -126,7 +127,7 @@ fun FeedScreen(
                                 onClickManga = onClickManga,
                                 // KMK -->
                                 onLongClickManga = onLongClickManga,
-                                selection = state.selection,
+                                selection = selection,
                                 // KMK <--
                             )
                         }
@@ -239,7 +240,7 @@ fun <T> RadioSelector(
     options: ImmutableList<T>,
     selected: Int?,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
-    onSelectOption: (Int) -> Unit /* KMK --> */ = {} /* KMK <-- */,
+    onSelectOption: (Int) -> Unit/* KMK --> */ = {},/* KMK <-- */
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         optionStrings.forEachIndexed { index, option ->

@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -40,7 +40,7 @@ fun TabbedScreen(
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
     // KMK -->
-    screenModel: FeedScreenModel,
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
     val scope = rememberCoroutineScope()
@@ -48,7 +48,7 @@ fun TabbedScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // KMK -->
-    val screenState by screenModel.state.collectAsState()
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     // KMK <--
 
     LaunchedEffect(startIndex) {
@@ -62,11 +62,11 @@ fun TabbedScreen(
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
             // KMK -->
-            if (screenState.selectionMode)
+            if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
-                    selectedCount = screenState.selection.size,
-                    onClickClearSelection = screenModel::clearSelection,
-                    onChangeCategoryClicked = screenModel::addFavorite,
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
             else
                 // KMK <--

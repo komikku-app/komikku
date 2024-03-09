@@ -48,11 +48,11 @@ class GlobalSearchScreen(
         }
 
         // KMK -->
-        val scope = rememberCoroutineScope()
-        val haptic = LocalHapticFeedback.current
-
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        val scope = rememberCoroutineScope()
+        val haptic = LocalHapticFeedback.current
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
             bulkFavoriteScreenModel.backHandler()
@@ -99,11 +99,7 @@ class GlobalSearchScreen(
                 },
                 onLongClickItem = { manga ->
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode)
-                    // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
-                    // KMK -->
-                    else
+                    if (!bulkFavoriteState.selectionMode)
                         scope.launchIO {
                             val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
                             when {
@@ -118,29 +114,29 @@ class GlobalSearchScreen(
                             }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
+                    else
                     // KMK <--
+                        navigator.push(MangaScreen(manga.id, true))
                 },
                 // KMK -->
-                bulkFavoriteState = bulkFavoriteState,
-                toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
-                addFavorite = bulkFavoriteScreenModel::addFavorite,
+                bulkFavoriteScreenModel = bulkFavoriteScreenModel,
                 // KMK <--
             )
         }
 
         // KMK -->
-        val onDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
+        val onBulkDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
         when (val dialog = bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onConfirm = { bulkFavoriteScreenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
                 )
             }
             is BulkFavoriteScreenModel.Dialog.RemoveManga -> {
                 RemoveMangaDialog(
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onConfirm = {
                         bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
                     },
@@ -150,7 +146,7 @@ class GlobalSearchScreen(
             is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, _ ->
                         bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
@@ -161,7 +157,7 @@ class GlobalSearchScreen(
             is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, exclude ->
                         bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
@@ -170,7 +166,7 @@ class GlobalSearchScreen(
             }
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onAllowAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate()
                     },
