@@ -65,17 +65,13 @@ fun GlobalSearchToolbar(
                 // KMK -->
                 actions = {
                     AppBarActions(
-                        actions = persistentListOf<AppBar.AppBarAction>().builder()
-                            .apply {
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.action_bulk_select),
-                                        icon = Icons.Outlined.Checklist,
-                                        onClick = toggleSelectionMode,
-                                    ),
-                                )
-                            }
-                            .build(),
+                        actions = persistentListOf(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_bulk_select),
+                                icon = Icons.Outlined.Checklist,
+                                onClick = toggleSelectionMode,
+                            ),
+                        )
                     )
                 },
                 // KMK <--
