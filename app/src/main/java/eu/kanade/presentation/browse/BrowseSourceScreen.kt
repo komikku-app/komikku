@@ -59,7 +59,7 @@ fun BrowseSourceContent(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
-    selection: List<Manga>? = null,
+    selection: List<Manga>,
     // KMK <--
 ) {
     val context = LocalContext.current

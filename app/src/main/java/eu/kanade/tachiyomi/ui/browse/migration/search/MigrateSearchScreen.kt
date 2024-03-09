@@ -53,18 +53,19 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             },
             onClickItem = {
                 // KMK -->
-                if (bulkFavoriteState.selectionMode)
+                if (bulkFavoriteState.selectionMode) {
                     bulkFavoriteScreenModel.toggleSelection(it)
-                else {
+                } else
                     // KMK <--
-                    // SY -->
-                    navigator.items
-                        .filterIsInstance<MigrationListScreen>()
-                        .last()
-                        .newSelectedItem = mangaId to it.id
-                    navigator.popUntil { it is MigrationListScreen }
-                    // SY <--
-                }
+                    {
+                        // SY -->
+                        navigator.items
+                            .filterIsInstance<MigrationListScreen>()
+                            .last()
+                            .newSelectedItem = mangaId to it.id
+                        navigator.popUntil { it is MigrationListScreen }
+                        // SY <--
+                    }
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
             // KMK -->
@@ -73,12 +74,12 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
         )
 
         // KMK -->
-        val onDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
+        val onBulkDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
         when (val dialog = bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, exclude ->
                         bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
@@ -87,7 +88,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             }
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
-                    onDismissRequest = onDismissRequest,
+                    onDismissRequest = onBulkDismissRequest,
                     onAllowAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate()
                     },

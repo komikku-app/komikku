@@ -2,6 +2,7 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,6 +28,9 @@ fun BrowseSourceSimpleToolbar(
     displayMode: LibraryDisplayMode?,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    // KMK -->
+    toggleSelectionMode: () -> Unit,
+    // KMK <--
 ) {
     AppBar(
         navigateUp = navigateUp,
@@ -41,6 +45,13 @@ fun BrowseSourceSimpleToolbar(
                         icon = Icons.Outlined.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ),
+                    // KMK -->
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_bulk_select),
+                        icon = Icons.Outlined.Checklist,
+                        onClick = toggleSelectionMode,
+                    ),
+                    // KMK <--
                 ),
             )
             DropdownMenu(
