@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreenModel
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import tachiyomi.domain.manga.model.Manga
@@ -13,9 +13,6 @@ import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun MigrateSearchScreen(
-    // KMK -->
-    screenModel: MigrateSearchScreenModel,
-    // KMK <--
     state: SearchScreenModel.State,
     fromSourceId: Long?,
     navigateUp: () -> Unit,
@@ -27,15 +24,20 @@ fun MigrateSearchScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
+    // KMK -->
+    bulkFavoriteState: BulkFavoriteScreenModel.State,
+    toggleSelectionMode: () -> Unit,
+    addFavorite: () -> Unit,
+    // KMK <--
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (state.selectionMode)
+            if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
-                    selectedCount = state.selection.size,
-                    onClickClearSelection = screenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = screenModel::addFavorite,
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = toggleSelectionMode,
+                    onChangeCategoryClicked = addFavorite,
                 )
             else
             // KMK <--
@@ -52,7 +54,7 @@ fun MigrateSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleBulkSelectionMode = screenModel::toggleSelectionMode
+                    toggleBulkSelectionMode = toggleSelectionMode
                     // KMK <--
                 )
         },
@@ -66,7 +68,7 @@ fun MigrateSearchScreen(
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
             // KMK -->
-            selection = state.selection,
+            selection = bulkFavoriteState.selection,
             // KMK <--
         )
     }

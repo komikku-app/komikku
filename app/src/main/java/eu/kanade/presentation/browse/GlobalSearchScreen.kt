@@ -12,7 +12,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreenModel
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
@@ -24,9 +24,6 @@ import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
 fun GlobalSearchScreen(
-    // KMK -->
-    screenModel: GlobalSearchScreenModel,
-    // KMK <--
     state: SearchScreenModel.State,
     navigateUp: () -> Unit,
     onChangeSearchQuery: (String?) -> Unit,
@@ -37,15 +34,20 @@ fun GlobalSearchScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
+    // KMK -->
+    bulkFavoriteState: BulkFavoriteScreenModel.State,
+    toggleSelectionMode: () -> Unit,
+    addFavorite: () -> Unit,
+    // KMK <--
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (state.selectionMode)
+            if (bulkFavoriteState.selectionMode)
                 SelectionToolbar(
-                    selectedCount = state.selection.size,
-                    onClickClearSelection = screenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = screenModel::addFavorite,
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = toggleSelectionMode,
+                    onChangeCategoryClicked = addFavorite,
                 )
             else
             // KMK <--
@@ -62,7 +64,7 @@ fun GlobalSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleBulkSelectionMode = screenModel::toggleSelectionMode,
+                    toggleBulkSelectionMode = toggleSelectionMode,
                     // KMK <--
                 )
         },
@@ -75,7 +77,7 @@ fun GlobalSearchScreen(
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
             // KMK -->
-            selection = state.selection,
+            selection = bulkFavoriteState.selection,
             // KMK <--
         )
     }
