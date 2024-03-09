@@ -652,7 +652,7 @@ object ImageUtil {
         if (zip4jFile != null && zip4jEntry != null) return extractImageOptionsZip4j(zip4jFile, zip4jEntry)
         // SY <--
 
-        imageStream.mark(imageStream.available() + 1)
+        imageStream.mark(Int.MAX_VALUE)
 
         val imageBytes = imageStream.readBytes()
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
