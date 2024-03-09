@@ -92,6 +92,10 @@ class BulkFavoriteScreenModel(
     fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
         screenModelScope.launch {
             val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
+            if (mangaList.isEmpty()) {
+                toggleSelectionMode()
+                return@launch
+            }
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
