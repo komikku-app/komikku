@@ -1,14 +1,25 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.presentation.browse.components.RemoveMangaDialog
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.manga.DuplicateMangaDialog
+import eu.kanade.presentation.manga.DuplicateMangasDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -317,6 +328,12 @@ class BulkFavoriteScreenModel(
         }
     }
 
+    fun dismissDialog() {
+        mutableState.update {
+            it.copy(dialog = null)
+        }
+    }
+
     interface Dialog {
         data class RemoveManga(val manga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
@@ -336,5 +353,91 @@ class BulkFavoriteScreenModel(
         val dialog: Dialog? = null,
         val selection: PersistentList<Manga> = persistentListOf(),
         val selectionMode: Boolean = false,
+    )
+}
+
+@Composable
+fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val navigator = LocalNavigator.currentOrThrow
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.AddDuplicateManga
+
+    DuplicateMangaDialog(
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onConfirm = { bulkFavoriteScreenModel.addFavorite(dialog.manga) },
+        onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+    )
+}
+
+@Composable
+fun RemoveMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.RemoveManga
+
+    RemoveMangaDialog(
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onConfirm = {
+            bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
+        },
+        mangaToRemove = dialog.manga,
+    )
+}
+
+@Composable
+fun ChangeMangaCategoryDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val navigator = LocalNavigator.currentOrThrow
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.ChangeMangaCategory
+
+    ChangeCategoryDialog(
+        initialSelection = dialog.initialSelection,
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onEditCategories = { navigator.push(CategoryScreen()) },
+        onConfirm = { include, _ ->
+            bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
+            bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
+        },
+    )
+}
+
+@Composable
+fun ChangeMangasCategoryDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val navigator = LocalNavigator.currentOrThrow
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.ChangeMangasCategory
+
+    ChangeCategoryDialog(
+        initialSelection = dialog.initialSelection,
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onEditCategories = { navigator.push(CategoryScreen()) },
+        onConfirm = { include, exclude ->
+            bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
+        },
+    )
+}
+
+@Composable
+fun AllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val navigator = LocalNavigator.currentOrThrow
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.AllowDuplicate
+
+    DuplicateMangasDialog(
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
+        onSkipAllDuplicate = {
+            bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
+        },
+        onOpenManga = {
+            navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
+        },
+        onAllowDuplicate = {
+            bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
+        },
+        onSkipDuplicate = {
+            bulkFavoriteScreenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
+            bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
+        },
+        duplicatedName = dialog.duplicatedManga.second.title,
     )
 }

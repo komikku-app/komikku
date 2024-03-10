@@ -45,13 +45,14 @@ import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.SelectionToolbar
-import eu.kanade.presentation.manga.AllowDuplicateDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
@@ -395,38 +396,11 @@ data class BrowseSourceScreen(
         }
 
         // KMK -->
-        val onBulkDismissRequest = { bulkFavoriteScreenModel.setDialog(null) }
-        when (val dialog = bulkFavoriteState.dialog) {
-            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> {
-                ChangeCategoryDialog(
-                    initialSelection = dialog.initialSelection,
-                    onDismissRequest = onBulkDismissRequest,
-                    onEditCategories = { navigator.push(CategoryScreen()) },
-                    onConfirm = { include, exclude ->
-                        bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
-                    },
-                )
-            }
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
-                AllowDuplicateDialog(
-                    onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
-                    onSkipAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
-                    },
-                    onOpenManga = {
-                        navigator.push(MangaScreen(dialog.duplicatedManga.second.id))
-                    },
-                    onAllowDuplicate = {
-                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first + 1)
-                    },
-                    onSkipDuplicate = {
-                        bulkFavoriteScreenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
-                        bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
-                    },
-                    duplicatedName = dialog.duplicatedManga.second.title,
-                )
-            }
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
             else -> {}
         }
         // KMK <--

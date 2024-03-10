@@ -63,7 +63,7 @@ fun DuplicateMangaDialog(
 
 // KMK -->
 @Composable
-fun AllowDuplicateDialog(
+fun DuplicateMangasDialog(
     onDismissRequest: () -> Unit,
     onAllowAllDuplicate: () -> Unit,
     onSkipAllDuplicate: () -> Unit,
