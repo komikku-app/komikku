@@ -17,14 +17,13 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.LocalSource
 
-// KMK -->
 @Composable
 fun SourceSettingsButton(
     id: Long,
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
 ) {
     // Create a fake source
-    val source = Source(id,"", "", supportsLatest = false, isStub = false)
+    val source = Source(id, "", "", supportsLatest = false, isStub = false)
     SourceSettingsButton(source = source)
 }
 
@@ -38,8 +37,9 @@ fun SourceSettingsButton(
 
     val navigator = LocalNavigator.currentOrThrow
     IconButton(onClick = {
-        if (source.installedExtension !== null)
+        if (source.installedExtension !== null) {
             navigator.push(ExtensionDetailsScreen(source.installedExtension!!.pkgName))
+        }
     }) {
         Icon(
             imageVector = Icons.Outlined.Settings,
@@ -47,4 +47,3 @@ fun SourceSettingsButton(
         )
     }
 }
-// KMK <--

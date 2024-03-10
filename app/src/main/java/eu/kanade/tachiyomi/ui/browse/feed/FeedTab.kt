@@ -110,10 +110,11 @@ fun Screen.feedTab(
                         BrowseSourceScreen(
                             source.id,
                             // KMK -->
-                            listingQuery = if (!source.supportsLatest)
+                            listingQuery = if (!source.supportsLatest) {
                                 GetRemoteManga.QUERY_POPULAR
-                            else
-                                GetRemoteManga.QUERY_LATEST,
+                            } else {
+                                GetRemoteManga.QUERY_LATEST
+                            },
                             // KMK <--
                         ),
                     )

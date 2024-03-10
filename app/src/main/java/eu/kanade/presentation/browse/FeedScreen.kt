@@ -211,10 +211,11 @@ fun FeedAddSearchDialog(
             val savedSearchStrings = remember {
                 savedSearches.map {
                     // KMK -->
-                    it?.name ?: if (source.supportsLatest)
+                    it?.name ?: if (source.supportsLatest) {
                         context.stringResource(MR.strings.latest)
-                    else
+                    } else {
                         context.stringResource(MR.strings.popular)
+                    }
                     // KMK <--
                 }.toImmutableList()
             }
@@ -228,7 +229,10 @@ fun FeedAddSearchDialog(
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) }, /* KMK --> */ enabled = selected != null /* KMK <-- */) {
+            TextButton(
+                onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) },
+                enabled = selected != null,
+            ) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },
@@ -240,7 +244,7 @@ fun <T> RadioSelector(
     options: ImmutableList<T>,
     selected: Int?,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
-    onSelectOption: (Int) -> Unit /* KMK --> */ = {} /* KMK <-- */,
+    onSelectOption: (Int) -> Unit = {},
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         optionStrings.forEachIndexed { index, option ->
