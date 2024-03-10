@@ -2,7 +2,6 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -16,6 +15,7 @@ import androidx.compose.runtime.setValue
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
@@ -46,11 +46,7 @@ fun BrowseSourceSimpleToolbar(
                         onClick = { selectingDisplayMode = true },
                     ),
                     // KMK -->
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_bulk_select),
-                        icon = Icons.Outlined.Checklist,
-                        onClick = toggleSelectionMode,
-                    ),
+                    bulkSelectionButton(toggleSelectionMode),
                     // KMK <--
                 ),
             )

@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ViewModule
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -21,6 +20,7 @@ import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import exh.source.anyIs
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -77,13 +77,7 @@ fun BrowseSourceToolbar(
                             )
                         }
                         // KMK -->
-                        add(
-                            AppBar.Action(
-                                title = stringResource(MR.strings.action_bulk_select),
-                                icon = Icons.Outlined.Checklist,
-                                onClick = toggleSelectionMode,
-                            ),
-                        )
+                        add(bulkSelectionButton(toggleSelectionMode))
                         // KMK <--
                         if (isLocalSource) {
                             if (isConfigurableSource && displayMode != null) {

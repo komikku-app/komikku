@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.browse.feed
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +28,7 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -91,11 +91,7 @@ fun Screen.feedTab(
                 },
             ),
             // KMK -->
-            AppBar.Action(
-                title = stringResource(MR.strings.action_bulk_select),
-                icon = Icons.Outlined.Checklist,
-                onClick = bulkFavoriteScreenModel::toggleSelectionMode,
-            ),
+            bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
             // KMK <--
         ),
         content = { contentPadding, snackbarHostState ->

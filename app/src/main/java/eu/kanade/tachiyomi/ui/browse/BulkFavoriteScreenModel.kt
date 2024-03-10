@@ -1,9 +1,12 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
@@ -15,6 +18,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.DuplicateMangasDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -42,6 +46,8 @@ import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
@@ -440,4 +446,18 @@ fun AllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
         },
         duplicatedName = dialog.duplicatedManga.second.title,
     )
+}
+
+@Composable
+fun bulkSelectionButton(toggleSelectionMode: () -> Unit) =
+    AppBar.Action(
+        title = stringResource(MR.strings.action_bulk_select),
+        icon = Icons.Outlined.Checklist,
+        onClick = toggleSelectionMode,
+    )
+
+@Preview
+@Composable
+fun BulkSelectionButtonPreview() {
+    bulkSelectionButton { }
 }

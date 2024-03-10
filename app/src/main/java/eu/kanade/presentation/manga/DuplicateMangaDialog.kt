@@ -12,6 +12,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -151,6 +152,20 @@ fun DuplicateMangasDialog(
                 }
             }
         },
+    )
+}
+
+@Preview
+@Composable
+fun DuplicateMangasDialogPreview() {
+    DuplicateMangasDialog(
+        onDismissRequest = { },
+        onAllowAllDuplicate = { },
+        onSkipAllDuplicate = { },
+        onOpenManga = { },
+        onAllowDuplicate = { },
+        onSkipDuplicate = { },
+        duplicatedName = "Berserk",
     )
 }
 // KMK <--

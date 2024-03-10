@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.PushPin
@@ -27,9 +26,9 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
@@ -66,11 +65,7 @@ fun GlobalSearchToolbar(
                 actions = {
                     AppBarActions(
                         actions = persistentListOf(
-                            AppBar.Action(
-                                title = stringResource(MR.strings.action_bulk_select),
-                                icon = Icons.Outlined.Checklist,
-                                onClick = toggleSelectionMode,
-                            ),
+                            bulkSelectionButton(toggleSelectionMode),
                         )
                     )
                 },
