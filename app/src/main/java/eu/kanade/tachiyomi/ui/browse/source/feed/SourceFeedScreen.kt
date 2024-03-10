@@ -4,8 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -29,7 +27,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
 import exh.util.nullIfBlank
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
@@ -47,7 +44,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
-        val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
         // KMK <--
 
@@ -78,22 +74,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             sourceId = screenModel.source.id,
             onLongClickManga = { manga ->
                 if (!bulkFavoriteState.selectionMode) {
-                    scope.launchIO {
-                        val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
-                        when {
-                            manga.favorite -> bulkFavoriteScreenModel.setDialog(
-                                BulkFavoriteScreenModel.Dialog.RemoveManga(manga)
-                            )
-                            duplicateManga != null -> bulkFavoriteScreenModel.setDialog(
-                                BulkFavoriteScreenModel.Dialog.AddDuplicateManga(
-                                    manga,
-                                    duplicateManga,
-                                ),
-                            )
-                            else -> bulkFavoriteScreenModel.addFavorite(manga)
-                        }
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
+                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                 } else {
                     navigator.push(MangaScreen(manga.id, true))
                 }

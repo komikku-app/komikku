@@ -7,9 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -24,7 +22,6 @@ import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class GlobalSearchScreen(
@@ -51,7 +48,6 @@ class GlobalSearchScreen(
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
-        val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
@@ -101,22 +97,7 @@ class GlobalSearchScreen(
                 onLongClickItem = { manga ->
                     // KMK -->
                     if (!bulkFavoriteState.selectionMode) {
-                        scope.launchIO {
-                            val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
-                            when {
-                                manga.favorite -> bulkFavoriteScreenModel.setDialog(
-                                    BulkFavoriteScreenModel.Dialog.RemoveManga(manga)
-                                )
-                                duplicateManga != null -> bulkFavoriteScreenModel.setDialog(
-                                    BulkFavoriteScreenModel.Dialog.AddDuplicateManga(
-                                        manga,
-                                        duplicateManga,
-                                    ),
-                                )
-                                else -> bulkFavoriteScreenModel.addFavorite(manga)
-                            }
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                     } else {
                         // KMK <--
                         navigator.push(MangaScreen(manga.id, true))
