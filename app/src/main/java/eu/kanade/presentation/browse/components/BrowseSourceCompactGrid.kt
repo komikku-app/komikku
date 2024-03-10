@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
@@ -33,6 +34,9 @@ fun BrowseSourceCompactGrid(
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    // KMK -->
+    selection: List<Manga>,
+    // KMK <--
 ) {
     LazyVerticalGrid(
         columns = columns,
@@ -60,6 +64,9 @@ fun BrowseSourceCompactGrid(
                 // SY <--
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
+                // KMK -->
+                isSelected = selection?.fastAny { selected -> selected.id == manga.id } ?: false,
+                // KMK <--
             )
         }
 
@@ -79,6 +86,9 @@ private fun BrowseSourceCompactGridItem(
     // SY <--
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
+    // KMK -->
+    isSelected: Boolean = false,
+    // KMK <--
 ) {
     MangaCompactGridItem(
         title = manga.title,
@@ -89,7 +99,13 @@ private fun BrowseSourceCompactGridItem(
             ogUrl = manga.thumbnailUrl,
             lastModified = manga.coverLastModified,
         ),
-        coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+        coverAlpha = when {
+            // KMK -->
+            isSelected -> CommonMangaItemDefaults.BrowseSelectedCoverAlpha
+            // KMK <--
+            manga.favorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
+            else -> 1f
+        },
         coverBadgeStart = {
             InLibraryBadge(enabled = manga.favorite)
         },

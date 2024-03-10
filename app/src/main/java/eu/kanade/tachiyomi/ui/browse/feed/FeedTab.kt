@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.Composable
@@ -7,6 +8,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
@@ -18,7 +20,15 @@ import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
 import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
+import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
@@ -29,10 +39,28 @@ import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun Screen.feedTab(): TabContent {
+fun Screen.feedTab(
+    // KMK -->
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    // KMK <--
+): TabContent {
     val navigator = LocalNavigator.currentOrThrow
     val screenModel = rememberScreenModel { FeedScreenModel() }
     val state by screenModel.state.collectAsState()
+
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+    val haptic = LocalHapticFeedback.current
+
+    BackHandler(enabled = bulkFavoriteState.selectionMode) {
+        bulkFavoriteScreenModel.backHandler()
+    }
+
+    LaunchedEffect(bulkFavoriteState.selectionMode) {
+        HomeScreen.showBottomNav(!bulkFavoriteState.selectionMode)
+    }
+    // KMK <--
 
     DisposableEffect(navigator.lastEvent) {
         if (navigator.lastEvent == StackEvent.Push) {
@@ -58,6 +86,9 @@ fun Screen.feedTab(): TabContent {
                     screenModel.openAddDialog()
                 },
             ),
+            // KMK -->
+            bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+            // KMK <--
         ),
         content = { contentPadding, snackbarHostState ->
             FeedScreen(
@@ -89,8 +120,24 @@ fun Screen.feedTab(): TabContent {
                 },
                 onClickDelete = screenModel::openDeleteDialog,
                 onClickManga = { manga ->
-                    navigator.push(MangaScreen(manga.id, true))
+                    // KMK -->
+                    if (bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.toggleSelection(manga)
+                    } else {
+                        // KMK <--
+                        navigator.push(MangaScreen(manga.id, true))
+                    }
                 },
+                // KMK -->
+                onLongClickManga = { manga ->
+                    if (!bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                    } else {
+                        navigator.push(MangaScreen(manga.id, true))
+                    }
+                },
+                selection = bulkFavoriteState.selection,
+                // KMK <--
                 onRefresh = screenModel::init,
                 getMangaState = { manga, source -> screenModel.getManga(initialManga = manga, source = source) },
             )
@@ -132,6 +179,22 @@ fun Screen.feedTab(): TabContent {
                     }
                 }
             }
+
+            // KMK -->
+            when (bulkFavoriteState.dialog) {
+                is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
+                    AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+                is BulkFavoriteScreenModel.Dialog.RemoveManga ->
+                    RemoveMangaDialog(bulkFavoriteScreenModel)
+                is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
+                    ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+                is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                    ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+                is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                    AllowDuplicateDialog(bulkFavoriteScreenModel)
+                else -> {}
+            }
+            // KMK <--
 
             val internalErrString = stringResource(MR.strings.internal_error)
             val tooManyFeedsString = stringResource(SYMR.strings.too_many_in_feed)

@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
@@ -27,6 +28,9 @@ fun BrowseSourceSimpleToolbar(
     displayMode: LibraryDisplayMode?,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    // KMK -->
+    toggleSelectionMode: () -> Unit,
+    // KMK <--
 ) {
     AppBar(
         navigateUp = navigateUp,
@@ -41,6 +45,9 @@ fun BrowseSourceSimpleToolbar(
                         icon = Icons.Outlined.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ),
+                    // KMK -->
+                    bulkSelectionButton(toggleSelectionMode),
+                    // KMK <--
                 ),
             )
             DropdownMenu(

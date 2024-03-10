@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.migration.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -14,9 +15,15 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
@@ -44,15 +51,43 @@ data class SourceSearchScreen(
 
         val snackbarHostState = remember { SnackbarHostState() }
 
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        BackHandler(enabled = bulkFavoriteState.selectionMode) {
+            bulkFavoriteScreenModel.toggleSelectionMode()
+        }
+        // KMK <--
+
         Scaffold(
             topBar = { scrollBehavior ->
-                SearchToolbar(
-                    searchQuery = state.toolbarQuery ?: "",
-                    onChangeSearchQuery = screenModel::setToolbarQuery,
-                    onClickCloseSearch = navigator::pop,
-                    onSearch = screenModel::search,
-                    scrollBehavior = scrollBehavior,
-                )
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    SelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    )
+                } else {
+                    // KMK <--
+                    SearchToolbar(
+                        searchQuery = state.toolbarQuery ?: "",
+                        onChangeSearchQuery = screenModel::setToolbarQuery,
+                        onClickCloseSearch = navigator::pop,
+                        onSearch = screenModel::search,
+                        scrollBehavior = scrollBehavior,
+                        // KMK -->
+                        actions = {
+                            AppBarActions(
+                                actions = persistentListOf(
+                                    bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                                )
+                            )
+                        },
+                        // KMK <--
+                    )
+                }
             },
             floatingActionButton = {
                 // SY -->
@@ -96,8 +131,19 @@ data class SourceSearchScreen(
                 },
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) },
-                onMangaClick = openMigrateDialog,
+                onMangaClick = { manga ->
+                    // KMK -->
+                    if (bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.toggleSelection(manga)
+                    } else {
+                        // KMK <--
+                        openMigrateDialog(manga)
+                    }
+                },
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
+                // KMK -->
+                selection = bulkFavoriteState.selection,
+                // KMK <--
             )
         }
 
@@ -123,5 +169,15 @@ data class SourceSearchScreen(
             }
             else -> {}
         }
+
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            else -> {}
+        }
+        // KMK <--
     }
 }

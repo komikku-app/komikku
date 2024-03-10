@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -14,6 +15,12 @@ import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -33,6 +40,13 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
 
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        val haptic = LocalHapticFeedback.current
+        // KMK <--
+
         SourceFeedScreen(
             name = screenModel.source.name,
             isLoading = state.isLoading,
@@ -43,13 +57,29 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onClickLatest = { onLatestClick(navigator, screenModel.source) },
             onClickSavedSearch = { onSavedSearchClick(navigator, screenModel.source, it) },
             onClickDelete = screenModel::openDeleteFeed,
-            onClickManga = { onMangaClick(navigator, it) },
+            onClickManga = {
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    bulkFavoriteScreenModel.toggleSelection(it)
+                } else {
+                    // KMK <--
+                    onMangaClick(navigator, it)
+                }
+            },
             onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
             searchQuery = state.searchQuery,
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
-            id = screenModel.source.id,
+            sourceId = screenModel.source.id,
+            onLongClickManga = { manga ->
+                if (!bulkFavoriteState.selectionMode) {
+                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                } else {
+                    navigator.push(MangaScreen(manga.id, true))
+                }
+            },
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             // KMK <--
         )
 
@@ -140,8 +170,30 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             null -> Unit
         }
 
-        BackHandler(state.searchQuery != null) {
-            screenModel.search(null)
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
+                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
+                RemoveMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
+                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            else -> {}
+        }
+        // KMK <--
+
+        BackHandler(state.searchQuery != null || bulkFavoriteState.selectionMode) {
+            // KMK -->
+            if (bulkFavoriteState.selectionMode) {
+                bulkFavoriteScreenModel.backHandler()
+            } else {
+                // KMK <--
+                screenModel.search(null)
+            }
         }
     }
 

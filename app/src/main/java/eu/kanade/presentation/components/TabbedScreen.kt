@@ -15,6 +15,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -36,10 +39,17 @@ fun TabbedScreen(
     startIndex: Int? = null,
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
+    // KMK -->
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    // KMK <--
 ) {
     val scope = rememberCoroutineScope()
     val state = rememberPagerState { tabs.size }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    // KMK <--
 
     LaunchedEffect(startIndex) {
         if (startIndex != null) {
@@ -51,14 +61,23 @@ fun TabbedScreen(
         topBar = {
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
-
-            SearchToolbar(
-                titleContent = { AppBarTitle(stringResource(titleRes)) },
-                searchEnabled = searchEnabled,
-                searchQuery = if (searchEnabled) searchQuery else null,
-                onChangeSearchQuery = onChangeSearchQuery,
-                actions = { AppBarActions(tab.actions) },
-            )
+            // KMK -->
+            if (bulkFavoriteState.selectionMode) {
+                SelectionToolbar(
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                )
+            } else {
+                // KMK <--
+                SearchToolbar(
+                    titleContent = { AppBarTitle(stringResource(titleRes)) },
+                    searchEnabled = searchEnabled,
+                    searchQuery = if (searchEnabled) searchQuery else null,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    actions = { AppBarActions(tab.actions) },
+                )
+            }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->

@@ -65,6 +65,10 @@ data class BrowseTab(
         val extensionsScreenModel = rememberScreenModel { ExtensionsScreenModel() }
         val extensionsState by extensionsScreenModel.state.collectAsState()
 
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        // KMK <--
+
         TabbedScreen(
             titleRes = MR.strings.browse,
             // SY -->
@@ -76,7 +80,7 @@ data class BrowseTab(
                 )
             } else if (feedTabInFront) {
                 persistentListOf(
-                    feedTab(),
+                    feedTab(bulkFavoriteScreenModel),
                     sourcesTab(),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
@@ -84,7 +88,7 @@ data class BrowseTab(
             } else {
                 persistentListOf(
                     sourcesTab(),
-                    feedTab(),
+                    feedTab(bulkFavoriteScreenModel),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
                 )
@@ -93,6 +97,9 @@ data class BrowseTab(
             // SY <--
             searchQuery = extensionsState.searchQuery,
             onChangeSearchQuery = extensionsScreenModel::search,
+            // KMK -->
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+            // KMK <--
         )
 
         LaunchedEffect(Unit) {

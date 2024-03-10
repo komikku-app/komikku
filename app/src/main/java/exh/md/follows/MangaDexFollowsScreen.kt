@@ -1,5 +1,6 @@
 package exh.md.follows
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -18,8 +19,12 @@ import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -38,17 +43,39 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         val screenModel = rememberScreenModel { MangaDexFollowsScreenModel(sourceId) }
         val state by screenModel.state.collectAsState()
 
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        BackHandler(enabled = bulkFavoriteState.selectionMode) {
+            bulkFavoriteScreenModel.toggleSelectionMode()
+        }
+        // KMK <--
+
         val snackbarHostState = remember { SnackbarHostState() }
 
         Scaffold(
             topBar = { scrollBehavior ->
-                BrowseSourceSimpleToolbar(
-                    title = stringResource(SYMR.strings.mangadex_follows),
-                    displayMode = screenModel.displayMode,
-                    onDisplayModeChange = { screenModel.displayMode = it },
-                    navigateUp = navigator::pop,
-                    scrollBehavior = scrollBehavior,
-                )
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    SelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    )
+                } else {
+                    // KMK <--
+                    BrowseSourceSimpleToolbar(
+                        title = stringResource(SYMR.strings.mangadex_follows),
+                        displayMode = screenModel.displayMode,
+                        onDisplayModeChange = { screenModel.displayMode = it },
+                        navigateUp = navigator::pop,
+                        scrollBehavior = scrollBehavior,
+                        // KMK -->
+                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                        // KMK <--
+                    )
+                }
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState)
@@ -69,23 +96,42 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onWebViewClick = null,
                 onHelpClick = null,
                 onLocalSourceHelpClick = null,
-                onMangaClick = { navigator.push(MangaScreen(it.id, true)) },
-                onMangaLongClick = { manga ->
-                    scope.launchIO {
-                        val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
-                        when {
-                            manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
-                            duplicateManga != null -> screenModel.setDialog(
-                                BrowseSourceScreenModel.Dialog.AddDuplicateManga(
-                                    manga,
-                                    duplicateManga,
-                                ),
-                            )
-                            else -> screenModel.addFavorite(manga)
-                        }
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onMangaClick = {
+                    // KMK -->
+                    if (bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.toggleSelection(it)
+                    } else {
+                        // KMK <--
+                        navigator.push(MangaScreen(it.id, true))
                     }
                 },
+                onMangaLongClick = { manga ->
+                    // KMK -->
+                    if (bulkFavoriteState.selectionMode) {
+                        navigator.push(MangaScreen(manga.id, true))
+                    } else {
+                        // KMK <--
+                        scope.launchIO {
+                            val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
+                            when {
+                                manga.favorite -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga)
+                                )
+                                duplicateManga != null -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(
+                                        manga,
+                                        duplicateManga,
+                                    ),
+                                )
+                                else -> screenModel.addFavorite(manga)
+                            }
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    }
+                },
+                // KMK -->
+                selection = bulkFavoriteState.selection,
+                // KMK <--
             )
         }
 
@@ -123,5 +169,15 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
             }
             else -> {}
         }
+
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            else -> {}
+        }
+        // KMK <--
     }
 }

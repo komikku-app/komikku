@@ -4,13 +4,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
+import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
@@ -32,22 +36,42 @@ fun GlobalSearchScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
+    // KMK -->
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    // KMK <--
 ) {
+    // KMK -->
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    // KMK <--
+
     Scaffold(
         topBar = { scrollBehavior ->
-            GlobalSearchToolbar(
-                searchQuery = state.searchQuery,
-                progress = state.progress,
-                total = state.total,
-                navigateUp = navigateUp,
-                onChangeSearchQuery = onChangeSearchQuery,
-                onSearch = onSearch,
-                sourceFilter = state.sourceFilter,
-                onChangeSearchFilter = onChangeSearchFilter,
-                onlyShowHasResults = state.onlyShowHasResults,
-                onToggleResults = onToggleResults,
-                scrollBehavior = scrollBehavior,
-            )
+            // KMK -->
+            if (bulkFavoriteState.selectionMode) {
+                SelectionToolbar(
+                    selectedCount = bulkFavoriteState.selection.size,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                )
+            } else {
+                // KMK <--
+                GlobalSearchToolbar(
+                    searchQuery = state.searchQuery,
+                    progress = state.progress,
+                    total = state.total,
+                    navigateUp = navigateUp,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    onSearch = onSearch,
+                    sourceFilter = state.sourceFilter,
+                    onChangeSearchFilter = onChangeSearchFilter,
+                    onlyShowHasResults = state.onlyShowHasResults,
+                    onToggleResults = onToggleResults,
+                    scrollBehavior = scrollBehavior,
+                    // KMK -->
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    // KMK <--
+                )
+            }
         },
     ) { paddingValues ->
         GlobalSearchContent(
@@ -57,6 +81,9 @@ fun GlobalSearchScreen(
             onClickSource = onClickSource,
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
+            // KMK -->
+            selection = bulkFavoriteState.selection,
+            // KMK <--
         )
     }
 }
@@ -70,6 +97,9 @@ internal fun GlobalSearchContent(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     fromSourceId: Long? = null,
+    // KMK -->
+    selection: List<Manga>,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = contentPadding,
@@ -107,6 +137,9 @@ internal fun GlobalSearchContent(
                                 getManga = getManga,
                                 onClick = onClickItem,
                                 onLongClick = onLongClickItem,
+                                // KMK -->
+                                selection = selection,
+                                // KMK <--
                             )
                         }
                         is SearchItemResult.Error -> {

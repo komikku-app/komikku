@@ -69,6 +69,10 @@ fun FeedScreen(
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    selection: List<Manga>,
+    // KMK <--
     onRefresh: () -> Unit,
     getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
 ) {
@@ -121,6 +125,10 @@ fun FeedScreen(
                                 item = item,
                                 getMangaState = { getMangaState(it, item.source) },
                                 onClickManga = onClickManga,
+                                // KMK -->
+                                onLongClickManga = onLongClickManga,
+                                selection = selection,
+                                // KMK <--
                             )
                         }
                     }
@@ -135,6 +143,10 @@ fun FeedItem(
     item: FeedItemUI,
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickManga: (Manga) -> Unit,
+    // KMK -->
+    onLongClickManga: (Manga) -> Unit,
+    selection: List<Manga>,
+    // KMK <--
 ) {
     when {
         item.results == null -> {
@@ -148,7 +160,10 @@ fun FeedItem(
                 titles = item.results,
                 getManga = getMangaState,
                 onClick = onClickManga,
-                onLongClick = onClickManga,
+                // KMK -->
+                onLongClick = onLongClickManga,
+                selection = selection,
+                // KMK <--
             )
         }
     }
