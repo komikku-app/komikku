@@ -231,7 +231,9 @@ fun FeedAddSearchDialog(
         confirmButton = {
             TextButton(
                 onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) },
+                // KMK -->
                 enabled = selected != null,
+                // KMK <--
             ) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
@@ -244,7 +246,7 @@ fun <T> RadioSelector(
     options: ImmutableList<T>,
     selected: Int?,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
-    onSelectOption: (Int) -> Unit = {},
+    onSelectOption: (Int) -> Unit /* KMK --> */ = {} /* KMK <-- */,
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         optionStrings.forEachIndexed { index, option ->
