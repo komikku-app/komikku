@@ -21,8 +21,8 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableMap
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.model.Source as DomainSource
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.domain.source.model.Source as DomainSource
 
 @Composable
 fun GlobalSearchScreen(
@@ -109,20 +109,25 @@ internal fun GlobalSearchContent(
                 // KMK -->
                 val domainSource = DomainSource(
                     source.id,
-                    "", "",
+                    "",
+                    "",
                     supportsLatest = false,
                     isStub = false
                 )
                 // KMK <--
 
                 GlobalSearchResultItem(
-                    title = (fromSourceId?.let {
-                        "▶ ${source.name}".takeIf { source.id == fromSourceId }
-                    } ?: source.name) +
+                    title = (
+                        fromSourceId?.let {
+                            "▶ ${source.name}".takeIf { source.id == fromSourceId }
+                        } ?: source.name
+                        ) +
                         // KMK -->
-                        (domainSource.installedExtension?.let { extension ->
-                            " (${extension.name})".takeIf { extension.name != source.name }
-                        } ?: ""),
+                        (
+                            domainSource.installedExtension?.let { extension ->
+                                " (${extension.name})".takeIf { extension.name != source.name }
+                            } ?: ""
+                            ),
                     // KMK <--
                     subtitle = LocaleHelper.getLocalizedDisplayName(source.lang),
                     onClick = { onClickSource(source) },
