@@ -180,9 +180,7 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate()
-                    },
+                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
                     onSkipAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },

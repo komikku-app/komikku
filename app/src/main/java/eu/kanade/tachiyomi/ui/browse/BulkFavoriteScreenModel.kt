@@ -35,7 +35,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
 
-
 class BulkFavoriteScreenModel(
     initialState: State = State(),
     private val sourceManager: SourceManager = Injekt.get(),
@@ -54,8 +53,9 @@ class BulkFavoriteScreenModel(
     }
 
     fun toggleSelectionMode() {
-        if (state.value.selectionMode)
+        if (state.value.selectionMode) {
             clearSelection()
+        }
         mutableState.update { it.copy(selectionMode = !it.selectionMode) }
     }
 
@@ -74,18 +74,20 @@ class BulkFavoriteScreenModel(
             }
             state.copy(selection = newSelection)
         }.also {
-            if (state.value.selection.isEmpty())
+            if (state.value.selection.isEmpty()) {
                 toggleSelectionMode()
+            }
         }
     }
 
     fun addFavorite(startIdx: Int = 0) {
         screenModelScope.launch {
             val mangaWithDup = getDuplicateLibraryManga(startIdx)
-            if (mangaWithDup != null)
+            if (mangaWithDup != null) {
                 setDialog(Dialog.AllowDuplicate(mangaWithDup))
-            else
+            } else {
                 addFavoriteDuplicate()
+            }
         }
     }
 
@@ -286,14 +288,12 @@ class BulkFavoriteScreenModel(
                 // Default category set
                 defaultCategory != null -> {
                     moveMangaToCategories(manga, defaultCategory)
-
                     changeMangaFavorite(manga)
                 }
 
                 // Automatic 'Default' or no categories
                 defaultCategoryId == 0 || categories.isEmpty() -> {
                     moveMangaToCategories(manga)
-
                     changeMangaFavorite(manga)
                 }
 
@@ -332,7 +332,7 @@ class BulkFavoriteScreenModel(
     }
 
     @Immutable
-    data class State (
+    data class State(
         val dialog: Dialog? = null,
         val selection: PersistentList<Manga> = persistentListOf(),
         val selectionMode: Boolean = false,

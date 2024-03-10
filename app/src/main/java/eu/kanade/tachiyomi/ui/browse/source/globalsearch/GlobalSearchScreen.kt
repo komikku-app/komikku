@@ -91,19 +91,22 @@ class GlobalSearchScreen(
                 },
                 onClickItem = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode)
+                    if (bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.toggleSelection(it)
-                    else
-                    // KMK <--
+                    } else {
+                        // KMK <--
                         navigator.push(MangaScreen(it.id, true))
+                    }
                 },
                 onLongClickItem = { manga ->
                     // KMK -->
-                    if (!bulkFavoriteState.selectionMode)
+                    if (!bulkFavoriteState.selectionMode) {
                         scope.launchIO {
                             val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
                             when {
-                                manga.favorite -> bulkFavoriteScreenModel.setDialog(BulkFavoriteScreenModel.Dialog.RemoveManga(manga))
+                                manga.favorite -> bulkFavoriteScreenModel.setDialog(
+                                    BulkFavoriteScreenModel.Dialog.RemoveManga(manga)
+                                )
                                 duplicateManga != null -> bulkFavoriteScreenModel.setDialog(
                                     BulkFavoriteScreenModel.Dialog.AddDuplicateManga(
                                         manga,
@@ -114,9 +117,10 @@ class GlobalSearchScreen(
                             }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                    else
-                    // KMK <--
+                    } else {
+                        // KMK <--
                         navigator.push(MangaScreen(manga.id, true))
+                    }
                 },
                 // KMK -->
                 bulkFavoriteScreenModel = bulkFavoriteScreenModel,
@@ -167,9 +171,7 @@ class GlobalSearchScreen(
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate()
-                    },
+                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
                     onSkipAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },

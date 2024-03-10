@@ -63,11 +63,12 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onClickDelete = screenModel::openDeleteFeed,
             onClickManga = {
                 // KMK -->
-                if (bulkFavoriteState.selectionMode)
+                if (bulkFavoriteState.selectionMode) {
                     bulkFavoriteScreenModel.toggleSelection(it)
-                else
-                // KMK <--
+                } else {
+                    // KMK <--
                     onMangaClick(navigator, it)
+                }
             },
             onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
             searchQuery = state.searchQuery,
@@ -76,11 +77,13 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             // KMK -->
             sourceId = screenModel.source.id,
             onLongClickManga = { manga ->
-                if (!bulkFavoriteState.selectionMode)
+                if (!bulkFavoriteState.selectionMode) {
                     scope.launchIO {
                         val duplicateManga = bulkFavoriteScreenModel.getDuplicateLibraryManga(manga)
                         when {
-                            manga.favorite -> bulkFavoriteScreenModel.setDialog(BulkFavoriteScreenModel.Dialog.RemoveManga(manga))
+                            manga.favorite -> bulkFavoriteScreenModel.setDialog(
+                                BulkFavoriteScreenModel.Dialog.RemoveManga(manga)
+                            )
                             duplicateManga != null -> bulkFavoriteScreenModel.setDialog(
                                 BulkFavoriteScreenModel.Dialog.AddDuplicateManga(
                                     manga,
@@ -91,8 +94,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                         }
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                else
+                } else {
                     navigator.push(MangaScreen(manga.id, true))
+                }
             },
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             // KMK <--
@@ -228,9 +232,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate()
-                    },
+                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
                     onSkipAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },
@@ -251,13 +253,14 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         }
         // KMK <--
 
-        BackHandler(state.searchQuery != null/* KMK --> */ || bulkFavoriteState.selectionMode /* KMK <-- */) {
+        BackHandler(state.searchQuery != null || bulkFavoriteState.selectionMode) {
             // KMK -->
-            if(bulkFavoriteState.selectionMode)
+            if (bulkFavoriteState.selectionMode) {
                 bulkFavoriteScreenModel.backHandler()
-            else
+            } else {
                 // KMK <--
                 screenModel.search(null)
+            }
         }
     }
 

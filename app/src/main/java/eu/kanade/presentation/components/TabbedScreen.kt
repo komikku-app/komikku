@@ -62,13 +62,13 @@ fun TabbedScreen(
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
             // KMK -->
-            if (bulkFavoriteState.selectionMode)
+            if (bulkFavoriteState.selectionMode) {
                 SelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
-            else
+            } else {
                 // KMK <--
                 SearchToolbar(
                     titleContent = { AppBarTitle(stringResource(titleRes)) },
@@ -77,6 +77,7 @@ fun TabbedScreen(
                     onChangeSearchQuery = onChangeSearchQuery,
                     actions = { AppBarActions(tab.actions) },
                 )
+            }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->

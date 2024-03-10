@@ -149,7 +149,6 @@ fun AllowDuplicateDialog(
                         Text(text = stringResource(MR.strings.action_cancel))
                     }
                 }
-
             }
         },
     )

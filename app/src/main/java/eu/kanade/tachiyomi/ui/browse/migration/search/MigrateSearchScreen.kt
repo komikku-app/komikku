@@ -89,9 +89,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate()
-                    },
+                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
                     onSkipAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },

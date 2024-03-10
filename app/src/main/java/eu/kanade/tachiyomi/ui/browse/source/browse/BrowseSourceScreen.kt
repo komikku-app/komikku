@@ -154,14 +154,14 @@ data class BrowseSourceScreen(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode)
+                    if (bulkFavoriteState.selectionMode) {
                         SelectionToolbar(
                             selectedCount = bulkFavoriteState.selection.size,
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                         )
-                    else
-                    // KMK <--
+                    } else {
+                        // KMK <--
                         BrowseSourceToolbar(
                             searchQuery = state.toolbarQuery,
                             onSearchQueryChange = screenModel::setToolbarQuery,
@@ -174,9 +174,10 @@ data class BrowseSourceScreen(
                             onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
                             onSearch = screenModel::search,
                             // KMK -->
-                            toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode
+                            toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                             // KMK <--
                         )
+                    }
 
                     Row(
                         modifier = Modifier
@@ -271,22 +272,25 @@ data class BrowseSourceScreen(
                 onLocalSourceHelpClick = onHelpClick,
                 onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode)
+                    if (bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.toggleSelection(it)
-                    else
-                    // KMK <--
+                    } else {
+                        // KMK <--
                         navigator.push(MangaScreen(it.id, true, smartSearchConfig))
+                    }
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode)
+                    if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
-                    else
-                    // KMK <--
+                    } else {
+                        // KMK <--
                         scope.launchIO {
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
-                                manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                                manga.favorite -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga)
+                                )
                                 duplicateManga != null -> screenModel.setDialog(
                                     BrowseSourceScreenModel.Dialog.AddDuplicateManga(
                                         manga,
@@ -296,7 +300,8 @@ data class BrowseSourceScreen(
                                 else -> screenModel.addFavorite(manga)
                             }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }   
+                        }
+                    }
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
@@ -405,9 +410,7 @@ data class BrowseSourceScreen(
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate -> {
                 AllowDuplicateDialog(
                     onDismissRequest = onBulkDismissRequest,
-                    onAllowAllDuplicate = {
-                        bulkFavoriteScreenModel.addFavoriteDuplicate()
-                    },
+                    onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
                     onSkipAllDuplicate = {
                         bulkFavoriteScreenModel.addFavoriteDuplicate(skipAllDuplicates = true)
                     },

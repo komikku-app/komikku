@@ -119,14 +119,14 @@ fun SourceFeedScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (bulkFavoriteState.selectionMode)
+            if (bulkFavoriteState.selectionMode) {
                 SelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
-            else
-            // KMK <--
+            } else {
+                // KMK <--
                 SourceFeedToolbar(
                     title = name,
                     searchQuery = searchQuery,
@@ -138,6 +138,7 @@ fun SourceFeedScreen(
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
+            }
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(

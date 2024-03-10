@@ -80,7 +80,7 @@ data class BrowseTab(
                 )
             } else if (feedTabInFront) {
                 persistentListOf(
-                    feedTab(/* KMK --> */bulkFavoriteScreenModel/* KMK <-- */),
+                    feedTab(bulkFavoriteScreenModel),
                     sourcesTab(),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
@@ -88,7 +88,7 @@ data class BrowseTab(
             } else {
                 persistentListOf(
                     sourcesTab(),
-                    feedTab(/* KMK --> */bulkFavoriteScreenModel/* KMK <-- */),
+                    feedTab(bulkFavoriteScreenModel),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
                 )

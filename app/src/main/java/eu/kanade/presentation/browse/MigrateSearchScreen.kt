@@ -37,14 +37,14 @@ fun MigrateSearchScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (bulkFavoriteState.selectionMode)
+            if (bulkFavoriteState.selectionMode) {
                 SelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                 )
-            else
-            // KMK <--
+            } else {
+                // KMK <--
                 GlobalSearchToolbar(
                     searchQuery = state.searchQuery,
                     progress = state.progress,
@@ -58,9 +58,10 @@ fun MigrateSearchScreen(
                     onToggleResults = onToggleResults,
                     scrollBehavior = scrollBehavior,
                     // KMK -->
-                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
+            }
         },
     ) { paddingValues ->
         GlobalSearchContent(
