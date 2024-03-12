@@ -2,6 +2,7 @@ package eu.kanade.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,6 +15,7 @@ fun SelectionToolbar(
     selectedCount: Int,
     onClickClearSelection: () -> Unit,
     onChangeCategoryClicked: () -> Unit,
+    onSelectAll: () -> Unit = {},
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
@@ -27,6 +29,13 @@ fun SelectionToolbar(
                             if (selectedCount > 0) {
                                 onChangeCategoryClicked()
                             }
+                        },
+                    ),
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_select_all),
+                        icon = Icons.Filled.SelectAll,
+                        onClick = {
+                            onSelectAll.invoke()
                         },
                     ),
                 ),

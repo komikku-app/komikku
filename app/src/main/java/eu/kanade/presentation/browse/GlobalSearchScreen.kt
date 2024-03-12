@@ -52,6 +52,20 @@ fun GlobalSearchScreen(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        state.filteredItems.forEach { (_, result) ->
+                            when (result) {
+                                is SearchItemResult.Success -> {
+                                    result.result.map{manga ->
+
+                                        if (!bulkFavoriteState.selection.contains(manga))
+                                            bulkFavoriteScreenModel.toggleSelection(manga)
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    },
                 )
             } else {
                 // KMK <--
