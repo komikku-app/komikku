@@ -91,6 +91,7 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.source.isEhBasedSource
+import exh.ui.ifSourcesLoaded
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.collections.immutable.persistentSetOf
@@ -389,6 +390,10 @@ class ReaderActivity : BaseActivity() {
                     onChangeReadingMode = viewModel::setMangaReadingMode,
                     onChangeOrientation = viewModel::setMangaOrientationType,
                 )
+            }
+
+            if (!ifSourcesLoaded()) {
+                return@setComposeContent
             }
 
             val isHttpSource = viewModel.getSource() is HttpSource

@@ -39,8 +39,10 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.sourcePreferences
 import eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText.Companion.setIncognito
 import exh.source.EnhancedHttpSource
+import exh.ui.ifSourcesLoaded
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -48,6 +50,11 @@ class SourcePreferencesScreen(val sourceId: Long) : Screen() {
 
     @Composable
     override fun Content() {
+        if (!ifSourcesLoaded()) {
+            LoadingScreen()
+            return
+        }
+
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
 
@@ -130,7 +137,7 @@ class SourcePreferencesFragment : PreferenceFragmentCompat() {
         // SY -->
         val source = Injekt.get<SourceManager>()
             .getOrStub(sourceId)
-            ?.let { source ->
+            .let { source ->
                 if (source is EnhancedHttpSource) {
                     if (source.enhancedSource is ConfigurableSource) {
                         source.source()
@@ -141,7 +148,6 @@ class SourcePreferencesFragment : PreferenceFragmentCompat() {
                     source
                 }
             }
-            ?: throw NullPointerException("source = null, SOURCE_ID = $SOURCE_ID")
         // SY <--
         val sourceScreen = preferenceManager.createPreferenceScreen(requireContext())
 
