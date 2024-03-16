@@ -157,6 +157,7 @@
     <string name="put_recommends_in_overflow_summary">將推薦按鈕放在彈出選單而不是作品頁面</string>
     <string name="put_merge_in_overflow">在選單顯示合併</string>
     <string name="put_merge_in_overflow_summary">將合併按鈕放在彈出選單而不是作品頁面</string>
+    <string name="pref_previews_row_count">預覽行數</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">導覽列</string>
