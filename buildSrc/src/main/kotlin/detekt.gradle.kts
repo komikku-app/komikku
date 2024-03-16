@@ -29,6 +29,18 @@ detekt {
     baseline = file(baselineFile)
 }
 
+val detektProjectBaseline by tasks.registering(DetektCreateBaselineTask::class) {
+    description = "Overrides current baseline."
+    buildUponDefaultConfig.set(true)
+    ignoreFailures.set(true)
+    parallel.set(true)
+    setSource(files(rootDir))
+    config.setFrom(configFile)
+    baseline = file(baselineFile)
+    include(kotlinFiles)
+    exclude(resourceFiles, buildFiles, generatedFiles, scriptsFiles)
+}
+
 tasks.withType<Detekt>().configureEach {
     include(kotlinFiles)
     exclude(resourceFiles, buildFiles, generatedFiles, scriptsFiles)
