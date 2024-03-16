@@ -18,17 +18,14 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
-      - name: TAG - Bump version and push tag
-        uses: anothrNick/github-tag-action@1.67.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          RELEASE_BRANCHES: preview
-          DEFAULT_BUMP: patch
+      - name: Create Tag
+        run: |
+          git tag "${{ github.run_number }}"
+          git push origin "${{ github.run_number }}"
 
       - name: PING - Dispatch initiating repository event
         run: |
-          curl -X POST https://api.github.com/repos/jobobby04/TachiyomiSYPreview/dispatches \
+          curl -X POST https://api.github.com/repos/komikku-app/KomikkuPreview/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
           -u ${{ secrets.ACCESS_TOKEN }} \
           --data '{"event_type": "ping", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
