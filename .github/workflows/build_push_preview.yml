@@ -21,7 +21,7 @@ jobs:
       - name: Create Tag
         run: |
           git tag "${{ github.run_number }}"
-          git push origin "${{ github.run_number }}"
+          git push origin "preview-${{ github.run_number }}"
 
       - name: PING - Dispatch initiating repository event
         run: |
