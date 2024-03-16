@@ -42,6 +42,7 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -51,6 +52,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -160,6 +162,13 @@ object LibraryTab : Tab {
                                     context.stringResource(MR.strings.information_no_entries_found),
                                 )
                             }
+                        }
+                    },
+                    onClickSyncNow = {
+                        if (!SyncDataJob.isAnyJobRunning(context)) {
+                            SyncDataJob.startNow(context)
+                        } else {
+                            context.toast(MR.strings.sync_in_progress)
                         }
                     },
                     // SY -->

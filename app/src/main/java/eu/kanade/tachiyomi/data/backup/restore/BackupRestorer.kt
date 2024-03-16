@@ -34,7 +34,7 @@ class BackupRestorer(
 
     private val categoriesRestorer: CategoriesRestorer = CategoriesRestorer(),
     private val preferenceRestorer: PreferenceRestorer = PreferenceRestorer(context),
-    private val mangaRestorer: MangaRestorer = MangaRestorer(),
+    private val mangaRestorer: MangaRestorer = MangaRestorer(isSync),
     // SY -->
     private val savedSearchRestorer: SavedSearchRestorer = SavedSearchRestorer(),
     // SY <--

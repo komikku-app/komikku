@@ -68,4 +68,8 @@
         <item quantity="one">%d depo</item>
         <item quantity="other">%d depo</item>
     </plurals>
+    <plurals name="num_repos">
+        <item quantity="one">%d depo</item>
+        <item quantity="other">%d depo</item>
+    </plurals>
 </resources>
