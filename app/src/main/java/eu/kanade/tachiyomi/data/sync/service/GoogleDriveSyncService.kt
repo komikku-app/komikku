@@ -469,9 +469,10 @@ class GoogleDriveService(private val context: Context) {
     }
 
     /**
-     * Handles the authorization code returned after the user has granted the application permission to access their Google Drive account.
-     * It obtains the access token and refresh token using the authorization code, saves the tokens to the SyncPreferences,
-     * sets up the Google Drive service using the obtained tokens, and initializes the service.
+     * Handles the authorization code returned after the user has granted the application permission to access their
+     * Google Drive account.
+     * It obtains the access token and refresh token using the authorization code, saves the tokens to the
+     * SyncPreferences, sets up the Google Drive service using the obtained tokens, and initializes the service.
      * @param authorizationCode The authorization code obtained from the OAuthCallbackServer.
      * @param activity The current activity.
      * @param onSuccess A callback function to be called on successful authorization.

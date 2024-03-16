@@ -70,7 +70,8 @@ abstract class SyncService(
         val mergedCategoriesList =
             mergeCategoriesLists(localSyncData.backup?.backupCategories, remoteSyncData.backup?.backupCategories)
 
-        val mergedSourcesList = mergeSourcesLists(localSyncData.backup?.backupSources, remoteSyncData.backup?.backupSources)
+        val mergedSourcesList =
+            mergeSourcesLists(localSyncData.backup?.backupSources, remoteSyncData.backup?.backupSources)
         val mergedPreferencesList =
             mergePreferencesLists(localSyncData.backup?.backupPreferences, remoteSyncData.backup?.backupPreferences)
         val mergedSourcePreferencesList = mergeSourcePreferencesLists(
@@ -84,7 +85,6 @@ abstract class SyncService(
             remoteSyncData.backup?.backupSavedSearches,
         )
         // SY <--
-
 
         // Create the merged Backup object
         val mergedBackup = Backup(
@@ -150,10 +150,14 @@ abstract class SyncService(
                 local != null && remote != null -> {
                     // Compare versions to decide which manga to keep
                     if (local.version >= remote.version) {
-                        logcat(LogPriority.DEBUG, logTag) { "Keeping local version of ${local.title} with merged chapters." }
+                        logcat(LogPriority.DEBUG, logTag) {
+                            "Keeping local version of ${local.title} with merged chapters."
+                        }
                         local.copy(chapters = mergeChapters(local.chapters, remote.chapters))
                     } else {
-                        logcat(LogPriority.DEBUG, logTag) { "Keeping remote version of ${remote.title} with merged chapters." }
+                        logcat(LogPriority.DEBUG, logTag) {
+                            "Keeping remote version of ${remote.title} with merged chapters."
+                        }
                         remote.copy(chapters = mergeChapters(local.chapters, remote.chapters))
                     }
                 }
@@ -227,7 +231,11 @@ abstract class SyncService(
                 }
                 localChapter != null && remoteChapter != null -> {
                     // Use version number to decide which chapter to keep
-                    val chosenChapter = if (localChapter.version >= remoteChapter.version) localChapter else remoteChapter
+                    val chosenChapter = if (localChapter.version >= remoteChapter.version) {
+                        localChapter
+                    } else {
+                        remoteChapter
+                    }
                     logcat(LogPriority.DEBUG, logTag) {
                         "Merging chapter: ${chosenChapter.name}. Chosen version from: ${
                             if (localChapter.version >= remoteChapter.version) "Local" else "Remote"
@@ -427,7 +435,8 @@ abstract class SyncService(
                 }
                 localSourcePreference != null && remoteSourcePreference != null -> {
                     // Merge the individual preferences within the source preferences
-                    val mergedPrefs = mergeIndividualPreferences(localSourcePreference.prefs, remoteSourcePreference.prefs)
+                    val mergedPrefs =
+                        mergeIndividualPreferences(localSourcePreference.prefs, remoteSourcePreference.prefs)
                     BackupSourcePreferences(sourceKey, mergedPrefs)
                 }
                 else -> null
@@ -448,8 +457,6 @@ abstract class SyncService(
         val mergedPrefsMap = (localPrefs + remotePrefs).associateBy { it.key }
         return mergedPrefsMap.values.toList()
     }
-
-
 
     // SY -->
     private fun mergeSavedSearchesLists(
@@ -507,5 +514,4 @@ abstract class SyncService(
         return mergedSearches
     }
     // SY <--
-
 }

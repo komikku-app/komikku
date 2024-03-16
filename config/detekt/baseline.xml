@@ -14,7 +14,6 @@
     <ID>ArgumentListWrapping:BiometricTimesScreen.kt$BiometricTimesScreen$(SYMR.strings.delete_time_range_confirmation, dialog.timeRange.formattedString)</ID>
     <ID>ArgumentListWrapping:BiometricTimesScreen.kt$BiometricTimesScreen$(context)</ID>
     <ID>ArgumentListWrapping:BiometricTimesScreen.kt$BiometricTimesScreen$(if (startTime == null) SYMR.strings.biometric_lock_start_time.getString(context) else SYMR.strings.biometric_lock_end_time.getString(context))</ID>
-    <ID>ArgumentListWrapping:ChapterLoader.kt$ChapterLoader$(chapter, manga, source, downloadManager, downloadProvider, tempFileManager)</ID>
     <ID>ArgumentListWrapping:DataSaver.kt$BandwidthHeroDataSaver$(imageUrl)</ID>
     <ID>ArgumentListWrapping:DataSaver.kt$WsrvNlDataSaver$(imageUrl)</ID>
     <ID>ArgumentListWrapping:DownloadPageLoader.kt$DownloadPageLoader$(dbChapter.name, dbChapter.scanlator, /* SY --&gt; */ manga.ogTitle /* SY &lt;-- */, source)</ID>
@@ -305,6 +304,7 @@
     <ID>CyclomaticComplexMethod:RateLimitInterceptor.kt$RateLimitInterceptor$override fun intercept(chain: Interceptor.Chain): Response</ID>
     <ID>CyclomaticComplexMethod:ReaderActivity.kt$ReaderActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
     <ID>CyclomaticComplexMethod:ReaderActivity.kt$ReaderActivity$private fun initializeMenu()</ID>
+    <ID>CyclomaticComplexMethod:ReaderViewModel.kt$ReaderViewModel$private suspend fun updateChapterProgress( readerChapter: ReaderChapter, page: Page/* SY --&gt; */, hasExtraPage: Boolean, /* SY &lt;-- */ )</ID>
     <ID>CyclomaticComplexMethod:Scaffold.kt$@Composable private fun ScaffoldLayout( fabPosition: FabPosition, topBar: @Composable () -&gt; Unit, startBar: @Composable () -&gt; Unit, content: @Composable (PaddingValues) -&gt; Unit, snackbar: @Composable () -&gt; Unit, fab: @Composable () -&gt; Unit, contentWindowInsets: WindowInsets, bottomBar: @Composable () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:SearchEngine.kt$SearchEngine$fun parseQuery(query: String, enableWildcard: Boolean = true)</ID>
     <ID>CyclomaticComplexMethod:SettingsEhScreen.kt$SettingsEhScreen$private fun getRelativeTimeFromNow(then: Duration): RelativeTime</ID>
@@ -414,6 +414,7 @@
     <ID>FunctionNaming:Requests.kt$fun DELETE( url: String, headers: Headers = DEFAULT_HEADERS, body: RequestBody = DEFAULT_BODY, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
     <ID>FunctionNaming:Requests.kt$fun GET( url: HttpUrl, headers: Headers = DEFAULT_HEADERS, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
     <ID>FunctionNaming:Requests.kt$fun GET( url: String, headers: Headers = DEFAULT_HEADERS, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
+    <ID>FunctionNaming:Requests.kt$fun PATCH( url: String, headers: Headers = DEFAULT_HEADERS, body: RequestBody = DEFAULT_BODY, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
     <ID>FunctionNaming:Requests.kt$fun POST( url: String, headers: Headers = DEFAULT_HEADERS, body: RequestBody = DEFAULT_BODY, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
     <ID>FunctionNaming:Requests.kt$fun PUT( url: String, headers: Headers = DEFAULT_HEADERS, body: RequestBody = DEFAULT_BODY, cache: CacheControl = DEFAULT_CACHE_CONTROL, ): Request</ID>
     <ID>FunctionParameterNaming:MangaScreen.kt$MangaScreen$manga_: Manga?</ID>
@@ -427,11 +428,12 @@
     <ID>ImplicitDefaultLocale:MetadataUtil.kt$MetadataUtil$String.format("%.1f %sB", bytes / unit.toDouble().pow(exp.toDouble()), pre)</ID>
     <ID>ImplicitDefaultLocale:TimeRange.kt$TimeRange$String.format("%02d:%02d - %02d:%02d", startHour, startMinute, endHour, endMinute)</ID>
     <ID>ImportOrdering:Commands.kt$import org.gradle.api.Project import java.io.ByteArrayOutputStream import java.text.SimpleDateFormat import java.util.TimeZone import java.util.Date</ID>
-    <ID>ImportOrdering:LocalSource.kt$import android.content.Context import com.hippo.unifile.UniFile import eu.kanade.tachiyomi.source.CatalogueSource import eu.kanade.tachiyomi.source.Source import eu.kanade.tachiyomi.source.UnmeteredSource import eu.kanade.tachiyomi.source.model.FilterList import eu.kanade.tachiyomi.source.model.MangasPage import eu.kanade.tachiyomi.source.model.SChapter import eu.kanade.tachiyomi.source.model.SManga import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder import eu.kanade.tachiyomi.util.storage.CbzCrypto import eu.kanade.tachiyomi.util.storage.CbzCrypto.addStreamToZip import eu.kanade.tachiyomi.util.storage.CbzCrypto.getCoverStreamFromZip import eu.kanade.tachiyomi.util.storage.CbzCrypto.getZipInputStream import eu.kanade.tachiyomi.util.storage.CbzCrypto.isEncryptedZip import eu.kanade.tachiyomi.util.storage.EpubFile import kotlinx.coroutines.async import kotlinx.coroutines.awaitAll import kotlinx.serialization.json.Json import kotlinx.serialization.json.decodeFromStream import kotlinx.serialization.json.encodeToStream import logcat.LogPriority import nl.adaptivity.xmlutil.AndroidXmlReader import nl.adaptivity.xmlutil.serialization.XML import tachiyomi.core.common.i18n.stringResource import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE import tachiyomi.core.metadata.comicinfo.ComicInfo import tachiyomi.core.metadata.comicinfo.copyFromComicInfo import tachiyomi.core.metadata.comicinfo.getComicInfo import tachiyomi.core.metadata.tachiyomi.MangaDetails import tachiyomi.core.common.storage.UniFileTempFileManager import tachiyomi.core.common.storage.extension import tachiyomi.core.common.storage.nameWithoutExtension import tachiyomi.core.common.util.lang.withIOContext import tachiyomi.core.common.util.system.ImageUtil import tachiyomi.core.common.util.system.logcat import tachiyomi.domain.chapter.service.ChapterRecognition import tachiyomi.domain.manga.model.Manga import tachiyomi.i18n.MR import tachiyomi.source.local.filter.OrderBy import tachiyomi.source.local.image.LocalCoverManager import tachiyomi.source.local.io.Archive import tachiyomi.source.local.io.Format import tachiyomi.source.local.io.LocalSourceFileSystem import tachiyomi.source.local.metadata.fillMetadata import uy.kohesive.injekt.injectLazy import java.io.InputStream import java.nio.charset.StandardCharsets import kotlin.time.Duration.Companion.days import com.github.junrar.Archive as JunrarArchive import tachiyomi.domain.source.model.Source as DomainSource</ID>
+    <ID>ImportOrdering:LocalCoverManager.kt$import android.content.Context import com.hippo.unifile.UniFile import eu.kanade.tachiyomi.source.model.SManga import eu.kanade.tachiyomi.util.storage.CbzCrypto import tachiyomi.core.common.storage.addStreamToZip import eu.kanade.tachiyomi.util.storage.DiskUtil import tachiyomi.core.common.storage.nameWithoutExtension import tachiyomi.core.common.util.system.ImageUtil import tachiyomi.source.local.io.LocalSourceFileSystem import java.io.InputStream</ID>
+    <ID>ImportOrdering:LocalSource.kt$import android.content.Context import android.os.Build import com.hippo.unifile.UniFile import eu.kanade.tachiyomi.source.CatalogueSource import eu.kanade.tachiyomi.source.Source import eu.kanade.tachiyomi.source.UnmeteredSource import eu.kanade.tachiyomi.source.model.FilterList import eu.kanade.tachiyomi.source.model.MangasPage import eu.kanade.tachiyomi.source.model.SChapter import eu.kanade.tachiyomi.source.model.SManga import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder import eu.kanade.tachiyomi.util.storage.CbzCrypto import eu.kanade.tachiyomi.util.storage.EpubFile import kotlinx.coroutines.async import kotlinx.coroutines.awaitAll import kotlinx.serialization.json.Json import kotlinx.serialization.json.decodeFromStream import kotlinx.serialization.json.encodeToStream import logcat.LogPriority import nl.adaptivity.xmlutil.AndroidXmlReader import nl.adaptivity.xmlutil.serialization.XML import tachiyomi.core.common.i18n.stringResource import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE import tachiyomi.core.metadata.comicinfo.ComicInfo import tachiyomi.core.metadata.comicinfo.copyFromComicInfo import tachiyomi.core.metadata.comicinfo.getComicInfo import tachiyomi.core.metadata.tachiyomi.MangaDetails import tachiyomi.core.common.storage.UniFileTempFileManager import tachiyomi.core.common.storage.addStreamToZip import tachiyomi.core.common.storage.extension import tachiyomi.core.common.storage.getCoverStreamFromZip import tachiyomi.core.common.storage.getZipInputStream import tachiyomi.core.common.storage.isEncryptedZip import tachiyomi.core.common.storage.nameWithoutExtension import tachiyomi.core.common.util.lang.withIOContext import tachiyomi.core.common.util.system.ImageUtil import tachiyomi.core.common.util.system.logcat import tachiyomi.domain.chapter.service.ChapterRecognition import tachiyomi.domain.manga.model.Manga import tachiyomi.i18n.MR import tachiyomi.source.local.filter.OrderBy import tachiyomi.source.local.image.LocalCoverManager import tachiyomi.source.local.io.Archive import tachiyomi.source.local.io.Format import tachiyomi.source.local.io.LocalSourceFileSystem import tachiyomi.source.local.metadata.fillMetadata import uy.kohesive.injekt.injectLazy import java.io.InputStream import java.nio.charset.StandardCharsets import kotlin.time.Duration.Companion.days import com.github.junrar.Archive as JunrarArchive import tachiyomi.domain.source.model.Source as DomainSource</ID>
     <ID>Indentation:BackupCreator.kt$BackupCreator$ </ID>
+    <ID>Indentation:LocalSource.kt$LocalSource$ </ID>
     <ID>Indentation:LocalesConfigPlugin.kt$ </ID>
     <ID>Indentation:PagerPageHolder.kt$PagerPageHolder$ </ID>
-    <ID>Indentation:ReaderPreferences.kt$ReaderPreferences$ </ID>
     <ID>InstanceOfCheckForException:AppUpdateDownloadJob.kt$AppUpdateDownloadJob$e is CancellationException</ID>
     <ID>InstanceOfCheckForException:AppUpdateDownloadJob.kt$AppUpdateDownloadJob$e is StreamResetException</ID>
     <ID>InstanceOfCheckForException:BackupRestoreJob.kt$BackupRestoreJob$e is CancellationException</ID>
@@ -533,6 +535,7 @@
     <ID>LongMethod:ReaderViewModel.kt$ReaderViewModel$suspend fun init(mangaId: Long, initialChapterId: Long /* SY --&gt; */, page: Int?/* SY &lt;-- */): Result&lt;Boolean&gt;</ID>
     <ID>LongMethod:SYDomainModule.kt$SYDomainModule$override fun InjektRegistrar.registerInjectables()</ID>
     <ID>LongMethod:SyncChaptersWithSource.kt$SyncChaptersWithSource$suspend fun await( rawSourceChapters: List&lt;SChapter&gt;, manga: Manga, source: Source, manualFetch: Boolean = false, fetchWindow: Pair&lt;Long, Long&gt; = Pair(0, 0), ): List&lt;Chapter&gt;</ID>
+    <ID>LongMethod:SyncManager.kt$SyncManager$suspend fun syncData()</ID>
     <ID>LongMethod:Tester.kt$Tester$@Test fun localFavoritesStorageTester(): Unit</ID>
     <ID>LongMethod:TrackStatus.kt$TrackStatus.Companion$fun parseTrackerStatus(trackerManager: TrackerManager, tracker: Long, status: Long): TrackStatus?</ID>
     <ID>LongMethod:Tsumino.kt$Tsumino$override suspend fun parseIntoMetadata(metadata: TsuminoSearchMetadata, input: Document)</ID>
@@ -547,8 +550,6 @@
     <ID>LongParameterList:HistoryMapper.kt$HistoryMapper$( historyId: Long, mangaId: Long, chapterId: Long, title: String, thumbnailUrl: String?, sourceId: Long, isFavorite: Boolean, coverLastModified: Long, chapterNumber: Double, readAt: Date?, readDuration: Long, )</ID>
     <ID>LongParameterList:MangaChapterListItem.kt$( action: LibraryPreferences.ChapterSwipeAction, read: Boolean, bookmark: Boolean, downloadState: Download.State, background: Color, onSwipe: () -&gt; Unit, )</ID>
     <ID>LongParameterList:MangaCoverFetcher.kt$MangaCoverFetcher$( private val url: String?, private val isLibraryManga: Boolean, private val options: Options, private val coverFileLazy: Lazy&lt;File?&gt;, private val customCoverFileLazy: Lazy&lt;File&gt;, private val diskCacheKeyLazy: Lazy&lt;String&gt;, private val sourceLazy: Lazy&lt;HttpSource?&gt;, private val callFactoryLazy: Lazy&lt;Call.Factory&gt;, private val diskCacheLazy: Lazy&lt;DiskCache&gt;, )</ID>
-    <ID>LongParameterList:MangaMapper.kt$MangaMapper$( id: Long, source: Long, url: String, artist: String?, author: String?, description: String?, genre: List&lt;String&gt;?, title: String, status: Long, thumbnailUrl: String?, favorite: Boolean, lastUpdate: Long?, nextUpdate: Long?, initialized: Boolean, viewerFlags: Long, chapterFlags: Long, coverLastModified: Long, dateAdded: Long, // SY --&gt; @Suppress("UNUSED_PARAMETER") filteredScanlators: String?, // SY &lt;-- updateStrategy: UpdateStrategy, calculateInterval: Long, lastModifiedAt: Long, favoriteModifiedAt: Long?, )</ID>
-    <ID>LongParameterList:MangaMapper.kt$MangaMapper$( id: Long, source: Long, url: String, artist: String?, author: String?, description: String?, genre: List&lt;String&gt;?, title: String, status: Long, thumbnailUrl: String?, favorite: Boolean, lastUpdate: Long?, nextUpdate: Long?, initialized: Boolean, viewerFlags: Long, chapterFlags: Long, coverLastModified: Long, dateAdded: Long, // SY --&gt; @Suppress("UNUSED_PARAMETER") filteredScanlators: String?, // SY &lt;-- updateStrategy: UpdateStrategy, calculateInterval: Long, lastModifiedAt: Long, favoriteModifiedAt: Long?, totalCount: Long, readCount: Double, latestUpload: Long, chapterFetchedAt: Long, lastRead: Long, bookmarkCount: Double, category: Long, )</ID>
     <ID>LongParameterList:MangaRestorer.kt$MangaRestorer$( manga: Manga, chapters: List&lt;BackupChapter&gt;, categories: List&lt;Long&gt;, backupCategories: List&lt;BackupCategory&gt;, history: List&lt;BackupHistory&gt;, tracks: List&lt;BackupTracking&gt;, excludedScanlators: List&lt;String&gt;, // SY --&gt; mergedMangaReferences: List&lt;BackupMergedMangaReference&gt;, flatMetadata: BackupFlatMetadata?, customManga: CustomMangaInfo?, // SY &lt;-- )</ID>
     <ID>LongParameterList:MangaScreen.kt$( manga: Manga, chapters: List&lt;ChapterList&gt;, isAnyChapterSelected: Boolean, chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction, chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction, // SY --&gt; alwaysShowReadingProgress: Boolean, // SY &lt;-- onChapterClicked: (Chapter) -&gt; Unit, onDownloadChapter: ((List&lt;ChapterList.Item&gt;, ChapterDownloadAction) -&gt; Unit)?, onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -&gt; Unit, onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -&gt; Unit, )</ID>
     <ID>LongParameterList:MangaScreenModel.kt$MangaScreenModel$( title: String?, author: String?, artist: String?, thumbnailUrl: String?, description: String?, tags: List&lt;String&gt;?, status: Long?, )</ID>
@@ -567,6 +568,7 @@
     <ID>LongParameterList:WebtoonRecyclerView.kt$WebtoonRecyclerView$( fromRate: Float, toRate: Float, fromX: Float, toX: Float, fromY: Float, toY: Float, )</ID>
     <ID>LoopWithTooManyJumpStatements:DownloadStore.kt$DownloadStore$for</ID>
     <ID>LoopWithTooManyJumpStatements:EHentaiUpdateWorker.kt$EHentaiUpdateWorker$for</ID>
+    <ID>LoopWithTooManyJumpStatements:GoogleDriveSyncService.kt$GoogleDriveSyncService$while</ID>
     <ID>LoopWithTooManyJumpStatements:ImageUtil.kt$ImageUtil$for</ID>
     <ID>LoopWithTooManyJumpStatements:Kavita.kt$Kavita$for</ID>
     <ID>LoopWithTooManyJumpStatements:MemAutoFlushingLookupTable.kt$MemAutoFlushingLookupTable$while</ID>
@@ -615,49 +617,10 @@
     <ID>MagicNumber:Backup.kt$Backup$105</ID>
     <ID>MagicNumber:Backup.kt$Backup$600</ID>
     <ID>MagicNumber:BackupCategory.kt$BackupCategory$100</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$10</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$11</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$3</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$4</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$5</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$6</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$7</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$8</ID>
-    <ID>MagicNumber:BackupChapter.kt$BackupChapter$9</ID>
     <ID>MagicNumber:BackupCreateJob.kt$BackupCreateJob.Companion$10</ID>
     <ID>MagicNumber:BackupDecoder.kt$BackupDecoder$0x1f8b</ID>
     <ID>MagicNumber:BackupFlatMetadata.kt$BackupFlatMetadata$3</ID>
     <ID>MagicNumber:BackupHistory.kt$BackupHistory$3</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$100</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$101</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$102</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$103</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$104</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$105</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$106</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$107</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$108</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$13</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$14</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$16</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$17</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$18</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$3</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$4</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$5</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$6</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$600</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$601</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$602</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$603</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$7</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$8</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$800</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$801</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$802</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$804</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$805</ID>
-    <ID>MagicNumber:BackupManga.kt$BackupManga$9</ID>
     <ID>MagicNumber:BackupMergedMangaReference.kt$BackupMergedMangaReference$3</ID>
     <ID>MagicNumber:BackupMergedMangaReference.kt$BackupMergedMangaReference$4</ID>
     <ID>MagicNumber:BackupMergedMangaReference.kt$BackupMergedMangaReference$5</ID>
@@ -696,7 +659,6 @@
     <ID>MagicNumber:BrowseSourceEHentaiList.kt$5</ID>
     <ID>MagicNumber:CbzCrypto.kt$CbzCrypto$100</ID>
     <ID>MagicNumber:CbzCrypto.kt$CbzCrypto$128</ID>
-    <ID>MagicNumber:CbzCrypto.kt$CbzCrypto$32</ID>
     <ID>MagicNumber:CbzCrypto.kt$CbzCrypto$42</ID>
     <ID>MagicNumber:ChapterCache.kt$ChapterCache$1024</ID>
     <ID>MagicNumber:ChapterDownloadIndicator.kt$0.5f</ID>
@@ -874,6 +836,10 @@
     <ID>MagicNumber:GlanceUtils.kt$64</ID>
     <ID>MagicNumber:GlanceUtils.kt$95</ID>
     <ID>MagicNumber:GlobalSearchItem.kt$99f</ID>
+    <ID>MagicNumber:GoogleDriveSyncService.kt$GoogleDriveSyncService$10</ID>
+    <ID>MagicNumber:GoogleDriveSyncService.kt$GoogleDriveSyncService$1000L</ID>
+    <ID>MagicNumber:GoogleDriveSyncService.kt$GoogleDriveSyncService$16000L</ID>
+    <ID>MagicNumber:GoogleDriveSyncService.kt$GoogleDriveSyncService$3</ID>
     <ID>MagicNumber:Hash.kt$Hash$15</ID>
     <ID>MagicNumber:Hash.kt$Hash$240</ID>
     <ID>MagicNumber:Hash.kt$Hash$4</ID>
@@ -1104,11 +1070,19 @@
     <ID>MagicNumber:Scrollbar.kt$50</ID>
     <ID>MagicNumber:SecureActivityDelegate.kt$SecureActivityDelegate.Companion$60_000</ID>
     <ID>MagicNumber:SecurityPreferences.kt$SecurityPreferences$0x7F</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$10080</ID>
     <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$12</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$1440</ID>
     <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$168</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$180</ID>
     <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$24</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$2880</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$30</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$360</ID>
     <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$48</ID>
     <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$6</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$60</ID>
+    <ID>MagicNumber:SettingsDataScreen.kt$SettingsDataScreen$720</ID>
     <ID>MagicNumber:SettingsDownloadScreen.kt$SettingsDownloadScreen$10</ID>
     <ID>MagicNumber:SettingsDownloadScreen.kt$SettingsDownloadScreen$3</ID>
     <ID>MagicNumber:SettingsDownloadScreen.kt$SettingsDownloadScreen$4</ID>
@@ -1170,6 +1144,12 @@
     <ID>MagicNumber:Surface.kt$4.5f</ID>
     <ID>MagicNumber:Suwayomi.kt$Suwayomi$255</ID>
     <ID>MagicNumber:Suwayomi.kt$Suwayomi$35</ID>
+    <ID>MagicNumber:SyncDataJob.kt$SyncDataJob.Companion$10</ID>
+    <ID>MagicNumber:SyncManager.kt$SyncManager$1000</ID>
+    <ID>MagicNumber:SyncManager.kt$SyncManager$60000</ID>
+    <ID>MagicNumber:SyncYomiSyncService.kt$SyncYomiSyncService$2000L</ID>
+    <ID>MagicNumber:SyncYomiSyncService.kt$SyncYomiSyncService$30L</ID>
+    <ID>MagicNumber:SyncYomiSyncService.kt$SyncYomiSyncService$32000L</ID>
     <ID>MagicNumber:Tabs.kt$0.08f</ID>
     <ID>MagicNumber:Tabs.kt$0.12f</ID>
     <ID>MagicNumber:TimeUtils.kt$4</ID>
@@ -1260,7 +1240,6 @@
     <ID>MaxLineLength:BatchAddScreen.kt$BatchAddScreen$Text(text = stringResource(SYMR.strings.eh_batch_add_title), style = MaterialTheme.typography.titleLarge)</ID>
     <ID>MaxLineLength:BiometricTimesScreen.kt$BiometricTimesScreen$.</ID>
     <ID>MaxLineLength:BiometricTimesScreen.kt$BiometricTimesScreen$text = stringResource(SYMR.strings.delete_time_range_confirmation, dialog.timeRange.formattedString)</ID>
-    <ID>MaxLineLength:ChapterLoader.kt$ChapterLoader$isDownloaded -&gt; DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider, tempFileManager)</ID>
     <ID>MaxLineLength:ComikeyHandler.kt$ComikeyHandler$private val urlForbidden = "https://fakeimg.pl/1800x2252/FFFFFF/000000/?font_size=120&amp;text=This%20chapter%20is%20not%20available%20for%20free.%0A%0AIf%20you%20have%20purchased%20this%20chapter%2C%20please%20%0Aopen%20the%20website%20in%20web%20view%20and%20log%20in."</ID>
     <ID>MaxLineLength:CoroutinesExtensions.kt$*</ID>
     <ID>MaxLineLength:DataSaver.kt$BandwidthHeroDataSaver$imageUrl.contains(".jpeg", true) || imageUrl.contains(".jpg", true) -&gt; if (ignoreJpg) imageUrl else getUrl(imageUrl)</ID>
@@ -1380,6 +1359,8 @@
     <ID>MaxLineLength:SourcesScreenModel.kt$SourcesScreenModel$SourceUiModel.Header(it.key.removePrefix(CATEGORY_KEY_PREFIX), it.value.firstOrNull()?.category != null)</ID>
     <ID>MaxLineLength:SourcesScreenModel.kt$SourcesScreenModel$private</ID>
     <ID>MaxLineLength:SpecificHostRateLimitInterceptor.kt$*</ID>
+    <ID>MaxLineLength:SyncService.kt$SyncService$*</ID>
+    <ID>MaxLineLength:SyncService.kt$SyncService$val</ID>
     <ID>MaxLineLength:TsuminoDescriptionAdapter.kt$binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)</ID>
     <ID>MaxLineLength:TsuminoDescriptionAdapter.kt$binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))</ID>
     <ID>MaxLineLength:WebViewUtil.kt$WebViewUtil$*</ID>
@@ -1391,7 +1372,6 @@
     <ID>MaximumLineLength:BangumiInterceptor.kt$BangumiInterceptor$ </ID>
     <ID>MaximumLineLength:BatchAddScreen.kt$BatchAddScreen$ </ID>
     <ID>MaximumLineLength:BiometricTimesScreen.kt$BiometricTimesScreen$ </ID>
-    <ID>MaximumLineLength:ChapterLoader.kt$ChapterLoader$ </ID>
     <ID>MaximumLineLength:ComikeyHandler.kt$ComikeyHandler$ </ID>
     <ID>MaximumLineLength:DataSaver.kt$BandwidthHeroDataSaver$ </ID>
     <ID>MaximumLineLength:DataSaver.kt$WsrvNlDataSaver$ </ID>
@@ -1453,6 +1433,7 @@
     <ID>MaximumLineLength:ShikimoriApi.kt$ShikimoriApi$ </ID>
     <ID>MaximumLineLength:SourceFeedScreen.kt$SourceFeedScreen$ </ID>
     <ID>MaximumLineLength:SourcesScreenModel.kt$SourcesScreenModel$ </ID>
+    <ID>MaximumLineLength:SyncService.kt$SyncService$ </ID>
     <ID>MaximumLineLength:TsuminoDescriptionAdapter.kt$ </ID>
     <ID>MaximumLineLength:WebtoonPageHolder.kt$WebtoonPageHolder$ </ID>
     <ID>MayBeConst:TsuminoSearchMetadata.kt$TsuminoSearchMetadata.Companion$val BASE_URL = "https://www.tsumino.com"</ID>
@@ -1589,9 +1570,6 @@
     <ID>ModifierWithoutDefault:SortTagListItem.kt$modifier</ID>
     <ID>ModifierWithoutDefault:SourceCategoryListItem.kt$modifier</ID>
     <ID>ModifierWithoutDefault:SourcesFilterScreen.kt$modifier</ID>
-    <ID>MultiLineIfElse:CbzCrypto.kt$CbzCrypto$ZipOutputStream(this.openOutputStream())</ID>
-    <ID>MultiLineIfElse:CbzCrypto.kt$CbzCrypto$ZipOutputStream(this.openOutputStream(), password)</ID>
-    <ID>MultiLineIfElse:CbzCrypto.kt$CbzCrypto$throw zipException</ID>
     <ID>MultiLineIfElse:SettingsAppearanceScreen.kt$SettingsAppearanceScreen$pluralStringResource( SYMR.plurals.row_count, previewsRowCount, previewsRowCount, )</ID>
     <ID>MultiLineIfElse:SettingsAppearanceScreen.kt$SettingsAppearanceScreen$stringResource(MR.strings.disabled)</ID>
     <ID>NestedBlockDepth:Anilist.kt$Anilist$override suspend fun update(track: Track, didReadChapter: Boolean): Track</ID>
@@ -1612,6 +1590,7 @@
     <ID>NestedBlockDepth:FilterHandler.kt$FilterHandler$fun getQueryMap(filters: FilterList): Map&lt;String, Any&gt;</ID>
     <ID>NestedBlockDepth:GalleryAdder.kt$GalleryAdder$suspend fun addGallery( context: Context, url: String, fav: Boolean = false, forceSource: UrlImportableSource? = null, throttleFunc: suspend () -&gt; Unit = {}, retry: Int = 1, ): GalleryAddEvent</ID>
     <ID>NestedBlockDepth:GetMergedChaptersByMangaId.kt$GetMergedChaptersByMangaId$private fun dedupeByPriority( mangaReferences: List&lt;MergedMangaReference&gt;, chapterList: List&lt;Chapter&gt;, ): List&lt;Chapter&gt;</ID>
+    <ID>NestedBlockDepth:GoogleDriveSyncService.kt$GoogleDriveSyncService$override suspend fun beforeSync()</ID>
     <ID>NestedBlockDepth:HBrowse.kt$HBrowse$override suspend fun parseIntoMetadata(metadata: HBrowseSearchMetadata, input: Document)</ID>
     <ID>NestedBlockDepth:ImageUtil.kt$ImageUtil$fun chooseBackground(context: Context, imageStream: InputStream): Drawable</ID>
     <ID>NestedBlockDepth:KavitaApi.kt$KavitaApi$fun getNewToken(apiUrl: String, apiKey: String): String?</ID>
@@ -1636,13 +1615,10 @@
     <ID>NestedBlockDepth:WebtoonRecyclerView.kt$WebtoonRecyclerView.Detector$override fun onTouchEvent(ev: MotionEvent): Boolean</ID>
     <ID>NestedBlockDepth:WebtoonViewer.kt$WebtoonViewer$fun scrollDown()</ID>
     <ID>NewLineAtEndOfFile:Commands.kt$.Commands.kt</ID>
-    <ID>NoBlankLineBeforeRbrace:CbzCrypto.kt$CbzCrypto$ </ID>
-    <ID>NoConsecutiveBlankLines:CbzCrypto.kt$CbzCrypto$ </ID>
     <ID>NoConsecutiveBlankLines:LocalesConfigPlugin.kt$ </ID>
     <ID>NoTrailingSpaces:ReaderViewModel.kt$ReaderViewModel$ </ID>
     <ID>NoUnusedImports:BackupManga.kt$eu.kanade.tachiyomi.data.backup.models.BackupManga.kt</ID>
     <ID>NoUnusedImports:CreateBackupScreen.kt$eu.kanade.presentation.more.settings.screen.data.CreateBackupScreen.kt</ID>
-    <ID>NoUnusedImports:SettingsAdvancedScreen.kt$eu.kanade.presentation.more.settings.screen.SettingsAdvancedScreen.kt</ID>
     <ID>NoUnusedImports:TachiyomiImageDecoder.kt$eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder.kt</ID>
     <ID>PreviewPublic:NamespaceTags.kt$NamespaceTagsPreview</ID>
     <ID>PreviewPublic:Scrollbar.kt$LazyListHorizontalScrollbarPreview</ID>
@@ -1665,12 +1641,14 @@
     <ID>ReturnCount:ExtensionLoader.kt$ExtensionLoader$private fun selectExtensionPackage(shared: ExtensionInfo?, private: ExtensionInfo?): ExtensionInfo?</ID>
     <ID>ReturnCount:FavoritesSyncHelper.kt$FavoritesSyncHelper$private suspend fun beginSync()</ID>
     <ID>ReturnCount:GalleryAdder.kt$GalleryAdder$suspend fun addGallery( context: Context, url: String, fav: Boolean = false, forceSource: UrlImportableSource? = null, throttleFunc: suspend () -&gt; Unit = {}, retry: Int = 1, ): GalleryAddEvent</ID>
+    <ID>ReturnCount:GoogleDriveSyncService.kt$GoogleDriveSyncService$override suspend fun pullSyncData(): SyncData?</ID>
     <ID>ReturnCount:HttpPageLoader.kt$HttpPageLoader$private fun preloadNextPages(currentPage: ReaderPage, amount: Int): List&lt;PriorityPage&gt;</ID>
     <ID>ReturnCount:ImageUtil.kt$ImageUtil$fun chooseBackground(context: Context, imageStream: InputStream): Drawable</ID>
     <ID>ReturnCount:KavitaApi.kt$KavitaApi$fun getNewToken(apiUrl: String, apiKey: String): String?</ID>
     <ID>ReturnCount:KavitaApi.kt$KavitaApi$private fun getLatestChapterRead(url: String): Double</ID>
     <ID>ReturnCount:LibraryUpdateJob.kt$LibraryUpdateJob$override suspend fun doWork(): Result</ID>
     <ID>ReturnCount:LibraryUpdateJob.kt$LibraryUpdateJob$private suspend fun updateManga(manga: Manga, fetchWindow: Pair&lt;Long, Long&gt;): List&lt;Chapter&gt;</ID>
+    <ID>ReturnCount:LibraryUpdateJob.kt$LibraryUpdateJob.Companion$fun startNow( context: Context, category: Category? = null, target: Target = Target.CHAPTERS, // SY --&gt; group: Int = LibraryGroup.BY_DEFAULT, groupExtra: String? = null, // SY &lt;-- ): Boolean</ID>
     <ID>ReturnCount:LocalCoverManager.kt$LocalCoverManager$actual fun update( manga: SManga, inputStream: InputStream, // SY --&gt; encrypted: Boolean, // SY &lt;-- ): UniFile?</ID>
     <ID>ReturnCount:LocalSource.kt$LocalSource$private fun copyComicInfoFileFromArchive(chapterArchives: List&lt;UniFile&gt;, folder: UniFile): UniFile?</ID>
     <ID>ReturnCount:MainActivity.kt$MainActivity$private fun handleIntentAction(intent: Intent, navigator: Navigator): Boolean</ID>
@@ -1691,6 +1669,9 @@
     <ID>ReturnCount:ReaderViewModel.kt$ReaderViewModel$fun setAsCover(useExtraPage: Boolean)</ID>
     <ID>ReturnCount:ReaderViewModel.kt$ReaderViewModel$fun shareImages()</ID>
     <ID>ReturnCount:ReorderSortTag.kt$ReorderSortTag$fun await(tag: String, newPosition: Int): Result</ID>
+    <ID>ReturnCount:SyncManager.kt$SyncManager$private fun areChaptersDifferent(localChapters: List&lt;Chapters&gt;, remoteChapters: List&lt;BackupChapter&gt;): Boolean</ID>
+    <ID>ReturnCount:SyncManager.kt$SyncManager$private suspend fun isMangaDifferent(localManga: Manga, remoteManga: BackupManga): Boolean</ID>
+    <ID>ReturnCount:SyncManager.kt$SyncManager$suspend fun syncData()</ID>
     <ID>ReturnCount:TimeRange.kt$TimeRange.Companion$fun fromPreferenceString(timeRange: String): TimeRange?</ID>
     <ID>ReturnCount:WebViewInterceptor.kt$WebViewInterceptor$override fun intercept(chain: Interceptor.Chain): Response</ID>
     <ID>ReturnCount:WebViewInterceptor.kt$private fun isRequestHeaderSafe(_name: String, _value: String): Boolean</ID>
@@ -1701,6 +1682,7 @@
     <ID>SerialVersionUIDInSerializableClass:Manga.kt$Manga : Serializable</ID>
     <ID>SerialVersionUIDInSerializableClass:MigrationProcedureConfig.kt$MigrationProcedureConfig : Serializable</ID>
     <ID>SerialVersionUIDInSerializableClass:SourcesScreen.kt$SourcesScreen$SmartSearchConfig : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Track.kt$Track : Serializable</ID>
     <ID>SpreadOperator:App.kt$App$( logConfig, *printers.toTypedArray(), )</ID>
     <ID>SpreadOperator:ChapterRepositoryImpl.kt$ChapterRepositoryImpl$(*chapterUpdates.toTypedArray())</ID>
     <ID>SpreadOperator:ChapterSanitizer.kt$ChapterSanitizer$(*CHAPTER_TRIM_CHARS)</ID>
@@ -1722,7 +1704,6 @@
     <ID>SwallowedException:Bangumi.kt$Bangumi$e: Exception</ID>
     <ID>SwallowedException:Bangumi.kt$Bangumi$e: Throwable</ID>
     <ID>SwallowedException:BrowseIcons.kt$e: Exception</ID>
-    <ID>SwallowedException:CbzCrypto.kt$CbzCrypto$e: Exception</ID>
     <ID>SwallowedException:ChapterCache.kt$ChapterCache$e: IOException</ID>
     <ID>SwallowedException:ChapterLoader.kt$ChapterLoader$e: UnsupportedRarV5Exception</ID>
     <ID>SwallowedException:ContextExtensions.kt$e: Exception</ID>
@@ -1746,6 +1727,9 @@
     <ID>SwallowedException:GalleryAdder.kt$GalleryAdder$e: Exception</ID>
     <ID>SwallowedException:GetChapterByUrlAndMangaId.kt$GetChapterByUrlAndMangaId$e: Exception</ID>
     <ID>SwallowedException:GetPagePreviews.kt$GetPagePreviews$e: Exception</ID>
+    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveService$e: IOException</ID>
+    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveService$e: TokenResponseException</ID>
+    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveSyncService$e: Exception</ID>
     <ID>SwallowedException:HttpSource.kt$HttpSource$e: URISyntaxException</ID>
     <ID>SwallowedException:ImageUtil.kt$ImageUtil$e: Exception</ID>
     <ID>SwallowedException:Kavita.kt$Kavita$e: Exception</ID>
@@ -1783,6 +1767,7 @@
     <ID>SwallowedException:SourceFeedScreenModel.kt$SourceFeedScreenModel$e: Exception</ID>
     <ID>SwallowedException:StorageStep.kt$StorageStep$e: ActivityNotFoundException</ID>
     <ID>SwallowedException:Suwayomi.kt$Suwayomi$e: Exception</ID>
+    <ID>SwallowedException:SyncManager.kt$SyncManager$e: IOException</ID>
     <ID>SwallowedException:TrackInfoDialog.kt$TrackInfoDialogHomeScreen.Model$e: Exception</ID>
     <ID>SwallowedException:UrlImportableSource.kt$UrlImportableSource$e: URISyntaxException</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:MangaScreenModel.kt$MangaScreenModel$IllegalStateException()</ID>
@@ -1816,7 +1801,6 @@
     <ID>TooGenericExceptionCaught:BaseTracker.kt$BaseTracker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BaseTracker.kt$BaseTracker$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:BrowseIcons.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:CbzCrypto.kt$CbzCrypto$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ChapterCache.kt$ChapterCache$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ChapterLoader.kt$ChapterLoader$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:ChapterRepositoryImpl.kt$ChapterRepositoryImpl$e: Exception</ID>
@@ -1871,6 +1855,8 @@
     <ID>TooGenericExceptionCaught:GetPagePreviews.kt$GetPagePreviews$e: Exception</ID>
     <ID>TooGenericExceptionCaught:GetTracks.kt$GetTracks$e: Exception</ID>
     <ID>TooGenericExceptionCaught:GlobalExceptionHandler.kt$GlobalExceptionHandler.Companion$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GoogleDriveSyncService.kt$GoogleDriveService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GoogleDriveSyncService.kt$GoogleDriveSyncService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:HistoryRepositoryImpl.kt$HistoryRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:HttpPageLoader.kt$HttpPageLoader$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:ImageSaver.kt$ImageSaver$e: Exception</ID>
@@ -1949,6 +1935,7 @@
     <ID>TooGenericExceptionCaught:SourcePagingSource.kt$SourcePagingSource$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Suwayomi.kt$Suwayomi$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SyncChapterProgressWithTrack.kt$SyncChapterProgressWithTrack$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:SyncDataJob.kt$SyncDataJob$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TrackChapter.kt$TrackChapter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TrackInfoDialog.kt$TrackInfoDialogHomeScreen.Model$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TrackInfoDialog.kt$TrackerSearchScreen.Model$e: Throwable</ID>
@@ -1978,6 +1965,13 @@
     <ID>TooGenericExceptionThrown:EHentai.kt$EHentai$throw Exception("HTTP error ${response.code}", stacktrace)</ID>
     <ID>TooGenericExceptionThrown:EHentai.kt$EHentai$throw Exception(it.text())</ID>
     <ID>TooGenericExceptionThrown:ExtensionLoader.kt$ExtensionLoader$throw Exception("Unknown source class type: ${obj.javaClass}")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": ${e.message}")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": Max retries reached.")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_deleting_google_drive_lock_file))</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_uploading_sync_data) + ": ${e.message}")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(e.message)</ID>
     <ID>TooGenericExceptionThrown:HttpSource.kt$HttpSource$throw RuntimeException(e)</ID>
     <ID>TooGenericExceptionThrown:KitsuApi.kt$KitsuApi$throw Exception("Could not find manga")</ID>
     <ID>TooGenericExceptionThrown:KitsuInterceptor.kt$KitsuInterceptor$throw Exception("Not authenticated with Kitsu")</ID>
@@ -2074,6 +2068,7 @@
     <ID>TooManyFunctions:ReaderViewModel.kt$ReaderViewModel : ViewModel</ID>
     <ID>TooManyFunctions:SecurityPreferences.kt$SecurityPreferences</ID>
     <ID>TooManyFunctions:SettingsAdvancedScreen.kt$SettingsAdvancedScreen : SearchableSettings</ID>
+    <ID>TooManyFunctions:SettingsDataScreen.kt$SettingsDataScreen : SearchableSettings</ID>
     <ID>TooManyFunctions:SettingsEhScreen.kt$SettingsEhScreen : SearchableSettings</ID>
     <ID>TooManyFunctions:SettingsItems.kt$tachiyomi.presentation.core.components.SettingsItems.kt</ID>
     <ID>TooManyFunctions:SettingsReaderScreen.kt$SettingsReaderScreen : SearchableSettings</ID>
@@ -2082,6 +2077,8 @@
     <ID>TooManyFunctions:SourceFeedScreenModel.kt$SourceFeedScreenModel : StateScreenModel</ID>
     <ID>TooManyFunctions:SourcePreferences.kt$SourcePreferences</ID>
     <ID>TooManyFunctions:Suwayomi.kt$Suwayomi : BaseTrackerEnhancedTracker</ID>
+    <ID>TooManyFunctions:SyncPreferences.kt$SyncPreferences</ID>
+    <ID>TooManyFunctions:SyncService.kt$SyncService</ID>
     <ID>TooManyFunctions:Tracker.kt$Tracker</ID>
     <ID>TooManyFunctions:UiPreferences.kt$UiPreferences</ID>
     <ID>TooManyFunctions:UnsortedPreferences.kt$UnsortedPreferences</ID>
@@ -2282,7 +2279,6 @@
     <ID>VariableNaming:TrackSearch.kt$TrackSearch$var publishing_status: String = ""</ID>
     <ID>VariableNaming:TrackSearch.kt$TrackSearch$var publishing_type: String = ""</ID>
     <ID>VariableNaming:TrackSearch.kt$TrackSearch$var start_date: String = ""</ID>
-    <ID>Wrapping:CbzCrypto.kt$CbzCrypto$(</ID>
     <ID>Wrapping:LibraryScreenModel.kt$LibraryScreenModel$-&gt;</ID>
   </CurrentIssues>
 </SmellBaseline>
