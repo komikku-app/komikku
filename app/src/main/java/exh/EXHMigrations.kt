@@ -1,6 +1,7 @@
 package exh
 
 import android.content.Context
+import android.widget.Toast
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.domain.base.BasePreferences
@@ -20,6 +21,7 @@ import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.DeviceUtil
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
@@ -653,6 +655,27 @@ object EXHMigrations {
                     prefs.edit {
                         remove(Preference.appStateKey("trusted_signatures"))
                     }
+                }
+
+                if (oldVersion under 66) {
+                    if (prefs.getBoolean(Preference.privateKey("encrypt_database"), false)) {
+                        context.toast(
+                            "Restart the app to load your encrypted library",
+                            Toast.LENGTH_LONG
+                        )
+                    }
+
+                    val appStatePrefsToReplace = listOf(
+                        "__PRIVATE_sql_password",
+                        "__PRIVATE_encrypt_database",
+                        "__PRIVATE_cbz_password",
+                    )
+
+                    replacePreferences(
+                        preferenceStore = preferenceStore,
+                        filterPredicate = { it.key in appStatePrefsToReplace },
+                        newKey = { Preference.appStateKey(it.replace("__PRIVATE_", "").trim()) },
+                    )
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
