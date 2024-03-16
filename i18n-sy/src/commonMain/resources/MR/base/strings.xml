@@ -324,9 +324,13 @@
     <string name="pref_center_margin">Center margin type</string>
     <string name="pref_center_margin_summary">Insert spacer to accommodate deadspace on foldable devices.</string>
 
-    <!-- Cache archived manga to disk -->
-    <string name="cache_archived_manga_to_disk">Cache images inside CBZ/CBR archives on disk</string>
-    <string name="cache_archived_manga_to_disk_subtitle">Temporarily copy images inside comic book archives to disk while reading \nMay improve reader performance</string>
+    <!-- Archive reader mode -->
+    <string name="archive_mode_load_from_file">Load from file</string>
+    <string name="archive_mode_load_into_memory">Load into memory</string>
+    <string name="archive_mode_cache_to_disk">Copy to disk</string>
+    <string name="pref_archive_reader_mode">Archive reader mode</string>
+    <string name="pref_archive_reader_mode_summary">The way in which images inside archives, such as CBZ or CBR, are being loaded</string>
+
 
     <!-- Entry Page -->
     <!-- Entry Info -->

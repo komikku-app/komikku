@@ -389,7 +389,6 @@ class ReaderViewModel @JvmOverloads constructor(
                         context = context,
                         downloadManager = downloadManager,
                         downloadProvider = downloadProvider,
-                        tempFileManager = tempFileManager,
                         manga = manga,
                         source = source, /* SY --> */
                         sourceManager = sourceManager,

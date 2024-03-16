@@ -13,7 +13,6 @@ import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.addFilesToZip
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.NOMEDIA_FILE
 import eu.kanade.tachiyomi.util.storage.saveTo
@@ -46,6 +45,7 @@ import logcat.LogPriority
 import nl.adaptivity.xmlutil.serialization.XML
 import okhttp3.Response
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.storage.addFilesToZip
 import tachiyomi.core.common.storage.extension
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNow
@@ -572,10 +572,6 @@ class Downloader(
                 tmpDir,
                 imageFile,
                 filenamePrefix,
-                // SY -->
-                zip4jFile = null,
-                zip4jEntry = null,
-                // SY <--
             )
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to split downloaded image" }

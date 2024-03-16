@@ -570,10 +570,14 @@ object SettingsReaderScreen : SearchableSettings {
                         .toMap()
                         .toImmutableMap(),
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = readerPreferences.cacheArchiveMangaOnDisk(),
-                    title = stringResource(SYMR.strings.cache_archived_manga_to_disk),
-                    subtitle = stringResource(SYMR.strings.cache_archived_manga_to_disk_subtitle),
+                Preference.PreferenceItem.ListPreference(
+                    pref = readerPreferences.archiveReaderMode(),
+                    title = stringResource(SYMR.strings.pref_archive_reader_mode),
+                    subtitle = stringResource(SYMR.strings.pref_archive_reader_mode_summary),
+                    entries = ReaderPreferences.archiveModeTypes
+                        .mapIndexed { index, it -> index to stringResource(it) }
+                        .toMap()
+                        .toImmutableMap(),
                 ),
             ),
         )

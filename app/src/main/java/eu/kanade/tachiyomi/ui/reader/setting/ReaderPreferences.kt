@@ -180,9 +180,9 @@ class ReaderPreferences(
 
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
 
-    fun cacheArchiveMangaOnDisk() = preferenceStore.getBoolean("cache_archive_manga_on_disk", false)
+    fun archiveReaderMode() = preferenceStore.getInt("archive_reader_mode", ArchiveReaderMode.LOAD_FROM_FILE)
 
-        fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
+    fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
     // SY <--
 
     enum class TappingInvertMode(
@@ -201,6 +201,12 @@ class ReaderPreferences(
         HIGH(13),
         LOW(31),
         LOWEST(47),
+    }
+
+    object ArchiveReaderMode {
+        const val LOAD_FROM_FILE = 0
+        const val LOAD_INTO_MEMORY = 1
+        const val CACHE_TO_DISK = 2
     }
 
     companion object {
@@ -263,6 +269,12 @@ class ReaderPreferences(
             SYMR.strings.center_margin_double_page,
             SYMR.strings.center_margin_wide_page,
             SYMR.strings.center_margin_double_and_wide_page,
+        )
+
+        val archiveModeTypes = listOf(
+            SYMR.strings.archive_mode_load_from_file,
+            SYMR.strings.archive_mode_load_into_memory,
+            SYMR.strings.archive_mode_cache_to_disk
         )
         // SY <--
     }

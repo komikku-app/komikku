@@ -187,7 +187,6 @@ class InterceptActivity : BaseActivity() {
                         lifecycleScope.launchIO {
                             loadGalleryEnd(gallery, sources[index])
                         }
-
                     }
                     .show()
             } else {
