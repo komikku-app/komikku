@@ -183,6 +183,10 @@
     <string name="library_group_updates_global">Always launch global updates</string>
     <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
     <string name="library_group_updates_all">Launch category updates all the time</string>
+    <string name="pref_mark_read_dupe_chapters">Mark duplicate chapters as read</string>
+    <string name="pref_mark_read_dupe_chapters_summary">Mark duplicate chapters as read after reading</string>
+    <string name="pref_library_mark_duplicate_chapters">Mark new duplicate chapters as read</string>
+    <string name="pref_library_mark_duplicate_chapters_summary">Automatically mark new chapters as read if it has been read before</string>
 
     <!-- Browse settings -->
     <string name="pref_hide_feed">Hide Feed tab</string>
