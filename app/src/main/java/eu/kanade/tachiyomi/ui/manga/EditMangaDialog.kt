@@ -201,6 +201,7 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
     binding.mangaGenresTags.clearFocus()
 
     binding.resetTags.setOnClickListener { resetTags(manga, binding, scope) }
+    binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope) }
 }
 
 private fun resetTags(manga: Manga, binding: EditMangaDialogBinding, scope: CoroutineScope) {
@@ -215,6 +216,15 @@ private fun loadCover(manga: Manga, context: Context, binding: EditMangaDialogBi
     binding.mangaCover.load(manga) {
         transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
     }
+}
+
+private fun resetInfo(manga: Manga, binding: EditMangaDialogBinding, scope: CoroutineScope) {
+    binding.title.setText("")
+    binding.mangaAuthor.setText("")
+    binding.mangaArtist.setText("")
+    binding.thumbnailUrl.setText("")
+    binding.mangaDescription.setText("")
+    resetTags(manga, binding, scope)
 }
 
 private fun ChipGroup.setChips(items: List<String>, scope: CoroutineScope) {

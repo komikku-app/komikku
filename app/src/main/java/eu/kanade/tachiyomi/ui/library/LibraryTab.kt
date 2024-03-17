@@ -205,6 +205,7 @@ object LibraryTab : Tab {
                         }
                     },
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
+                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
                     // SY <--
                 )
             },

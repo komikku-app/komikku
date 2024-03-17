@@ -750,6 +750,24 @@ class LibraryScreenModel(
             clearSelection()
         }
     }
+
+    fun resetInfo() {
+        state.value.selection.fastForEach { (manga) ->
+            val mangaInfo = CustomMangaInfo(
+                id = manga.id,
+                title = null,
+                author = null,
+                artist = null,
+                thumbnailUrl = null,
+                description = null,
+                genre = null,
+                status = null,
+            )
+
+            setCustomMangaInfo.set(mangaInfo)
+        }
+        clearSelection()
+    }
     // SY <--
 
     /**
@@ -1335,6 +1353,18 @@ class LibraryScreenModel(
 
         val showAddToMangadex: Boolean by lazy {
             selection.any { it.manga.source in mangaDexSourceIds }
+        }
+
+        val showResetInfo: Boolean by lazy {
+            selection.fastAny { (manga) ->
+                manga.title != manga.ogTitle ||
+                    manga.author != manga.ogAuthor ||
+                    manga.artist != manga.ogArtist ||
+                    manga.thumbnailUrl != manga.ogThumbnailUrl ||
+                    manga.description != manga.ogDescription ||
+                    manga.genre != manga.ogGenre ||
+                    manga.status != manga.ogStatus
+            }
         }
         // SY <--
 

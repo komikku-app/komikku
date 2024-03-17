@@ -350,6 +350,7 @@
     <!-- Entry Info Edit -->
     <string name="reset_tags">Reset Tags</string>
     <string name="add_tag">Add Tag</string>
+    <string name="reset_info">Reset Info</string>
     <string name="title_hint">Title: %1$s</string>
     <string name="description_hint">Description: %1$s</string>
     <string name="author_hint">Author: %1$s</string>
