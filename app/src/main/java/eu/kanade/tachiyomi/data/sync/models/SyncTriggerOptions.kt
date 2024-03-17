@@ -9,21 +9,18 @@ data class SyncTriggerOptions(
     val syncOnChapterOpen: Boolean = false,
     val syncOnAppStart: Boolean = false,
     val syncOnAppResume: Boolean = false,
-    val syncOnLibraryUpdate: Boolean = false,
 ) {
     fun asBooleanArray() = booleanArrayOf(
         syncOnChapterRead,
         syncOnChapterOpen,
         syncOnAppStart,
         syncOnAppResume,
-        syncOnLibraryUpdate,
     )
 
     fun anyEnabled() = syncOnChapterRead ||
         syncOnChapterOpen ||
         syncOnAppStart ||
-        syncOnAppResume ||
-        syncOnLibraryUpdate
+        syncOnAppResume
 
     companion object {
         val mainOptions = persistentListOf(
@@ -47,11 +44,6 @@ data class SyncTriggerOptions(
                 getter = SyncTriggerOptions::syncOnAppResume,
                 setter = { options, enabled -> options.copy(syncOnAppResume = enabled) },
             ),
-            Entry(
-                label = MR.strings.sync_on_library_update,
-                getter = SyncTriggerOptions::syncOnLibraryUpdate,
-                setter = { options, enabled -> options.copy(syncOnLibraryUpdate = enabled) },
-            ),
         )
 
         fun fromBooleanArray(array: BooleanArray) = SyncTriggerOptions(
@@ -59,7 +51,6 @@ data class SyncTriggerOptions(
             syncOnChapterOpen = array[1],
             syncOnAppStart = array[2],
             syncOnAppResume = array[3],
-            syncOnLibraryUpdate = array[4],
         )
     }
 

@@ -605,7 +605,6 @@
     <string name="sync_on_chapter_open">Sync on Chapter Open</string>
     <string name="sync_on_app_start">Sync on App Start</string>
     <string name="sync_on_app_resume">Sync on App Resume</string>
-    <string name="sync_on_library_update">Sync on Library Update</string>
     <string name="sync_library">Sync library</string>
 
       <!-- Advanced section -->

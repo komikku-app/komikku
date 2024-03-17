@@ -817,19 +817,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 KEY_GROUP_EXTRA to groupExtra,
                 // SY <--
             )
-            val request = OneTimeWorkRequestBuilder<LibraryUpdateJob>()
-                .addTag(TAG)
-                .addTag(WORK_NAME_MANUAL)
-                .setInputData(inputData)
-                .build()
-            wm.enqueueUniqueWork(WORK_NAME_MANUAL, ExistingWorkPolicy.KEEP, request)
 
             val syncPreferences: SyncPreferences = Injekt.get()
 
-            // Only proceed with SyncDataJob if sync is enabled and the specific sync on library update flag is set
-            val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
-            if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnLibraryUpdate
-            ) {
+            // Always sync the data before library update if syncing is enabled.
+            if (syncPreferences.isSyncEnabled()) {
                 // Check if SyncDataJob is already running
                 if (wm.isRunning(SyncDataJob.TAG_MANUAL)) {
                     // SyncDataJob is already running
@@ -842,7 +834,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     .build()
 
                 // Chain SyncDataJob to run before LibraryUpdateJob
-                val inputData = workDataOf(KEY_CATEGORY to category?.id)
                 val libraryUpdateJob = OneTimeWorkRequestBuilder<LibraryUpdateJob>()
                     .addTag(TAG)
                     .addTag(WORK_NAME_MANUAL)
@@ -853,7 +844,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     .then(libraryUpdateJob)
                     .enqueue()
             } else {
-                val inputData = workDataOf(KEY_CATEGORY to category?.id)
                 val request = OneTimeWorkRequestBuilder<LibraryUpdateJob>()
                     .addTag(TAG)
                     .addTag(WORK_NAME_MANUAL)
