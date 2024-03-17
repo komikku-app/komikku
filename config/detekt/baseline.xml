@@ -1727,9 +1727,6 @@
     <ID>SwallowedException:GalleryAdder.kt$GalleryAdder$e: Exception</ID>
     <ID>SwallowedException:GetChapterByUrlAndMangaId.kt$GetChapterByUrlAndMangaId$e: Exception</ID>
     <ID>SwallowedException:GetPagePreviews.kt$GetPagePreviews$e: Exception</ID>
-    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveService$e: IOException</ID>
-    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveService$e: TokenResponseException</ID>
-    <ID>SwallowedException:GoogleDriveSyncService.kt$GoogleDriveSyncService$e: Exception</ID>
     <ID>SwallowedException:HttpSource.kt$HttpSource$e: URISyntaxException</ID>
     <ID>SwallowedException:ImageUtil.kt$ImageUtil$e: Exception</ID>
     <ID>SwallowedException:Kavita.kt$Kavita$e: Exception</ID>
@@ -1767,7 +1764,6 @@
     <ID>SwallowedException:SourceFeedScreenModel.kt$SourceFeedScreenModel$e: Exception</ID>
     <ID>SwallowedException:StorageStep.kt$StorageStep$e: ActivityNotFoundException</ID>
     <ID>SwallowedException:Suwayomi.kt$Suwayomi$e: Exception</ID>
-    <ID>SwallowedException:SyncManager.kt$SyncManager$e: IOException</ID>
     <ID>SwallowedException:TrackInfoDialog.kt$TrackInfoDialogHomeScreen.Model$e: Exception</ID>
     <ID>SwallowedException:UrlImportableSource.kt$UrlImportableSource$e: URISyntaxException</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:MangaScreenModel.kt$MangaScreenModel$IllegalStateException()</ID>
@@ -1966,12 +1962,12 @@
     <ID>TooGenericExceptionThrown:EHentai.kt$EHentai$throw Exception(it.text())</ID>
     <ID>TooGenericExceptionThrown:ExtensionLoader.kt$ExtensionLoader$throw Exception("Unknown source class type: ${obj.javaClass}")</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": ${e.message}")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": ${e.message}", e)</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": Max retries reached.")</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_deleting_google_drive_lock_file))</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_uploading_sync_data) + ": ${e.message}")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_deleting_google_drive_lock_file), e)</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_uploading_sync_data) + ": ${e.message}", e)</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(e.message)</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(e.message, e)</ID>
     <ID>TooGenericExceptionThrown:HttpSource.kt$HttpSource$throw RuntimeException(e)</ID>
     <ID>TooGenericExceptionThrown:KitsuApi.kt$KitsuApi$throw Exception("Could not find manga")</ID>
     <ID>TooGenericExceptionThrown:KitsuInterceptor.kt$KitsuInterceptor$throw Exception("Not authenticated with Kitsu")</ID>
