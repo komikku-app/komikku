@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
+import android.util.Log
+import tachiyomi.core.common.preference.Preference as BasePreference
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.widget.Toast
@@ -58,6 +60,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_NJALLA
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
+import eu.kanade.tachiyomi.network.interceptor.CloudflareBypassException
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
@@ -79,10 +82,17 @@ import exh.util.toAnnotatedString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import okhttp3.Headers
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchNonCancellable
@@ -259,9 +269,13 @@ object SettingsAdvancedScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
         val networkHelper = remember { Injekt.get<NetworkHelper>() }
+        val scope = rememberCoroutineScope()
 
         val userAgentPref = networkPreferences.defaultUserAgent()
         val userAgent by userAgentPref.collectAsState()
+        val flareSolverrUrlPref = networkPreferences.flareSolverrUrl()
+        val enableFlareSolverrPref = networkPreferences.enableFlareSolverr()
+        val enableFlareSolverr by enableFlareSolverrPref.collectAsState()
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_network),
@@ -341,6 +355,27 @@ object SettingsAdvancedScreen : SearchableSettings {
                         context.toast(MR.strings.requires_app_restart)
                     },
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = enableFlareSolverrPref,
+                    title = stringResource(MR.strings.pref_enable_flare_solverr),
+                    subtitle = stringResource(MR.strings.pref_enable_flare_solverr_summary)
+                ),
+                Preference.PreferenceItem.EditTextPreference(
+                    pref = flareSolverrUrlPref,
+                    title = stringResource(MR.strings.pref_flare_solverr_url),
+                    enabled = enableFlareSolverr,
+                    subtitle = stringResource(MR.strings.pref_flare_solverr_url_summary),
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title =  stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent),
+                    enabled = enableFlareSolverr,
+                    onClick = {
+                        scope.launch {
+                            testFlareSolverrAndUpdateUserAgent(flareSolverrUrlPref, userAgentPref, context)
+                        }
+                    },
+                )
+
             ),
         )
     }
@@ -839,6 +874,68 @@ object SettingsAdvancedScreen : SearchableSettings {
             ),
         )
     }
+
+    private suspend fun testFlareSolverrAndUpdateUserAgent(
+        flareSolverrUrlPref: BasePreference<String>,
+        userAgentPref: BasePreference<String>,
+        context: android.content.Context
+    ) {
+            try {
+                withContext(Dispatchers.IO) {
+                    val client = OkHttpClient()
+                    val flareSolverUrl = flareSolverrUrlPref.get().trim()
+                    val mediaType = "application/json; charset=utf-8".toMediaType()
+                    val data = JSONObject()
+                        .put("cmd", "request.get")
+                        .put("url", "https://www.google.com/")
+                        .put("maxTimeout", 60000)
+                        .put("returnOnlyCookies", true)
+                        .toString()
+                    val body = data.toRequestBody(mediaType)
+                    val request = Request.Builder()
+                        .url(flareSolverUrl)
+                        .post(body)
+                        .header("Content-Type", "application/json")
+                        .build()
+
+                    Log.d("FlareSolverrRequest", "Sending request to FlareSolverr: $flareSolverUrl with payload: $data")
+
+                    val response = client.newCall(request).execute()
+                    if (!response.isSuccessful) {
+                        Log.e("HttpError", "Request failed with status code: ${response.code}")
+                        throw CloudflareBypassException("Failed with status code: ${response.code}")
+                    }
+
+                    val responseBody = response.body.string()
+                    Log.d("HttpResponse", responseBody)
+
+                    val jsonResponse = JSONObject(responseBody)
+                    val status = jsonResponse.optString("status")
+                    if (status == "ok") {
+                        val newUserAgent = jsonResponse.optJSONObject("solution")?.getString("userAgent")
+                        newUserAgent?.let {
+                            userAgentPref.set(it)
+                            Log.d("FlareSolverrInterceptor", "User agent updated to: $it")
+                        }
+                        val message = "FlareSolverr is working. User agent updated. Please restart the app"
+                        withContext(Dispatchers.Main) {
+                            context.toast(message)
+                        }
+                    } else {
+                        val message = "FlareSolverr is not working."
+                        withContext(Dispatchers.Main) {
+                            context.toast(message)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FlareSolverrInterceptor", "Error: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    context.toast("Error contacting FlareSolverr")
+                }
+            }
+    }
+
 
     private var job: Job? = null
     // SY <--

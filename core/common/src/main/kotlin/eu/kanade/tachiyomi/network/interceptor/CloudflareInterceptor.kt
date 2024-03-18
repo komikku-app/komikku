@@ -8,6 +8,7 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.network.AndroidCookieJar
+import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.util.system.isOutdated
 import eu.kanade.tachiyomi.util.system.toast
 import okhttp3.Cookie
@@ -23,6 +24,7 @@ import java.util.concurrent.CountDownLatch
 class CloudflareInterceptor(
     private val context: Context,
     private val cookieManager: AndroidCookieJar,
+    private val preferences: NetworkPreferences,
     defaultUserAgentProvider: () -> String,
 ) : WebViewInterceptor(context, defaultUserAgentProvider) {
 
@@ -39,6 +41,10 @@ class CloudflareInterceptor(
         response: Response,
     ): Response {
         try {
+            // If FlareSolverr is enabled, just proceed with the request, no need to try and bypass CF with webview.
+            if (preferences.enableFlareSolverr().get()){
+                return chain.proceed(request)
+            }
             response.close()
             cookieManager.remove(request.url, COOKIE_NAMES, 0)
             val oldCookie = cookieManager.get(request.url)
@@ -128,7 +134,7 @@ class CloudflareInterceptor(
                 context.toast(MR.strings.information_webview_outdated, Toast.LENGTH_LONG)
             }
 
-            throw CloudflareBypassException()
+            throw CloudflareBypassException("Error resolving with WebView")
         }
     }
 }
@@ -137,4 +143,4 @@ private val ERROR_CODES = listOf(403, 503)
 private val SERVER_CHECK = arrayOf("cloudflare-nginx", "cloudflare")
 private val COOKIE_NAMES = listOf("cf_clearance")
 
-private class CloudflareBypassException : Exception()
+class CloudflareBypassException(message: String, cause: Throwable? = null) : Exception(message, cause)

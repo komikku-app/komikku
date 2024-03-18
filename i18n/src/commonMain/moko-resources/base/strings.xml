@@ -618,8 +618,13 @@
     <string name="pref_verbose_logging">Verbose logging</string>
     <string name="pref_verbose_logging_summary">Print verbose logs to system log (reduces app performance)</string>
     <string name="pref_debug_info">Debug info</string>
+    <string name="pref_enable_flare_solverr">Enable FlareSolverr</string>
+    <string name="pref_enable_flare_solverr_summary">Use FlareSolverr to bypass Cloudflare\'s anti-bot protection</string>
+    <string name="pref_flare_solverr_url">FlareSolverr URL</string>
+    <string name="pref_flare_solverr_url_summary">URL of the FlareSolverr instance to use for example http://192.168.1.202:8191/v1 or https://api.example.com</string>
+    <string name="pref_test_flare_solverr_and_update_user_agent">Test FlareSolverr and update user agent</string>
 
-      <!-- About section -->
+    <!-- About section -->
     <string name="website">Website</string>
     <string name="version">Version</string>
     <string name="whats_new">What\'s new</string>
