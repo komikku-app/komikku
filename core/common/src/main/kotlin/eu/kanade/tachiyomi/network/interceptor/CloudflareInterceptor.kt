@@ -31,6 +31,11 @@ class CloudflareInterceptor(
     private val executor = ContextCompat.getMainExecutor(context)
 
     override fun shouldIntercept(response: Response): Boolean {
+        // Check if FlareSolverr is enabled if it's enabled we don't need to bypass Cloudflare through WebView
+        if (preferences.enableFlareSolverr().get()){
+            return false
+        }
+
         // Check if Cloudflare anti-bot is on
         return response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK
     }
@@ -41,10 +46,6 @@ class CloudflareInterceptor(
         response: Response,
     ): Response {
         try {
-            // If FlareSolverr is enabled, just proceed with the request, no need to try and bypass CF with webview.
-            if (preferences.enableFlareSolverr().get()){
-                return chain.proceed(request)
-            }
             response.close()
             cookieManager.remove(request.url, COOKIE_NAMES, 0)
             val oldCookie = cookieManager.get(request.url)
