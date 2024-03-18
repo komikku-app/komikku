@@ -16,34 +16,51 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
     private val cookieManager = CookieManager.getInstance()
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
+        val originalRequest = chain.request()
 
         // FlareSolverr is disabled, so just proceed with the request.
-        if (!preferences.enableFlareSolverr().get()){
-            return chain.proceed(request)
+        if (!preferences.enableFlareSolverr().get()) {
+            return chain.proceed(originalRequest)
         }
 
-        Log.d("FlareSolverrInterceptor", "Intercepting request: ${request.url}")
+        Log.d("FlareSolverrInterceptor", "Intercepting request: ${originalRequest.url}")
 
         // First, ensure cf_clearance for subdomains if needed.
-        ensureCfClearanceForSubdomain(request.url.toString())
+        ensureCfClearanceForSubdomain(originalRequest.url.toString())
 
-        // Then, check if the cf_clearance cookie exists and is valid for the base domain.
-        if (!isCfClearanceCookieValid(request.url.toString())) {
+        var cookiesString = ""
+
+        // Check if the cf_clearance cookie exists and is valid for the base domain or the current subdomain.
+        if (!isCfClearanceCookieValid(originalRequest.url.toString())) {
             // If the cf_clearance cookie is missing or not valid, get the cookies string from FlareSolverr.
-            val cookiesString = resolveWithFlareSolverr(request)
+            cookiesString = resolveWithFlareSolverr(originalRequest)
 
             // If cookies were found, parse and add them to the cookie jar.
             cookiesString.takeIf { it.isNotBlank() }?.let { cookies ->
-                val url = request.url.toString()
+                val url = originalRequest.url.toString()
                 cookies.split("; ").forEach { cookie ->
                     Log.d("FlareSolverrInterceptor", "Adding cookie: $cookie, to $url")
                     cookieManager.setCookie(url, cookie)
                 }
             }
+        } else {
+            // Here, the cf_clearance cookie is valid; we need to ensure it's included in the request for subdomains.
+            val cfClearanceValue = getCookieValueForDomain(originalRequest.url.toString(), CF_COOKIE_NAME)
+            if (cfClearanceValue != null) {
+                cookiesString = "cf_clearance=$cfClearanceValue"
+            }
         }
 
-        return chain.proceed(request)
+        // Create a new request with the cookies, whether they are newly obtained or retrieved from the cookie jar.
+        val newRequest = if (cookiesString.isNotBlank()) {
+            originalRequest.newBuilder()
+                .header("Cookie", cookiesString.trimEnd(';'))
+                .build()
+        } else {
+            originalRequest
+        }
+
+        return chain.proceed(newRequest)
     }
 
     private fun resolveWithFlareSolverr(originalRequest: Request, addAllCookies: Boolean = true): String {
@@ -145,7 +162,7 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
         val host = uri.host ?: return
         val baseDomain = getBaseDomain(url)
         if (host != "www.$baseDomain" && isCfClearanceCookieValid("https://www.$baseDomain/")) {
-            val cfClearanceValue = getCookieValueForDomain("https://www.$baseDomain/", "cf_clearance")
+            val cfClearanceValue = getCookieValueForDomain("https://www.$baseDomain/", CF_COOKIE_NAME)
             if (cfClearanceValue != null) {
                 val subdomainUrl = "https://$host/"
                 cookieManager.setCookie(subdomainUrl, "cf_clearance=$cfClearanceValue")
@@ -167,3 +184,5 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
             ?.substringAfter("$cookieName=")
     }
 }
+
+private const val CF_COOKIE_NAME = "cf_clearance"
