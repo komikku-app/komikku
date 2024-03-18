@@ -31,7 +31,7 @@ fun BrowseSourceList(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
-    selection: List<Manga>? = null,
+    selection: List<Manga>,
     // KMK <--
 ) {
     LazyColumn(
@@ -58,7 +58,7 @@ fun BrowseSourceList(
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
                 // KMK -->
-                isSelected = selection?.fastAny { selected -> selected.id == manga.id } ?: false,
+                isSelected = selection.fastAny { selected -> selected.id == manga.id },
                 // KMK <--
             )
         }
