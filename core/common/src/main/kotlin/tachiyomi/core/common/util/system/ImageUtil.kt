@@ -91,6 +91,9 @@ object ImageUtil {
                 // Coil supports animated WebP on Android 9.0+
                 // https://coil-kt.github.io/coil/getting_started/#supported-image-formats
                 Format.Webp -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                // Coil supports animated Heif on Android 11+
+                // https://coil-kt.github.io/coil/getting_started/#supported-image-formats
+                Format.Heif -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 else -> false
             }
         } catch (e: Exception) {
