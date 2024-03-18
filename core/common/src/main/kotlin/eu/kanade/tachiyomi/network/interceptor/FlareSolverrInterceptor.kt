@@ -46,7 +46,7 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
         return chain.proceed(request)
     }
 
-    private fun resolveWithFlareSolverr(originalRequest: Request): String {
+    private fun resolveWithFlareSolverr(originalRequest: Request, addAllCookies: Boolean = true): String {
         try {
             val client = OkHttpClient()
 
@@ -86,10 +86,13 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
                 cookiesArray?.let {
                     for (i in 0 until it.length()) {
                         val cookieObj = it.getJSONObject(i)
-                        val cookieString = "${cookieObj.getString("name")}=${cookieObj.getString("value")};"
-                        cookieStringBuilder.append(cookieString)
-                        if (i < cookiesArray.length() - 1) {
-                            cookieStringBuilder.append(" ")
+                        // Check if we should add all cookies or just cf_clearance
+                        if (addAllCookies || cookieObj.getString("name") == "cf_clearance") {
+                            val cookieString = "${cookieObj.getString("name")}=${cookieObj.getString("value")};"
+                            cookieStringBuilder.append(cookieString)
+                            if (i < cookiesArray.length() - 1) {
+                                cookieStringBuilder.append(" ")
+                            }
                         }
                     }
                 }
