@@ -623,6 +623,7 @@
     <string name="pref_flare_solverr_url">FlareSolverr URL</string>
     <string name="pref_flare_solverr_url_summary">URL of the FlareSolverr instance to use for example http://192.168.1.202:8191/v1 or https://api.example.com</string>
     <string name="pref_test_flare_solverr_and_update_user_agent">Test FlareSolverr and update user agent</string>
+    <string name="pref_test_flare_solverr_and_update_user_agent_summary">Test FlareSolverr to update the user agent. Only required once; then toggle as needed.</string>
 
     <!-- About section -->
     <string name="website">Website</string>
