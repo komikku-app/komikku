@@ -19,7 +19,7 @@ H.last_read,
 H.time_read
 FROM history H
 JOIN chapters C
-ON H.chapter_id = C._id AND C.manga_id = :mangaId
+ON H.chapter_id = C._id
 WHERE C.manga_id = :mangaId AND C._id = H.chapter_id;
 
 getHistoryByChapterUrl:
