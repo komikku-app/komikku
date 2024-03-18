@@ -136,7 +136,6 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
      * is not found or considered invalid, suggesting that access may be blocked by Cloudflare.
      */
     private fun isCfClearanceCookieValid(url: String): Boolean {
-        // Checks if the cf_clearance cookie is valid. This function has been updated to check for the cookie's presence across both the base domain and any subdomains.
         val baseDomain = getBaseDomain(url)
         val checkUrl = "https://www.$baseDomain/"
         val cookiesStringForBaseDomain = cookieManager.getCookie(checkUrl)

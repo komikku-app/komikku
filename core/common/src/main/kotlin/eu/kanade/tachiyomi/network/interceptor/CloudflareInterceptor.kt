@@ -32,7 +32,7 @@ class CloudflareInterceptor(
 
     override fun shouldIntercept(response: Response): Boolean {
         // Check if FlareSolverr is enabled if it's enabled we don't need to bypass Cloudflare through WebView
-        if (preferences.enableFlareSolverr().get()){
+        if (preferences.enableFlareSolverr().get()) {
             return false
         }
 

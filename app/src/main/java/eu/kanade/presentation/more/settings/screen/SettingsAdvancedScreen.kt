@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
 import android.util.Log
-import tachiyomi.core.common.preference.Preference as BasePreference
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.widget.Toast
@@ -114,6 +113,7 @@ import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
+import tachiyomi.core.common.preference.Preference as BasePreference
 
 object SettingsAdvancedScreen : SearchableSettings {
     private fun readResolve(): Any = SettingsAdvancedScreen
@@ -367,7 +367,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(MR.strings.pref_flare_solverr_url_summary),
                 ),
                 Preference.PreferenceItem.TextPreference(
-                    title =  stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent),
+                    title = stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent),
                     enabled = enableFlareSolverr,
                     subtitle = stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent_summary),
                     onClick = {
@@ -881,62 +881,61 @@ object SettingsAdvancedScreen : SearchableSettings {
         userAgentPref: BasePreference<String>,
         context: android.content.Context
     ) {
-            try {
-                withContext(Dispatchers.IO) {
-                    val client = OkHttpClient()
-                    val flareSolverUrl = flareSolverrUrlPref.get().trim()
-                    val mediaType = "application/json; charset=utf-8".toMediaType()
-                    val data = JSONObject()
-                        .put("cmd", "request.get")
-                        .put("url", "https://www.google.com/")
-                        .put("maxTimeout", 60000)
-                        .put("returnOnlyCookies", true)
-                        .toString()
-                    val body = data.toRequestBody(mediaType)
-                    val request = Request.Builder()
-                        .url(flareSolverUrl)
-                        .post(body)
-                        .header("Content-Type", "application/json")
-                        .build()
+        try {
+            withContext(Dispatchers.IO) {
+                val client = OkHttpClient()
+                val flareSolverUrl = flareSolverrUrlPref.get().trim()
+                val mediaType = "application/json; charset=utf-8".toMediaType()
+                val data = JSONObject()
+                    .put("cmd", "request.get")
+                    .put("url", "https://www.google.com/")
+                    .put("maxTimeout", 60000)
+                    .put("returnOnlyCookies", true)
+                    .toString()
+                val body = data.toRequestBody(mediaType)
+                val request = Request.Builder()
+                    .url(flareSolverUrl)
+                    .post(body)
+                    .header("Content-Type", "application/json")
+                    .build()
 
-                    Log.d("FlareSolverrRequest", "Sending request to FlareSolverr: $flareSolverUrl with payload: $data")
+                Log.d("FlareSolverrRequest", "Sending request to FlareSolverr: $flareSolverUrl with payload: $data")
 
-                    val response = client.newCall(request).execute()
-                    if (!response.isSuccessful) {
-                        Log.e("HttpError", "Request failed with status code: ${response.code}")
-                        throw CloudflareBypassException("Failed with status code: ${response.code}")
-                    }
-
-                    val responseBody = response.body.string()
-                    Log.d("HttpResponse", responseBody)
-
-                    val jsonResponse = JSONObject(responseBody)
-                    val status = jsonResponse.optString("status")
-                    if (status == "ok") {
-                        val newUserAgent = jsonResponse.optJSONObject("solution")?.getString("userAgent")
-                        newUserAgent?.let {
-                            userAgentPref.set(it)
-                            Log.d("FlareSolverrInterceptor", "User agent updated to: $it")
-                        }
-                        val message = "FlareSolverr is working. User agent updated. Please restart the app"
-                        withContext(Dispatchers.Main) {
-                            context.toast(message)
-                        }
-                    } else {
-                        val message = "FlareSolverr is not working."
-                        withContext(Dispatchers.Main) {
-                            context.toast(message)
-                        }
-                    }
+                val response = client.newCall(request).execute()
+                if (!response.isSuccessful) {
+                    Log.e("HttpError", "Request failed with status code: ${response.code}")
+                    throw CloudflareBypassException("Failed with status code: ${response.code}")
                 }
-            } catch (e: Exception) {
-                Log.e("FlareSolverrInterceptor", "Error: ${e.message}", e)
-                withContext(Dispatchers.Main) {
-                    context.toast("Error contacting FlareSolverr")
+
+                val responseBody = response.body.string()
+                Log.d("HttpResponse", responseBody)
+
+                val jsonResponse = JSONObject(responseBody)
+                val status = jsonResponse.optString("status")
+                if (status == "ok") {
+                    val newUserAgent = jsonResponse.optJSONObject("solution")?.getString("userAgent")
+                    newUserAgent?.let {
+                        userAgentPref.set(it)
+                        Log.d("FlareSolverrInterceptor", "User agent updated to: $it")
+                    }
+                    val message = "FlareSolverr is working. User agent updated. Please restart the app"
+                    withContext(Dispatchers.Main) {
+                        context.toast(message)
+                    }
+                } else {
+                    val message = "FlareSolverr is not working."
+                    withContext(Dispatchers.Main) {
+                        context.toast(message)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Log.e("FlareSolverrInterceptor", "Error: ${e.message}", e)
+            withContext(Dispatchers.Main) {
+                context.toast("Error contacting FlareSolverr")
+            }
+        }
     }
-
 
     private var job: Job? = null
     // SY <--
