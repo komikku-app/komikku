@@ -16,7 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Launch
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -69,6 +70,8 @@ fun ExtensionDetailsScreen(
     navigateUp: () -> Unit,
     state: ExtensionDetailsScreenModel.State,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
+    onClickWhatsNew: () -> Unit,
+    onClickReadme: () -> Unit,
     onClickEnableAll: () -> Unit,
     onClickDisableAll: () -> Unit,
     onClickClearCookies: () -> Unit,
@@ -95,11 +98,26 @@ fun ExtensionDetailsScreen(
                     AppBarActions(
                         actions = persistentListOf<AppBar.AppBarAction>().builder()
                             .apply {
-                                if (url != null) {
+                                if (state.extension?.isUnofficial == false) {
                                     add(
                                         AppBar.Action(
+                                            title = stringResource(MR.strings.whats_new),
+                                            icon = Icons.Outlined.History,
+                                            onClick = onClickWhatsNew,
+                                        ),
+                                    )
+                                    add(
+                                        AppBar.Action(
+                                            title = stringResource(MR.strings.action_faq_and_guides),
+                                            icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                                            onClick = onClickReadme,
+                                        ),
+                                    )
+                                }
+                                if (url != null) {
+                                    add(
+                                        AppBar.OverflowAction(
                                             title = stringResource(MR.strings.action_open_repo),
-                                            icon = Icons.AutoMirrored.Outlined.Launch,
                                             onClick = {
                                                 uriHandler.openUri(url)
                                             },
