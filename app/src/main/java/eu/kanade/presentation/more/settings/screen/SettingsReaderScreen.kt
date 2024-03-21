@@ -35,6 +35,7 @@ object SettingsReaderScreen : SearchableSettings {
         // SY -->
         val forceHorizontalSeekbar by readerPref.forceHorizontalSeekbar().collectAsState()
         // SY <--
+
         return listOf(
             Preference.PreferenceItem.ListPreference(
                 pref = readerPref.defaultReadingMode(),
@@ -81,12 +82,6 @@ object SettingsReaderScreen : SearchableSettings {
                 enabled = !forceHorizontalSeekbar,
             ),
             // SY <--
-            Preference.PreferenceItem.SwitchPreference(
-                pref = readerPref.trueColor(),
-                title = stringResource(MR.strings.pref_true_color),
-                subtitle = stringResource(MR.strings.pref_true_color_summary),
-                enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-            ),
             /* SY -->
             Preference.PreferenceItem.SwitchPreference(
                 pref = readerPref.pageTransitions(),
