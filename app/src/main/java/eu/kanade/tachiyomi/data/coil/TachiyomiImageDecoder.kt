@@ -9,7 +9,6 @@ import coil3.decode.Decoder
 import coil3.decode.ImageSource
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
-import coil3.request.allowRgb565
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.FileHeader
