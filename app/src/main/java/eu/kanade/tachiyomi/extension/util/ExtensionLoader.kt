@@ -20,6 +20,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_SIGNATURE
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -60,9 +61,6 @@ internal object ExtensionLoader {
         PackageManager.GET_META_DATA or
         PackageManager.GET_SIGNATURES or
         (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)
-
-    // cuong-tran's key
-    private const val officialSignature = "cbec121aa82ebb02aaa73806992e0368a97d47b5451ed6524816d03084c45905"
 
     private const val PRIVATE_EXTENSION_EXTENSION = "ext"
 
@@ -392,7 +390,7 @@ internal object ExtensionLoader {
     }
 
     private fun isTrusted(pkgInfo: PackageInfo, signatureHash: String): Boolean {
-        if (officialSignature == signatureHash) {
+        if (OFFICIAL_REPO_SIGNATURE == signatureHash) {
             return true
         }
         return trustExtension.isTrusted(pkgInfo, signatureHash)
@@ -402,7 +400,7 @@ internal object ExtensionLoader {
      * Showing UNOFFICIAL text on extension
      */
     private fun isOfficiallySigned(signatures: List<String>): Boolean {
-        return signatures.all { it == officialSignature }
+        return signatures.all { it == OFFICIAL_REPO_SIGNATURE }
     }
 
     /**

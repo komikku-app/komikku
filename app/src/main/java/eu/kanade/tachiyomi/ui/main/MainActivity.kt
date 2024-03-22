@@ -178,6 +178,7 @@ class MainActivity : BaseActivity() {
                 backupPreferences = Injekt.get(),
                 trackerManager = Injekt.get(),
                 pagePreviewCache = Injekt.get(),
+                extensionRepoRepository = Injekt.get(),
             )
         } else {
             false

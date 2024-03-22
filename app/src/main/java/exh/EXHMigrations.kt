@@ -43,6 +43,8 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import logcat.LogPriority
+import mihon.domain.extensionrepo.exception.SaveExtensionRepoException
+import mihon.domain.extensionrepo.repository.ExtensionRepoRepository
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.TriState
@@ -105,6 +107,7 @@ object EXHMigrations {
         backupPreferences: BackupPreferences,
         trackerManager: TrackerManager,
         pagePreviewCache: PagePreviewCache,
+        extensionRepoRepository: ExtensionRepoRepository,
     ): Boolean {
         val lastVersionCode = preferenceStore.getInt("eh_last_version_code", 0)
         val oldVersion = lastVersionCode.get()
@@ -684,6 +687,25 @@ object EXHMigrations {
                         filterPredicate = { it.key in appStatePrefsToReplace },
                         newKey = { Preference.appStateKey(it.replace("__PRIVATE_", "").trim()) },
                     )
+                }
+
+                if (oldVersion under 67) {
+                    runBlocking {
+                        for ((index, source) in sourcePreferences.extensionRepos().get().withIndex()) {
+                            try {
+                                extensionRepoRepository.upsertRepository(
+                                    source,
+                                    "Repo #${index + 1}",
+                                    null,
+                                    source,
+                                    "NOFINGERPRINT-${index + 1}",
+                                )
+                            } catch (e: SaveExtensionRepoException) {
+                                logcat(LogPriority.ERROR, e) { "Error Migrating Extension Repo with baseUrl: $source" }
+                            }
+                        }
+                        sourcePreferences.extensionRepos().delete()
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
