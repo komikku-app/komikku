@@ -25,15 +25,19 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import exh.ui.ifSourcesLoaded
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
 
@@ -150,6 +154,14 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onMigrate = {
+                        PreMigrationScreen.navigateToMigration(
+                            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                            navigator,
+                            dialog.duplicate.id,
+                            dialog.manga.id,
+                        )
+                    }
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

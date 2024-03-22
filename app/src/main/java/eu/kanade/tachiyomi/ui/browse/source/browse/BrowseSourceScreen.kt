@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -67,6 +68,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -74,6 +76,8 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 data class BrowseSourceScreen(
     private val sourceId: Long,
@@ -365,6 +369,16 @@ data class BrowseSourceScreen(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onMigrate = {
+                        // SY -->
+                        PreMigrationScreen.navigateToMigration(
+                            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                            navigator,
+                            dialog.duplicate.id,
+                            dialog.manga.id,
+                        )
+                        // SY <--
+                    },
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {
