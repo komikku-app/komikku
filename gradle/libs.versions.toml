@@ -1,5 +1,5 @@
 [versions]
-aboutlib_version = "10.10.0"
+aboutlib_version = "11.1.0"
 acra = "5.11.3"
 leakcanary = "2.13"
 moko = "0.23.0"
