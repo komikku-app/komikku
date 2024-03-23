@@ -165,7 +165,6 @@ dependencies {
     debugImplementation(compose.ui.tooling)
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
-    implementation(compose.accompanist.webview)
     implementation(compose.accompanist.systemuicontroller)
 
     implementation(androidx.paging.runtime)
@@ -247,6 +246,8 @@ dependencies {
     implementation(libs.bundles.voyager)
     implementation(libs.compose.materialmotion)
     implementation(libs.swipe)
+    implementation(libs.compose.webview)
+
 
     implementation(libs.google.api.services.drive)
     implementation(libs.google.api.client.oauth)
