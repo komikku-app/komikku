@@ -50,7 +50,7 @@ object Migrations {
                 coroutineScope.launchIO {
                     for ((index, source) in sourcePreferences.extensionRepos().get().withIndex()) {
                         try {
-                            extensionRepoRepository.upsertRepository(
+                            extensionRepoRepository.upsertRepo(
                                 source,
                                 "Repo #${index + 1}",
                                 null,
