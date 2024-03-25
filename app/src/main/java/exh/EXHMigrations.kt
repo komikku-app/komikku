@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
@@ -114,6 +115,7 @@ object EXHMigrations {
                 LibraryUpdateJob.setupTask(context)
                 BackupCreateJob.setupTask(context)
                 EHentaiUpdateWorker.scheduleBackground(context)
+                SyncDataJob.setupTask(context)
 
                 // Fresh install
                 if (oldVersion == 0) {
