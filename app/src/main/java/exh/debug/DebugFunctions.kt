@@ -1,23 +1,15 @@
 package exh.debug
 
 import android.app.Application
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.tachiyomi.core.security.SecurityPreferences
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
-import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.workManager
-import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
@@ -27,11 +19,9 @@ import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
-import mihon.domain.extensionrepo.repository.ExtensionRepoRepository
-import tachiyomi.core.common.preference.PreferenceStore
+import mihon.core.migration.Migrator
+import mihon.core.migration.migrations.migrations
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.domain.backup.service.BackupPreferences
-import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFavorites
@@ -48,16 +38,6 @@ import java.util.UUID
 object DebugFunctions {
     private val app: Application by injectLazy()
     private val handler: DatabaseHandler by injectLazy()
-    private val prefsStore: PreferenceStore by injectLazy()
-    private val basePrefs: BasePreferences by injectLazy()
-    private val uiPrefs: UiPreferences by injectLazy()
-    private val networkPrefs: NetworkPreferences by injectLazy()
-    private val sourcePrefs: SourcePreferences by injectLazy()
-    private val securityPrefs: SecurityPreferences by injectLazy()
-    private val libraryPrefs: LibraryPreferences by injectLazy()
-    private val readerPrefs: ReaderPreferences by injectLazy()
-    private val backupPrefs: BackupPreferences by injectLazy()
-    private val trackerManager: TrackerManager by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val getFavorites: GetFavorites by injectLazy()
@@ -66,46 +46,22 @@ object DebugFunctions {
     private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
     private val getSearchMetadata: GetSearchMetadata by injectLazy()
     private val getAllManga: GetAllManga by injectLazy()
-    private val pagePreviewCache: PagePreviewCache by injectLazy()
-    private val extensionRepoRepository: ExtensionRepoRepository by injectLazy()
 
     fun forceUpgradeMigration() {
-        val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
-        lastVersionCode.set(1)
-        EXHMigrations.upgrade(
-            context = app,
-            preferenceStore = prefsStore,
-            basePreferences = basePrefs,
-            uiPreferences = uiPrefs,
-            networkPreferences = networkPrefs,
-            sourcePreferences = sourcePrefs,
-            securityPreferences = securityPrefs,
-            libraryPreferences = libraryPrefs,
-            readerPreferences = readerPrefs,
-            backupPreferences = backupPrefs,
-            trackerManager = trackerManager,
-            pagePreviewCache = pagePreviewCache,
-            extensionRepoRepository = extensionRepoRepository,
+        Migrator.migrate(
+            old = 1,
+            new = BuildConfig.VERSION_CODE,
+            migrations = migrations,
+            onMigrationComplete = {}
         )
     }
 
     fun forceSetupJobs() {
-        val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
-        lastVersionCode.set(0)
-        EXHMigrations.upgrade(
-            context = app,
-            preferenceStore = prefsStore,
-            basePreferences = basePrefs,
-            uiPreferences = uiPrefs,
-            networkPreferences = networkPrefs,
-            sourcePreferences = sourcePrefs,
-            securityPreferences = securityPrefs,
-            libraryPreferences = libraryPrefs,
-            readerPreferences = readerPrefs,
-            backupPreferences = backupPrefs,
-            trackerManager = trackerManager,
-            pagePreviewCache = pagePreviewCache,
-            extensionRepoRepository = extensionRepoRepository,
+        Migrator.migrate(
+            old = 0,
+            new = BuildConfig.VERSION_CODE,
+            migrations = migrations,
+            onMigrationComplete = {}
         )
     }
 

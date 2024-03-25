@@ -50,8 +50,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
@@ -80,7 +78,6 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import exh.EXHMigrations
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
 import exh.log.DebugModeOverlay
@@ -97,7 +94,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.core.migration.Migrator
+import mihon.core.migration.migrations.migrations
 import tachiyomi.core.common.Constants
+import tachiyomi.core.common.preference.Preference
+import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
@@ -113,9 +114,7 @@ import androidx.compose.ui.graphics.Color.Companion as ComposeColor
 
 class MainActivity : BaseActivity() {
 
-    private val sourcePreferences: SourcePreferences by injectLazy()
     private val libraryPreferences: LibraryPreferences by injectLazy()
-    private val uiPreferences: UiPreferences by injectLazy()
     private val preferences: BasePreferences by injectLazy()
 
     // SY -->
@@ -165,21 +164,7 @@ class MainActivity : BaseActivity() {
 
         val didMigration = if (isLaunch) {
             addAnalytics()
-            EXHMigrations.upgrade(
-                context = applicationContext,
-                basePreferences = preferences,
-                uiPreferences = uiPreferences,
-                preferenceStore = Injekt.get(),
-                networkPreferences = Injekt.get(),
-                sourcePreferences = sourcePreferences,
-                securityPreferences = Injekt.get(),
-                libraryPreferences = libraryPreferences,
-                readerPreferences = Injekt.get(),
-                backupPreferences = Injekt.get(),
-                trackerManager = Injekt.get(),
-                pagePreviewCache = Injekt.get(),
-                extensionRepoRepository = Injekt.get(),
-            )
+            migrate()
         } else {
             false
         }
@@ -421,6 +406,23 @@ class MainActivity : BaseActivity() {
                 navigator.push(OnboardingScreen())
             }
         }
+    }
+
+    private fun migrate(): Boolean {
+        val preferenceStore = Injekt.get<PreferenceStore>()
+        // SY -->
+        val preference = preferenceStore.getInt(Preference.appStateKey("eh_last_version_code"), 0)
+        // SY <--
+        logcat { "Migration from ${preference.get()} to ${BuildConfig.VERSION_CODE}" }
+        return Migrator.migrate(
+            old = preference.get(),
+            new = BuildConfig.VERSION_CODE,
+            migrations = migrations,
+            onMigrationComplete = {
+                logcat { "Updating last version to ${BuildConfig.VERSION_CODE}" }
+                preference.set(BuildConfig.VERSION_CODE)
+            },
+        )
     }
 
     /**
