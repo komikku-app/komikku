@@ -27,6 +27,7 @@ import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
+import mihon.domain.extensionrepo.repository.ExtensionRepoRepository
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.backup.service.BackupPreferences
@@ -66,6 +67,7 @@ object DebugFunctions {
     private val getSearchMetadata: GetSearchMetadata by injectLazy()
     private val getAllManga: GetAllManga by injectLazy()
     private val pagePreviewCache: PagePreviewCache by injectLazy()
+    private val extensionRepoRepository: ExtensionRepoRepository by injectLazy()
 
     fun forceUpgradeMigration() {
         val lastVersionCode = prefsStore.getInt("eh_last_version_code", 0)
@@ -83,6 +85,7 @@ object DebugFunctions {
             backupPreferences = backupPrefs,
             trackerManager = trackerManager,
             pagePreviewCache = pagePreviewCache,
+            extensionRepoRepository = extensionRepoRepository,
         )
     }
 
@@ -102,6 +105,7 @@ object DebugFunctions {
             backupPreferences = backupPrefs,
             trackerManager = trackerManager,
             pagePreviewCache = pagePreviewCache,
+            extensionRepoRepository = extensionRepoRepository,
         )
     }
 
