@@ -40,7 +40,6 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         }
 
         val screenModel = rememberScreenModel { RecommendsScreenModel(mangaId, sourceId) }
-        val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->

@@ -66,6 +66,7 @@ fun EditMangaDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    @Suppress("NAME_SHADOWING")
                     val binding = binding ?: return@TextButton
                     onPositiveClick(
                         binding.title.text.toString(),
@@ -120,7 +121,7 @@ fun EditMangaDialog(
 }
 
 private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDialogBinding, scope: CoroutineScope) {
-    loadCover(manga, context, binding)
+    loadCover(manga, binding)
 
     val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
         context,
@@ -188,7 +189,7 @@ private fun onViewCreated(manga: Manga, context: Context, binding: EditMangaDial
         binding.mangaDescription.hint =
             context.stringResource(
                 SYMR.strings.description_hint,
-                manga.ogDescription?.takeIf { it.isNotBlank() }?.let { it.replace("\n", " ").chop(20) } ?: ""
+                manga.ogDescription?.takeIf { it.isNotBlank() }?.replace("\n", " ")?.chop(20) ?: ""
             )
         binding.thumbnailUrl.hint =
             context.stringResource(
@@ -212,7 +213,7 @@ private fun resetTags(manga: Manga, binding: EditMangaDialogBinding, scope: Coro
     }
 }
 
-private fun loadCover(manga: Manga, context: Context, binding: EditMangaDialogBinding) {
+private fun loadCover(manga: Manga, binding: EditMangaDialogBinding) {
     binding.mangaCover.load(manga) {
         transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
     }

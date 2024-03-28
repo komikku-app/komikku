@@ -50,7 +50,7 @@ class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) 
                 )
             },
         ) { paddingValues ->
-            when (val state = state) {
+            when (@Suppress("NAME_SHADOWING") val state = state) {
                 MetadataViewState.Loading -> LoadingScreen()
                 MetadataViewState.MetadataNotFound -> EmptyScreen(MR.strings.no_results_found)
                 MetadataViewState.SourceNotFound -> EmptyScreen(MR.strings.source_empty_screen)

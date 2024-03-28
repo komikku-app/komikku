@@ -41,7 +41,6 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         }
 
         val screenModel = rememberScreenModel { MangaDexSimilarScreenModel(mangaId, sourceId) }
-        val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->

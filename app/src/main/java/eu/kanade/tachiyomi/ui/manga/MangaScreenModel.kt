@@ -1005,6 +1005,7 @@ class MangaScreenModel(
                 downloadManager.getQueuedDownloadOrNull(chapter.id)
             }
             // SY -->
+            @Suppress("NAME_SHADOWING")
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
             val source = mergedData?.sources?.find { manga.source == it.id }?.takeIf { mergedData.sources.size > 2 }
             // SY <--
@@ -1078,7 +1079,7 @@ class MangaScreenModel(
                         downloadNewChapters(newChapters)
                     }
                 } else {
-                    state.source.fetchChaptersForMergedManga(state.manga, manualFetch, true, dedupe)
+                    state.source.fetchChaptersForMergedManga(state.manga, manualFetch)
                 }
             }
         } catch (e: Throwable) {

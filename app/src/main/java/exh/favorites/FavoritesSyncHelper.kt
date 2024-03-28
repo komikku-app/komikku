@@ -2,6 +2,7 @@ package exh.favorites
 
 import android.content.Context
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.PowerManager
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.POST
@@ -136,10 +137,18 @@ class FavoritesSyncHelper(val context: Context) {
             }
             ignore { wifiLock?.release() }
             wifiLock = ignore {
-                context.wifiManager.createWifiLock(
-                    WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                    "teh:ExhFavoritesSyncWifi",
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    context.wifiManager.createWifiLock(
+                        WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
+                        "teh:ExhFavoritesSyncWifi",
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.wifiManager.createWifiLock(
+                        WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                        "teh:ExhFavoritesSyncWifi",
+                    )
+                }
             }
 
             // Do not update galleries while syncing favorites

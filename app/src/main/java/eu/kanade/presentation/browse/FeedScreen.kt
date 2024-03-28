@@ -74,7 +74,7 @@ fun FeedScreen(
     selection: List<Manga>,
     // KMK <--
     onRefresh: () -> Unit,
-    getMangaState: @Composable (Manga, CatalogueSource?) -> State<Manga>,
+    getMangaState: @Composable (Manga) -> State<Manga>,
 ) {
     when {
         state.isLoading -> LoadingScreen()
@@ -123,7 +123,7 @@ fun FeedScreen(
                         ) {
                             FeedItem(
                                 item = item,
-                                getMangaState = { getMangaState(it, item.source) },
+                                getMangaState = { getMangaState(it) },
                                 onClickManga = onClickManga,
                                 // KMK -->
                                 onLongClickManga = onLongClickManga,

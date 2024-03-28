@@ -59,6 +59,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -740,6 +741,7 @@ class LibraryScreenModel(
         clearSelection()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun syncMangaToDex() {
         launchIO {
             MdUtil.getEnabledMangaDex(unsortedPreferences, sourcePreferences, sourceManager)?.let { mdex ->
