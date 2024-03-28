@@ -19,6 +19,9 @@ import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
+import mihon.core.migration.MigrationContext
+import mihon.core.migration.MigrationJobFactory
+import mihon.core.migration.MigrationStrategyFactory
 import mihon.core.migration.Migrator
 import mihon.core.migration.migrations.migrations
 import tachiyomi.data.DatabaseHandler
@@ -47,22 +50,20 @@ object DebugFunctions {
     private val getSearchMetadata: GetSearchMetadata by injectLazy()
     private val getAllManga: GetAllManga by injectLazy()
 
-    fun forceUpgradeMigration() {
-        Migrator.migrate(
-            old = 1,
-            new = BuildConfig.VERSION_CODE,
-            migrations = migrations,
-            onMigrationComplete = {}
-        )
+    fun forceUpgradeMigration(): Boolean {
+        val migrationContext = MigrationContext(dryrun = false)
+        val migrationJobFactory = MigrationJobFactory(migrationContext, Migrator.scope)
+        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory, {})
+        val strategy = migrationStrategyFactory.create(1, BuildConfig.VERSION_CODE)
+        return runBlocking { strategy(migrations).await() }
     }
 
-    fun forceSetupJobs() {
-        Migrator.migrate(
-            old = 0,
-            new = BuildConfig.VERSION_CODE,
-            migrations = migrations,
-            onMigrationComplete = {}
-        )
+    fun forceSetupJobs(): Boolean {
+        val migrationContext = MigrationContext(dryrun = false)
+        val migrationJobFactory = MigrationJobFactory(migrationContext, Migrator.scope)
+        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory, {})
+        val strategy = migrationStrategyFactory.create(0, BuildConfig.VERSION_CODE)
+        return runBlocking { strategy(migrations).await() }
     }
 
     fun resetAgedFlagInEXHManga() {

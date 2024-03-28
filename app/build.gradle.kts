@@ -269,6 +269,8 @@ dependencies {
     // debugImplementation(libs.leakcanary.android)
     implementation(libs.leakcanary.plumber)
 
+    testImplementation(kotlinx.coroutines.test)
+
     // SY -->
     // Text distance (EH)
     implementation(sylibs.simularity)

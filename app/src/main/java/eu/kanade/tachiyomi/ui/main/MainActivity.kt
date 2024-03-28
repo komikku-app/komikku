@@ -95,10 +95,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import mihon.core.migration.Migrator
-import mihon.core.migration.migrations.migrations
 import tachiyomi.core.common.Constants
-import tachiyomi.core.common.preference.Preference
-import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
@@ -106,8 +103,6 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 import androidx.compose.ui.graphics.Color.Companion as ComposeColor
@@ -164,7 +159,7 @@ class MainActivity : BaseActivity() {
 
         val didMigration = if (isLaunch) {
             addAnalytics()
-            migrate()
+            Migrator.awaitAndRelease()
         } else {
             false
         }
@@ -406,23 +401,6 @@ class MainActivity : BaseActivity() {
                 navigator.push(OnboardingScreen())
             }
         }
-    }
-
-    private fun migrate(): Boolean {
-        val preferenceStore = Injekt.get<PreferenceStore>()
-        // SY -->
-        val preference = preferenceStore.getInt(Preference.appStateKey("eh_last_version_code"), 0)
-        // SY <--
-        logcat { "Migration from ${preference.get()} to ${BuildConfig.VERSION_CODE}" }
-        return Migrator.migrate(
-            old = preference.get(),
-            new = BuildConfig.VERSION_CODE,
-            migrations = migrations,
-            onMigrationComplete = {
-                logcat { "Updating last version to ${BuildConfig.VERSION_CODE}" }
-                preference.set(BuildConfig.VERSION_CODE)
-            },
-        )
     }
 
     /**
