@@ -247,6 +247,7 @@ dependencies {
     implementation(libs.compose.materialmotion)
     implementation(libs.swipe)
     implementation(libs.compose.webview)
+    implementation(libs.compose.grid)
 
 
     implementation(libs.google.api.services.drive)
