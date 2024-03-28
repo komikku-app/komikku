@@ -54,7 +54,7 @@ coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp" }
 
 subsamplingscaleimageview = "com.github.tachiyomiorg:subsampling-scale-image-view:aeaa170036"
 image-decoder = "com.github.tachiyomiorg:image-decoder:e08e9be535"
-exifinterface = "androidx.exifinterface:exifinterface:1.3.6"
+exifinterface = "androidx.exifinterface:exifinterface:1.3.7"
 
 natural-comparator = "com.github.gpanther:java-nat-sort:natural-comparator-1.1"
 
