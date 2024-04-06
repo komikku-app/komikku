@@ -1,7 +1,10 @@
+import mihon.buildlogic.tasks.getLocalesConfigTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    kotlin("multiplatform")
-    id("com.android.library")
+    id("mihon.library")
     id("dev.icerock.mobile.multiplatform-resources")
+    kotlin("multiplatform")
     id("com.github.ben-manes.versions")
 }
 
@@ -42,12 +45,12 @@ multiplatformResources {
 }
 
 tasks {
-    val localesConfigTask = registerLocalesConfigTask(project)
+    val localesConfigTask = project.getLocalesConfigTask()
     preBuild {
         dependsOn(localesConfigTask)
     }
 
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    withType<KotlinCompile> {
         kotlinOptions.freeCompilerArgs += listOf(
             "-Xexpect-actual-classes",
         )
