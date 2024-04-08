@@ -26,6 +26,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
@@ -215,7 +216,7 @@ fun SelectItem(
     ) {
         OutlinedTextField(
             modifier = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryEditable)
                 .fillMaxWidth()
                 .padding(
                     horizontal = SettingsItemsPaddings.Horizontal,

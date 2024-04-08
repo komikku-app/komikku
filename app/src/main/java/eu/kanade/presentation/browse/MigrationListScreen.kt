@@ -94,7 +94,7 @@ fun MigrationListScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .animateItemPlacement()
+                        .animateItem()
                         .padding(horizontal = 16.dp)
                         .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.SpaceBetween,
