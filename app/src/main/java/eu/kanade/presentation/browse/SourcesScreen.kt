@@ -137,7 +137,7 @@ fun SourcesScreen(
                     when (model) {
                         is SourceUiModel.Header -> {
                             SourceHeader(
-                                modifier = Modifier.animateItemPlacement(),
+                                modifier = Modifier.animateItem(),
                                 language = model.language,
                                 // SY -->
                                 isCategory = model.isCategory,
@@ -145,7 +145,7 @@ fun SourcesScreen(
                             )
                         }
                         is SourceUiModel.Item -> SourceItem(
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                             source = model.source,
                             // SY -->
                             showLatest = state.showLatest,
