@@ -129,7 +129,7 @@ private fun LibraryRegularToolbar(
                         onClick = onClickOpenRandomManga,
                     ),
                     AppBar.OverflowAction(
-                        title = stringResource(MR.strings.sync_library),
+                        title = stringResource(SYMR.strings.sync_library),
                         onClick = onClickSyncNow,
                     ),
                 ).builder().apply {

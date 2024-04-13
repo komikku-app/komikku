@@ -27,6 +27,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
@@ -68,7 +69,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
         try {
             googleDriveService.refreshToken()
             val drive = googleDriveService.driveService
-                ?: throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))
+                ?: throw Exception(context.stringResource(SYMR.strings.google_drive_not_signed_in))
 
             var backoff = 1000L
             var retries = 0 // Retry counter
@@ -112,11 +113,11 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
 
             if (retries >= maxRetries) {
                 logcat(LogPriority.ERROR) { "Max retries reached, exiting sync process" }
-                throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": Max retries reached.")
+                throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive) + ": Max retries reached.")
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e) { "Error in GoogleDrive beforeSync" }
-            throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": ${e.message}", e)
+            throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive) + ": ${e.message}", e)
         }
     }
 
@@ -125,7 +126,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
 
         if (drive == null) {
             logcat(LogPriority.DEBUG) { "Google Drive service not initialized" }
-            throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))
+            throw Exception(context.stringResource(SYMR.strings.google_drive_not_signed_in))
         }
 
         val fileList = getAppDataFileList(drive)
@@ -166,7 +167,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
     override suspend fun pushSyncData(syncData: SyncData) {
         val jsonData = json.encodeToString(syncData)
         val drive = googleDriveService.driveService
-            ?: throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))
+            ?: throw Exception(context.stringResource(SYMR.strings.google_drive_not_signed_in))
 
         val fileList = getAppDataFileList(drive)
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -205,7 +206,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
             deleteLockFile(drive)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e) { "Failed to push or update sync data" }
-            throw Exception(context.stringResource(MR.strings.error_uploading_sync_data) + ": ${e.message}", e)
+            throw Exception(context.stringResource(SYMR.strings.error_uploading_sync_data) + ": ${e.message}", e)
         }
     }
 
@@ -282,7 +283,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e) { "Error deleting lock file" }
-            throw Exception(context.stringResource(MR.strings.error_deleting_google_drive_lock_file), e)
+            throw Exception(context.stringResource(SYMR.strings.error_deleting_google_drive_lock_file), e)
         }
     }
 
@@ -407,7 +408,7 @@ class GoogleDriveService(private val context: Context) {
             .build()
 
         if (refreshToken == "") {
-            throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))
+            throw Exception(context.stringResource(SYMR.strings.google_drive_not_signed_in))
         }
 
         credential.refreshToken = refreshToken
