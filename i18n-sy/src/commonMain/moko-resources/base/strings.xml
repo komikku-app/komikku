@@ -153,6 +153,9 @@
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
     <string name="clear_db_exclude_read">Keep entries with read chapters</string>
+    <string name="flare_solver_user_agent_update_success">FlareSolverr is working. User agent updated. Please restart the app</string>
+    <string name="flare_solver_update_user_agent_failed">FlareSolverr is not working. User agent not updated. Please check your settings</string>
+    <string name= "flare_solver_error">Error contacting FlareSolverr</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>

@@ -51,4 +51,20 @@ class AndroidCookieJar : CookieJar {
     fun removeAll() {
         manager.removeAllCookies {}
     }
+
+    fun addAll(url: HttpUrl, cookies: List<Cookie>) {
+        val urlString = url.toString()
+        val existingCookies = manager.getCookie(urlString)?.split("; ")?.associate {
+            val (name, value) = it.split('=', limit = 2)
+            name to value
+        }?.toMutableMap() ?: mutableMapOf()
+
+        cookies.forEach { newCookie ->
+            existingCookies[newCookie.name] = newCookie.value
+        }
+
+        existingCookies.forEach { (name, value) ->
+            manager.setCookie(urlString, "$name=$value")
+        }
+    }
 }
