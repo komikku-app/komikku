@@ -88,7 +88,14 @@ class SyncManager(
             appSettings = syncOptions.appSettings,
             sourceSettings = syncOptions.sourceSettings,
             privateSettings = syncOptions.privateSettings,
+
+            // SY -->
+            customInfo = syncOptions.customInfo,
+            readEntries = syncOptions.readEntries,
+            // SY <--
         )
+
+        logcat(LogPriority.DEBUG) { "Begin create backup" }
         val backup = Backup(
             backupManga = backupCreator.backupMangas(databaseManga, backupOptions),
             backupCategories = backupCreator.backupCategories(backupOptions),
@@ -100,9 +107,11 @@ class SyncManager(
             backupSavedSearches = backupCreator.backupSavedSearches(),
             // SY <--
         )
+        logcat(LogPriority.DEBUG) { "End create backup" }
 
         // Create the SyncData object
         val syncData = SyncData(
+            deviceId = syncPreferences.uniqueDeviceID(),
             backup = backup,
         )
 
@@ -129,8 +138,22 @@ class SyncManager(
 
         val remoteBackup = syncService?.doSync(syncData)
 
+        if (remoteBackup == null) {
+            logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
+            // should we call showSyncError?
+            return
+        }
+
+        if (remoteBackup === syncData.backup){
+            // nothing changed
+            logcat(LogPriority.DEBUG) { "Skip restore due to remote was overwrite from local" }
+            syncPreferences.lastSyncTimestamp().set(Date().time)
+            notifier.showSyncSuccess("Sync completed successfully")
+            return
+        }
+
         // Stop the sync early if the remote backup is null or empty
-        if (remoteBackup?.backupManga?.size == 0) {
+        if (remoteBackup.backupManga?.size == 0) {
             notifier.showSyncError("No data found on remote server.")
             return
         }
@@ -143,49 +166,47 @@ class SyncManager(
             return
         }
 
-        if (remoteBackup != null) {
-            val (filteredFavorites, nonFavorites) = filterFavoritesAndNonFavorites(remoteBackup)
-            updateNonFavorites(nonFavorites)
+        val (filteredFavorites, nonFavorites) = filterFavoritesAndNonFavorites(remoteBackup)
+        updateNonFavorites(nonFavorites)
 
-            val newSyncData = backup.copy(
-                backupManga = filteredFavorites,
-                backupCategories = remoteBackup.backupCategories,
-                backupSources = remoteBackup.backupSources,
-                backupPreferences = remoteBackup.backupPreferences,
-                backupSourcePreferences = remoteBackup.backupSourcePreferences,
+        val newSyncData = backup.copy(
+            backupManga = filteredFavorites,
+            backupCategories = remoteBackup.backupCategories,
+            backupSources = remoteBackup.backupSources,
+            backupPreferences = remoteBackup.backupPreferences,
+            backupSourcePreferences = remoteBackup.backupSourcePreferences,
 
-                // SY -->
-                backupSavedSearches = remoteBackup.backupSavedSearches,
-                // SY <--
+            // SY -->
+            backupSavedSearches = remoteBackup.backupSavedSearches,
+            // SY <--
+        )
+
+        // It's local sync no need to restore data. (just update remote data)
+        if (filteredFavorites.isEmpty()) {
+            // update the sync timestamp
+            syncPreferences.lastSyncTimestamp().set(Date().time)
+            notifier.showSyncSuccess("Sync completed successfully")
+            return
+        }
+
+        val backupUri = writeSyncDataToCache(context, newSyncData)
+        logcat(LogPriority.DEBUG) { "Got Backup Uri: $backupUri" }
+        if (backupUri != null) {
+            BackupRestoreJob.start(
+                context,
+                backupUri,
+                sync = true,
+                options = RestoreOptions(
+                    appSettings = true,
+                    sourceSettings = true,
+                    library = true,
+                ),
             )
 
-            // It's local sync no need to restore data. (just update remote data)
-            if (filteredFavorites.isEmpty()) {
-                // update the sync timestamp
-                syncPreferences.lastSyncTimestamp().set(Date().time)
-                notifier.showSyncSuccess("Sync completed successfully")
-                return
-            }
-
-            val backupUri = writeSyncDataToCache(context, newSyncData)
-            logcat(LogPriority.DEBUG) { "Got Backup Uri: $backupUri" }
-            if (backupUri != null) {
-                BackupRestoreJob.start(
-                    context,
-                    backupUri,
-                    sync = true,
-                    options = RestoreOptions(
-                        appSettings = true,
-                        sourceSettings = true,
-                        library = true,
-                    ),
-                )
-
-                // update the sync timestamp
-                syncPreferences.lastSyncTimestamp().set(Date().time)
-            } else {
-                logcat(LogPriority.ERROR) { "Failed to write sync data to file" }
-            }
+            // update the sync timestamp
+            syncPreferences.lastSyncTimestamp().set(Date().time)
+        } else {
+            logcat(LogPriority.ERROR) { "Failed to write sync data to file" }
         }
     }
 

@@ -13,6 +13,8 @@ class SyncPreferences(
     fun clientAPIKey() = preferenceStore.getString("sync_client_api_key", "")
     fun lastSyncTimestamp() = preferenceStore.getLong(Preference.appStateKey("last_sync_timestamp"), 0L)
 
+    fun lastSyncEtag() =  preferenceStore.getString("sync_etag", "")
+
     fun syncInterval() = preferenceStore.getInt("sync_interval", 0)
     fun syncService() = preferenceStore.getInt("sync_service", 0)
 
@@ -53,6 +55,11 @@ class SyncPreferences(
             appSettings = preferenceStore.getBoolean("appSettings", true).get(),
             sourceSettings = preferenceStore.getBoolean("sourceSettings", true).get(),
             privateSettings = preferenceStore.getBoolean("privateSettings", true).get(),
+
+            // SY -->
+            customInfo = preferenceStore.getBoolean("customInfo", true).get(),
+            readEntries = preferenceStore.getBoolean("readEntries", true).get()
+            // SY <--
         )
     }
 
@@ -65,6 +72,11 @@ class SyncPreferences(
         preferenceStore.getBoolean("appSettings", true).set(syncSettings.appSettings)
         preferenceStore.getBoolean("sourceSettings", true).set(syncSettings.sourceSettings)
         preferenceStore.getBoolean("privateSettings", true).set(syncSettings.privateSettings)
+
+        // SY -->
+        preferenceStore.getBoolean("customInfo", true).set(syncSettings.customInfo)
+        preferenceStore.getBoolean("readEntries", true).set(syncSettings.readEntries)
+        // SY <--
     }
 
     fun getSyncTriggerOptions(): SyncTriggerOptions {

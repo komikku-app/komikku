@@ -9,4 +9,9 @@ data class SyncSettings(
     val appSettings: Boolean = true,
     val sourceSettings: Boolean = true,
     val privateSettings: Boolean = false,
+
+    // SY -->
+    val customInfo: Boolean = true,
+    val readEntries: Boolean = true
+    // SY <--
 )
