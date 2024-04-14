@@ -392,7 +392,6 @@
     <string name="pref_archive_reader_mode">Archive reader mode</string>
     <string name="pref_archive_reader_mode_summary">The way in which images inside archives, such as CBZ or CBR, are being loaded</string>
 
-
     <!-- Entry Page -->
     <!-- Entry Info -->
     <string name="az_recommends">See Recommendations</string>

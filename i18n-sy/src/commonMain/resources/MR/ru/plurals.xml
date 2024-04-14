@@ -103,4 +103,12 @@
         <item quantity="many">%1$d секунд назад</item>
         <item quantity="other">%1$d секунд назад</item>
     </plurals>
+
+    <!-- Manga preview row counter -->
+    <plurals name="row_count">
+        <item quantity="one">%d ряд</item>
+        <item quantity="few">%d ряда</item>
+        <item quantity="many">%d рядов</item>
+        <item quantity="other">%d рядов</item>
+    </plurals>
 </resources>

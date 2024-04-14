@@ -160,6 +160,7 @@
     <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню вместо размещения на сведеньях серии</string>
     <string name="put_merge_in_overflow">Объединение в выпадающем меню</string>
     <string name="put_merge_in_overflow_summary">Поместить кнопку «Объединение» в выпадающее меню вместо размещения на сведеньях серии</string>
+    <string name="pref_previews_row_count">Размер сетки для предосмотра</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Панель навигации</string>
@@ -174,6 +175,10 @@
     <string name="library_group_updates_global">Всегда запускать глобальные обновления</string>
     <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для группы «Не группировать». Остальные группы используют обновления категорий</string>
     <string name="library_group_updates_all">Постоянно запускать обновления категорий</string>
+    <string name="pref_mark_read_dupe_chapters">Помечать повторяющиеся главы как «Прочитано»</string>
+    <string name="pref_mark_read_dupe_chapters_summary">Помечать повторяющиеся главы как «Прочитано» после прочтения</string>
+    <string name="pref_library_mark_duplicate_chapters">Помечать новые повторяющиеся главы как «Прочитано»</string>
+    <string name="pref_library_mark_duplicate_chapters_summary">Автоматически помечать новые главы как «Прочитано», если они были ранее прочитаны</string>
 
     <!-- Browse settings -->
     <string name="pref_hide_feed">Скрыть вкладку «Лента»</string>
@@ -312,9 +317,12 @@
     <string name="pref_center_margin">Отступ по центру</string>
     <string name="pref_center_margin_summary">Вставить проставку для устранения зазоров на складных устройствах.</string>
 
-    <!-- Cache archived manga to disk -->
-    <string name="cache_archived_manga_to_disk">Кэшировать изображения внутри архивов CBZ/CBR</string>
-    <string name="cache_archived_manga_to_disk_subtitle">Во время чтения временно копирует изображения в архив серий \nМожет улучшить производительность читалки</string>
+    <!-- Archive reader mode -->
+    <string name="archive_mode_load_from_file">Загрузить из файла</string>
+    <string name="archive_mode_load_into_memory">Загрузить в память</string>
+    <string name="archive_mode_cache_to_disk">Копировать на диск</string>
+    <string name="pref_archive_reader_mode">Режим чтения для архивов</string>
+    <string name="pref_archive_reader_mode_summary">Способ, благодаря которому, изображения из архивов, таких как CBZ или CBR, будут загружены</string>
 
     <!-- Entry Page -->
     <!-- Entry Info -->
@@ -330,6 +338,7 @@
     <!-- Entry Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
     <string name="add_tag">Добавить тэг</string>
+    <string name="reset_info">Сбросить сведенья</string>
     <string name="title_hint">Название: %1$s</string>
     <string name="description_hint">Описание: %1$s</string>
     <string name="author_hint">Автор: %1$s</string>
