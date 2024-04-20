@@ -1141,7 +1141,7 @@ class ReaderViewModel @JvmOverloads constructor(
 
         return imageSaver.save(
             image = Image.Page(
-                inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, 0, bg) },
+                inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, 0, bg).inputStream() },
                 name = filename,
                 location = location,
             ),
