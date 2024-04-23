@@ -41,7 +41,7 @@ jobs:
                 "type": "both",
                 "regex": "^.*(myanimelist|mal).*$",
                 "ignoreCase": true,
-                "message": "For issues with linking MyAnimeList, please follow these steps:\n1. Update App to version 0.16.4 or newer\n2. Change your default User-Agent (`More → Settings → Advanced → Default user agent string`)\n3. Close and restart App\n4. Attempt to link MyAnimeList again\n\nIf you had MyAnimeList linked before, try to unlink it first before trying these steps."
+                "message": "For issues with linking MyAnimeList, please follow these steps:\n1. Update Komikku to latest version\n2. Change your default User-Agent (`More → Settings → Advanced → Default user agent string`)\n3. Close and restart App\n4. Attempt to link MyAnimeList again\n\nIf you had MyAnimeList linked before, try to unlink it first before trying these steps."
               }
             ]
           auto-close-ignore-label: do-not-autoclose
