@@ -252,7 +252,7 @@ class BulkFavoriteScreenModel(
             .orEmpty()
     }
 
-    suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
+    private suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
         return getDuplicateLibraryManga.await(manga).getOrNull(0)
     }
 
