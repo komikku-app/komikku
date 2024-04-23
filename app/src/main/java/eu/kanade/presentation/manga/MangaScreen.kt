@@ -31,6 +31,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,6 +50,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
+import eu.kanade.presentation.browse.components.GlobalSearchCardRow
+import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
@@ -167,6 +170,12 @@ fun MangaScreen(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+
+    // KMK -->
+    getMangaState: @Composable ((Manga) -> State<Manga>),
+    onRelatedMangaClick: (Manga) -> Unit,
+    onRelatedMangaLongClick: (Manga) -> Unit,
+    // KMK <--
 ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
@@ -220,6 +229,11 @@ fun MangaScreen(
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
+            // KMK -->
+            getMangaState = getMangaState,
+            onRelatedMangaClick = onRelatedMangaClick,
+            onRelatedMangaLongClick = onRelatedMangaLongClick,
+            // KMK <--
         )
     } else {
         MangaScreenLargeImpl(
@@ -266,6 +280,11 @@ fun MangaScreen(
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
+            // KMK -->
+            getMangaState = getMangaState,
+            onRelatedMangaClick = onRelatedMangaClick,
+            onRelatedMangaLongClick = onRelatedMangaLongClick,
+            // KMK <--
         )
     }
 }
@@ -328,6 +347,12 @@ private fun MangaScreenSmallImpl(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+
+    // KMK -->
+    getMangaState: @Composable ((Manga) -> State<Manga>),
+    onRelatedMangaClick: (Manga) -> Unit,
+    onRelatedMangaLongClick: (Manga) -> Unit,
+    // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
 
@@ -534,6 +559,29 @@ private fun MangaScreenSmallImpl(
                         )
                     }
 
+                    // KMK -->
+                    if (state.manga.relatedMangas!!.isNotEmpty()) {
+                        item(
+                            key = MangaScreenItem.RELATED_TITLES,
+                            contentType = MangaScreenItem.RELATED_TITLES,
+                        ) {
+                            GlobalSearchResultItem(
+                                title = "Related titles",
+                                subtitle = null,
+                                onLongClick = null,
+                                onClick = { /* Should show a page with grid/list of all the related manga */ },
+                            ) {
+                                RelatedMangas(
+                                    mangas = state.manga.relatedMangas!!,
+                                    getMangaState = { getMangaState(it) },
+                                    onClickManga = onRelatedMangaClick,
+                                    onLongClickManga = onRelatedMangaLongClick,
+                                )
+                            }
+                        }
+                    }
+                    // KMK <--
+
                     // SY -->
                     if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
                         item(
@@ -654,6 +702,12 @@ fun MangaScreenLargeImpl(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+
+    // KMK -->
+    getMangaState: @Composable ((Manga) -> State<Manga>),
+    onRelatedMangaClick: (Manga) -> Unit,
+    onRelatedMangaLongClick: (Manga) -> Unit,
+    // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -863,6 +917,29 @@ fun MangaScreenLargeImpl(
                                 bottom = contentPadding.calculateBottomPadding(),
                             ),
                         ) {
+                            // KMK -->
+                            if (state.manga.relatedMangas!!.isNotEmpty()) {
+                                item(
+                                    key = MangaScreenItem.RELATED_TITLES,
+                                    contentType = MangaScreenItem.RELATED_TITLES,
+                                ) {
+                                    GlobalSearchResultItem(
+                                        title = "Related titles",
+                                        subtitle = null,
+                                        onLongClick = null,
+                                        onClick = { /* Should show a page with grid/list of all the related manga */ },
+                                    ) {
+                                        RelatedMangas(
+                                            mangas = state.manga.relatedMangas!!,
+                                            getMangaState = { getMangaState(it) },
+                                            onClickManga = onRelatedMangaClick,
+                                            onLongClickManga = onRelatedMangaLongClick,
+                                        )
+                                    }
+                                }
+                            }
+                            // KMK <--
+
                             item(
                                 key = MangaScreenItem.CHAPTER_HEADER,
                                 contentType = MangaScreenItem.CHAPTER_HEADER,
@@ -899,6 +976,24 @@ fun MangaScreenLargeImpl(
         }
     }
 }
+
+// KMK -->
+@Composable
+fun RelatedMangas(
+    mangas: List<Manga>,
+    getMangaState: @Composable ((Manga) -> State<Manga>),
+    onClickManga: (Manga) -> Unit,
+    onLongClickManga: (Manga) -> Unit,
+) {
+    GlobalSearchCardRow(
+        titles = mangas,
+        getManga = getMangaState,
+        onClick = onClickManga,
+        onLongClick = onLongClickManga,
+        selection = emptyList(),
+    )
+}
+// KMK <--
 
 @Composable
 private fun SharedMangaBottomActionMenu(

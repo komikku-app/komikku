@@ -32,4 +32,8 @@ enum class MangaScreenItem {
     // SY <--
     CHAPTER_HEADER,
     CHAPTER,
+
+    // KMK -->
+    RELATED_TITLES,
+    // KMK <--
 }
