@@ -274,6 +274,54 @@ abstract class HttpSource : CatalogueSource {
      */
     protected abstract fun mangaDetailsParse(response: Response): SManga
 
+    // KMK -->
+    /**
+     * Get all the available related mangas for a manga.
+     * Normally it's not needed to override this method.
+     *
+     * @param manga the current manga to get related mangas.
+     * @return the related mangas for the current manga.
+     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     */
+    @Suppress("DEPRECATION")
+    override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
+        return fetchRelatedMangaList(manga).awaitSingle()
+    }
+
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getRelatedMangaList"))
+    override fun fetchRelatedMangaList(manga: SManga): Observable<List<SManga>> {
+        return client.newCall(relatedMangaListRequest(manga))
+            .asObservableSuccess()
+            .map { response ->
+                relatedMangaListParse(response)
+            }
+    }
+
+    /**
+     * Returns the request for get related manga list. Override only if it's needed to override
+     * the url, send different headers or request method like POST.
+     *
+     * @param manga the manga to look for related mangas.
+     */
+    protected open fun relatedMangaListRequest(manga: SManga): Request {
+        return GET(baseUrl + manga.url, headers)
+    }
+
+    /**
+     * Parses the response from the site and returns a list of related mangas.
+     *
+     * @param response the response from the site.
+     */
+    protected open fun relatedMangaListParse(response: Response): List<SManga> = throw UnsupportedOperationException()
+
+    /**
+     * Parses the response from the site and returns a SManga Object.
+     *
+     * @param response the response from the site.
+     */
+    protected open fun relatedMangaPageParse(response: Response): SManga = throw UnsupportedOperationException()
+    // KMK <--
+
     /**
      * Get all the available chapters for a manga.
      * Normally it's not needed to override this method.

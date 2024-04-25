@@ -24,6 +24,7 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.downloadedFilter
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
@@ -395,6 +396,9 @@ class MangaScreenModel(
 
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
+            // KMK -->
+            val needRefreshRelatedMangas = relatedMangas.isEmpty()
+            // KMK <--
 
             // Show what we have earlier
             mutableState.update {
@@ -412,7 +416,7 @@ class MangaScreenModel(
                     }.toImmutableSet(),
                     // SY <--
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
-                    isRefreshingData = needRefreshInfo || needRefreshChapter,
+                    isRefreshingData = needRefreshInfo || needRefreshChapter /* KMK --> */|| needRefreshRelatedMangas,/* KMK <-- */
                     dialog = null,
                     // SY -->
                     showRecommendationsInOverflow = uiPreferences.recommendsInOverflow().get(),
@@ -440,6 +444,9 @@ class MangaScreenModel(
                 val fetchFromSourceTasks = listOf(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
+                    // KMK -->
+                    async { if (needRefreshRelatedMangas) fetchRelatedMangasFromSource() },
+                    // KMK <--
                 )
                 fetchFromSourceTasks.awaitAll()
             }
@@ -455,6 +462,9 @@ class MangaScreenModel(
             val fetchFromSourceTasks = listOf(
                 async { fetchMangaFromSource(manualFetch) },
                 async { fetchChaptersFromSource(manualFetch) },
+                // KMK -->
+                async { fetchRelatedMangasFromSource() },
+                // KMK <--
             )
             fetchFromSourceTasks.awaitAll()
             updateSuccessState { it.copy(isRefreshingData = false) }
@@ -1089,6 +1099,41 @@ class MangaScreenModel(
             updateSuccessState { it.copy(manga = newManga, isRefreshingData = false) }
         }
     }
+
+    // KMK -->
+    /**
+     * Requests an list of related mangas from the source.
+     */
+    private suspend fun fetchRelatedMangasFromSource() {
+        val state = successState ?: return
+        try {
+            withIOContext {
+                if (state.source !is MergedSource) {
+                    val relatedMangas = if (state.source.supportsRelatedMangas)
+                        withIOContext {
+                            state.source.getRelatedMangaList(state.manga.toSManga())
+                                .map {
+                                    networkToLocalManga.await(it.toDomainManga(state.source.id))
+                                }
+                        }
+                    else null
+                    updateSuccessState { it.copy(relatedMangas = relatedMangas, isRefreshingData = false) }
+                } else {
+                    throw UnsupportedOperationException("Fetching related titles for merged entry is not supported")
+                }
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+            val message = with(context) { e.formattedMessage }
+
+            screenModelScope.launch {
+                snackbarHostState.showSnackbar(message = message)
+            }
+            val newManga = mangaRepository.getMangaById(mangaId)
+            updateSuccessState { it.copy(manga = newManga, isRefreshingData = false) }
+        }
+    }
+    // KMK <--
 
     /**
      * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
