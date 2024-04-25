@@ -50,13 +50,6 @@ interface Source {
 
     // KMK -->
     /**
-     * Whether the source has support for related mangas.
-     *
-     * @since extensions-lib 1.6
-     */
-    val supportsRelatedMangas: Boolean get() = false
-
-    /**
      * Get all the available related mangas for a manga.
      *
      * @since extensions-lib 1.6
