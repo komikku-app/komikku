@@ -198,6 +198,8 @@
     <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
     <string name="pref_local_source_hidden_folders">Local source hidden folders</string>
     <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
+    <string name="pref_source_related_mangas">Related mangas</string>
+    <string name="pref_source_related_mangas_summary">Show related mangas provided by extensions</string>
 
     <!-- Backup settings -->
     <string name="custom_entry_info">Custom entry info</string>

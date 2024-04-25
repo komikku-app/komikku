@@ -1109,7 +1109,7 @@ class MangaScreenModel(
         try {
             withIOContext {
                 if (state.source !is MergedSource) {
-                    val relatedMangas = if (true)//state.source.supportsRelatedMangas)
+                    val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get())
                         withIOContext {
                             state.source.getRelatedMangaList(state.manga.toSManga())
                                 .map {
