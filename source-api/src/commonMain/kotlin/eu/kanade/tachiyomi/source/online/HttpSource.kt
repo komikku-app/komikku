@@ -321,12 +321,14 @@ abstract class HttpSource : CatalogueSource {
     protected open suspend fun fetchRelatedMangaListBySearch(manga: SManga): List<SManga> {
         fun String.stripKeyword(): List<String> {
             val regexWhitespace = Regex("\\s+")
-            // remove special character
-            return replace(Regex("[\\[(!~@#$%^&*|,?:\"<>)\\]]"), " ")
+            val regexSpecialCharacters = Regex("[\\[(!~@#$%^&*|,?:\"<>)\\]]")
+            val regexNumberOnly = Regex("^\\d+$")
+
+            return replace(regexSpecialCharacters, " ")
                 .split(regexWhitespace)
                 .map {
                     // remove number only
-                    it.replace(Regex("^\\d+$"), "")
+                    it.replace(regexNumberOnly, "")
                         .lowercase(Locale.getDefault())
                 }
                 // exclude single character
