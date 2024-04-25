@@ -20,12 +20,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import logcat.LogPriority
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
@@ -287,6 +289,7 @@ abstract class HttpSource : CatalogueSource {
      * @since extensions-lib 1.6
      */
     protected open val supportsRelatedMangas: Boolean get() = false
+    protected open val disableRelatedMangas: Boolean get() = false
 
     /**
      * Get all the available related mangas for a manga.
@@ -298,10 +301,18 @@ abstract class HttpSource : CatalogueSource {
      */
     @Suppress("DEPRECATION")
     override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
-        return if (supportsRelatedMangas)
-            fetchRelatedMangaList(manga).awaitSingle()
-        else
-            return fetchRelatedMangaListBySearch(manga)
+        return when {
+            supportsRelatedMangas -> fetchRelatedMangaList(manga).awaitSingle()
+            disableRelatedMangas -> emptyList()
+            else -> {
+                try {
+                    fetchRelatedMangaListBySearch(manga)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    throw UnsupportedOperationException("Error getting related titles.")
+                }
+            }
+        }
     }
 
     /**
@@ -330,7 +341,8 @@ abstract class HttpSource : CatalogueSource {
         if (words.isEmpty()) {
             return emptyList()
         }
-        val results = words.map { keyword ->
+
+        return words.map { keyword ->
             scope.async {
                 client.newCall(searchMangaRequest(0, keyword, FilterList()))
                     .execute()
@@ -344,8 +356,6 @@ abstract class HttpSource : CatalogueSource {
             }
         }.awaitAll()
             .minBy { if (it.isEmpty()) Int.MAX_VALUE else it.size }
-
-        return results
     }
 
     /**
