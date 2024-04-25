@@ -56,10 +56,9 @@ fun GlobalSearchScreen(
                         state.filteredItems.forEach { (_, result) ->
                             when (result) {
                                 is SearchItemResult.Success -> {
-                                    result.result.map{manga ->
-
+                                    result.result.forEach { manga ->
                                         if (!bulkFavoriteState.selection.contains(manga))
-                                            bulkFavoriteScreenModel.toggleSelection(manga)
+                                            bulkFavoriteScreenModel.select(manga)
                                     }
                                 }
                                 else -> {}

@@ -84,12 +84,23 @@ class BulkFavoriteScreenModel(
         mutableState.update { it.copy(selection = persistentListOf()) }
     }
 
-    fun toggleSelection(manga: Manga) {
+    fun select(manga: Manga) {
+        toggleSelection(manga, toSelectedState = true)
+    }
+
+    fun unselect(manga: Manga) {
+        toggleSelection(manga, toSelectedState = false)
+    }
+
+    /**
+     * @param toSelectedState set to true to only Select, set to false to only Unselect
+     */
+    fun toggleSelection(manga: Manga, toSelectedState: Boolean? = null) {
         mutableState.update { state ->
             val newSelection = state.selection.mutate { list ->
-                if (list.fastAny { it.id == manga.id }) {
+                if (toSelectedState != true && list.fastAny { it.id == manga.id }) {
                     list.removeAll { it.id == manga.id }
-                } else {
+                } else if (toSelectedState != false) {
                     list.add(manga)
                 }
             }
