@@ -396,9 +396,6 @@ class MangaScreenModel(
 
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
-            // KMK -->
-            val needRefreshRelatedMangas = relatedMangas.isEmpty()
-            // KMK <--
 
             // Show what we have earlier
             mutableState.update {
@@ -416,7 +413,7 @@ class MangaScreenModel(
                     }.toImmutableSet(),
                     // SY <--
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
-                    isRefreshingData = needRefreshInfo || needRefreshChapter /* KMK --> */|| needRefreshRelatedMangas,/* KMK <-- */
+                    isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     // SY -->
                     showRecommendationsInOverflow = uiPreferences.recommendsInOverflow().get(),
@@ -445,7 +442,7 @@ class MangaScreenModel(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                     // KMK -->
-                    async { if (needRefreshRelatedMangas) fetchRelatedMangasFromSource() },
+                    async { fetchRelatedMangasFromSource() },
                     // KMK <--
                 )
                 fetchFromSourceTasks.awaitAll()
@@ -1117,7 +1114,7 @@ class MangaScreenModel(
                                 }
                         }
                     else null
-                    updateSuccessState { it.copy(relatedMangas = relatedMangas, isRefreshingData = false) }
+                    updateSuccessState { it.copy(relatedMangas = relatedMangas) }
                 } else {
                     throw UnsupportedOperationException("Fetching related titles for merged entry is not supported")
                 }
@@ -1130,7 +1127,7 @@ class MangaScreenModel(
                 snackbarHostState.showSnackbar(message = message)
             }
             val newManga = mangaRepository.getMangaById(mangaId)
-            updateSuccessState { it.copy(manga = newManga, isRefreshingData = false) }
+            updateSuccessState { it.copy(manga = newManga) }
         }
     }
     // KMK <--
