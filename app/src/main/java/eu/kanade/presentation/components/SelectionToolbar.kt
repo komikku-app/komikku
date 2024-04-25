@@ -15,30 +15,38 @@ fun SelectionToolbar(
     selectedCount: Int,
     onClickClearSelection: () -> Unit,
     onChangeCategoryClicked: () -> Unit,
-    onSelectAll: () -> Unit = {},
+    onSelectAll: (() -> Unit)? = null,
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
         actions = {
             AppBarActions(
-                persistentListOf(
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Filled.BookmarkAdd,
-                        onClick = {
-                            if (selectedCount > 0) {
-                                onChangeCategoryClicked()
-                            }
-                        },
-                    ),
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_select_all),
-                        icon = Icons.Filled.SelectAll,
-                        onClick = {
-                            onSelectAll.invoke()
-                        },
-                    ),
-                ),
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        if (onSelectAll != null) {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(MR.strings.action_select_all),
+                                    icon = Icons.Filled.SelectAll,
+                                    onClick = {
+                                        onSelectAll.invoke()
+                                    },
+                                ),
+                            )
+                        }
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_bookmark),
+                                icon = Icons.Filled.BookmarkAdd,
+                                onClick = {
+                                    if (selectedCount > 0) {
+                                        onChangeCategoryClicked()
+                                    }
+                                },
+                            ),
+                        )
+                    }
+                    .build(),
             )
         },
         isActionMode = true,
