@@ -65,11 +65,6 @@ data class Manga(
         get() = customMangaInfo?.status ?: ogStatus
     // SY <--
 
-    // KMK -->
-    val relatedMangas: List<Manga>?
-        get() = listOf(this, this, this, this, this, this, this, this, this, this, this, this, this)
-    // KMK <--
-
     val expectedNextUpdate: Instant?
         get() = nextUpdate
             .takeIf { status != SManga.COMPLETED.toLong() }

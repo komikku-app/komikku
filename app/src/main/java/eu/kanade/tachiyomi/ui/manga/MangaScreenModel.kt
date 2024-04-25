@@ -208,6 +208,11 @@ class MangaScreenModel(
     private val filteredChapters: List<ChapterList.Item>?
         get() = successState?.processedChapters
 
+    // KMK -->
+    private val relatedMangas: List<Manga>
+        get() = successState?.relatedMangas ?: emptyList()
+    // KMK <--
+
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
 
@@ -1654,6 +1659,9 @@ class MangaScreenModel(
             val alwaysShowReadingProgress: Boolean,
             val previewsRowCount: Int,
             // SY <--
+            // KMK -->
+            val relatedMangas: List<Manga>? = null,
+            // KMK <--
         ) : State {
             val processedChapters by lazy {
                 chapters.applyFilters(manga).toList()

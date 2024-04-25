@@ -560,7 +560,7 @@ private fun MangaScreenSmallImpl(
                     }
 
                     // KMK -->
-                    if (state.manga.relatedMangas!!.isNotEmpty()) {
+                    if (state.relatedMangas?.isNotEmpty() == true) {
                         item(
                             key = MangaScreenItem.RELATED_TITLES,
                             contentType = MangaScreenItem.RELATED_TITLES,
@@ -572,7 +572,7 @@ private fun MangaScreenSmallImpl(
                                 onClick = { /* Should show a page with grid/list of all the related manga */ },
                             ) {
                                 RelatedMangas(
-                                    mangas = state.manga.relatedMangas!!,
+                                    mangas = state.relatedMangas,
                                     getMangaState = { getMangaState(it) },
                                     onClickManga = onRelatedMangaClick,
                                     onLongClickManga = onRelatedMangaLongClick,
@@ -918,7 +918,7 @@ fun MangaScreenLargeImpl(
                             ),
                         ) {
                             // KMK -->
-                            if (state.manga.relatedMangas!!.isNotEmpty()) {
+                            if (state.relatedMangas?.isNotEmpty() == true) {
                                 item(
                                     key = MangaScreenItem.RELATED_TITLES,
                                     contentType = MangaScreenItem.RELATED_TITLES,
@@ -930,7 +930,7 @@ fun MangaScreenLargeImpl(
                                         onClick = { /* Should show a page with grid/list of all the related manga */ },
                                     ) {
                                         RelatedMangas(
-                                            mangas = state.manga.relatedMangas!!,
+                                            mangas = state.relatedMangas,
                                             getMangaState = { getMangaState(it) },
                                             onClickManga = onRelatedMangaClick,
                                             onLongClickManga = onRelatedMangaLongClick,
