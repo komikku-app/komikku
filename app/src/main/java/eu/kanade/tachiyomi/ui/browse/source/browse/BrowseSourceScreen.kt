@@ -171,6 +171,12 @@ data class BrowseSourceScreen(
                             selectedCount = bulkFavoriteState.selection.size,
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                            onSelectAll = {
+                                state.mangaDisplayingList.forEach { manga ->
+                                    if (!bulkFavoriteState.selection.contains(manga))
+                                        bulkFavoriteScreenModel.select(manga)
+                                }
+                            },
                         )
                     } else {
                         // KMK <--
@@ -317,6 +323,7 @@ data class BrowseSourceScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }

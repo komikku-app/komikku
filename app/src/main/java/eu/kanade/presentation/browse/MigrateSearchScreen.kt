@@ -8,6 +8,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import tachiyomi.domain.manga.model.Manga
@@ -42,6 +43,19 @@ fun MigrateSearchScreen(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        state.filteredItems.forEach { (_, result) ->
+                            when (result) {
+                                is SearchItemResult.Success -> {
+                                    result.result.forEach { manga ->
+                                        if (!bulkFavoriteState.selection.contains(manga))
+                                            bulkFavoriteScreenModel.select(manga)
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    },
                 )
             } else {
                 // KMK <--

@@ -473,6 +473,9 @@ open class BrowseSourceScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
+        // KMK -->
+        val mangaDisplayingList: MutableSet<Manga> = emptySet<Manga>().toMutableSet()
+        // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }

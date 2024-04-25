@@ -122,6 +122,14 @@ fun SourceFeedScreen(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        items.forEach {
+                            it.results?.forEach { manga ->
+                                if (!bulkFavoriteState.selection.contains(manga))
+                                    bulkFavoriteScreenModel.select(manga)
+                            }
+                        }
+                    },
                 )
             } else {
                 // KMK <--

@@ -29,7 +29,7 @@ fun SelectionToolbar(
                                     title = stringResource(MR.strings.action_select_all),
                                     icon = Icons.Filled.SelectAll,
                                     onClick = {
-                                        onSelectAll.invoke()
+                                        onSelectAll()
                                     },
                                 ),
                             )

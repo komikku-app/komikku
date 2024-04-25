@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -40,6 +41,7 @@ fun TabbedScreen(
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
     // KMK -->
+    feedScreenModel: FeedScreenModel,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
@@ -48,6 +50,7 @@ fun TabbedScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // KMK -->
+    val feedState by feedScreenModel.state.collectAsState()
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     // KMK <--
 
@@ -67,6 +70,14 @@ fun TabbedScreen(
                     selectedCount = bulkFavoriteState.selection.size,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        feedState.items?.forEach {
+                            it.results?.forEach { manga ->
+                                if (!bulkFavoriteState.selection.contains(manga))
+                                    bulkFavoriteScreenModel.select(manga)
+                            }
+                        }
+                    },
                 )
             } else {
                 // KMK <--

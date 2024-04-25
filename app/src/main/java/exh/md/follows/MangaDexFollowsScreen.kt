@@ -73,6 +73,12 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         selectedCount = bulkFavoriteState.selection.size,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            state.mangaDisplayingList.forEach { manga ->
+                                if (!bulkFavoriteState.selection.contains(manga))
+                                    bulkFavoriteScreenModel.select(manga)
+                            }
+                        },
                     )
                 } else {
                     // KMK <--
@@ -142,6 +148,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }

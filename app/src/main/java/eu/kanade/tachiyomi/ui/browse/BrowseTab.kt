@@ -21,6 +21,7 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.extensionsTab
+import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.feedTab
 import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -66,6 +67,7 @@ data class BrowseTab(
         val extensionsState by extensionsScreenModel.state.collectAsState()
 
         // KMK -->
+        val feedScreenModel = rememberScreenModel { FeedScreenModel() }
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         // KMK <--
 
@@ -80,7 +82,7 @@ data class BrowseTab(
                 )
             } else if (feedTabInFront) {
                 persistentListOf(
-                    feedTab(bulkFavoriteScreenModel),
+                    feedTab(/* KMK --> */feedScreenModel, bulkFavoriteScreenModel/* KMK <-- */),
                     sourcesTab(),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
@@ -88,7 +90,7 @@ data class BrowseTab(
             } else {
                 persistentListOf(
                     sourcesTab(),
-                    feedTab(bulkFavoriteScreenModel),
+                    feedTab(/* KMK --> */feedScreenModel, bulkFavoriteScreenModel/* KMK <-- */),
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
                 )
@@ -98,6 +100,7 @@ data class BrowseTab(
             searchQuery = extensionsState.searchQuery,
             onChangeSearchQuery = extensionsScreenModel::search,
             // KMK -->
+            feedScreenModel = feedScreenModel,
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             // KMK <--
         )
