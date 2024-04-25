@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
-Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
+Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. Komikku tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like TachiyomiSY, J2K and Neko.
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
@@ -12,12 +12,15 @@ Tachiyomi is a free and open source manga reader for Android 6.0 and above. This
 
 Features of Komikku include:
 - [x] Built-in & official extensions repository
-- [x] Search for sources when too many sources installed
-- [x] Show which source is NSFW
-- [x] Filter to show 18+ only sources/extensions browse
-- [x] Button to jump to source's package settings page (to uninstall unwanted sources)
-- [x] More Feed items (20 for now)
+- [x] Bulk selection to add to library & change categories of multiple entries all at once, everywhere.
+It can detect duplication being added and give option to allow/skip one by one or allow/skip all duplication.
+Also allow long-click to add/remove single entry to/from library, everywhere.
 - [x] Feed now supports all extensions
+- [x] More Feed items (20 for now)
+- [x] Search for sources when too many sources installed
+- [x] Show which source is NSFW in Browse tab
+- [x] Filter to show 18+ only sources/extensions browse
+- [x] Settings button to jump to source's package settings page (to uninstall unwanted sources)
 - [ ] Show photo’s size so you can compare which source has better quality
 - [ ] Support other sources just like E-Hentai: Lucious...
 - [ ] History of searched query
