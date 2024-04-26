@@ -24,17 +24,23 @@ import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import exh.ui.ifSourcesLoaded
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.LoadingScreen
 
 class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
 
     @Composable
     override fun Content() {
+        if (!ifSourcesLoaded()) {
+            LoadingScreen()
+            return
+        }
+
         val screenModel = rememberScreenModel { MangaDexSimilarScreenModel(mangaId, sourceId) }
-        val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->

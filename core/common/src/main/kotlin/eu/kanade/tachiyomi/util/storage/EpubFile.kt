@@ -1,22 +1,36 @@
 package eu.kanade.tachiyomi.util.storage
 
+import android.content.Context
+import android.os.Build
+import com.hippo.unifile.UniFile
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
+import org.apache.commons.compress.archivers.zip.ZipFile
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import tachiyomi.core.common.storage.UniFileTempFileManager
+import tachiyomi.core.common.storage.openReadOnlyChannel
+import uy.kohesive.injekt.injectLazy
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 
 /**
  * Wrapper over ZipFile to load files in epub format.
  */
-class EpubFile(file: File) : Closeable {
+// SY -->
+class EpubFile(file: UniFile, context: Context) : Closeable {
+
+    private val tempFileManager: UniFileTempFileManager by injectLazy()
 
     /**
      * Zip file of this epub.
      */
-    private val zip = ZipFile(file)
+    private val zip = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        ZipFile(tempFileManager.createTempFile(file))
+    } else {
+        ZipFile(file.openReadOnlyChannel(context))
+    }
+    // SY <--
 
     /**
      * Path separator used by this epub.
@@ -33,14 +47,14 @@ class EpubFile(file: File) : Closeable {
     /**
      * Returns an input stream for reading the contents of the specified zip file entry.
      */
-    fun getInputStream(entry: ZipEntry): InputStream {
+    fun getInputStream(entry: ZipArchiveEntry): InputStream {
         return zip.getInputStream(entry)
     }
 
     /**
      * Returns the zip file entry for the specified name, or null if not found.
      */
-    fun getEntry(name: String): ZipEntry? {
+    fun getEntry(name: String): ZipArchiveEntry? {
         return zip.getEntry(name)
     }
 

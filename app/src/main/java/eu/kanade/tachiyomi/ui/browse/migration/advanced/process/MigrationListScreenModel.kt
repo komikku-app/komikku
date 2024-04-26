@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiThrottleManager
@@ -104,8 +105,14 @@ class MigrationListScreenModel(
 
     init {
         screenModelScope.launchIO {
+            val mangaIds = when (val migration = config.migration) {
+                is MigrationType.MangaList -> {
+                    migration.mangaIds
+                }
+                is MigrationType.MangaSingle -> listOf(migration.fromMangaId)
+            }
             runMigrations(
-                config.mangaIds
+                mangaIds
                     .map {
                         async {
                             val manga = getManga.await(it) ?: return@async null
@@ -161,9 +168,13 @@ class MigrationListScreenModel(
                 break
             }
             // in case it was removed
-            if (manga.manga.id !in config.mangaIds) {
-                continue
+            when (val migration = config.migration) {
+                is MigrationType.MangaList -> if (manga.manga.id !in migration.mangaIds) {
+                    continue
+                }
+                else -> Unit
             }
+
             if (manga.searchResult.value == SearchResult.Searching && manga.migrationScope.isActive) {
                 val mangaObj = manga.manga
                 val mangaSource = sourceManager.getOrStub(mangaObj.source)
@@ -174,6 +185,28 @@ class MigrationListScreenModel(
                             sources
                         } else {
                             sources.filter { it.id != mangaSource.id }
+                        }
+                        when (val migration = config.migration) {
+                            is MigrationType.MangaSingle -> if (migration.toManga != null) {
+                                val localManga = getManga.await(migration.toManga)
+                                if (localManga != null) {
+                                    val source = sourceManager.get(localManga.source) as? CatalogueSource
+                                    if (source != null) {
+                                        val chapters = if (source is EHentai) {
+                                            source.getChapterList(localManga.toSManga(), throttleManager::throttle)
+                                        } else {
+                                            source.getChapterList(localManga.toSManga())
+                                        }
+                                        try {
+                                            syncChaptersWithSource.await(chapters, localManga, source)
+                                        } catch (_: Exception) {
+                                        }
+                                        manga.progress.value = validSources.size to validSources.size
+                                        return@async localManga
+                                    }
+                                }
+                            }
+                            else -> Unit
                         }
                         if (useSourceWithMost) {
                             val sourceSemaphore = Semaphore(3)
@@ -523,13 +556,18 @@ class MigrationListScreenModel(
     }
 
     fun removeManga(item: MigratingManga) {
-        val ids = config.mangaIds.toMutableList()
-        val index = ids.indexOf(item.manga.id)
-        if (index > -1) {
-            ids.removeAt(index)
-            config.mangaIds = ids
-            val index2 = migratingItems.value.orEmpty().indexOf(item)
-            if (index2 > -1) migratingItems.value = (migratingItems.value.orEmpty() - item).toImmutableList()
+        when (val migration = config.migration) {
+            is MigrationType.MangaList -> {
+                val ids = migration.mangaIds.toMutableList()
+                val index = ids.indexOf(item.manga.id)
+                if (index > -1) {
+                    ids.removeAt(index)
+                    config.migration = MigrationType.MangaList(ids)
+                    val index2 = migratingItems.value.orEmpty().indexOf(item)
+                    if (index2 > -1) migratingItems.value = (migratingItems.value.orEmpty() - item).toImmutableList()
+                }
+            }
+            is MigrationType.MangaSingle -> Unit
         }
     }
 

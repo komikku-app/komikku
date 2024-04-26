@@ -72,6 +72,7 @@
         <item quantity="other">%1$d seconds ago</item>
     </plurals>
 
+    <!-- Manga preview row counter -->
     <plurals name="row_count">
         <item quantity="one">%d row</item>
         <item quantity="other">%d rows</item>

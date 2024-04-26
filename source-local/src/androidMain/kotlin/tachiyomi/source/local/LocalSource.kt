@@ -1,6 +1,7 @@
 package tachiyomi.source.local
 
 import android.content.Context
+import android.os.Build
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
@@ -11,10 +12,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.addStreamToZip
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.getCoverStreamFromZip
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.getZipInputStream
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.isEncryptedZip
 import eu.kanade.tachiyomi.util.storage.EpubFile
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -31,7 +28,11 @@ import tachiyomi.core.metadata.comicinfo.copyFromComicInfo
 import tachiyomi.core.metadata.comicinfo.getComicInfo
 import tachiyomi.core.metadata.tachiyomi.MangaDetails
 import tachiyomi.core.common.storage.UniFileTempFileManager
+import tachiyomi.core.common.storage.addStreamToZip
 import tachiyomi.core.common.storage.extension
+import tachiyomi.core.common.storage.getCoverStreamFromZip
+import tachiyomi.core.common.storage.getZipInputStream
+import tachiyomi.core.common.storage.isEncryptedZip
 import tachiyomi.core.common.storage.nameWithoutExtension
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.ImageUtil
@@ -268,7 +269,13 @@ actual class LocalSource(
                     }
                 }
                 is Format.Rar -> {
-                    JunrarArchive(tempFileManager.createTempFile(chapter)).use { rar ->
+                    val archive = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                        JunrarArchive(tempFileManager.createTempFile(chapter))
+                    } else {
+                        JunrarArchive(chapter.openInputStream())
+                    }
+
+                    archive.use { rar ->
                         rar.fileHeaders.firstOrNull { it.fileName == COMIC_INFO_FILE }?.let { comicInfoFile ->
                             rar.getInputStream(comicInfoFile).buffered().use { stream ->
                                 return copyComicInfoFile(stream, folder)
@@ -330,7 +337,7 @@ actual class LocalSource(
 
                     val format = Format.valueOf(chapterFile)
                     if (format is Format.Epub) {
-                        EpubFile(tempFileManager.createTempFile(format.file)).use { epub ->
+                        EpubFile(format.file, context).use { epub ->
                             epub.fillMetadata(manga, this)
                         }
                     }
@@ -397,10 +404,15 @@ actual class LocalSource(
                             format.file.isEncryptedZip()
                         )
                     }
-                    // SY <--
                 }
                 is Format.Rar -> {
-                    JunrarArchive(tempFileManager.createTempFile(format.file)).use { archive ->
+                    val rarArchive = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                        JunrarArchive(tempFileManager.createTempFile(format.file))
+                    } else {
+                        JunrarArchive(format.file.openInputStream())
+                    }
+                    rarArchive.use { archive ->
+                        // SY <--
                         val entry = archive.fileHeaders
                             .sortedWith { f1, f2 -> f1.fileName.compareToCaseInsensitiveNaturalOrder(f2.fileName) }
                             .find { !it.isDirectory && ImageUtil.isImage(it.fileName) { archive.getInputStream(it) } }
@@ -409,15 +421,17 @@ actual class LocalSource(
                     }
                 }
                 is Format.Epub -> {
-                    EpubFile(tempFileManager.createTempFile(format.file)).use { epub ->
-                        val entry = epub.getImagesFromPages()
-                            .firstOrNull()
-                            ?.let { epub.getEntry(it) }
+                    // SY -->
+                        EpubFile(format.file, context).use { epub ->
+                            // SY <--
+                            val entry = epub.getImagesFromPages()
+                                .firstOrNull()
+                                ?.let { epub.getEntry(it) }
 
-                        entry?.let { coverManager.update(manga, epub.getInputStream(it)) }
+                            entry?.let { coverManager.update(manga, epub.getInputStream(it)) }
+                        }
                     }
                 }
-            }
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e) { "Error updating cover for ${manga.title}" }
             null

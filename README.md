@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png) Komikku
-Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. Komikku tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like TachiyomiSY, J2K and Neko.
+Mihon/Tachiyomi is a free and open source manga reader for Android 6.0 and above. This version of Mihon/Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
@@ -12,6 +12,7 @@ Tachiyomi is a free and open source manga reader for Android 6.0 and above. This
 
 Features of Komikku include:
 - [x] Built-in & official extensions repository
+- [x] Show list of related titles (must enable in Settings/Browse) for all sources. Some sources might need fix for it to work.
 - [x] Bulk selection to add to library & change categories of multiple entries all at once, everywhere.
 It can detect duplication being added and give option to allow/skip one by one or allow/skip all duplication.
 Also allow long-click to add/remove single entry to/from library, everywhere.
@@ -25,7 +26,7 @@ Also allow long-click to add/remove single entry to/from library, everywhere.
 - [ ] Support other sources just like E-Hentai: Lucious...
 - [ ] History of searched query
 
-Features of Tachiyomi(original) include:
+Features of Mihon/Tachiyomi(original) include:
 * Online reading from a variety of sources
 * Local reading of downloaded content
 * A configurable reader with multiple viewers, reading directions and other settings.
@@ -57,7 +58,6 @@ Features of TachiyomiSY include:
 * Page preload customization
 * Customize image cache size
 * Batch import of custom sources and featured extensions
-* Automatic CAPTCHA solving
 * Advanced source settings page, searching, enable/disable all
 * Click tag for local search, long click tag for global search
 * Merge multiple of the same manga from different sources

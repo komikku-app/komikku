@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
@@ -28,7 +27,6 @@ class ChapterLoader(
     private val context: Context,
     private val downloadManager: DownloadManager,
     private val downloadProvider: DownloadProvider,
-    private val tempFileManager: UniFileTempFileManager,
     private val manga: Manga,
     private val source: Source,
     // SY -->
@@ -121,36 +119,39 @@ class ChapterLoader(
                         source = source,
                         downloadManager = downloadManager,
                         downloadProvider = downloadProvider,
-                        tempFileManager = tempFileManager,
                     )
                     source is HttpSource -> HttpPageLoader(chapter, source)
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {
                             is Format.Directory -> DirectoryPageLoader(format.file)
-                            is Format.Zip -> ZipPageLoader(tempFileManager.createTempFile(format.file))
+                            is Format.Zip -> ZipPageLoader(format.file, context)
                             is Format.Rar -> try {
-                                RarPageLoader(tempFileManager.createTempFile(format.file))
+                                RarPageLoader(format.file)
                             } catch (e: UnsupportedRarV5Exception) {
                                 error(context.stringResource(MR.strings.loader_rar5_error))
                             }
-                            is Format.Epub -> EpubPageLoader(tempFileManager.createTempFile(format.file))
+                            is Format.Epub -> EpubPageLoader(format.file, context)
                         }
                     }
                     else -> error(context.stringResource(MR.strings.loader_not_implemented_error))
                 }
             }
             // SY <--
-            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider, tempFileManager)
+            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {
                     is Format.Directory -> DirectoryPageLoader(format.file)
-                    is Format.Zip -> ZipPageLoader(tempFileManager.createTempFile(format.file))
+                    // SY -->
+                    is Format.Zip -> ZipPageLoader(format.file, context)
                     is Format.Rar -> try {
-                        RarPageLoader(tempFileManager.createTempFile(format.file))
+                        RarPageLoader(format.file)
+                        // SY <--
                     } catch (e: UnsupportedRarV5Exception) {
                         error(context.stringResource(MR.strings.loader_rar5_error))
                     }
-                    is Format.Epub -> EpubPageLoader(tempFileManager.createTempFile(format.file))
+                    // SY -->
+                    is Format.Epub -> EpubPageLoader(format.file, context)
+                    // SY <--
                 }
             }
             source is HttpSource -> HttpPageLoader(chapter, source)

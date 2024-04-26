@@ -55,4 +55,7 @@
     <plurals name="humanize_second">
         <item quantity="other">%1$d 秒前</item>
     </plurals>
+        <plurals name="row_count">
+        <item quantity="other">%d 行</item>
+    </plurals>
 </resources>

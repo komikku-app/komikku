@@ -42,4 +42,8 @@ class DownloadPreferences(
         "download_new_categories_exclude",
         emptySet(),
     )
+
+    // KMK -->
+    fun downloadCacheRenewInterval() = preferenceStore.getInt("download_cache_renew_interval", 1)
+    // KMK <--
 }

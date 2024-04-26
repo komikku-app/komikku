@@ -287,7 +287,7 @@ open class FeedScreenModel(
     }
 
     @Composable
-    fun getManga(initialManga: DomainManga, source: CatalogueSource?): State<DomainManga> {
+    fun getManga(initialManga: DomainManga): State<DomainManga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->

@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.app.Application
+import android.os.Build
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
 import com.hippo.unifile.UniFile
@@ -8,6 +9,14 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -19,11 +28,17 @@ import java.util.concurrent.Executors
 /**
  * Loader used to load a chapter from a .rar or .cbr file.
  */
-internal class RarPageLoader(file: File) : PageLoader() {
-
-    private val rar = Archive(file)
+internal class RarPageLoader(file: UniFile) : PageLoader() {
 
     // SY -->
+    private val tempFileManager: UniFileTempFileManager by injectLazy()
+
+    private val rar = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        Archive(tempFileManager.createTempFile(file))
+    } else {
+        Archive(file.openInputStream())
+    }
+
     private val context: Application by injectLazy()
     private val readerPreferences: ReaderPreferences by injectLazy()
     private val tmpDir = File(context.externalCacheDir, "reader_${file.hashCode()}").also {
@@ -31,20 +46,21 @@ internal class RarPageLoader(file: File) : PageLoader() {
     }
 
     init {
-        if (readerPreferences.cacheArchiveMangaOnDisk().get()) {
+        if (readerPreferences.archiveReaderMode().get() == ReaderPreferences.ArchiveReaderMode.CACHE_TO_DISK) {
             tmpDir.mkdirs()
-            Archive(file).use { rar ->
-                rar.fileHeaders.asSequence()
-                    .filterNot { it.isDirectory }
-                    .forEach { header ->
-                        val pageOutputStream = File(tmpDir, header.fileName.substringAfterLast("/"))
-                            .also { it.createNewFile() }
-                            .outputStream()
-                        getStream(header).use {
-                            it.copyTo(pageOutputStream)
+            rar.fileHeaders.asSequence()
+                .filter { !it.isDirectory && ImageUtil.isImage(it.fileName) { rar.getInputStream(it) } }
+                .sortedWith { f1, f2 -> f1.fileName.compareToCaseInsensitiveNaturalOrder(f2.fileName) }
+                .forEach { header ->
+                    File(tmpDir, header.fileName.substringAfterLast("/"))
+                        .also { it.createNewFile() }
+                        .outputStream()
+                        .use { output ->
+                            rar.getInputStream(header).use { input ->
+                                input.copyTo(output)
+                            }
                         }
-                    }
-            }
+                }
         }
     }
     // SY <--
@@ -58,16 +74,37 @@ internal class RarPageLoader(file: File) : PageLoader() {
 
     override suspend fun getPages(): List<ReaderPage> {
         // SY -->
-        if (readerPreferences.cacheArchiveMangaOnDisk().get()) {
+        if (readerPreferences.archiveReaderMode().get() == ReaderPreferences.ArchiveReaderMode.CACHE_TO_DISK) {
             return DirectoryPageLoader(UniFile.fromFile(tmpDir)!!).getPages()
         }
+        val mutex = Mutex()
         // SY <--
         return rar.fileHeaders.asSequence()
             .filter { !it.isDirectory && ImageUtil.isImage(it.fileName) { rar.getInputStream(it) } }
             .sortedWith { f1, f2 -> f1.fileName.compareToCaseInsensitiveNaturalOrder(f2.fileName) }
             .mapIndexed { i, header ->
+                // SY -->
+                val imageBytesDeferred: Deferred<ByteArray>? =
+                    when (readerPreferences.archiveReaderMode().get()) {
+                        ReaderPreferences.ArchiveReaderMode.LOAD_INTO_MEMORY -> {
+                            CoroutineScope(Dispatchers.IO).async {
+                                mutex.withLock {
+                                    getStream(header).buffered().use { stream ->
+                                        stream.readBytes()
+                                    }
+                                }
+                            }
+                        }
+
+                        else -> null
+                    }
+
+                val imageBytes by lazy { runBlocking { imageBytesDeferred?.await() } }
+                // SY <--
                 ReaderPage(i).apply {
-                    stream = { getStream(header) }
+                    // SY -->
+                    stream = { imageBytes?.copyOf()?.inputStream() ?: getStream(header) }
+                    // SY <--
                     status = Page.State.READY
                 }
             }

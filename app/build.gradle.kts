@@ -1,9 +1,12 @@
+import mihon.buildlogic.getBuildTime
+import mihon.buildlogic.getCommitCount
+import mihon.buildlogic.getGitSha
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("com.android.application")
+    id("mihon.android.application")
+    id("mihon.android.application.compose")
     id("com.mikepenz.aboutlibraries.plugin")
-    kotlin("android")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     // id("com.github.zellius.shortcut-helper")
@@ -26,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "app.komikku"
 
-        versionCode = 65
+        versionCode = 67
         versionName = "1.10.5"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
@@ -120,7 +123,6 @@ android {
 
     buildFeatures {
         viewBinding = true
-        compose = true
         buildConfig = true
 
         // Disable some unused things
@@ -132,10 +134,6 @@ android {
     lint {
         abortOnError = false
         checkReleaseBuilds = false
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = compose.versions.compiler.get()
     }
 }
 
@@ -154,7 +152,6 @@ dependencies {
     implementation(projects.presentationWidget)
 
     // Compose
-    implementation(platform(compose.bom))
     implementation(compose.activity)
     implementation(compose.foundation)
     implementation(compose.material3.core)
@@ -165,7 +162,6 @@ dependencies {
     debugImplementation(compose.ui.tooling)
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
-    implementation(compose.accompanist.webview)
     implementation(compose.accompanist.systemuicontroller)
 
     implementation(androidx.paging.runtime)
@@ -215,7 +211,7 @@ dependencies {
     // Disk
     implementation(libs.disklrucache)
     implementation(libs.unifile)
-    implementation(libs.junrar)
+    implementation(libs.bundles.archive)
     // SY -->
     implementation(libs.zip4j)
     // SY <--
@@ -247,6 +243,12 @@ dependencies {
     implementation(libs.bundles.voyager)
     implementation(libs.compose.materialmotion)
     implementation(libs.swipe)
+    implementation(libs.compose.webview)
+    implementation(libs.compose.grid)
+
+
+    implementation(libs.google.api.services.drive)
+    implementation(libs.google.api.client.oauth)
 
     // Logging
     implementation(libs.logcat)
@@ -264,6 +266,8 @@ dependencies {
     // For detecting memory leaks; see https://square.github.io/leakcanary/
     // debugImplementation(libs.leakcanary.android)
     implementation(libs.leakcanary.plumber)
+
+    testImplementation(kotlinx.coroutines.test)
 
     // SY -->
     // Text distance (EH)
@@ -316,25 +320,6 @@ tasks {
             "-opt-in=kotlinx.coroutines.FlowPreview",
             "-opt-in=kotlinx.coroutines.InternalCoroutinesApi",
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-        )
-
-        if (project.findProperty("tachiyomi.enableComposeCompilerMetrics") == "true") {
-            kotlinOptions.freeCompilerArgs += listOf(
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
-                    project.layout.buildDirectory.dir("compose_metrics").get().asFile.absolutePath,
-            )
-            kotlinOptions.freeCompilerArgs += listOf(
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
-                    project.layout.buildDirectory.dir("compose_metrics").get().asFile.absolutePath,
-            )
-        }
-
-        // https://developer.android.com/jetpack/androidx/releases/compose-compiler#1.5.9
-        kotlinOptions.freeCompilerArgs += listOf(
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:nonSkippingGroupOptimization=true",
         )
     }
 }

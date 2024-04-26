@@ -34,6 +34,7 @@ import java.io.IOException
  * Disk caching is handled by [PagePreviewCache], otherwise
  * handled by Coil's [DiskCache].
  */
+@Suppress("LongParameterList")
 class PagePreviewFetcher(
     private val page: PagePreview,
     private val options: Options,
@@ -43,7 +44,7 @@ class PagePreviewFetcher(
     private val diskCacheKeyLazy: Lazy<String>,
     private val sourceLazy: Lazy<PagePreviewSource?>,
     private val callFactoryLazy: Lazy<Call.Factory>,
-    private val diskCacheLazy: Lazy<DiskCache>,
+    private val imageLoader: ImageLoader,
 ) : Fetcher {
 
     private val diskCacheKey: String
@@ -164,7 +165,7 @@ class PagePreviewFetcher(
 
     private fun moveSnapshotToPagePreviewCache(snapshot: DiskCache.Snapshot): File? {
         return try {
-            diskCacheLazy.value.run {
+            imageLoader.diskCache?.run {
                 fileSystem.source(snapshot.data).use { input ->
                     writeSourceToPagePreviewCache(input)
                 }
@@ -203,15 +204,16 @@ class PagePreviewFetcher(
     }
 
     private fun readFromDiskCache(): DiskCache.Snapshot? {
-        return if (options.diskCachePolicy.readEnabled) diskCacheLazy.value.openSnapshot(diskCacheKey) else null
+        return if (options.diskCachePolicy.readEnabled) imageLoader.diskCache?.openSnapshot(diskCacheKey) else null
     }
 
     private fun writeToDiskCache(
         response: Response,
     ): DiskCache.Snapshot? {
-        val editor = diskCacheLazy.value.openEditor(diskCacheKey) ?: return null
+        val diskCache = imageLoader.diskCache
+        val editor = diskCache?.openEditor(diskCacheKey) ?: return null
         try {
-            diskCacheLazy.value.fileSystem.write(editor.data) {
+            diskCache.fileSystem.write(editor.data) {
                 response.body.source().readAll(this)
             }
             return editor.commitAndOpenSnapshot()
@@ -235,7 +237,6 @@ class PagePreviewFetcher(
 
     class Factory(
         private val callFactoryLazy: Lazy<Call.Factory>,
-        private val diskCacheLazy: Lazy<DiskCache>,
     ) : Fetcher.Factory<PagePreview> {
 
         private val pagePreviewCache: PagePreviewCache by injectLazy()
@@ -248,10 +249,10 @@ class PagePreviewFetcher(
                 pagePreviewFile = { pagePreviewCache.getImageFile(data.imageUrl) },
                 isInCache = { pagePreviewCache.isImageInCache(data.imageUrl) },
                 writeToCache = { pagePreviewCache.putImageToCache(data.imageUrl, it) },
-                diskCacheKeyLazy = lazy { PagePreviewKeyer().key(data, options) },
+                diskCacheKeyLazy = lazy { imageLoader.components.key(data, options)!! },
                 sourceLazy = lazy { sourceManager.get(data.source) as? PagePreviewSource },
                 callFactoryLazy = callFactoryLazy,
-                diskCacheLazy = diskCacheLazy,
+                imageLoader = imageLoader,
             )
         }
     }

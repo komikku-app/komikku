@@ -16,6 +16,7 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreen
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.DelicateCoroutinesApi
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.UnsortedPreferences
@@ -55,6 +56,7 @@ fun Screen.migrateSourceTab(): TabContent {
                 // SY -->
                 onClickAll = { source ->
                     // TODO: Jay wtf, need to clean this up sometime
+                    @OptIn(DelicateCoroutinesApi::class)
                     launchIO {
                         val manga = Injekt.get<GetFavorites>().await()
                         val sourceMangas =

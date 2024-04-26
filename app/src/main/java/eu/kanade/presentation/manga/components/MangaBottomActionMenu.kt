@@ -239,6 +239,7 @@ fun LibraryBottomActionMenu(
     onClickCleanTitles: (() -> Unit)?,
     onClickMigrate: (() -> Unit)?,
     onClickAddToMangaDex: (() -> Unit)?,
+    onClickResetInfo: (() -> Unit)?,
     // SY <--
     modifier: Modifier = Modifier,
 ) {
@@ -267,7 +268,7 @@ fun LibraryBottomActionMenu(
                 }
             }
             // SY -->
-            val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null
+            val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null || onClickResetInfo != null
             val configuration = LocalConfiguration.current
             val moveMarkPrev = remember { !configuration.isTabletUi() }
             var overFlowOpen by remember { mutableStateOf(false) }
@@ -362,6 +363,12 @@ fun LibraryBottomActionMenu(
                             DropdownMenuItem(
                                 text = { Text(stringResource(SYMR.strings.mangadex_add_to_follows)) },
                                 onClick = onClickAddToMangaDex,
+                            )
+                        }
+                        if (onClickResetInfo != null) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(SYMR.strings.reset_info)) },
+                                onClick = onClickResetInfo,
                             )
                         }
                     }

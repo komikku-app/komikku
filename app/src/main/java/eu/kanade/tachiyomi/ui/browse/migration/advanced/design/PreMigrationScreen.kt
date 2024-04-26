@@ -46,9 +46,15 @@ import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import java.io.Serializable
 import kotlin.math.roundToInt
 
-class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
+sealed class MigrationType : Serializable {
+    data class MangaList(val mangaIds: List<Long>) : MigrationType()
+    data class MangaSingle(val fromMangaId: Long, val toManga: Long?) : MigrationType()
+}
+
+class PreMigrationScreen(val migration: MigrationType) : Screen() {
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { PreMigrationScreenModel() }
@@ -173,7 +179,7 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
                     screenModel.onMigrationSheet(false)
                     screenModel.saveEnabledSources()
 
-                    navigator replace MigrationListScreen(MigrationProcedureConfig(mangaIds, extraParam))
+                    navigator replace MigrationListScreen(MigrationProcedureConfig(migration, extraParam))
                 },
             )
         }
@@ -184,10 +190,22 @@ class PreMigrationScreen(val mangaIds: List<Long>) : Screen() {
             navigator.push(
                 if (skipPre) {
                     MigrationListScreen(
-                        MigrationProcedureConfig(mangaIds, null),
+                        MigrationProcedureConfig(MigrationType.MangaList(mangaIds), null),
                     )
                 } else {
-                    PreMigrationScreen(mangaIds)
+                    PreMigrationScreen(MigrationType.MangaList(mangaIds))
+                },
+            )
+        }
+
+        fun navigateToMigration(skipPre: Boolean, navigator: Navigator, fromMangaId: Long, toManga: Long?) {
+            navigator.push(
+                if (skipPre) {
+                    MigrationListScreen(
+                        MigrationProcedureConfig(MigrationType.MangaSingle(fromMangaId, toManga), null),
+                    )
+                } else {
+                    PreMigrationScreen(MigrationType.MangaSingle(fromMangaId, toManga))
                 },
             )
         }

@@ -26,6 +26,7 @@
     <string name="label_download_queue">Download queue</string>
     <string name="label_library">Library</string>
     <string name="label_recent_updates">Updates</string>
+    <string name="label_upcoming">Upcoming</string>
     <string name="label_recent_manga">History</string>
     <string name="label_sources">Sources</string>
     <string name="label_backup">Backup and restore</string>
@@ -162,7 +163,10 @@
     <string name="action_webview_forward">Forward</string>
     <string name="action_webview_refresh">Refresh</string>
     <string name="action_start_downloading_now">Start downloading now</string>
+    <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_not_now">Not now</string>
+    <string name="action_add_anyway">Add anyway</string>
+    <string name="action_migrate_duplicate">Migrate existing entry</string>
 
     <!-- Operations -->
     <string name="loading">Loading…</string>
@@ -287,9 +291,6 @@
     <string name="pref_library_update_refresh_metadata">Automatically refresh metadata</string>
     <string name="pref_library_update_refresh_metadata_summary">Check for new cover and details when updating library</string>
 
-    <string name="pref_library_mark_duplicate_chapters">Mark new duplicate chapters as read</string>
-    <string name="pref_library_mark_duplicate_chapters_summary">Automatically mark new chapters as read if it has been read before</string>
-
     <string name="default_category">Default category</string>
     <string name="default_category_summary">Always ask</string>
     <string name="categorized_display_settings">Per-category settings for sort</string>
@@ -353,6 +354,9 @@
     <string name="invalid_repo_name">Invalid repo URL</string>
     <string name="delete_repo_confirmation">Do you wish to delete the repo \"%s\"?</string>
     <string name="action_open_repo">Open source repo</string>
+    <string name="action_replace_repo">Replace</string>
+    <string name="action_replace_repo_title">Signing Key Fingerprint Already Exists</string>
+    <string name="action_replace_repo_message">Repository %1$s has the same Signing Key Fingerprint as %2$s.\nIf this is expected, %2$s will be replaced, otherwise contact your repo maintainer.</string>
 
       <!-- Reader section -->
     <string name="pref_fullscreen">Fullscreen</string>
@@ -372,8 +376,7 @@
     <string name="pref_show_page_number">Show page number</string>
     <string name="pref_show_reading_mode">Show reading mode</string>
     <string name="pref_show_reading_mode_summary">Briefly show current mode when reader is opened</string>
-    <string name="pref_true_color">32-bit color</string>
-    <string name="pref_true_color_summary">Reduces banding, but may impact performance</string>
+    <string name="pref_display_profile">Custom display profile</string>
     <string name="pref_crop_borders">Crop borders</string>
     <string name="pref_custom_brightness">Custom brightness</string>
     <string name="pref_grayscale">Grayscale</string>
@@ -389,8 +392,6 @@
     <string name="pref_skip_read_chapters">Skip chapters marked read</string>
     <string name="pref_skip_filtered_chapters">Skip filtered chapters</string>
     <string name="pref_skip_dupe_chapters">Skip duplicate chapters</string>
-    <string name="pref_mark_read_dupe_chapters">Mark duplicate chapters as read</string>
-    <string name="pref_mark_read_dupe_chapters_summary">Mark duplicate chapters as read after reading</string>
     <string name="pref_reader_navigation">Navigation</string>
     <string name="pref_read_with_volume_keys">Volume keys</string>
     <string name="pref_read_with_volume_keys_inverted">Invert volume keys</string>
@@ -488,6 +489,14 @@
     <string name="save_chapter_as_cbz">Save as CBZ archive</string>
     <string name="split_tall_images">Split tall images</string>
     <string name="split_tall_images_summary">Improves reader performance</string>
+    <string name="download_cache_renew_interval">Download cache renew interval</string>
+    <string name="download_cache_renew_interval_manual">Manual</string>
+    <string name="download_cache_renew_interval_1hour">1 hour</string>
+    <string name="download_cache_renew_interval_2hour">2 hours</string>
+    <string name="download_cache_renew_interval_6hour">6 hours</string>
+    <string name="download_cache_renew_interval_12hour">12 hours</string>
+    <string name="download_cache_renew_interval_24hour">1 day</string>
+    <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
 
     <!-- Tracking section -->
     <string name="tracking_guide">Tracking guide</string>
@@ -804,6 +813,12 @@
     <string name="updates_last_update_info">Library last updated: %s</string>
     <string name="updates_last_update_info_just_now">Just now</string>
     <string name="relative_time_span_never">Never</string>
+    <string name="action_view_upcoming">View Upcoming Updates</string>
+
+    <!-- Upcoming -->
+    <string name="upcoming_guide">Upcoming Guide</string>
+    <string name="upcoming_calendar_next">Next Month</string>
+    <string name="upcoming_calendar_prev">Previous Month</string>
 
     <!-- History -->
     <string name="recent_manga_time">Ch. %1$s - %2$s</string>

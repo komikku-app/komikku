@@ -56,10 +56,9 @@ import tachiyomi.presentation.core.icons.Reddit
 import tachiyomi.presentation.core.icons.X
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 object AboutScreen : Screen() {
 
@@ -293,11 +292,15 @@ object AboutScreen : Screen() {
 
     internal fun getFormattedBuildTime(): String {
         return try {
-            val df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
-                .withZone(ZoneId.of("UTC"))
-            val buildTime = LocalDateTime.from(df.parse(BuildConfig.BUILD_TIME))
-
-            buildTime!!.toDateTimestampString(UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()))
+            LocalDateTime.ofInstant(
+                Instant.parse(BuildConfig.BUILD_TIME),
+                ZoneId.systemDefault(),
+            )
+                .toDateTimestampString(
+                    UiPreferences.dateFormat(
+                        Injekt.get<UiPreferences>().dateFormat().get(),
+                    ),
+                )
         } catch (e: Exception) {
             BuildConfig.BUILD_TIME
         }

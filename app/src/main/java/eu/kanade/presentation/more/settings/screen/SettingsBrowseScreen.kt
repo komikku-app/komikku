@@ -2,6 +2,7 @@ package eu.kanade.presentation.more.settings.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -17,6 +18,7 @@ import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import kotlinx.collections.immutable.persistentListOf
+import mihon.domain.extensionrepo.interactor.GetExtensionRepoCount
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
@@ -39,7 +41,9 @@ object SettingsBrowseScreen : SearchableSettings {
         val navigator = LocalNavigator.currentOrThrow
 
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
-        val reposCount by sourcePreferences.extensionRepos().collectAsState()
+        val getExtensionRepoCount = remember { Injekt.get<GetExtensionRepoCount>() }
+
+        val reposCount by getExtensionRepoCount.subscribe().collectAsState(0)
 
         // SY -->
         val scope = rememberCoroutineScope()
@@ -52,6 +56,13 @@ object SettingsBrowseScreen : SearchableSettings {
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_sources),
                 preferenceItems = persistentListOf(
+                    // KMK -->
+                    Preference.PreferenceItem.SwitchPreference(
+                        pref = sourcePreferences.relatedMangas(),
+                        title = stringResource(SYMR.strings.pref_source_related_mangas),
+                        subtitle = stringResource(SYMR.strings.pref_source_related_mangas_summary),
+                    ),
+                    // KMK <--
                     kotlin.run {
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(
@@ -104,7 +115,7 @@ object SettingsBrowseScreen : SearchableSettings {
                     ),
                     Preference.PreferenceItem.TextPreference(
                         title = stringResource(MR.strings.label_extension_repos),
-                        subtitle = pluralStringResource(MR.plurals.num_repos, reposCount.size, reposCount.size),
+                        subtitle = pluralStringResource(MR.plurals.num_repos, reposCount, reposCount),
                         onClick = {
                             navigator.push(ExtensionReposScreen())
                         },

@@ -24,6 +24,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.DuplicateMangasDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.removeCovers
@@ -39,6 +40,7 @@ import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -252,7 +254,7 @@ class BulkFavoriteScreenModel(
             .orEmpty()
     }
 
-    suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
+    private suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
         return getDuplicateLibraryManga.await(manga).getOrNull(0)
     }
 
@@ -349,7 +351,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    fun setDialog(dialog: Dialog?) {
+    private fun setDialog(dialog: Dialog?) {
         mutableState.update {
             it.copy(dialog = dialog)
         }
@@ -393,6 +395,14 @@ fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
         onConfirm = { bulkFavoriteScreenModel.addFavorite(dialog.manga) },
         onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+        onMigrate = {
+            PreMigrationScreen.navigateToMigration(
+                Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                navigator,
+                dialog.duplicate.id,
+                dialog.manga.id,
+            )
+        },
     )
 }
 

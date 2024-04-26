@@ -157,6 +157,7 @@
     <string name="put_recommends_in_overflow_summary">将推荐按钮放在弹出菜单而不是作品页面</string>
     <string name="put_merge_in_overflow">在菜单显示合并</string>
     <string name="put_merge_in_overflow_summary">将合并按钮放在弹出菜单而不是作品页面</string>
+    <string name="pref_previews_row_count">预览行数</string>
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">导航栏</string>
@@ -171,8 +172,13 @@
     <string name="library_group_updates_global">总是进行全局更新</string>
     <string name="library_group_updates_all_but_ungrouped">仅为未分组的作品进行全局更新，否则进行目录更新</string>
     <string name="library_group_updates_all">每次都进行目录更新</string>
+    <string name="pref_mark_read_dupe_chapters">标记重复的章节为已读</string>
+    <string name="pref_mark_read_dupe_chapters_summary">在阅读后标记重复的章节为已读</string>
+    <string name="pref_library_mark_duplicate_chapters">标记新的重复的章节为已读</string>
+    <string name="pref_library_mark_duplicate_chapters_summary">如果之前已经读过，自动将新的重复的章节标记为已读</string>
 
     <!-- Browse settings -->
+    <string name="pref_hide_feed">隐藏订阅标签</string>
     <string name="pref_feed_position">订阅标签位置</string>
     <string name="pref_feed_position_summery">你想让订阅标签成为浏览中的第一个标签吗？这将使它成为打开浏览时的默认标签，如果你使用的是数据或计费网络，则不建议使用。</string>
     <string name="pref_source_source_filtering">在目录中过滤图源</string>
@@ -308,9 +314,12 @@
     <string name="pref_center_margin">中间空白类型</string>
     <string name="pref_center_margin_summary">插入空白以适应可折叠设备的屏幕盲区。</string>
 
-    <!-- Cache archived manga to disk -->
-    <string name="cache_archived_manga_to_disk">缓存 CBZ/CBR 档案中的图片</string>
-    <string name="cache_archived_manga_to_disk_subtitle">阅读时临时复制压缩包中的图片到缓存\n可以改善阅读器的性能</string>
+    <!-- Archive reader mode -->
+    <string name="archive_mode_load_from_file">直接从文件加载</string>
+    <string name="archive_mode_load_into_memory">缓存到内存</string>
+    <string name="archive_mode_cache_to_disk">缓存到存储</string>
+    <string name="pref_archive_reader_mode">归档读取方式</string>
+    <string name="pref_archive_reader_mode_summary">在 CBZ 或 CBR 归档中的图像的加载方式</string>
 
     <!-- Entry Page -->
     <!-- Entry Info -->
@@ -326,10 +335,12 @@
     <!-- Entry Info Edit -->
     <string name="reset_tags">重置标签</string>
     <string name="add_tag">添加标签</string>
+    <string name="reset_info">重置信息</string>
     <string name="title_hint">标题：%1$s</string>
     <string name="description_hint">描述：%1$s</string>
     <string name="author_hint">作者：%1$s</string>
     <string name="artist_hint">艺术家：%1$s</string>
+    <string name="thumbnail_url_hint">缩略图地址：%1$s</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->

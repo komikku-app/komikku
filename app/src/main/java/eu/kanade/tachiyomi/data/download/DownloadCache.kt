@@ -18,6 +18,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -45,6 +46,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
@@ -69,6 +71,9 @@ class DownloadCache(
 ) {
 
     private val scope = CoroutineScope(Dispatchers.IO)
+    // KMK -->
+    private val downloadPreferences: DownloadPreferences = Injekt.get()
+    // KMK <--
 
     private val _changes: Channel<Unit> = Channel(Channel.UNLIMITED)
     val changes = _changes.receiveAsFlow()
@@ -79,7 +84,11 @@ class DownloadCache(
      * The interval after which this cache should be invalidated. 1 hour shouldn't cause major
      * issues, as the cache is only used for UI feedback.
      */
-    private val renewInterval = 1.hours.inWholeMilliseconds
+    private val renewInterval //= 1.hours.inWholeMilliseconds
+        // KMK -->
+        get() = downloadPreferences.downloadCacheRenewInterval().get()
+            .hours.inWholeMilliseconds
+        // KMK <--
 
     /**
      * The last time the cache was refreshed.
@@ -320,7 +329,7 @@ class DownloadCache(
         lastRenew = 0L
         renewalJob?.cancel()
         diskCacheFile.delete()
-        renewCache()
+        renewCache(/* KMK --> */ 0L /* KMK <-- */)
     }
 
     // KMK -->
@@ -335,9 +344,9 @@ class DownloadCache(
     /**
      * Renews the downloads cache.
      */
-    private fun renewCache() {
+    private fun renewCache(/* KMK --> */ renewInterval: Long = this.renewInterval /* KMK <-- */) {
         // Avoid renewing cache if in the process nor too often
-        if (lastRenew + renewInterval >= System.currentTimeMillis() || renewalJob?.isActive == true) {
+        if (/* KMK --> */ renewInterval < 0L || /* KMK <-- */ lastRenew + renewInterval >= System.currentTimeMillis() || renewalJob?.isActive == true) {
             return
         }
 
@@ -347,19 +356,15 @@ class DownloadCache(
             }
 
             // Try to wait until extensions and sources have loaded
-            var sources = getSources()
-            if (sources.isEmpty()) {
-                withTimeoutOrNull(30.seconds) {
-                    while (!extensionManager.isInitialized) {
-                        delay(2.seconds)
-                    }
+            // SY -->
+            var sources = emptyList<Source>()
+            withTimeoutOrNull(30.seconds) {
+                extensionManager.isInitialized.first { it }
+                sourceManager.isInitialized.first { it }
 
-                    while (extensionManager.availableExtensionsFlow.value.isNotEmpty() && sources.isEmpty()) {
-                        delay(2.seconds)
-                        sources = getSources()
-                    }
-                }
+                sources = getSources()
             }
+            // SY <--
 
             val sourceMap = sources.associate { provider.getSourceDirName(it).lowercase() to it.id }
 

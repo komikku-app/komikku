@@ -52,3 +52,20 @@ When creating a fork, remember to:
 - To avoid having your data polluting the main app's analytics and crash report services:
     - If you want to use Firebase analytics, replace [`google-services.json`](https://github.com/komikku-app/komikku/blob/master/app/src/standard/google-services.json) with your own
     - If you want to use ACRA crash reporting, replace the `ACRA_URI` endpoint in [`build.gradle.kts`](https://github.com/komikku-app/komikku/blob/master/app/build.gradle.kts) with your own
+
+
+### Supporting Cloud Sync - Google Drive Implementation
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project
+3. Go to API & Services -> Library -> Google Drive API and click enable
+4. Go to API & Services -> Oauth consent screen
+5. Create it, fill in the app name, user support email, and developer contact information
+6. In the next screen, click add or remove scopes, and add the `.../auth/drive.appdata` and `.../auth/drive.file` scopes
+7. Don't add any test users and go back to the dashboard
+8. Click publish
+9. Go to API & Services -> Credentials
+10. Click Create credentials -> Oauth client ID
+11. Select Android, give it a name, and set `eu.kanade.google.oauth` as the package name
+12. To get the SHA-1 key, run `keytool -printcert -jarfile app-standard-universal-release.apk` on your apk, and copy the listed SHA-1
+13. Expand advanced settings, and enable Custom URL scheme
+14. After that just download the json, name it to `client_secrets.json` and put it in `app/src/main/assets/`

@@ -28,19 +28,22 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class InterceptActivity : BaseActivity() {
     private var statusJob: Job? = null
@@ -108,7 +111,11 @@ class InterceptActivity : BaseActivity() {
 
     private fun processLink() {
         if (Intent.ACTION_VIEW == intent.action) {
-            loadGallery(intent.dataString!!)
+            lifecycleScope.launchIO {
+                // wait for sources to load
+                Injekt.get<SourceManager>().isInitialized.first { it }
+                loadGallery(intent.dataString!!)
+            }
         }
     }
 
@@ -167,8 +174,7 @@ class InterceptActivity : BaseActivity() {
 
     private val galleryAdder = GalleryAdder()
 
-    @Synchronized
-    fun loadGallery(gallery: String) {
+    suspend fun loadGallery(gallery: String) {
         // Do not load gallery if already loading
         if (status.value is InterceptResult.Idle) {
             status.value = InterceptResult.Loading
@@ -178,7 +184,9 @@ class InterceptActivity : BaseActivity() {
                     .setTitle(MR.strings.label_sources.getString(this))
                     .setSingleChoiceItems(sources.map { it.toString() }.toTypedArray(), 0) { dialog, index ->
                         dialog.dismiss()
-                        loadGalleryEnd(gallery, sources[index])
+                        lifecycleScope.launchIO {
+                            loadGalleryEnd(gallery, sources[index])
+                        }
                     }
                     .show()
             } else {
@@ -187,15 +195,12 @@ class InterceptActivity : BaseActivity() {
         }
     }
 
-    private fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
-        // Load gallery async
-        lifecycleScope.launch(Dispatchers.IO) {
-            val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
+    private suspend fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
+        val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
 
-            status.value = when (result) {
-                is GalleryAddEvent.Success -> InterceptResult.Success(result.manga.id, result.manga, result.chapter)
-                is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
-            }
+        status.value = when (result) {
+            is GalleryAddEvent.Success -> InterceptResult.Success(result.manga.id, result.manga, result.chapter)
+            is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
         }
     }
 

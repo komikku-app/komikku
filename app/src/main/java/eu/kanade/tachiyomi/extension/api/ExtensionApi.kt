@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
-import eu.kanade.domain.extension.interactor.OFFICIAL_REPO_BASE_URL
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -12,9 +11,16 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.source.BlacklistedSources
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_BASE_URL
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_SIGNATURE
+import mihon.domain.extensionrepo.interactor.GetExtensionRepo
+import mihon.domain.extensionrepo.interactor.UpdateExtensionRepo
+import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.withIOContext
@@ -27,8 +33,12 @@ internal class ExtensionApi {
 
     private val networkService: NetworkHelper by injectLazy()
     private val preferenceStore: PreferenceStore by injectLazy()
-    private val sourcePreferences: SourcePreferences by injectLazy()
+    private val getExtensionRepo: GetExtensionRepo by injectLazy()
+    private val updateExtensionRepo: UpdateExtensionRepo by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
+    // SY -->
+    private val sourcePreferences: SourcePreferences by injectLazy()
+    // SY <--
     private val json: Json by injectLazy()
 
     private val lastExtCheck: Preference<Long> by lazy {
@@ -36,18 +46,27 @@ internal class ExtensionApi {
     }
 
     suspend fun findExtensions(): List<Extension.Available> {
+        val officialRepo = ExtensionRepo(
+            baseUrl = OFFICIAL_REPO_BASE_URL,
+            name = "Komikku Official Extensions Repo",
+            shortName = "Komikku Official",
+            website = "https://komikku-app.github.io",
+            signingKeyFingerprint = OFFICIAL_REPO_SIGNATURE,
+        )
         return withIOContext {
-            // Combine built-in OFFICIAL repo's extensions list with repo's list
-            val extensions = buildList {
-                addAll(getExtensions(OFFICIAL_REPO_BASE_URL))
-                sourcePreferences.extensionRepos().get().map { addAll(getExtensions(it)) }
+            buildList {
+                // Combine built-in OFFICIAL repo's extensions list with repo's list
+                addAll(getExtensions(officialRepo))
+                getExtensionRepo.getAll()
+                    .map { async { getExtensions(it) } }
+                    .awaitAll()
+                    .flatten()
             }
-
-            extensions
         }
     }
 
-    private suspend fun getExtensions(repoBaseUrl: String): List<Extension.Available> {
+    private suspend fun getExtensions(extRepo: ExtensionRepo): List<Extension.Available> {
+        val repoBaseUrl = extRepo.baseUrl
         return try {
             val response = networkService.client
                 .newCall(GET("$repoBaseUrl/index.min.json"))
@@ -74,6 +93,9 @@ internal class ExtensionApi {
         ) {
             return null
         }
+
+        // Update extension repo details
+        updateExtensionRepo.awaitAll()
 
         val extensions = if (fromAvailableExtensionList) {
             extensionManager.availableExtensionsFlow.value
@@ -126,6 +148,8 @@ internal class ExtensionApi {
                     libVersion = it.extractLibVersion(),
                     lang = it.lang,
                     isNsfw = it.nsfw == 1,
+                    hasReadme = it.hasReadme == 1,
+                    hasChangelog = it.hasChangelog == 1,
                     sources = it.sources?.map(extensionSourceMapper).orEmpty(),
                     apkName = it.apk,
                     iconUrl = "$repoUrl/icon/${it.pkg}.png",
@@ -160,6 +184,8 @@ private data class ExtensionJsonObject(
     val code: Long,
     val version: String,
     val nsfw: Int,
+    val hasReadme: Int = 0,
+    val hasChangelog: Int = 0,
     val sources: List<ExtensionSourceJsonObject>?,
 )
 

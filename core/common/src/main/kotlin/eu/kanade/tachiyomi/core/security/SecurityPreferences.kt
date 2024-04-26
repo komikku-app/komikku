@@ -24,9 +24,9 @@ class SecurityPreferences(
 
     fun authenticatorDays() = this.preferenceStore.getInt("biometric_days", 0x7F)
 
-    fun encryptDatabase() = this.preferenceStore.getBoolean(Preference.privateKey("encrypt_database"), false)
+    fun encryptDatabase() = this.preferenceStore.getBoolean(Preference.appStateKey("encrypt_database"), false)
 
-    fun sqlPassword() = this.preferenceStore.getString(Preference.privateKey("sql_password"), "")
+    fun sqlPassword() = this.preferenceStore.getString(Preference.appStateKey("sql_password"), "")
 
     fun passwordProtectDownloads() = preferenceStore.getBoolean(
         Preference.privateKey("password_protect_downloads"),
@@ -35,7 +35,7 @@ class SecurityPreferences(
 
     fun encryptionType() = this.preferenceStore.getEnum("encryption_type", EncryptionType.AES_256)
 
-    fun cbzPassword() = this.preferenceStore.getString(Preference.privateKey("cbz_password"), "")
+    fun cbzPassword() = this.preferenceStore.getString(Preference.appStateKey("cbz_password"), "")
     // SY <--
 
     /**

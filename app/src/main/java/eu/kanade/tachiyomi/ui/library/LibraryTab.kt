@@ -41,6 +41,7 @@ import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -162,6 +163,13 @@ object LibraryTab : Tab {
                             }
                         }
                     },
+                    onClickSyncNow = {
+                        if (!SyncDataJob.isRunning(context)) {
+                            SyncDataJob.startNow(context)
+                        } else {
+                            context.toast(SYMR.strings.sync_in_progress)
+                        }
+                    },
                     // SY -->
                     onClickSyncExh = screenModel::openFavoritesSyncDialog.takeIf { state.showSyncExh },
                     // SY <--
@@ -197,6 +205,7 @@ object LibraryTab : Tab {
                         }
                     },
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
+                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
                     // SY <--
                 )
             },

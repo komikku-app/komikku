@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.library")
+    id("mihon.library")
     kotlin("android")
     kotlin("plugin.serialization")
     id("com.github.ben-manes.versions")
@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.image.decoder)
 
     implementation(libs.unifile)
+    implementation(libs.bundles.archive)
 
     api(kotlinx.coroutines.core)
     api(kotlinx.serialization.json)

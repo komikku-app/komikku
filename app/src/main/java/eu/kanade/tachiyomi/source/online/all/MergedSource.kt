@@ -109,8 +109,6 @@ class MergedSource : HttpSource() {
     suspend fun fetchChaptersForMergedManga(
         manga: Manga,
         downloadChapters: Boolean = true,
-        editScanlators: Boolean = false,
-        dedupe: Boolean = true,
     ) {
         fetchChaptersAndSync(manga, downloadChapters)
     }

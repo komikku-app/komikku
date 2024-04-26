@@ -17,8 +17,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
-import coil3.disk.DiskCache
-import coil3.disk.directory
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.allowRgb565
 import coil3.request.crossfade
@@ -36,6 +34,7 @@ import com.google.firebase.ktx.initialize
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.tachiyomi.crash.CrashActivity
@@ -47,6 +46,7 @@ import eu.kanade.tachiyomi.data.coil.PagePreviewFetcher
 import eu.kanade.tachiyomi.data.coil.PagePreviewKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.di.AppModule
 import eu.kanade.tachiyomi.di.PreferenceModule
 import eu.kanade.tachiyomi.di.SYPreferenceModule
@@ -71,8 +71,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
 import logcat.LogcatLogger
+import mihon.core.migration.Migrator
+import mihon.core.migration.migrations.migrations
 import org.conscrypt.Conscrypt
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.preference.Preference
+import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
@@ -168,25 +172,49 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
             LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
         }*/
+
+        val syncPreferences: SyncPreferences = Injekt.get()
+        val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
+        if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppStart
+        ) {
+            SyncDataJob.startNow(this@App)
+        }
+
+        initializeMigrator()
+    }
+
+    private fun initializeMigrator() {
+        val preferenceStore = Injekt.get<PreferenceStore>()
+        // SY -->
+        val preference = preferenceStore.getInt(Preference.appStateKey("eh_last_version_code"), 0)
+        // SY <--
+        logcat { "Migration from ${preference.get()} to ${BuildConfig.VERSION_CODE}" }
+        Migrator.initialize(
+            old = preference.get(),
+            new = BuildConfig.VERSION_CODE,
+            migrations = migrations,
+            onMigrationComplete = {
+                logcat { "Updating last version to ${BuildConfig.VERSION_CODE}" }
+                preference.set(BuildConfig.VERSION_CODE)
+            },
+        )
     }
 
     override fun newImageLoader(context: Context): ImageLoader {
         return ImageLoader.Builder(this).apply {
             val callFactoryLazy = lazy { Injekt.get<NetworkHelper>().client }
-            val diskCacheLazy = lazy { CoilDiskCache.get(this@App) }
             components {
                 add(OkHttpNetworkFetcherFactory(callFactoryLazy::value))
                 add(TachiyomiImageDecoder.Factory())
-                add(MangaCoverFetcher.MangaFactory(callFactoryLazy, diskCacheLazy))
-                add(MangaCoverFetcher.MangaCoverFactory(callFactoryLazy, diskCacheLazy))
+                add(MangaCoverFetcher.MangaFactory(callFactoryLazy))
+                add(MangaCoverFetcher.MangaCoverFactory(callFactoryLazy))
                 add(MangaKeyer())
                 add(MangaCoverKeyer())
                 // SY -->
                 add(PagePreviewKeyer())
-                add(PagePreviewFetcher.Factory(callFactoryLazy, diskCacheLazy))
+                add(PagePreviewFetcher.Factory(callFactoryLazy))
                 // SY <--
             }
-            diskCache(diskCacheLazy::value)
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(DeviceUtil.isLowRamDevice(this@App))
             if (networkPreferences.verboseLogging().get()) logger(DebugLogger())
@@ -199,6 +227,13 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
     override fun onStart(owner: LifecycleOwner) {
         SecureActivityDelegate.onApplicationStart()
+
+        val syncPreferences: SyncPreferences = Injekt.get()
+        val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
+        if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppResume
+        ) {
+            SyncDataJob.startNow(this@App)
+        }
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -231,6 +266,12 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             Notifications.createChannels(this)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to modify notification channels" }
+        }
+
+        val syncPreferences: SyncPreferences = Injekt.get()
+        val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
+        if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppStart) {
+            SyncDataJob.startNow(this@App)
         }
     }
 
@@ -329,24 +370,3 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 }
 
 private const val ACTION_DISABLE_INCOGNITO_MODE = "tachi.action.DISABLE_INCOGNITO_MODE"
-
-/**
- * Direct copy of Coil's internal SingletonDiskCache so that [MangaCoverFetcher] can access it.
- */
-private object CoilDiskCache {
-
-    private const val FOLDER_NAME = "image_cache"
-    private var instance: DiskCache? = null
-
-    @Synchronized
-    fun get(context: Context): DiskCache {
-        return instance ?: run {
-            val safeCacheDir = context.cacheDir.apply { mkdirs() }
-            // Create the singleton disk cache instance.
-            DiskCache.Builder()
-                .directory(safeCacheDir.resolve(FOLDER_NAME))
-                .build()
-                .also { instance = it }
-        }
-    }
-}

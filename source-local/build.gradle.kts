@@ -1,6 +1,6 @@
 plugins {
+    id("mihon.library")
     kotlin("multiplatform")
-    id("com.android.library")
 }
 
 kotlin {
@@ -15,7 +15,7 @@ kotlin {
                 // SY <--
 
                 implementation(libs.unifile)
-                implementation(libs.junrar)
+                implementation(libs.bundles.archive)
                 // SY -->
                 implementation(libs.zip4j)
                 // SY <--

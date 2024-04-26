@@ -26,15 +26,22 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.ui.ifSourcesLoaded
 import exh.util.nullIfBlank
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.presentation.core.screens.LoadingScreen
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {
 
     @Composable
     override fun Content() {
+        if (!ifSourcesLoaded()) {
+            LoadingScreen()
+            return
+        }
+
         val screenModel = rememberScreenModel { SourceFeedScreenModel(sourceId) }
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow

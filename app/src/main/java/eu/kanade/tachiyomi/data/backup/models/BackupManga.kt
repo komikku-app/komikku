@@ -6,7 +6,10 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 
-@Suppress("DEPRECATION")
+@Suppress(
+    "DEPRECATION",
+    "MagicNumber",
+)
 @Serializable
 data class BackupManga(
     // in 1.x some of these values have different names
@@ -40,6 +43,7 @@ data class BackupManga(
     @ProtoNumber(106) var lastModifiedAt: Long = 0,
     @ProtoNumber(107) var favoriteModifiedAt: Long? = null,
     @ProtoNumber(108) var excludedScanlators: List<String> = emptyList(),
+    @ProtoNumber(109) var version: Long = 0,
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -76,6 +80,7 @@ data class BackupManga(
             updateStrategy = this@BackupManga.updateStrategy,
             lastModifiedAt = this@BackupManga.lastModifiedAt,
             favoriteModifiedAt = this@BackupManga.favoriteModifiedAt,
+            version = this@BackupManga.version,
         )
     }
 }

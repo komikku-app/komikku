@@ -82,4 +82,8 @@ class SourcePreferences(
         WSRV_NL,
     }
     // SY <--
+
+    // KMK -->
+    fun relatedMangas() = preferenceStore.getBoolean("related_mangas", false)
+    // KMK <--
 }

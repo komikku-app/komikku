@@ -121,7 +121,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         )
 
         val onDismissRequest = { screenModel.dialog.value = null }
-        when (val dialog = dialog) {
+        when (@Suppress("NAME_SHADOWING") val dialog = dialog) {
             is MigrationListScreenModel.Dialog.MigrateMangaDialog -> {
                 MigrationMangaDialog(
                     onDismissRequest = onDismissRequest,

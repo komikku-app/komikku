@@ -1,7 +1,7 @@
 plugins {
-    kotlin("multiplatform")
-    id("com.android.library")
+    id("mihon.library")
     id("dev.icerock.mobile.multiplatform-resources")
+    kotlin("multiplatform")
     id("com.github.ben-manes.versions")
 }
 

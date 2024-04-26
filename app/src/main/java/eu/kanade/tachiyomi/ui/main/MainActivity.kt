@@ -50,8 +50,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
@@ -80,7 +78,6 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import exh.EXHMigrations
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
 import exh.log.DebugModeOverlay
@@ -97,6 +94,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.core.migration.Migrator
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
@@ -105,17 +103,13 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 import androidx.compose.ui.graphics.Color.Companion as ComposeColor
 
 class MainActivity : BaseActivity() {
 
-    private val sourcePreferences: SourcePreferences by injectLazy()
     private val libraryPreferences: LibraryPreferences by injectLazy()
-    private val uiPreferences: UiPreferences by injectLazy()
     private val preferences: BasePreferences by injectLazy()
 
     // SY -->
@@ -165,20 +159,7 @@ class MainActivity : BaseActivity() {
 
         val didMigration = if (isLaunch) {
             addAnalytics()
-            EXHMigrations.upgrade(
-                context = applicationContext,
-                basePreferences = preferences,
-                uiPreferences = uiPreferences,
-                preferenceStore = Injekt.get(),
-                networkPreferences = Injekt.get(),
-                sourcePreferences = sourcePreferences,
-                securityPreferences = Injekt.get(),
-                libraryPreferences = libraryPreferences,
-                readerPreferences = Injekt.get(),
-                backupPreferences = Injekt.get(),
-                trackerManager = Injekt.get(),
-                pagePreviewCache = Injekt.get(),
-            )
+            Migrator.awaitAndRelease()
         } else {
             false
         }

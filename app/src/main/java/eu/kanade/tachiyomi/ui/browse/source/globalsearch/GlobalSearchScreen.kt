@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import exh.ui.ifSourcesLoaded
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class GlobalSearchScreen(
@@ -31,6 +32,11 @@ class GlobalSearchScreen(
 
     @Composable
     override fun Content() {
+        if (!ifSourcesLoaded()) {
+            LoadingScreen()
+            return
+        }
+
         val navigator = LocalNavigator.currentOrThrow
 
         val screenModel = rememberScreenModel {

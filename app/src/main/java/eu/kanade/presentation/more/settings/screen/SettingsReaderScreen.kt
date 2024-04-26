@@ -35,6 +35,7 @@ object SettingsReaderScreen : SearchableSettings {
         // SY -->
         val forceHorizontalSeekbar by readerPref.forceHorizontalSeekbar().collectAsState()
         // SY <--
+
         return listOf(
             Preference.PreferenceItem.ListPreference(
                 pref = readerPref.defaultReadingMode(),
@@ -81,12 +82,6 @@ object SettingsReaderScreen : SearchableSettings {
                 enabled = !forceHorizontalSeekbar,
             ),
             // SY <--
-            Preference.PreferenceItem.SwitchPreference(
-                pref = readerPref.trueColor(),
-                title = stringResource(MR.strings.pref_true_color),
-                subtitle = stringResource(MR.strings.pref_true_color_summary),
-                enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-            ),
             /* SY -->
             Preference.PreferenceItem.SwitchPreference(
                 pref = readerPref.pageTransitions(),
@@ -178,11 +173,13 @@ object SettingsReaderScreen : SearchableSettings {
                     pref = readerPreferences.skipDupe(),
                     title = stringResource(MR.strings.pref_skip_dupe_chapters),
                 ),
+                // SY -->
                 Preference.PreferenceItem.SwitchPreference(
                     pref = readerPreferences.markReadDupe(),
-                    title = stringResource(MR.strings.pref_mark_read_dupe_chapters),
-                    subtitle = stringResource(MR.strings.pref_mark_read_dupe_chapters_summary),
+                    title = stringResource(SYMR.strings.pref_mark_read_dupe_chapters),
+                    subtitle = stringResource(SYMR.strings.pref_mark_read_dupe_chapters_summary),
                 ),
+                // SY <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = readerPreferences.alwaysShowChapterTransition(),
                     title = stringResource(MR.strings.pref_always_show_chapter_transition),
@@ -570,10 +567,14 @@ object SettingsReaderScreen : SearchableSettings {
                         .toMap()
                         .toImmutableMap(),
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = readerPreferences.cacheArchiveMangaOnDisk(),
-                    title = stringResource(SYMR.strings.cache_archived_manga_to_disk),
-                    subtitle = stringResource(SYMR.strings.cache_archived_manga_to_disk_subtitle),
+                Preference.PreferenceItem.ListPreference(
+                    pref = readerPreferences.archiveReaderMode(),
+                    title = stringResource(SYMR.strings.pref_archive_reader_mode),
+                    subtitle = stringResource(SYMR.strings.pref_archive_reader_mode_summary),
+                    entries = ReaderPreferences.archiveModeTypes
+                        .mapIndexed { index, it -> index to stringResource(it) }
+                        .toMap()
+                        .toImmutableMap(),
                 ),
             ),
         )

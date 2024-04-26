@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.source.model.StubSource
 
 interface SourceManager {
@@ -19,6 +20,8 @@ interface SourceManager {
     fun getCatalogueSources(): List<CatalogueSource>
 
     // SY -->
+    val isInitialized: StateFlow<Boolean>
+
     fun getVisibleOnlineSources(): List<HttpSource>
 
     fun getVisibleCatalogueSources(): List<CatalogueSource>

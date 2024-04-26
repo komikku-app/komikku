@@ -51,4 +51,7 @@
     <plurals name="num_repos">
         <item quantity="other">%d รีโพ</item>
     </plurals>
+    <plurals name="num_repos">
+        <item quantity="other">%d α╕úα╕╡α╣éα╕₧</item>
+    </plurals>
 </resources>

@@ -42,6 +42,12 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -64,8 +70,10 @@ import exh.recs.RecommendsScreen
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isMdBasedSource
+import exh.ui.ifSourcesLoaded
 import exh.ui.metadata.MetadataViewScreen
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
@@ -98,6 +106,11 @@ class MangaScreen(
 
     @Composable
     override fun Content() {
+        if (!ifSourcesLoaded()) {
+            LoadingScreen()
+            return
+        }
+
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val haptic = LocalHapticFeedback.current
@@ -114,6 +127,11 @@ class MangaScreen(
 
         val successState = state as MangaScreenModel.State.Success
         val isHttpSource = remember { successState.source is HttpSource }
+
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+        // KMK <--
 
         LaunchedEffect(successState.manga, screenModel.source) {
             if (isHttpSource) {
@@ -219,6 +237,11 @@ class MangaScreen(
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
+            // KMK -->
+            getMangaState = { screenModel.getManga(initialManga = it) },
+            onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
+            onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
+            // KMK <--
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
@@ -245,11 +268,19 @@ class MangaScreen(
                     },
                 )
             }
-            is MangaScreenModel.Dialog.DuplicateManga -> DuplicateMangaDialog(
-                onDismissRequest = onDismissRequest,
-                onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
-                onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
-            )
+
+            is MangaScreenModel.Dialog.DuplicateManga -> {
+                DuplicateMangaDialog(
+                    onDismissRequest = onDismissRequest,
+                    onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
+                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onMigrate = {
+                        // SY -->
+                        migrateManga(navigator, dialog.duplicate, screenModel.manga!!.id)
+                        // SY <--
+                    },
+                )
+            }
             MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
                 onDismissRequest = onDismissRequest,
                 manga = successState.manga,
@@ -336,6 +367,22 @@ class MangaScreen(
                 onConfirm = screenModel::setExcludedScanlators,
             )
         }
+
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
+                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
+                RemoveMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
+                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            else -> {}
+        }
+        // KMK <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {
@@ -451,12 +498,13 @@ class MangaScreen(
     /**
      * Initiates source migration for the specific manga.
      */
-    private fun migrateManga(navigator: Navigator, manga: Manga) {
+    private fun migrateManga(navigator: Navigator, manga: Manga, toMangaId: Long? = null) {
         // SY -->
         PreMigrationScreen.navigateToMigration(
             Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
             navigator,
-            listOf(manga.id),
+            manga.id,
+            toMangaId,
         )
         // SY <--
     }
@@ -499,6 +547,7 @@ class MangaScreen(
         navigator.push(SourcesScreen(smartSearchConfig))
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun mergeWithAnother(
         navigator: Navigator,
         context: Context,
