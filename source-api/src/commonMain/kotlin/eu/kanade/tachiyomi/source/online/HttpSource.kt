@@ -304,14 +304,7 @@ abstract class HttpSource : CatalogueSource {
         return when {
             supportsRelatedMangas -> fetchRelatedMangaList(manga).awaitSingle()
             disableRelatedMangas -> emptyList()
-            else -> {
-                try {
-                    fetchRelatedMangaListBySearch(manga)
-                } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e)
-                    throw UnsupportedOperationException("Error getting related titles.")
-                }
-            }
+            else -> fetchRelatedMangaListBySearch(manga)
         }
     }
 
@@ -346,15 +339,20 @@ abstract class HttpSource : CatalogueSource {
 
         return words.map { keyword ->
             scope.async {
-                client.newCall(searchMangaRequest(0, keyword, FilterList()))
-                    .execute()
-                    .let { response ->
-                        searchMangaParse(response).mangas
-                            .filter {
-                                it.url != manga.url &&
-                                    it.title.lowercase().contains(keyword)
-                            }
-                    }
+                try {
+                    client.newCall(searchMangaRequest(0, keyword, FilterList()))
+                        .execute()
+                        .let { response ->
+                            searchMangaParse(response).mangas
+                                .filter {
+                                    it.url != manga.url &&
+                                        it.title.lowercase().contains(keyword)
+                                }
+                        }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e) { "Related titles: $e" }
+                    emptyList()
+                }
             }
         }.awaitAll()
             .minBy { if (it.isEmpty()) Int.MAX_VALUE else it.size }
