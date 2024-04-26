@@ -78,12 +78,12 @@ jobs:
           contents: 'package exh const val syDebugVersion: String = "${{ github.run_number }}"'
           write-mode: overwrite
 
-      - name: Write changelog_debug.xml
-        uses: DamianReeves/write-file-action@v1.3
-        with:
-          path: app/src/main/res/raw/changelog_debug.xml
-          contents: "${{ env.CHANGELOG }}"
-          write-mode: overwrite
+      # - name: Write changelog_debug.xml
+      #   uses: DamianReeves/write-file-action@v1.3
+      #   with:
+      #     path: app/src/main/res/raw/changelog_debug.xml
+      #     contents: "${{ env.CHANGELOG }}"
+      #     write-mode: overwrite
 
       - name: Write google-services.json
         uses: DamianReeves/write-file-action@v1.3
