@@ -70,14 +70,14 @@ jobs:
           
       # SY <--
       - name: Write google-services.json
-        uses: DamianReeves/write-file-action@v1.2
+        uses: DamianReeves/write-file-action@v1.3
         with:
           path: app/google-services.json
           contents: ${{ secrets.GOOGLE_SERVICES_TEXT }}
           write-mode: overwrite
 
       - name: Write client_secrets.json
-        uses: DamianReeves/write-file-action@v1.2
+        uses: DamianReeves/write-file-action@v1.3
         with:
           path: app/src/main/assets/client_secrets.json
           contents: ${{ secrets.CLIENT_SECRETS_TEXT }}
