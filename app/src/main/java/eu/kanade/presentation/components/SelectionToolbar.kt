@@ -2,6 +2,7 @@ package eu.kanade.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,22 +15,38 @@ fun SelectionToolbar(
     selectedCount: Int,
     onClickClearSelection: () -> Unit,
     onChangeCategoryClicked: () -> Unit,
+    onSelectAll: (() -> Unit)? = null,
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
         actions = {
             AppBarActions(
-                persistentListOf(
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Filled.BookmarkAdd,
-                        onClick = {
-                            if (selectedCount > 0) {
-                                onChangeCategoryClicked()
-                            }
-                        },
-                    ),
-                ),
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        if (onSelectAll != null) {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(MR.strings.action_select_all),
+                                    icon = Icons.Filled.SelectAll,
+                                    onClick = {
+                                        onSelectAll()
+                                    },
+                                ),
+                            )
+                        }
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_bookmark),
+                                icon = Icons.Filled.BookmarkAdd,
+                                onClick = {
+                                    if (selectedCount > 0) {
+                                        onChangeCategoryClicked()
+                                    }
+                                },
+                            ),
+                        )
+                    }
+                    .build(),
             )
         },
         isActionMode = true,

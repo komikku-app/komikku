@@ -44,6 +44,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->
+        val state by screenModel.state.collectAsState()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -68,6 +69,12 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                         selectedCount = bulkFavoriteState.selection.size,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            state.mangaDisplayingList.forEach { manga ->
+                                if (!bulkFavoriteState.selection.contains(manga))
+                                    bulkFavoriteScreenModel.select(manga)
+                            }
+                        },
                     )
                 } else {
                     // KMK <--
@@ -120,6 +127,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }
