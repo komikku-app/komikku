@@ -145,6 +145,33 @@ abstract class ParsedHttpSource : HttpSource() {
      */
     protected abstract fun mangaDetailsParse(document: Document): SManga
 
+    // KMK -->
+    /**
+     * Parses the response from the site and returns a list of related mangas.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     *
+     * @param response the response from the site.
+     */
+    override fun relatedMangaListParse(response: Response): List<SManga> {
+        return response.asJsoup()
+            .select(relatedMangaListSelector()).map { relatedMangaFromElement(it) }
+    }
+
+    /**
+     * Returns the Jsoup selector that returns a list of [Element] corresponding to each related mangas.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     */
+    protected open fun relatedMangaListSelector(): String = popularMangaSelector()
+
+    /**
+     * Returns a manga from the given element.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     *
+     * @param element an element obtained from [relatedMangaListSelector].
+     */
+    protected open fun relatedMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
+    // KMK <--
+
     /**
      * Parses the response from the site and returns a list of chapters.
      *

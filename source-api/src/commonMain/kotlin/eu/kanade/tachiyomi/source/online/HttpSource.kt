@@ -16,17 +16,24 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.maybeInjectEHLogger
 import exh.pref.DelegateSourcePreferences
 import exh.source.DelegatedHttpSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import logcat.LogPriority
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.MessageDigest
+import java.util.Locale
 
 /**
  * A simple implementation for sources from a website.
@@ -273,6 +280,118 @@ abstract class HttpSource : CatalogueSource {
      * @param response the response from the site.
      */
     protected abstract fun mangaDetailsParse(response: Response): SManga
+
+    // KMK -->
+    /**
+     * Whether parsing related mangas in manga page or extension provide custom related mangas request (true)
+     * or using search keyword to search for related mangas (false - default)
+     * @default false
+     * @since extensions-lib 1.6
+     */
+    protected open val supportsRelatedMangas: Boolean get() = false
+    protected open val disableRelatedMangas: Boolean get() = false
+
+    /**
+     * Get all the available related mangas for a manga.
+     * Normally it's not needed to override this method.
+     *
+     * @param manga the current manga to get related mangas.
+     * @return the related mangas for the current manga.
+     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     */
+    @Suppress("DEPRECATION")
+    override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
+        return when {
+            supportsRelatedMangas -> fetchRelatedMangaList(manga).awaitSingle()
+            disableRelatedMangas -> emptyList()
+            else -> {
+                try {
+                    fetchRelatedMangaListBySearch(manga)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    throw UnsupportedOperationException("Error getting related titles.")
+                }
+            }
+        }
+    }
+
+    /**
+     * Fetch related mangas by searching for each keywords from manga's title
+     */
+    protected open suspend fun fetchRelatedMangaListBySearch(manga: SManga): List<SManga> {
+        fun String.stripKeyword(): List<String> {
+            val regexWhitespace = Regex("\\s+")
+            val regexSpecialCharacters = Regex("[\\[(!~@#$%^&*|,?:\"<>)\\]]")
+            val regexNumberOnly = Regex("^\\d+$")
+
+            return replace(regexSpecialCharacters, " ")
+                .split(regexWhitespace)
+                .map {
+                    // remove number only
+                    it.replace(regexNumberOnly, "")
+                        .lowercase(Locale.getDefault())
+                }
+                // exclude single character
+                .filter { it.length > 1 }
+        }
+        val scope = CoroutineScope(Dispatchers.IO)
+        val words = HashSet<String>()
+        words += manga.title.stripKeyword()
+        manga.originalTitle.let { title ->
+            words += title.stripKeyword()
+        }
+        if (words.isEmpty()) {
+            return emptyList()
+        }
+
+        return words.map { keyword ->
+            scope.async {
+                client.newCall(searchMangaRequest(0, keyword, FilterList()))
+                    .execute()
+                    .let { response ->
+                        searchMangaParse(response).mangas
+                            .filter {
+                                it.url != manga.url &&
+                                    it.title.lowercase().contains(keyword)
+                            }
+                    }
+            }
+        }.awaitAll()
+            .minBy { if (it.isEmpty()) Int.MAX_VALUE else it.size }
+    }
+
+    /**
+     * Fetch related mangas found in manga's page which is provided by sites.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     */
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getRelatedMangaList"))
+    override fun fetchRelatedMangaList(manga: SManga): Observable<List<SManga>> {
+        return client.newCall(relatedMangaListRequest(manga))
+            .asObservableSuccess()
+            .map { response ->
+                relatedMangaListParse(response)
+            }
+    }
+
+    /**
+     * Returns the request for get related manga list. Override only if it's needed to override
+     * the url, send different headers or request method like POST.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     *
+     * @param manga the manga to look for related mangas.
+     */
+    protected open fun relatedMangaListRequest(manga: SManga): Request {
+        return GET(baseUrl + manga.url, headers)
+    }
+
+    /**
+     * Parses the response from the site and returns a list of related mangas.
+     * If using this, must also: 'override val supportsRelatedMangas = true'
+     *
+     * @param response the response from the site.
+     */
+    protected open fun relatedMangaListParse(response: Response): List<SManga> = popularMangaParse(response).mangas
+    // KMK <--
 
     /**
      * Get all the available chapters for a manga.

@@ -52,6 +52,13 @@ object SettingsBrowseScreen : SearchableSettings {
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.label_sources),
                 preferenceItems = persistentListOf(
+                    // KMK -->
+                    Preference.PreferenceItem.SwitchPreference(
+                        pref = sourcePreferences.relatedMangas(),
+                        title = stringResource(SYMR.strings.pref_source_related_mangas),
+                        subtitle = stringResource(SYMR.strings.pref_source_related_mangas_summary),
+                    ),
+                    // KMK <--
                     kotlin.run {
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(

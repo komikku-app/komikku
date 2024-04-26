@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -22,6 +24,7 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.downloadedFilter
+import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
@@ -72,6 +75,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -135,6 +139,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.floor
+import androidx.compose.runtime.State as RuntimeState
 
 class MangaScreenModel(
     val context: Context,
@@ -203,6 +208,11 @@ class MangaScreenModel(
 
     private val filteredChapters: List<ChapterList.Item>?
         get() = successState?.processedChapters
+
+    // KMK -->
+    private val relatedMangas: List<Manga>
+        get() = successState?.relatedMangas ?: emptyList()
+    // KMK <--
 
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
@@ -431,6 +441,9 @@ class MangaScreenModel(
                 val fetchFromSourceTasks = listOf(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
+                    // KMK -->
+                    async { fetchRelatedMangasFromSource() },
+                    // KMK <--
                 )
                 fetchFromSourceTasks.awaitAll()
             }
@@ -446,6 +459,9 @@ class MangaScreenModel(
             val fetchFromSourceTasks = listOf(
                 async { fetchMangaFromSource(manualFetch) },
                 async { fetchChaptersFromSource(manualFetch) },
+                // KMK -->
+                async { fetchRelatedMangasFromSource() },
+                // KMK <--
             )
             fetchFromSourceTasks.awaitAll()
             updateSuccessState { it.copy(isRefreshingData = false) }
@@ -552,6 +568,19 @@ class MangaScreenModel(
             successState.copy(manga = manga)
         }
     }
+
+    // KMK -->
+    @Composable
+    fun getManga(initialManga: Manga): RuntimeState<Manga> {
+        return produceState(initialValue = initialManga) {
+            getManga.subscribe(initialManga.url, initialManga.source)
+                .filterNotNull()
+                .collectLatest { manga ->
+                    value = manga
+                }
+        }
+    }
+    // KMK <--
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
         val originalManga = getManga.await(originalMangaId)
@@ -1067,6 +1096,41 @@ class MangaScreenModel(
             updateSuccessState { it.copy(manga = newManga, isRefreshingData = false) }
         }
     }
+
+    // KMK -->
+    /**
+     * Requests an list of related mangas from the source.
+     */
+    private suspend fun fetchRelatedMangasFromSource() {
+        val state = successState ?: return
+        try {
+            withIOContext {
+                if (state.source !is MergedSource) {
+                    val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get())
+                        withIOContext {
+                            state.source.getRelatedMangaList(state.manga.toSManga())
+                                .map {
+                                    networkToLocalManga.await(it.toDomainManga(state.source.id))
+                                }
+                        }
+                    else null
+                    updateSuccessState { it.copy(relatedMangas = relatedMangas) }
+                } else {
+                    throw UnsupportedOperationException("Fetching related titles for merged entry is not supported")
+                }
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+            val message = with(context) { e.formattedMessage }
+
+            screenModelScope.launch {
+                snackbarHostState.showSnackbar(message = message)
+            }
+            val newManga = mangaRepository.getMangaById(mangaId)
+            updateSuccessState { it.copy(manga = newManga) }
+        }
+    }
+    // KMK <--
 
     /**
      * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
@@ -1637,6 +1701,9 @@ class MangaScreenModel(
             val alwaysShowReadingProgress: Boolean,
             val previewsRowCount: Int,
             // SY <--
+            // KMK -->
+            val relatedMangas: List<Manga>? = null,
+            // KMK <--
         ) : State {
             val processedChapters by lazy {
                 chapters.applyFilters(manga).toList()

@@ -42,6 +42,12 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
+import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -120,6 +126,11 @@ class MangaScreen(
 
         val successState = state as MangaScreenModel.State.Success
         val isHttpSource = remember { successState.source is HttpSource }
+
+        // KMK -->
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+        // KMK <--
 
         LaunchedEffect(successState.manga, screenModel.source) {
             if (isHttpSource) {
@@ -225,6 +236,11 @@ class MangaScreen(
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
+            // KMK -->
+            getMangaState = { screenModel.getManga(initialManga = it) },
+            onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
+            onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
+            // KMK <--
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
@@ -342,6 +358,22 @@ class MangaScreen(
                 onConfirm = screenModel::setExcludedScanlators,
             )
         }
+
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
+                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
+                RemoveMangaDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
+                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            else -> {}
+        }
+        // KMK <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {
