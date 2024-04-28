@@ -12,7 +12,7 @@ Mihon/Tachiyomi is a free and open source manga reader for Android 6.0 and above
 
 Features of Komikku include:
 - [x] Built-in & official extensions repository
-- [x] Show list of related titles (must enable in Settings/Browse) for all sources. Some sources might need fix for it to work.
+- [x] Show list of related titles (must enable in Settings/Browse) for all sources.
 - [x] Bulk selection to add to library & change categories of multiple entries all at once, everywhere.
 It can detect duplication being added and give option to allow/skip one by one or allow/skip all duplication.
 Also allow long-click to add/remove single entry to/from library, everywhere.
