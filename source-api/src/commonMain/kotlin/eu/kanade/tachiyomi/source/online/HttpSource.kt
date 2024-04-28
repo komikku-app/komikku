@@ -286,7 +286,7 @@ abstract class HttpSource : CatalogueSource {
      * Whether parsing related mangas in manga page or extension provide custom related mangas request (true)
      * or using search keyword to search for related mangas (false - default)
      * @default false
-     * @since extensions-lib 1.6
+     * @since komikku/extensions-lib 1.6
      */
     protected open val supportsRelatedMangas: Boolean get() = false
     protected open val disableRelatedMangas: Boolean get() = false
@@ -295,23 +295,31 @@ abstract class HttpSource : CatalogueSource {
      * Get all the available related mangas for a manga.
      * Normally it's not needed to override this method.
      *
+     * @since komikku/extensions-lib 1.6
      * @param manga the current manga to get related mangas.
      * @return the related mangas for the current manga.
      * @throws UnsupportedOperationException if a source doesn't support related mangas.
      */
-    @Suppress("DEPRECATION")
     override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
         return when {
-            supportsRelatedMangas -> fetchRelatedMangaList(manga).awaitSingle()
+            supportsRelatedMangas -> {
+                client.newCall(relatedMangaListRequest(manga))
+                    .execute()
+                    .let { response ->
+                        relatedMangaListParse(response)
+                    }
+            }
             disableRelatedMangas -> emptyList()
-            else -> fetchRelatedMangaListBySearch(manga)
+            else -> getRelatedMangaListBySearch(manga)
         }
     }
 
     /**
      * Fetch related mangas by searching for each keywords from manga's title
+     *
+     * @since komikku/extensions-lib 1.6
      */
-    protected open suspend fun fetchRelatedMangaListBySearch(manga: SManga): List<SManga> {
+    protected open suspend fun getRelatedMangaListBySearch(manga: SManga): List<SManga> {
         fun String.stripKeyword(): List<String> {
             val regexWhitespace = Regex("\\s+")
             val regexSpecialCharacters = Regex("[\\[(!~@#$%^&*|,?:\"<>)\\]]")
@@ -338,19 +346,16 @@ abstract class HttpSource : CatalogueSource {
         }
 
         return words.map { keyword ->
+            // Make multiple search in parallel
             scope.async {
                 try {
-                    client.newCall(searchMangaRequest(0, keyword, FilterList()))
-                        .execute()
-                        .let { response ->
-                            searchMangaParse(response).mangas
-                                .filter {
-                                    it.url != manga.url &&
-                                        it.title.lowercase().contains(keyword)
-                                }
+                    getSearchManga(0, keyword, FilterList())
+                        .mangas.filter {
+                            it.url != manga.url &&
+                                it.title.lowercase().contains(keyword)
                         }
                 } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e) { "Related titles: $e" }
+                    logcat(LogPriority.ERROR, e) { "getRelatedMangaListBySearch: $e" }
                     emptyList()
                 }
             }
@@ -359,23 +364,11 @@ abstract class HttpSource : CatalogueSource {
     }
 
     /**
-     * Fetch related mangas found in manga's page which is provided by sites.
-     * If using this, must also: 'override val supportsRelatedMangas = true'
-     */
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getRelatedMangaList"))
-    override fun fetchRelatedMangaList(manga: SManga): Observable<List<SManga>> {
-        return client.newCall(relatedMangaListRequest(manga))
-            .asObservableSuccess()
-            .map { response ->
-                relatedMangaListParse(response)
-            }
-    }
-
-    /**
      * Returns the request for get related manga list. Override only if it's needed to override
      * the url, send different headers or request method like POST.
      * If using this, must also: 'override val supportsRelatedMangas = true'
      *
+     * @since komikku/extensions-lib 1.6
      * @param manga the manga to look for related mangas.
      */
     protected open fun relatedMangaListRequest(manga: SManga): Request {
@@ -386,6 +379,7 @@ abstract class HttpSource : CatalogueSource {
      * Parses the response from the site and returns a list of related mangas.
      * If using this, must also: 'override val supportsRelatedMangas = true'
      *
+     * @since komikku/extensions-lib 1.6
      * @param response the response from the site.
      */
     protected open fun relatedMangaListParse(response: Response): List<SManga> = popularMangaParse(response).mangas

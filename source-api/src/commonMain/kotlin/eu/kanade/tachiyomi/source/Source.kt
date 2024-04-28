@@ -52,14 +52,12 @@ interface Source {
     /**
      * Get all the available related mangas for a manga.
      *
-     * @since extensions-lib 1.6
+     * @since komikku/extensions-lib 1.6
      * @param manga the current manga to get related mangas.
      * @return the related mangas for the current manga.
      */
-    @Suppress("DEPRECATION")
-    suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
-        return fetchRelatedMangaList(manga).awaitSingle()
-    }
+    suspend fun getRelatedMangaList(manga: SManga): List<SManga> =
+        throw IllegalStateException("Not used")
     // KMK <--
 
     /**
@@ -88,22 +86,6 @@ interface Source {
     )
     fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
         throw IllegalStateException("Not used")
-
-    // KMK -->
-    /**
-     * Get all the available related mangas for a manga.
-     *
-     * @since extensions-lib 1.6
-     * @param manga the current manga to get related mangas.
-     * @return the related mangas for the current manga.
-     */
-    @Deprecated(
-        "Use the non-RxJava API instead",
-        ReplaceWith("getRelatedMangaList"),
-    )
-    fun fetchRelatedMangaList(manga: SManga): Observable<List<SManga>> =
-        throw IllegalStateException("Not used")
-    // KMK <--
 
     @Deprecated(
         "Use the non-RxJava API instead",

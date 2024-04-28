@@ -209,11 +209,6 @@ class MangaScreenModel(
     private val filteredChapters: List<ChapterList.Item>?
         get() = successState?.processedChapters
 
-    // KMK -->
-    private val relatedMangas: List<Manga>
-        get() = successState?.relatedMangas ?: emptyList()
-    // KMK <--
-
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
 
@@ -1107,14 +1102,16 @@ class MangaScreenModel(
         try {
             withIOContext {
                 if (state.source !is MergedSource) {
-                    val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get())
+                    val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get()) {
                         withIOContext {
                             state.source.getRelatedMangaList(state.manga.toSManga())
                                 .map {
                                     networkToLocalManga.await(it.toDomainManga(state.source.id))
                                 }
                         }
-                    else null
+                    } else {
+                        null
+                    }
                     updateSuccessState { it.copy(relatedMangas = relatedMangas) }
                 } else {
                     throw UnsupportedOperationException("Fetching related titles for merged entry is not supported")
