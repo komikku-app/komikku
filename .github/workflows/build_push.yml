@@ -53,7 +53,7 @@ jobs:
           echo "CHANGELOG=$changelog" >> $GITHUB_ENV
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v2
+        uses: gradle/wrapper-validation-action@v3
 
       - name: Setup Android SDK
         run: |
@@ -132,7 +132,7 @@ jobs:
 
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
           name: Komikku ${{ env.VERSION_TAG }}
