@@ -33,7 +33,6 @@ import uy.kohesive.injekt.api.get
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.MessageDigest
-import java.util.Locale
 
 /**
  * A simple implementation for sources from a website.
@@ -322,7 +321,8 @@ abstract class HttpSource : CatalogueSource {
     protected open suspend fun getRelatedMangaListBySearch(manga: SManga): List<SManga> {
         fun String.stripKeyword(): List<String> {
             val regexWhitespace = Regex("\\s+")
-            val regexSpecialCharacters = Regex("[\\[(!~@#$%^&*|,?:\"<>)\\]]")
+            val regexSpecialCharacters =
+                Regex("([!~#$%^&*+_|/\\\\,?:;'“”‘’\"<>(){}\\[\\]。・～：—！？、―«»《》〘〙【】「」｜]|\\s-|-\\s|\\s\\.|\\.\\s)")
             val regexNumberOnly = Regex("^\\d+$")
 
             return replace(regexSpecialCharacters, " ")
@@ -330,7 +330,7 @@ abstract class HttpSource : CatalogueSource {
                 .map {
                     // remove number only
                     it.replace(regexNumberOnly, "")
-                        .lowercase(Locale.getDefault())
+                        .lowercase()
                 }
                 // exclude single character
                 .filter { it.length > 1 }
