@@ -288,6 +288,20 @@ abstract class HttpSource : CatalogueSource {
      * @since komikku/extensions-lib 1.6
      */
     protected open val supportsRelatedMangas: Boolean get() = false
+
+    /**
+     * Extensions provide custom [relatedMangaListRequest] and [relatedMangaListParse]
+     * while also want to use App's [getRelatedMangaListBySearch] together.
+     * @default false
+     * @since komikku/extensions-lib 1.6
+     */
+    protected open val supportsRelatedMangasAndSearch: Boolean get() = false
+
+    /**
+     * Disable showing any related titles
+     * @default false
+     * @since komikku/extensions-lib 1.6
+     */
     protected open val disableRelatedMangas: Boolean get() = false
 
     /**
@@ -301,16 +315,28 @@ abstract class HttpSource : CatalogueSource {
      */
     override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
         return when {
-            supportsRelatedMangas -> {
-                client.newCall(relatedMangaListRequest(manga))
-                    .execute()
-                    .let { response ->
-                        relatedMangaListParse(response)
-                    }
-            }
+            supportsRelatedMangasAndSearch -> fetchRelatedMangaList(manga) + getRelatedMangaListBySearch(manga)
+            supportsRelatedMangas -> fetchRelatedMangaList(manga)
             disableRelatedMangas -> emptyList()
             else -> getRelatedMangaListBySearch(manga)
         }
+    }
+
+    /**
+     * Fetch related mangas for a manga from source/site.
+     * Normally it's not needed to override this method.
+     *
+     * @since komikku/extensions-lib 1.6
+     * @param manga the current manga to get related mangas.
+     * @return the related mangas for the current manga.
+     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     */
+    protected open suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> {
+        return client.newCall(relatedMangaListRequest(manga))
+            .execute()
+            .let { response ->
+                relatedMangaListParse(response)
+            }
     }
 
     /**
