@@ -21,6 +21,11 @@ class StubSource(
     override suspend fun getPageList(chapter: SChapter): List<Page> =
         throw SourceNotInstalledException()
 
+    // KMK -->
+    override suspend fun getRelatedMangaList(manga: SManga): List<SManga> =
+        throw SourceNotInstalledException()
+    // KMK <--
+
     override fun toString(): String =
         if (!isInvalid) "$name (${lang.uppercase()})" else id.toString()
 
