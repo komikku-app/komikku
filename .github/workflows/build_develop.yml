@@ -1,10 +1,10 @@
-name: Dev-benchmark Builder
+name: Development Builder
 on:
   push:
     branches:
+      - develop
       - dev-benchmark
-  # Manual trigger
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +19,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - name: Set up gradle
