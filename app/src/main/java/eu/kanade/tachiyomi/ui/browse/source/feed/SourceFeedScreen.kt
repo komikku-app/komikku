@@ -15,6 +15,7 @@ import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
@@ -24,6 +25,7 @@ import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
 import exh.ui.ifSourcesLoaded
@@ -78,6 +80,16 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
+            onWebViewClick = {
+                val source = screenModel.source as? HttpSource ?: return@SourceFeedScreen
+                navigator.push(
+                    WebViewScreen(
+                        url = source.baseUrl,
+                        initialTitle = source.name,
+                        sourceId = source.id,
+                    ),
+                )
+            },
             sourceId = screenModel.source.id,
             onLongClickManga = { manga ->
                 if (!bulkFavoriteState.selectionMode) {

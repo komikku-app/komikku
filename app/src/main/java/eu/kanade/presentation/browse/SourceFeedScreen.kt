@@ -3,6 +3,10 @@ package eu.kanade.presentation.browse
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -34,6 +38,7 @@ import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
+import tachiyomi.source.local.LocalSource
 
 sealed class SourceFeedUI {
     abstract val id: Long
@@ -105,6 +110,7 @@ fun SourceFeedScreen(
     onSearchQueryChange: (String?) -> Unit,
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
+    onWebViewClick: () -> Unit,
     sourceId: Long,
     onLongClickManga: (Manga) -> Unit,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
@@ -140,6 +146,7 @@ fun SourceFeedScreen(
                     scrollBehavior = scrollBehavior,
                     onClickSearch = onClickSearch,
                     // KMK -->
+                    onWebViewClick = onWebViewClick,
                     sourceId = sourceId,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
@@ -272,6 +279,7 @@ fun SourceFeedToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     onClickSearch: (String) -> Unit,
     // KMK -->
+    onWebViewClick: () -> Unit,
     sourceId: Long,
     toggleSelectionMode: () -> Unit,
     // KMK <--
@@ -292,6 +300,18 @@ fun SourceFeedToolbar(
                 )
             )
             persistentListOf(
+                if (sourceId != LocalSource.ID) {
+                    IconButton(
+                        onClick = onWebViewClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Public,
+                            contentDescription = stringResource(MR.strings.action_web_view),
+                        )
+                    }
+                } else {
+                    null
+                },
                 SourceSettingsButton(sourceId),
             )
         },
