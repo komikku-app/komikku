@@ -254,7 +254,7 @@ class MangaScreen(
                     }
                     navigator.push(screen)
                 } else {
-                    navigator.push(ExtensionsScreen())
+                    navigator.push(ExtensionsScreen(searchSource = successState.source.name))
                 }
             },
             // KMK <--
