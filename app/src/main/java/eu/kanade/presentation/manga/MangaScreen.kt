@@ -175,6 +175,7 @@ fun MangaScreen(
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    onSourceClick: () -> Unit,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -233,6 +234,7 @@ fun MangaScreen(
             getMangaState = getMangaState,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
+            onSourceClick = onSourceClick,
             // KMK <--
         )
     } else {
@@ -284,6 +286,7 @@ fun MangaScreen(
             getMangaState = getMangaState,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
+            onSourceClick = onSourceClick,
             // KMK <--
         )
     }
@@ -352,6 +355,7 @@ private fun MangaScreenSmallImpl(
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    onSourceClick: () -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -500,6 +504,9 @@ private fun MangaScreenSmallImpl(
                             status = state.manga.status,
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
+                            // KMK -->
+                            onSourceClick = onSourceClick,
+                            // KMK <--
                         )
                     }
 
@@ -707,6 +714,7 @@ fun MangaScreenLargeImpl(
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    onSourceClick: () -> Unit,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -847,6 +855,9 @@ fun MangaScreenLargeImpl(
                             status = state.manga.status,
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
+                            // KMK -->
+                            onSourceClick = onSourceClick,
+                            // KMK <--
                         )
                         MangaActionRow(
                             favorite = state.manga.favorite,

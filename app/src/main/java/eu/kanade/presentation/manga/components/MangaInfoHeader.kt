@@ -107,6 +107,9 @@ fun MangaInfoBox(
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
+    onSourceClick: () -> Unit,
+    // KMK <--
 ) {
     Box(modifier = modifier) {
         // Backdrop
@@ -144,6 +147,9 @@ fun MangaInfoBox(
                     status = status,
                     sourceName = sourceName,
                     isStubSource = isStubSource,
+                    // KMK -->
+                    onSourceClick = onSourceClick,
+                    // KMK <--
                 )
             } else {
                 MangaAndSourceTitlesLarge(
@@ -157,6 +163,9 @@ fun MangaInfoBox(
                     status = status,
                     sourceName = sourceName,
                     isStubSource = isStubSource,
+                    // KMK -->
+                    onSourceClick = onSourceClick,
+                    // KMK <--
                 )
             }
         }
@@ -383,6 +392,9 @@ private fun MangaAndSourceTitlesLarge(
     status: Long,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    onSourceClick: () -> Unit,
+    // KMK <--
 ) {
     Column(
         modifier = Modifier
@@ -406,6 +418,9 @@ private fun MangaAndSourceTitlesLarge(
             sourceName = sourceName,
             isStubSource = isStubSource,
             textAlign = TextAlign.Center,
+            // KMK -->
+            onSourceClick = onSourceClick,
+            // KMK <--
         )
     }
 }
@@ -422,6 +437,9 @@ private fun MangaAndSourceTitlesSmall(
     status: Long,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    onSourceClick: () -> Unit,
+    // KMK <--
 ) {
     Row(
         modifier = Modifier
@@ -449,6 +467,9 @@ private fun MangaAndSourceTitlesSmall(
                 status = status,
                 sourceName = sourceName,
                 isStubSource = isStubSource,
+                // KMK -->
+                onSourceClick = onSourceClick,
+                // KMK <--
             )
         }
     }
@@ -464,6 +485,9 @@ private fun ColumnScope.MangaContentInfo(
     sourceName: String,
     isStubSource: Boolean,
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
+    // KMK -->
+    onSourceClick: () -> Unit,
+    // KMK <--
 ) {
     val context = LocalContext.current
     Text(
@@ -588,10 +612,9 @@ private fun ColumnScope.MangaContentInfo(
             Text(
                 text = sourceName,
                 modifier = Modifier.clickableNoIndication {
-                    doSearch(
-                        sourceName,
-                        false,
-                    )
+                    // KMK -->
+                    onSourceClick()
+                    // KMK <--
                 },
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,

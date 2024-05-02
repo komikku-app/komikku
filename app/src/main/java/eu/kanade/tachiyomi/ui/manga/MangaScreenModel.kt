@@ -194,6 +194,8 @@ class MangaScreenModel(
 
     val loggedInTrackers by lazy { trackerManager.trackers.filter { it.isLoggedIn } }
 
+    val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
+
     val manga: Manga?
         get() = successState?.manga
 

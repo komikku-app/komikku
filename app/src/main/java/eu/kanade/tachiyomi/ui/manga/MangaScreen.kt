@@ -72,6 +72,7 @@ import exh.source.getMainSource
 import exh.source.isMdBasedSource
 import exh.ui.ifSourcesLoaded
 import exh.ui.metadata.MetadataViewScreen
+import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -87,6 +88,8 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.interactor.GetRemoteManga
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -241,6 +244,16 @@ class MangaScreen(
             getMangaState = { screenModel.getManga(initialManga = it) },
             onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
             onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
+            onSourceClick = {
+                if (successState.source !is StubSource) {
+                    val screen = when {
+                        smartSearchConfig != null -> SmartSearchScreen(successState.source.id, smartSearchConfig)
+                        screenModel.useNewSourceNavigation -> SourceFeedScreen(successState.source.id)
+                        else -> BrowseSourceScreen(successState.source.id, GetRemoteManga.QUERY_POPULAR)
+                    }
+                    navigator.push(screen)
+                }
+            },
             // KMK <--
         )
 
