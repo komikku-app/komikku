@@ -166,7 +166,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {
                             screenModel.onMangaDexRandom {
-                                navigator.replace(
+                                navigator.push(
                                     BrowseSourceScreen(
                                         sourceId,
                                         "id:$it",
@@ -179,7 +179,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                     openMangaDexFollows = if (screenModel.sourceIsMangaDex) {
                         {
-                            navigator.replace(MangaDexFollowsScreen(sourceId))
+                            navigator.push(MangaDexFollowsScreen(sourceId))
                         }
                     } else {
                         null
@@ -221,19 +221,19 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
     }
 
     fun onBrowseClick(navigator: Navigator, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
-        navigator.replace(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
+        navigator.push(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
     }
 
     private fun onLatestClick(navigator: Navigator, source: Source) {
-        navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
+        navigator.push(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
     }
 
     fun onBrowseClick(navigator: Navigator, source: Source) {
-        navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
+        navigator.push(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
     }
 
     private fun onSavedSearchClick(navigator: Navigator, source: Source, savedSearch: SavedSearch) {
-        navigator.replace(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
+        navigator.push(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
     }
 
     private fun onSearchClick(navigator: Navigator, source: Source, query: String) {
