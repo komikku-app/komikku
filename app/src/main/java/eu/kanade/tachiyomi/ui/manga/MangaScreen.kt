@@ -48,6 +48,7 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -252,6 +253,8 @@ class MangaScreen(
                         else -> BrowseSourceScreen(successState.source.id, GetRemoteManga.QUERY_POPULAR)
                     }
                     navigator.push(screen)
+                } else {
+                    navigator.push(ExtensionsScreen())
                 }
             },
             // KMK <--
