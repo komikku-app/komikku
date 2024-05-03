@@ -579,7 +579,7 @@ private fun MangaScreenSmallImpl(
                                 onClick = { /* Should show a page with grid/list of all the related manga */ },
                             ) {
                                 RelatedMangas(
-                                    mangas = state.relatedMangas,
+                                    mangas = state.relatedMangas.map { it.value },
                                     getMangaState = { getMangaState(it) },
                                     onClickManga = onRelatedMangaClick,
                                     onLongClickManga = onRelatedMangaLongClick,
@@ -941,7 +941,7 @@ fun MangaScreenLargeImpl(
                                         onClick = { /* Should show a page with grid/list of all the related manga */ },
                                     ) {
                                         RelatedMangas(
-                                            mangas = state.relatedMangas,
+                                            mangas = state.relatedMangas.map { it.value },
                                             getMangaState = { getMangaState(it) },
                                             onClickManga = onRelatedMangaClick,
                                             onLongClickManga = onRelatedMangaLongClick,

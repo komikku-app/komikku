@@ -1105,12 +1105,15 @@ class MangaScreenModel(
             withIOContext {
                 if (state.source !is MergedSource) {
                     val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get()) {
-                        withIOContext {
-                            state.source.getRelatedMangaList(state.manga.toSManga())
-                                .map {
-                                    networkToLocalManga.await(it.toDomainManga(state.source.id))
-                                }
+                        val map = mutableMapOf<Long, Manga>()
+                        val list = state.source.getRelatedMangaList(state.manga.toSManga())
+                            .map {
+                                networkToLocalManga.await(it.toDomainManga(state.source.id))
+                            }
+                        list.forEach {
+                            map[it.id] = it
                         }
+                        map
                     } else {
                         null
                     }
@@ -1711,7 +1714,7 @@ class MangaScreenModel(
             val previewsRowCount: Int,
             // SY <--
             // KMK -->
-            val relatedMangas: List<Manga>? = null,
+            val relatedMangas: MutableMap<Long, Manga>? = null,
             // KMK <--
         ) : State {
             val processedChapters by lazy {
