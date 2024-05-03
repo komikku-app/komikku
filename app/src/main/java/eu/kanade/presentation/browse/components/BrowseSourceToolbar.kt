@@ -114,18 +114,18 @@ fun BrowseSourceToolbar(
                                 )
                             }
                             // KMK -->
-                            add(
-                                AppBar.OverflowAction(
-                                    title = stringResource(MR.strings.pref_invalidate_download_cache),
-                                    onClick = { },
-                                ),
-                            )
-                            add(
-                                AppBar.OverflowAction(
-                                    title = stringResource(MR.strings.pref_clean_invalid_downloads),
-                                    onClick = { },
-                                ),
-                            )
+//                            add(
+//                                AppBar.OverflowAction(
+//                                    title = stringResource(MR.strings.pref_invalidate_download_cache),
+//                                    onClick = { },
+//                                ),
+//                            )
+//                            add(
+//                                AppBar.OverflowAction(
+//                                    title = stringResource(MR.strings.pref_clean_invalid_downloads),
+//                                    onClick = { },
+//                                ),
+//                            )
                             // KMK <--
                         }
                         // SY <--
