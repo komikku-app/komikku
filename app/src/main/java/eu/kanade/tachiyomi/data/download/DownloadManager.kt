@@ -475,7 +475,7 @@ class DownloadManager(
 
     fun renameMangaDir(oldTitle: String, newTitle: String, source: Long) {
         val sourceDir = provider.findSourceDir(sourceManager.getOrStub(source)) ?: return
-        val mangaDir = sourceDir.findFile(DiskUtil.buildValidFilename(oldTitle), true) ?: return
+        val mangaDir = sourceDir.findFile(DiskUtil.buildValidFilename(oldTitle)) ?: return
         mangaDir.renameTo(DiskUtil.buildValidFilename(newTitle))
     }
 }
