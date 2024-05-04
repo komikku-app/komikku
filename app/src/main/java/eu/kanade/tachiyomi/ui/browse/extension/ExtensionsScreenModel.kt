@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -49,7 +50,17 @@ class ExtensionsScreenModel(
                 ExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
             }
         }
-        val queryFilter: (String/* KMK --> */, Boolean/* KMK <-- */) -> ((Extension) -> Boolean) = { query/* KMK --> */, nsfwOnly/* KMK <-- */ ->
+        val queryFilter: (
+            String,
+            // KMK -->
+            Boolean,
+            // KMK <--
+        ) -> ((Extension) -> Boolean) = {
+                query,
+                // KMK -->
+                nsfwOnly
+            // KMK <--
+            ->
             filter@{ extension ->
                 // KMK -->
                 if (nsfwOnly && !extension.isNsfw) return@filter false
@@ -92,7 +103,14 @@ class ExtensionsScreenModel(
 
                 val itemsGroups: ItemGroups = mutableMapOf()
 
-                val updates = _updates.filter(queryFilter(searchQuery/* KMK --> */, nsfwOnly/* KMK <-- */)).map(extensionMapper(downloads))
+                val updates = _updates
+                    .filter(queryFilter(
+                        searchQuery,
+                        // KMK -->
+                        nsfwOnly,
+                        // KMK <--
+                    ))
+                    .map(extensionMapper(downloads))
                 if (updates.isNotEmpty()) {
                     itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.ext_updates_pending)] = updates
                 }
@@ -201,7 +219,9 @@ class ExtensionsScreenModel(
     }
 
     fun trustExtension(extension: Extension.Untrusted) {
-        extensionManager.trust(extension)
+        screenModelScope.launch {
+            extensionManager.trust(extension)
+        }
     }
 
     // KMK -->
