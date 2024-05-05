@@ -17,16 +17,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import logcat.LogPriority
 import nl.adaptivity.xmlutil.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE
-import tachiyomi.core.metadata.comicinfo.ComicInfo
-import tachiyomi.core.metadata.comicinfo.copyFromComicInfo
-import tachiyomi.core.metadata.comicinfo.getComicInfo
-import tachiyomi.core.metadata.tachiyomi.MangaDetails
 import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.storage.addStreamToZip
 import tachiyomi.core.common.storage.extension
@@ -37,6 +31,12 @@ import tachiyomi.core.common.storage.nameWithoutExtension
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE
+import tachiyomi.core.metadata.comicinfo.ComicInfo
+import tachiyomi.core.metadata.comicinfo.ComicInfoPublishingStatus
+import tachiyomi.core.metadata.comicinfo.copyFromComicInfo
+import tachiyomi.core.metadata.comicinfo.getComicInfo
+import tachiyomi.core.metadata.tachiyomi.MangaDetails
 import tachiyomi.domain.chapter.service.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -157,17 +157,39 @@ actual class LocalSource(
 
     // SY -->
     fun updateMangaInfo(manga: SManga) {
-        val existingFile = fileSystem.getFilesInMangaDirectory(manga.url).find { it.extension == "json" }
-        val file = existingFile
-            ?: fileSystem.getMangaDirectory(manga.url)?.createFile("info.json")
-            ?: return
-        file.openOutputStream().use {
-            json.encodeToStream(manga.toJson(), it)
+        val mangaDirFiles = fileSystem.getFilesInMangaDirectory(manga.url)
+        val existingFile = mangaDirFiles
+            .firstOrNull { it.name == COMIC_INFO_FILE }
+        val comicInfoArchiveFile = mangaDirFiles
+            .firstOrNull { it.name == COMIC_INFO_ARCHIVE }
+        val existingComicInfo = (existingFile?.openInputStream() ?: comicInfoArchiveFile?.getZipInputStream(COMIC_INFO_FILE))?.use {
+            AndroidXmlReader(it, StandardCharsets.UTF_8.name()).use {
+                xml.decodeFromReader<ComicInfo>(it)
+            }
         }
-    }
+        val newComicInfo = if (existingComicInfo != null) {
+            manga.run {
+                existingComicInfo.copy(
+                    series = ComicInfo.Series(title),
+                    summary = description?.let { ComicInfo.Summary(it) },
+                    writer = author?.let { ComicInfo.Writer(it) },
+                    penciller = artist?.let { ComicInfo.Penciller(it) },
+                    genre = genre?.let { ComicInfo.Genre(it) },
+                    publishingStatus = ComicInfo.PublishingStatusTachiyomi(
+                        ComicInfoPublishingStatus.toComicInfoValue(status.toLong()),
+                    ),
+                )
+            }
+        } else {
+            manga.getComicInfo()
+        }
 
-    private fun SManga.toJson(): MangaDetails {
-        return MangaDetails(title, author, artist, description, genre?.split(", "), status)
+        fileSystem.getMangaDirectory(manga.url)?.let {
+            copyComicInfoFile(
+                xml.encodeToString(ComicInfo.serializer(), newComicInfo).byteInputStream(),
+                it
+            )
+        }
     }
     // SY <--
 
