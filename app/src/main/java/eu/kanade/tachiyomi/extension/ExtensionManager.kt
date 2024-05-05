@@ -54,10 +54,8 @@ class ExtensionManager(
 
     val scope = CoroutineScope(SupervisorJob())
 
-    // SY -->
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-    // SY <--
 
     /**
      * API where all the available extensions can be found.
@@ -75,7 +73,10 @@ class ExtensionManager(
     val installedExtensionsFlow = _installedExtensionsMapFlow.mapExtensions(scope)
 
     private val _availableExtensionsMapFlow = MutableStateFlow(emptyMap<String, Extension.Available>())
-    val availableExtensionsFlow = _availableExtensionsMapFlow.mapExtensions(scope)
+    // SY -->
+    val availableExtensionsFlow = _availableExtensionsMapFlow.map { it.filterNotBlacklisted().values.toList() }
+        .stateIn(scope, SharingStarted.Lazily, _availableExtensionsMapFlow.value.values.toList())
+    // SY <--
 
     private val _untrustedExtensionsMapFlow = MutableStateFlow(emptyMap<String, Extension.Untrusted>())
     val untrustedExtensionsFlow = _untrustedExtensionsMapFlow.mapExtensions(scope)
@@ -136,9 +137,9 @@ class ExtensionManager(
             .associate { it.extension.pkgName to it.extension }
             // SY -->
             .filterNotBlacklisted()
+        // SY <--
 
         _isInitialized.value = true
-        // SY <--
     }
 
     // EXH -->
@@ -220,9 +221,7 @@ class ExtensionManager(
         val installedExtensionsMap = _installedExtensionsMapFlow.value.toMutableMap()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
-            // SY -->
-            val availableExt = availableExtensionsFlow.value.find { it.pkgName == pkgName }
-            // SY <--
+            val availableExt = availableExtensions.find { it.pkgName == pkgName }
 
             if (availableExt == null && !extension.isObsolete) {
                 installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
