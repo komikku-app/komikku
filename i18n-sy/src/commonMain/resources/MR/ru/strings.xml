@@ -179,6 +179,9 @@
     <string name="pref_mark_read_dupe_chapters_summary">Помечать повторяющиеся главы как «Прочитано» после прочтения</string>
     <string name="pref_library_mark_duplicate_chapters">Помечать новые повторяющиеся главы как «Прочитано»</string>
     <string name="pref_library_mark_duplicate_chapters_summary">Автоматически помечать новые главы как «Прочитано», если они были ранее прочитаны</string>
+    <string name="update_30min">Каждые 30 минут</string>
+    <string name="update_1hour">Каждый час</string>
+    <string name="update_3hour">Каждые 3 часа</string>
 
     <!-- Browse settings -->
     <string name="pref_hide_feed">Скрыть вкладку «Лента»</string>
@@ -194,6 +197,47 @@
     <!-- Backup settings -->
     <string name="custom_entry_info">Сведенья пользователя</string>
     <string name="all_read_entries">Прочитанные серии</string>
+    <string name="label_sync">Синхронизировать</string>
+    <string name="label_triggers">Триггеры</string>
+
+    <!-- Sync settings -->
+    <string name="sync_error">Не удалось синхронизировать библиотеку</string>
+    <string name="sync_complete">Синхронизация библиотеки завершена</string>
+    <string name="sync_in_progress">Синхронизация уже выполняется</string>
+    <string name="pref_sync_host">Хост</string>
+    <string name="pref_sync_host_summ">Введите адрес хоста для синхронизации вашей библиотеки</string>
+    <string name="pref_sync_api_key">Ключ API</string>
+    <string name="pref_sync_api_key_summ">Введите API ключ для синхронизации вашей библиотеки</string>
+    <string name="pref_sync_now_group_title">Действия синхронизации</string>
+    <string name="pref_sync_now">Синхронизировать сейчас</string>
+    <string name="pref_sync_now_subtitle">Начать немедленную синхронизацию ваших данных</string>
+    <string name="pref_sync_service">Сервис</string>
+    <string name="pref_sync_service_category">Синхронизация</string>
+    <string name="pref_sync_automatic_category">Автоматическая синхронизация</string>
+    <string name="pref_sync_interval">Частота синхронизации</string>
+    <string name="pref_choose_what_to_sync">Выберите, что синхронизировать</string>
+    <string name="last_synchronization">Последняя синхронизация: %1$s</string>
+    <string name="google_drive">Google Диск</string>
+    <string name="pref_google_drive_sign_in">Войти в Google Диск</string>
+    <string name="pref_google_drive_purge_sync_data">Очистить данные синхронизации с Google Диска</string>
+    <string name="google_drive_sync_data_purged">Данные синхронизации удалены из Google Диска</string>
+    <string name="google_drive_sync_data_not_found">Данные синхронизации не найдены в Google Диске</string>
+    <string name="google_drive_sync_data_purge_error">Ошибка при очистке данных синхронизации с Google Диска, попробуйте войти снова.</string>
+    <string name="google_drive_login_success">Выполнен вход в Google Диск</string>
+    <string name="google_drive_login_failed">Не удалось войти в Google Диск: %s</string>
+    <string name="google_drive_not_signed_in">Не выполнен вход в Google Диск</string>
+    <string name="error_uploading_sync_data">Ошибка при загрузке данных синхронизации на Google Диск</string>
+    <string name="error_deleting_google_drive_lock_file">Ошибка удаления файла блокировки Google Диска</string>
+    <string name="error_before_sync_gdrive">Ошибка перед синхронизацией: %s</string>
+    <string name="pref_purge_confirmation_title">Подтверждение очистки</string>
+    <string name="pref_purge_confirmation_message">Очистка данных синхронизации приведет к удалению всех данных синхронизации с Google Диска. Вы уверены, что хотите продолжить?</string>
+    <string name="pref_sync_options">Создать триггеры синхронизации</string>
+    <string name="pref_sync_options_summ">Можно использовать для настройки триггеров синхронизации</string>
+    <string name="sync_on_chapter_read">Синхронизовать при прочтении главы</string>
+    <string name="sync_on_chapter_open">Синхронизовать при открытии главы</string>
+    <string name="sync_on_app_start">Синхронизовать при запуске приложения</string>
+    <string name="sync_on_app_resume">Синхронизовать при возвращении в приложение</string>
+    <string name="sync_library">Синхронизировать библиотеку</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Биометрическое время блокировки</string>

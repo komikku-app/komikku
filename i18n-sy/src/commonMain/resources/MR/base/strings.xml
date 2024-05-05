@@ -206,10 +206,8 @@
     <string name="pref_source_related_mangas_summary">Show related mangas provided by extensions</string>
 
     <!-- Backup settings -->
-    <string name="pref_backup_and_sync_summary">Manual &amp; automatic backups and sync</string>
     <string name="custom_entry_info">Custom entry info</string>
     <string name="all_read_entries">All read entries</string>
-    <string name="label_backup">Backup</string>
     <string name="label_sync">Sync</string>
     <string name="label_triggers">Triggers</string>
 
@@ -223,24 +221,16 @@
     <string name="pref_sync_api_key_summ">Enter the API key to synchronize your library</string>
     <string name="pref_sync_now_group_title">Sync Actions</string>
     <string name="pref_sync_now">Sync now</string>
-    <string name="pref_sync_confirmation_title">Sync confirmation</string>
     <string name="pref_sync_now_subtitle">Initiate immediate synchronization of your data</string>
-    <string name="pref_sync_confirmation_message">Syncing will overwrite your local library with the remote library. Are you sure you want to continue?</string>
     <string name="pref_sync_service">Service</string>
-    <string name="pref_sync_service_summ">Select the service to sync your library with</string>
     <string name="pref_sync_service_category">Sync</string>
     <string name="pref_sync_automatic_category">Automatic Synchronization</string>
     <string name="pref_sync_interval">Synchronization frequency</string>
     <string name="pref_choose_what_to_sync">Choose what to sync</string>
-    <string name="success_reset_sync_timestamp">Last sync timestamp reset</string>
     <string name="syncyomi">SyncYomi</string>
-    <string name="sync_completed_message">Done in %1$s</string>
     <string name="last_synchronization">Last Synchronization: %1$s</string>
     <string name="google_drive">Google Drive</string>
     <string name="pref_google_drive_sign_in">Sign in</string>
-    <string name="google_drive_sign_in_success">Signed in successfully</string>
-    <string name="google_drive_sign_in_failed">Sign in failed</string>
-    <string name="authentication">Authentication</string>
     <string name="pref_google_drive_purge_sync_data">Clear Sync Data from Google Drive</string>
     <string name="google_drive_sync_data_purged">Sync data purged from Google Drive</string>
     <string name="google_drive_sync_data_not_found">No sync data found in Google Drive</string>
