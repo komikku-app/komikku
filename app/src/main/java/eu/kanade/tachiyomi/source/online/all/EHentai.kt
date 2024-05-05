@@ -806,6 +806,11 @@ class EHentai(
     override fun pageListParse(response: Response) =
         throw UnsupportedOperationException("Unused method was called somehow!")
 
+    override suspend fun getImageUrl(page: Page): String {
+        val imageUrlResponse = client.newCall(imageUrlRequest(page)).awaitSuccess()
+        return realImageUrlParse(imageUrlResponse, page)
+    }
+
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
