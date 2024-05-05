@@ -26,9 +26,9 @@ class EpubFile(file: UniFile, context: Context) : Closeable {
      * Zip file of this epub.
      */
     private val zip = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-        ZipFile(tempFileManager.createTempFile(file))
+        ZipFile.Builder().setFile(tempFileManager.createTempFile(file)).get()
     } else {
-        ZipFile(file.openReadOnlyChannel(context))
+        ZipFile.Builder().setSeekableByteChannel(file.openReadOnlyChannel(context)).get()
     }
     // SY <--
 

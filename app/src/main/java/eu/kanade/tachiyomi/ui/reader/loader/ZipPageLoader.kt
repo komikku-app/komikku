@@ -43,7 +43,9 @@ internal class ZipPageLoader(file: UniFile, context: Context) : PageLoader() {
     }
 
     private val apacheZip: ZipFile? = if (!file.isEncryptedZip() && Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-        ZipFile(channel)
+        ZipFile.Builder()
+            .setSeekableByteChannel(channel)
+            .get()
     } else {
         null
     }
