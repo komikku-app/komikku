@@ -234,6 +234,9 @@ class LibraryScreenModel(
                     prefs.filterBookmarked,
                     prefs.filterCompleted,
                     prefs.filterIntervalCustom,
+                    // SY -->
+                    prefs.filterLewd,
+                    // SY <--
                 ) + trackFilter.values
                 ).any { it != TriState.DISABLED }
         }
