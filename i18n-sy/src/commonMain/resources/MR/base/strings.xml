@@ -28,6 +28,7 @@
 
     <!-- About -->
     <string name="changelog_version">Version %1$s</string>
+    <string name="changelogs">Change Logs</string>
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>

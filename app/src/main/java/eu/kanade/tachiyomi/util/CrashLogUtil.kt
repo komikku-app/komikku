@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
-import exh.syDebugVersion
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.lang.withUIContext
 import uy.kohesive.injekt.Injekt
@@ -39,7 +38,7 @@ class CrashLogUtil(
     fun getDebugInfo(): String {
         return """
             App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE}, ${BuildConfig.BUILD_TIME})
-            Preview build: $syDebugVersion
+            Build version: ${BuildConfig.COMMIT_COUNT}
             Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}; build ${Build.DISPLAY})
             Device brand: ${Build.BRAND}
             Device manufacturer: ${Build.MANUFACTURER}

@@ -32,10 +32,12 @@ class GetApplicationRelease(
         lastChecked.set(now.toEpochMilli())
 
         // Check if latest version is different from current version
-        // SY -->
-        val isNewVersion =
-            isNewVersion(arguments.isPreview, arguments.syDebugVersion, arguments.versionName, release.version)
-        // SY <--
+        val isNewVersion = isNewVersion(
+            isPreview = arguments.isPreview,
+            commitCount = arguments.commitCount,
+            versionName = arguments.versionName,
+            versionTag = release.version,
+        )
         return when {
             isNewVersion && arguments.isThirdParty -> Result.ThirdPartyInstallation
             isNewVersion -> Result.NewUpdate(release)
@@ -43,28 +45,45 @@ class GetApplicationRelease(
         }
     }
 
-    // SY -->
+    /**
+     * [isPreview] is if current version is Preview (beta) build
+     *
+     * [versionTag] is the version of new release
+     *
+     * Release (stable) version will compare with current's [versionName] ("v0.1.2")
+     *
+     * Preview (beta) version will compare with current's [commitCount] ("r1234")
+     */
     private fun isNewVersion(
         isPreview: Boolean,
-        syDebugVersion: String,
+        commitCount: Int,
         versionName: String,
         versionTag: String,
     ): Boolean {
         // Removes prefixes like "r" or "v"
         val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
         return if (isPreview) {
-            // Preview builds: based on releases in "jobobby04/TachiyomiSYPreview" repo
-            // tagged as something like "508"
-            val currentInt = syDebugVersion.toIntOrNull()
-            currentInt != null && newVersion.toInt() > currentInt
+            // Preview builds: based on releases in "komikku-app/komikku-preview" repo
+            // tagged as something like "r1234"
+            // KMK -->
+            // When has stable update but current app is preview version (same repo) expect new update
+            // TODO: remove this when all users has finished switching from preview to stable
+            if (newVersion.matches("""\d.\d.\d""".toRegex())) return true
+            // KMK <--
+            newVersion.toInt() > commitCount
         } else {
             // Release builds: based on releases in "komikku-app/komikku" repo
-            // tagged as something like "0.1.2"
+            // tagged as something like "v0.1.2"
             val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
 
             val newSemVer = newVersion.split(".").map { it.toInt() }
             val oldSemVer = oldVersion.split(".").map { it.toInt() }
 
+            // KMK -->
+            // When has stable update with preview version but current app is stable version expect no update
+            // TODO: remove this when all users has finished switching from preview to stable
+            if (newSemVer.size != oldSemVer.size) return false
+            // KMK <--
             oldSemVer.mapIndexed { index, i ->
                 if (newSemVer[index] > i) {
                     return true
@@ -74,17 +93,19 @@ class GetApplicationRelease(
             false
         }
     }
-    // SY <--
 
     data class Arguments(
+        /** If current version is Preview (beta) build */
         val isPreview: Boolean,
+        /** If current version is from third party */
         val isThirdParty: Boolean,
+        /** Commit count of current version */
         val commitCount: Int,
+        /** Current version name, could be version tag (v0.1.2) or commit count (r1234) */
         val versionName: String,
+        /** Repository name */
         val repository: String,
-        // SY -->
-        val syDebugVersion: String,
-        // SY <--
+        /** Force check for new update */
         val forceCheck: Boolean = false,
     )
 

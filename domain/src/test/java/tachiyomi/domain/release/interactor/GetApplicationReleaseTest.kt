@@ -49,7 +49,6 @@ class GetApplicationReleaseTest {
                 commitCount = 0,
                 versionName = "v1.0.0",
                 repository = "test",
-                syDebugVersion = "0",
             ),
         )
 
@@ -62,7 +61,7 @@ class GetApplicationReleaseTest {
         every { preference.set(any()) }.answers { }
 
         val release = Release(
-            "200",
+            "r2000",
             "info",
             "http://example.com/release_link",
             listOf("http://example.com/assets"),
@@ -77,13 +76,10 @@ class GetApplicationReleaseTest {
                 commitCount = 1000,
                 versionName = "",
                 repository = "test",
-                syDebugVersion = "100",
             ),
         )
 
-        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(
-            release,
-        ).release
+        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
     }
 
     @Test
@@ -106,14 +102,11 @@ class GetApplicationReleaseTest {
                 isThirdParty = false,
                 commitCount = 0,
                 versionName = "v1.0.0",
-                syDebugVersion = "0",
                 repository = "test",
             ),
         )
 
-        (result as GetApplicationRelease.Result.NewUpdate).release shouldBe GetApplicationRelease.Result.NewUpdate(
-            release,
-        ).release
+        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
     }
 
     @Test
@@ -136,7 +129,6 @@ class GetApplicationReleaseTest {
                 isThirdParty = false,
                 commitCount = 0,
                 versionName = "v2.0.0",
-                syDebugVersion = "0",
                 repository = "test",
             ),
         )
@@ -150,7 +142,7 @@ class GetApplicationReleaseTest {
         every { preference.set(any()) }.answers { }
 
         val release = Release(
-            "v1.0.0",
+            "v2.0.0",
             "info",
             "http://example.com/release_link",
             listOf("http://example.com/assets"),
@@ -163,8 +155,7 @@ class GetApplicationReleaseTest {
                 isPreview = false,
                 isThirdParty = false,
                 commitCount = 0,
-                versionName = "v2.0.0",
-                syDebugVersion = "0",
+                versionName = "v1.0.0",
                 repository = "test",
             ),
         )
@@ -172,4 +163,88 @@ class GetApplicationReleaseTest {
         coVerify(exactly = 0) { releaseService.latest(any()) }
         result shouldBe GetApplicationRelease.Result.NoNewUpdate
     }
+
+    // KMK -->
+    // TODO: remove below tests when all users finished switching from preview to stable
+    @Test
+    fun `When preview version updating to new stable version with preview tag expect new update`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val release = Release(
+            "r1234",
+            "info",
+            "http://example.com/release_link",
+            listOf("http://example.com/assets"),
+        )
+
+        coEvery { releaseService.latest(any()) } returns release
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isPreview = true,
+                isThirdParty = false,
+                commitCount = 25,
+                versionName = "",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+    }
+
+    @Test
+    fun `When has stable update with preview version but current app is stable version expect no update`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val release = Release(
+            "r1234",
+            "info",
+            "http://example.com/release_link",
+            listOf("http://example.com/assets"),
+        )
+
+        coEvery { releaseService.latest(any()) } returns release
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isPreview = false,
+                isThirdParty = false,
+                commitCount = 0,
+                versionName = "v1.0.0",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NoNewUpdate
+    }
+
+    @Test
+    fun `When has stable update but current app is preview version (same repo) expect new update`() = runTest {
+        every { preference.get() } returns 0
+        every { preference.set(any()) }.answers { }
+
+        val release = Release(
+            "v2.0.0",
+            "info",
+            "http://example.com/release_link",
+            listOf("http://example.com/assets"),
+        )
+
+        coEvery { releaseService.latest(any()) } returns release
+
+        val result = getApplicationRelease.await(
+            GetApplicationRelease.Arguments(
+                isPreview = true,
+                isThirdParty = false,
+                commitCount = 25,
+                versionName = "",
+                repository = "test",
+            ),
+        )
+
+        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+    }
+    // KMK <--
 }

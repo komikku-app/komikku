@@ -71,20 +71,6 @@ jobs:
           changelog="<?xml version=\"1.0\" encoding=\"utf-8\"?><changelog bulletedList=\"true\"><changelogversion versionName=\"${{ github.run_number }}\" changeDate=\"\">$changelog</changelogversion></changelog>"
           echo "CHANGELOG=$changelog" >> $GITHUB_ENV
 
-      - name: Write Version.kt
-        uses: DamianReeves/write-file-action@v1.3
-        with:
-          path: app/src/main/java/exh/Version.kt
-          contents: 'package exh const val syDebugVersion: String = "${{ github.run_number }}"'
-          write-mode: overwrite
-
-      # - name: Write changelog_debug.xml
-      #   uses: DamianReeves/write-file-action@v1.3
-      #   with:
-      #     path: app/src/main/res/raw/changelog_debug.xml
-      #     contents: "${{ env.CHANGELOG }}"
-      #     write-mode: overwrite
-
       - name: Write google-services.json
         uses: DamianReeves/write-file-action@v1.3
         with:

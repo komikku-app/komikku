@@ -36,6 +36,7 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
         buildConfigField("boolean", "INCLUDE_UPDATER", "false")
+        buildConfigField("boolean", "PREVIEW", "false")
 
         ndk {
             abiFilters += SUPPORTED_ABIS
@@ -66,9 +67,19 @@ android {
             matchingFallbacks.add("release")
         }
         named("release") {
-            isMinifyEnabled = true
             isShrinkResources = true
+            isMinifyEnabled = true
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+        }
+        create("preview") {
+            initWith(getByName("release"))
+            buildConfigField("boolean", "PREVIEW", "true")
+
+            matchingFallbacks.add("release")
+            versionNameSuffix = "-${getCommitCount()}"
+            applicationIdSuffix = ".beta"
+            signingConfig = signingConfigs.getByName("debug")
+            // signingConfig = signingConfigs.getByName("debug")
         }
         create("benchmark") {
             initWith(getByName("release"))
@@ -77,12 +88,13 @@ android {
             matchingFallbacks.add("release")
             isDebuggable = false
             isProfileable = true
-            versionNameSuffix = "-benchmark"
+            versionNameSuffix = "-${getCommitCount()}-benchmark"
             applicationIdSuffix = ".benchmark"
         }
     }
 
     sourceSets {
+        getByName("preview").res.srcDirs("src/beta/res")
         getByName("benchmark").res.srcDirs("src/debug/res")
     }
 
