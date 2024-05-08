@@ -1,46 +1,339 @@
 <?xml version="1.0" encoding="utf-8"?>
-<changelog bulletedList="false">
-    <!--
-
-    <changelogversion changeDate="" versionName="r1810">
-        <changelogtext>Background jobs were migrated to a new system. You may need to toggle the settings to ensure they
-            run properly. This includes app updates, library updates, and automatic backups.
-        </changelogtext>
+<changelog bulletedList="true">
+    <changelogversion versionName="Current" changeDate="May 9,2024">
+        <changelogtext></changelogtext>
     </changelogversion>
-
-    <changelogversion changeDate="" versionName="r1340">
-        <changelogtext>A new screen for managing extensions was added. If you previously installed extensions from FDroid,
-            you will have to uninstall all of them first (tap on the extension then uninstall), otherwise you won't be able
-            to update them due to signature mismatch. You won't lose anything in this process as the extensions themselves
-            don't store anything.
-        </changelogtext>
+    <changelogversion versionName="1.10.5" changeDate="May 9,2024">
+        <changelogtext>[b]All features from Komikku pre-release version[/b]</changelogtext>
+        <changelogtext>Show related mangas for all sources</changelogtext>
+        <changelogtext>Bulk selection multiple entries to favorite/category</changelogtext>
+        <changelogtext>Search for source in Browse screen</changelogtext>
+        <changelogtext>Quick NSFW sources filter in both Extensions/Browse screen</changelogtext>
+        <changelogtext>Feeds screen support all sources</changelogtext>
+        <changelogtext>More Feed's entries</changelogtext>
+        <changelogtext>Click manga's source name will jump to source browsing</changelogtext>
+        <changelogtext>Show extensions/sources NSFW &amp; languages tag</changelogtext>
+        <changelogtext>Jump to extensions' settings from Source screen</changelogtext>
+        <changelogtext>Built-in official extensions repo</changelogtext>
+        <changelogtext>Migrate to Komikku's own Tracking clients</changelogtext>
+        <changelogtext>Configurable interval to refresh entries from downloaded storage</changelogtext>
+        <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
+        <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5(Mar 2,2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
+        <changelogtext>Minor fix for mark duplicate chapters as read</changelogtext>
+        <changelogtext>Include the delayed tracker update fix</changelogtext>
     </changelogversion>
-
-    <changelogversion changeDate="" versionName="r959">
-        <changelogtext>The download manager has been rewritten and it's possible some of your downloads
-            aren't recognized anymore. You may have to check your downloads folder and manually delete those.
-        </changelogtext>
-        <changelogtext>You can now download to any folder in your SD card.</changelogtext>
-        <changelogtext>The download directory setting has been reset.</changelogtext>
+    <changelogversion versionName="1.10.4" changeDate="Jan 17,2024">
+        <changelogtext>Hotfix for 1.10.3</changelogtext>
     </changelogversion>
-
-    <changelogversion changeDate="" versionName="r857">
-        <changelogtext>[b]Important![/b] Delete after read has been updated.
-            This means the value has been reset set to disabled.
-            This can be changed in Settings > Downloads
-        </changelogtext>
+    <changelogversion versionName="1.10.3" changeDate="Feb 17,2024">
+        <changelogtext>[b]Based on Mihon stable 0.16.3(from 0.16.1)[/b]</changelogtext>
+        <changelogtext>Use Mihon.app website</changelogtext>
+        <changelogtext>Add hide feed tab option(Thanks @Riztard)</changelogtext>
+        <changelogtext>Add mark dupes as read option(Thanks @Riztard)</changelogtext>
+        <changelogtext>Add custom Thumbnail url(Thanks @Riztard)</changelogtext>
+        <changelogtext>Improve Chinese translation(Thanks @ouovouo)</changelogtext>
     </changelogversion>
-
-    <changelogversion changeDate="" versionName="r736">
-        <changelogtext>[b]Important![/b] Now chapters follow the order of the sources. [b]It's required that you update your entire library
-            before reading in order for them to be synced.[/b] Old behavior can be restored for a manga in the overflow menu of the chapters tab.
-        </changelogtext>
+    <changelogversion versionName="1.10.2" changeDate="Jan 17,2024">
+        <changelogtext>[b]Based on Mihon stable 0.16.1(from Tachiyomi 0.15.3)[/b]</changelogtext>
     </changelogversion>
-
-    <changelogversion changeDate="" versionName="r724">
-        <changelogtext>Kissmanga covers may not load anymore. The only workaround is to update the details of the manga
-            from the info tab, or clearing the database (the latter won't fix covers from library manga).
-        </changelogtext>
-    </changelogversion>-->
-
+    <changelogversion versionName="1.10.1" changeDate="Jan 13,2024">
+        <changelogtext>[b]Based on Tachiyomi stable 0.15.3(from 0.15.2)[/b]</changelogtext>
+        <changelogtext>Fix MangaDex auth spamming the refresh login endpoint</changelogtext>
+        <changelogtext>Cleanup links to Tachiyomi and change some to Mihon</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.10.0" changeDate="Jan 09,2024">
+        <changelogtext>[b]Based on Tachiyomi stable 0.15.2(from 0.14.7)[/b]</changelogtext>
+        <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
+        <changelogtext>Add Exh source icon</changelogtext>
+        <changelogtext>Allow seeing all read manga statistics</changelogtext>
+        <changelogtext>Add exceeded page quota error</changelogtext>
+        <changelogtext>Add encrypted database(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Add encrypted local covers(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Add encrypted cbz archives(Thanks @Shamicen)</changelogtext>
+        <changelogtext>Center the Exh Utils(Thanks @Koranir)</changelogtext>
+        <changelogtext>Shorter chapter list in reader(Thanks @Riztard)</changelogtext>
+        <changelogtext>So much other stuff that I give up, I'm just going to make the release</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.9.4" changeDate="Oct 29,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.7(from 0.14.6)[/b]</changelogtext>
+        <changelogtext>Use ReadableAt for MangaDex dates</changelogtext>
+        <changelogtext>Fix E-H/Exh page previews</changelogtext>
+        <changelogtext>Fix page previews cache</changelogtext>
+        <changelogtext>Fix E-H/Exh browse thumbnails</changelogtext>
+        <changelogtext>Fix crash on Chinese</changelogtext>
+        <changelogtext>Fix Mangadex Recommendations when Delegation is off</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.9.3" changeDate="Apr 18,2023">
+        <changelogtext>Hotfix for 1.9.2, fix backup restore</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.9.2" changeDate="Apr 17,2023">
+        <changelogtext>Hotfix for 1.9.1, fix tag editing</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.9.1" changeDate="Apr 16,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.6(from 0.14.3)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add support for wsrv.nl data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add MangaDex Data Saver support to MangaPlus Chapters</changelogtext>
+        <changelogtext>[b]New[/b] Add Smooth Scrolling for auto-scroll in Webtoon format</changelogtext>
+        <changelogtext>Handle refreshing Feed properly and allow manual refresh</changelogtext>
+        <changelogtext>Fix open in webview for some sources</changelogtext>
+        <changelogtext>Fix common crashes</changelogtext>
+        <changelogtext>Fix library tag sorting</changelogtext>
+        <changelogtext>Fix library category selection</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.9.0" changeDate="Jan 7,2023">
+        <changelogtext>[b]Based on Tachiyomi stable 0.14.3(from 0.13.6)[/b]</changelogtext>
+        <changelogtext>Support new E-H/EXH search engine</changelogtext>
+        <changelogtext>[b]New[/b] Add custom igneous cookie option</changelogtext>
+        <changelogtext>[b]New[/b] Add page previews</changelogtext>
+        <changelogtext>[b]New[/b] Deduplication for chapters</changelogtext>
+        <changelogtext>Update Autofill E-Hentai tags</changelogtext>
+        <changelogtext>Support external extension repos better</changelogtext>
+        <changelogtext>Improve E-H/Exh toplist support</changelogtext>
+        <changelogtext>Remove links from MangaDex manga</changelogtext>
+        <changelogtext>Use new MangaDex OAuth Login</changelogtext>
+        <changelogtext>Removed AutoCaptcha solver</changelogtext>
+        <changelogtext>Removed Drag &amp; Drop</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.5" changeDate="Aug 14,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.6(from 0.13.5)[/b]</changelogtext>
+        <changelogtext>Update EH tags for auto-complete filter</changelogtext>
+        <changelogtext>Update supported MangaDex languages</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.4" changeDate="Jul 13,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.5(from 0.13.4)[/b]</changelogtext>
+        <changelogtext>Fix On Hiatus dynamic category</changelogtext>
+        <changelogtext>Fix group by tracking</changelogtext>
+        <changelogtext>Migrate custom covers</changelogtext>
+        <changelogtext>Improve sheet selection items</changelogtext>
+        <changelogtext>Use Tachiyomi Image decoder for double pages, fixes certain image types not loading for double pages</changelogtext>
+        <changelogtext>Only use auto-scroll when app is in focus</changelogtext>
+        <changelogtext>Stop ddos when updating a merge manga</changelogtext>
+        <changelogtext>Fix auto-downloading for merge manga</changelogtext>
+        <changelogtext>Fix mangadex blocked uploaders</changelogtext>
+        <changelogtext>Add visibility virtual tag for E-Hentai, you can now search for expunged in the library</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.3" changeDate="Apr 22,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.4(from 0.13.3)[/b]</changelogtext>
+        <changelogtext>Added chinese simplified translation(By Howard20181)</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.2" changeDate="Apr 15,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.3(from 0.13.1)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Replace Latest tab with Feed menu for using saved searches</changelogtext>
+        <changelogtext>[b]New[/b] Add Sources feed to combined Browse/Latest menu by long clicking a saved search</changelogtext>
+        <changelogtext>Support Mangadex blocked groups and uploaders extension setting</changelogtext>
+        <changelogtext>Improve E-H redirect to existing galleries</changelogtext>
+        <changelogtext>Fix Tsumino Email Protected issues</changelogtext>
+        <changelogtext>Fix HBrowse new galleries</changelogtext>
+        <changelogtext>Improve migration sheet, by CrepeTF</changelogtext>
+        <changelogtext>Fix rounded corners for migration menu</changelogtext>
+        <changelogtext>Only show scanlator filter if there are 2 or over scanlators</changelogtext>
+        <changelogtext>Fix renamed manga delete after read</changelogtext>
+        <changelogtext>Save combined image now respects folderPerManga, by curche</changelogtext>
+        <changelogtext>Fix clear database keep read setting</changelogtext>
+        <changelogtext>Updated Russian translations (By D3xron and e-shl)</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.1" changeDate="Feb 1,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.1(from 0.13.0)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Use MangaDex blocked groups and uploaders from the extension settings</changelogtext>
+        <changelogtext>Fixed delete after read for renamed manga</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.0" changeDate="Jan 31,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.0(from 0.11.1)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] When Favorites sync takes longer then 5 seconds for a gallery, display the gallery name</changelogtext>
+        <changelogtext>[b]Improved[/b] Replace Favorites Sync realm database with the regular database</changelogtext>
+        <changelogtext>Fix some sources not updating when grouping by source</changelogtext>
+        <changelogtext>[b]New[/b] Search EHentai uploader on click</changelogtext>
+        <changelogtext>Fix EH/ExhHentai duplicate results in search</changelogtext>
+        <changelogtext>[b]New[/b] Add EH/ExhHentai popular as the default browse menu</changelogtext>
+        <changelogtext>[b]New[/b] Add a toplists filter for E-Hentai</changelogtext>
+        <changelogtext>[b]Improved[/b] Throw error when ExHentai igneous cookie is mystery</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated E-Hentai tag list for autocomplete view</changelogtext>
+        <changelogtext>[b]Improved[/b] Replace Icon with a better one</changelogtext>
+        <changelogtext>[b]New[/b] Add way to open merged mangas in webview</changelogtext>
+        <changelogtext>Fix merged manga delete after read</changelogtext>
+        <changelogtext>[b]Improved[/b] Improve Hitomi tag list</changelogtext>
+        <changelogtext>[b]Improved[/b] Better support tag search</changelogtext>
+        <changelogtext>Stop excluding Tsumino from library updates</changelogtext>
+        <changelogtext>[b]New[/b] Re-Add MangaDex delegation, includes many features</changelogtext>
+        <changelogtext>[b]Improved[/b] Improve filter by scanlator to handle all sources</changelogtext>
+        <changelogtext>[b]New[/b] Rename manga directory if title changes</changelogtext>
+        <changelogtext>[b]New[/b] Add duel page viewer</changelogtext>
+        <changelogtext>[b]New[/b] Add cancel button in reader chapters dialog</changelogtext>
+        <changelogtext>[b]Improved[/b] Add new websites for Webtoon mode trigger (By @joseph619)</changelogtext>
+        <changelogtext>Fix chapter navigation for pager reader</changelogtext>
+        <changelogtext>Bugfix reader chapter list</changelogtext>
+        <changelogtext>Fix crash when opening reader or webview during migration</changelogtext>
+        <changelogtext>[b]New[/b] Add way to keep the manga when canceling migration</changelogtext>
+        <changelogtext>[b]Improved[/b] Handle the + for configurable sources better(By @curche)</changelogtext>
+        <changelogtext>[b]Removed[/b] Remove pure red theme</changelogtext>
+        <changelogtext>[b]New[/b] Add option to backup all read manga in addition your library</changelogtext>
+        <changelogtext>Sync edited info fields with J2k (By @null-dev)</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude sources from data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude the downloader from data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add biometric time range</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated PT-BR translations(By @Sam-Oak)</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated Russian translations (By @D3xron and @e-shl)</changelogtext>
+        <changelogtext>[b]New[/b] Add Indonesian translation (By @HaruSasaki)</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.7.0" changeDate="Jun 1,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.11.1(from 0.10.12)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add reader bottom button customization (by E-SHL)</changelogtext>
+        <changelogtext>Add more lewd tag checks (Jobobby04, E-SHL)</changelogtext>
+        <changelogtext>Convert chapter bottom sheet to a dialog</changelogtext>
+        <changelogtext>Exh login menu now supports a custom igneous cookie</changelogtext>
+        <changelogtext>Exh sync fixes, now doesn't stop on missing galleries</changelogtext>
+        <changelogtext>Browse source from migration now properly adds it as a result</changelogtext>
+        <changelogtext>Drop support for Android 5</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.6.2" changeDate="Apr 28,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.12(from 0.10.11)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add Dark Blue AMOLED theme (by E-SHL)</changelogtext>
+        <changelogtext>Fix bug with clean orphaned downloads deleting manga downloads it shouldn't have</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.6.1" changeDate="Apr 19,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.11(from 0.10.10)[/b]</changelogtext>
+        <changelogtext>Add a debug function to address really old SY full backups reader mode bug</changelogtext>
+        <changelogtext>Block merged manga from migration</changelogtext>
+        <changelogtext>Remove useless source migration action from overflow</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.6.0" changeDate="Apr 11,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.10(from 0.10.9)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Edit manga status</changelogtext>
+        <changelogtext>[b]New[/b] Backup custom manga info</changelogtext>
+        <changelogtext>[b]New[/b] Logs now output to file, logging to file is now useful, and can be used to debug</changelogtext>
+        <changelogtext>[b]New[/b] Vertical Seekbar for webtoon and vertical</changelogtext>
+        <changelogtext>[b]New[/b] Hot Pink theme by OncePunchedBot</changelogtext>
+        <changelogtext>[b]Removed[/b] Mangadex delegation and tracking</changelogtext>
+        <changelogtext>Clear db now has a option to keep read manga</changelogtext>
+        <changelogtext>Clear db now works properly with merged manga</changelogtext>
+        <changelogtext>EHentai updater should now die less</changelogtext>
+        <changelogtext>Fix 8Muses delegation</changelogtext>
+        <changelogtext>Logs now output to file, logging to file is now useful, and can be used to debug</changelogtext>
+        <changelogtext>In the browse/latest menu errors now populate instead of just saying no results found</changelogtext>
+        <changelogtext>Fix download issue with scanlator for merged manga</changelogtext>
+        <changelogtext>Fix Migration getting stuck</changelogtext>
+        <changelogtext>Fix crash when opening chapter from manual search in migration</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.5.0" changeDate="Feb 12,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.9(from 0.10.7)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Clicking the title now takes you to the manga page</changelogtext>
+        <changelogtext>[b]New[/b] Enhanced Reader Bottom menu</changelogtext>
+        <changelogtext>[b]New[/b] MDList now works for all manga, not just mangadex manga</changelogtext>
+        <changelogtext>[b]New[/b] Backup now backs up read manga not in library</changelogtext>
+        <changelogtext>[b]New[/b] Library update now updates manga from different sources in parallel</changelogtext>
+        <changelogtext>[b]New[/b] Use new Mangadex API server and API v2</changelogtext>
+        <changelogtext>[b]New[/b] Deeplink Mangadex chapters</changelogtext>
+        <changelogtext>Fix Mangadex Deeplink errors</changelogtext>
+        <changelogtext>Fix Mangadex login autofill saving wrong info</changelogtext>
+        <changelogtext>Fix Merged manga chapters not being marked as read on the manga page after reading</changelogtext>
+        <changelogtext>Fix Merged manga downloads</changelogtext>
+        <changelogtext>Fix Similar Manga notification</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.4.1" changeDate="Dec 14,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.7(from 0.10.6)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add separate crop borders setting for Continues Vertical</changelogtext>
+        <changelogtext>[b]New[/b] Add simple external repo support</changelogtext>
+        <changelogtext>Fix crashes with Merge Settings</changelogtext>
+        <changelogtext>Maybe fix push to Mangadex</changelogtext>
+        <changelogtext>Improve Anilist rec names(thanks She11sh0cked)</changelogtext>
+        <changelogtext>Deeplink and Batch add will now only search enabled sources</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.4.0" changeDate="Dec 12,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.6(from 0.10.5)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] NEW ICON! Thanks to Aytox who made it!</changelogtext>
+        <changelogtext>[b]New[/b] Add french translation, thanks to Adam-sama</changelogtext>
+        <changelogtext>[b]New[/b] Double clicking the updates bottom bar button will open downloads</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude manga in certain categories from auto delete</changelogtext>
+        <changelogtext>[b]New[/b] Add Sort by Tags library sorting method, adds a customizable list of tags that manga will by sorted by the position of the tag in the list</changelogtext>
+        <changelogtext>Update Lewd manga filter to include new sources and tags</changelogtext>
+        <changelogtext>Enhance More Info menu</changelogtext>
+        <changelogtext>Cleanup the looks of manga extra info</changelogtext>
+        <changelogtext>Fix Smart background so it works properly(it half worked before)</changelogtext>
+        <changelogtext>Community recommendations enhancements, errors now properly show</changelogtext>
+        <changelogtext>Add ability to use Neko similar manga for Mangadex manga</changelogtext>
+        <changelogtext>Support the short title NHentai source setting</changelogtext>
+        <changelogtext>Switch to the Mangadex extension for the low quality cover setting</changelogtext>
+        <changelogtext>[b]New[/b] Add push to Mangadex in Mangadex settings</changelogtext>
+        <changelogtext>Fix Mangadex settings inconsistencies</changelogtext>
+        <changelogtext>[b]New[/b] If the E-Hentai download limit exceeded image is sent, stop downloading</changelogtext>
+        <changelogtext>EHentai options will be hidden instead of greyed out when not logged in</changelogtext>
+        <changelogtext>Fix MDList tracking stalling when it thinks its logged in but its not</changelogtext>
+        <changelogtext>Fix MDList tracking getting set to complete when its not</changelogtext>
+        <changelogtext>E-Hentai migrations will be throttled so that you dont get banned</changelogtext>
+        <changelogtext>Migrating will migrate viewer, chapter sort, and other stuff</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.3.1" changeDate="Sept 14,2020">
+        <changelogtext>[b]New[/b] Share manga info when you share a page</changelogtext>
+        <changelogtext>Tweak preload settings, make the max 20, defaults to 10</changelogtext>
+        <changelogtext>Set the new browse + latest view as default</changelogtext>
+        <changelogtext>Fix Mangadex 2FA input</changelogtext>
+        <changelogtext>Fix backup for merged manga</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.3.0" changeDate="Sept 14,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.5(from 0.10.4)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Delegate MangaDex, add Mangadex Follows browse, import, push, and tracking, as well as a custom manga view!</changelogtext>
+        <changelogtext>[b]New[/b] No title grid option</changelogtext>
+        <changelogtext>[b]New[/b] Started filter</changelogtext>
+        <changelogtext>[b]New[/b] Grab J2k chapters bottom sheet</changelogtext>
+        <changelogtext>[b]New[/b] Add data saver proxy server support</changelogtext>
+        <changelogtext>[b]New[/b] Long click to copy metadata information</changelogtext>
+        <changelogtext>[b]New[/b] Expand manga thumbnails(Inspired by J2k)</changelogtext>
+        <changelogtext>[b]Rewritten[/b] Overhaul merge manga, its actually usable now</changelogtext>
+        <changelogtext>[b]New[/b] Always display read progress on E-Hentai chapters when preserve reading positon is enabled</changelogtext>
+        <changelogtext>[b]New[/b] Add combined latest/browse page as a option</changelogtext>
+        <changelogtext>[b]New[/b] Add download as CBZ</changelogtext>
+        <changelogtext>Network logging to file fixes</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.2.0" changeDate="Aug 12,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.4(from 0.10.2)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] cleanup orphaned downloads option (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] delegate Hitomi, please download the extension to continue using your Hitomi manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate NHentai, please download the extension to continue using your NHentai manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate PervEden, please download the extension to continue using your PervEden manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate 8Muses, manga in your library cannot be migrated because of the extension format, 8Muses is in the EroMuse extension</changelogtext>
+        <changelogtext>[b]New[/b] Dynamic Categories, inspired by J2ks feature, but written from the ground up, quickly organize your library into different sets of categories, by source, status, and tracking, or totally ungrouped, its in the library bottom sheet</changelogtext>
+        <changelogtext>[b]New[/b] Continue reading button, inspired by the J2k feature, it will take you to the first unread chapter, can be toggled in the library bottom sheet</changelogtext>
+        <changelogtext>[b]Rewritten[/b] Redo drag and drop, now you can drag and drop in any mode, and it will switch your mode to it when you drag and drop something</changelogtext>
+        <changelogtext>[b]New[/b] quick clean Titles, adds a quick clean that will clean titles from manga from certain sources, it will quickly remove unnecessary bloat</changelogtext>
+        <changelogtext>[b]Rewritten[/b] rewrite the library search engine (that was inherited from EH), it now can exclude, use quotes for absolute searches, it supports namespace tags, and a bunch more, its probably the most advanced search engine any Tachi fork has</changelogtext>
+        <changelogtext>Fix pressing download unread chapters on an Exh manga would download the latest chapter even if it was read</changelogtext>
+        <changelogtext>[b]New[/b] smart Background, when using a pager like LTR, the background will now change color depending on the page (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] force disable zoom out option for webtoon mode, no more do you accidently zoom out, on by default but can be toggled off (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] finishing an Exh chapter will mark previous chapters as read</changelogtext>
+        <changelogtext>Don’t download new chapters after refreshing Exh manga</changelogtext>
+        <changelogtext>Fix a migration crash that happened when the chapter list threw an exception</changelogtext>
+        <changelogtext>Fix a start-up crash that made the app unusable for some people</changelogtext>
+        <changelogtext>Some icon fixes</changelogtext>
+        <changelogtext>Change the way releases are built, likely fixes problems with installing the app for some people</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.1.1" changeDate="Aug 2,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.2(from 0.10.1)[/b]</changelogtext>
+        <changelogtext>Delegated HBrowse, if you used that source please install the extension to continue using your manga</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.1.0" changeDate="Aug 1,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.1(from a 0.9.2 preview)[/b]</changelogtext>
+        <changelogtext>Made the app translatable! Feel free to ask how to in the Tachiyomi discord or open a issue if you want to help with translations</changelogtext>
+        <changelogtext>Move to the new 0.10.0 manga page</changelogtext>
+        <changelogtext>[b]New[/b] Add move recommendations to overflow menu option</changelogtext>
+        <changelogtext>[b]New[/b] Add special browse view for E-Hentai</changelogtext>
+        <changelogtext>[b]New[/b] Add special manga info view to integrated and delegated sources</changelogtext>
+        <changelogtext>[b]New[/b] Add special tag view for certain sources</changelogtext>
+        <changelogtext>Made global search respect the source manga view setting</changelogtext>
+        <changelogtext>[b]New[/b] Manga info edit</changelogtext>
+        <changelogtext>[b]New[/b] Pressing download unread chapters on E-Hentai manga will only download the latest version</changelogtext>
+        <changelogtext>[b]New[/b] Using the manga floating action button on E-Hentai manga will open the latest version</changelogtext>
+        <changelogtext>[b]New[/b] Allow hitomi.la users to select if they want to download manga as webp or not</changelogtext>
+        <changelogtext>Fix 8muses</changelogtext>
+        <changelogtext>Fix hitomi.la</changelogtext>
+        <changelogtext>Fix Pururin</changelogtext>
+        <changelogtext>Fix blacklisted nhentai sources</changelogtext>
+        <changelogtext>Fix download badges for internal sources</changelogtext>
+        <changelogtext>Fix source category deletion crash</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.0.0" changeDate="July 9,2020">
+        <changelogtext>Welcome to my first full release of TachiyomiSY!</changelogtext>
+        <changelogtext>I hope you enjoy your stay, many improvements are planned!</changelogtext>
+    </changelogversion>
 </changelog>
