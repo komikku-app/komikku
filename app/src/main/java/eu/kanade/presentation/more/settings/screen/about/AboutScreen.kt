@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,11 +47,7 @@ import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.CustomIcons
-import tachiyomi.presentation.core.icons.Discord
-import tachiyomi.presentation.core.icons.Facebook
 import tachiyomi.presentation.core.icons.Github
-import tachiyomi.presentation.core.icons.Reddit
-import tachiyomi.presentation.core.icons.X
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
@@ -180,37 +174,35 @@ object AboutScreen : Screen() {
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        LinkIcon(
-                            label = stringResource(MR.strings.website),
-                            icon = Icons.Outlined.Public,
-                            url = "https://mihon.app",
-                        )
-                        LinkIcon(
-                            label = "Discord",
-                            icon = CustomIcons.Discord,
-                            url = "https://discord.gg/mihon",
-                        )
-                        LinkIcon(
-                            label = "X",
-                            icon = CustomIcons.X,
-                            url = "https://x.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Facebook",
-                            icon = CustomIcons.Facebook,
-                            url = "https://facebook.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Reddit",
-                            icon = CustomIcons.Reddit,
-                            url = "https://www.reddit.com/r/mihonapp",
-                        )
+                        // LinkIcon(
+                        //     label = stringResource(MR.strings.website),
+                        //     icon = Icons.Outlined.Public,
+                        //     url = "https://mihon.app",
+                        // )
+                        // LinkIcon(
+                        //     label = "Discord",
+                        //     icon = CustomIcons.Discord,
+                        //     url = "https://discord.gg/mihon",
+                        // )
+                        // LinkIcon(
+                        //     label = "X",
+                        //     icon = CustomIcons.X,
+                        //     url = "https://x.com/mihonapp",
+                        // )
+                        // LinkIcon(
+                        //     label = "Facebook",
+                        //     icon = CustomIcons.Facebook,
+                        //     url = "https://facebook.com/mihonapp",
+                        // )
+                        // LinkIcon(
+                        //     label = "Reddit",
+                        //     icon = CustomIcons.Reddit,
+                        //     url = "https://www.reddit.com/r/mihonapp",
+                        // )
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            // SY -->
-                            url = "https://github.com/komikku-app/komikku",
-                            // SY <--
+                            url = "https://github.com/komikku-app",
                         )
                     }
                 }
