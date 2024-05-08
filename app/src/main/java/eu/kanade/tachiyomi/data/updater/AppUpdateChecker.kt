@@ -56,5 +56,6 @@ val GITHUB_REPO: String by lazy {
     } else {
         "komikku-app/komikku"
     }
-    // SY <--
 }
+
+val RELEASE_URL = "https://github.com/$GITHUB_REPO/releases/tag/$RELEASE_TAG"
