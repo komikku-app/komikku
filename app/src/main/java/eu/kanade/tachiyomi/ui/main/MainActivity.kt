@@ -75,8 +75,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
@@ -84,7 +86,6 @@ import exh.log.DebugModeOverlay
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
-import exh.syDebugVersion
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -520,8 +521,8 @@ class MainActivity : BaseActivity() {
 
     // SY -->
     private fun addAnalytics() {
-        if (!BuildConfig.DEBUG && isPreviewBuildType) {
-            Firebase.analytics.setUserProperty("preview_version", syDebugVersion)
+        if (!isDevFlavor && (isReleaseBuildType || isPreviewBuildType)) {
+            Firebase.analytics.setUserProperty("preview_version", BuildConfig.COMMIT_COUNT)
         }
     }
     // SY <--

@@ -58,6 +58,7 @@ import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isDevFlavor
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import exh.log.CrashlyticsPrinter
@@ -65,7 +66,6 @@ import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
 import exh.log.XLogLogcatLogger
 import exh.log.xLogD
-import exh.syDebugVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -102,7 +102,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         // SY -->
         if (!isDevFlavor) {
-            Firebase.crashlytics.setCrashlyticsCollectionEnabled(isReleaseBuildType)
+            Firebase.crashlytics.setCrashlyticsCollectionEnabled(isReleaseBuildType || isPreviewBuildType)
         }
         // SY <--
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
@@ -329,7 +329,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         xLogD(
             """
                 App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
-                Preview build: $syDebugVersion
+                Build version: ${BuildConfig.COMMIT_COUNT}
                 Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) 
                 Android build ID: ${Build.DISPLAY}
                 Device brand: ${Build.BRAND}

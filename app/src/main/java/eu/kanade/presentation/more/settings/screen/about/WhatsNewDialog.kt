@@ -22,8 +22,11 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.updater.RELEASE_URL
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
@@ -37,19 +40,22 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun WhatsNewDialog(onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
+                Text(text = stringResource(MR.strings.action_ok))
             }
         },
-        title = {
-            Text(text = stringResource(MR.strings.whats_new))
+        title = { Text(text = stringResource(MR.strings.updated_version, BuildConfig.VERSION_NAME)) },
+        dismissButton = {
+            TextButton(onClick = { context.openInBrowser(RELEASE_URL) }) {
+                Text(text = stringResource(SYMR.strings.changelogs))
+            }
         },
         text = {
             Column {
-                val context = LocalContext.current
                 val changelog by produceState<List<DisplayChangelog>?>(initialValue = null) {
                     value = withIOContext {
                         XML.decodeFromReader<Changelog>(
