@@ -1,18 +1,11 @@
-name: Preview Builder
-
+name: Benchmark Builder
 on:
   # Dispatch or Manual triggers
   workflow_dispatch:
 
 #  push:
 #    branches:
-#      - master
-#    paths:
-#      - '**'
-#      - '!**.md'
-#      - '!.github/**'
-#      - '.github/scripts/**'
-#      - '.github/workflows/**'
+#      - dev-benchmark
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,8 +20,8 @@ jobs:
       CURRENT_SHA: ${{ steps.prepare_env.outputs.CURRENT_SHA }}
       PREV_RELEASE_SHA: ${{ steps.prepare_env.outputs.PREV_RELEASE_SHA }}
       COMMIT_LOGS: ${{ steps.prepare_env.outputs.COMMIT_LOGS }}
-      TAG_PREFIX: r
-      ARTIFACTS_PREFIX: standard/preview/app-standard
+      TAG_PREFIX: benchmark-r
+      ARTIFACTS_PREFIX: dev/benchmark/app-dev
     steps:
       - name: Get tag name
         id: get_tag
@@ -103,10 +96,10 @@ jobs:
       # - name: Build app and run unit tests
       #   uses: gradle/gradle-command-action@v2
       #   with:
-      #     arguments: detekt assembleStandardPreview testStandardPreviewUnitTest
+      #     arguments: detekt assembleDevBenchmark testDevBenchmarkUnitTest
 
-      - name: Build Preview app and run unit tests
-        run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest --stacktrace
+      - name: Build Benchmark app and run unit tests
+        run: ./gradlew assembleDevBenchmark testDevBenchmarkUnitTest --stacktrace
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -132,7 +125,7 @@ jobs:
       - name: Sign APK
         uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
         with:
-          releaseDirectory: app/build/outputs/apk/standard/preview
+          releaseDirectory: app/build/outputs/apk/dev/benchmark
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -143,23 +136,23 @@ jobs:
         run: |
           set -e
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-universal-preview-signed.apk Komikku-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
+          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-universal-benchmark-signed.apk Komikku-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           sha=`sha256sum Komikku-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk | awk '{ print $1 }'`
           echo "APK_UNIVERSAL_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-arm64-v8a-preview-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
+          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-arm64-v8a-benchmark-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           sha=`sha256sum Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk | awk '{ print $1 }'`
           echo "APK_ARM64_V8A_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-armeabi-v7a-preview-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
+          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-armeabi-v7a-benchmark-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           sha=`sha256sum Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk | awk '{ print $1 }'`
           echo "APK_ARMEABI_V7A_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86-preview-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
+          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86-benchmark-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           sha=`sha256sum Komikku-x86-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk | awk '{ print $1 }'`
           echo "APK_X86_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86_64-preview-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
+          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86_64-benchmark-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           sha=`sha256sum Komikku-x86_64-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk | awk '{ print $1 }'`
           echo "APK_X86_64_SHA=$sha" >> $GITHUB_OUTPUT
 
@@ -167,7 +160,7 @@ jobs:
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
         with:
           tag_name: ${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}
-          name: Komikku Preview ${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}
+          name: Komikku Benchmark ${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}
           body: |
             ### Commits
 
@@ -198,3 +191,4 @@ jobs:
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  

@@ -1,14 +1,27 @@
-name: Remote Dispatch Action Initiator
+name: Remote Dispatch Preview Build
  
 on:
+  # Dispatch or Manual triggers
+  workflow_dispatch:
+
   push:
-   branches: 
-    - 'preview'
+    branches:
+      - master
+      - develop
+    paths:
+      - '**'
+      - '!**.md'
+      - '!.github/**'
+      - '.github/scripts/**'
+      - '.github/workflows/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
  
 jobs:
   trigger_preview_build:
     name: Trigger preview build
-    if: ${{ github.ref == 'refs/heads/preview' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -18,14 +31,28 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
+      - name: Prepare build
+        id: prepare_build
+        run: |
+          set -e
+
+          commit_count=$(git rev-list --count HEAD)
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
+
       - name: Create Tag
         run: |
-          git tag "preview-${{ github.run_number }}"
-          git push origin "preview-${{ github.run_number }}"
+          git tag "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
+          git push origin "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
 
-      - name: PING - Dispatch initiating repository event
-        run: |
-          curl -X POST https://api.github.com/repos/komikku-app/KomikkuPreview/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
-          -u ${{ secrets.ACCESS_TOKEN }} \
-          --data '{"event_type": "ping", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+      - name: Get branch names.
+        id: branch_names
+        uses: tj-actions/branch-names@v8
+          
+      - name: Invoke workflow in preview repo
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: build_app.yml
+          repo: komikku-app/komikku-preview
+          ref: "refs/heads/main"
+          token: "${{ secrets.BOT_PAT }}"
+          inputs: '{ "git-ref": "${{ steps.branch_names.outputs.current_branch }}" }'
