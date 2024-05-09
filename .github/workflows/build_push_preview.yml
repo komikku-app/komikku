@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
@@ -39,12 +41,12 @@ jobs:
           commit_count=$(git rev-list --count HEAD)
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
 
-      - name: Create Tag
+      - name: Create Tag 'r${{ steps.prepare_build.outputs.COMMIT_COUNT }}'
         run: |
           git tag "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
           git push origin "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
 
-      - name: Get branch names.
+      - name: Get branch names
         id: branch_names
         uses: tj-actions/branch-names@v8
           

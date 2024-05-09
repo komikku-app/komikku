@@ -61,10 +61,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare-build
     steps:
-      - name: Clone Repository (r${{ needs.prepare-build.outputs.COMMIT_COUNT }})
+      - name: Clone Repository (${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }})
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@v3
