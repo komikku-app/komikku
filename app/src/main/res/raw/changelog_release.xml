@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
     <changelogversion versionName="1.10.5" changeDate="May 9,2024">
-        <changelogtext>[b]All features from Komikku pre-release version[/b]</changelogtext>
         <changelogtext>Show related mangas for all sources</changelogtext>
-        <changelogtext>Bulk selection multiple entries to favorite/category</changelogtext>
-        <changelogtext>Search for source in Browse screen</changelogtext>
+        <changelogtext>Bulk select multiple entries to favorite/category</changelogtext>
+        <changelogtext>Built-in official extensions repo</changelogtext>
+        <changelogtext>Search for sources in Browse screen</changelogtext>
         <changelogtext>Quick NSFW sources filter in both Extensions/Browse screen</changelogtext>
         <changelogtext>Feeds screen support all sources</changelogtext>
         <changelogtext>More Feed's entries</changelogtext>
         <changelogtext>Click manga's source name will jump to source browsing</changelogtext>
         <changelogtext>Show extensions/sources NSFW &amp; languages tag</changelogtext>
         <changelogtext>Jump to extensions' settings from Source screen</changelogtext>
-        <changelogtext>Built-in official extensions repo</changelogtext>
         <changelogtext>Migrate to Komikku's own Tracking clients</changelogtext>
         <changelogtext>Configurable interval to refresh entries from downloaded storage</changelogtext>
         <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
         <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
         <changelogtext>[b]Based on TachiyomiSY stable 1.10.5(Mar 2,2024)[/b]</changelogtext>
         <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
-        <changelogtext>Minor fix for mark duplicate chapters as read</changelogtext>
+        <changelogtext>Minor fix for marking duplicate chapters as read</changelogtext>
         <changelogtext>Include the delayed tracker update fix</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.10.4" changeDate="Jan 17,2024">
