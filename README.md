@@ -18,9 +18,9 @@ It can detect duplication being added and give option to allow/skip one by one o
 Also allow long-click to add/remove single entry to/from library, everywhere.
 - [x] Feed now supports all extensions
 - [x] More Feed items (20 for now)
-- [x] Search for sources when too many sources installed
+- [x] Search for sources in Browse screen when too many sources installed
+- [x] Quick NSFW sources filter in both Extensions/Browse screen
 - [x] Show which source is NSFW in Browse tab
-- [x] Filter to show 18+ only sources/extensions browse
 - [x] Settings button to jump to source's package settings page (to uninstall unwanted sources)
 - [ ] Show photo’s size so you can compare which source has better quality
 - [ ] Support other sources just like E-Hentai: Lucious...
