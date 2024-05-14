@@ -475,7 +475,7 @@ fun SourceOptionsDialog(
                 // SY <--
                 // KMK -->
                 if (onClickSettings != null && source.installedExtension !== null &&
-                    !(source.id == LocalSource.ID || source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID)) {
+                    source.id !in listOf(LocalSource.ID, EH_SOURCE_ID, EXH_SOURCE_ID)) {
                     Text(
                         text =  stringResource(MR.strings.label_extension_info),
                         modifier = Modifier

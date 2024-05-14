@@ -246,7 +246,7 @@ fun <T> RadioSelector(
     options: ImmutableList<T>,
     selected: Int?,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
-    onSelectOption: (Int) -> Unit /* KMK --> */ = {} /* KMK <-- */,
+    onSelectOption: (Int) -> Unit = {},
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         optionStrings.forEachIndexed { index, option ->

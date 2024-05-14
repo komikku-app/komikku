@@ -298,7 +298,7 @@ private fun ExtensionItem(
                     )
                 }
 
-                val padding by animateDpAsState(targetValue = if (idle) 0.dp else 8.dp)
+                val padding by animateDpAsState(targetValue = if (idle) 0.dp else 8.dp, label = "DpAnimation")
                 ExtensionIcon(
                     extension = extension,
                     modifier = Modifier
