@@ -42,6 +42,7 @@ jobs:
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
 
       - name: Create Tag 'r${{ steps.prepare_build.outputs.COMMIT_COUNT }}'
+        if: ${{ github.ref }} == "refs/heads/master"
         run: |
           git tag "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
           git push origin "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
@@ -49,7 +50,7 @@ jobs:
       - name: Get branch names
         id: branch_names
         uses: tj-actions/branch-names@v8
-          
+
       - name: Invoke workflow in preview repo
         uses: benc-uk/workflow-dispatch@v1
         with:
