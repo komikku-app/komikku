@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="Current" changeDate="May 9,2024">
+    <changelogversion versionName="Latest (r8855)" changeDate="May 17, 2024">
+        <changelogtext>A dedicated screen for related entries, fetching directly from sources</changelogtext>
+        <changelogtext>Faster loading of related entries</changelogtext>
+        <changelogtext>Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
+        <changelogtext>Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r8852" changeDate="May 9,2024">
         <changelogtext>Beta build switch to 'preview' repo</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.10.5" changeDate="May 9,2024">

@@ -79,7 +79,7 @@ fun BrowseSourceComfortableGrid(
 }
 
 @Composable
-private fun BrowseSourceComfortableGridItem(
+internal fun BrowseSourceComfortableGridItem(
     manga: Manga,
     // SY -->
     metadata: RaisedSearchMetadata?,

@@ -22,8 +22,10 @@ class StubSource(
         throw SourceNotInstalledException()
 
     // KMK -->
-    override suspend fun getRelatedMangaList(manga: SManga): List<SManga> =
-        throw SourceNotInstalledException()
+    override suspend fun getRelatedMangaList(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) = throw SourceNotInstalledException()
     // KMK <--
 
     override fun toString(): String =

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -43,8 +44,12 @@ import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.isLoading
+import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.removeDuplicates
+import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
@@ -128,6 +133,7 @@ import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.manga.repository.MangaRepository
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
@@ -435,12 +441,17 @@ class MangaScreenModel(
 
             // Fetch info-chapters when needed
             if (screenModelScope.isActive) {
+                // KMK -->
+                launch {
+                    launch {
+                        fetchRelatedMangasFromSource()
+                    }.join()
+                    updateSuccessState { it.copy(isFetchingRelatedMangas = false) }
+                }
+                // KMK <--
                 val fetchFromSourceTasks = listOf(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
-                    // KMK -->
-                    async { fetchRelatedMangasFromSource() },
-                    // KMK <--
                 )
                 fetchFromSourceTasks.awaitAll()
             }
@@ -456,9 +467,6 @@ class MangaScreenModel(
             val fetchFromSourceTasks = listOf(
                 async { fetchMangaFromSource(manualFetch) },
                 async { fetchChaptersFromSource(manualFetch) },
-                // KMK -->
-                async { fetchRelatedMangasFromSource() },
-                // KMK <--
             )
             fetchFromSourceTasks.awaitAll()
             updateSuccessState { it.copy(isRefreshingData = false) }
@@ -1101,25 +1109,29 @@ class MangaScreenModel(
      */
     private suspend fun fetchRelatedMangasFromSource() {
         val state = successState ?: return
+        val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
         try {
             withIOContext {
-                if (state.source !is MergedSource) {
-                    val relatedMangas = if (Injekt.get<SourcePreferences>().relatedMangas().get()) {
-                        val map = mutableMapOf<Long, Manga>()
-                        val list = state.source.getRelatedMangaList(state.manga.toSManga())
-                            .map {
-                                networkToLocalManga.await(it.toDomainManga(state.source.id))
+                if (state.source !is StubSource) {
+                    if (relatedMangasEnabled) {
+                        state.source.getRelatedMangaList(state.manga.toSManga()) { pair, _ ->
+                            /* Push found related mangas into collection */
+                            val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
+                                mangaList.map {
+                                    networkToLocalManga.await(it.toDomainManga(state.source.id))
+                                }
                             }
-                        list.forEach {
-                            map[it.id] = it
+
+                            updateSuccessState { successState ->
+                                val relatedMangaCollection =
+                                    successState.relatedMangaCollection
+                                        ?.toMutableStateList()
+                                        ?.apply { add(relatedManga) }
+                                        ?: listOf(relatedManga)
+                                successState.copy(relatedMangaCollection = relatedMangaCollection)
+                            }
                         }
-                        map
-                    } else {
-                        null
                     }
-                    updateSuccessState { it.copy(relatedMangas = relatedMangas) }
-                } else {
-                    throw UnsupportedOperationException("Fetching related titles for merged entry is not supported")
                 }
             }
         } catch (e: Throwable) {
@@ -1129,8 +1141,6 @@ class MangaScreenModel(
             screenModelScope.launch {
                 snackbarHostState.showSnackbar(message = message)
             }
-            val newManga = mangaRepository.getMangaById(mangaId)
-            updateSuccessState { it.copy(manga = newManga) }
         }
     }
     // KMK <--
@@ -1714,9 +1724,22 @@ class MangaScreenModel(
             val previewsRowCount: Int,
             // SY <--
             // KMK -->
-            val relatedMangas: MutableMap<Long, Manga>? = null,
+            val isFetchingRelatedMangas: Boolean = true,
+            /**
+             * a list of <keyword, related mangas>
+             */
+            val relatedMangaCollection: List<RelatedManga>? = null,
             // KMK <--
         ) : State {
+            // KMK ->>
+            val relatedMangasSorted = relatedMangaCollection
+                ?.sorted(manga)
+                ?.removeDuplicates(manga)
+                ?.filter { it.isVisible() }
+                ?.isLoading(isFetchingRelatedMangas)
+                ?: if (!isFetchingRelatedMangas) emptyList() else null
+            // KMK <--
+
             val processedChapters by lazy {
                 chapters.applyFilters(manga).toList()
             }
@@ -1820,3 +1843,69 @@ sealed interface PagePreviewState {
     data class Error(val error: Throwable) : PagePreviewState
 }
 // SY <--
+
+// KMK -->
+sealed interface RelatedManga {
+    data object Loading : RelatedManga
+
+    data class Success(
+        val keyword: String,
+        val mangaList: List<Manga>,
+    ) : RelatedManga {
+        val isEmpty: Boolean
+            get() = mangaList.isEmpty()
+
+        companion object {
+            suspend fun fromPair(
+                pair: Pair<String, List<SManga>>,
+                toManga: suspend (mangaList: List<SManga>) -> List<Manga>,
+            ) = Success(pair.first, toManga(pair.second))
+        }
+    }
+
+    fun isVisible(): Boolean {
+        return this is Loading || (this is Success && !this.isEmpty)
+    }
+
+    companion object {
+        fun List<RelatedManga>.sorted(manga: Manga): List<RelatedManga> {
+            val success = filterIsInstance<Success>()
+            val loading = filterIsInstance<Loading>()
+            val title = manga.title.lowercase()
+            val ogTitle = manga.ogTitle.lowercase()
+            return success.filter { it.keyword.isEmpty() } +
+                success.filter { it.keyword.lowercase() == title } +
+                success.filter { it.keyword.lowercase() == ogTitle && ogTitle != title } +
+                success.filter { it.keyword.isNotEmpty() && it.keyword.lowercase() !in listOf(title, ogTitle) }
+                    .sortedByDescending { it.keyword.length }
+                    .sortedBy { it.mangaList.size } +
+                loading
+        }
+
+        fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
+            val mangaUrls = HashSet<String>().apply { add(manga.url) }
+
+            return map { relatedManga ->
+                if (relatedManga is Success) {
+                    Success(
+                        relatedManga.keyword,
+                        relatedManga.mangaList
+                            .filterNot { mangaUrls.contains(it.url) }
+                            .onEach { mangaUrls.add(it.url) },
+                    )
+                } else {
+                    relatedManga
+                }
+            }
+        }
+
+        fun List<RelatedManga>.isLoading(isFetchingRelatedMangas: Boolean): List<RelatedManga> {
+            return if (isFetchingRelatedMangas) {
+                this + listOf(Loading)
+            } else {
+                this
+            }
+        }
+    }
+}
+// KMK <--

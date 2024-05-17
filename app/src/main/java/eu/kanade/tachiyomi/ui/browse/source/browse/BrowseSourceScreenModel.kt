@@ -474,7 +474,7 @@ open class BrowseSourceScreenModel(
         val filterable: Boolean = true,
         // SY <--
         // KMK -->
-        val mangaDisplayingList: MutableSet<Manga> = emptySet<Manga>().toMutableSet()
+        val mangaDisplayingList: MutableSet<Manga> = mutableSetOf()
         // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()

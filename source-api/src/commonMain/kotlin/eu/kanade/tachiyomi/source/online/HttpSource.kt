@@ -16,18 +16,14 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.maybeInjectEHLogger
 import exh.pref.DelegateSourcePreferences
 import exh.source.DelegatedHttpSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import logcat.LogPriority
+import kotlinx.coroutines.coroutineScope
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
-import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
@@ -282,45 +278,11 @@ abstract class HttpSource : CatalogueSource {
 
     // KMK -->
     /**
-     * Whether parsing related mangas in manga page or extension provide custom related mangas request (true)
-     * or using search keyword to search for related mangas (false - default)
-     * @default false
+     * Whether parsing related mangas in manga page or extension provide custom related mangas request.
+     * @default true
      * @since komikku/extensions-lib 1.6
      */
-    protected open val supportsRelatedMangas: Boolean get() = false
-
-    /**
-     * Extensions provide custom [relatedMangaListRequest] and [relatedMangaListParse]
-     * while also want to use App's [getRelatedMangaListBySearch] together.
-     * @default false
-     * @since komikku/extensions-lib 1.6
-     */
-    protected open val supportsRelatedMangasAndSearch: Boolean get() = false
-
-    /**
-     * Disable showing any related titles
-     * @default false
-     * @since komikku/extensions-lib 1.6
-     */
-    protected open val disableRelatedMangas: Boolean get() = false
-
-    /**
-     * Get all the available related mangas for a manga.
-     * Normally it's not needed to override this method.
-     *
-     * @since komikku/extensions-lib 1.6
-     * @param manga the current manga to get related mangas.
-     * @return the related mangas for the current manga.
-     * @throws UnsupportedOperationException if a source doesn't support related mangas.
-     */
-    override suspend fun getRelatedMangaList(manga: SManga): List<SManga> {
-        return when {
-            supportsRelatedMangasAndSearch -> fetchRelatedMangaList(manga) + getRelatedMangaListBySearch(manga)
-            supportsRelatedMangas -> fetchRelatedMangaList(manga)
-            disableRelatedMangas -> emptyList()
-            else -> getRelatedMangaListBySearch(manga)
-        }
-    }
+    override val supportsRelatedMangas: Boolean get() = true
 
     /**
      * Fetch related mangas for a manga from source/site.
@@ -331,62 +293,14 @@ abstract class HttpSource : CatalogueSource {
      * @return the related mangas for the current manga.
      * @throws UnsupportedOperationException if a source doesn't support related mangas.
      */
-    protected open suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> {
-        return client.newCall(relatedMangaListRequest(manga))
-            .execute()
-            .let { response ->
-                relatedMangaListParse(response)
-            }
-    }
-
-    /**
-     * Fetch related mangas by searching for each keywords from manga's title
-     *
-     * @since komikku/extensions-lib 1.6
-     */
-    protected open suspend fun getRelatedMangaListBySearch(manga: SManga): List<SManga> {
-        fun String.stripKeyword(): List<String> {
-            val regexWhitespace = Regex("\\s+")
-            val regexSpecialCharacters =
-                Regex("([!~#$%^&*+_|/\\\\,?:;'“”‘’\"<>(){}\\[\\]。・～：—！？、―«»《》〘〙【】「」｜]|\\s-|-\\s|\\s\\.|\\.\\s)")
-            val regexNumberOnly = Regex("^\\d+$")
-
-            return replace(regexSpecialCharacters, " ")
-                .split(regexWhitespace)
-                .map {
-                    // remove number only
-                    it.replace(regexNumberOnly, "")
-                        .lowercase()
+    override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> = coroutineScope {
+        async {
+            client.newCall(relatedMangaListRequest(manga))
+                .execute()
+                .let { response ->
+                    relatedMangaListParse(response)
                 }
-                // exclude single character
-                .filter { it.length > 1 }
-        }
-        val scope = CoroutineScope(Dispatchers.IO)
-        val words = HashSet<String>()
-        words += manga.title.stripKeyword()
-        manga.originalTitle.let { title ->
-            words += title.stripKeyword()
-        }
-        if (words.isEmpty()) {
-            return emptyList()
-        }
-
-        return words.map { keyword ->
-            // Make multiple search in parallel
-            scope.async {
-                try {
-                    getSearchManga(0, keyword, FilterList())
-                        .mangas.filter {
-                            it.url != manga.url &&
-                                it.title.lowercase().contains(keyword)
-                        }
-                } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e) { "getRelatedMangaListBySearch: $e" }
-                    emptyList()
-                }
-            }
-        }.awaitAll()
-            .minBy { if (it.isEmpty()) Int.MAX_VALUE else it.size }
+        }.await()
     }
 
     /**

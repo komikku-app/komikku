@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
-import eu.kanade.presentation.browse.components.GlobalSearchCardRow
-import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.presentation.browse.RelatedMangaTitle
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
@@ -65,6 +65,7 @@ import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.MissingChapterCountListItem
 import eu.kanade.presentation.manga.components.PagePreviewItems
 import eu.kanade.presentation.manga.components.PagePreviews
+import eu.kanade.presentation.manga.components.RelatedMangas
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -99,6 +100,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
@@ -107,6 +109,8 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.shouldExpandFAB
 import tachiyomi.source.local.isLocal
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -171,7 +175,8 @@ fun MangaScreen(
     onInvertSelection: () -> Unit,
 
     // KMK -->
-    getMangaState: @Composable ((Manga) -> State<Manga>),
+    getMangaState: @Composable (Manga) -> State<Manga>,
+    onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
@@ -231,6 +236,7 @@ fun MangaScreen(
             onInvertSelection = onInvertSelection,
             // KMK -->
             getMangaState = getMangaState,
+            onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
@@ -283,6 +289,7 @@ fun MangaScreen(
             onInvertSelection = onInvertSelection,
             // KMK -->
             getMangaState = getMangaState,
+            onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
@@ -352,6 +359,7 @@ private fun MangaScreenSmallImpl(
 
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
+    onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
@@ -372,6 +380,9 @@ private fun MangaScreenSmallImpl(
         mutableStateOf(Dp.Hairline)
     }
     // SY <--
+    // KMK -->
+    val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
+    // KMK <--
 
     val internalOnBackPressed = {
         if (isAnySelected) {
@@ -566,22 +577,23 @@ private fun MangaScreenSmallImpl(
                     }
 
                     // KMK -->
-                    if (state.relatedMangas?.isNotEmpty() == true) {
+                    if (state.source !is StubSource && relatedMangasEnabled) {
                         item(
                             key = MangaScreenItem.RELATED_TITLES,
                             contentType = MangaScreenItem.RELATED_TITLES,
                         ) {
-                            GlobalSearchResultItem(
-                                title = "Related titles",
-                                subtitle = null,
-                                onLongClick = null,
-                                onClick = { /* Should show a page with grid/list of all the related manga */ },
-                            ) {
+                            Column {
+                                RelatedMangaTitle(
+                                    title = stringResource(SYMR.strings.pref_source_related_mangas),
+                                    subtitle = null,
+                                    onClick = onRelatedMangasScreenClick,
+                                    onLongClick = null,
+                                )
                                 RelatedMangas(
-                                    mangas = state.relatedMangas.map { it.value },
-                                    getMangaState = { getMangaState(it) },
-                                    onClickManga = onRelatedMangaClick,
-                                    onLongClickManga = onRelatedMangaLongClick,
+                                    relatedMangas = state.relatedMangasSorted,
+                                    getMangaState = getMangaState,
+                                    onMangaClick = onRelatedMangaClick,
+                                    onMangaLongClick = onRelatedMangaLongClick
                                 )
                             }
                         }
@@ -651,7 +663,7 @@ private fun MangaScreenSmallImpl(
 }
 
 @Composable
-fun MangaScreenLargeImpl(
+private fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
     snackbarHostState: SnackbarHostState,
     nextUpdate: Instant?,
@@ -711,6 +723,7 @@ fun MangaScreenLargeImpl(
 
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
+    onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
@@ -730,6 +743,9 @@ fun MangaScreenLargeImpl(
     // SY -->
     val metadataDescription = metadataDescription(state.source)
     // SY <--
+    // KMK -->
+    val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
+    // KMK <--
 
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
     var topBarHeight by remember { mutableIntStateOf(0) }
@@ -928,22 +944,23 @@ fun MangaScreenLargeImpl(
                             ),
                         ) {
                             // KMK -->
-                            if (state.relatedMangas?.isNotEmpty() == true) {
+                            if (state.source !is StubSource && relatedMangasEnabled) {
                                 item(
                                     key = MangaScreenItem.RELATED_TITLES,
                                     contentType = MangaScreenItem.RELATED_TITLES,
                                 ) {
-                                    GlobalSearchResultItem(
-                                        title = "Related titles",
-                                        subtitle = null,
-                                        onLongClick = null,
-                                        onClick = { /* Should show a page with grid/list of all the related manga */ },
-                                    ) {
+                                    Column {
+                                        RelatedMangaTitle(
+                                            title = stringResource(SYMR.strings.pref_source_related_mangas),
+                                            subtitle = null,
+                                            onClick = onRelatedMangasScreenClick,
+                                            onLongClick = null,
+                                        )
                                         RelatedMangas(
-                                            mangas = state.relatedMangas.map { it.value },
-                                            getMangaState = { getMangaState(it) },
-                                            onClickManga = onRelatedMangaClick,
-                                            onLongClickManga = onRelatedMangaLongClick,
+                                            relatedMangas = state.relatedMangasSorted,
+                                            getMangaState = getMangaState,
+                                            onMangaClick = onRelatedMangaClick,
+                                            onMangaLongClick = onRelatedMangaLongClick
                                         )
                                     }
                                 }
@@ -986,24 +1003,6 @@ fun MangaScreenLargeImpl(
         }
     }
 }
-
-// KMK -->
-@Composable
-fun RelatedMangas(
-    mangas: List<Manga>,
-    getMangaState: @Composable ((Manga) -> State<Manga>),
-    onClickManga: (Manga) -> Unit,
-    onLongClickManga: (Manga) -> Unit,
-) {
-    GlobalSearchCardRow(
-        titles = mangas,
-        getManga = getMangaState,
-        onClick = onClickManga,
-        onLongClick = onLongClickManga,
-        selection = emptyList(),
-    )
-}
-// KMK <--
 
 @Composable
 private fun SharedMangaBottomActionMenu(

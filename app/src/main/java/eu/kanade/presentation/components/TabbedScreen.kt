@@ -73,8 +73,9 @@ fun TabbedScreen(
                     onSelectAll = {
                         feedState.items?.forEach {
                             it.results?.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga))
+                                if (!bulkFavoriteState.selection.contains(manga)) {
                                     bulkFavoriteScreenModel.select(manga)
+                                }
                             }
                         }
                     },

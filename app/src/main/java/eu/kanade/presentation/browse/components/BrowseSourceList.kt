@@ -72,7 +72,7 @@ fun BrowseSourceList(
 }
 
 @Composable
-private fun BrowseSourceListItem(
+internal fun BrowseSourceListItem(
     manga: Manga,
     // SY -->
     metadata: RaisedSearchMetadata?,

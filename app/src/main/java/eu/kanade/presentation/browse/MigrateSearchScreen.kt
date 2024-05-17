@@ -48,8 +48,9 @@ fun MigrateSearchScreen(
                             when (result) {
                                 is SearchItemResult.Success -> {
                                     result.result.forEach { manga ->
-                                        if (!bulkFavoriteState.selection.contains(manga))
+                                        if (!bulkFavoriteState.selection.contains(manga)) {
                                             bulkFavoriteScreenModel.select(manga)
+                                        }
                                     }
                                 }
                                 else -> {}

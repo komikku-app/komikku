@@ -60,7 +60,7 @@ fun GlobalSearchCardRow(
 }
 
 @Composable
-private fun MangaItem(
+internal fun MangaItem(
     title: String,
     cover: MangaCover,
     isFavorite: Boolean,
@@ -92,7 +92,7 @@ private fun MangaItem(
 }
 
 @Composable
-private fun EmptyResultItem() {
+internal fun EmptyResultItem() {
     Text(
         text = stringResource(MR.strings.no_results_found),
         modifier = Modifier

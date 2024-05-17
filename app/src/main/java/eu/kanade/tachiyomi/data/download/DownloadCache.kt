@@ -71,6 +71,7 @@ class DownloadCache(
 ) {
 
     private val scope = CoroutineScope(Dispatchers.IO)
+
     // KMK -->
     private val downloadPreferences: DownloadPreferences = Injekt.get()
     // KMK <--

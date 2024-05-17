@@ -70,8 +70,9 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                         onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga))
+                                if (!bulkFavoriteState.selection.contains(manga)) {
                                     bulkFavoriteScreenModel.select(manga)
+                                }
                             }
                         },
                     )
@@ -119,10 +120,8 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                     // KMK -->
                     if (!bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        // KMK <--
-                        onMangaClick(manga)
                     }
+                    // KMK <--
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,

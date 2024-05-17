@@ -79,7 +79,7 @@ fun BrowseSourceCompactGrid(
 }
 
 @Composable
-private fun BrowseSourceCompactGridItem(
+internal fun BrowseSourceCompactGridItem(
     manga: Manga,
     // SY -->
     metadata: RaisedSearchMetadata?,

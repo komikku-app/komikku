@@ -1,139 +1,127 @@
-package exh.md.similar
+package eu.kanade.tachiyomi.ui.browse
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.BrowseSourceContent
+import eu.kanade.core.preference.asState
+import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.presentation.browse.RelatedMangasContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
-import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import exh.ui.ifSourcesLoaded
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
+import eu.kanade.tachiyomi.ui.manga.RelatedManga
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
-import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
-class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
-
+class RelatedMangasScreen(
+    val mangaScreenModel: MangaScreenModel,
+    val onKeywordClick: (String) -> Unit,
+    val onKeywordLongClick: (String) -> Unit,
+    private val getManga: GetManga = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
+) : Screen() {
     @Composable
     override fun Content() {
-        if (!ifSourcesLoaded()) {
-            LoadingScreen()
-            return
-        }
+        val scope = rememberCoroutineScope()
+        var displayMode by sourcePreferences.sourceDisplayMode().asState(scope)
 
-        val screenModel = rememberScreenModel { MangaDexSimilarScreenModel(mangaId, sourceId) }
-        val navigator = LocalNavigator.currentOrThrow
+        val screenState by mangaScreenModel.state.collectAsState()
+        val successState = screenState as? MangaScreenModel.State.Success ?: return
 
-        // KMK -->
-        val state by screenModel.state.collectAsState()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
+        val navigator = LocalNavigator.currentOrThrow
         val haptic = LocalHapticFeedback.current
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
             bulkFavoriteScreenModel.toggleSelectionMode()
-        }
-        // KMK <--
-
-        val onMangaClick: (Manga) -> Unit = {
-            navigator.push(MangaScreen(it.id, true))
         }
 
         val snackbarHostState = remember { SnackbarHostState() }
 
         Scaffold(
             topBar = { scrollBehavior ->
-                // KMK -->
                 if (bulkFavoriteState.selectionMode) {
                     SelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
-                            state.mangaDisplayingList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
+                            successState.relatedMangasSorted?.forEach {
+                                val relatedManga = it as RelatedManga.Success
+                                relatedManga.mangaList.forEach { manga ->
+                                    if (!bulkFavoriteState.selection.contains(manga)) {
+                                        bulkFavoriteScreenModel.select(manga)
+                                    }
                                 }
                             }
                         },
                     )
                 } else {
-                    // KMK <--
                     BrowseSourceSimpleToolbar(
                         navigateUp = navigator::pop,
-                        title = stringResource(SYMR.strings.similar, screenModel.manga.title),
-                        displayMode = screenModel.displayMode,
-                        onDisplayModeChange = { screenModel.displayMode = it },
+                        title = successState.manga.title,
+                        displayMode = displayMode,
+                        onDisplayModeChange = { displayMode = it },
                         scrollBehavior = scrollBehavior,
-                        // KMK -->
                         toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
-                        // KMK <--
                     )
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-
-            BrowseSourceContent(
-                source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
-                columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
-                // SY -->
-                ehentaiBrowseDisplayMode = false,
-                // SY <--
-                displayMode = screenModel.displayMode,
-                snackbarHostState = snackbarHostState,
+            RelatedMangasContent(
+                relatedMangas = successState.relatedMangasSorted,
+                getMangaState = { manga -> getMangaState(initialManga = manga) },
+                columns = getColumnsPreference(LocalConfiguration.current.orientation),
+                displayMode = displayMode,
                 contentPadding = paddingValues,
-                onWebViewClick = null,
-                onHelpClick = null,
-                onLocalSourceHelpClick = null,
                 onMangaClick = { manga ->
-                    // KMK -->
                     if (bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.toggleSelection(manga)
                     } else {
-                        // KMK <--
-                        onMangaClick(manga)
+                        navigator.push(MangaScreen(manga.id, true))
                     }
                 },
                 onMangaLongClick = { manga ->
-                    // KMK -->
                     if (!bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                     } else {
-                        // KMK <--
-                        onMangaClick(manga)
+                        navigator.push(MangaScreen(manga.id, true))
                     }
                 },
-                // KMK -->
+                onKeywordClick = onKeywordClick,
+                onKeywordLongClick = onKeywordLongClick,
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
-                // KMK <--
             )
         }
 
-        // KMK -->
         when (bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
                 AddDuplicateMangaDialog(bulkFavoriteScreenModel)
@@ -147,6 +135,26 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                 AllowDuplicateDialog(bulkFavoriteScreenModel)
             else -> {}
         }
-        // KMK <--
+    }
+
+    private fun getColumnsPreference(orientation: Int): GridCells {
+        val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
+        val columns = if (isLandscape) {
+            libraryPreferences.landscapeColumns()
+        } else {
+            libraryPreferences.portraitColumns()
+        }.get()
+        return if (columns == 0) GridCells.Adaptive(128.dp) else GridCells.Fixed(columns)
+    }
+
+    @Composable
+    fun getMangaState(initialManga: Manga): State<Manga> {
+        return produceState(initialValue = initialManga) {
+            getManga.subscribe(initialManga.url, initialManga.source)
+                .filterNotNull()
+                .collectLatest { manga ->
+                    value = manga
+                }
+        }
     }
 }

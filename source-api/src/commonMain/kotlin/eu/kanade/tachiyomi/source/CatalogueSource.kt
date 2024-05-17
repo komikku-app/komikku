@@ -2,8 +2,13 @@ package eu.kanade.tachiyomi.source
 
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.SManga
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import logcat.LogPriority
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.core.common.util.system.logcat
 
 interface CatalogueSource : Source {
 
@@ -56,6 +61,132 @@ interface CatalogueSource : Source {
      * Returns the list of filters for the source.
      */
     fun getFilterList(): FilterList
+
+    // KMK -->
+    /**
+     * Whether parsing related mangas in manga page or extension provide custom related mangas request.
+     * @default false
+     * @since komikku/extensions-lib 1.6
+     */
+    val supportsRelatedMangas: Boolean get() = false
+
+    /**
+     * Extensions doesn't want to use App's [getRelatedMangaListBySearch].
+     * @default false
+     * @since komikku/extensions-lib 1.6
+     */
+    val disableRelatedMangasBySearch: Boolean get() = false
+
+    /**
+     * Disable showing any related titles.
+     * @default false
+     * @since komikku/extensions-lib 1.6
+     */
+    val disableRelatedMangas: Boolean get() = false
+
+    /**
+     * Get all the available related mangas for a manga.
+     * Normally it's not needed to override this method.
+     *
+     * @since komikku/extensions-lib 1.6
+     * @param manga the current manga to get related mangas.
+     * @return a list of <keyword, related mangas>
+     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     */
+    override suspend fun getRelatedMangaList(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        if (!disableRelatedMangas) {
+            if (supportsRelatedMangas) {
+                coroutineScope {
+                    launch {
+                        runCatching { fetchRelatedMangaList(manga) }
+                            .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
+                            .onFailure {
+                                logcat(LogPriority.ERROR, it) { "## fetchRelatedMangaList: $it" }
+                            }
+                    }
+                }
+            }
+
+            if (!disableRelatedMangasBySearch) {
+                getRelatedMangaListBySearch(manga, pushResults)
+            }
+        }
+    }
+
+    /**
+     * Fetch related mangas for a manga from source/site.
+     *
+     * @since komikku/extensions-lib 1.6
+     * @param manga the current manga to get related mangas.
+     * @return the related mangas for the current manga.
+     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     */
+    suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> =
+        throw IllegalStateException("Not used")
+
+    /**
+     * Slit & strip manga's title into separate searchable keywords.
+     * Used for searching related mangas.
+     *
+     * @since komikku/extensions-lib 1.6
+     * @return List of keywords.
+     */
+    fun String.stripKeywordForRelatedMangas(): List<String> {
+        val regexWhitespace = Regex("\\s+")
+        val regexSpecialCharacters =
+            Regex("([!~#$%^&*+_|/\\\\,?:;'“”‘’\"<>(){}\\[\\]。・～：—！？、―«»《》〘〙【】「」｜]|\\s-|-\\s|\\s\\.|\\.\\s)")
+        val regexNumberOnly = Regex("^\\d+$")
+
+        return replace(regexSpecialCharacters, " ")
+            .split(regexWhitespace)
+            .map {
+                // remove number only
+                it.replace(regexNumberOnly, "")
+                    .lowercase()
+            }
+            // exclude single character
+            .filter { it.length > 1 }
+    }
+
+    /**
+     * Fetch related mangas by searching for each keywords from manga's title.
+     *
+     * @return a list of <keyword, related mangas>
+     * @since komikku/extensions-lib 1.6
+     */
+    private suspend fun getRelatedMangaListBySearch(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        val words = HashSet<String>()
+        words.add(manga.title)
+        if (manga.title.lowercase() != manga.originalTitle.lowercase()) words.add(manga.originalTitle)
+        manga.title.stripKeywordForRelatedMangas()
+            .filterNot { word -> words.any { it.lowercase() == word } }
+            .onEach { words.add(it) }
+        manga.originalTitle.stripKeywordForRelatedMangas()
+            .filterNot { word -> words.any { it.lowercase() == word } }
+            .onEach { words.add(it) }
+        if (words.isEmpty()) return
+
+        coroutineScope {
+            words.map { keyword ->
+                launch {
+                    runCatching {
+                        getSearchManga(1, keyword, FilterList()).mangas
+                    }
+                        .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
+                        .onFailure { e ->
+                            logcat(LogPriority.ERROR, e) { "## getRelatedMangaListBySearch: $e" }
+                        }
+                }
+            }
+        }
+    }
+    // KMK <--
 
     @Deprecated(
         "Use the non-RxJava API instead",

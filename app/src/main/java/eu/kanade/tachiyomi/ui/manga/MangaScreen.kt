@@ -47,6 +47,7 @@ import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
+import eu.kanade.tachiyomi.ui.browse.RelatedMangasScreen
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
@@ -243,6 +244,19 @@ class MangaScreen(
             onInvertSelection = screenModel::invertSelection,
             // KMK -->
             getMangaState = { screenModel.getManga(initialManga = it) },
+            onRelatedMangasScreenClick = {
+                navigator.push(
+                    RelatedMangasScreen(
+                        mangaScreenModel = screenModel,
+                        onKeywordClick = { query ->
+                            navigator.push(BrowseSourceScreen(successState.source.id, query))
+                        },
+                        onKeywordLongClick = { query ->
+                            navigator.push(GlobalSearchScreen(query))
+                        },
+                    )
+                )
+            },
             onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
             onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
             onSourceClick = {
