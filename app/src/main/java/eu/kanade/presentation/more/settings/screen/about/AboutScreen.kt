@@ -28,10 +28,14 @@ import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
+import eu.kanade.tachiyomi.ui.more.ComingUpdatesScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
+import eu.kanade.tachiyomi.ui.more.WhatsNewScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.isDevFlavor
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -63,6 +67,11 @@ object AboutScreen : Screen() {
         val handleBack = LocalBackPress.current
         val navigator = LocalNavigator.currentOrThrow
         var isCheckingUpdates by remember { mutableStateOf(false) }
+
+        // KMK -->
+        var isCheckingWhatsNew by remember { mutableStateOf(false) }
+        var isCheckingWhatsComing by remember { mutableStateOf(false) }
+        // KMK <--
 
         // SY -->
         var showWhatsNewDialog by remember { mutableStateOf(false) }
@@ -134,16 +143,84 @@ object AboutScreen : Screen() {
                     }
                 }
 
-                if (!BuildConfig.DEBUG) {
+                // KMK -->
+                item {
+                    TextPreferenceWidget(
+                        title = stringResource(MR.strings.whats_new),
+                        widget = {
+                            AnimatedVisibility(visible = isCheckingWhatsNew) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    strokeWidth = 3.dp,
+                                )
+                            }
+                        },
+                        onPreferenceClick = {
+                            if (!isCheckingWhatsNew) {
+                                scope.launch {
+                                    isCheckingWhatsNew = true
+
+                                    getReleaseNotes(
+                                        context = context,
+                                        onAvailableUpdate = { result ->
+                                            val whatsNewScreen = WhatsNewScreen(
+                                                currentVersion = BuildConfig.VERSION_NAME,
+                                                versionName = result.release.version,
+                                                changelogInfo = result.release.info,
+                                                releaseLink = result.release.releaseLink,
+                                            )
+                                            navigator.push(whatsNewScreen)
+                                        },
+                                        onFinish = {
+                                            isCheckingWhatsNew = false
+                                        },
+                                    )
+                                }
+                            }
+                        },
+                    )
+                }
+
+                if (isReleaseBuildType || isDevFlavor) {
                     item {
                         TextPreferenceWidget(
-                            title = stringResource(MR.strings.whats_new),
-                            // SY -->
-                            onPreferenceClick = { showWhatsNewDialog = true },
-                            // SY <--
+                            title = stringResource(MR.strings.whats_coming),
+                            widget = {
+                                AnimatedVisibility(visible = isCheckingWhatsComing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(28.dp),
+                                        strokeWidth = 3.dp,
+                                    )
+                                }
+                            },
+                            onPreferenceClick = {
+                                if (!isCheckingWhatsComing) {
+                                    scope.launch {
+                                        isCheckingWhatsComing = true
+
+                                        checkVersion(
+                                            context = context,
+                                            onAvailableUpdate = { result ->
+                                                val updateScreen = ComingUpdatesScreen(
+                                                    versionName = result.release.version,
+                                                    changelogInfo = result.release.info,
+                                                    releaseLink = result.release.releaseLink,
+                                                    downloadLink = result.release.getDownloadLink(),
+                                                )
+                                                navigator.push(updateScreen)
+                                            },
+                                            onFinish = {
+                                                isCheckingWhatsComing = false
+                                            },
+                                            peekIntoPreview = true,
+                                        )
+                                    }
+                                }
+                            },
                         )
                     }
                 }
+                // KMK <--
 
                 // item {
                 //     TextPreferenceWidget(
@@ -222,8 +299,11 @@ object AboutScreen : Screen() {
         context: Context,
         onAvailableUpdate: (GetApplicationRelease.Result.NewUpdate) -> Unit,
         onFinish: () -> Unit,
+        // KMK -->
+        peekIntoPreview: Boolean = false,
+        // KMK <--
     ) {
-        val updateChecker = AppUpdateChecker()
+        val updateChecker = AppUpdateChecker(peekIntoPreview)
         withUIContext {
             try {
                 when (val result = withIOContext { updateChecker.checkForUpdate(context, forceCheck = true) }) {
@@ -235,6 +315,29 @@ object AboutScreen : Screen() {
                     }
                     is GetApplicationRelease.Result.OsTooOld -> {
                         context.toast(MR.strings.update_check_eol)
+                    }
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                context.toast(e.message)
+                logcat(LogPriority.ERROR, e)
+            } finally {
+                onFinish()
+            }
+        }
+    }
+
+    private suspend fun getReleaseNotes(
+        context: Context,
+        onAvailableUpdate: (GetApplicationRelease.Result.NewUpdate) -> Unit,
+        onFinish: () -> Unit,
+    ) {
+        val updateChecker = AppUpdateChecker()
+        withUIContext {
+            try {
+                when (val result = withIOContext { updateChecker.getReleaseNotes(context) }) {
+                    is GetApplicationRelease.Result.NewUpdate -> {
+                        onAvailableUpdate(result)
                     }
                     else -> {}
                 }

@@ -465,6 +465,7 @@
     <string name="skip_this_step_next_time">Skip this step next time</string>
     <string name="hide_not_found_entries">Hide not found entries</string>
     <string name="search_parameter">Search parameter (e.g. language:english)</string>
+    <string name="current_">Current: %1$s</string>
     <string name="latest_">Latest: %1$s</string>
     <string name="migrating_to">migrating to</string>
     <string name="match_pinned_sources">Match pinned sources</string>

@@ -27,21 +27,20 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.InfoScreen
 
 @Composable
-fun NewUpdateScreen(
+fun WhatsNewScreen(
+    currentVersion: String,
     versionName: String,
     changelogInfo: String,
     onOpenInBrowser: () -> Unit,
-    onRejectUpdate: () -> Unit,
     onAcceptUpdate: () -> Unit,
 ) {
     InfoScreen(
         icon = Icons.Outlined.NewReleases,
-        headingText = stringResource(MR.strings.update_check_notification_update_available),
-        subtitleText = stringResource(SYMR.strings.latest_, versionName),
-        acceptText = stringResource(MR.strings.update_check_confirm),
+        headingText = stringResource(MR.strings.whats_new),
+        subtitleText = stringResource(SYMR.strings.latest_, versionName) +
+            " - " + stringResource(SYMR.strings.current_, currentVersion),
+        acceptText = stringResource(MR.strings.action_ok),
         onAcceptClick = onAcceptUpdate,
-        rejectText = stringResource(MR.strings.action_not_now),
-        onRejectClick = onRejectUpdate,
     ) {
         RichText(
             modifier = Modifier
@@ -69,20 +68,21 @@ fun NewUpdateScreen(
 
 @PreviewLightDark
 @Composable
-private fun NewUpdateScreenPreview() {
+private fun WhatsNewScreenPreview() {
     TachiyomiPreviewTheme {
-        NewUpdateScreen(
-            versionName = "v0.99.9",
+        WhatsNewScreen(
+            currentVersion = "v0.99.9",
+            versionName = "v1.00.0",
             changelogInfo = """
                 ## Yay
                 Foobar
                 
                 ### More info
-                - Hello
+                [komikku-app/komikku@23d862d17...48fb4a2e6](https://github.com/komikku-app/komikku/compare/23d862d17...48fb4a2e6)
+                - Hello ([@cuong-tran](@https://github.com/cuong-tran))
                 - World
             """.trimIndent(),
             onOpenInBrowser = {},
-            onRejectUpdate = {},
             onAcceptUpdate = {},
         )
     }

@@ -7,7 +7,11 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import uy.kohesive.injekt.injectLazy
 
-class AppUpdateChecker {
+class AppUpdateChecker(
+    // KMK -->
+    private val peekIntoPreview: Boolean = false,
+    // KMK <--
+) {
 
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
@@ -20,11 +24,11 @@ class AppUpdateChecker {
         return withIOContext {
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
-                    isPreview = BuildConfig.PREVIEW,
+                    isPreview = BuildConfig.PREVIEW || peekIntoPreview,
                     isThirdParty = context.isInstalledFromFDroid(),
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
-                    repository = GITHUB_REPO,
+                    repository = getGithubRepo(peekIntoPreview),
                     forceCheck = forceCheck,
                 ),
             )
@@ -40,22 +44,40 @@ class AppUpdateChecker {
             result
         }
     }
+
+    // KMK -->
+    suspend fun getReleaseNotes(context: Context): GetApplicationRelease.Result {
+        return withIOContext {
+            getApplicationRelease.awaitReleaseNotes(
+                GetApplicationRelease.Arguments(
+                    isPreview = BuildConfig.PREVIEW || peekIntoPreview,
+                    isThirdParty = context.isInstalledFromFDroid(),
+                    commitCount = BuildConfig.COMMIT_COUNT.toInt(),
+                    versionName = BuildConfig.VERSION_NAME,
+                    repository = getGithubRepo(peekIntoPreview),
+                ),
+            )
+        }
+    }
+    // KMK <--
 }
 
-val GITHUB_REPO: String by lazy {
-    if (BuildConfig.PREVIEW) {
+val GITHUB_REPO: String by lazy { getGithubRepo() }
+
+fun getGithubRepo(peekIntoPreview: Boolean = false): String =
+    if (BuildConfig.PREVIEW || peekIntoPreview) {
         "komikku-app/komikku-preview"
     } else {
         "komikku-app/komikku"
     }
-}
 
-val RELEASE_TAG: String by lazy {
-    if (BuildConfig.PREVIEW) {
+val RELEASE_TAG: String by lazy { getReleaseTag() }
+
+fun getReleaseTag(peekIntoPreview: Boolean = false): String =
+    if (BuildConfig.PREVIEW || peekIntoPreview) {
         "r${BuildConfig.COMMIT_COUNT}"
     } else {
         "v${BuildConfig.VERSION_NAME}"
     }
-}
 
 val RELEASE_URL = "https://github.com/$GITHUB_REPO/releases/tag/$RELEASE_TAG"

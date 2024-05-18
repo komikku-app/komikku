@@ -27,7 +27,27 @@ class GetApplicationRelease(
             return Result.NoNewUpdate
         }
 
-        val release = service.latest(arguments.repository)
+        // KMK -->
+        val releases = service.releaseNotes(arguments.repository)
+            .filter {
+                !it.preRelease && isNewVersion(
+                    arguments.isPreview,
+                    arguments.commitCount,
+                    arguments.versionName,
+                    it.version
+                )
+            }
+        val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
+
+        val release = releases.firstOrNull()
+            ?.copy(
+                info = releases.joinToString("\r---\r") {
+                    "## ${it.version}\r\r" +
+                        it.info.replace(checksumRegex, "")
+                }
+            )
+        if (release == null) return Result.NoNewUpdate
+        // KMK <--
 
         lastChecked.set(now.toEpochMilli())
 
@@ -44,6 +64,24 @@ class GetApplicationRelease(
             else -> Result.NoNewUpdate
         }
     }
+
+    // KMK -->
+    suspend fun awaitReleaseNotes(arguments: Arguments): Result {
+        val releases = service.releaseNotes(arguments.repository)
+            .filter { !it.preRelease }
+        val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
+
+        val release = releases.firstOrNull()
+            ?.copy(
+                info = releases.joinToString("\r---\r") {
+                    "## ${it.version}\r\r" +
+                        it.info.replace(checksumRegex, "")
+                }
+            )
+        if (release == null) return Result.NoNewUpdate
+        return Result.NewUpdate(release)
+    }
+    // KMK <--
 
     /**
      * [isPreview] is if current version is Preview (beta) build

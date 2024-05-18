@@ -27,7 +27,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.InfoScreen
 
 @Composable
-fun NewUpdateScreen(
+fun ComingUpdatesScreen(
     versionName: String,
     changelogInfo: String,
     onOpenInBrowser: () -> Unit,
@@ -36,9 +36,9 @@ fun NewUpdateScreen(
 ) {
     InfoScreen(
         icon = Icons.Outlined.NewReleases,
-        headingText = stringResource(MR.strings.update_check_notification_update_available),
+        headingText = stringResource(MR.strings.update_check_notification_preview_available),
         subtitleText = stringResource(SYMR.strings.latest_, versionName),
-        acceptText = stringResource(MR.strings.update_check_confirm),
+        acceptText = stringResource(MR.strings.update_check_try_now),
         onAcceptClick = onAcceptUpdate,
         rejectText = stringResource(MR.strings.action_not_now),
         onRejectClick = onRejectUpdate,
@@ -69,16 +69,17 @@ fun NewUpdateScreen(
 
 @PreviewLightDark
 @Composable
-private fun NewUpdateScreenPreview() {
+private fun ComingUpdatesScreenPreview() {
     TachiyomiPreviewTheme {
-        NewUpdateScreen(
+        ComingUpdatesScreen(
             versionName = "v0.99.9",
             changelogInfo = """
                 ## Yay
                 Foobar
                 
                 ### More info
-                - Hello
+                [komikku-app/komikku@23d862d17...48fb4a2e6](https://github.com/komikku-app/komikku/compare/23d862d17...48fb4a2e6)
+                - Hello ([@cuong-tran](@https://github.com/cuong-tran))
                 - World
             """.trimIndent(),
             onOpenInBrowser = {},

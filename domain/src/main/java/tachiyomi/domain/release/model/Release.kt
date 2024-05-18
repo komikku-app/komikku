@@ -10,6 +10,10 @@ data class Release(
     val info: String,
     val releaseLink: String,
     private val assets: List<String>,
+    // KMK -->
+    val preRelease: Boolean = false,
+    val draft: Boolean = false,
+    // KMK <--
 ) {
 
     /**
