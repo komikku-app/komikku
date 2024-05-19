@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew assembleDevPreview testDevPreviewUnitTest --stacktrace
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Komikku-${{ github.sha }}.apk
           path: app/build/outputs/apk/dev/preview/app-dev-universal-preview.apk
