@@ -3,7 +3,8 @@
   "rebaseWhen": "conflicted",
   "labels": ["Dependencies"],
   "extends": [
-    "config:recommended"
+    ["config:best-practices"],
+    "github>mihonapp/mihon//.github/renovate.json5"
   ],
   "includeForks": true
 }
