@@ -39,4 +39,4 @@ jobs:
 
       - name: Build app and run unit tests
         # run: ./gradlew detekt assembleStandardRelease testReleaseUnitTest
-        run: ./gradlew assembleStandardRelease testStandardReleaseUnitTest --stacktrace
+        run: ./gradlew assembleDevPreview testDevPreviewUnitTest --stacktrace
