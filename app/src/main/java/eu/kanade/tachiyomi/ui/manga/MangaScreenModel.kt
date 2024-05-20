@@ -1111,25 +1111,23 @@ class MangaScreenModel(
         val state = successState ?: return
         val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
         try {
-            withIOContext {
-                if (state.source !is StubSource) {
-                    if (relatedMangasEnabled) {
-                        state.source.getRelatedMangaList(state.manga.toSManga()) { pair, _ ->
-                            /* Push found related mangas into collection */
-                            val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
-                                mangaList.map {
-                                    networkToLocalManga.await(it.toDomainManga(state.source.id))
-                                }
+            if (state.source !is StubSource) {
+                if (relatedMangasEnabled) {
+                    state.source.getRelatedMangaList(state.manga.toSManga()) { pair, _ ->
+                        /* Push found related mangas into collection */
+                        val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
+                            mangaList.map {
+                                networkToLocalManga.await(it.toDomainManga(state.source.id))
                             }
+                        }
 
-                            updateSuccessState { successState ->
-                                val relatedMangaCollection =
-                                    successState.relatedMangaCollection
-                                        ?.toMutableStateList()
-                                        ?.apply { add(relatedManga) }
-                                        ?: listOf(relatedManga)
-                                successState.copy(relatedMangaCollection = relatedMangaCollection)
-                            }
+                        updateSuccessState { successState ->
+                            val relatedMangaCollection =
+                                successState.relatedMangaCollection
+                                    ?.toMutableStateList()
+                                    ?.apply { add(relatedManga) }
+                                    ?: listOf(relatedManga)
+                            successState.copy(relatedMangaCollection = relatedMangaCollection)
                         }
                     }
                 }

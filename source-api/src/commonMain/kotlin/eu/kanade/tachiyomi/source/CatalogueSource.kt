@@ -98,22 +98,28 @@ interface CatalogueSource : Source {
         pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
     ) {
         if (!disableRelatedMangas) {
-            if (supportsRelatedMangas) {
-                coroutineScope {
-                    launch {
-                        runCatching { fetchRelatedMangaList(manga) }
-                            .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
-                            .onFailure {
-                                logcat(LogPriority.ERROR, it) { "## fetchRelatedMangaList: $it" }
-                            }
-                    }
-                }
-            }
-
-            if (!disableRelatedMangasBySearch) {
-                getRelatedMangaListBySearch(manga, pushResults)
+            coroutineScope {
+                if (supportsRelatedMangas) launch { getRelatedMangaListByExtension(manga, pushResults) }
+                if (!disableRelatedMangasBySearch) launch { getRelatedMangaListBySearch(manga, pushResults) }
             }
         }
+    }
+
+    /**
+     * Get related mangas provided by extension
+     *
+     * @return a list of <keyword, related mangas>
+     * @since komikku/extensions-lib 1.6
+     */
+    suspend fun getRelatedMangaListByExtension(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        runCatching { fetchRelatedMangaList(manga) }
+            .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
+            .onFailure { e ->
+                logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
+            }
     }
 
     /**
@@ -152,12 +158,12 @@ interface CatalogueSource : Source {
     }
 
     /**
-     * Fetch related mangas by searching for each keywords from manga's title.
+     * Get related mangas by searching for each keywords from manga's title.
      *
      * @return a list of <keyword, related mangas>
      * @since komikku/extensions-lib 1.6
      */
-    private suspend fun getRelatedMangaListBySearch(
+    suspend fun getRelatedMangaListBySearch(
         manga: SManga,
         pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
     ) {
