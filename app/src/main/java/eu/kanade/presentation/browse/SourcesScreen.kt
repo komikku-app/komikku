@@ -34,14 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -76,6 +73,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
+import tachiyomi.presentation.core.util.isScrollingUp
 import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
@@ -172,33 +170,15 @@ fun AnimatedFloatingSearchBox(
     placeholderText: String? = null,
 ) {
     AnimatedVisibility(
-        visible = listState.isScrollingUp().value,
+        visible = listState.isScrollingUp(),
         enter = expandVertically(),
-        exit = shrinkVertically()
+        exit = shrinkVertically(),
     ) {
         SourcesSearch(
             searchQuery = searchQuery,
             onChangeSearchQuery = onChangeSearchQuery,
             placeholderText = placeholderText,
         )
-    }
-}
-
-@Composable
-fun LazyListState.isScrollingUp(): State<Boolean> {
-    return produceState(initialValue = true) {
-        var lastIndex = 0
-        var lastScroll = Int.MAX_VALUE
-        snapshotFlow {
-            firstVisibleItemIndex to firstVisibleItemScrollOffset
-        }.collect { (currentIndex, currentScroll) ->
-            if (currentIndex != lastIndex || currentScroll != lastScroll) {
-                value = currentIndex < lastIndex ||
-                    (currentIndex == lastIndex && currentScroll < lastScroll)
-                lastIndex = currentIndex
-                lastScroll = currentScroll
-            }
-        }
     }
 }
 
@@ -250,39 +230,47 @@ fun SourcesSearch(
         keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
-        decorationBox = { innerTextField -> TextFieldDefaults.DecorationBox(
-            value = searchQuery ?: "",
-            innerTextField = innerTextField,
-            enabled = true,
-            singleLine = true,
-            visualTransformation = VisualTransformation.None,
-            interactionSource = remember { MutableInteractionSource() },
-            placeholder = { Text(
-                modifier = Modifier.secondaryItemAlpha(),
-                text = (placeholderText ?: stringResource(MR.strings.action_search_hint)),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium,
-            ) },
-            leadingIcon = { SearchBoxLeadingIcon(
-                isFocused || !searchQuery.isNullOrBlank(),
-                modifier = Modifier,
-                onClickCloseSearch,
-            ) },
-            trailingIcon = { SearchBoxTrailingIcon(
-                searchQuery.isNullOrEmpty(),
-                modifier = Modifier,
-                onClickClearSearch,
-            ) },
-            shape = RoundedCornerShape(24.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.onBackground,
-            ),
-            contentPadding = PaddingValues(12.dp),
-        ) }
+        decorationBox = { innerTextField ->
+            TextFieldDefaults.DecorationBox(
+                value = searchQuery ?: "",
+                innerTextField = innerTextField,
+                enabled = true,
+                singleLine = true,
+                visualTransformation = VisualTransformation.None,
+                interactionSource = remember { MutableInteractionSource() },
+                placeholder = {
+                    Text(
+                        modifier = Modifier.secondaryItemAlpha(),
+                        text = (placeholderText ?: stringResource(MR.strings.action_search_hint)),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+                leadingIcon = {
+                    SearchBoxLeadingIcon(
+                        isFocused || !searchQuery.isNullOrBlank(),
+                        modifier = Modifier,
+                        onClickCloseSearch,
+                    )
+                },
+                trailingIcon = {
+                    SearchBoxTrailingIcon(
+                        searchQuery.isNullOrEmpty(),
+                        modifier = Modifier,
+                        onClickClearSearch,
+                    )
+                },
+                shape = RoundedCornerShape(24.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.onBackground,
+                ),
+                contentPadding = PaddingValues(12.dp),
+            )
+        }
     )
 }
 
@@ -292,7 +280,7 @@ fun SearchBoxLeadingIcon(
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
     onClickCloseSearch: () -> Unit = {},
 ) {
-    if (isSearching)
+    if (isSearching) {
         IconButton(
             onClick = onClickCloseSearch,
         ) {
@@ -301,11 +289,12 @@ fun SearchBoxLeadingIcon(
                 contentDescription = "Close",
             )
         }
-    else
+    } else {
         Icon(
             imageVector = Icons.Filled.Search,
             contentDescription = "Search",
         )
+    }
 }
 
 @Composable
@@ -314,7 +303,7 @@ fun SearchBoxTrailingIcon(
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
     onClickClearSearch: () -> Unit = {},
 ) {
-    if (!isEmpty)
+    if (!isEmpty) {
         IconButton(
             onClick = onClickClearSearch,
         ) {
@@ -323,6 +312,7 @@ fun SearchBoxTrailingIcon(
                 contentDescription = "Clear",
             )
         }
+    }
 }
 // KMK <--
 
@@ -475,9 +465,10 @@ fun SourceOptionsDialog(
                 // SY <--
                 // KMK -->
                 if (onClickSettings != null && source.installedExtension !== null &&
-                    source.id !in listOf(LocalSource.ID, EH_SOURCE_ID, EXH_SOURCE_ID)) {
+                    source.id !in listOf(LocalSource.ID, EH_SOURCE_ID, EXH_SOURCE_ID)
+                ) {
                     Text(
-                        text =  stringResource(MR.strings.label_extension_info),
+                        text = stringResource(MR.strings.label_extension_info),
                         modifier = Modifier
                             .clickable(onClick = onClickSettings)
                             .fillMaxWidth()
