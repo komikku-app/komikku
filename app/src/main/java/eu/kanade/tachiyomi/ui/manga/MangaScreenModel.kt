@@ -1143,12 +1143,20 @@ class MangaScreenModel(
      * Requests an list of related mangas from the source.
      */
     private suspend fun fetchRelatedMangasFromSource() {
+        fun exceptionHandler(e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+            val message = with(context) { e.formattedMessage }
+
+            screenModelScope.launch {
+                snackbarHostState.showSnackbar(message = message)
+            }
+        }
         val state = successState ?: return
         val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
         try {
             if (state.source !is StubSource) {
                 if (relatedMangasEnabled) {
-                    state.source.getRelatedMangaList(state.manga.toSManga()) { pair, _ ->
+                    state.source.getRelatedMangaList(state.manga.toSManga(), { e -> exceptionHandler(e) }) { pair, _ ->
                         /* Push found related mangas into collection */
                         val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
                             mangaList.map {
@@ -1167,13 +1175,8 @@ class MangaScreenModel(
                     }
                 }
             }
-        } catch (e: Throwable) {
-            logcat(LogPriority.ERROR, e)
-            val message = with(context) { e.formattedMessage }
-
-            screenModelScope.launch {
-                snackbarHostState.showSnackbar(message = message)
-            }
+        } catch (e: Exception) {
+            exceptionHandler(e)
         }
     }
     // KMK <--
