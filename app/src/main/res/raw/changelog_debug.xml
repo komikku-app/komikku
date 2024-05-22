@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
     <changelogversion versionName="Latest (r8894)" changeDate="May 17, 2024">
-        <changelogtext>A dedicated screen for related entries, fetching directly from sources</changelogtext>
-        <changelogtext>Faster loading of related entries</changelogtext>
-        <changelogtext>Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
+        <changelogtext>[b]New[/b] A dedicated screen for related entries, fetching directly from sources</changelogtext>
+        <changelogtext>[b]Improved[/b] Faster loading of related entries</changelogtext>
+        <changelogtext>[b]Improved[/b] Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
         <changelogtext>Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
-        <changelogtext>A peek into Preview-build's 'What's New' in About screen</changelogtext>
-        <changelogtext>Update to TachiyomiSY preview-142</changelogtext>
+        <changelogtext>[b]Improved[/b] Auto sync read chapters from Trackers &amp; mark read to update</changelogtext>
+        <changelogtext>[b]New[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
+        <changelogtext>[b]Update to TachiyomiSY preview-142[/b]</changelogtext>
     </changelogversion>
     <changelogversion versionName="r8852" changeDate="May 9,2024">
         <changelogtext>Beta build switch to 'preview' repo</changelogtext>

@@ -5,6 +5,7 @@
         <changelogtext>[b]Improved[/b] Faster loading of related entries</changelogtext>
         <changelogtext>[b]Improved[/b] Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
         <changelogtext>Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
+        <changelogtext>[b]Improved[/b] Auto sync read chapters from Trackers &amp; mark read to update</changelogtext>
         <changelogtext>[b]New[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
         <changelogtext>[b]Update to TachiyomiSY 1.10.6[/b]</changelogtext>
         <changelogtext>[b]Update to Mihon 0.16.6[/b]</changelogtext>
