@@ -452,10 +452,9 @@ class MangaScreenModel(
             if (screenModelScope.isActive) {
                 // KMK -->
                 launch {
-                    launch {
-                        fetchRelatedMangasFromSource()
-                    }.join()
-                    updateSuccessState { it.copy(isFetchingRelatedMangas = false) }
+                    fetchRelatedMangasFromSource(onFinish = {
+                        updateSuccessState { it.copy(isFetchingRelatedMangas = false) }
+                    })
                 }
                 // KMK <--
                 val fetchFromSourceTasks = listOf(
@@ -1142,7 +1141,7 @@ class MangaScreenModel(
     /**
      * Requests an list of related mangas from the source.
      */
-    private suspend fun fetchRelatedMangasFromSource() {
+    private suspend fun fetchRelatedMangasFromSource(onFinish: () -> Unit) {
         fun exceptionHandler(e: Throwable) {
             logcat(LogPriority.ERROR, e)
             val message = with(context) { e.formattedMessage }
@@ -1177,6 +1176,8 @@ class MangaScreenModel(
             }
         } catch (e: Exception) {
             exceptionHandler(e)
+        } finally {
+            onFinish()
         }
     }
     // KMK <--
@@ -1796,6 +1797,10 @@ class MangaScreenModel(
             // KMK <--
         ) : State {
             // KMK ->>
+            /**
+             * a value of null will be treated as still loading, so if all searching were failed and won't update
+             * 'relatedMangaCollection` then we should return empty list
+             */
             val relatedMangasSorted = relatedMangaCollection
                 ?.sorted(manga)
                 ?.removeDuplicates(manga)
@@ -1932,7 +1937,7 @@ sealed interface RelatedManga {
     }
 
     companion object {
-        fun List<RelatedManga>.sorted(manga: Manga): List<RelatedManga> {
+        internal fun List<RelatedManga>.sorted(manga: Manga): List<RelatedManga> {
             val success = filterIsInstance<Success>()
             val loading = filterIsInstance<Loading>()
             val title = manga.title.lowercase()
@@ -1946,7 +1951,7 @@ sealed interface RelatedManga {
                 loading
         }
 
-        fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
+        internal fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
             val mangaUrls = HashSet<String>().apply { add(manga.url) }
 
             return map { relatedManga ->
@@ -1963,7 +1968,7 @@ sealed interface RelatedManga {
             }
         }
 
-        fun List<RelatedManga>.isLoading(isFetchingRelatedMangas: Boolean): List<RelatedManga> {
+        internal fun List<RelatedManga>.isLoading(isFetchingRelatedMangas: Boolean): List<RelatedManga> {
             return if (isFetchingRelatedMangas) {
                 this + listOf(Loading)
             } else {
