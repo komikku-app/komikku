@@ -41,10 +41,10 @@ fun RelatedMangasComfortableGrid(
         verticalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridVerticalSpacer),
         horizontalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridHorizontalSpacer),
     ) {
-        relatedMangas.forEach {
-            val isLoading = it is RelatedManga.Loading
+        relatedMangas.forEach { related ->
+            val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                header {
+                header(key = "$related#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -53,10 +53,10 @@ fun RelatedMangasComfortableGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                header { RelatedMangasLoadingItem() }
+                header(key = "$related#content") { RelatedMangasLoadingItem() }
             } else {
-                val relatedManga = it as RelatedManga.Success
-                header {
+                val relatedManga = related as RelatedManga.Success
+                header(key = "${related.keyword}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(SYMR.strings.related_mangas_more)
@@ -73,7 +73,7 @@ fun RelatedMangasComfortableGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(count = relatedManga.mangaList.size) { index ->
+                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceComfortableGridItem(
                         manga = manga,

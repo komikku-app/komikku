@@ -64,7 +64,7 @@ fun RelatedMangaCardRow(
         contentPadding = PaddingValues(MaterialTheme.padding.small),
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
     ) {
-        items(mangas) {
+        items(mangas, key = { it.id }) {
             val manga by getManga(it)
             MangaItem(
                 title = manga.title,

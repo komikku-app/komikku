@@ -36,10 +36,10 @@ fun RelatedMangasList(
         ),
         contentPadding = PaddingValues(MaterialTheme.padding.small),
     ) {
-        relatedMangas.forEach {
-            val isLoading = it is RelatedManga.Loading
+        relatedMangas.forEach { related ->
+            val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                stickyHeader {
+                stickyHeader(key = "$related#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -48,10 +48,10 @@ fun RelatedMangasList(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                item { RelatedMangasLoadingItem() }
+                item(key = "$related#content") { RelatedMangasLoadingItem() }
             } else {
-                val relatedManga = it as RelatedManga.Success
-                stickyHeader {
+                val relatedManga = related as RelatedManga.Success
+                stickyHeader(key = "${related.keyword}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(SYMR.strings.related_mangas_more)
@@ -68,7 +68,7 @@ fun RelatedMangasList(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(count = relatedManga.mangaList.size) { index ->
+                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceListItem(
                         manga = manga,
