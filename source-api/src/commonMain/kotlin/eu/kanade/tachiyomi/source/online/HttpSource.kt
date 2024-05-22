@@ -18,12 +18,15 @@ import exh.pref.DelegateSourcePreferences
 import exh.source.DelegatedHttpSource
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import logcat.LogPriority
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
@@ -324,6 +327,81 @@ abstract class HttpSource : CatalogueSource {
      */
     protected open fun relatedMangaListParse(response: Response): List<SManga> = popularMangaParse(response).mangas
     // KMK <--
+
+    // KMK -->
+    /**
+     * TODO: Remove
+     */
+    override suspend fun getRelatedMangaList(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        super.getRelatedMangaList(manga, pushResults)
+        logcat(LogPriority.ERROR) { "####################################" }
+    }
+
+    override suspend fun getRelatedMangaListByExtension(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        val startTime = System.currentTimeMillis()
+        logcat(LogPriority.ERROR) { "Search Extension >>>> @${(startTime % 10000000) / 1000}" }
+        runCatching { fetchRelatedMangaList(manga) }
+            .onSuccess {
+                if (it.isNotEmpty()) pushResults(Pair("", it), false)
+                logcat(LogPriority.ERROR) {
+                    "Extension search - result: ${it.size} <<<< (~${System.currentTimeMillis() - startTime}ms)"
+                }
+            }
+            .onFailure { e ->
+                logcat(LogPriority.ERROR, e) {
+                    "## getRelatedMangaListByExtension (~${System.currentTimeMillis() - startTime}ms): $e"
+                }
+            }
+    }
+
+    /**
+     * TODO: Remove
+     */
+    override suspend fun getRelatedMangaListBySearch(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) {
+        val words = HashSet<String>()
+        words.add(manga.title)
+        if (manga.title.lowercase() != manga.originalTitle.lowercase()) words.add(manga.originalTitle)
+        manga.title.stripKeywordForRelatedMangas()
+            .filterNot { word -> words.any { it.lowercase() == word } }
+            .onEach { words.add(it) }
+        manga.originalTitle.stripKeywordForRelatedMangas()
+            .filterNot { word -> words.any { it.lowercase() == word } }
+            .onEach { words.add(it) }
+        if (words.isEmpty()) return
+
+        coroutineScope {
+            words.map { keyword ->
+                val startTime = System.currentTimeMillis()
+                launch {
+                    logcat(LogPriority.ERROR) { "Search '$keyword' >>>> @${(startTime % 10000000) / 1000}" }
+                    runCatching {
+                        getSearchManga(1, keyword, FilterList()).mangas
+                    }
+                        .onSuccess {
+                            if (it.isNotEmpty()) pushResults(Pair(keyword, it), false)
+                            logcat(LogPriority.ERROR) {
+                                "keyword: $keyword - result: ${it.size}" +
+                                    " <<<< (~${System.currentTimeMillis() - startTime}ms)"
+                            }
+                        }
+                        .onFailure { e ->
+                            logcat(LogPriority.ERROR, e) {
+                                "## getRelatedMangaListBySearch (~${System.currentTimeMillis() - startTime}ms): '$keyword' => $e"
+                            }
+                        }
+                }
+            }
+        }
+    }
 
     /**
      * Get all the available chapters for a manga.
