@@ -30,6 +30,7 @@ import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.TrackChapter
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
@@ -58,6 +59,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.log.xLogD
@@ -457,6 +459,7 @@ class MangaScreenModel(
                 }
                 // KMK <--
                 val fetchFromSourceTasks = listOf(
+                    async { syncTrackers() },
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                 )
@@ -468,10 +471,35 @@ class MangaScreenModel(
         }
     }
 
+    // KMK -->
+    private suspend fun syncTrackers() {
+        if (!trackPreferences.updateTrackMarkedRead().get()) return
+
+        val refreshTracks = Injekt.get<RefreshTracks>()
+        refreshTracks.await(mangaId)
+            .filter { it.first != null }
+            .forEach { (track, e) ->
+                logcat(LogPriority.ERROR, e) {
+                    "Failed to refresh track data mangaId=$mangaId for service ${track!!.id}"
+                }
+                withUIContext {
+                    context.toast(
+                        context.stringResource(
+                            MR.strings.track_error,
+                            track!!.name,
+                            e.message ?: "",
+                        ),
+                    )
+                }
+            }
+    }
+    // KMK <--
+
     fun fetchAllFromSource(manualFetch: Boolean = true) {
         screenModelScope.launch {
             updateSuccessState { it.copy(isRefreshingData = true) }
             val fetchFromSourceTasks = listOf(
+                async { syncTrackers() },
                 async { fetchMangaFromSource(manualFetch) },
                 async { fetchChaptersFromSource(manualFetch) },
             )
@@ -676,7 +704,7 @@ class MangaScreenModel(
             mergedManga = networkToLocalManga.await(mergedManga)
 
             getCategories.await(originalMangaId)
-                .let {
+                .let { it ->
                     setMangaCategories.await(mergedManga.id, it.map { it.id })
                 }
 

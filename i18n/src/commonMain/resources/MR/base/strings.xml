@@ -502,6 +502,7 @@
     <string name="tracking_guide">Tracking guide</string>
     <string name="pref_auto_update_manga_sync">Update progress after reading</string>
     <string name="pref_update_tracking_marked_read">Update progress when marked as read</string>
+    <string name="pref_auto_sync_read_chapters">Auto sync read chapters from Trackers</string>
     <string name="services">Trackers</string>
     <string name="tracking_info">One-way sync to update the chapter progress in external tracker services. Set up tracking for individual entries from their tracking button.</string>
     <string name="enhanced_services">Enhanced trackers</string>
