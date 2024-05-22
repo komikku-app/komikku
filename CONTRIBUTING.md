@@ -30,7 +30,7 @@ To auto-fix some linting errors, run the `ktlintFormat` Gradle task.
 
 ## Getting help
 
-- Join [the Discord server](https://discord.gg/komikku) for online help and to ask questions while developing.
+- Join [the Discord server](https://discord.gg/85jB7V5AJR) for online help and to ask questions while developing.
 
 # Translations
 
