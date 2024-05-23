@@ -472,7 +472,7 @@ class MangaScreenModel(
 
     // KMK -->
     private suspend fun syncTrackers() {
-        if (!trackPreferences.updateTrackMarkedRead().get()) return
+        if (!trackPreferences.autoSyncReadChapters().get()) return
 
         val refreshTracks = Injekt.get<RefreshTracks>()
         refreshTracks.await(mangaId)
