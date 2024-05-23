@@ -154,9 +154,10 @@ fun RelatedMangaTitle(
 }
 
 fun LazyGridScope.header(
+    key: Any? = null,
     content: @Composable LazyGridItemScope.() -> Unit,
 ) {
-    item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
+    item(key = key, span = { GridItemSpan(this.maxLineSpan) }, content = content)
 }
 
 @Composable

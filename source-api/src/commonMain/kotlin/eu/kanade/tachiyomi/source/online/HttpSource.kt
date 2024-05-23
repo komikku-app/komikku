@@ -312,7 +312,7 @@ abstract class HttpSource : CatalogueSource {
      * @param manga the manga to look for related mangas.
      */
     protected open fun relatedMangaListRequest(manga: SManga): Request {
-        return GET(baseUrl + manga.url, headers)
+        return mangaDetailsRequest(manga)
     }
 
     /**
