@@ -204,6 +204,7 @@
     <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
     <string name="pref_source_related_mangas">Related titles</string>
     <string name="pref_source_related_mangas_summary">Show related titles while viewing entry</string>
+    <string name="related_mangas_more">More like these...</string>
 
     <!-- Backup settings -->
     <string name="custom_entry_info">Custom entry info</string>

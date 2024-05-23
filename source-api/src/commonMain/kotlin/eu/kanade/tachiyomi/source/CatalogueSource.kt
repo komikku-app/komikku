@@ -1,10 +1,13 @@
 package eu.kanade.tachiyomi.source
 
+import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
@@ -95,12 +98,14 @@ interface CatalogueSource : Source {
      */
     override suspend fun getRelatedMangaList(
         manga: SManga,
+        exceptionHandler: (Throwable) -> Unit,
         pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
     ) {
+        val handler = CoroutineExceptionHandler { _, e -> exceptionHandler(e) }
         if (!disableRelatedMangas) {
-            coroutineScope {
-                if (supportsRelatedMangas) launch { getRelatedMangaListByExtension(manga, pushResults) }
-                if (!disableRelatedMangasBySearch) launch { getRelatedMangaListBySearch(manga, pushResults) }
+            supervisorScope {
+                if (supportsRelatedMangas) launch(handler) { getRelatedMangaListByExtension(manga, pushResults) }
+                if (!disableRelatedMangasBySearch) launch(handler) { getRelatedMangaListBySearch(manga, pushResults) }
             }
         }
     }
@@ -118,7 +123,15 @@ interface CatalogueSource : Source {
         runCatching { fetchRelatedMangaList(manga) }
             .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
             .onFailure { e ->
-                logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
+                @Suppress("KotlinConstantConditions")
+                if (BuildConfig.BUILD_TYPE == "release") {
+                    logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
+                } else {
+                    throw UnsupportedOperationException(
+                        "Extension doesn't support site's related entries," +
+                            " please report an issue to Komikku."
+                    )
+                }
             }
     }
 

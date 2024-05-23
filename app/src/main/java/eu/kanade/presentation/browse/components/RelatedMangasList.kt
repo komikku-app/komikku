@@ -15,6 +15,7 @@ import eu.kanade.presentation.browse.RelatedMangasLoadingItem
 import eu.kanade.tachiyomi.ui.manga.RelatedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -35,10 +36,10 @@ fun RelatedMangasList(
         ),
         contentPadding = PaddingValues(MaterialTheme.padding.small),
     ) {
-        relatedMangas.forEach {
-            val isLoading = it is RelatedManga.Loading
+        relatedMangas.forEach { related ->
+            val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                stickyHeader {
+                stickyHeader(key = "$related#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -47,19 +48,27 @@ fun RelatedMangasList(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                item { RelatedMangasLoadingItem() }
+                item(key = "$related#content") { RelatedMangasLoadingItem() }
             } else {
-                val relatedManga = it as RelatedManga.Success
-                stickyHeader {
+                val relatedManga = related as RelatedManga.Success
+                stickyHeader(key = "${related.keyword}#header") {
                     RelatedMangaTitle(
-                        title = relatedManga.keyword,
+                        title = if (relatedManga.keyword.isNotBlank()) {
+                            stringResource(SYMR.strings.related_mangas_more)
+                        } else {
+                            stringResource(SYMR.strings.pref_source_related_mangas)
+                        },
                         subtitle = null,
-                        onClick = { onKeywordClick(relatedManga.keyword) },
-                        onLongClick = { onKeywordLongClick(relatedManga.keyword) },
+                        onClick = {
+                            if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
+                        },
+                        onLongClick = {
+                            if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
+                        },
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(count = relatedManga.mangaList.size) { index ->
+                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceListItem(
                         manga = manga,

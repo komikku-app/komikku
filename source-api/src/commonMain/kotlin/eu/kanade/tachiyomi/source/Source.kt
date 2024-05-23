@@ -58,6 +58,7 @@ interface Source {
      */
     suspend fun getRelatedMangaList(
         manga: SManga,
+        exceptionHandler: (Throwable) -> Unit,
         pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
     ): Unit = throw IllegalStateException("Not used")
     // KMK <--
