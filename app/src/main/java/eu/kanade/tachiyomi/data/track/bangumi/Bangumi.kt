@@ -147,4 +147,6 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
             .map(Int::toString)
             .toImmutableList()
     }
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
 }

@@ -79,4 +79,6 @@ interface Tracker {
     suspend fun setRemoteStartDate(track: Track, epochMillis: Long)
 
     suspend fun setRemoteFinishDate(track: Track, epochMillis: Long)
+
+    fun hasNotStartedReading(status: Long): Boolean
 }

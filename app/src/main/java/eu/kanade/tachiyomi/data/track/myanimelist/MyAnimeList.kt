@@ -174,4 +174,6 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
             null
         }
     }
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
 }

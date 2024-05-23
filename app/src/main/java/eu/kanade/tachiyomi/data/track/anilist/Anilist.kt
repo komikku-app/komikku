@@ -240,4 +240,6 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
             null
         }
     }
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
 }

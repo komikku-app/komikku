@@ -111,4 +111,6 @@ class Komga(id: Long) : BaseTracker(id, "Komga"), EnhancedTracker {
         } else {
             null
         }
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == UNREAD
 }

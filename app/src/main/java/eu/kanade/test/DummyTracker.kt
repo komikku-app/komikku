@@ -116,4 +116,6 @@ data class DummyTracker(
         track: eu.kanade.tachiyomi.data.database.models.Track,
         epochMillis: Long,
     ) = Unit
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == 2L
 }

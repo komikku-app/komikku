@@ -50,7 +50,8 @@ class SyncChapterProgressWithTrack(
                 insertTrack.await(updatedTrack)
             }
             // Update local chapters following Tracker
-            updateChapter.awaitAll(chapterUpdates)
+            if (!tracker.hasNotStartedReading(remoteTrack.status))
+                updateChapter.awaitAll(chapterUpdates)
         } catch (e: Throwable) {
             logcat(LogPriority.WARN, e)
         }

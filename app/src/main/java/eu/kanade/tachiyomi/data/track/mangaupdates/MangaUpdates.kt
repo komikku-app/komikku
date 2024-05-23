@@ -120,4 +120,6 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
     fun restoreSession(): String? {
         return trackPreferences.trackPassword(this).get().ifBlank { null }
     }
+
+    override fun hasNotStartedReading(status: Long): Boolean = status == WISH_LIST
 }
