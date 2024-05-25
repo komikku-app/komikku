@@ -262,6 +262,7 @@ dependencies {
     implementation(libs.google.api.client.oauth)
 
     // Logging
+    implementation(libs.timber)
     implementation(libs.logcat)
 
     // Crash reports/analytics
