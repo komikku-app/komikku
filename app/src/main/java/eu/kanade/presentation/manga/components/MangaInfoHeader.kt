@@ -129,6 +129,7 @@ fun MangaInfoBox(
                         brush = Brush.verticalGradient(colors = backdropGradientColors),
                     )
                 }
+                .background(MaterialTheme.colorScheme.inversePrimary)
                 .blur(4.dp)
                 .alpha(0.2f),
         )
