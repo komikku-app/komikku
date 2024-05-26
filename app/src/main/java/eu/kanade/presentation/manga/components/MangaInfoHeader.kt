@@ -241,7 +241,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(MR.strings.action_web_view),
                 icon = Icons.Outlined.Public,
-                color = defaultActionButtonColor,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = onWebViewClicked,
                 onLongClick = onWebViewLongClicked,
             )
@@ -251,7 +251,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(SYMR.strings.merge),
                 icon = Icons.AutoMirrored.Outlined.CallMerge,
-                color = defaultActionButtonColor,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = onMergeClicked,
             )
         }
