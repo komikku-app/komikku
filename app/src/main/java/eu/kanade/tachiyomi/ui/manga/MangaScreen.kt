@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -23,6 +27,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.ktx.rememberThemeColor
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
@@ -163,7 +169,7 @@ class MangaScreen(
         }
         // SY <--
 
-        MangaScreen(
+        val mangaScreen = @Composable { MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
             nextUpdate = successState.manga.expectedNextUpdate,
@@ -172,7 +178,8 @@ class MangaScreen(
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
             onBackClicked = navigator::pop,
             onChapterClicked = { openChapter(context, it) },
-            onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
+            onDownloadChapter = screenModel::runChapterDownloadActions
+                .takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
                 screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -214,23 +221,45 @@ class MangaScreen(
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
             onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
             onCoverClicked = screenModel::showCoverDialog,
-            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
-            onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
-            onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
+            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }
+                .takeIf { isHttpSource },
+            onDownloadActionClicked = screenModel::runDownloadAction
+                .takeIf { !successState.source.isLocalOrStub() },
+            onEditCategoryClicked = screenModel::showChangeCategoryDialog
+                .takeIf { successState.manga.favorite },
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
             previewsRowCount = successState.previewsRowCount,
             // SY -->
-            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
+            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }
+                .takeIf { successState.manga.favorite },
             onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
-            onRecommendClicked = { openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga) },
+            onRecommendClicked = {
+                openRecommends(
+                    context,
+                    navigator,
+                    screenModel.source?.getMainSource(),
+                    successState.manga
+                )
+            },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
-            onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
-            onOpenPagePreview = {
-                openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, it)
+            onMergeWithAnotherClicked = {
+                mergeWithAnother(
+                    navigator,
+                    context,
+                    successState.manga,
+                    screenModel::smartSearchMerge
+                )
+            },
+            onOpenPagePreview = { page ->
+                openPagePreview(
+                    context,
+                    successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter,
+                    page,
+                )
             },
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
@@ -272,6 +301,11 @@ class MangaScreen(
                 }
             },
             // KMK <--
+        ) }
+
+        DynamicTheme(
+            seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
+            content = mangaScreen,
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
@@ -413,6 +447,36 @@ class MangaScreen(
             else -> {}
         }
         // KMK <--
+    }
+
+    @Composable
+    fun DynamicTheme(
+        seedColor: Color,
+        useDarkTheme: Boolean = isSystemInDarkTheme(),
+        content: @Composable () -> Unit
+    ) {
+        DynamicMaterialTheme(
+            seedColor = seedColor,
+            useDarkTheme = useDarkTheme,
+            animate = true,
+            content = content,
+        )
+    }
+
+    @Composable
+    fun DynamicTheme(
+        image: ImageBitmap,
+        useDarkTheme: Boolean = isSystemInDarkTheme(),
+        content: @Composable () -> Unit,
+    ) {
+        val seedColor = rememberThemeColor(image, fallback = MaterialTheme.colorScheme.primary)
+
+        DynamicMaterialTheme(
+            seedColor = seedColor,
+            useDarkTheme = useDarkTheme,
+            animate = true,
+            content = content,
+        )
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {

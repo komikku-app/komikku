@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -9,9 +10,19 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.util.fastAny
+import androidx.core.graphics.ColorUtils
+import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import coil3.executeBlocking
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.size.Size
+import coil3.size.SizeResolver
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
@@ -38,6 +49,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -59,6 +71,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
@@ -243,7 +256,7 @@ class MangaScreenModel(
 
     data class EXHRedirect(val mangaId: Long)
 
-    var dedupe: Boolean = true
+    var seedColor: Color? = null
     // EXH <--
 
     private data class CombineState(
@@ -337,6 +350,7 @@ class MangaScreenModel(
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
+
                     updateSuccessState {
                         it.copy(
                             manga = manga,
@@ -388,6 +402,12 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
+//            setPaletteColor(manga)
+//            val cover = getCover(manga)
+//            setPaletteColorIOContext(manga)
+//            setPaletteColorEnqueue(manga)
+//            setPaletteColorExecuteBlocking(manga)
+            setPaletteColorExecute(manga)
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
                 .toChapterListItems(manga, null)
@@ -414,6 +434,7 @@ class MangaScreenModel(
                 val source = sourceManager.getOrStub(manga.source)
                 State.Success(
                     manga = manga,
+                    seedColor = seedColor,
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
@@ -467,6 +488,136 @@ class MangaScreenModel(
 
             // Initial loading finished
             updateSuccessState { it.copy(isRefreshingData = false) }
+        }
+    }
+
+    private suspend fun setPaletteColorIOContext(model: Any) {
+        if (model is ImageRequest && model.defined.sizeResolver != null) return
+
+        val sizeResolver = SizeResolver(Size.ORIGINAL)
+
+        val imageRequestBuilder = if (model is ImageRequest) {
+            model.newBuilder()
+                .size(sizeResolver)
+        } else {
+            ImageRequest.Builder(context)
+                .data(model)
+                .size(sizeResolver)
+        }
+
+        val imageRequest = imageRequestBuilder
+            .allowHardware(!BuildConfig.DEBUG)
+//            .memoryCacheKey(model.toString())
+            .build()
+
+        withIOContext {
+            val result = context.imageLoader.execute(imageRequest).image?.asDrawable(context.resources)
+            val bitmap = result?.getBitmapOrNull() ?: return@withIOContext
+            Palette.from(bitmap).generate { palette ->
+                palette?.getBestColor()?.let { color ->
+                    seedColor = Color(color)
+                    updateSuccessState { it.copy(seedColor = seedColor) }
+//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
+                }
+            }
+        }
+    }
+
+    private fun setPaletteColorEnqueue(model: Any) {
+        if (model is ImageRequest && model.defined.sizeResolver != null) return
+
+        val sizeResolver = SizeResolver(Size.ORIGINAL)
+
+        val imageRequestBuilder = if (model is ImageRequest) {
+            model.newBuilder()
+                .size(sizeResolver)
+        } else {
+            ImageRequest.Builder(context)
+                .data(model)
+                .size(sizeResolver)
+        }
+
+        val imageRequest = imageRequestBuilder
+            .allowHardware(!BuildConfig.DEBUG)
+//            .memoryCacheKey(model.toString())
+            .target(
+                onSuccess = { result ->
+                    val bitmap = result.asDrawable(context.resources).getBitmapOrNull() ?: return@target
+                    Palette.from(bitmap).generate { palette ->
+                        palette?.getBestColor()?.let { color ->
+                            seedColor = Color(color)
+                            updateSuccessState { it.copy(seedColor = seedColor) }
+//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
+                        }
+                    }
+                },
+//                onError = {
+//                },
+            )
+            .build()
+
+        context.imageLoader.enqueue(imageRequest)
+    }
+
+    private fun setPaletteColorExecuteBlocking(model: Any) {
+        if (model is ImageRequest && model.defined.sizeResolver != null) return
+
+        val sizeResolver = SizeResolver(Size.ORIGINAL)
+
+        val imageRequestBuilder = if (model is ImageRequest) {
+            model.newBuilder()
+                .size(sizeResolver)
+        } else {
+            ImageRequest.Builder(context)
+                .data(model)
+                .size(sizeResolver)
+        }
+
+        val imageRequest = imageRequestBuilder
+            .allowHardware(!BuildConfig.DEBUG)
+//            .memoryCacheKey(model.toString())
+            .build()
+
+        context.imageLoader.executeBlocking(imageRequest).image?.let { image ->
+            val bitmap = image.asDrawable(context.resources).getBitmapOrNull() ?: return@let
+            Palette.from(bitmap).generate { palette ->
+                palette?.getBestColor()?.let { color ->
+                    seedColor = Color(color)
+                    updateSuccessState { it.copy(seedColor = seedColor) }
+//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
+                }
+            }
+        }
+    }
+
+    private suspend fun setPaletteColorExecute(model: Any) {
+        if (model is ImageRequest && model.defined.sizeResolver != null) return
+
+        val sizeResolver = SizeResolver(Size.ORIGINAL)
+
+        val imageRequestBuilder = if (model is ImageRequest) {
+            model.newBuilder()
+                .size(sizeResolver)
+        } else {
+            ImageRequest.Builder(context)
+                .data(model)
+                .size(sizeResolver)
+        }
+
+        val imageRequest = imageRequestBuilder
+            .allowHardware(!BuildConfig.DEBUG)
+//            .memoryCacheKey(model.toString())
+            .build()
+
+        context.imageLoader.execute(imageRequest).image?.let { image ->
+            val bitmap = image.asDrawable(context.resources).getBitmapOrNull() ?: return@let
+            Palette.from(bitmap).generate { palette ->
+                palette?.getBestColor()?.let { color ->
+                    seedColor = Color(color)
+                    updateSuccessState { it.copy(seedColor = seedColor) }
+//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
+                }
+            }
         }
     }
 
@@ -703,8 +854,8 @@ class MangaScreenModel(
             mergedManga = networkToLocalManga.await(mergedManga)
 
             getCategories.await(originalMangaId)
-                .let { it ->
-                    setMangaCategories.await(mergedManga.id, it.map { it.id })
+                .let { categories ->
+                    setMangaCategories.await(mergedManga.id, categories.map { it.id })
                 }
 
             val originalMangaReference = MergedMangaReference(
@@ -1794,9 +1945,50 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
+
+            val seedColor: Color? = null,
+            val vibrantColor: Int? = null,
             // KMK <--
         ) : State {
-            // KMK ->>
+            // KMK -->
+            private val tooDarkForNight = 0.6f
+            private val tooBrightForDay = 0.4f
+            private val nightModeBlendingRatio = 0.33f
+            private val dayModeBlendingRatio = 0.5f
+
+            @Composable
+            fun accentColor(isNightMode: Boolean = isSystemInDarkTheme()): Color? {
+                if (vibrantColor == null) return null
+
+                val luminance = ColorUtils.calculateLuminance(vibrantColor).toFloat()
+
+                // Blend it if too dark in Night mode or too bright in Day mode
+                val isNotSuitable = if (isNightMode) {
+                    luminance <= tooDarkForNight
+                } else {
+                    luminance > tooBrightForDay
+                }
+                val blendingRatio = if (isNightMode) {
+                    nightModeBlendingRatio * (1 - luminance)
+                } else {
+                    dayModeBlendingRatio * luminance
+                }
+
+                val accentColor = Color(
+                    if (isNotSuitable) {
+                        // We want it brighter in Night mode and darker in Day mode =>
+                        ColorUtils.blendARGB(
+                            vibrantColor,
+                            if (isNightMode) Color.White.toArgb() else Color.Black.toArgb(),
+                            blendingRatio,
+                        )
+                    } else {
+                        vibrantColor
+                    }
+                )
+                return accentColor
+            }
+
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list
@@ -1978,3 +2170,40 @@ sealed interface RelatedManga {
     }
 }
 // KMK <--
+
+// J2K -->
+fun Palette.getBestColor(): Int? {
+    // How big is the vibrant color
+    val vibPopulation = vibrantSwatch?.population ?: -1
+    // Saturation of the most dominant color
+    val domSat = dominantSwatch?.hsl?.get(1) ?: 0f
+    // Brightness of the most dominant color
+    val domLum = dominantSwatch?.hsl?.get(2) ?: -1f
+    // How big is the muted color
+    val mutedPopulation = mutedSwatch?.population ?: -1
+    // Saturation of the muted color
+    val mutedSat = mutedSwatch?.hsl?.get(1) ?: 0f
+    // If muted color is 3 times bigger than vibrant color then minimum acceptable saturation
+    // for muted color is lower (more likely to use it even if it's not colorful)
+    val mutedSatMinAcceptable = if (mutedPopulation > vibPopulation * 3f) 0.1f else 0.25f
+
+    val dominantIsColorful = domSat >= .25f
+    val dominantBrightnessJustRight = domLum <= .8f && domLum > .2f
+    val vibrantIsConsiderableBigEnough = vibPopulation >= mutedPopulation * 0.75f
+    val mutedIsBig = mutedPopulation > vibPopulation * 1.5f
+    val mutedIsNotTooBoring = mutedSat > mutedSatMinAcceptable
+
+    return when {
+        dominantIsColorful && dominantBrightnessJustRight -> dominantSwatch
+        // use vibrant color even if it's only 0.75 times smaller than muted color
+        vibrantIsConsiderableBigEnough -> vibrantSwatch
+        // use muted color if it's 1.5 times bigger than vibrant color and colorful enough (above the limit)
+        mutedIsBig && mutedIsNotTooBoring -> mutedSwatch
+        // return major vibrant color variant with more favor of vibrant color (size x3)
+        else -> listOfNotNull(vibrantSwatch, lightVibrantSwatch, darkVibrantSwatch)
+            .maxByOrNull {
+                if (it === vibrantSwatch) vibPopulation * 3 else it.population
+            }
+    }?.rgb
+}
+// J2K <--
