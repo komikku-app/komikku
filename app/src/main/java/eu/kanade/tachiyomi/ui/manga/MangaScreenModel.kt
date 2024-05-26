@@ -17,6 +17,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import coil3.Image
 import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -402,12 +403,10 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
-//            setPaletteColor(manga)
-//            val cover = getCover(manga)
-//            setPaletteColorIOContext(manga)
-//            setPaletteColorEnqueue(manga)
-//            setPaletteColorExecuteBlocking(manga)
-            setPaletteColorExecute(manga)
+//            setPaletteColor(manga, ImageRequestType.IOContext)
+            setPaletteColor(manga, ImageRequestType.Enqueue)
+//            setPaletteColor(manga, ImageRequestType.Execute)
+//            setPaletteColor(manga, ImageRequestType.ExecuteBlocking)
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
                 .toChapterListItems(manga, null)
@@ -491,7 +490,7 @@ class MangaScreenModel(
         }
     }
 
-    private suspend fun setPaletteColorIOContext(model: Any) {
+    private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val sizeResolver = SizeResolver(Size.ORIGINAL)
@@ -504,118 +503,47 @@ class MangaScreenModel(
                 .data(model)
                 .size(sizeResolver)
         }
-
-        val imageRequest = imageRequestBuilder
             .allowHardware(!BuildConfig.DEBUG)
 //            .memoryCacheKey(model.toString())
-            .build()
 
-        withIOContext {
-            val result = context.imageLoader.execute(imageRequest).image?.asDrawable(context.resources)
-            val bitmap = result?.getBitmapOrNull() ?: return@withIOContext
-            Palette.from(bitmap).generate { palette ->
-                palette?.getBestColor()?.let { color ->
-                    seedColor = Color(color)
-                    updateSuccessState { it.copy(seedColor = seedColor) }
-//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
-                }
-            }
-        }
-    }
-
-    private fun setPaletteColorEnqueue(model: Any) {
-        if (model is ImageRequest && model.defined.sizeResolver != null) return
-
-        val sizeResolver = SizeResolver(Size.ORIGINAL)
-
-        val imageRequestBuilder = if (model is ImageRequest) {
-            model.newBuilder()
-                .size(sizeResolver)
-        } else {
-            ImageRequest.Builder(context)
-                .data(model)
-                .size(sizeResolver)
-        }
-
-        val imageRequest = imageRequestBuilder
-            .allowHardware(!BuildConfig.DEBUG)
-//            .memoryCacheKey(model.toString())
-            .target(
-                onSuccess = { result ->
-                    val bitmap = result.asDrawable(context.resources).getBitmapOrNull() ?: return@target
-                    Palette.from(bitmap).generate { palette ->
-                        palette?.getBestColor()?.let { color ->
-                            seedColor = Color(color)
-                            updateSuccessState { it.copy(seedColor = seedColor) }
-//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
-                        }
+        val generatePalette: (Image) -> Unit = { image ->
+            val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
+            if (bitmap != null) {
+                Palette.from(bitmap).generate { palette ->
+                    palette?.getBestColor()?.let { color ->
+                        seedColor = Color(color)
+                        updateSuccessState { it.copy(seedColor = seedColor) }
                     }
-                },
-//                onError = {
-//                },
-            )
-            .build()
-
-        context.imageLoader.enqueue(imageRequest)
-    }
-
-    private fun setPaletteColorExecuteBlocking(model: Any) {
-        if (model is ImageRequest && model.defined.sizeResolver != null) return
-
-        val sizeResolver = SizeResolver(Size.ORIGINAL)
-
-        val imageRequestBuilder = if (model is ImageRequest) {
-            model.newBuilder()
-                .size(sizeResolver)
-        } else {
-            ImageRequest.Builder(context)
-                .data(model)
-                .size(sizeResolver)
-        }
-
-        val imageRequest = imageRequestBuilder
-            .allowHardware(!BuildConfig.DEBUG)
-//            .memoryCacheKey(model.toString())
-            .build()
-
-        context.imageLoader.executeBlocking(imageRequest).image?.let { image ->
-            val bitmap = image.asDrawable(context.resources).getBitmapOrNull() ?: return@let
-            Palette.from(bitmap).generate { palette ->
-                palette?.getBestColor()?.let { color ->
-                    seedColor = Color(color)
-                    updateSuccessState { it.copy(seedColor = seedColor) }
-//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
                 }
             }
         }
-    }
 
-    private suspend fun setPaletteColorExecute(model: Any) {
-        if (model is ImageRequest && model.defined.sizeResolver != null) return
-
-        val sizeResolver = SizeResolver(Size.ORIGINAL)
-
-        val imageRequestBuilder = if (model is ImageRequest) {
-            model.newBuilder()
-                .size(sizeResolver)
-        } else {
-            ImageRequest.Builder(context)
-                .data(model)
-                .size(sizeResolver)
-        }
-
-        val imageRequest = imageRequestBuilder
-            .allowHardware(!BuildConfig.DEBUG)
-//            .memoryCacheKey(model.toString())
-            .build()
-
-        context.imageLoader.execute(imageRequest).image?.let { image ->
-            val bitmap = image.asDrawable(context.resources).getBitmapOrNull() ?: return@let
-            Palette.from(bitmap).generate { palette ->
-                palette?.getBestColor()?.let { color ->
-                    seedColor = Color(color)
-                    updateSuccessState { it.copy(seedColor = seedColor) }
-//                updateSuccessState { it.copy(vibrantColor = vibrantColor) }
+        when (method) {
+            ImageRequestType.Enqueue -> {
+                context.imageLoader.enqueue(
+                    imageRequestBuilder
+                        .target(onSuccess = generatePalette)
+                        .build()
+                )
+            }
+            ImageRequestType.Execute -> {
+                context.imageLoader.execute(imageRequestBuilder.build())
+                    .image?.let { image ->
+                        generatePalette(image)
+                    }
+            }
+            ImageRequestType.ExecuteBlocking -> {
+                context.imageLoader.executeBlocking(imageRequestBuilder.build())
+                    .image?.let { image ->
+                        generatePalette(image)
+                    }
+            }
+            ImageRequestType.IOContext -> {
+                withIOContext {
+                    context.imageLoader.execute(imageRequestBuilder.build())
+                        .image?.let { image ->
+                            generatePalette(image)
+                        }
                 }
             }
         }
@@ -2207,3 +2135,10 @@ fun Palette.getBestColor(): Int? {
     }?.rgb
 }
 // J2K <--
+
+enum class ImageRequestType {
+    IOContext,
+    Enqueue,
+    Execute,
+    ExecuteBlocking,
+}
