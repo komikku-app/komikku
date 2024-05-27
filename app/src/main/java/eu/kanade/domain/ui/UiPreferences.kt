@@ -28,6 +28,8 @@ class UiPreferences(
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
+    fun detailsPageThemeCoverBased() = preferenceStore.getBoolean("pref_details_page_theme_cover_based_key", true)
+
     fun relativeTime() = preferenceStore.getBoolean("relative_time_v2", true)
 
     fun dateFormat() = preferenceStore.getString("app_date_format", "")

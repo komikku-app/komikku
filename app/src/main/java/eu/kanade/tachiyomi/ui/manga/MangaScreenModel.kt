@@ -257,7 +257,7 @@ class MangaScreenModel(
 
     data class EXHRedirect(val mangaId: Long)
 
-    var seedColor: Color? = null
+    private var seedColor: Color? = null
     // EXH <--
 
     private data class CombineState(
@@ -403,10 +403,14 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
-//            setPaletteColor(manga, ImageRequestType.IOContext)
-            setPaletteColor(manga, ImageRequestType.Enqueue)
-//            setPaletteColor(manga, ImageRequestType.Execute)
-//            setPaletteColor(manga, ImageRequestType.ExecuteBlocking)
+
+            if (uiPreferences.detailsPageThemeCoverBased().get()) {
+//                setPaletteColor(manga, ImageRequestType.IOContext)
+                setPaletteColor(manga, ImageRequestType.Enqueue)
+//                setPaletteColor(manga, ImageRequestType.Execute)
+//                setPaletteColor(manga, ImageRequestType.ExecuteBlocking)
+            }
+
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
                 .toChapterListItems(manga, null)
