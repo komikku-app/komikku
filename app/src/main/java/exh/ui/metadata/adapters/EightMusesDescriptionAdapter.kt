@@ -2,8 +2,10 @@ package exh.ui.metadata.adapters
 
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import eu.kanade.tachiyomi.R
@@ -18,6 +20,8 @@ import tachiyomi.i18n.MR
 @Composable
 fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -29,8 +33,10 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
             val binding = DescriptionAdapter8mBinding.bind(it)
 
             binding.title.text = meta.title ?: context.stringResource(MR.strings.unknown)
+            binding.title.setTextColor(onBackgroundColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
+            binding.moreInfo.setTextColor(onBackgroundColor)
 
             binding.title.setOnLongClickListener {
                 context.copyToClipboard(
@@ -39,6 +45,7 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
                 )
                 true
             }
+            binding.title.setTextColor(onBackgroundColor)
 
             binding.moreInfo.setOnClickListener {
                 openMetadataViewer()
