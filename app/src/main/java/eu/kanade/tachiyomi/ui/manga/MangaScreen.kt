@@ -234,7 +234,7 @@ class MangaScreen(
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }
                 .takeIf { successState.manga.favorite },
-            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
+            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga, successState.seedColor) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = {
                 openRecommends(
@@ -603,8 +603,8 @@ class MangaScreen(
         // SY <--
     }
 
-    private fun openMetadataViewer(navigator: Navigator, manga: Manga) {
-        navigator.push(MetadataViewScreen(manga.id, manga.source))
+    private fun openMetadataViewer(navigator: Navigator, manga: Manga, seedColor: Color? = null) {
+        navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor))
     }
 
     private fun openMergedMangaWebview(context: Context, navigator: Navigator, mergedMangaData: MergedMangaData) {

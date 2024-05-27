@@ -1,5 +1,6 @@
 package exh.ui.metadata
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -16,11 +17,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -33,7 +36,11 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.plus
 
-class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) : Screen() {
+class MetadataViewScreen(
+    private val mangaId: Long,
+    private val sourceId: Long,
+    private val seedColor: Color? = null,
+) : Screen() {
 
     @Composable
     override fun Content() {
@@ -41,7 +48,9 @@ class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) 
         val navigator = LocalNavigator.currentOrThrow
 
         val state by screenModel.state.collectAsState()
-        Scaffold(
+
+        @Composable
+        fun content() = Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
                     title = screenModel.manga.collectAsState().value?.title,
@@ -96,5 +105,12 @@ class MetadataViewScreen(private val mangaId: Long, private val sourceId: Long) 
                 }
             }
         }
+
+        DynamicMaterialTheme(
+            seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
+            useDarkTheme = isSystemInDarkTheme(),
+            animate = true,
+            content = { content() }
+        )
     }
 }
