@@ -5,10 +5,11 @@ import android.content.res.ColorStateList
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.annotation.LayoutRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -49,6 +50,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
+import timber.log.Timber
 
 @Composable
 fun EditMangaDialog(
@@ -76,6 +78,7 @@ fun EditMangaDialog(
         tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
         btnTextColor = MaterialTheme.colorScheme.onPrimary.toArgb(),
         btnBgColor = MaterialTheme.colorScheme.surfaceTint.toArgb(),
+        dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant.toArgb(),
     )
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -150,6 +153,7 @@ class EditMangaDialogColors(
     @ColorInt val tagTextColor: Int,
     @ColorInt val btnTextColor: Int,
     @ColorInt val btnBgColor: Int,
+    @ColorInt val dropdownBgColor: Int,
 )
 
 private fun onViewCreated(
@@ -161,7 +165,7 @@ private fun onViewCreated(
 ) {
     loadCover(manga, binding)
 
-    val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
+    val statusAdapter = SpinnerAdapter(
         context,
         android.R.layout.simple_spinner_dropdown_item,
         listOf(
@@ -173,6 +177,7 @@ private fun onViewCreated(
             MR.strings.cancelled,
             MR.strings.on_hiatus,
         ).map { context.stringResource(it) },
+        colors,
     )
 
     binding.status.adapter = statusAdapter
@@ -189,14 +194,6 @@ private fun onViewCreated(
                 else -> 0
             },
         )
-    }
-
-    // Set Spinner's text color
-    binding.status.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-            if (view != null) (view as TextView).setTextColor(colors.textColor)
-        }
-        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
     }
 
     // Set Spinner's dropdown caret color
@@ -382,3 +379,48 @@ private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
         null
     }
 }.toList()
+
+private class SpinnerAdapter(
+    context: Context,
+    @LayoutRes val resource: Int,
+    objects: List<String>,
+    val colors: EditMangaDialogColors,
+) : ArrayAdapter<String>(context, resource, objects) {
+    private val mInflater = LayoutInflater.from(context)
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        return createViewFromResource(mInflater, position, convertView, parent, resource)
+    }
+
+    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+        return createViewFromResource(mInflater, position, convertView, parent, resource)
+    }
+
+    private fun createViewFromResource(
+        inflater: LayoutInflater,
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup,
+        resource: Int,
+    ): View {
+        val text: TextView
+
+        val view = convertView ?: inflater.inflate(resource, parent, false)
+
+        try {
+            //  If no custom field is assigned, assume the whole resource is a TextView
+            text = view as TextView
+        } catch (e: ClassCastException) {
+            Timber.e("You must supply a resource ID for a TextView")
+            throw IllegalStateException("ArrayAdapter requires the resource ID to be a TextView", e)
+        }
+
+        val item: String? = getItem(position)
+        if (item != null) text.text = item
+
+        text.setTextColor(colors.textColor)
+        text.setBackgroundColor(colors.dropdownBgColor)
+
+        return view
+    }
+}
