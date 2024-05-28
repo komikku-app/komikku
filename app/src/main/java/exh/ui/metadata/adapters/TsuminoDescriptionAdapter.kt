@@ -64,6 +64,7 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
             binding.ratingBar.setSupportProgressTintList(ColorStateList.valueOf(primaryColor))
             binding.ratingBar.setSupportSecondaryProgressTintList(ColorStateList.valueOf(outlineVariantColor))
+            binding.rating.setTextColor(onBackgroundColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
             binding.moreInfo.setTextColor(onBackgroundColor)

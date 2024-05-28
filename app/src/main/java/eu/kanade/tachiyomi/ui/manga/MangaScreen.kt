@@ -193,8 +193,7 @@ class MangaScreen(
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
             onBackClicked = navigator::pop,
             onChapterClicked = { openChapter(context, it) },
-            onDownloadChapter = screenModel::runChapterDownloadActions
-                .takeIf { !successState.source.isLocalOrStub() },
+            onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
                 screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -236,51 +235,23 @@ class MangaScreen(
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
             onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
             onCoverClicked = screenModel::showCoverDialog,
-            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }
-                .takeIf { isHttpSource },
-            onDownloadActionClicked = screenModel::runDownloadAction
-                .takeIf { !successState.source.isLocalOrStub() },
-            onEditCategoryClicked = screenModel::showChangeCategoryDialog
-                .takeIf { successState.manga.favorite },
+            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
+            onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
+            onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
             previewsRowCount = successState.previewsRowCount,
             // SY -->
-            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }
-                .takeIf { successState.manga.favorite },
-            onMetadataViewerClicked = {
-                openMetadataViewer(
-                    navigator,
-                    successState.manga,
-                    successState.seedColor
-                )
-            },
+            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
+            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
-            onRecommendClicked = {
-                openRecommends(
-                    context,
-                    navigator,
-                    screenModel.source?.getMainSource(),
-                    successState.manga
-                )
-            },
+            onRecommendClicked = { openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga) },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
-            onMergeWithAnotherClicked = {
-                mergeWithAnother(
-                    navigator,
-                    context,
-                    successState.manga,
-                    screenModel::smartSearchMerge
-                )
-            },
+            onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
             onOpenPagePreview = { page ->
-                openPagePreview(
-                    context,
-                    successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter,
-                    page,
-                )
+                openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, page)
             },
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
@@ -312,11 +283,7 @@ class MangaScreen(
             onSourceClick = {
                 if (successState.source !is StubSource) {
                     val screen = when {
-                        smartSearchConfig != null -> SmartSearchScreen(
-                            successState.source.id,
-                            smartSearchConfig
-                        )
-
+                        smartSearchConfig != null -> SmartSearchScreen(successState.source.id, smartSearchConfig)
                         screenModel.useNewSourceNavigation -> SourceFeedScreen(successState.source.id)
                         else -> BrowseSourceScreen(successState.source.id, GetRemoteManga.QUERY_POPULAR)
                     }

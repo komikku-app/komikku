@@ -351,7 +351,6 @@ class MangaScreenModel(
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
-
                     updateSuccessState {
                         it.copy(
                             manga = manga,
@@ -437,10 +436,10 @@ class MangaScreenModel(
                 val source = sourceManager.getOrStub(manga.source)
                 State.Success(
                     manga = manga,
-                    seedColor = seedColor,
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
+                    seedColor = seedColor,
                     // SY -->
                     availableScanlators = if (manga.source == MERGED_SOURCE_ID) {
                         getAvailableScanlators.awaitMerge(mangaId)
@@ -1879,48 +1878,9 @@ class MangaScreenModel(
             val relatedMangaCollection: List<RelatedManga>? = null,
 
             val seedColor: Color? = null,
-            val vibrantColor: Int? = null,
             // KMK <--
         ) : State {
             // KMK -->
-            private val tooDarkForNight = 0.6f
-            private val tooBrightForDay = 0.4f
-            private val nightModeBlendingRatio = 0.33f
-            private val dayModeBlendingRatio = 0.5f
-
-            @Composable
-            fun accentColor(isNightMode: Boolean = isSystemInDarkTheme()): Color? {
-                if (vibrantColor == null) return null
-
-                val luminance = ColorUtils.calculateLuminance(vibrantColor).toFloat()
-
-                // Blend it if too dark in Night mode or too bright in Day mode
-                val isNotSuitable = if (isNightMode) {
-                    luminance <= tooDarkForNight
-                } else {
-                    luminance > tooBrightForDay
-                }
-                val blendingRatio = if (isNightMode) {
-                    nightModeBlendingRatio * (1 - luminance)
-                } else {
-                    dayModeBlendingRatio * luminance
-                }
-
-                val accentColor = Color(
-                    if (isNotSuitable) {
-                        // We want it brighter in Night mode and darker in Day mode =>
-                        ColorUtils.blendARGB(
-                            vibrantColor,
-                            if (isNightMode) Color.White.toArgb() else Color.Black.toArgb(),
-                            blendingRatio,
-                        )
-                    } else {
-                        vibrantColor
-                    }
-                )
-                return accentColor
-            }
-
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list
