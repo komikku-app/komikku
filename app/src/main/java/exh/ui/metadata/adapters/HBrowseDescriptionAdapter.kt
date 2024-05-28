@@ -20,8 +20,8 @@ import tachiyomi.i18n.sy.SYMR
 @Composable
 fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -33,11 +33,11 @@ fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             val binding = DescriptionAdapterHbBinding.bind(it)
 
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, primaryColor)
-            binding.pages.setTextColor(onBackgroundColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
-            binding.moreInfo.setTextColor(onBackgroundColor)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             binding.pages.setOnLongClickListener {
                 context.copyToClipboard(

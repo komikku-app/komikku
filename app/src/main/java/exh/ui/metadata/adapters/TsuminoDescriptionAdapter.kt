@@ -26,9 +26,9 @@ import kotlin.math.round
 @Composable
 fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -43,31 +43,31 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                 binding.genre.setBackgroundColor(it.first)
                 it.second
             } ?: meta.category ?: context.stringResource(MR.strings.unknown)
-            binding.genre.setTextColor(onBackgroundColor)
+            binding.genre.setTextColor(textColor)
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
-            binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, primaryColor)
-            binding.favorites.setTextColor(onBackgroundColor)
+            binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
+            binding.favorites.setTextColor(textColor)
 
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
-            binding.whenPosted.setTextColor(onBackgroundColor)
+            binding.whenPosted.setTextColor(textColor)
 
             binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
-            binding.uploader.setTextColor(onBackgroundColor)
+            binding.uploader.setTextColor(textColor)
 
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, primaryColor)
-            binding.pages.setTextColor(onBackgroundColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.setTextColor(textColor)
 
             binding.ratingBar.rating = meta.averageRating ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
-            binding.ratingBar.setSupportProgressTintList(ColorStateList.valueOf(primaryColor))
-            binding.ratingBar.setSupportSecondaryProgressTintList(ColorStateList.valueOf(outlineVariantColor))
-            binding.rating.setTextColor(onBackgroundColor)
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
+            binding.rating.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
-            binding.moreInfo.setTextColor(onBackgroundColor)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             listOf(
                 binding.favorites,

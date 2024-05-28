@@ -27,8 +27,8 @@ import java.time.ZonedDateTime
 @Composable
 fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -49,13 +49,13 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                     it.second
                 } ?: categoriesString ?: context.stringResource(MR.strings.unknown)
             }
-            binding.genre.setTextColor(onBackgroundColor)
+            binding.genre.setTextColor(textColor)
 
             meta.favoritesCount?.let {
                 if (it == 0L) return@let
                 binding.favorites.text = it.toString()
-                binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, primaryColor)
-                binding.favorites.setTextColor(onBackgroundColor)
+                binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
+                binding.favorites.setTextColor(textColor)
             }
 
             binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT
@@ -63,22 +63,22 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                     ZonedDateTime
                         .ofInstant(Instant.ofEpochSecond(meta.uploadDate ?: 0), ZoneId.systemDefault())
                 )
-            binding.whenPosted.setTextColor(onBackgroundColor)
+            binding.whenPosted.setTextColor(textColor)
 
             binding.pages.text = context.pluralStringResource(
                 SYMR.plurals.num_pages,
                 meta.pageImageTypes.size,
                 meta.pageImageTypes.size,
             )
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, primaryColor)
-            binding.pages.setTextColor(onBackgroundColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.setTextColor(textColor)
 
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
-            binding.id.setTextColor(onBackgroundColor)
+            binding.id.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
-            binding.moreInfo.setTextColor(onBackgroundColor)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             listOf(
                 binding.favorites,

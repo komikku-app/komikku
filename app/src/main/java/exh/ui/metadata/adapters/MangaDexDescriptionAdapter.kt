@@ -23,9 +23,9 @@ import kotlin.math.round
 @Composable
 fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -43,12 +43,12 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(context, ratingFloat)
             binding.rating.isVisible = ratingFloat != null
             binding.ratingBar.isVisible = ratingFloat != null
-            binding.ratingBar.setSupportProgressTintList(ColorStateList.valueOf(primaryColor))
-            binding.ratingBar.setSupportSecondaryProgressTintList(ColorStateList.valueOf(outlineVariantColor))
-            binding.rating.setTextColor(onBackgroundColor)
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
+            binding.rating.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
-            binding.moreInfo.setTextColor(onBackgroundColor)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             binding.rating.setOnLongClickListener {
                 context.copyToClipboard(

@@ -29,9 +29,9 @@ fun EHentaiDescription(
     search: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    val outlineVariantColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.secondary.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -50,26 +50,26 @@ fun EHentaiDescription(
                     }
                     ?: meta.genre
                     ?: context.stringResource(MR.strings.unknown)
-            binding.genre.setTextColor(onBackgroundColor)
+            binding.genre.setTextColor(textColor)
 
             binding.visible.text = context.stringResource(SYMR.strings.is_visible, meta.visible ?: context.stringResource(MR.strings.unknown))
-            binding.visible.setTextColor(onBackgroundColor)
+            binding.visible.setTextColor(textColor)
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
-            binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, primaryColor)
-            binding.favorites.setTextColor(onBackgroundColor)
+            binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
+            binding.favorites.setTextColor(textColor)
 
             binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
-            binding.uploader.setTextColor(onBackgroundColor)
+            binding.uploader.setTextColor(textColor)
 
             binding.size.text = MetadataUtil.humanReadableByteCount(meta.size ?: 0, true)
-            binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24, primaryColor)
-            binding.size.setTextColor(onBackgroundColor)
+            binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24, iconColor)
+            binding.size.setTextColor(textColor)
 
             val length = meta.length ?: 0
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, length, length)
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, primaryColor)
-            binding.pages.setTextColor(onBackgroundColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.setTextColor(textColor)
 
             val language = meta.language ?: context.stringResource(MR.strings.unknown)
             binding.language.text = if (meta.translated == true) {
@@ -77,18 +77,18 @@ fun EHentaiDescription(
             } else {
                 language
             }
-            binding.language.setTextColor(onBackgroundColor)
+            binding.language.setTextColor(textColor)
 
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
-            binding.ratingBar.setSupportProgressTintList(ColorStateList.valueOf(primaryColor))
-            binding.ratingBar.setSupportSecondaryProgressTintList(ColorStateList.valueOf(outlineVariantColor))
-            binding.rating.setTextColor(onBackgroundColor)
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
+            binding.rating.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, primaryColor)
-            binding.moreInfo.setTextColor(onBackgroundColor)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             listOf(
                 binding.favorites,
