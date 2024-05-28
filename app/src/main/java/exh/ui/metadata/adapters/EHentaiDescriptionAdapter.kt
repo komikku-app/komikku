@@ -31,7 +31,7 @@ fun EHentaiDescription(
     val context = LocalContext.current
     val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
     val iconColor = MaterialTheme.colorScheme.secondary.toArgb()
-    val ratingBarSecondaryColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->

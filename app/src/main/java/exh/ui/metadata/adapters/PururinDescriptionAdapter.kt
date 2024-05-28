@@ -27,7 +27,7 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
-    val ratingBarSecondaryColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
