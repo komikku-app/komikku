@@ -11,7 +11,7 @@ voyager = "1.0.0"
 detekt = "1.23.6"
 detektCompose = "0.3.12"
 paletteKtxVersion = "1.0.0"
-materialKolorVersion = "1.6.0"
+materialKolorVersion = "1.6.1"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.0.4"

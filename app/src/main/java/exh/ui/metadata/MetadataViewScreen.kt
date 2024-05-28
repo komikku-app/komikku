@@ -24,6 +24,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.PaletteStyle
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -109,6 +110,7 @@ class MetadataViewScreen(
         DynamicMaterialTheme(
             seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
             useDarkTheme = isSystemInDarkTheme(),
+            style = PaletteStyle.Vibrant,
             animate = true,
             content = { content() }
         )
