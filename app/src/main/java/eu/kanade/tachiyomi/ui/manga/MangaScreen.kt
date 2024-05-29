@@ -27,9 +27,9 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.PaletteStyle
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.ChapterSettingsDialog
@@ -133,12 +133,13 @@ class MangaScreen(
         }
 
         val successState = state as MangaScreenModel.State.Success
+        val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
         DynamicMaterialTheme(
             seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
             useDarkTheme = isSystemInDarkTheme(),
-            style = PaletteStyle.Vibrant,
-            animate = true,
+            style = uiPreferences.themeCoverBasedStyle().get(),
+            animate = uiPreferences.themeCoverBasedAnimate().get(),
             content = { MaterialThemeContent(context, screenModel, successState) },
         )
     }

@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.materialkolor.PaletteStyle
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
@@ -111,6 +112,19 @@ object SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.detailsPageThemeCoverBased(),
                     title = stringResource(MR.strings.pref_details_page_theme_cover_based),
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = uiPreferences.themeCoverBasedStyle(),
+                    title = stringResource(MR.strings.pref_theme_cover_based_style),
+                    enabled = uiPreferences.detailsPageThemeCoverBased().get(),
+                    entries = PaletteStyle.entries
+                        .associateWith { it.name }
+                        .toImmutableMap(),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.themeCoverBasedAnimate(),
+                    title = stringResource(MR.strings.pref_theme_cover_based_animate),
+                    enabled = uiPreferences.detailsPageThemeCoverBased().get(),
                 ),
             ),
         )
