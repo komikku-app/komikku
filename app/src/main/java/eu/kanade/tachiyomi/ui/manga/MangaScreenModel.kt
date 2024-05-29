@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -11,9 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.util.fastAny
-import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -50,7 +47,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -404,10 +400,10 @@ class MangaScreenModel(
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
             if (uiPreferences.detailsPageThemeCoverBased().get()) {
-//                setPaletteColor(manga, ImageRequestType.IOContext)
-                setPaletteColor(manga, ImageRequestType.Enqueue)
-//                setPaletteColor(manga, ImageRequestType.Execute)
-//                setPaletteColor(manga, ImageRequestType.ExecuteBlocking)
+//                setSeedColor(manga, ImageRequestType.IOContext)
+                setSeedColor(manga, ImageRequestType.Enqueue)
+//                setSeedColor(manga, ImageRequestType.Execute)
+//                setSeedColor(manga, ImageRequestType.ExecuteBlocking)
             }
 
             // SY -->
@@ -493,7 +489,7 @@ class MangaScreenModel(
         }
     }
 
-    private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
+    private suspend fun setSeedColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val sizeResolver = SizeResolver(Size.ORIGINAL)
@@ -506,8 +502,7 @@ class MangaScreenModel(
                 .data(model)
                 .size(sizeResolver)
         }
-            .allowHardware(!BuildConfig.DEBUG)
-//            .memoryCacheKey(model.toString())
+            .allowHardware(false)
 
         val generatePalette: (Image) -> Unit = { image ->
             val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
