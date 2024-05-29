@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -40,7 +41,13 @@ import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
+import eu.kanade.tachiyomi.widget.materialdialogs.binding
+import eu.kanade.tachiyomi.widget.materialdialogs.dismissDialog
+import eu.kanade.tachiyomi.widget.materialdialogs.setColors
+import eu.kanade.tachiyomi.widget.materialdialogs.setNegativeButton
+import eu.kanade.tachiyomi.widget.materialdialogs.setPositiveButton
+import eu.kanade.tachiyomi.widget.materialdialogs.setTextEdit
+import eu.kanade.tachiyomi.widget.materialdialogs.setTitle
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineScope
@@ -80,6 +87,7 @@ fun EditMangaDialog(
         btnTextColor = MaterialTheme.colorScheme.onPrimary.toArgb(),
         btnBgColor = MaterialTheme.colorScheme.surfaceTint.toArgb(),
         dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant.toArgb(),
+        dialogBgColor = MaterialTheme.colorScheme.surfaceContainerHigh.toArgb(),
     )
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -156,6 +164,7 @@ class EditMangaDialogColors(
     @ColorInt val btnTextColor: Int,
     @ColorInt val btnBgColor: Int,
     @ColorInt val dropdownBgColor: Int,
+    @ColorInt val dialogBgColor: Int,
 )
 
 private fun onViewCreated(
@@ -379,17 +388,25 @@ private fun ChipGroup.setChips(
         chipBackgroundColor = colorStateList
 
         setOnClickListener {
-            var newTag: String? = null
-            MaterialAlertDialogBuilder(context)
+            var dialog: AlertDialog? = null
+
+            val builder = MaterialAlertDialogBuilder(context)
+            val binding = builder.binding(context)
                 .setTitle(SYMR.strings.add_tag.getString(context))
-                .setTextInput {
-                    newTag = it.trimOrNull()
-                }
-                .setPositiveButton(MR.strings.action_ok.getString(context)) { _, _ ->
+                .setPositiveButton(MR.strings.action_ok.getString(context)) {
+                    dialog?.dismissDialog()
+                    val newTag = it.trimOrNull()
                     if (newTag != null) setChips(items + listOfNotNull(newTag), scope, colors)
                 }
-                .setNegativeButton(MR.strings.action_cancel.getString(context), null)
-                .show()
+                .setNegativeButton(MR.strings.action_cancel.getString(context)) {
+                    dialog?.dismissDialog()
+                }
+                .setTextEdit()
+                .setColors(colors)
+
+            dialog = builder.create()
+            dialog.setView(binding.root)
+            dialog.show()
         }
     }
     addView(addTagChip)
