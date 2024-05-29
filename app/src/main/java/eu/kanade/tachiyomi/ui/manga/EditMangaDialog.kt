@@ -72,6 +72,7 @@ fun EditMangaDialog(
     }
     val colors = EditMangaDialogColors(
         textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+        textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
         iconColor = MaterialTheme.colorScheme.primary.toArgb(),
         tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
         tagFocusColor = MaterialTheme.colorScheme.outline.toArgb(),
@@ -147,6 +148,7 @@ fun EditMangaDialog(
 
 class EditMangaDialogColors(
     @ColorInt val textColor: Int,
+    @ColorInt val textHighlightColor: Int,
     @ColorInt val iconColor: Int,
     @ColorInt val tagColor: Int,
     @ColorInt val tagFocusColor: Int,
@@ -235,34 +237,55 @@ private fun onViewCreated(
         binding.mangaDescription.hint =
             context.stringResource(
                 SYMR.strings.description_hint,
-                manga.ogDescription?.takeIf { it.isNotBlank() }?.replace("\n", " ")?.chop(20) ?: ""
+                manga.ogDescription?.takeIf { it.isNotBlank() }?.replace("\n", " ")?.chop(20) ?: "",
             )
         binding.thumbnailUrl.hint =
             context.stringResource(
                 SYMR.strings.thumbnail_url_hint,
                 manga.ogThumbnailUrl?.let {
                     it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
-                } ?: ""
+                } ?: "",
             )
     }
     binding.mangaGenresTags.clearFocus()
 
-    binding.title.setTextColor(colors.textColor)
-    binding.mangaAuthor.setTextColor(colors.textColor)
-    binding.mangaArtist.setTextColor(colors.textColor)
-    binding.thumbnailUrl.setTextColor(colors.textColor)
-    binding.mangaDescription.setTextColor(colors.textColor)
-    binding.titleOutline.boxStrokeColor = colors.iconColor
-    binding.mangaAuthorOutline.boxStrokeColor = colors.iconColor
-    binding.mangaArtistOutline.boxStrokeColor = colors.iconColor
-    binding.thumbnailUrlOutline.boxStrokeColor = colors.iconColor
-    binding.mangaDescriptionOutline.boxStrokeColor = colors.iconColor
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        binding.titleOutline.cursorColor = ColorStateList.valueOf(colors.iconColor)
-        binding.mangaAuthorOutline.cursorColor = ColorStateList.valueOf(colors.iconColor)
-        binding.mangaArtistOutline.cursorColor = ColorStateList.valueOf(colors.iconColor)
-        binding.thumbnailUrlOutline.cursorColor = ColorStateList.valueOf(colors.iconColor)
-        binding.mangaDescriptionOutline.cursorColor = ColorStateList.valueOf(colors.iconColor)
+    listOf(
+        binding.title,
+        binding.mangaAuthor,
+        binding.mangaArtist,
+        binding.thumbnailUrl,
+        binding.mangaDescription,
+    ).forEach {
+        it.setTextColor(colors.textColor)
+        it.highlightColor = colors.textHighlightColor
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            it.textSelectHandle?.let { drawable ->
+                drawable.setTint(colors.iconColor)
+                it.setTextSelectHandle(drawable)
+            }
+            it.textSelectHandleLeft?.let { drawable ->
+                drawable.setTint(colors.iconColor)
+                it.setTextSelectHandleLeft(drawable)
+            }
+            it.textSelectHandleRight?.let { drawable ->
+                drawable.setTint(colors.iconColor)
+                it.setTextSelectHandleRight(drawable)
+            }
+        }
+    }
+    listOf(
+        binding.titleOutline,
+        binding.mangaAuthorOutline,
+        binding.mangaArtistOutline,
+        binding.thumbnailUrlOutline,
+        binding.mangaDescriptionOutline,
+    ).forEach {
+        it.boxStrokeColor = colors.iconColor
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            it.cursorColor = ColorStateList.valueOf(colors.iconColor)
+        }
     }
 
     binding.resetTags.setTextColor(colors.btnTextColor)
