@@ -589,12 +589,14 @@ private fun MangaScreenSmallImpl(
                                     onClick = onRelatedMangasScreenClick,
                                     onLongClick = null,
                                 )
-                                RelatedMangas(
-                                    relatedMangas = state.relatedMangasSorted,
-                                    getMangaState = getMangaState,
-                                    onMangaClick = onRelatedMangaClick,
-                                    onMangaLongClick = onRelatedMangaLongClick
-                                )
+                                if (state.relatedMangasSorted == null || state.relatedMangasSorted.isNotEmpty()) {
+                                    RelatedMangas(
+                                        relatedMangas = state.relatedMangasSorted,
+                                        getMangaState = getMangaState,
+                                        onMangaClick = onRelatedMangaClick,
+                                        onMangaLongClick = onRelatedMangaLongClick,
+                                    )
+                                }
                             }
                         }
                     }
