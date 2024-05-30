@@ -27,6 +27,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.rememberDynamicColorScheme
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.ui.UiPreferences
@@ -135,13 +136,25 @@ class MangaScreen(
         val successState = state as MangaScreenModel.State.Success
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
-        DynamicMaterialTheme(
-            seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
-            useDarkTheme = isSystemInDarkTheme(),
-            style = uiPreferences.themeCoverBasedStyle().get(),
-            animate = uiPreferences.themeCoverBasedAnimate().get(),
-            content = { MaterialThemeContent(context, screenModel, successState) },
-        )
+        if (uiPreferences.themeCoverBasedAnimate().get()) {
+            DynamicMaterialTheme(
+                seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
+                useDarkTheme = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+                animate = uiPreferences.themeCoverBasedAnimate().get(),
+                content = { MaterialThemeContent(context, screenModel, successState) },
+            )
+        } else {
+            val colorScheme = rememberDynamicColorScheme(
+                seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
+                isDark = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+            )
+            MaterialTheme(
+                colorScheme = colorScheme,
+                content = { MaterialThemeContent(context, screenModel, successState) },
+            )
+        }
     }
 
     @Composable
