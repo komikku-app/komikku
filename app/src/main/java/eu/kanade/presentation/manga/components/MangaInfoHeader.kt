@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.materialkolor.ktx.blend
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
@@ -129,7 +130,7 @@ fun MangaInfoBox(
                         brush = Brush.verticalGradient(colors = backdropGradientColors),
                     )
                 }
-                .background(MaterialTheme.colorScheme.inversePrimary)
+                .background(MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.2f))
                 .blur(4.dp)
                 .alpha(0.2f),
         )
