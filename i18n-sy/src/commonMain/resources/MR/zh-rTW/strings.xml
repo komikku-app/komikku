@@ -496,7 +496,6 @@
     <string name="launching_app">應用程式啟動中……</string>
     <string name="error_with_reason">錯誤：%1$s</string>
     <string name="could_not_open_entry">無法開啟此作品：\n\n%1$s</string>
-    <string name="entry_id_is_null">作品 ID 為空！</string>
     <string name="loading_entry">作品載入中……</string>
 
     <!-- Page previews -->
@@ -612,7 +611,6 @@
 
     <!-- Similar -->
     <string name="similar">與 %1$s 相似</string>
-    <string name="similar_no_results">相似作品未找到</string>
 
     <!-- MangaDex relations-->
     <string name="relation_similar">相似</string>

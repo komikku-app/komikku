@@ -134,7 +134,6 @@
     <string name="data_saver_image_format_summary_on">La taille du fichier Jpeg est considérablement plus petite que Webp (ce qui signifie que plus de données sont économisées), mais cela fait également perdre plus de qualité aux images. \n Actuellement compresse en Jpeg</string>
     <string name="data_saver_image_format_summary_off">La taille du fichier Jpeg est considérablement plus petite que celle de Webp (ce qui signifie que plus de données sont économisées), mais cela fait également perdre plus de qualité aux images. \n. Actuellement compresse en Webp</string>
     <string name="data_saver_color_bw">Convertir en noir et blanc</string>
-    <string name="data_saver_server">Serveur proxy Bandwidth Hero</string>
     <string name="data_saver_server_summary">Mettez ici l\'URL du serveur Bandwidth Hero Proxy</string>
 
     <!-- Log Level -->
