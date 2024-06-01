@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
+import okio.BufferedSource
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
 import uy.kohesive.injekt.injectLazy
@@ -70,50 +71,63 @@ object MangaCoverMetadata {
      *
      * It should also be called everytime while browsing to get manga's color from [CoverCache].
      *
+     * @author Jays2Kings
      */
-    fun setRatioAndColors(mangaCover: MangaCover, ogFile: File? = null, force: Boolean = false) {
+    fun setRatioAndColors(
+        mangaCover: MangaCover,
+        bufferedSource: BufferedSource? = null,
+        ogFile: File? = null,
+        force: Boolean = false,
+    ) {
         if (!mangaCover.isMangaFavorite) {
-            remove(mangaCover)
+            mangaCover.remove()
         }
         // Won't do anything if manga is browsing & color loaded
         if (mangaCover.vibrantCoverColor != null && !mangaCover.isMangaFavorite) return
         val file = ogFile
             ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
             ?: coverCache.getCoverFile(mangaCover.url)
-        // if the file exists and the there was still an error then the file is corrupted
-        if (file?.exists() == true) {
-            val options = BitmapFactory.Options()
-            val hasVibrantColor = if (mangaCover.isMangaFavorite) mangaCover.vibrantCoverColor != null else true
-            // If dominantCoverColors is not null, it means that color is restored from Prefs
-            // and also has vibrantCoverColor (e.g. new color caused by updated cover)
-            if (mangaCover.dominantCoverColors != null && hasVibrantColor && !force) {
-                // Trying update color without needs for actually reading file
-                options.inJustDecodeBounds = true
-            } else {
-                options.inSampleSize = 4
-            }
-            val bitmap = BitmapFactory.decodeFile(file.path, options)
-            if (bitmap != null) {
-                Palette.from(bitmap).generate {
-                    if (it == null) return@generate
-                    if (mangaCover.isMangaFavorite) {
-                        it.dominantSwatch?.let { swatch ->
-                            mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
-                        }
+
+        val options = BitmapFactory.Options()
+        val hasVibrantColor = if (mangaCover.isMangaFavorite) mangaCover.vibrantCoverColor != null else true
+        // If dominantCoverColors is not null, it means that color is restored from Prefs
+        // and also has vibrantCoverColor (e.g. new color caused by updated cover)
+        val updateRatioOnly = mangaCover.dominantCoverColors != null && hasVibrantColor && !force
+        if (updateRatioOnly) {
+            // Just trying to update ratio without actual reading bitmap (bitmap will be null)
+            // This is often when open a favorite manga
+            options.inJustDecodeBounds = true
+        } else {
+            options.inSampleSize = 4
+        }
+
+        val bitmap = when {
+            bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)
+            // if the file exists and the there was still an error then the file is corrupted
+            file?.exists() == true -> BitmapFactory.decodeFile(file.path, options)
+            else -> { return }
+        }
+
+        if (bitmap != null) {
+            Palette.from(bitmap).generate {
+                if (it == null) return@generate
+                if (mangaCover.isMangaFavorite) {
+                    it.dominantSwatch?.let { swatch ->
+                        mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
                     }
-                    val color = it.getBestColor() ?: return@generate
-                    mangaCover.vibrantCoverColor = color
                 }
+                val color = it.getBestColor() ?: return@generate
+                mangaCover.vibrantCoverColor = color
             }
-            if (mangaCover.isMangaFavorite && !(options.outWidth == -1 || options.outHeight == -1)) {
-                mangaCover.ratio = options.outWidth / options.outHeight.toFloat()
-            }
+        }
+        if (mangaCover.isMangaFavorite && !(options.outWidth == -1 || options.outHeight == -1)) {
+            mangaCover.ratio = options.outWidth / options.outHeight.toFloat()
         }
     }
 
-    fun remove(cover: MangaCover) {
-        MangaCover.coverRatioMap.remove(cover.mangaId)
-        MangaCover.coverColorMap.remove(cover.mangaId)
+    fun MangaCover.remove() {
+        MangaCover.coverRatioMap.remove(mangaId)
+        MangaCover.coverColorMap.remove(mangaId)
     }
 
     fun savePrefs() {
@@ -124,9 +138,8 @@ object MangaCoverMetadata {
     }
 }
 
-fun Palette.getBestColor(defaultColor: Int) = getBestColor() ?: defaultColor
-
 /**
+ * Calculate the best [Palette.Swatch] from [Palette]
  * @author Jays2Kings
  */
 fun Palette.getBestColor(): Int? {

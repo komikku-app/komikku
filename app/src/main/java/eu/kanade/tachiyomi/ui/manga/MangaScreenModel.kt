@@ -504,12 +504,10 @@ class MangaScreenModel(
 
         val imageRequestBuilder = if (model is ImageRequest) {
             model.newBuilder()
-                .size(sizeResolver)
         } else {
-            ImageRequest.Builder(context)
-                .data(model)
-                .size(sizeResolver)
+            ImageRequest.Builder(context).data(model)
         }
+            .size(sizeResolver)
             .allowHardware(false)
 
         val generatePalette: (Image) -> Unit = { image ->

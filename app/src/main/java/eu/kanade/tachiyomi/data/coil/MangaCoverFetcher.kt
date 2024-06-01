@@ -27,6 +27,7 @@ import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.internal.http.HTTP_NOT_MODIFIED
+import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import okio.Source
@@ -84,10 +85,7 @@ class MangaCoverFetcher(
         // diskCacheKey is thumbnail_url
         if (url == null) error("No cover specified")
         return when (getResourceType(url)) {
-            Type.File -> {
-                setRatioAndColorsInScope(mangaCover, File(url.substringAfter("file://")))
-                fileLoader(File(url.substringAfter("file://")))
-            }
+            Type.File -> fileLoader(File(url.substringAfter("file://")))
             Type.URI -> fileUriLoader(url)
             Type.URL -> httpLoader()
             null -> error("Invalid image")
@@ -95,6 +93,7 @@ class MangaCoverFetcher(
     }
 
     private fun fileLoader(file: File): FetchResult {
+        setRatioAndColorsInScope(mangaCover, ogFile = file)
         return SourceFetchResult(
             source = ImageSource(
                 file = file.toOkioPath(),
@@ -127,7 +126,6 @@ class MangaCoverFetcher(
             null
         }
         if (libraryCoverCacheFile?.exists() == true && options.diskCachePolicy.readEnabled) {
-            setRatioAndColorsInScope(mangaCover, libraryCoverCacheFile)
             return fileLoader(libraryCoverCacheFile)
         }
 
@@ -138,12 +136,11 @@ class MangaCoverFetcher(
                 val snapshotCoverCache = moveSnapshotToCoverCache(snapshot, libraryCoverCacheFile)
                 if (snapshotCoverCache != null) {
                     // Read from cover cache after added to library
-                    setRatioAndColorsInScope(mangaCover, snapshotCoverCache)
                     return fileLoader(snapshotCoverCache)
                 }
 
-                // Read from snapshot (history entries go here)
-                setRatioAndColorsInScope(mangaCover)
+                // Read from snapshot
+                setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
@@ -157,7 +154,6 @@ class MangaCoverFetcher(
             try {
                 // Read from cover cache after library manga cover updated
                 val responseCoverCache = writeResponseToCoverCache(response, libraryCoverCacheFile)
-                setRatioAndColorsInScope(mangaCover)
                 if (responseCoverCache != null) {
                     return fileLoader(responseCoverCache)
                 }
@@ -165,6 +161,7 @@ class MangaCoverFetcher(
                 // Read from disk cache
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
+                    setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
                     return SourceFetchResult(
                         source = snapshot.toImageSource(),
                         mimeType = "image/*",
@@ -172,7 +169,14 @@ class MangaCoverFetcher(
                     )
                 }
 
-                // Read from response if cache is unused or unusable (browsing entries go here)
+                setRatioAndColorsInScope(
+                    mangaCover,
+                    bufferedSource = ImageSource(
+                        source = responseBody.source(),
+                        fileSystem = FileSystem.SYSTEM,
+                    ).source(),
+                )
+                // Read from response if cache is unused or unusable
                 return SourceFetchResult(
                     source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
                     mimeType = "image/*",
@@ -313,13 +317,15 @@ class MangaCoverFetcher(
     /**
      * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
      * @param ogFile if Null then it will load from [CoverCache]. It can't accept File from [writeResponseToCoverCache]
-     *
-     * @author @Jays2Kings
      */
-    // TODO: Remove mangaCover here
-    private fun setRatioAndColorsInScope(mangaCover: MangaCover, ogFile: File? = null, force: Boolean = false) {
+    private fun setRatioAndColorsInScope(
+        mangaCover: MangaCover,
+        bufferedSource: BufferedSource? = null,
+        ogFile: File? = null,
+        force: Boolean = false
+    ) {
         fileScope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, ogFile, force)
+            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, force)
         }
     }
 

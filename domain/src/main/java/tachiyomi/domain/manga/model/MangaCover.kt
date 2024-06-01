@@ -38,8 +38,8 @@ data class MangaCover(
     @Suppress("KDocUnresolvedReference")
     var vibrantCoverColor: Int?
         get() = vibrantCoverColorMap[mangaId]
-        set(value) = mangaId.let {
-            vibrantCoverColorMap[it] = value
+        set(value) {
+            vibrantCoverColorMap[mangaId] = value
         }
 
     /**
@@ -76,7 +76,7 @@ data class MangaCover(
 
         /**
          * [vibrantCoverColorMap] store color generated while browsing library.
-         * It always empty at beginning each time app starts, then add more color.
+         * It always empty at beginning each time app starts, then add more color while browsing.
          */
         val vibrantCoverColorMap: HashMap<Long, Int?> = hashMapOf()
 
@@ -84,7 +84,7 @@ data class MangaCover(
          * [coverColorMap] stores favorite manga's cover & text's color as a joined string in Prefs.
          * They will be loaded each time [App] is initialized with [MangaCoverMetadata.load]
          *
-         * They will be saved back when [MangaCoverFetcher.setRatioAndColorsInScope] is called.
+         * They will be saved back when [MainActivity.onPause] is triggered.
          */
         @Suppress("KDocUnresolvedReference")
         var coverColorMap = ConcurrentHashMap<Long, Pair<Int, Int>>()
