@@ -61,14 +61,14 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
     override suspend fun doWork(): Result {
         return try {
             if (requiresWifiConnection(preferences) && !context.isConnectedToWifi()) {
-                Result.failure()
+                Result.success() // retry again later
             } else {
                 startUpdating()
                 logger.d("Update job completed!")
                 Result.success()
             }
         } catch (e: Exception) {
-            Result.failure()
+            Result.success() // retry again later
         }
     }
 
