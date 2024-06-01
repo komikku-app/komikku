@@ -6,11 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.materialkolor.PaletteStyle
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
@@ -106,6 +108,10 @@ object SettingsAppearanceScreen : SearchableSettings {
     private fun getDetailsPageThemeGroup(
         uiPreferences: UiPreferences,
     ): Preference.PreferenceGroup {
+        val scope = rememberCoroutineScope()
+        val detailsPageThemeCoverBased by remember {
+            Injekt.get<UiPreferences>().detailsPageThemeCoverBased().asState(scope)
+        }
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_details_page_theme),
             preferenceItems = persistentListOf(
@@ -116,7 +122,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.themeCoverBasedStyle(),
                     title = stringResource(MR.strings.pref_theme_cover_based_style),
-                    enabled = uiPreferences.detailsPageThemeCoverBased().get(),
+                    enabled = detailsPageThemeCoverBased,
                     entries = PaletteStyle.entries
                         .associateWith { it.name }
                         .toImmutableMap(),
@@ -124,7 +130,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.themeCoverBasedAnimate(),
                     title = stringResource(MR.strings.pref_theme_cover_based_animate),
-                    enabled = uiPreferences.detailsPageThemeCoverBased().get(),
+                    enabled = detailsPageThemeCoverBased,
                 ),
             ),
         )
