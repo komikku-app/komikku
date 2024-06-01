@@ -16,6 +16,11 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.manga.MangaCoverMetadata
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.CacheControl
 import okhttp3.Call
@@ -31,6 +36,7 @@ import okio.source
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -48,7 +54,8 @@ import java.io.IOException
  */
 @Suppress("LongParameterList")
 class MangaCoverFetcher(
-    private val url: String?,
+    private val mangaCover: MangaCover,
+    private val url: String? = mangaCover.url,
     private val isLibraryManga: Boolean,
     private val options: Options,
     private val coverFileLazy: Lazy<File?>,
@@ -58,6 +65,8 @@ class MangaCoverFetcher(
     private val callFactoryLazy: Lazy<Call.Factory>,
     private val imageLoader: ImageLoader,
 ) : Fetcher {
+
+    private val fileScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
@@ -75,7 +84,10 @@ class MangaCoverFetcher(
         // diskCacheKey is thumbnail_url
         if (url == null) error("No cover specified")
         return when (getResourceType(url)) {
-            Type.File -> fileLoader(File(url.substringAfter("file://")))
+            Type.File -> {
+                setRatioAndColorsInScope(mangaCover, File(url.substringAfter("file://")))
+                fileLoader(File(url.substringAfter("file://")))
+            }
             Type.URI -> fileUriLoader(url)
             Type.URL -> httpLoader()
             null -> error("Invalid image")
@@ -95,6 +107,7 @@ class MangaCoverFetcher(
     }
 
     private fun fileUriLoader(uri: String): FetchResult {
+        setRatioAndColorsInScope(mangaCover)
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
             .source()
@@ -114,6 +127,7 @@ class MangaCoverFetcher(
             null
         }
         if (libraryCoverCacheFile?.exists() == true && options.diskCachePolicy.readEnabled) {
+            setRatioAndColorsInScope(mangaCover, libraryCoverCacheFile)
             return fileLoader(libraryCoverCacheFile)
         }
 
@@ -124,10 +138,12 @@ class MangaCoverFetcher(
                 val snapshotCoverCache = moveSnapshotToCoverCache(snapshot, libraryCoverCacheFile)
                 if (snapshotCoverCache != null) {
                     // Read from cover cache after added to library
+                    setRatioAndColorsInScope(mangaCover, snapshotCoverCache)
                     return fileLoader(snapshotCoverCache)
                 }
 
-                // Read from snapshot
+                // Read from snapshot (history entries go here)
+                setRatioAndColorsInScope(mangaCover)
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
@@ -141,6 +157,7 @@ class MangaCoverFetcher(
             try {
                 // Read from cover cache after library manga cover updated
                 val responseCoverCache = writeResponseToCoverCache(response, libraryCoverCacheFile)
+                setRatioAndColorsInScope(mangaCover)
                 if (responseCoverCache != null) {
                     return fileLoader(responseCoverCache)
                 }
@@ -155,7 +172,7 @@ class MangaCoverFetcher(
                     )
                 }
 
-                // Read from response if cache is unused or unusable
+                // Read from response if cache is unused or unusable (browsing entries go here)
                 return SourceFetchResult(
                     source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
                     mimeType = "image/*",
@@ -293,6 +310,19 @@ class MangaCoverFetcher(
         }
     }
 
+    /**
+     * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
+     * @param ogFile if Null then it will load from [CoverCache]. It can't accept File from [writeResponseToCoverCache]
+     *
+     * @author @Jays2Kings
+     */
+    // TODO: Remove mangaCover here
+    private fun setRatioAndColorsInScope(mangaCover: MangaCover, ogFile: File? = null, force: Boolean = false) {
+        fileScope.launch {
+            MangaCoverMetadata.setRatioAndColors(mangaCover, ogFile, force)
+        }
+    }
+
     private enum class Type {
         File,
         URI,
@@ -308,7 +338,7 @@ class MangaCoverFetcher(
 
         override fun create(data: Manga, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
-                url = data.thumbnailUrl,
+                mangaCover = data.asMangaCover(),
                 isLibraryManga = data.favorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.thumbnailUrl) },
@@ -330,7 +360,7 @@ class MangaCoverFetcher(
 
         override fun create(data: MangaCover, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
-                url = data.url,
+                mangaCover = data,
                 isLibraryManga = data.isMangaFavorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.url) },

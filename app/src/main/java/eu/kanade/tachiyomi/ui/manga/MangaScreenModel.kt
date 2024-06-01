@@ -66,6 +66,8 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
+import eu.kanade.tachiyomi.util.manga.MangaCoverMetadata
+import eu.kanade.tachiyomi.util.manga.getBestColor
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
@@ -400,8 +402,8 @@ class MangaScreenModel(
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
             if (uiPreferences.detailsPageThemeCoverBased().get()) {
+                setPaletteColor(manga, ImageRequestType.Enqueue)
 //                setSeedColor(manga, ImageRequestType.IOContext)
-                setSeedColor(manga, ImageRequestType.Enqueue)
 //                setSeedColor(manga, ImageRequestType.Execute)
 //                setSeedColor(manga, ImageRequestType.ExecuteBlocking)
             }
@@ -489,7 +491,13 @@ class MangaScreenModel(
         }
     }
 
-    private suspend fun setSeedColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
+    /**
+     * [setPaletteColor] Get the color of the manga cover by loading cover from network.
+     *
+     * It's always called when open manga detail page. Although color is already loaded while
+     * browsing via [MangaCoverMetadata.setRatioAndColors] but will be refreshed with new loaded cover with this.
+     */
+    private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val sizeResolver = SizeResolver(Size.ORIGINAL)
@@ -2057,43 +2065,6 @@ sealed interface RelatedManga {
     }
 }
 // KMK <--
-
-// J2K -->
-fun Palette.getBestColor(): Int? {
-    // How big is the vibrant color
-    val vibPopulation = vibrantSwatch?.population ?: -1
-    // Saturation of the most dominant color
-    val domSat = dominantSwatch?.hsl?.get(1) ?: 0f
-    // Brightness of the most dominant color
-    val domLum = dominantSwatch?.hsl?.get(2) ?: -1f
-    // How big is the muted color
-    val mutedPopulation = mutedSwatch?.population ?: -1
-    // Saturation of the muted color
-    val mutedSat = mutedSwatch?.hsl?.get(1) ?: 0f
-    // If muted color is 3 times bigger than vibrant color then minimum acceptable saturation
-    // for muted color is lower (more likely to use it even if it's not colorful)
-    val mutedSatMinAcceptable = if (mutedPopulation > vibPopulation * 3f) 0.1f else 0.25f
-
-    val dominantIsColorful = domSat >= .25f
-    val dominantBrightnessJustRight = domLum <= .8f && domLum > .2f
-    val vibrantIsConsiderableBigEnough = vibPopulation >= mutedPopulation * 0.75f
-    val mutedIsBig = mutedPopulation > vibPopulation * 1.5f
-    val mutedIsNotTooBoring = mutedSat > mutedSatMinAcceptable
-
-    return when {
-        dominantIsColorful && dominantBrightnessJustRight -> dominantSwatch
-        // use vibrant color even if it's only 0.75 times smaller than muted color
-        vibrantIsConsiderableBigEnough -> vibrantSwatch
-        // use muted color if it's 1.5 times bigger than vibrant color and colorful enough (above the limit)
-        mutedIsBig && mutedIsNotTooBoring -> mutedSwatch
-        // return major vibrant color variant with more favor of vibrant color (size x3)
-        else -> listOfNotNull(vibrantSwatch, lightVibrantSwatch, darkVibrantSwatch)
-            .maxByOrNull {
-                if (it === vibrantSwatch) vibPopulation * 3 else it.population
-            }
-    }?.rgb
-}
-// J2K <--
 
 enum class ImageRequestType {
     IOContext,

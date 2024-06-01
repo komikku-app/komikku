@@ -74,6 +74,7 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
+import eu.kanade.tachiyomi.util.manga.MangaCoverMetadata
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
@@ -335,6 +336,11 @@ class MainActivity : BaseActivity() {
             BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
         }
         // SY -->
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MangaCoverMetadata.savePrefs()
     }
 
     override fun onProvideAssistContent(outContent: AssistContent) {
