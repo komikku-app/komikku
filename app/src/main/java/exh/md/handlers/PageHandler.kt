@@ -27,6 +27,7 @@ class PageHandler(
     private val bilibiliHandler: BilibiliHandler,
     private val azukiHandler: AzukiHandler,
     private val mangaHotHandler: MangaHotHandler,
+    private val namicomiHandler: NamicomiHandler,
     private val preferences: TrackPreferences,
     private val mdList: MdList,
 ) {
@@ -53,6 +54,10 @@ class PageHandler(
                     )
                     chapter.scanlator.equals("mangahot", true) -> mangaHotHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
+                    )
+                    chapter.scanlator.equals("namicomi", true) -> namicomiHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                        dataSaver = dataSaver,
                     )
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
@@ -120,6 +125,9 @@ class PageHandler(
                 azukiHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, azukiHandler.headers), page)
             }
             page.imageUrl?.contains("mangahot", true) == true -> {
+                mangaHotHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaHotHandler.headers), page)
+            }
+            page.imageUrl?.contains("namicomi", true) == true -> {
                 mangaHotHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaHotHandler.headers), page)
             }
             else -> null

@@ -31,6 +31,7 @@ import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaHotHandler
 import exh.md.handlers.MangaPlusHandler
+import exh.md.handlers.NamicomiHandler
 import exh.md.handlers.PageHandler
 import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
@@ -123,6 +124,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val mangaHotHandler by lazy {
         MangaHotHandler(network.client, network.defaultUserAgentProvider())
     }
+    private val namicomiHandler by lazy {
+        NamicomiHandler(network.client, network.defaultUserAgentProvider())
+    }
     private val pageHandler by lazy {
         PageHandler(
             headers,
@@ -132,6 +136,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             bilibiliHandler,
             azukHandler,
             mangaHotHandler,
+            namicomiHandler,
             trackPreferences,
             mdList,
         )
