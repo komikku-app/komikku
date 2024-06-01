@@ -19,8 +19,6 @@ import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
-import coil3.size.Size
-import coil3.size.SizeResolver
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
@@ -112,6 +110,7 @@ import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.lang.withUIContext
@@ -145,10 +144,12 @@ import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.applyFilter
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
@@ -500,23 +501,32 @@ class MangaScreenModel(
     private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
-        val sizeResolver = SizeResolver(Size.ORIGINAL)
-
         val imageRequestBuilder = if (model is ImageRequest) {
             model.newBuilder()
         } else {
             ImageRequest.Builder(context).data(model)
         }
-            .size(sizeResolver)
             .allowHardware(false)
 
         val generatePalette: (Image) -> Unit = { image ->
             val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
             if (bitmap != null) {
                 Palette.from(bitmap).generate { palette ->
-                    palette?.getBestColor()?.let { color ->
-                        seedColor = Color(color)
-                        updateSuccessState { it.copy(seedColor = seedColor) }
+                    screenModelScope.launchUI {
+                        palette?.getBestColor()?.let { vibrantColor ->
+                            when (model) {
+                                is Manga -> {
+                                    val mangaCover = model.asMangaCover()
+                                    mangaCover.vibrantCoverColor = vibrantColor
+                                }
+
+                                is MangaCover -> {
+                                    model.vibrantCoverColor = vibrantColor
+                                }
+                            }
+                            seedColor = Color(vibrantColor)
+                            updateSuccessState { it.copy(seedColor = seedColor) }
+                        }
                     }
                 }
             }
@@ -526,7 +536,17 @@ class MangaScreenModel(
             ImageRequestType.Enqueue -> {
                 context.imageLoader.enqueue(
                     imageRequestBuilder
-                        .target(onSuccess = generatePalette)
+                        .target(
+                            onSuccess = generatePalette,
+                            onError = {
+                                // TODO: handle error
+                                // val file = coverCache.getCoverFile(manga!!)
+                                // if (file.exists()) {
+                                //     file.delete()
+                                //     setPaletteColor()
+                                // }
+                            },
+                        )
                         .build()
                 )
             }
