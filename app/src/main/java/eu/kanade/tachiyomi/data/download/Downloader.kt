@@ -21,6 +21,7 @@ import exh.util.DataSaver
 import exh.util.DataSaver.Companion.getImage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -76,6 +77,7 @@ import java.util.zip.ZipOutputStream
  *
  * Its queue contains the list of chapters to download.
  */
+@OptIn(DelicateCoroutinesApi::class)
 class Downloader(
     private val context: Context,
     private val provider: DownloadProvider,

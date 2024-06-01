@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
@@ -40,6 +41,7 @@ import eu.kanade.tachiyomi.BuildConfig.APPLICATION_ID as ID
  * Pending Broadcasts should be made from here.
  * NOTE: Use local broadcasts if possible.
  */
+@OptIn(DelicateCoroutinesApi::class)
 class NotificationReceiver : BroadcastReceiver() {
 
     private val getManga: GetManga by injectLazy()

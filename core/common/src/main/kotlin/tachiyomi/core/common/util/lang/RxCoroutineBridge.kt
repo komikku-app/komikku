@@ -3,6 +3,7 @@ package tachiyomi.core.common.util.lang
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -64,7 +65,7 @@ private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutin
 internal fun <T> CancellableContinuation<T>.unsubscribeOnCancellation(sub: Subscription) =
     invokeOnCancellation { sub.unsubscribe() }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 fun <T> runAsObservable(
     backpressureMode: Emitter.BackpressureMode = Emitter.BackpressureMode.NONE,
     block: suspend () -> T,

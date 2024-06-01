@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import eu.kanade.tachiyomi.util.system.notify
+import kotlinx.coroutines.DelicateCoroutinesApi
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
@@ -41,6 +42,7 @@ import uy.kohesive.injekt.api.get
 import java.math.RoundingMode
 import java.text.NumberFormat
 
+@OptIn(DelicateCoroutinesApi::class)
 class LibraryUpdateNotifier(
     private val context: Context,
 
