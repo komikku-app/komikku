@@ -76,6 +76,9 @@ class MangaCoverFetcher(
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
 
+    /**
+     * Called each time a cover is displayed
+     */
     override suspend fun fetch(): FetchResult {
         // Use custom cover if exists
         val useCustomCover = options.extras.getOrDefault(USE_CUSTOM_COVER_KEY)

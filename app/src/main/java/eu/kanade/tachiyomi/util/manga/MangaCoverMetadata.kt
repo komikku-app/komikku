@@ -49,17 +49,12 @@ object MangaCoverMetadata {
     }
 
     /**
-     * [setRatioAndColors] generate cover's color & ratio.
-     * It's called everytime while browsing to get manga's color from [CoverCache].
+     * [setRatioAndColors] generate cover's color & ratio by reading cover's bitmap from [CoverCache].
+     * It's called along with [MangaCoverFetcher.fetch] everytime a cover is **displayed** (anywhere).
      *
-     * It won't run if manga is not in library but already has [MangaCover.vibrantCoverColor].
-     *
-     * If manga already has [MangaCover.vibrantCoverColor] (wrote by previous run) and not in library,
-     * it won't do anything. It only run with favorite manga, or non-favorite manga without color.
-     *
-     * It removes saved colors from saved Prefs of [MangaCover.coverColorMap] if manga is not favorite.
-     *
-     * If a favorite manga already restored [MangaCover.dominantCoverColors] then it
+     * When called:
+     *  - It removes saved colors from saved Prefs of [MangaCover.coverColorMap] if manga is not favorite.
+     *  - If a favorite manga already restored [MangaCover.dominantCoverColors] then it
      * will skip actually reading bitmap, only extract ratio. Except when [MangaCover.vibrantCoverColor]
      * is not loaded then it will read bitmap & extract vibrant color.
      *

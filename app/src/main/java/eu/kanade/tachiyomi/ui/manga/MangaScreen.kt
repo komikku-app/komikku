@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -134,11 +135,12 @@ class MangaScreen(
         }
 
         val successState = state as MangaScreenModel.State.Success
+        val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
         if (uiPreferences.themeCoverBasedAnimate().get()) {
             DynamicMaterialTheme(
-                seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
+                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
                 useDarkTheme = isSystemInDarkTheme(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
                 animate = uiPreferences.themeCoverBasedAnimate().get(),
@@ -146,7 +148,7 @@ class MangaScreen(
             )
         } else {
             val colorScheme = rememberDynamicColorScheme(
-                seedColor = successState.seedColor ?: MaterialTheme.colorScheme.primary,
+                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
                 isDark = isSystemInDarkTheme(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
             )

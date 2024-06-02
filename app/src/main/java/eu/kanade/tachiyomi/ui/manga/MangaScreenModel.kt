@@ -158,7 +158,6 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -170,8 +169,6 @@ class MangaScreenModel(
     val mangaId: Long,
     private val isFromSource: Boolean,
     val smartSearched: Boolean,
-    private val mangaCover: MangaCover? = null,
-    private var vibrantColor: Color? = mangaCover?.vibrantCoverColor?.let { Color(it) },
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
@@ -349,15 +346,11 @@ class MangaScreenModel(
                 .combine(downloadManager.queueState) { state, _ -> state }
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
-                    if (uiPreferences.detailsPageThemeCoverBased().get()) {
-                        vibrantColor = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
-                    }
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
                     updateSuccessState {
                         it.copy(
                             manga = manga,
                             chapters = chapterItems,
-                            seedColor = vibrantColor,
                             // SY -->
                             meta = raiseMetadata(flatMetadata, it.source),
                             mergedData = mergedData,
@@ -405,10 +398,6 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
-            if (uiPreferences.detailsPageThemeCoverBased().get()) {
-                vibrantColor = vibrantColor ?: manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
-                if (vibrantColor == null) setPaletteColor(manga)
-            }
 
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
@@ -439,7 +428,6 @@ class MangaScreenModel(
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
-                    seedColor = vibrantColor,
                     // SY -->
                     availableScanlators = if (manga.source == MERGED_SOURCE_ID) {
                         getAvailableScanlators.awaitMerge(mangaId)
@@ -497,7 +485,6 @@ class MangaScreenModel(
      * Get the color of the manga cover by loading cover with ImageRequest directly from network.
      */
     private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
-        Timber.e("setPaletteColor: Should not run into this function")
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val imageRequestBuilder = if (model is ImageRequest) {
@@ -514,17 +501,9 @@ class MangaScreenModel(
                     screenModelScope.launchUI {
                         palette?.getBestColor()?.let { vibrantColor ->
                             when (model) {
-                                is Manga -> {
-                                    val mangaCover = model.asMangaCover()
-                                    mangaCover.vibrantCoverColor = vibrantColor
-                                }
-
-                                is MangaCover -> {
-                                    model.vibrantCoverColor = vibrantColor
-                                }
+                                is Manga -> model.asMangaCover().vibrantCoverColor = vibrantColor
+                                is MangaCover -> model.vibrantCoverColor = vibrantColor
                             }
-                            this@MangaScreenModel.vibrantColor = Color(vibrantColor)
-                            updateSuccessState { it.copy(seedColor = this@MangaScreenModel.vibrantColor) }
                         }
                     }
                 }
@@ -1896,11 +1875,11 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
-
-            val seedColor: Color? = null,
             // KMK <--
         ) : State {
             // KMK -->
+            val seedColor: Color? = MangaCover.vibrantCoverColorMap[manga.id]?.let { Color(it) }
+
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list

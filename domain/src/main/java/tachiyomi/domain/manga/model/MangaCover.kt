@@ -30,10 +30,7 @@ data class MangaCover(
      * It contains color for all mangas, both in library or browsing.
      *
      * It reads/saves to a hashmap in [MangaCover.vibrantCoverColorMap] for multiple mangas.
-     *
-     * A value set will only update the hashmap, it won't update any UI by itself.
      */
-    @Suppress("KDocUnresolvedReference")
     var vibrantCoverColor: Int?
         get() = vibrantCoverColorMap[mangaId]
         set(value) {
@@ -48,8 +45,8 @@ data class MangaCover(
      *
      * Format: <first: cover color, second: text color>.
      *
-     * Set in [MangaCoverMetadata.setRatioAndColors] whenever browsing meets a favorite manga
-     *  by loading from [CoverCache].
+     * Set in *[MangaCoverMetadata.setRatioAndColors]* whenever browsing meets a favorite manga
+     *  by loading from *[CoverCache]*.
      */
     @Suppress("KDocUnresolvedReference")
     var dominantCoverColors: Pair<Int, Int>?
@@ -76,9 +73,9 @@ data class MangaCover(
 
         /**
          * [coverColorMap] stores favorite manga's cover & text's color as a joined string in Prefs.
-         * They will be loaded each time [App] is initialized with [MangaCoverMetadata.load]
+         * They will be loaded each time *[App]* is initialized with *[MangaCoverMetadata.load]*.
          *
-         * They will be saved back when [MainActivity.onPause] is triggered.
+         * They will be saved back when *[MainActivity.onPause]* is triggered.
          */
         @Suppress("KDocUnresolvedReference")
         var coverColorMap = ConcurrentHashMap<Long, Pair<Int, Int>>()
