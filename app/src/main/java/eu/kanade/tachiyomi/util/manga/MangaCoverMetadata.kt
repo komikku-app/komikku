@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.util.manga
 import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import okio.BufferedSource
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
@@ -57,6 +58,7 @@ object MangaCoverMetadata {
      *  - If a favorite manga already restored [MangaCover.dominantCoverColors] then it
      * will skip actually reading bitmap, only extract ratio. Except when [MangaCover.vibrantCoverColor]
      * is not loaded then it will read bitmap & extract vibrant color.
+     * => always set [force] to true so it will always re-calculate ratio & color.
      *
      * Set [MangaCover.dominantCoverColors] for favorite manga only.
      * Set [MangaCover.vibrantCoverColor] for all mangas.
@@ -67,13 +69,11 @@ object MangaCoverMetadata {
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = false,
+        force: Boolean = true,
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
         }
-        // Won't do anything if manga is browsing & color loaded
-        if (mangaCover.vibrantCoverColor != null && !mangaCover.isMangaFavorite) return
         val file = ogFile
             ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
             ?: coverCache.getCoverFile(mangaCover.url)

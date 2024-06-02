@@ -329,7 +329,7 @@ class MangaCoverFetcher(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = false
+        force: Boolean = true
     ) {
         if (!uiPreferences.detailsPageThemeCoverBased().get()) return
         fileScope.launch {
