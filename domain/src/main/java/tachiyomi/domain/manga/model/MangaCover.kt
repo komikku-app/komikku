@@ -23,6 +23,7 @@ data class MangaCover(
         null
     }
     val url: String? = customThumbnailUrl ?: ogUrl
+    // SY <--
 
     /**
      * [vibrantCoverColor] is used to set the color theme in manga detail page.
@@ -30,10 +31,7 @@ data class MangaCover(
      *
      * It reads/saves to a hashmap in [MangaCover.vibrantCoverColorMap] for multiple mangas.
      *
-     * Set in [MangaCoverMetadata.setRatioAndColors] & [MangaScreenModel.setPaletteColor]:
-     * - First [MangaCoverMetadata.setRatioAndColors] sets when browsing, use that to show color
-     * initially in detail page.
-     * - Then [MangaScreenModel.setPaletteColor] update color with if having new cover.
+     * A value set will only update the hashmap, it won't update any UI by itself.
      */
     @Suppress("KDocUnresolvedReference")
     var vibrantCoverColor: Int?
@@ -52,10 +50,6 @@ data class MangaCover(
      *
      * Set in [MangaCoverMetadata.setRatioAndColors] whenever browsing meets a favorite manga
      *  by loading from [CoverCache].
-     *
-     * If manga has a new cover and had [MangaCover.vibrantCoverColor] updated with [MangaScreenModel.setPaletteColor],
-     * the next time it appears in browsing (or when come backs from detail page),
-     * [MangaCoverMetadata.setRatioAndColors] will update this without loading Bitmap from [CoverCache].
      */
     @Suppress("KDocUnresolvedReference")
     var dominantCoverColors: Pair<Int, Int>?
@@ -91,7 +85,6 @@ data class MangaCover(
 
         var coverRatioMap = ConcurrentHashMap<Long, Float>()
     }
-    // SY <--
 }
 
 fun Manga.asMangaCover(): MangaCover {

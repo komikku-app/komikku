@@ -64,7 +64,6 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
-import eu.kanade.tachiyomi.util.manga.MangaCoverMetadata
 import eu.kanade.tachiyomi.util.manga.getBestColor
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -159,6 +158,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
+import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -170,6 +170,8 @@ class MangaScreenModel(
     val mangaId: Long,
     private val isFromSource: Boolean,
     val smartSearched: Boolean,
+    private val mangaCover: MangaCover? = null,
+    private var vibrantColor: Color? = mangaCover?.vibrantCoverColor?.let { Color(it) },
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
@@ -255,8 +257,6 @@ class MangaScreenModel(
     val redirectFlow: MutableSharedFlow<EXHRedirect> = MutableSharedFlow()
 
     data class EXHRedirect(val mangaId: Long)
-
-    private var seedColor: Color? = null
     // EXH <--
 
     private data class CombineState(
@@ -349,11 +349,15 @@ class MangaScreenModel(
                 .combine(downloadManager.queueState) { state, _ -> state }
                 // SY <--
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
+                    if (uiPreferences.detailsPageThemeCoverBased().get()) {
+                        vibrantColor = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
+                    }
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
                     updateSuccessState {
                         it.copy(
                             manga = manga,
                             chapters = chapterItems,
+                            seedColor = vibrantColor,
                             // SY -->
                             meta = raiseMetadata(flatMetadata, it.source),
                             mergedData = mergedData,
@@ -401,12 +405,9 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
-
             if (uiPreferences.detailsPageThemeCoverBased().get()) {
-                setPaletteColor(manga, ImageRequestType.Enqueue)
-//                setSeedColor(manga, ImageRequestType.IOContext)
-//                setSeedColor(manga, ImageRequestType.Execute)
-//                setSeedColor(manga, ImageRequestType.ExecuteBlocking)
+                vibrantColor = vibrantColor ?: manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
+                if (vibrantColor == null) setPaletteColor(manga)
             }
 
             // SY -->
@@ -438,7 +439,7 @@ class MangaScreenModel(
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
-                    seedColor = seedColor,
+                    seedColor = vibrantColor,
                     // SY -->
                     availableScanlators = if (manga.source == MERGED_SOURCE_ID) {
                         getAvailableScanlators.awaitMerge(mangaId)
@@ -493,12 +494,10 @@ class MangaScreenModel(
     }
 
     /**
-     * [setPaletteColor] Get the color of the manga cover by loading cover from network.
-     *
-     * It's always called when open manga detail page. Although color is already loaded while
-     * browsing via [MangaCoverMetadata.setRatioAndColors] but will be refreshed with new loaded cover with this.
+     * Get the color of the manga cover by loading cover with ImageRequest directly from network.
      */
     private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
+        Timber.e("setPaletteColor: Should not run into this function")
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val imageRequestBuilder = if (model is ImageRequest) {
@@ -524,8 +523,8 @@ class MangaScreenModel(
                                     model.vibrantCoverColor = vibrantColor
                                 }
                             }
-                            seedColor = Color(vibrantColor)
-                            updateSuccessState { it.copy(seedColor = seedColor) }
+                            this@MangaScreenModel.vibrantColor = Color(vibrantColor)
+                            updateSuccessState { it.copy(seedColor = this@MangaScreenModel.vibrantColor) }
                         }
                     }
                 }

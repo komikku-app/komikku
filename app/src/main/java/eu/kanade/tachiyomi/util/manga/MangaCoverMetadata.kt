@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.util.manga
 import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import okio.BufferedSource
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
@@ -50,26 +49,22 @@ object MangaCoverMetadata {
     }
 
     /**
-     * [setRatioAndColors] won't run if manga is not in library but already has [MangaCover.vibrantCoverColor].
+     * [setRatioAndColors] generate cover's color & ratio.
+     * It's called everytime while browsing to get manga's color from [CoverCache].
+     *
+     * It won't run if manga is not in library but already has [MangaCover.vibrantCoverColor].
+     *
+     * If manga already has [MangaCover.vibrantCoverColor] (wrote by previous run) and not in library,
+     * it won't do anything. It only run with favorite manga, or non-favorite manga without color.
      *
      * It removes saved colors from saved Prefs of [MangaCover.coverColorMap] if manga is not favorite.
      *
-     * If manga already has color (wrote by previous run or when opened detail page
-     * with [MangaScreenModel.setPaletteColor] and not in library, it won't do anything.
-     * It only run with favorite manga or non-favorite manga without color.
-     *
-     * If manga already restored color (except that favorite manga doesn't load color yet), then it
-     * will skip actually reading [CoverCache].
-     * For example when a manga updates its cover and next time it goes back to browsing page, this
-     * function will skip loading bitmap but trying set dominant color with new cover. By doing so,
-     * new cover's color will be saved into Prefs.
+     * If a favorite manga already restored [MangaCover.dominantCoverColors] then it
+     * will skip actually reading bitmap, only extract ratio. Except when [MangaCover.vibrantCoverColor]
+     * is not loaded then it will read bitmap & extract vibrant color.
      *
      * Set [MangaCover.dominantCoverColors] for favorite manga only.
      * Set [MangaCover.vibrantCoverColor] for all mangas.
-     *
-     * This function is called when updating old library, to initially store color for all favorite mangas.
-     *
-     * It should also be called everytime while browsing to get manga's color from [CoverCache].
      *
      * @author Jays2Kings
      */
