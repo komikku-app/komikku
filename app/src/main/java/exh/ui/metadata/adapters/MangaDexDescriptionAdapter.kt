@@ -1,10 +1,13 @@
 package exh.ui.metadata.adapters
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
@@ -20,6 +23,9 @@ import kotlin.math.round
 @Composable
 fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -37,8 +43,12 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(context, ratingFloat)
             binding.rating.isVisible = ratingFloat != null
             binding.ratingBar.isVisible = ratingFloat != null
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
+            binding.rating.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             binding.rating.setOnLongClickListener {
                 context.copyToClipboard(

@@ -12,16 +12,22 @@ import coil3.fetch.SourceFetchResult
 import coil3.getOrDefault
 import coil3.request.Options
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.internal.http.HTTP_NOT_MODIFIED
+import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import okio.Source
@@ -31,7 +37,10 @@ import okio.source
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.IOException
@@ -48,7 +57,8 @@ import java.io.IOException
  */
 @Suppress("LongParameterList")
 class MangaCoverFetcher(
-    private val url: String?,
+    private val mangaCover: MangaCover,
+    private val url: String? = mangaCover.url,
     private val isLibraryManga: Boolean,
     private val options: Options,
     private val coverFileLazy: Lazy<File?>,
@@ -59,9 +69,15 @@ class MangaCoverFetcher(
     private val imageLoader: ImageLoader,
 ) : Fetcher {
 
+    private val uiPreferences: UiPreferences = Injekt.get()
+    private val fileScope = CoroutineScope(Job() + Dispatchers.IO)
+
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
 
+    /**
+     * Called each time a cover is displayed
+     */
     override suspend fun fetch(): FetchResult {
         // Use custom cover if exists
         val useCustomCover = options.extras.getOrDefault(USE_CUSTOM_COVER_KEY)
@@ -83,6 +99,7 @@ class MangaCoverFetcher(
     }
 
     private fun fileLoader(file: File): FetchResult {
+        setRatioAndColorsInScope(mangaCover, ogFile = file)
         return SourceFetchResult(
             source = ImageSource(
                 file = file.toOkioPath(),
@@ -95,6 +112,7 @@ class MangaCoverFetcher(
     }
 
     private fun fileUriLoader(uri: String): FetchResult {
+        setRatioAndColorsInScope(mangaCover)
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
             .source()
@@ -128,6 +146,7 @@ class MangaCoverFetcher(
                 }
 
                 // Read from snapshot
+                setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
@@ -148,6 +167,7 @@ class MangaCoverFetcher(
                 // Read from disk cache
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
+                    setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
                     return SourceFetchResult(
                         source = snapshot.toImageSource(),
                         mimeType = "image/*",
@@ -155,6 +175,13 @@ class MangaCoverFetcher(
                     )
                 }
 
+                setRatioAndColorsInScope(
+                    mangaCover,
+                    bufferedSource = ImageSource(
+                        source = responseBody.source(),
+                        fileSystem = FileSystem.SYSTEM,
+                    ).source(),
+                )
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
                     source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
@@ -293,6 +320,27 @@ class MangaCoverFetcher(
         }
     }
 
+    /**
+     * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
+     *
+     * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
+     * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
+     *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
+     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
+     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
+     */
+    private fun setRatioAndColorsInScope(
+        mangaCover: MangaCover,
+        bufferedSource: BufferedSource? = null,
+        ogFile: File? = null,
+        force: Boolean = true
+    ) {
+        if (!uiPreferences.detailsPageThemeCoverBased().get()) return
+        fileScope.launch {
+            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, force)
+        }
+    }
+
     private enum class Type {
         File,
         URI,
@@ -308,7 +356,7 @@ class MangaCoverFetcher(
 
         override fun create(data: Manga, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
-                url = data.thumbnailUrl,
+                mangaCover = data.asMangaCover(),
                 isLibraryManga = data.favorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.thumbnailUrl) },
@@ -330,7 +378,7 @@ class MangaCoverFetcher(
 
         override fun create(data: MangaCover, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
-                url = data.url,
+                mangaCover = data,
                 isLibraryManga = data.isMangaFavorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.url) },

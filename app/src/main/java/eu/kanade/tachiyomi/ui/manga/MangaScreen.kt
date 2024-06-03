@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,8 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -23,8 +27,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.rememberDynamicColorScheme
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.ChapterSettingsDialog
@@ -116,10 +123,7 @@ class MangaScreen(
             return
         }
 
-        val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
-        val haptic = LocalHapticFeedback.current
-        val scope = rememberCoroutineScope()
         val screenModel =
             rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
 
@@ -131,6 +135,40 @@ class MangaScreen(
         }
 
         val successState = state as MangaScreenModel.State.Success
+        val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
+        val uiPreferences = remember { Injekt.get<UiPreferences>() }
+
+        if (uiPreferences.themeCoverBasedAnimate().get()) {
+            DynamicMaterialTheme(
+                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
+                useDarkTheme = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+                animate = uiPreferences.themeCoverBasedAnimate().get(),
+                content = { MaterialThemeContent(context, screenModel, successState) },
+            )
+        } else {
+            val colorScheme = rememberDynamicColorScheme(
+                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
+                isDark = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+            )
+            MaterialTheme(
+                colorScheme = colorScheme,
+                content = { MaterialThemeContent(context, screenModel, successState) },
+            )
+        }
+    }
+
+    @Composable
+    fun MaterialThemeContent(
+        context: Context,
+        screenModel: MangaScreenModel,
+        successState: MangaScreenModel.State.Success,
+    ) {
+        val navigator = LocalNavigator.currentOrThrow
+        val haptic = LocalHapticFeedback.current
+        val scope = rememberCoroutineScope()
+
         val isHttpSource = remember { successState.source is HttpSource }
 
         // KMK -->
@@ -162,7 +200,6 @@ class MangaScreen(
                 .launchIn(this)
         }
         // SY <--
-
         MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
@@ -229,8 +266,8 @@ class MangaScreen(
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
             onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
-            onOpenPagePreview = {
-                openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, it)
+            onOpenPagePreview = { page ->
+                openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, page)
             },
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
@@ -289,6 +326,7 @@ class MangaScreen(
                     },
                 )
             }
+
             is MangaScreenModel.Dialog.DeleteChapters -> {
                 DeleteChaptersDialog(
                     onDismissRequest = onDismissRequest,
@@ -311,6 +349,7 @@ class MangaScreen(
                     },
                 )
             }
+
             MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
                 onDismissRequest = onDismissRequest,
                 manga = successState.manga,
@@ -324,6 +363,7 @@ class MangaScreen(
                 scanlatorFilterActive = successState.scanlatorFilterActive,
                 onScanlatorFilterClicked = { showScanlatorsDialog = true },
             )
+
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
                     screen = TrackInfoDialogHomeScreen(
@@ -335,6 +375,7 @@ class MangaScreen(
                     onDismissRequest = onDismissRequest,
                 )
             }
+
             MangaScreenModel.Dialog.FullCover -> {
                 val sm = rememberScreenModel { MangaCoverScreenModel(successState.manga.id) }
                 val manga by sm.state.collectAsState()
@@ -361,6 +402,7 @@ class MangaScreen(
                     LoadingScreen(Modifier.systemBarsPadding())
                 }
             }
+
             is MangaScreenModel.Dialog.SetFetchInterval -> {
                 SetIntervalDialog(
                     interval = dialog.manga.fetchInterval,
@@ -378,6 +420,7 @@ class MangaScreen(
                     onPositiveClick = screenModel::updateMangaInfo,
                 )
             }
+
             is MangaScreenModel.Dialog.EditMergedSettings -> {
                 EditMergedSettingsDialog(
                     mergedData = dialog.mergedData,
@@ -402,14 +445,19 @@ class MangaScreen(
         when (bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
                 AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+
             is BulkFavoriteScreenModel.Dialog.RemoveManga ->
                 RemoveMangaDialog(bulkFavoriteScreenModel)
+
             is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
                 ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+
             is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                 ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+
             is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
                 AllowDuplicateDialog(bulkFavoriteScreenModel)
+
             else -> {}
         }
         // KMK <--
@@ -539,8 +587,8 @@ class MangaScreen(
         // SY <--
     }
 
-    private fun openMetadataViewer(navigator: Navigator, manga: Manga) {
-        navigator.push(MetadataViewScreen(manga.id, manga.source))
+    private fun openMetadataViewer(navigator: Navigator, manga: Manga, seedColor: Color? = null) {
+        navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor))
     }
 
     private fun openMergedMangaWebview(context: Context, navigator: Navigator, mergedMangaData: MergedMangaData) {

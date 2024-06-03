@@ -1,10 +1,13 @@
 package exh.ui.metadata.adapters
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import eu.kanade.tachiyomi.R
@@ -22,6 +25,9 @@ import kotlin.math.round
 @Composable
 fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -38,21 +44,29 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                     it.second
                 } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
             }
+            binding.genre.setTextColor(textColor)
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
+            binding.uploader.setTextColor(textColor)
 
             binding.size.text = meta.fileSize ?: context.stringResource(MR.strings.unknown)
-            binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24)
+            binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24, iconColor)
+            binding.size.setTextColor(textColor)
 
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.setTextColor(textColor)
 
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
+            binding.rating.setTextColor(textColor)
 
-            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
+            binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.setTextColor(textColor)
 
             listOf(
                 binding.genre,

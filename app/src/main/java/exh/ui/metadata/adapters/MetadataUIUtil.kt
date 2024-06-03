@@ -61,9 +61,13 @@ object MetadataUIUtil {
         genreColor.color to context.stringResource(stringId)
     }
 
-    fun TextView.bindDrawable(context: Context, @DrawableRes drawable: Int) {
+    fun TextView.bindDrawable(
+        context: Context,
+        @DrawableRes drawable: Int,
+        @ColorInt color: Int = context.getResourceColor(R.attr.colorAccent),
+    ) {
         ContextCompat.getDrawable(context, drawable)?.apply {
-            setTint(context.getResourceColor(R.attr.colorAccent))
+            setTint(color)
             setBounds(0, 0, 20.dpToPx, 20.dpToPx)
             setCompoundDrawables(this, null, null, null)
         }
