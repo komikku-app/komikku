@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
@@ -36,6 +37,7 @@ enum class MangaCover(val ratio: Float) {
         shape: Shape = MaterialTheme.shapes.extraSmall,
         onClick: (() -> Unit)? = null,
         @ColorInt tint: Int = CoverPlaceholderColor,
+        alpha: Float = 1f,
     ) {
         val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
         var atEnd by remember { mutableStateOf(false) }
@@ -51,15 +53,19 @@ enum class MangaCover(val ratio: Float) {
             runAnimation()
         }
 
+        var succeed by remember { mutableStateOf(false) }
+
         AsyncImage(
             model = data,
             placeholder = rememberAnimatedVectorPainter(animatedImageVector = animatedImageVector, atEnd = atEnd),
             error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
+            onSuccess = { succeed = true },
             contentDescription = contentDescription,
             modifier = modifier
                 .aspectRatio(ratio)
                 .clip(shape)
+                .alpha(if (succeed) alpha else 1f)
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(

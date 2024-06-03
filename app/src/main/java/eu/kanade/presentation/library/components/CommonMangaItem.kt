@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -86,11 +87,12 @@ fun MangaCompactGridItem(
                         .fillMaxWidth()
                         .background(
                             color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                                ?: Color.Unspecified
-                        )
-                        .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha),
+                                ?: MaterialTheme.colorScheme.surface
+                        ),
+                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                     data = coverData,
-                    tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
+                    tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
+                        ?: MaterialTheme.colorScheme.onSurface.toArgb(),
                 )
             },
             badgesStart = coverBadgeStart,
@@ -194,11 +196,12 @@ fun MangaComfortableGridItem(
                             .fillMaxWidth()
                             .background(
                                 color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                                    ?: Color.Unspecified
-                            )
-                            .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha),
+                                    ?: MaterialTheme.colorScheme.surface
+                            ),
+                        alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                         data = coverData,
-                        tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
+                        tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
+                            ?: MaterialTheme.colorScheme.onSurface.toArgb(),
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -353,11 +356,12 @@ fun MangaListItem(
                 .fillMaxHeight()
                 .background(
                     color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                        ?: Color.Unspecified
-                )
-                .alpha(coverAlpha),
+                        ?: MaterialTheme.colorScheme.surface
+                ),
+            alpha = coverAlpha,
             data = coverData,
-            tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
+            tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
+                ?: MaterialTheme.colorScheme.onSurface.toArgb(),
         )
         Text(
             text = title,
