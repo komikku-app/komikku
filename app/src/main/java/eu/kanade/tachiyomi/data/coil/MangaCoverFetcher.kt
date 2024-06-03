@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.manga.MangaCoverMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -323,7 +322,12 @@ class MangaCoverFetcher(
 
     /**
      * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
-     * @param ogFile if Null then it will load from [CoverCache]. It can't accept File from [writeResponseToCoverCache]
+     *
+     * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
+     * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
+     *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
+     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
+     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
      */
     private fun setRatioAndColorsInScope(
         mangaCover: MangaCover,

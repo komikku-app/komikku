@@ -1,9 +1,8 @@
-package eu.kanade.tachiyomi.util.manga
+package eu.kanade.tachiyomi.data.coil
 
 import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import okio.BufferedSource
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
@@ -63,6 +62,12 @@ object MangaCoverMetadata {
      * Set [MangaCover.dominantCoverColors] for favorite manga only.
      * Set [MangaCover.vibrantCoverColor] for all mangas.
      *
+     * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
+     * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
+     *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
+     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
+     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
+     *
      * @author Jays2Kings
      */
     fun setRatioAndColors(
@@ -110,7 +115,7 @@ object MangaCoverMetadata {
                 mangaCover.vibrantCoverColor = color
             }
         }
-        if (mangaCover.isMangaFavorite && !(options.outWidth == -1 || options.outHeight == -1)) {
+        if (mangaCover.isMangaFavorite && options.outWidth != -1 && options.outHeight != -1) {
             mangaCover.ratio = options.outWidth / options.outHeight.toFloat()
         }
     }
@@ -126,43 +131,4 @@ object MangaCoverMetadata {
         val mapColorCopy = MangaCover.coverColorMap.toMap()
         preferences.coverColors().set(mapColorCopy.map { "${it.key}|${it.value.first}|${it.value.second}" }.toSet())
     }
-}
-
-/**
- * Calculate the best [Palette.Swatch] from [Palette]
- * @author Jays2Kings
- */
-fun Palette.getBestColor(): Int? {
-    // How big is the vibrant color
-    val vibPopulation = vibrantSwatch?.population ?: -1
-    // Saturation of the most dominant color
-    val domSat = dominantSwatch?.hsl?.get(1) ?: 0f
-    // Brightness of the most dominant color
-    val domLum = dominantSwatch?.hsl?.get(2) ?: -1f
-    // How big is the muted color
-    val mutedPopulation = mutedSwatch?.population ?: -1
-    // Saturation of the muted color
-    val mutedSat = mutedSwatch?.hsl?.get(1) ?: 0f
-    // If muted color is 3 times bigger than vibrant color then minimum acceptable saturation
-    // for muted color is lower (more likely to use it even if it's not colorful)
-    val mutedSatMinAcceptable = if (mutedPopulation > vibPopulation * 3f) 0.1f else 0.25f
-
-    val dominantIsColorful = domSat >= .25f
-    val dominantBrightnessJustRight = domLum <= .8f && domLum > .2f
-    val vibrantIsConsiderableBigEnough = vibPopulation >= mutedPopulation * 0.75f
-    val mutedIsBig = mutedPopulation > vibPopulation * 1.5f
-    val mutedIsNotTooBoring = mutedSat > mutedSatMinAcceptable
-
-    return when {
-        dominantIsColorful && dominantBrightnessJustRight -> dominantSwatch
-        // use vibrant color even if it's only 0.75 times smaller than muted color
-        vibrantIsConsiderableBigEnough -> vibrantSwatch
-        // use muted color if it's 1.5 times bigger than vibrant color and colorful enough (above the limit)
-        mutedIsBig && mutedIsNotTooBoring -> mutedSwatch
-        // return major vibrant color variant with more favor of vibrant color (size x3)
-        else -> listOfNotNull(vibrantSwatch, lightVibrantSwatch, darkVibrantSwatch)
-            .maxByOrNull {
-                if (it === vibrantSwatch) vibPopulation * 3 else it.population
-            }
-    }?.rgb
 }

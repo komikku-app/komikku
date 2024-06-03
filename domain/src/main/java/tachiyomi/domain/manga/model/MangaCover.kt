@@ -47,6 +47,9 @@ data class MangaCover(
      *
      * Set in *[MangaCoverMetadata.setRatioAndColors]* whenever browsing meets a favorite manga
      *  by loading from *[CoverCache]*.
+     *
+     * Get in *[CommonMangaItem.MangaCompactGridItem]*, *[CommonMangaItem.MangaComfortableGridItem]* and
+     *  *[CommonMangaItem.MangaListItem]*
      */
     @Suppress("KDocUnresolvedReference")
     var dominantCoverColors: Pair<Int, Int>?
