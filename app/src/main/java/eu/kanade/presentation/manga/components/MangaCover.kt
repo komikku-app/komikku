@@ -1,20 +1,27 @@
 package eu.kanade.presentation.manga.components
 
 import androidx.annotation.ColorInt
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import coil3.compose.AsyncImage
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
 import eu.kanade.tachiyomi.R
+import kotlinx.coroutines.delay
 
 enum class MangaCover(val ratio: Float) {
     Square(1f / 1f),
@@ -30,9 +37,23 @@ enum class MangaCover(val ratio: Float) {
         onClick: (() -> Unit)? = null,
         @ColorInt tint: Int = CoverPlaceholderColor,
     ) {
+        val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
+        var atEnd by remember { mutableStateOf(false) }
+
+        suspend fun runAnimation() {
+            while (true) {
+                delay(LoadingAnimatedDuration)
+                atEnd = !atEnd
+            }
+        }
+
+        LaunchedEffect(animatedImageVector) {
+            runAnimation()
+        }
+
         AsyncImage(
             model = data,
-            placeholder = ColorPainter(Color(CoverPlaceholderColor)),
+            placeholder = rememberAnimatedVectorPainter(animatedImageVector = animatedImageVector, atEnd = atEnd),
             error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             contentDescription = contentDescription,
@@ -56,3 +77,4 @@ enum class MangaCover(val ratio: Float) {
 
 @ColorInt
 internal val CoverPlaceholderColor = 0x7F888888
+const val LoadingAnimatedDuration = 600L
