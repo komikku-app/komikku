@@ -50,10 +50,6 @@ object CommonMangaItemDefaults {
     val GridVerticalSpacer = 4.dp
 
     const val BrowseFavoriteCoverAlpha = 0.34f
-
-    // KMK -->
-    const val BrowseSelectedCoverAlpha = 0.17f
-    // KMK <--
 }
 
 private val ContinueReadingButtonSize = 28.dp
@@ -325,7 +321,7 @@ private fun GridItemSelectable(
 private fun Modifier.selectedOutline(
     isSelected: Boolean,
     color: Color,
-) = this then drawBehind { if (isSelected) drawRect(color = color) }
+) = this.drawBehind { if (isSelected) drawRect(color = color) }
 
 /**
  * Layout of list item.

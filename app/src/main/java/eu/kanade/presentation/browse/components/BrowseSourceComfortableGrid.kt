@@ -99,10 +99,8 @@ internal fun BrowseSourceComfortableGridItem(
             ogUrl = manga.thumbnailUrl,
             lastModified = manga.coverLastModified,
         ),
+        isSelected = isSelected,
         coverAlpha = when {
-            // KMK -->
-            isSelected -> CommonMangaItemDefaults.BrowseSelectedCoverAlpha
-            // KMK <--
             manga.favorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
             else -> 1f
         },

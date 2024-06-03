@@ -78,10 +78,8 @@ internal fun MangaItem(
             coverBadgeStart = {
                 InLibraryBadge(enabled = isFavorite)
             },
+            isSelected = isSelected,
             coverAlpha = when {
-                // KMK -->
-                isSelected -> CommonMangaItemDefaults.BrowseSelectedCoverAlpha
-                // KMK <--
                 isFavorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
                 else -> 1f
             },
