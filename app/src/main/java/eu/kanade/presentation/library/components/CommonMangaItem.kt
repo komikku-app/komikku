@@ -37,11 +37,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.presentation.manga.components.CoverPlaceholderColor
 import eu.kanade.presentation.manga.components.MangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
+import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 
 object CommonMangaItemDefaults {
     val GridHorizontalSpacer = 4.dp
@@ -66,7 +68,7 @@ private const val GridSelectedCoverAlpha = 0.76f
  */
 @Composable
 fun MangaCompactGridItem(
-    coverData: tachiyomi.domain.manga.model.MangaCover,
+    coverData: DomainMangaCover,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
@@ -86,8 +88,13 @@ fun MangaCompactGridItem(
                 MangaCover.Book(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(
+                            color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
+                                ?: Color.Unspecified
+                        )
                         .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha),
                     data = coverData,
+                    tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
                 )
             },
             badgesStart = coverBadgeStart,
@@ -167,7 +174,7 @@ private fun BoxScope.CoverTextOverlay(
  */
 @Composable
 fun MangaComfortableGridItem(
-    coverData: tachiyomi.domain.manga.model.MangaCover,
+    coverData: DomainMangaCover,
     title: String,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -189,8 +196,13 @@ fun MangaComfortableGridItem(
                     MangaCover.Book(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .background(
+                                color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
+                                    ?: Color.Unspecified
+                            )
                             .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha),
                         data = coverData,
+                        tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -320,7 +332,7 @@ private fun Modifier.selectedOutline(
  */
 @Composable
 fun MangaListItem(
-    coverData: tachiyomi.domain.manga.model.MangaCover,
+    coverData: DomainMangaCover,
     title: String,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -343,8 +355,13 @@ fun MangaListItem(
         MangaCover.Square(
             modifier = Modifier
                 .fillMaxHeight()
+                .background(
+                    color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
+                        ?: Color.Unspecified
+                )
                 .alpha(coverAlpha),
             data = coverData,
+            tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second ?: CoverPlaceholderColor,
         )
         Text(
             text = title,

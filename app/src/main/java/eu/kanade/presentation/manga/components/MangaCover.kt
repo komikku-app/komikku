@@ -1,5 +1,6 @@
 package eu.kanade.presentation.manga.components
 
+import androidx.annotation.ColorInt
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material3.MaterialTheme
@@ -27,11 +28,13 @@ enum class MangaCover(val ratio: Float) {
         contentDescription: String = "",
         shape: Shape = MaterialTheme.shapes.extraSmall,
         onClick: (() -> Unit)? = null,
+        @ColorInt tint: Int = CoverPlaceholderColor,
     ) {
         AsyncImage(
             model = data,
-            placeholder = ColorPainter(CoverPlaceholderColor),
-            error = rememberResourceBitmapPainter(id = R.drawable.cover_error),
+            placeholder = ColorPainter(Color(CoverPlaceholderColor)),
+            error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
+            fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             contentDescription = contentDescription,
             modifier = modifier
                 .aspectRatio(ratio)
@@ -51,4 +54,5 @@ enum class MangaCover(val ratio: Float) {
     }
 }
 
-private val CoverPlaceholderColor = Color(0x1F888888)
+@ColorInt
+internal val CoverPlaceholderColor = 0x7F888888
