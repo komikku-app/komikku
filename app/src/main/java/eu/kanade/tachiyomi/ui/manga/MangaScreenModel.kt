@@ -9,9 +9,16 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastAny
+import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import coil3.Image
+import coil3.executeBlocking
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
@@ -57,8 +64,10 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
+import eu.kanade.tachiyomi.data.coil.getBestColor
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
@@ -100,6 +109,7 @@ import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.lang.withUIContext
@@ -133,10 +143,12 @@ import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.manga.model.applyFilter
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
@@ -242,8 +254,6 @@ class MangaScreenModel(
     val redirectFlow: MutableSharedFlow<EXHRedirect> = MutableSharedFlow()
 
     data class EXHRedirect(val mangaId: Long)
-
-    var dedupe: Boolean = true
     // EXH <--
 
     private data class CombineState(
@@ -388,6 +398,7 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
+
             // SY -->
             val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
                 .toChapterListItems(manga, null)
@@ -467,6 +478,76 @@ class MangaScreenModel(
 
             // Initial loading finished
             updateSuccessState { it.copy(isRefreshingData = false) }
+        }
+    }
+
+    /**
+     * Get the color of the manga cover by loading cover with ImageRequest directly from network.
+     */
+    private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
+        if (model is ImageRequest && model.defined.sizeResolver != null) return
+
+        val imageRequestBuilder = if (model is ImageRequest) {
+            model.newBuilder()
+        } else {
+            ImageRequest.Builder(context).data(model)
+        }
+            .allowHardware(false)
+
+        val generatePalette: (Image) -> Unit = { image ->
+            val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
+            if (bitmap != null) {
+                Palette.from(bitmap).generate { palette ->
+                    screenModelScope.launchUI {
+                        palette?.getBestColor()?.let { vibrantColor ->
+                            when (model) {
+                                is Manga -> model.asMangaCover().vibrantCoverColor = vibrantColor
+                                is MangaCover -> model.vibrantCoverColor = vibrantColor
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        when (method) {
+            ImageRequestType.Enqueue -> {
+                context.imageLoader.enqueue(
+                    imageRequestBuilder
+                        .target(
+                            onSuccess = generatePalette,
+                            onError = {
+                                // TODO: handle error
+                                // val file = coverCache.getCoverFile(manga!!)
+                                // if (file.exists()) {
+                                //     file.delete()
+                                //     setPaletteColor()
+                                // }
+                            },
+                        )
+                        .build()
+                )
+            }
+            ImageRequestType.Execute -> {
+                context.imageLoader.execute(imageRequestBuilder.build())
+                    .image?.let { image ->
+                        generatePalette(image)
+                    }
+            }
+            ImageRequestType.ExecuteBlocking -> {
+                context.imageLoader.executeBlocking(imageRequestBuilder.build())
+                    .image?.let { image ->
+                        generatePalette(image)
+                    }
+            }
+            ImageRequestType.IOContext -> {
+                withIOContext {
+                    context.imageLoader.execute(imageRequestBuilder.build())
+                        .image?.let { image ->
+                            generatePalette(image)
+                        }
+                }
+            }
         }
     }
 
@@ -703,8 +784,8 @@ class MangaScreenModel(
             mergedManga = networkToLocalManga.await(mergedManga)
 
             getCategories.await(originalMangaId)
-                .let { it ->
-                    setMangaCategories.await(mergedManga.id, it.map { it.id })
+                .let { categories ->
+                    setMangaCategories.await(mergedManga.id, categories.map { it.id })
                 }
 
             val originalMangaReference = MergedMangaReference(
@@ -1796,7 +1877,9 @@ class MangaScreenModel(
             val relatedMangaCollection: List<RelatedManga>? = null,
             // KMK <--
         ) : State {
-            // KMK ->>
+            // KMK -->
+            val seedColor: Color? = MangaCover.vibrantCoverColorMap[manga.id]?.let { Color(it) }
+
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list
@@ -1978,3 +2061,10 @@ sealed interface RelatedManga {
     }
 }
 // KMK <--
+
+enum class ImageRequestType {
+    IOContext,
+    Enqueue,
+    Execute,
+    ExecuteBlocking,
+}

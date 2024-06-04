@@ -1,10 +1,10 @@
 name: CI
 on:
-  push:
-    branches:
-      - develop
-    paths-ignore:
-      - '**.md'
+#  push:
+#    branches:
+#      - develop
+#    paths-ignore:
+#      - '**.md'
   # Dispatch or Manual triggers
   workflow_dispatch:
 

@@ -3,6 +3,7 @@ package tachiyomi.presentation.widget.components
 import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
@@ -23,6 +24,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.core.common.Constants
+import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.widget.util.calculateRowAndColumnCount
@@ -86,6 +88,7 @@ fun UpdatesWidget(
                                     UpdatesMangaCover(
                                         cover = cover,
                                         modifier = GlanceModifier.clickable(actionStartActivity(intent)),
+                                        color = MangaCover.coverColorMap[mangaId]?.first?.let { Color(it) },
                                     )
                                 }
                             }

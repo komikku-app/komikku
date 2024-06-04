@@ -15,7 +15,7 @@ import java.io.InputStream
 import java.time.Instant
 
 /**
- * Call before updating [Manga.thumbnail_url] to ensure old cover can be cleared from cache
+ * Call before updating [Manga.thumbnailUrl] to ensure old cover can be cleared from cache
  */
 fun Manga.prepUpdateCover(coverCache: CoverCache, remoteManga: SManga, refreshSameUrl: Boolean): Manga {
     // Never refresh covers if the new url is null, as the current url has possibly become invalid

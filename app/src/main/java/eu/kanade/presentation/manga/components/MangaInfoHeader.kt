@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.materialkolor.ktx.blend
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
@@ -129,6 +130,7 @@ fun MangaInfoBox(
                         brush = Brush.verticalGradient(colors = backdropGradientColors),
                     )
                 }
+                .background(MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.2f))
                 .blur(4.dp)
                 .alpha(0.2f),
         )
@@ -241,7 +243,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(MR.strings.action_web_view),
                 icon = Icons.Outlined.Public,
-                color = defaultActionButtonColor,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = onWebViewClicked,
                 onLongClick = onWebViewLongClicked,
             )
@@ -251,7 +253,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(SYMR.strings.merge),
                 icon = Icons.AutoMirrored.Outlined.CallMerge,
-                color = defaultActionButtonColor,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = onMergeClicked,
             )
         }
