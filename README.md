@@ -81,7 +81,7 @@ Additional features for some extensions, features include custom description, op
 ## Download
 Get the app from our [releases page](https://github.com/komikku-app/komikku/releases/latest).
 
-If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/jobobby04/tachiyomisypreview/releases).
+If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/komikku-app/komikku-preview/releases/latest).
 
 ## Issues, Feature Requests and Contributing
 
@@ -90,7 +90,7 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 <details><summary>Issues</summary>
 
 1. **Before reporting a new issue, take a look at the [FAQ](https://tachiyomi.org/docs/faq/general), the [changelog](https://github.com/komikku-app/komikku/releases) and the already opened [issues](https://github.com/komikku-app/komikku/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg)](https://discord.gg/mihon)
+2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1242381704459452488)](https://discord.gg/85jB7V5AJR)
 
 </details>
 
@@ -104,9 +104,7 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 * If it could be device-dependent, try reproducing on another device (if possible)
 * Don't group unrelated requests into one issue
 
-DO: https://github.com/tachiyomiorg/tachiyomi/issues/24 https://github.com/tachiyomiorg/tachiyomi/issues/71
-
-DON'T: https://github.com/tachiyomiorg/tachiyomi/issues/75
+Use the [issue forms](https://github.com/komikku-app/komikku/issues/new/choose) to submit a bug.
 
 </details>
 
@@ -130,8 +128,8 @@ See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 
 ## FAQ
 
-[See our website.](https://mihon.app/)
-You can also reach out to us on [Discord](https://discord.gg/mihon).
+[See our website.](https://komikku-app.github.io/)
+You can also reach out to us on [Discord](https://discord.gg/85jB7V5AJR).
 
 ## License
 
