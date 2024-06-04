@@ -26,12 +26,12 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
         with:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v3
+        uses: gradle/wrapper-validation-action@216d1ad2b3710bf005dc39237337b9673fd8fcd5 # v3
 
       - name: Prepare build
         id: prepare_build
@@ -49,10 +49,10 @@ jobs:
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@v8
+        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8
 
       - name: Invoke workflow in preview repo
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@25b02cc069be46d637e8fe2f1e8484008e9e9609 # v1
         with:
           workflow: build_app.yml
           repo: komikku-app/komikku-preview
