@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.gowtham.ratingbar.RatingBar
-import com.gowtham.ratingbar.RatingBarConfig
+import com.gowtham.ratingbar.RatingBarStyle
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.manga.components.MangaCover
 import exh.metadata.MetadataUtil
@@ -226,13 +226,10 @@ fun BrowseSourceEHentaiListItem(
                         value = rating,
                         onValueChange = {},
                         onRatingChanged = {},
-                        config = RatingBarConfig().apply {
-                            isIndicator(true)
-                            numStars(5)
-                            size(18.dp)
-                            activeColor(Color(0xFF005ED7))
-                            inactiveColor(Color(0xE1E2ECFF))
-                        },
+                        isIndicator = true,
+                        numOfStars = 5,
+                        size = 18.dp,
+                        style = RatingBarStyle.Fill(),
                     )
                     val color = genre?.first?.color
                     val res = genre?.second
