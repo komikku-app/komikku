@@ -1,6 +1,7 @@
 package eu.kanade.presentation.util
 
 import android.content.res.Resources
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,11 +20,12 @@ import androidx.core.graphics.drawable.toBitmap
  * @return the bitmap associated with the resource
  */
 @Composable
-fun rememberResourceBitmapPainter(@DrawableRes id: Int): BitmapPainter {
+fun rememberResourceBitmapPainter(@DrawableRes id: Int, @ColorInt tint: Int? = null): BitmapPainter {
     val context = LocalContext.current
     return remember(id) {
         val drawable = ContextCompat.getDrawable(context, id)
             ?: throw Resources.NotFoundException()
+        tint?.let { drawable.setTint(it) }
         BitmapPainter(drawable.toBitmap().asImageBitmap())
     }
 }
