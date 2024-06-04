@@ -144,7 +144,7 @@ class SyncManager(
             return
         }
 
-        if (remoteBackup === syncData.backup){
+        if (remoteBackup === syncData.backup) {
             // nothing changed
             logcat(LogPriority.DEBUG) { "Skip restore due to remote was overwrite from local" }
             syncPreferences.lastSyncTimestamp().set(Date().time)
@@ -153,7 +153,7 @@ class SyncManager(
         }
 
         // Stop the sync early if the remote backup is null or empty
-        if (remoteBackup.backupManga?.size == 0) {
+        if (remoteBackup.backupManga.isEmpty()) {
             notifier.showSyncError("No data found on remote server.")
             return
         }

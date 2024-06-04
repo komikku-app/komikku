@@ -8,10 +8,10 @@ import tachiyomi.core.common.util.lang.withIOContext
  * Util for evaluating JavaScript in sources.
  */
 @Suppress("UNUSED", "UNCHECKED_CAST")
-class JavaScriptEngine(context: Context) {
+class JavaScriptEngine(@Suppress("UNUSED_PARAMETER") context: Context) {
 
     /**
-     * Evaluate arbitrary JavaScript code and get the result as a primtive type
+     * Evaluate arbitrary JavaScript code and get the result as a primitive type
      * (e.g., String, Int).
      *
      * @since extensions-lib 1.4
