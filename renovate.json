@@ -1,10 +1,14 @@
 {
-  "baseBranches": ["develop"],
+  "baseBranches": [
+    "develop"
+  ],
   "rebaseWhen": "conflicted",
-  "labels": ["Dependencies"],
+  "labels": [
+    "Dependencies"
+  ],
   "extends": [
     "config:best-practices",
     "github>mihonapp/mihon//.github/renovate.json5"
   ],
-  "includeForks": true
+  "forkProcessing": "enabled"
 }
