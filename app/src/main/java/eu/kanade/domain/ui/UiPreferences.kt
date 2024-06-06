@@ -29,7 +29,7 @@ class UiPreferences(
 
     fun themeCoverBasedStyle() = preferenceStore.getEnum("pref_theme_cover_based_style_key", PaletteStyle.Vibrant)
 
-    fun themeCoverBasedAnimate() = preferenceStore.getBoolean("pref_theme_cover_based_animate_key", false)
+    fun themeCoverBasedAnimate() = preferenceStore.getBoolean("pref_theme_cover_based_animate_key", true)
 
     fun relativeTime() = preferenceStore.getBoolean("relative_time_v2", true)
 
