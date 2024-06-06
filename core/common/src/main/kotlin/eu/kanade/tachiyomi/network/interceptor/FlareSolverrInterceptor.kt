@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.network.interceptor
 
 import android.util.Log
+import android.webkit.CookieManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.POST
@@ -22,6 +23,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
 import uy.kohesive.injekt.injectLazy
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -121,6 +125,7 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
 
         suspend fun resolveWithFlareSolverr(
             originalRequest: Request,
+            cookieManager: CookieManager = CookieManager.getInstance(),
         ): Request {
             val flareSolverTag = "FlareSolverr"
 
@@ -154,47 +159,31 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
                 Log.d(flareSolverTag, "Received challenge solution for ${originalRequest.url}")
                 Log.d(flareSolverTag, "Received cookies from FlareSolverr\n${flareSolverResponse.solution.cookies.joinToString("; ")}")
 
-                val cookies = flareSolverResponse.solution.cookies.map { cookie ->
+                flareSolverResponse.solution.cookies.forEach { cookie ->
                     Log.d(flareSolverTag, "Creating cookie for ${cookie.name}")
                     try {
                         val domain = cookie.domain.removePrefix(".")
-                        val builder = Cookie.Builder()
-                            .name(cookie.name)
-                            .value(cookie.value)
-                            .domain(domain)
-                            .path(cookie.path)
-                            .expiresAt(cookie.expires?.takeUnless { it < 0.0 }?.toLong() ?: Long.MAX_VALUE)
-                        if (cookie.httpOnly) builder.httpOnly()
-                        if (cookie.secure) builder.secure()
-                        val builtCookie = builder.build()
-                        Log.d(flareSolverTag, "Built cookie: $builtCookie")
-                        builtCookie
+                        val cookieString = buildCookieString(cookie, domain)
+                        Log.d(flareSolverTag, "Adding cookie string to CookieManager: $cookieString")
+                        cookieManager.setCookie("https://$domain", cookieString)
                     } catch (e: Exception) {
                         Log.e(flareSolverTag, "Error creating cookie for ${cookie.name}", e)
                         throw e
                     }
-                }.groupBy { it.domain }.flatMap { (domain, cookies) ->
-                    Log.d(flareSolverTag, "Adding cookies to domain $domain")
-                    network.cookieJar.addAll(
-                        HttpUrl.Builder()
-                            .scheme("https")
-                            .host(domain.removePrefix("."))
-                            .build(),
-                        cookies
-                    )
-                    cookies
                 }
 
-                Log.d(flareSolverTag, "New cookies\n${cookies.joinToString("; ")}")
+                // Verify if the cookies are set correctly
+                val allCookies = flareSolverResponse.solution.cookies.mapNotNull { cookie ->
+                    val domain = cookie.domain.removePrefix(".")
+                    val setCookie = cookieManager.getCookie("https://$domain")
+                    Log.d(flareSolverTag, "Set cookies in CookieManager for $domain: $setCookie")
+                    setCookie
+                }.joinToString("; ")
 
-                val finalCookies =
-                    network.cookieJar.get(originalRequest.url).joinToString("; ", postfix = "; ") {
-                        "${it.name}=${it.value}"
-                    }
+                Log.d(flareSolverTag, "Final cookies\n$allCookies")
 
-                Log.d(flareSolverTag, "Final cookies\n$finalCookies")
                 return originalRequest.newBuilder()
-                    .header("Cookie", finalCookies)
+                    .header("Cookie", allCookies)
                     .header("User-Agent", flareSolverResponse.solution.userAgent)
                     .build()
             } else {
@@ -202,6 +191,22 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
                 throw CloudflareBypassException()
             }
         }
+
+        private fun buildCookieString(cookie: FlareSolverSolutionCookie, domain: String): String {
+            val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
+            val expires = if (cookie.expires != null && cookie.expires > 0) {
+                ZonedDateTime.now().plusSeconds(cookie.expires.toLong()).format(formatter)
+            } else {
+                "Fri, 31 Dec 9999 23:59:59 GMT"
+            }
+
+            return StringBuilder().apply {
+                append("${cookie.name}=${cookie.value}; Domain=$domain; Path=${cookie.path}; Expires=$expires;")
+                if (cookie.httpOnly) append(" HttpOnly;")
+                if (cookie.secure) append(" Secure;")
+            }.toString()
+        }
+
 
         private class CloudflareBypassException : Exception()
     }
