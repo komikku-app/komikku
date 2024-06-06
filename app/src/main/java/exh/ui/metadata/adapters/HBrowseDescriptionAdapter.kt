@@ -20,7 +20,7 @@ import tachiyomi.i18n.sy.SYMR
 @Composable
 fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),

@@ -26,7 +26,7 @@ import kotlin.math.round
 @Composable
 fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
-    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
