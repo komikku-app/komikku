@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
@@ -139,23 +140,43 @@ fun TagsChip(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     border: ChipBorder? = SuggestionChipDefaults.suggestionChipBorder(),
-    borderM3: BorderStroke? = SuggestionChipDefaultsM3.suggestionChipBorder(enabled = true),
+    borderM3: BorderStroke? = null,
 ) {
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
         if (onClick != null) {
-            SuggestionChip(
-                modifier = modifier,
-                onClick = onClick,
-                label = {
-                    Text(
-                        text = text,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                border = borderM3,
+            val elevatedSuggestionChipColors = SuggestionChipDefaultsM3.elevatedSuggestionChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             )
+            if (borderM3 != null) {
+                SuggestionChip(
+                    modifier = modifier,
+                    onClick = onClick,
+                    label = {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    colors = elevatedSuggestionChipColors,
+                    border = borderM3,
+                )
+            } else {
+                ElevatedSuggestionChip(
+                    modifier = modifier,
+                    onClick = onClick,
+                    label = {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    colors = elevatedSuggestionChipColors,
+                )
+            }
         } else {
             SuggestionChip(
                 modifier = modifier,
