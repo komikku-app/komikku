@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -69,9 +68,6 @@ fun MangaChapterListItem(
     onChapterSwipe: (LibraryPreferences.ChapterSwipeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val textAlpha = if (read) ReadItemAlpha else 1f
-    val textSubtitleAlpha = if (read) ReadItemAlpha else SecondaryItemAlpha
-
     val start = getSwipeAction(
         action = chapterSwipeStartAction,
         read = read,
@@ -136,15 +132,20 @@ fun MangaChapterListItem(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = LocalContentColor.current.copy(alpha = textAlpha),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         onTextLayout = { textHeight = it.size.height },
+                        color = LocalContentColor.current.copy(alpha = if (read) ReadItemAlpha else 1f),
                     )
                 }
 
-                Row(modifier = Modifier.alpha(textSubtitleAlpha)) {
-                    ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
+                Row {
+                    val subtitleStyle = MaterialTheme.typography.bodySmall
+                        .merge(
+                            color = LocalContentColor.current
+                                .copy(alpha = if (read) ReadItemAlpha else SecondaryItemAlpha)
+                        )
+                    ProvideTextStyle(value = subtitleStyle) {
                         if (date != null) {
                             Text(
                                 text = date,
