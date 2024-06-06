@@ -14,8 +14,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.Cookie
-import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
@@ -25,7 +23,6 @@ import okio.IOException
 import uy.kohesive.injekt.injectLazy
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
