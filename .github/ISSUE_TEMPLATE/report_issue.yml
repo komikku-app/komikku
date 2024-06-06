@@ -98,7 +98,7 @@ body:
           required: true
         - label: I have gone through the [FAQ](https://mihon.app/docs/faq/general) and [troubleshooting guide](https:/mihon.app/docs/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.10.5](https://github.com/komikku-app/komikku/releases/latest)**.
+        - label: I have updated the app to the **[latest](https://github.com/komikku-app/komikku/releases/latest)** version.
           required: true
         - label: I have updated all installed extensions.
           required: true

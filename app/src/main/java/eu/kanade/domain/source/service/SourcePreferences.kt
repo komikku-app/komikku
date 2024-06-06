@@ -40,6 +40,7 @@ class SourcePreferences(
 
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
 
+    @Deprecated("Use ExtensionRepoRepository instead", replaceWith = ReplaceWith("ExtensionRepoRepository.getAll()"))
     fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
 
     fun extensionUpdatesCount() = preferenceStore.getInt("ext_updates_count", 0)
