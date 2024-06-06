@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.network.interceptor
 
 import android.util.Log
-import android.webkit.CookieManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.POST
@@ -25,8 +24,6 @@ import okio.IOException
 import uy.kohesive.injekt.injectLazy
 
 class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Interceptor {
-//    private val cookieManager = CookieManager.getInstance()
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
@@ -125,7 +122,9 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
         suspend fun resolveWithFlareSolverr(
             originalRequest: Request,
         ): Request {
-            Log.d("FlareSolverr", "Requesting challenge solution for ${originalRequest.url}")
+            val flareSolverTag = "FlareSolverr"
+
+            Log.d( flareSolverTag, "Requesting challenge solution for ${originalRequest.url}")
 
             val flareSolverResponse =
                 with(json) {
@@ -152,48 +151,54 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
                 }
 
             if (flareSolverResponse.solution.status in 200..299) {
+                Log.d(flareSolverTag, "Received challenge solution for ${originalRequest.url}")
+                Log.d(flareSolverTag, "Received cookies from FlareSolverr\n${flareSolverResponse.solution.cookies.joinToString("; ")}")
 
-                Log.d("FlareSolverr", "Received challenge solution for ${originalRequest.url}")
+                val cookies = flareSolverResponse.solution.cookies.map { cookie ->
+                    Log.d(flareSolverTag, "Creating cookie for ${cookie.name}")
+                    try {
+                        val domain = cookie.domain.removePrefix(".")
+                        val builder = Cookie.Builder()
+                            .name(cookie.name)
+                            .value(cookie.value)
+                            .domain(domain)
+                            .path(cookie.path)
+                            .expiresAt(cookie.expires?.takeUnless { it < 0.0 }?.toLong() ?: Long.MAX_VALUE)
+                        if (cookie.httpOnly) builder.httpOnly()
+                        if (cookie.secure) builder.secure()
+                        val builtCookie = builder.build()
+                        Log.d(flareSolverTag, "Built cookie: $builtCookie")
+                        builtCookie
+                    } catch (e: Exception) {
+                        Log.e(flareSolverTag, "Error creating cookie for ${cookie.name}", e)
+                        throw e
+                    }
+                }.groupBy { it.domain }.flatMap { (domain, cookies) ->
+                    Log.d(flareSolverTag, "Adding cookies to domain $domain")
+                    network.cookieJar.addAll(
+                        HttpUrl.Builder()
+                            .scheme("https")
+                            .host(domain.removePrefix("."))
+                            .build(),
+                        cookies
+                    )
+                    cookies
+                }
 
-                val cookies =
-                    flareSolverResponse.solution.cookies
-                        .map { cookie ->
-                            Cookie.Builder()
-                                .name(cookie.name)
-                                .value(cookie.value)
-                                .domain(cookie.domain)
-                                .path(cookie.path)
-                                .expiresAt(cookie.expires?.takeUnless { it < 0.0 }?.toLong() ?: Long.MAX_VALUE)
-                                .also {
-                                    if (cookie.httpOnly) it.httpOnly()
-                                    if (cookie.secure) it.secure()
-                                }
-                                .build()
-                        }
-                        .groupBy { it.domain }
-                        .flatMap { (domain, cookies) ->
-                            network.cookieJar.addAll(
-                                HttpUrl.Builder()
-                                    .scheme("http")
-                                    .host(domain.removePrefix("."))
-                                    .build(),
-                                cookies,
-                            )
+                Log.d(flareSolverTag, "New cookies\n${cookies.joinToString("; ")}")
 
-                            cookies
-                        }
-                Log.d("FlareSolverr", "New cookies\n${cookies.joinToString("; ")}" )
                 val finalCookies =
                     network.cookieJar.get(originalRequest.url).joinToString("; ", postfix = "; ") {
                         "${it.name}=${it.value}"
                     }
-                Log.d ("FlareSolverr", "Final cookies\n$finalCookies")
+
+                Log.d(flareSolverTag, "Final cookies\n$finalCookies")
                 return originalRequest.newBuilder()
                     .header("Cookie", finalCookies)
                     .header("User-Agent", flareSolverResponse.solution.userAgent)
                     .build()
             } else {
-                Log.d("FlareSolverr", "Failed to solve challenge: ${flareSolverResponse.message}")
+                Log.d(flareSolverTag, "Failed to solve challenge: ${flareSolverResponse.message}")
                 throw CloudflareBypassException()
             }
         }
