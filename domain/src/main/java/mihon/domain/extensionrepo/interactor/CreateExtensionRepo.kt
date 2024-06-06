@@ -71,6 +71,7 @@ class CreateExtensionRepo(
     }
 
     companion object {
+        const val OFFICIAL_REPO_WEBSITE = "https://komikku-app.github.io"
         const val OFFICIAL_REPO_BASE_URL = "https://raw.githubusercontent.com/komikku-app/extensions/repo"
 
         // cuong-tran's key
