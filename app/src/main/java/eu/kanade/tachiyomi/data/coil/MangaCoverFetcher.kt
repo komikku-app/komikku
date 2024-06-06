@@ -26,7 +26,6 @@ import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.internal.http.HTTP_NOT_MODIFIED
 import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
@@ -396,5 +395,7 @@ class MangaCoverFetcher(
 
         private val CACHE_CONTROL_NO_STORE = CacheControl.Builder().noStore().build()
         private val CACHE_CONTROL_NO_NETWORK_NO_CACHE = CacheControl.Builder().noCache().onlyIfCached().build()
+
+        private const val HTTP_NOT_MODIFIED = 304
     }
 }

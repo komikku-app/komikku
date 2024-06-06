@@ -18,7 +18,6 @@ import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.internal.http.HTTP_NOT_MODIFIED
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import okio.Source
@@ -27,6 +26,7 @@ import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.IOException
+import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
 
 /**
  * A [Fetcher] that fetches page preview image for [PagePreview] object.
