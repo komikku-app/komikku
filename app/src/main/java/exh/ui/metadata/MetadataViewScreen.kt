@@ -24,7 +24,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.PaletteStyle
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -36,6 +36,8 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.plus
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class MetadataViewScreen(
     private val mangaId: Long,
@@ -107,11 +109,13 @@ class MetadataViewScreen(
             }
         }
 
+        val uiPreferences = remember { Injekt.get<UiPreferences>() }
+
         DynamicMaterialTheme(
             seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
             useDarkTheme = isSystemInDarkTheme(),
-            style = PaletteStyle.Vibrant,
-            animate = true,
+            style = uiPreferences.themeCoverBasedStyle().get(),
+            animate = uiPreferences.themeCoverBasedAnimate().get(),
             content = { content() }
         )
     }

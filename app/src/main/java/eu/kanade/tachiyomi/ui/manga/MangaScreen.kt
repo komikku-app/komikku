@@ -29,7 +29,6 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.rememberDynamicColorScheme
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.ui.UiPreferences
@@ -140,25 +139,13 @@ class MangaScreen(
         val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
-        if (uiPreferences.themeCoverBasedAnimate().get()) {
-            DynamicMaterialTheme(
-                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
-                useDarkTheme = isSystemInDarkTheme(),
-                style = uiPreferences.themeCoverBasedStyle().get(),
-                animate = uiPreferences.themeCoverBasedAnimate().get(),
-                content = { MaterialThemeContent(context, screenModel, successState) },
-            )
-        } else {
-            val colorScheme = rememberDynamicColorScheme(
-                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
-                isDark = isSystemInDarkTheme(),
-                style = uiPreferences.themeCoverBasedStyle().get(),
-            )
-            MaterialTheme(
-                colorScheme = colorScheme,
-                content = { MaterialThemeContent(context, screenModel, successState) },
-            )
-        }
+        DynamicMaterialTheme(
+            seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
+            useDarkTheme = isSystemInDarkTheme(),
+            style = uiPreferences.themeCoverBasedStyle().get(),
+            animate = uiPreferences.themeCoverBasedAnimate().get(),
+            content = { MaterialThemeContent(context, screenModel, successState) },
+        )
     }
 
     @Composable
@@ -262,7 +249,7 @@ class MangaScreen(
             previewsRowCount = successState.previewsRowCount,
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
-            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga) },
+            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga, successState.seedColor) },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = { openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga) },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
