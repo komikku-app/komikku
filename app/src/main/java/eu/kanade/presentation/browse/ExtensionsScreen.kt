@@ -150,6 +150,7 @@ private fun ExtensionContent(
     val context = LocalContext.current
     var trustState by remember { mutableStateOf<Extension.Untrusted?>(null) }
     val installGranted = rememberRequestPackageInstallsPermissionState(initialValue = true)
+    val navigator = LocalNavigator.currentOrThrow
 
     FastScrollLazyColumn(
         contentPadding = contentPadding + topSmallPaddingValues,
@@ -173,19 +174,34 @@ private fun ExtensionContent(
                 when (header) {
                     is ExtensionUiModel.Header.Resource -> {
                         val action: @Composable RowScope.() -> Unit =
-                            if (header.textRes == MR.strings.ext_updates_pending) {
-                                {
-                                    Button(onClick = { onClickUpdateAll() }) {
-                                        Text(
-                                            text = stringResource(MR.strings.ext_update_all),
-                                            style = LocalTextStyle.current.copy(
-                                                color = MaterialTheme.colorScheme.onPrimary,
-                                            ),
-                                        )
+                            when (header.textRes) {
+                                MR.strings.ext_updates_pending -> {
+                                    {
+                                        Button(onClick = { onClickUpdateAll() }) {
+                                            Text(
+                                                text = stringResource(MR.strings.ext_update_all),
+                                                style = LocalTextStyle.current.copy(
+                                                    color = MaterialTheme.colorScheme.onPrimary,
+                                                ),
+                                            )
+                                        }
                                     }
                                 }
-                            } else {
-                                {}
+                                MR.strings.extensions_page_more -> {
+                                    {
+                                        Button(onClick = { navigator.push(ExtensionReposScreen()) }) {
+                                            Text(
+                                                text = stringResource(MR.strings.action_add_repo),
+                                                style = LocalTextStyle.current.copy(
+                                                    color = MaterialTheme.colorScheme.onPrimary,
+                                                ),
+                                            )
+                                        }
+                                    }
+                                }
+                                else -> {
+                                    {}
+                                }
                             }
                         ExtensionHeader(
                             textRes = header.textRes,

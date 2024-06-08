@@ -124,6 +124,9 @@ class ExtensionsScreenModel(
                 if (languagesWithExtensions.isNotEmpty()) {
                     itemsGroups.putAll(languagesWithExtensions)
                 }
+                if (_available.isEmpty()) {
+                    itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.extensions_page_more)] = emptyList()
+                }
 
                 itemsGroups
             }
