@@ -18,8 +18,8 @@ class OfficialExtensionRepositoryMigration : Migration {
         try {
             extensionRepositoryRepository.upsertRepo(
                 baseUrl = CreateExtensionRepo.OFFICIAL_REPO_BASE_URL,
-                name = "Komikku Official Extensions Repo",
-                shortName = "Komikku Official",
+                name = "Komikku Official",
+                shortName = "Komikku",
                 website = "https://komikku-app.github.io",
                 signingKeyFingerprint = CreateExtensionRepo.OFFICIAL_REPO_SIGNATURE,
             )
