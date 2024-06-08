@@ -22,24 +22,18 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
-import eu.kanade.core.preference.asState
-import eu.kanade.domain.source.service.SourcePreferences
+import androidx.compose.ui.tooling.preview.Preview
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 @Composable
 fun ExtensionReposContent(
@@ -48,13 +42,11 @@ fun ExtensionReposContent(
     paddingValues: PaddingValues,
     onOpenWebsite: (ExtensionRepo) -> Unit,
     onClickDelete: (String) -> Unit,
+    onClickEnable: (String) -> Unit,
+    onClickDisable: (String) -> Unit,
+    disabledRepos: Set<String>,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val sourcePreferences = Injekt.get<SourcePreferences>()
-    val disabledRepos by remember { sourcePreferences.disabledRepos().asState(scope) }
-
     LazyColumn(
         state = lazyListState,
         contentPadding = paddingValues,
@@ -63,26 +55,15 @@ fun ExtensionReposContent(
     ) {
         repos.forEach {
             item {
-                val isDisabled = it.baseUrl in disabledRepos
                 ExtensionRepoListItem(
                     modifier = Modifier.animateItemPlacement(),
                     repo = it,
                     onOpenWebsite = { onOpenWebsite(it) },
                     onDelete = { onClickDelete(it.baseUrl) },
-                    isDisabled = isDisabled,
-                    onEnableDisable = {
-                        if (it.baseUrl in disabledRepos) {
-                            sourcePreferences.disabledRepos().set(
-                                disabledRepos.filterNot { baseUrl -> baseUrl == it.baseUrl }.toSet()
-                            )
-                        } else {
-                            sourcePreferences.disabledRepos().set(
-                                disabledRepos + it.baseUrl
-                            )
-                        }
-                        context.toast(MR.strings.repos_need_refresh)
-                    },
+                    onEnable = { onClickEnable(it.baseUrl) },
+                    onDisable = { onClickDisable(it.baseUrl) },
                     onEdit = { },
+                    isDisabled = it.baseUrl in disabledRepos,
                 )
             }
         }
@@ -96,7 +77,8 @@ private fun ExtensionRepoListItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     isDisabled: Boolean,
-    onEnableDisable: () -> Unit,
+    onEnable: () -> Unit,
+    onDisable: () -> Unit,
     onEdit: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -151,7 +133,7 @@ private fun ExtensionRepoListItem(
                 )
             }
 
-            IconButton(onClick = onEnableDisable) {
+            IconButton(onClick = if (isDisabled) onEnable else onDisable) {
                 Icon(
                     imageVector = if (isDisabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                     contentDescription = stringResource(MR.strings.action_disable),
@@ -173,4 +155,23 @@ private fun ExtensionRepoListItem(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun ExtensionReposContentPreview() {
+    val repos = persistentSetOf(
+        ExtensionRepo("url1", "Repo 1", "", "", "key1"),
+        ExtensionRepo("url2", "Repo 2", "", "", "key2"),
+    )
+    ExtensionReposContent(
+        repos = repos,
+        lazyListState = LazyListState(),
+        paddingValues = PaddingValues(),
+        onOpenWebsite = {},
+        onClickDelete = {},
+        onClickEnable = {},
+        onClickDisable = {},
+        disabledRepos = setOf("url2"),
+    )
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.source.service.SourcePreferences
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.channels.Channel
@@ -28,6 +29,7 @@ class ExtensionReposScreenModel(
     private val replaceExtensionRepo: ReplaceExtensionRepo = Injekt.get(),
     private val updateExtensionRepo: UpdateExtensionRepo = Injekt.get(),
 ) : StateScreenModel<RepoScreenState>(RepoScreenState.Loading) {
+    private val sourcePreferences by lazy { Injekt.get<SourcePreferences>() }
 
     private val _events: Channel<RepoEvent> = Channel(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
@@ -93,6 +95,24 @@ class ExtensionReposScreenModel(
     fun deleteRepo(baseUrl: String) {
         screenModelScope.launchIO {
             deleteExtensionRepo.await(baseUrl)
+        }
+    }
+
+    fun enableRepo(baseUrl: String) {
+        val disabledRepos = sourcePreferences.disabledRepos().get()
+        if (baseUrl in disabledRepos) {
+            sourcePreferences.disabledRepos().set(
+                disabledRepos.filterNot { it == baseUrl }.toSet()
+            )
+        }
+    }
+
+    fun disableRepo(baseUrl: String) {
+        val disabledRepos = sourcePreferences.disabledRepos().get()
+        if (baseUrl !in disabledRepos) {
+            sourcePreferences.disabledRepos().set(
+                disabledRepos + baseUrl
+            )
         }
     }
 

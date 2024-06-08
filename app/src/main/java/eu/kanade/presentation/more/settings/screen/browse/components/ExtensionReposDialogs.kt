@@ -1,6 +1,5 @@
 package eu.kanade.presentation.more.settings.screen.browse.components
 
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -17,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
-import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.coroutines.delay
 import mihon.domain.extensionrepo.model.ExtensionRepo
@@ -27,7 +25,6 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ExtensionRepoCreateDialog(
-    context: Context,
     onDismissRequest: () -> Unit,
     onCreate: (String) -> Unit,
     repoUrls: ImmutableSet<String>,
@@ -45,7 +42,6 @@ fun ExtensionRepoCreateDialog(
                 onClick = {
                     onCreate(name)
                     onDismissRequest()
-                    context.toast(MR.strings.repos_need_refresh)
                 },
             ) {
                 Text(text = stringResource(MR.strings.action_add))
@@ -96,7 +92,6 @@ fun ExtensionRepoCreateDialog(
 
 @Composable
 fun ExtensionRepoDeleteDialog(
-    context: Context,
     onDismissRequest: () -> Unit,
     onDelete: () -> Unit,
     repo: String,
@@ -107,7 +102,6 @@ fun ExtensionRepoDeleteDialog(
             TextButton(onClick = {
                 onDelete()
                 onDismissRequest()
-                context.toast(MR.strings.repos_need_refresh)
             }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }

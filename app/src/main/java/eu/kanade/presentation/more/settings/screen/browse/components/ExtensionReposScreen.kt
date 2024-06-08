@@ -40,6 +40,9 @@ fun ExtensionReposScreen(
     onClickCreate: () -> Unit,
     onOpenWebsite: (ExtensionRepo) -> Unit,
     onClickDelete: (String) -> Unit,
+    onClickEnable: (String) -> Unit,
+    onClickDisable: (String) -> Unit,
+    disabledRepos: Set<String>,
     onClickRefresh: () -> Unit,
     navigateUp: () -> Unit,
 ) {
@@ -93,6 +96,9 @@ fun ExtensionReposScreen(
                 PaddingValues(horizontal = MaterialTheme.padding.medium),
             onOpenWebsite = onOpenWebsite,
             onClickDelete = onClickDelete,
+            onClickEnable = onClickEnable,
+            onClickDisable = onClickDisable,
+            disabledRepos = disabledRepos,
         )
     }
 }
@@ -100,13 +106,38 @@ fun ExtensionReposScreen(
 @Preview
 @Composable
 private fun ExtensionReposScreenPreview() {
+    val state = RepoScreenState.Success(
+        repos = persistentSetOf(
+            ExtensionRepo("url1", "Repo 1", "", "", "key1"),
+            ExtensionRepo("url2", "Repo 2", "", "", "key2"),
+        )
+    )
+    ExtensionReposScreen(
+        state = state,
+        onClickCreate = { },
+        onOpenWebsite = { },
+        onClickDelete = { },
+        onClickEnable = { },
+        onClickDisable = { },
+        onClickRefresh = { },
+        navigateUp = { },
+        disabledRepos = setOf("url2")
+    )
+}
+
+@Preview
+@Composable
+private fun ExtensionReposScreenEmptyPreview() {
     val state = RepoScreenState.Success(repos = persistentSetOf())
     ExtensionReposScreen(
         state = state,
-        onClickCreate = { /*TODO*/ },
-        onOpenWebsite = { /*TODO*/ },
-        onClickDelete = { /*TODO*/ },
-        onClickRefresh = { /*TODO*/ },
-        navigateUp = { /*TODO*/ },
+        onClickCreate = { },
+        onOpenWebsite = { },
+        onClickDelete = { },
+        onClickEnable = { },
+        onClickDisable = { },
+        onClickRefresh = { },
+        navigateUp = { },
+        disabledRepos = emptySet(),
     )
 }
