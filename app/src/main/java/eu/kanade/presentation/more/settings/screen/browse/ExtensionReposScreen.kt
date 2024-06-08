@@ -55,6 +55,7 @@ class ExtensionReposScreen(
             null -> {}
             is RepoDialog.Create -> {
                 ExtensionRepoCreateDialog(
+                    context = context,
                     onDismissRequest = screenModel::dismissDialog,
                     onCreate = { screenModel.createRepo(it) },
                     repoUrls = successState.repos.map { it.baseUrl }.toImmutableSet(),
@@ -62,6 +63,7 @@ class ExtensionReposScreen(
             }
             is RepoDialog.Delete -> {
                 ExtensionRepoDeleteDialog(
+                    context = context,
                     onDismissRequest = screenModel::dismissDialog,
                     onDelete = { screenModel.deleteRepo(dialog.repo) },
                     repo = dialog.repo,

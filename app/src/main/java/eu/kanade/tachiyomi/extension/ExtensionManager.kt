@@ -73,6 +73,7 @@ class ExtensionManager(
     val installedExtensionsFlow = _installedExtensionsMapFlow.mapExtensions(scope)
 
     private val _availableExtensionsMapFlow = MutableStateFlow(emptyMap<String, Extension.Available>())
+
     // SY -->
     val availableExtensionsFlow = _availableExtensionsMapFlow.map { it.filterNotBlacklisted().values.toList() }
         .stateIn(scope, SharingStarted.Lazily, _availableExtensionsMapFlow.value.values.toList())
@@ -213,25 +214,26 @@ class ExtensionManager(
      * @param availableExtensions The list of extensions given by the [api].
      */
     private fun updatedInstalledExtensionsStatuses(availableExtensions: List<Extension.Available>) {
-        if (availableExtensions.isEmpty()) {
-            preferences.extensionUpdatesCount().set(0)
-            return
-        }
-
         val installedExtensionsMap = _installedExtensionsMapFlow.value.toMutableMap()
+        val isEmpty = availableExtensions.isEmpty()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
             val availableExt = availableExtensions.find { it.pkgName == pkgName }
 
-            if (availableExt == null && !extension.isObsolete) {
-                installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
-                changed = true
+            if (availableExt == null) {
+                // Clear isObsolete & hasUpdate
+                val isObsolete = !isEmpty && !extension.isObsolete
+                changed = changed || isObsolete || isEmpty && (extension.isObsolete || extension.hasUpdate)
+                installedExtensionsMap[pkgName] = extension.copy(
+                    isObsolete = isObsolete,
+                    hasUpdate = false,
+                )
                 // SY -->
             } else if (extension.isBlacklisted() && !extension.isRedundant) {
                 installedExtensionsMap[pkgName] = extension.copy(isRedundant = true)
                 changed = true
                 // SY <--
-            } else if (availableExt != null) {
+            } else {
                 val hasUpdate = extension.updateExists(availableExt)
                 if (extension.hasUpdate != hasUpdate) {
                     installedExtensionsMap[pkgName] = extension.copy(

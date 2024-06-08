@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableSet
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
@@ -49,6 +50,7 @@ fun ExtensionReposContent(
     onClickDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val sourcePreferences = Injekt.get<SourcePreferences>()
     val disabledRepos by remember { sourcePreferences.disabledRepos().asState(scope) }
@@ -78,6 +80,7 @@ fun ExtensionReposContent(
                                 disabledRepos + it.baseUrl
                             )
                         }
+                        context.toast(MR.strings.repos_need_refresh)
                     },
                     onEdit = { },
                 )
