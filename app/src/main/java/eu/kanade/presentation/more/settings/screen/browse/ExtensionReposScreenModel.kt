@@ -93,6 +93,7 @@ class ExtensionReposScreenModel(
      * Deletes the given repo from the database
      */
     fun deleteRepo(baseUrl: String) {
+        enableRepo(baseUrl)
         screenModelScope.launchIO {
             deleteExtensionRepo.await(baseUrl)
         }
