@@ -12,7 +12,6 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ElevatedCard
@@ -62,7 +61,6 @@ fun ExtensionReposContent(
                     onDelete = { onClickDelete(it.baseUrl) },
                     onEnable = { onClickEnable(it.baseUrl) },
                     onDisable = { onClickDisable(it.baseUrl) },
-                    onEdit = { },
                     isDisabled = it.baseUrl in disabledRepos,
                 )
             }
@@ -79,7 +77,6 @@ private fun ExtensionRepoListItem(
     isDisabled: Boolean,
     onEnable: () -> Unit,
     onDisable: () -> Unit,
-    onEdit: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -137,13 +134,6 @@ private fun ExtensionRepoListItem(
                 Icon(
                     imageVector = if (isDisabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                     contentDescription = stringResource(MR.strings.action_disable),
-                )
-            }
-
-            IconButton(onClick = onEdit) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = stringResource(MR.strings.action_edit),
                 )
             }
 
