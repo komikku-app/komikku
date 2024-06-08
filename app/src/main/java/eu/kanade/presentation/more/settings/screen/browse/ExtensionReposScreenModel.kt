@@ -9,6 +9,8 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo
@@ -28,8 +30,8 @@ class ExtensionReposScreenModel(
     private val deleteExtensionRepo: DeleteExtensionRepo = Injekt.get(),
     private val replaceExtensionRepo: ReplaceExtensionRepo = Injekt.get(),
     private val updateExtensionRepo: UpdateExtensionRepo = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
 ) : StateScreenModel<RepoScreenState>(RepoScreenState.Loading) {
-    private val sourcePreferences by lazy { Injekt.get<SourcePreferences>() }
 
     private val _events: Channel<RepoEvent> = Channel(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
@@ -41,10 +43,22 @@ class ExtensionReposScreenModel(
                     mutableState.update {
                         RepoScreenState.Success(
                             repos = repos.toImmutableSet(),
+                            disabledRepos = sourcePreferences.disabledRepos().get(),
                         )
                     }
                 }
         }
+
+        sourcePreferences.disabledRepos().changes()
+            .onEach { disabledRepos ->
+                mutableState.update {
+                    when (it) {
+                        is RepoScreenState.Success -> it.copy(disabledRepos = disabledRepos)
+                        else -> it
+                    }
+                }
+            }
+            .launchIn(screenModelScope)
     }
 
     /**
@@ -158,6 +172,7 @@ sealed class RepoScreenState {
         val repos: ImmutableSet<ExtensionRepo>,
         val oldRepos: ImmutableSet<String>? = null,
         val dialog: RepoDialog? = null,
+        val disabledRepos: Set<String> = emptySet(),
     ) : RepoScreenState() {
 
         val isEmpty: Boolean

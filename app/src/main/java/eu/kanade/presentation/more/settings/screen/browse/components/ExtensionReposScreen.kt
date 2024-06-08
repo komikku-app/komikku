@@ -42,7 +42,6 @@ fun ExtensionReposScreen(
     onClickDelete: (String) -> Unit,
     onClickEnable: (String) -> Unit,
     onClickDisable: (String) -> Unit,
-    disabledRepos: Set<String>,
     onClickRefresh: () -> Unit,
     navigateUp: () -> Unit,
 ) {
@@ -98,7 +97,7 @@ fun ExtensionReposScreen(
             onClickDelete = onClickDelete,
             onClickEnable = onClickEnable,
             onClickDisable = onClickDisable,
-            disabledRepos = disabledRepos,
+            disabledRepos = state.disabledRepos,
         )
     }
 }
@@ -110,7 +109,8 @@ private fun ExtensionReposScreenPreview() {
         repos = persistentSetOf(
             ExtensionRepo("url1", "Repo 1", "", "", "key1"),
             ExtensionRepo("url2", "Repo 2", "", "", "key2"),
-        )
+        ),
+        disabledRepos = setOf("url2")
     )
     ExtensionReposScreen(
         state = state,
@@ -121,7 +121,6 @@ private fun ExtensionReposScreenPreview() {
         onClickDisable = { },
         onClickRefresh = { },
         navigateUp = { },
-        disabledRepos = setOf("url2")
     )
 }
 
@@ -138,6 +137,5 @@ private fun ExtensionReposScreenEmptyPreview() {
         onClickDisable = { },
         onClickRefresh = { },
         navigateUp = { },
-        disabledRepos = emptySet(),
     )
 }
