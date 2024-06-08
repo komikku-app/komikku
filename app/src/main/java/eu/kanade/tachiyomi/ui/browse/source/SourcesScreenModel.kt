@@ -23,7 +23,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -67,8 +66,8 @@ class SourcesScreenModel(
         // SY -->
         combine(
             // KMK -->
-            state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
-            state.map { it.nsfwOnly }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+            state.map { Pair(it.searchQuery, it.nsfwOnly) }
+                .distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
             // KMK <--
             getEnabledSources.subscribe(),
             getSourceCategories.subscribe(),
@@ -97,29 +96,31 @@ class SourcesScreenModel(
 
     private fun collectLatestSources(
         // KMK -->
-        searchQuery: String?,
-        nsfwOnly: Boolean,
-        @Suppress("LocalVariableName") _sources: List<Source>,
+        filters: Pair<String?, Boolean>,
+        unfilteredSources: List<Source>,
         // KMK <--
         categories: List<String>,
         showLatest: Boolean,
         showPin: Boolean
     ) {
         // KMK -->
+        val searchQuery = filters.first
+        val nsfwOnly = filters.second
         val queryFilter: (String?) -> ((Source) -> Boolean) = { query ->
             filter@{ source ->
-                if (nsfwOnly && source.installedExtension?.isNsfw == true) return@filter false
                 if (query.isNullOrBlank()) return@filter true
                 query.split(",").any {
                     val input = it.trim()
                     if (input.isEmpty()) return@any false
-                    source.name.contains(input, ignoreCase = true) ||
                     source.installedExtension?.name?.contains(input, ignoreCase = true) == true ||
+                        source.name.contains(input, ignoreCase = true) ||
                         source.id == input.toLongOrNull()
                 }
             }
         }
-        val sources = _sources.filter(queryFilter(searchQuery))
+        val sources = unfilteredSources
+            .filter { !nsfwOnly || it.installedExtension?.isNsfw != false }
+            .filter(queryFilter(searchQuery))
         // KMK <--
         mutableState.update { state ->
             val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
@@ -205,26 +206,6 @@ class SourcesScreenModel(
         mutableState.update {
             it.copy(nsfwOnly = !it.nsfwOnly)
         }
-    }
-
-    private fun <T1, T2, T3, T4, T5, T6, R> combine(
-        flow: Flow<T1>,
-        flow2: Flow<T2>,
-        flow3: Flow<T3>,
-        flow4: Flow<T4>,
-        flow5: Flow<T5>,
-        flow6: Flow<T6>,
-        transform: suspend (T1, T2, T3, T4, T5, T6) -> R
-    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6) { args: Array<*> ->
-        @Suppress("UNCHECKED_CAST")
-        transform(
-            args[0] as T1,
-            args[1] as T2,
-            args[2] as T3,
-            args[3] as T4,
-            args[4] as T5,
-            args[5] as T6,
-        )
     }
     // KMK <--
 

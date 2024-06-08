@@ -70,6 +70,7 @@ import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
@@ -98,12 +99,11 @@ fun SourcesScreen(
 
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
+        state.isEmpty && state.searchQuery.isNullOrBlank() -> EmptyScreen(
+            MR.strings.source_empty_screen,
+            modifier = Modifier.padding(contentPadding),
+        )
         // KMK -->
-        // Disable this since a query with empty result will cause empty screen and hide search box
-        // state.isEmpty -> EmptyScreen(
-        //     MR.strings.source_empty_screen,
-        //     modifier = Modifier.padding(contentPadding),
-        // )
         else -> Column {
             AnimatedFloatingSearchBox(
                 listState = lazyListState,
