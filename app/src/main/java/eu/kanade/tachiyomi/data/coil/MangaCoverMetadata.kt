@@ -78,10 +78,9 @@ object MangaCoverMetadata {
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
+            // For browsing mangas, it will only load color once.
+            if (mangaCover.vibrantCoverColor != null) return
         }
-        val file = ogFile
-            ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
-            ?: coverCache.getCoverFile(mangaCover.url)
 
         val options = BitmapFactory.Options()
         val hasVibrantColor = if (mangaCover.isMangaFavorite) mangaCover.vibrantCoverColor != null else true
@@ -92,9 +91,15 @@ object MangaCoverMetadata {
             // Just trying to update ratio without actual reading bitmap (bitmap will be null)
             // This is often when open a favorite manga
             options.inJustDecodeBounds = true
+            // Don't even need to update ratio because we don't use it yet.
+            return
         } else {
             options.inSampleSize = 4
         }
+
+        val file = ogFile
+            ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
+            ?: coverCache.getCoverFile(mangaCover.url)
 
         val bitmap = when {
             bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)
