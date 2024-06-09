@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
@@ -86,6 +87,8 @@ import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
@@ -280,6 +283,8 @@ fun ExpandableMangaDescription(
     // SY <--
     modifier: Modifier = Modifier,
 ) {
+    val uiPreferences = Injekt.get<UiPreferences>()
+    val pureDarkMode = uiPreferences.themeDarkAmoled().get()
     Column(modifier = modifier) {
         val (expanded, onExpanded) = rememberSaveable {
             mutableStateOf(defaultExpandState)
@@ -347,6 +352,7 @@ fun ExpandableMangaDescription(
                                 tagSelected = it
                                 showMenu = true
                             },
+                            pureDarkMode = pureDarkMode,
                         )
                     } else {
                         // SY <--
@@ -362,6 +368,7 @@ fun ExpandableMangaDescription(
                                         tagSelected = it
                                         showMenu = true
                                     },
+                                    pureDarkMode = pureDarkMode,
                                 )
                             }
                         }
@@ -379,6 +386,7 @@ fun ExpandableMangaDescription(
                                     tagSelected = it
                                     showMenu = true
                                 },
+                                pureDarkMode = pureDarkMode,
                             )
                         }
                     }
