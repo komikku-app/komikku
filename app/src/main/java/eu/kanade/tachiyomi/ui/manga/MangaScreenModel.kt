@@ -15,7 +15,6 @@ import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import coil3.Image
-import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
@@ -45,6 +44,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
+import eu.kanade.tachiyomi.data.coil.getBestColor
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -64,7 +64,6 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
-import eu.kanade.tachiyomi.data.coil.getBestColor
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
@@ -481,7 +480,7 @@ class MangaScreenModel(
     /**
      * Get the color of the manga cover by loading cover with ImageRequest directly from network.
      */
-    private suspend fun setPaletteColor(model: Any, method: ImageRequestType = ImageRequestType.Enqueue) {
+    fun setPaletteColor(model: Any) {
         if (model is ImageRequest && model.defined.sizeResolver != null) return
 
         val imageRequestBuilder = if (model is ImageRequest) {
@@ -507,45 +506,21 @@ class MangaScreenModel(
             }
         }
 
-        when (method) {
-            ImageRequestType.Enqueue -> {
-                context.imageLoader.enqueue(
-                    imageRequestBuilder
-                        .target(
-                            onSuccess = generatePalette,
-                            onError = {
-                                // TODO: handle error
-                                // val file = coverCache.getCoverFile(manga!!)
-                                // if (file.exists()) {
-                                //     file.delete()
-                                //     setPaletteColor()
-                                // }
-                            },
-                        )
-                        .build()
+        context.imageLoader.enqueue(
+            imageRequestBuilder
+                .target(
+                    onSuccess = generatePalette,
+                    onError = {
+                        // TODO: handle error
+                        // val file = coverCache.getCoverFile(manga!!)
+                        // if (file.exists()) {
+                        //     file.delete()
+                        //     setPaletteColor()
+                        // }
+                    },
                 )
-            }
-            ImageRequestType.Execute -> {
-                context.imageLoader.execute(imageRequestBuilder.build())
-                    .image?.let { image ->
-                        generatePalette(image)
-                    }
-            }
-            ImageRequestType.ExecuteBlocking -> {
-                context.imageLoader.executeBlocking(imageRequestBuilder.build())
-                    .image?.let { image ->
-                        generatePalette(image)
-                    }
-            }
-            ImageRequestType.IOContext -> {
-                withIOContext {
-                    context.imageLoader.execute(imageRequestBuilder.build())
-                        .image?.let { image ->
-                            generatePalette(image)
-                        }
-                }
-            }
-        }
+                .build()
+        )
     }
 
     // KMK -->
@@ -2079,10 +2054,3 @@ sealed interface RelatedManga {
     }
 }
 // KMK <--
-
-enum class ImageRequestType {
-    IOContext,
-    Enqueue,
-    Execute,
-    ExecuteBlocking,
-}

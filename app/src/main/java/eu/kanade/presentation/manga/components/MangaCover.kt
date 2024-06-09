@@ -23,6 +23,7 @@ import coil3.compose.AsyncImage
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.delay
+import tachiyomi.domain.manga.model.Manga
 
 enum class MangaCover(val ratio: Float) {
     Square(1f / 1f),
@@ -38,6 +39,7 @@ enum class MangaCover(val ratio: Float) {
         onClick: (() -> Unit)? = null,
         @ColorInt tint: Int = CoverPlaceholderColor,
         alpha: Float = 1f,
+        onCoverLoaded: ((Manga) -> Unit)? = null,
     ) {
         val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
         var atEnd by remember { mutableStateOf(false) }
@@ -60,7 +62,10 @@ enum class MangaCover(val ratio: Float) {
             placeholder = rememberAnimatedVectorPainter(animatedImageVector = animatedImageVector, atEnd = atEnd),
             error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
-            onSuccess = { succeed = true },
+            onSuccess = {
+                succeed = true
+                if (onCoverLoaded != null && data is Manga) onCoverLoaded(data)
+            },
             contentDescription = contentDescription,
             modifier = modifier
                 .aspectRatio(ratio)

@@ -183,6 +183,7 @@ fun MangaScreen(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -243,6 +244,7 @@ fun MangaScreen(
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
+            onCoverLoaded = onCoverLoaded,
             // KMK <--
         )
     } else {
@@ -296,6 +298,7 @@ fun MangaScreen(
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
+            onCoverLoaded = onCoverLoaded,
             // KMK <--
         )
     }
@@ -366,6 +369,7 @@ private fun MangaScreenSmallImpl(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -520,6 +524,7 @@ private fun MangaScreenSmallImpl(
                             doSearch = onSearch,
                             // KMK -->
                             onSourceClick = onSourceClick,
+                            onCoverLoaded = onCoverLoaded,
                             // KMK <--
                         )
                     }
@@ -747,6 +752,7 @@ private fun MangaScreenLargeImpl(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -893,6 +899,7 @@ private fun MangaScreenLargeImpl(
                             doSearch = onSearch,
                             // KMK -->
                             onSourceClick = onSourceClick,
+                            onCoverLoaded = onCoverLoaded,
                             // KMK <--
                         )
                         MangaActionRow(

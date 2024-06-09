@@ -108,6 +108,7 @@ fun MangaInfoBox(
     modifier: Modifier = Modifier,
     // KMK -->
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     Box(modifier = modifier) {
@@ -149,6 +150,7 @@ fun MangaInfoBox(
                     isStubSource = isStubSource,
                     // KMK -->
                     onSourceClick = onSourceClick,
+                    onCoverLoaded = onCoverLoaded,
                     // KMK <--
                 )
             } else {
@@ -165,6 +167,7 @@ fun MangaInfoBox(
                     isStubSource = isStubSource,
                     // KMK -->
                     onSourceClick = onSourceClick,
+                    onCoverLoaded = onCoverLoaded,
                     // KMK <--
                 )
             }
@@ -398,6 +401,7 @@ private fun MangaAndSourceTitlesLarge(
     isStubSource: Boolean,
     // KMK -->
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     Column(
@@ -411,6 +415,7 @@ private fun MangaAndSourceTitlesLarge(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
+            onCoverLoaded = { manga -> onCoverLoaded(manga) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         MangaContentInfo(
@@ -443,6 +448,7 @@ private fun MangaAndSourceTitlesSmall(
     isStubSource: Boolean,
     // KMK -->
     onSourceClick: () -> Unit,
+    onCoverLoaded: (Manga) -> Unit,
     // KMK <--
 ) {
     Row(
@@ -459,6 +465,7 @@ private fun MangaAndSourceTitlesSmall(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
+            onCoverLoaded = { manga -> onCoverLoaded(manga) },
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),

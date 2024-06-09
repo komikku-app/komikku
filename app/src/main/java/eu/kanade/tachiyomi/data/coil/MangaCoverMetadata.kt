@@ -65,8 +65,7 @@ object MangaCoverMetadata {
      * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
-     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
+     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
      *
      * @author Jays2Kings
      */
@@ -74,7 +73,7 @@ object MangaCoverMetadata {
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = true,
+        force: Boolean = false,
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
