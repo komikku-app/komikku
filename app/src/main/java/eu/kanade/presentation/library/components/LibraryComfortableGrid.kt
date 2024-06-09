@@ -61,6 +61,7 @@ internal fun LibraryComfortableGrid(
                 } else {
                     null
                 },
+                libraryColored = true,
             )
         }
     }

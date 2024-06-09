@@ -89,6 +89,7 @@ import tachiyomi.presentation.core.util.secondaryItemAlpha
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
+import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 
 private val whitespaceLineRegex = Regex("[\\r\\n]{2,}", setOf(RegexOption.MULTILINE))
 
@@ -108,7 +109,7 @@ fun MangaInfoBox(
     modifier: Modifier = Modifier,
     // KMK -->
     onSourceClick: () -> Unit,
-    onCoverLoaded: (Manga) -> Unit,
+    onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
 ) {
     Box(modifier = modifier) {
@@ -401,7 +402,7 @@ private fun MangaAndSourceTitlesLarge(
     isStubSource: Boolean,
     // KMK -->
     onSourceClick: () -> Unit,
-    onCoverLoaded: (Manga) -> Unit,
+    onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
 ) {
     Column(
@@ -415,7 +416,7 @@ private fun MangaAndSourceTitlesLarge(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
-            onCoverLoaded = { manga -> onCoverLoaded(manga) },
+            onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         MangaContentInfo(
@@ -448,7 +449,7 @@ private fun MangaAndSourceTitlesSmall(
     isStubSource: Boolean,
     // KMK -->
     onSourceClick: () -> Unit,
-    onCoverLoaded: (Manga) -> Unit,
+    onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
 ) {
     Row(
@@ -465,7 +466,7 @@ private fun MangaAndSourceTitlesSmall(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
-            onCoverLoaded = { manga -> onCoverLoaded(manga) },
+            onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
