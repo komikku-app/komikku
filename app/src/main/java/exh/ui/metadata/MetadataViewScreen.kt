@@ -111,12 +111,16 @@ class MetadataViewScreen(
 
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
-        DynamicMaterialTheme(
-            seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
-            useDarkTheme = isSystemInDarkTheme(),
-            style = uiPreferences.themeCoverBasedStyle().get(),
-            animate = uiPreferences.themeCoverBasedAnimate().get(),
-            content = { content() }
-        )
+        if (uiPreferences.detailsPageThemeCoverBased().get()) {
+            DynamicMaterialTheme(
+                seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
+                useDarkTheme = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+                animate = uiPreferences.themeCoverBasedAnimate().get(),
+                content = { content() },
+            )
+        } else {
+            content()
+        }
     }
 }

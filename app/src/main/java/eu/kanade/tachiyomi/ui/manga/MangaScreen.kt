@@ -139,13 +139,17 @@ class MangaScreen(
         val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
-        DynamicMaterialTheme(
-            seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
-            useDarkTheme = isSystemInDarkTheme(),
-            style = uiPreferences.themeCoverBasedStyle().get(),
-            animate = uiPreferences.themeCoverBasedAnimate().get(),
-            content = { MaterialThemeContent(context, screenModel, successState) },
-        )
+        if (uiPreferences.detailsPageThemeCoverBased().get()) {
+            DynamicMaterialTheme(
+                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
+                useDarkTheme = isSystemInDarkTheme(),
+                style = uiPreferences.themeCoverBasedStyle().get(),
+                animate = uiPreferences.themeCoverBasedAnimate().get(),
+                content = { MaterialThemeContent(context, screenModel, successState) },
+            )
+        } else {
+            MaterialThemeContent(context, screenModel, successState)
+        }
     }
 
     @Composable
