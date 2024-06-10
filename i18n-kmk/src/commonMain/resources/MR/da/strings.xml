@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Søg efter kilde</string>
+  <string name="action_toggle_nsfw_only">Slå kun NSFW til/fra</string>
+  <string name="action_bulk_select">Masse valg tilstand</string>
+  <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
+  <string name="pref_details_page_theme">Detaljer side</string>
+  <string name="pref_details_page_theme_cover_based">Detaljer sidetema baseret på omslag</string>
+  <string name="pref_theme_cover_based_style">Tema stil</string>
+  <string name="pref_theme_cover_based_animate">Tema animere</string>
+  <string name="ext_unofficial">Uofficiel</string>
+  <string name="unofficial_extension_message">Denne udvidelse er ikke fra den officielle repo.</string>
+  <string name="download_cache_renew_interval">Download cache forny interval</string>
+  <string name="download_cache_renew_interval_manual">Manuelt</string>
+  <string name="download_cache_renew_interval_1hour">1 time</string>
+  <string name="download_cache_renew_interval_2hour">2 timer</string>
+  <string name="download_cache_renew_interval_6hour">6 timer</string>
+  <string name="download_cache_renew_interval_12hour">12 timer</string>
+  <string name="download_cache_renew_interval_24hour">1 dag</string>
+  <string name="download_cache_renew_interval_info">Hvis sat til \"manual\", enten opdateres hver manga eller ved hjælp af \"Invalidér downloads indekset\" handling i \"Avanceret\"</string>
+  <string name="pref_update_tracking_marked_read">Opdatering fremskridt når markeret som læst</string>
+  <string name="pref_auto_sync_read_chapters">Auto synkronisering læse kapitler fra Trackers</string>
+  <string name="pref_clean_invalid_downloads">Ryd ugyldige downloads</string>
+  <string name="pref_clean_invalid_downloads_summary">Find og fjern alle downloads, filer, mapper, der ikke er gemt i dit bibliotek</string>
+  <string name="invalid_downloads_cleaned">Ugyldige downloads renset</string>
+  <string name="pref_private_installer_warning">Undgå at bruge privat installation, fordi den ikke er stabil endnu, vil føre til virkelig langsom start/genoptage App.</string>
+  <string name="whats_coming">Hvad kommer (snart)</string>
+  <string name="action_allow_duplicate_manga">Tillad det</string>
+  <string name="action_skip_duplicate_manga">Spring over</string>
+  <string name="action_allow_all_duplicate_manga">Tillad alle</string>
+  <string name="action_skip_all_duplicate_manga">Spring alle over</string>
+  <string name="update_check_try_now">Prøv nu</string>
+  <string name="update_check_notification_preview_available">Kommer (snart) opdateringer!</string>
+  <string name="changelogs">Skift Logs</string>
+  <string name="pref_source_related_mangas">Relaterede titler</string>
+  <string name="pref_source_related_mangas_summary">Vis relaterede titler under indgangen</string>
+  <string name="related_mangas_more">Mere som disse...</string>
+  <string name="too_many_in_feed">For mange kilder i dit feed, kan ikke tilføje mere end begrænset (20)</string>
+  <string name="current_">Nuværende: %1$s</string>
+</resources>

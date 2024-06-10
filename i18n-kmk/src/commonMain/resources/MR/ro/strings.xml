@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Caută sursa</string>
+  <string name="action_toggle_nsfw_only">Comută numai NSFW</string>
+  <string name="action_bulk_select">Mod selecţie în masă</string>
+  <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
+  <string name="pref_details_page_theme">Pagina de detalii</string>
+  <string name="pref_details_page_theme_cover_based">Tema paginii cu detalii bazate pe copertă</string>
+  <string name="pref_theme_cover_based_style">Stil temă</string>
+  <string name="pref_theme_cover_based_animate">Animare temă</string>
+  <string name="ext_unofficial">Neoficial.</string>
+  <string name="unofficial_extension_message">Această extensie nu este din repo-ul oficial.</string>
+  <string name="download_cache_renew_interval">Interval reînnoire descărcare geocutie</string>
+  <string name="download_cache_renew_interval_manual">Manual</string>
+  <string name="download_cache_renew_interval_1hour">1 oră</string>
+  <string name="download_cache_renew_interval_2hour">2 ore</string>
+  <string name="download_cache_renew_interval_6hour">6 ore</string>
+  <string name="download_cache_renew_interval_12hour">12 ore</string>
+  <string name="download_cache_renew_interval_24hour">1 zi</string>
+  <string name="download_cache_renew_interval_info">Dacă este setat pe \"manual\", fie reîmprospătează fiecare manga fie folosind \"Invalidare index\" în \"Avansat\"</string>
+  <string name="pref_update_tracking_marked_read">Actualizați progresul când marcați ca citit</string>
+  <string name="pref_auto_sync_read_chapters">Auto sincronizare capitole de citire din Trackeri</string>
+  <string name="pref_clean_invalid_downloads">Curăță descărcările invalide</string>
+  <string name="pref_clean_invalid_downloads_summary">Găsește și șterge toate descărcările, fișierele, dosarele care nu sunt salvate în biblioteca ta</string>
+  <string name="invalid_downloads_cleaned">Descărcări invalide curățate</string>
+  <string name="pref_private_installer_warning">Evitați să utilizați Private Installer deoarece nu este încă stabil, va duce la pornirea/reluarea aplicației foarte lente.</string>
+  <string name="whats_coming">Ce urmează (în curând)</string>
+  <string name="action_allow_duplicate_manga">Permite</string>
+  <string name="action_skip_duplicate_manga">Săriți peste</string>
+  <string name="action_allow_all_duplicate_manga">Permite tot</string>
+  <string name="action_skip_all_duplicate_manga">Sari peste toate</string>
+  <string name="update_check_try_now">Încearcă acum</string>
+  <string name="update_check_notification_preview_available">În curând actualizări!</string>
+  <string name="changelogs">Jurnale de modificări</string>
+  <string name="pref_source_related_mangas">Titluri asociate</string>
+  <string name="pref_source_related_mangas_summary">Arată titlurile conexe în timpul vizualizării intrării</string>
+  <string name="related_mangas_more">Mai asemănător cu acestea...</string>
+  <string name="too_many_in_feed">Prea multe surse în fluxul tău, nu pot adăuga mai mult decât limitat (20)</string>
+  <string name="current_">Curent: %1$s</string>
+</resources>

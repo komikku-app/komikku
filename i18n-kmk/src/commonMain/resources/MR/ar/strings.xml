@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">البحث عن مصدر</string>
+  <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
+  <string name="action_bulk_select">وضع التحديد بالجملة</string>
+  <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
+  <string name="pref_details_page_theme">صفحة التفاصيل</string>
+  <string name="pref_details_page_theme_cover_based">تفاصيل سمة الصفحة استنادًا إلى الغلاف</string>
+  <string name="pref_theme_cover_based_style">نمط السمة</string>
+  <string name="pref_theme_cover_based_animate">الرسوم المتحركة للسمة</string>
+  <string name="ext_unofficial">غير رسمي</string>
+  <string name="unofficial_extension_message">وهذا التمديد ليس من المستودع الرسمي.</string>
+  <string name="download_cache_renew_interval">الفاصل الزمني لتجديد التحميل</string>
+  <string name="download_cache_renew_interval_manual">دليل</string>
+  <string name="download_cache_renew_interval_1hour">ساعة واحدة</string>
+  <string name="download_cache_renew_interval_2hour">ساعتين</string>
+  <string name="download_cache_renew_interval_6hour">6 ساعات</string>
+  <string name="download_cache_renew_interval_12hour">12 ساعة</string>
+  <string name="download_cache_renew_interval_24hour">1 يوم</string>
+  <string name="download_cache_renew_interval_info">إذا تم تعيين إلى \"يدوي\"، إما تحديث كل مانغا أو باستخدام \"فهرس التنزيلات غير صحيح\" في \"المتقدم\"</string>
+  <string name="pref_update_tracking_marked_read">تحديث التقدم عند وضع علامة كمقروء</string>
+  <string name="pref_auto_sync_read_chapters">المزامنة التلقائية للفصول المقروءة من التتبع</string>
+  <string name="pref_clean_invalid_downloads">تنظيف التنزيلات غير صالحة</string>
+  <string name="pref_clean_invalid_downloads_summary">العثور على جميع التنزيلات والملفات والمجلدات التي لم يتم حفظها في مكتبتك وإزالتها</string>
+  <string name="invalid_downloads_cleaned">تم تنظيف التنزيلات غير صالحة</string>
+  <string name="pref_private_installer_warning">تجنب استخدام المثبت الخاص لأنه غير مستقر بعد، سيؤدي إلى بدء التطبيق أو استئنافه ببطء.</string>
+  <string name="whats_coming">ما سيأتي (قريبا)</string>
+  <string name="action_allow_duplicate_manga">السماح به</string>
+  <string name="action_skip_duplicate_manga">تخطي</string>
+  <string name="action_allow_all_duplicate_manga">السماح للجميع</string>
+  <string name="action_skip_all_duplicate_manga">تخطي الكل</string>
+  <string name="update_check_try_now">حاول الآن</string>
+  <string name="update_check_notification_preview_available">التحديثات القادمة (قريباً)!</string>
+  <string name="changelogs">سجلات التغيير</string>
+  <string name="pref_source_related_mangas">العناوين ذات الصلة</string>
+  <string name="pref_source_related_mangas_summary">إظهار العناوين ذات الصلة أثناء عرض الإدخال</string>
+  <string name="related_mangas_more">أكثر مثل هذه...</string>
+  <string name="too_many_in_feed">العديد من المصادر في موجز الويب الخاص بك، لا يمكن إضافة أكثر من محدودة (20)</string>
+  <string name="current_">حاليا: %1$s</string>
+</resources>

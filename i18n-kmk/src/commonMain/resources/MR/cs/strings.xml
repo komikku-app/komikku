@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Hledat zdroj</string>
+  <string name="action_toggle_nsfw_only">Přepnout pouze NSFW</string>
+  <string name="action_bulk_select">Režim hromadného výběru</string>
+  <string name="action_faq_and_guides">FAQ a návody</string>
+  <string name="pref_details_page_theme">Stránka s podrobnostmi</string>
+  <string name="pref_details_page_theme_cover_based">Šablona stránky s podrobnostmi na základě obalu</string>
+  <string name="pref_theme_cover_based_style">Styl motivu</string>
+  <string name="pref_theme_cover_based_animate">Animace motivu</string>
+  <string name="ext_unofficial">Neoficiální</string>
+  <string name="unofficial_extension_message">Toto rozšíření není z oficiálního repozitáře.</string>
+  <string name="download_cache_renew_interval">Interval obnovení mezipaměti</string>
+  <string name="download_cache_renew_interval_manual">Ruční</string>
+  <string name="download_cache_renew_interval_1hour">1 hodina</string>
+  <string name="download_cache_renew_interval_2hour">2 hodiny</string>
+  <string name="download_cache_renew_interval_6hour">6 hodin</string>
+  <string name="download_cache_renew_interval_12hour">12 hodin</string>
+  <string name="download_cache_renew_interval_24hour">1 den</string>
+  <string name="download_cache_renew_interval_info">Je-li nastaveno na \"manuální\", obnovte každý manga nebo použijte akci \"Invalidovat stahování\" v \"Pokročilé\"</string>
+  <string name="pref_update_tracking_marked_read">Probíhá aktualizace při označení jako přečtené.</string>
+  <string name="pref_auto_sync_read_chapters">Automatická synchronizace kapitol čtení ze sledovačů</string>
+  <string name="pref_clean_invalid_downloads">Vyčistit neplatné stahování</string>
+  <string name="pref_clean_invalid_downloads_summary">Najít a odstranit všechna stahování, soubory, složky, které nejsou uloženy ve vaší knihovně</string>
+  <string name="invalid_downloads_cleaned">Neplatné stahování vyčištěno</string>
+  <string name="pref_private_installer_warning">Vyhněte se používání Soukromého instalátoru, protože ještě není stabilní, povede k opravdu pomalému startu/obnovení aplikace.</string>
+  <string name="whats_coming">Co přichází (brzy)</string>
+  <string name="action_allow_duplicate_manga">Povolit</string>
+  <string name="action_skip_duplicate_manga">Přeskočit</string>
+  <string name="action_allow_all_duplicate_manga">Povolit vše</string>
+  <string name="action_skip_all_duplicate_manga">Přeskočit vše</string>
+  <string name="update_check_try_now">Vyzkoušejte nyní</string>
+  <string name="update_check_notification_preview_available">Probíhá (brzy) aktualizace!</string>
+  <string name="changelogs">Záznamy změn</string>
+  <string name="pref_source_related_mangas">Související názvy</string>
+  <string name="pref_source_related_mangas_summary">Zobrazit související názvy při prohlížení položky</string>
+  <string name="related_mangas_more">Líbí se mi to...</string>
+  <string name="too_many_in_feed">Příliš mnoho zdrojů ve vašem feedu, nemůže přidat více než omezené (20)</string>
+  <string name="current_">Aktuální: %1$s</string>
+</resources>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Cerca la sorgente</string>
+  <string name="action_toggle_nsfw_only">Attiva/disattiva solo NSFW</string>
+  <string name="action_bulk_select">Modalità selezione Bulk</string>
+  <string name="action_faq_and_guides">FAQ e guide</string>
+  <string name="pref_details_page_theme">Pagina dettagli</string>
+  <string name="pref_details_page_theme_cover_based">Dettagli tema pagina basato sulla copertina</string>
+  <string name="pref_theme_cover_based_style">Stile tema</string>
+  <string name="pref_theme_cover_based_animate">Animazione tema</string>
+  <string name="ext_unofficial">Non Ufficiale</string>
+  <string name="unofficial_extension_message">Questa estensione non proviene dal repo ufficiale.</string>
+  <string name="download_cache_renew_interval">Intervallo di rinnovo download cache</string>
+  <string name="download_cache_renew_interval_manual">Manuale</string>
+  <string name="download_cache_renew_interval_1hour">1 ora</string>
+  <string name="download_cache_renew_interval_2hour">2 ore</string>
+  <string name="download_cache_renew_interval_6hour">6 ore</string>
+  <string name="download_cache_renew_interval_12hour">12 ore</string>
+  <string name="download_cache_renew_interval_24hour">1 giorno</string>
+  <string name="download_cache_renew_interval_info">Se impostato su \"manual\", aggiorna ogni manga o usando l\'azione \"Invalidate downloads index\" in \"Avanzate\"</string>
+  <string name="pref_update_tracking_marked_read">Aggiorna i progressi quando marcati come letti</string>
+  <string name="pref_auto_sync_read_chapters">Sincronizza automaticamente i capitoli letti dai tracker</string>
+  <string name="pref_clean_invalid_downloads">Pulisci download non validi</string>
+  <string name="pref_clean_invalid_downloads_summary">Trova e rimuovi tutti i download, file, cartelle che non vengono salvate nella tua libreria</string>
+  <string name="invalid_downloads_cleaned">Scaricamenti non validi puliti</string>
+  <string name="pref_private_installer_warning">Evitare di utilizzare Installer Privato perché non è ancora stabile, porterà a davvero lenta start/resume App.</string>
+  <string name="whats_coming">Cosa succederà (presto)</string>
+  <string name="action_allow_duplicate_manga">Consenti di farlo</string>
+  <string name="action_skip_duplicate_manga">Salta esso</string>
+  <string name="action_allow_all_duplicate_manga">Consenti tutto</string>
+  <string name="action_skip_all_duplicate_manga">Salta tutto</string>
+  <string name="update_check_try_now">Prova ora</string>
+  <string name="update_check_notification_preview_available">In arrivo (presto) aggiornamenti!</string>
+  <string name="changelogs">Cambia Log</string>
+  <string name="pref_source_related_mangas">Titoli correlati</string>
+  <string name="pref_source_related_mangas_summary">Mostra i titoli correlati durante la visualizzazione della voce</string>
+  <string name="related_mangas_more">Più come questi...</string>
+  <string name="too_many_in_feed">Troppe fonti nel tuo feed, non puoi aggiungere più del limite (20)</string>
+  <string name="current_">Attuale: %1$s</string>
+</resources>

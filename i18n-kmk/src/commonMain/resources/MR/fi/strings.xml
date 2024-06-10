@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Hae lähdekoodia</string>
+  <string name="action_toggle_nsfw_only">Vaihda vain NSFW</string>
+  <string name="action_bulk_select">Bulk valintatila</string>
+  <string name="action_faq_and_guides">UKK ja oppaat</string>
+  <string name="pref_details_page_theme">Yksityiskohdat sivu</string>
+  <string name="pref_details_page_theme_cover_based">Yksityiskohtaiset tiedot sivun teema kannen perusteella</string>
+  <string name="pref_theme_cover_based_style">Teeman tyyli</string>
+  <string name="pref_theme_cover_based_animate">Teema animoitu</string>
+  <string name="ext_unofficial">Epävirallinen</string>
+  <string name="unofficial_extension_message">Tämä laajennus ei ole virallisesta reposta.</string>
+  <string name="download_cache_renew_interval">Lataa välimuistin uusimisväli</string>
+  <string name="download_cache_renew_interval_manual">Manuaalinen</string>
+  <string name="download_cache_renew_interval_1hour">1 tunti</string>
+  <string name="download_cache_renew_interval_2hour">2 tuntia</string>
+  <string name="download_cache_renew_interval_6hour">6 tuntia</string>
+  <string name="download_cache_renew_interval_12hour">12 tuntia</string>
+  <string name="download_cache_renew_interval_24hour">1 päivä</string>
+  <string name="download_cache_renew_interval_info">Jos asetus on \"manuaalinen\", joko päivitä jokainen manga tai käyttämällä \"mitätöidä latausindeksi\" toimintoa \"Lisäasetukset\"</string>
+  <string name="pref_update_tracking_marked_read">Päivitä edistys, kun merkitty luetuksi</string>
+  <string name="pref_auto_sync_read_chapters">Synkronoi automaattisesti lukemat Seuraajista</string>
+  <string name="pref_clean_invalid_downloads">Puhdista virheelliset lataukset</string>
+  <string name="pref_clean_invalid_downloads_summary">Etsi ja poista kaikki lataukset, tiedostot, kansiot, joita ei ole tallennettu kirjastoosi</string>
+  <string name="invalid_downloads_cleaned">Virheelliset lataukset puhdistettu</string>
+  <string name="pref_private_installer_warning">Vältä yksityisen asentajan käyttöä, koska se ei ole vielä vakaa, johtaa todella hitaaseen käynnistämiseen/jatkamiseen.</string>
+  <string name="whats_coming">Mitä on tulossa (pian)</string>
+  <string name="action_allow_duplicate_manga">Salli se</string>
+  <string name="action_skip_duplicate_manga">Ohita se</string>
+  <string name="action_allow_all_duplicate_manga">Salli kaikki</string>
+  <string name="action_skip_all_duplicate_manga">Ohita kaikki</string>
+  <string name="update_check_try_now">Kokeile nyt</string>
+  <string name="update_check_notification_preview_available">Tulevat (pian) päivitykset!</string>
+  <string name="changelogs">Muuta Lokeja</string>
+  <string name="pref_source_related_mangas">Liittyvät otsikot</string>
+  <string name="pref_source_related_mangas_summary">Näytä liittyvät otsikot katseltaessa merkintää</string>
+  <string name="related_mangas_more">Enemmän näiden...</string>
+  <string name="too_many_in_feed">Liian monta lähdettä rehussa, ei voi lisätä enemmän kuin rajoitettu (20)</string>
+  <string name="current_">Nykyinen: %1$s</string>
+</resources>

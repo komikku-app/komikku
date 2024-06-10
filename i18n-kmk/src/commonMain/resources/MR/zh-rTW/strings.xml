@@ -1,3 +1,40 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="action_source_search">搜尋來源</string>
+  <string name="action_toggle_nsfw_only">切換僅 NSFW</string>
+  <string name="action_bulk_select">批量選擇模式</string>
+  <string name="action_faq_and_guides">常見問題和指南</string>
+  <string name="pref_details_page_theme">詳情頁面</string>
+  <string name="pref_details_page_theme_cover_based">基於封面的詳細資訊頁面主題</string>
+  <string name="pref_theme_cover_based_style">主題風格</string>
+  <string name="pref_theme_cover_based_animate">主題動畫</string>
+  <string name="ext_unofficial">非官方版本</string>
+  <string name="unofficial_extension_message">此擴充功能不是來自官方儲存庫</string>
+  <string name="download_cache_renew_interval">下載快取更新間隔</string>
+  <string name="download_cache_renew_interval_manual">手動</string>
+  <string name="download_cache_renew_interval_1hour">1小時</string>
+  <string name="download_cache_renew_interval_2hour">2小時</string>
+  <string name="download_cache_renew_interval_6hour">6小時</string>
+  <string name="download_cache_renew_interval_12hour">12小時</string>
+  <string name="download_cache_renew_interval_24hour">1天</string>
+  <string name="download_cache_renew_interval_info">如果設置為「手動」，可以刷新每個漫畫，或者在「高級」選項中使用「使下載索引失效」的操作</string>
+  <string name="pref_update_tracking_marked_read">標記為已讀時更新章節進度</string>
+  <string name="pref_auto_sync_read_chapters">自動同步歷程中的已讀章節</string>
+  <string name="pref_clean_invalid_downloads">清理無效下載</string>
+  <string name="pref_clean_invalid_downloads_summary">查找並刪除所有未儲存在您的書櫃中的下載、文件和資料夾</string>
+  <string name="invalid_downloads_cleaned">已清理無效下載</string>
+  <string name="pref_private_installer_warning">避免使用 Private 安裝選項，因為它尚不穩定，會導致應用程式啟動和恢復速度非常緩慢</string>
+  <string name="whats_coming">即將到來</string>
+  <string name="action_allow_duplicate_manga">允許</string>
+  <string name="action_skip_duplicate_manga">跳過</string>
+  <string name="action_allow_all_duplicate_manga">全部允許</string>
+  <string name="action_skip_all_duplicate_manga">全部跳過</string>
+  <string name="update_check_try_now">立即嘗試</string>
+  <string name="update_check_notification_preview_available">即將更新！</string>
+  <string name="changelogs">更新紀錄</string>
+  <string name="pref_source_related_mangas">相關標題</string>
+  <string name="pref_source_related_mangas_summary">查看條目時顯示相關標題</string>
+  <string name="related_mangas_more">更多類似這些...</string>
+  <string name="too_many_in_feed">您的訂閱來源過多，無法添加超過限制數的來源 (20)</string>
+  <string name="current_">當前：%1$s</string>
 </resources>

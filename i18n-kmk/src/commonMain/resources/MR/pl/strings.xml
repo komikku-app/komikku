@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Szukaj źródła</string>
+  <string name="action_toggle_nsfw_only">Przełącz tylko NSFW</string>
+  <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
+  <string name="action_faq_and_guides">FAQ i przewodniki</string>
+  <string name="pref_details_page_theme">Strona szczegółów</string>
+  <string name="pref_details_page_theme_cover_based">Szczegółowy motyw strony oparty na okładce</string>
+  <string name="pref_theme_cover_based_style">Styl motywu</string>
+  <string name="pref_theme_cover_based_animate">Animacja motywu</string>
+  <string name="ext_unofficial">Nieoficjalne</string>
+  <string name="unofficial_extension_message">To rozszerzenie nie pochodzi z oficjalnego repozytorium.</string>
+  <string name="download_cache_renew_interval">Częstotliwość odnawiania pamięci podręcznej pobierania</string>
+  <string name="download_cache_renew_interval_manual">Ręcznie</string>
+  <string name="download_cache_renew_interval_1hour">1 godzina</string>
+  <string name="download_cache_renew_interval_2hour">2 godziny</string>
+  <string name="download_cache_renew_interval_6hour">6 godzin</string>
+  <string name="download_cache_renew_interval_12hour">12 godzin</string>
+  <string name="download_cache_renew_interval_24hour">1 dzień</string>
+  <string name="download_cache_renew_interval_info">Jeśli ustawiono na \"manual\", odśwież każdy manga lub użyj akcji \"Invalidate downloads index\" w \"Advanced\"</string>
+  <string name="pref_update_tracking_marked_read">Aktualizacja postępu po oznaczeniu jako przeczytane</string>
+  <string name="pref_auto_sync_read_chapters">Automatyczna synchronizacja odczytanych rozdziałów z trackerów</string>
+  <string name="pref_clean_invalid_downloads">Wyczyść nieprawidłowe pobieranie</string>
+  <string name="pref_clean_invalid_downloads_summary">Znajdź i usuń wszystkie pobierania, pliki, foldery, które nie są zapisywane w twojej bibliotece</string>
+  <string name="invalid_downloads_cleaned">Wyczyszczono nieprawidłowe pobieranie</string>
+  <string name="pref_private_installer_warning">Unikaj korzystania z Prywatnego Instalatora, ponieważ nie jest jeszcze stabilny, doprowadzi do naprawdę wolnego startu/wznowienia aplikacji.</string>
+  <string name="whats_coming">Co nadchodzi (wkrótce)</string>
+  <string name="action_allow_duplicate_manga">Zezwól na to</string>
+  <string name="action_skip_duplicate_manga">Pomiń</string>
+  <string name="action_allow_all_duplicate_manga">Zezwól wszystkim</string>
+  <string name="action_skip_all_duplicate_manga">Pomiń wszystkie</string>
+  <string name="update_check_try_now">Spróbuj teraz</string>
+  <string name="update_check_notification_preview_available">Najbliższe aktualizacje!</string>
+  <string name="changelogs">Dziennik zmian</string>
+  <string name="pref_source_related_mangas">Podobne tytuły</string>
+  <string name="pref_source_related_mangas_summary">Pokaż powiązane tytuły podczas przeglądania wpisu</string>
+  <string name="related_mangas_more">Więcej takich informacji...</string>
+  <string name="too_many_in_feed">Zbyt wiele źródeł w Twoim kanale, nie można dodać więcej niż ograniczonej liczby źródeł (20)</string>
+  <string name="current_">Aktualnie: %1$s</string>
+</resources>

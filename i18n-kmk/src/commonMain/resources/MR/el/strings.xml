@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Αναζήτηση πηγής</string>
+  <string name="action_toggle_nsfw_only">Εναλλαγή μόνο NSFW</string>
+  <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
+  <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
+  <string name="pref_details_page_theme">Σελίδα λεπτομερειών</string>
+  <string name="pref_details_page_theme_cover_based">Θέμα λεπτομερειών σελίδας με βάση το εξώφυλλο</string>
+  <string name="pref_theme_cover_based_style">Στυλ θέματος</string>
+  <string name="pref_theme_cover_based_animate">Εφέ κίνησης θέματος</string>
+  <string name="ext_unofficial">Ανεπίσημη</string>
+  <string name="unofficial_extension_message">Η επέκταση αυτή δεν προέρχεται από την επίσημη αποχώρηση.</string>
+  <string name="download_cache_renew_interval">Χρονικό διάστημα ανανέωσης προσωρινής μνήμης</string>
+  <string name="download_cache_renew_interval_manual">Χειροκίνητα</string>
+  <string name="download_cache_renew_interval_1hour">1 ώρα</string>
+  <string name="download_cache_renew_interval_2hour">2 ώρες</string>
+  <string name="download_cache_renew_interval_6hour">6 ώρες</string>
+  <string name="download_cache_renew_interval_12hour">12 ώρες</string>
+  <string name="download_cache_renew_interval_24hour">1 ημέρα</string>
+  <string name="download_cache_renew_interval_info">Εάν επιλέξετε \"εγχειρίδιο\", είτε ανανεώστε κάθε manga είτε χρησιμοποιώντας την ενέργεια \"Invalidate downloads index\" στο \"Advanced\"</string>
+  <string name="pref_update_tracking_marked_read">Πρόοδος ενημέρωσης όταν επισημαίνεται ως αναγνωσμένη</string>
+  <string name="pref_auto_sync_read_chapters">Αυτόματος συγχρονισμός κεφαλαίων ανάγνωσης από Trackers</string>
+  <string name="pref_clean_invalid_downloads">Καθαρισμός μη έγκυρων λήψεων</string>
+  <string name="pref_clean_invalid_downloads_summary">Βρείτε και αφαιρέστε όλες τις λήψεις, αρχεία, φακέλους που δεν αποθηκεύονται στη βιβλιοθήκη σας</string>
+  <string name="invalid_downloads_cleaned">Μη έγκυρες λήψεις καθαρίστηκαν</string>
+  <string name="pref_private_installer_warning">Αποφύγετε τη χρήση Private Installer επειδή δεν είναι ακόμα σταθερό, θα οδηγήσει σε πραγματικά αργή εκκίνηση/συνέχιση της εφαρμογής.</string>
+  <string name="whats_coming">Τι έρχεται (σύντομα)</string>
+  <string name="action_allow_duplicate_manga">Επιτρέψτε το</string>
+  <string name="action_skip_duplicate_manga">Παράλειψη</string>
+  <string name="action_allow_all_duplicate_manga">Επιτρέπονται όλα</string>
+  <string name="action_skip_all_duplicate_manga">Παράλειψη όλων</string>
+  <string name="update_check_try_now">Δοκιμάστε τώρα</string>
+  <string name="update_check_notification_preview_available">Ερχόμενοι (σύντομα) ενημερώσεις!</string>
+  <string name="changelogs">Καταγραφή Αλλαγών</string>
+  <string name="pref_source_related_mangas">Σχετικοί τίτλοι</string>
+  <string name="pref_source_related_mangas_summary">Εμφάνιση σχετικών τίτλων κατά την προβολή της καταχώρησης</string>
+  <string name="related_mangas_more">Περισσότερο σαν αυτά...</string>
+  <string name="too_many_in_feed">Πάρα πολλές πηγές στη ροή σας, δεν μπορούν να προσθέσουν περισσότερα από περιορισμένα (20)</string>
+  <string name="current_">Τρέχον: %1$s</string>
+</resources>
