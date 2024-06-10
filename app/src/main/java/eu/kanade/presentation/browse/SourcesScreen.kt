@@ -68,14 +68,12 @@ import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
 import tachiyomi.presentation.core.util.isScrollingUp
-import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.source.local.LocalSource
@@ -104,7 +102,9 @@ fun SourcesScreen(
             modifier = Modifier.padding(contentPadding),
         )
         // KMK -->
-        else -> Column {
+        else -> Column(
+            modifier = Modifier.padding(contentPadding),
+        ) {
             AnimatedFloatingSearchBox(
                 listState = lazyListState,
                 searchQuery = state.searchQuery,
@@ -115,7 +115,6 @@ fun SourcesScreen(
             FastScrollLazyColumn(
                 state = lazyListState,
                 // KMK <--
-                contentPadding = contentPadding + topSmallPaddingValues,
             ) {
                 items(
                     items = state.items,

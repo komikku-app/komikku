@@ -70,7 +70,17 @@ fun Screen.sourcesTab(
                 ),
             )
         } else {
-            persistentListOf()
+            // Merge: find in another source
+            persistentListOf(
+                // KMK -->
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_toggle_nsfw_only),
+                    icon = Icons.Outlined._18UpRating,
+                    iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                    onClick = { screenModel.toggleNsfwOnly() },
+                ),
+                // KMK <--
+            )
         },
         // SY <--
         content = { contentPadding, snackbarHostState ->
@@ -119,8 +129,9 @@ fun Screen.sourcesTab(
                         onDismiss = screenModel::closeDialog,
                         // KMK -->
                         onClickSettings = {
-                            if (source.installedExtension !== null)
+                            if (source.installedExtension !== null) {
                                 navigator.push(ExtensionDetailsScreen(source.installedExtension!!.pkgName))
+                            }
                             screenModel.closeDialog()
                         },
                         // KMK <--
