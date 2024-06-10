@@ -185,6 +185,7 @@ fun MangaScreen(
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -246,6 +247,7 @@ fun MangaScreen(
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
+            onPaletteScreenClick = onPaletteScreenClick,
             // KMK <--
         )
     } else {
@@ -300,6 +302,7 @@ fun MangaScreen(
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
+            onPaletteScreenClick = onPaletteScreenClick,
             // KMK <--
         )
     }
@@ -371,6 +374,7 @@ private fun MangaScreenSmallImpl(
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -442,6 +446,7 @@ private fun MangaScreenSmallImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                onPaletteScreenClick = onPaletteScreenClick,
             )
         },
         bottomBar = {
@@ -754,6 +759,7 @@ private fun MangaScreenLargeImpl(
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -816,6 +822,7 @@ private fun MangaScreenLargeImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                onPaletteScreenClick = onPaletteScreenClick,
             )
         },
         bottomBar = {

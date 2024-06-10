@@ -304,7 +304,8 @@ class MangaScreen(
                     navigator.push(ExtensionsScreen(searchSource = successState.source.name))
                 }
             },
-            onCoverLoaded = screenModel::setPaletteColor
+            onCoverLoaded = screenModel::setPaletteColor,
+            onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor)) }
             // KMK <--
         )
 
