@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Bron zoeken</string>
+  <string name="action_toggle_nsfw_only">Alleen NSFW in-/uitschakelen</string>
+  <string name="action_bulk_select">Bulk selectiemodus</string>
+  <string name="action_faq_and_guides">FAQ en handleidingen</string>
+  <string name="pref_details_page_theme">Details pagina</string>
+  <string name="pref_details_page_theme_cover_based">Details pagina thema gebaseerd op cover</string>
+  <string name="pref_theme_cover_based_style">Thema stijl</string>
+  <string name="pref_theme_cover_based_animate">Thema animeren</string>
+  <string name="ext_unofficial">Onofficiële</string>
+  <string name="unofficial_extension_message">Deze uitbreiding komt niet uit de officiële repo.</string>
+  <string name="download_cache_renew_interval">Download de cache vernieuwingsinterval</string>
+  <string name="download_cache_renew_interval_manual">Handleiding</string>
+  <string name="download_cache_renew_interval_1hour">1 uur</string>
+  <string name="download_cache_renew_interval_2hour">2 uur</string>
+  <string name="download_cache_renew_interval_6hour">6 uur</string>
+  <string name="download_cache_renew_interval_12hour">12 uur</string>
+  <string name="download_cache_renew_interval_24hour">1 dag</string>
+  <string name="download_cache_renew_interval_info">Indien ingesteld op \"handmatig\", verververs manga of gebruik de \"Ongevalideer downloads index\" actie in \"Geavanceerd\"</string>
+  <string name="pref_update_tracking_marked_read">Update voortgang wanneer gemarkeerd als gelezen</string>
+  <string name="pref_auto_sync_read_chapters">Automatisch synchroniseren van gelezen hoofdstukken van Trackers</string>
+  <string name="pref_clean_invalid_downloads">Ongeldige downloads opschonen</string>
+  <string name="pref_clean_invalid_downloads_summary">Zoek en verwijder alle downloads, bestanden, mappen die niet worden opgeslagen in uw bibliotheek</string>
+  <string name="invalid_downloads_cleaned">Ongeldige downloads opgeschoond</string>
+  <string name="pref_private_installer_warning">Vermijd het gebruik van Private Installer omdat het nog niet stabiel is, zal leiden tot een zeer trage start / hervatten app.</string>
+  <string name="whats_coming">Wat komt er (binnenkort)</string>
+  <string name="action_allow_duplicate_manga">Sta toe</string>
+  <string name="action_skip_duplicate_manga">Sla het over</string>
+  <string name="action_allow_all_duplicate_manga">Alles toestaan</string>
+  <string name="action_skip_all_duplicate_manga">Alles overslaan</string>
+  <string name="update_check_try_now">Probeer het nu</string>
+  <string name="update_check_notification_preview_available">Komt (binnenkort) updates!</string>
+  <string name="changelogs">Logboek wijzigen</string>
+  <string name="pref_source_related_mangas">Gerelateerde titels</string>
+  <string name="pref_source_related_mangas_summary">Toon gerelateerde titels tijdens het bekijken van het item</string>
+  <string name="related_mangas_more">Meer van deze...</string>
+  <string name="too_many_in_feed">Te veel bronnen in je feed, kan niet meer dan beperkt toevoegen (20)</string>
+  <string name="current_">Huidige: %1$s</string>
+</resources>

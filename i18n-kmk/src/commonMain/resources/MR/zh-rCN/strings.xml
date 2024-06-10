@@ -1,3 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="action_source_search">搜索源</string>
+  <string name="action_toggle_nsfw_only">仅切换 NSFW</string>
+  <string name="action_bulk_select">批量选择模式</string>
+  <string name="action_faq_and_guides">常见问题和指南</string>
+  <string name="pref_details_page_theme">详细信息页面</string>
+  <string name="pref_details_page_theme_cover_based">基于封面的详细页面主题</string>
+  <string name="pref_theme_cover_based_style">主题样式</string>
+  <string name="pref_theme_cover_based_animate">主题动画</string>
+  <string name="ext_unofficial">非官方的</string>
+  <string name="unofficial_extension_message">这个扩展不是官方仓库的扩展。</string>
+  <string name="download_cache_renew_interval">下载缓存续间隔</string>
+  <string name="download_cache_renew_interval_manual">手动模式</string>
+  <string name="download_cache_renew_interval_1hour">1 小时</string>
+  <string name="download_cache_renew_interval_2hour">2 小时</string>
+  <string name="download_cache_renew_interval_6hour">6 小时</string>
+  <string name="download_cache_renew_interval_12hour">12 小时</string>
+  <string name="download_cache_renew_interval_24hour">1天</string>
+  <string name="download_cache_renew_interval_info">如果设置为“手动”，可以刷新每个曼加或使用“无效下载指数”动作在“高级”中</string>
+  <string name="pref_update_tracking_marked_read">当标记为已读时更新进度</string>
+  <string name="pref_auto_sync_read_chapters">从 Tracker 自动同步已读章节</string>
+  <string name="pref_clean_invalid_downloads">清除无效的下载</string>
+  <string name="pref_clean_invalid_downloads_summary">查找并删除所有未保存到您的资料库中的下载、文件和文件夹</string>
+  <string name="invalid_downloads_cleaned">已清理无效的下载</string>
+  <string name="pref_private_installer_warning">避免使用私有安装程序，因为它还不稳定，将导致启动/恢复应用程序真正缓慢。</string>
+  <string name="whats_coming">即将到来的 (即将)</string>
+  <string name="action_allow_duplicate_manga">允许它</string>
+  <string name="action_skip_duplicate_manga">跳过</string>
+  <string name="action_allow_all_duplicate_manga">允许所有</string>
+  <string name="action_skip_all_duplicate_manga">跳过所有</string>
+  <string name="update_check_try_now">现在试试</string>
+  <string name="update_check_notification_preview_available">即将更新(即将更新) ！</string>
+  <string name="changelogs">更改日志</string>
+  <string name="pref_source_related_mangas">相关标题</string>
+  <string name="pref_source_related_mangas_summary">查看条目时显示相关标题</string>
+  <string name="related_mangas_more">更像这样...</string>
+  <string name="too_many_in_feed">你的新闻源太多，不能添加超过限制 (20)</string>
+  <string name="current_">当前: %1$s</string>
 </resources>

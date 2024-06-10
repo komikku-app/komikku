@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Пошук джерела</string>
+  <string name="action_toggle_nsfw_only">Лише NSFW</string>
+  <string name="action_bulk_select">Масовий режим вибору</string>
+  <string name="action_faq_and_guides">ЧаПи та керівництва</string>
+  <string name="pref_details_page_theme">Сторінка подробиць</string>
+  <string name="pref_details_page_theme_cover_based">Тема сторінки подробиць на основі обкладинки</string>
+  <string name="pref_theme_cover_based_style">Стиль теми</string>
+  <string name="pref_theme_cover_based_animate">Анімація теми</string>
+  <string name="ext_unofficial">Неофіційна</string>
+  <string name="unofficial_extension_message">Це розширення не з офіційного репозиторію.</string>
+  <string name="download_cache_renew_interval">Завантажити інтервал оновлення кешу</string>
+  <string name="download_cache_renew_interval_manual">Вручну</string>
+  <string name="download_cache_renew_interval_1hour">1 година</string>
+  <string name="download_cache_renew_interval_2hour">2 години</string>
+  <string name="download_cache_renew_interval_6hour">6 годин</string>
+  <string name="download_cache_renew_interval_12hour">12 годин</string>
+  <string name="download_cache_renew_interval_24hour">1 день</string>
+  <string name="download_cache_renew_interval_info">Якщо встановлено значення \"вручну\", або оновити кожну мангу або за допомогою \"Інвалідний індекс завантажень\" в розділі \"Додатково\"</string>
+  <string name="pref_update_tracking_marked_read">Оновити прогрес якщо позначено як прочитане</string>
+  <string name="pref_auto_sync_read_chapters">Автоматично синхронізувати прочитані розділи від трекерів</string>
+  <string name="pref_clean_invalid_downloads">Очистити неприпустимі завантаження</string>
+  <string name="pref_clean_invalid_downloads_summary">Знайти та видалити всі завантаження, файли, папки які не збережено в бібліотеці</string>
+  <string name="invalid_downloads_cleaned">Видалені неприпустимі завантаження</string>
+  <string name="pref_private_installer_warning">Уникнення використання приватного встановлювача через те, що воно поки що не є стабільним, це призведе до дуже повільного запуску/відновлення.</string>
+  <string name="whats_coming">Що прийде (скоро)</string>
+  <string name="action_allow_duplicate_manga">Дозволити</string>
+  <string name="action_skip_duplicate_manga">Пропустити</string>
+  <string name="action_allow_all_duplicate_manga">Дозволити все</string>
+  <string name="action_skip_all_duplicate_manga">Пропустити все</string>
+  <string name="update_check_try_now">Спробуйте зараз</string>
+  <string name="update_check_notification_preview_available">Будучи (скоро) оновлення!</string>
+  <string name="changelogs">Список змін</string>
+  <string name="pref_source_related_mangas">Пов\'язані заголовки</string>
+  <string name="pref_source_related_mangas_summary">Показати зв\'язані заголовки під час перегляду матеріалу</string>
+  <string name="related_mangas_more">Подобається це...</string>
+  <string name="too_many_in_feed">Занадто багато джерел у вашій стрічці, не можуть додати більше ніж обмежений (20)</string>
+  <string name="current_">Поточна: %1$s</string>
+</resources>

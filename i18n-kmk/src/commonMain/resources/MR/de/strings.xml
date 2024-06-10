@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Nach Quelle suchen</string>
+  <string name="action_toggle_nsfw_only">Nur NSFW umschalten</string>
+  <string name="action_bulk_select">Massenauswahlmodus</string>
+  <string name="action_faq_and_guides">FAQ und Anleitungen</string>
+  <string name="pref_details_page_theme">Detailseite</string>
+  <string name="pref_details_page_theme_cover_based">Detailseitenthema basierend auf Cover</string>
+  <string name="pref_theme_cover_based_style">Design-Stil</string>
+  <string name="pref_theme_cover_based_animate">Theme animieren</string>
+  <string name="ext_unofficial">Ungültig</string>
+  <string name="unofficial_extension_message">Diese Erweiterung ist nicht vom offiziellen Repo.</string>
+  <string name="download_cache_renew_interval">Download-Cache Erneuerungsintervall</string>
+  <string name="download_cache_renew_interval_manual">Manuell</string>
+  <string name="download_cache_renew_interval_1hour">1 Stunde</string>
+  <string name="download_cache_renew_interval_2hour">2 Stunden</string>
+  <string name="download_cache_renew_interval_6hour">6 Stunden</string>
+  <string name="download_cache_renew_interval_12hour">12 Stunden</string>
+  <string name="download_cache_renew_interval_24hour">1 Tag</string>
+  <string name="download_cache_renew_interval_info">Wenn auf \"Handbuch\" gesetzt, aktualisieren Sie entweder jede Manga oder verwenden Sie die Aktion \"Ungültiger Download-Index\" in \"Erweitert\"</string>
+  <string name="pref_update_tracking_marked_read">Aktualisiere Fortschritt wenn als gelesen markiert</string>
+  <string name="pref_auto_sync_read_chapters">Auto-Sync gelesene Kapitel von Trackers</string>
+  <string name="pref_clean_invalid_downloads">Ungültige Downloads bereinigen</string>
+  <string name="pref_clean_invalid_downloads_summary">Finden und entfernen Sie alle Downloads, Dateien, Ordner die nicht in Ihrer Bibliothek gespeichert sind</string>
+  <string name="invalid_downloads_cleaned">Ungültige Downloads bereinigt</string>
+  <string name="pref_private_installer_warning">Vermeiden Sie die Verwendung des Private Installers, da er noch nicht stabil ist, wird die Start-/Fortsetzungs-App wirklich verlangsamen.</string>
+  <string name="whats_coming">Was kommt (bald)</string>
+  <string name="action_allow_duplicate_manga">Erlaube es</string>
+  <string name="action_skip_duplicate_manga">Überspringen</string>
+  <string name="action_allow_all_duplicate_manga">Alle erlauben</string>
+  <string name="action_skip_all_duplicate_manga">Alle überspringen</string>
+  <string name="update_check_try_now">Jetzt versuchen</string>
+  <string name="update_check_notification_preview_available">Kommt (bald) Updates!</string>
+  <string name="changelogs">Log ändern</string>
+  <string name="pref_source_related_mangas">Ähnliche Titel</string>
+  <string name="pref_source_related_mangas_summary">Ähnliche Titel während des Eintrags anzeigen</string>
+  <string name="related_mangas_more">Mehr davon...</string>
+  <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed, kann nicht mehr als begrenzt hinzufügen (20)</string>
+  <string name="current_">Aktuell: %1$s</string>
+</resources>
