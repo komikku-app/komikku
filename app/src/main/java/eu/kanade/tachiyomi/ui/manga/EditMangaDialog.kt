@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -205,6 +206,14 @@ private fun onViewCreated(
                 else -> 0
             },
         )
+    }
+
+    // Set Spinner's selected item's background color to transparent
+    binding.status.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+            if (view != null) (view as TextView).setBackgroundColor(0x00000000)
+        }
+        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
     }
 
     // Set Spinner's dropdown caret color
