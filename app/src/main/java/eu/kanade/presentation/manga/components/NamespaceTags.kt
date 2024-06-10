@@ -177,9 +177,6 @@ fun TagsChip(
                     ),
                 )
             } else {
-                val elevatedSuggestionChipColors = SuggestionChipDefaultsM3.elevatedSuggestionChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                )
                 ElevatedSuggestionChip(
                     modifier = modifier,
                     onClick = onClick,
@@ -191,7 +188,9 @@ fun TagsChip(
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    colors = elevatedSuggestionChipColors,
+                    colors = SuggestionChipDefaultsM3.elevatedSuggestionChipColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
                 )
             }
         } else {

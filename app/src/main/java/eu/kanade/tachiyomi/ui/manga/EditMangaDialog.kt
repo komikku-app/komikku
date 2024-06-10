@@ -83,7 +83,6 @@ fun EditMangaDialog(
         textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
         iconColor = MaterialTheme.colorScheme.primary.toArgb(),
         tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
-        tagFocusColor = MaterialTheme.colorScheme.outline.toArgb(),
         tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
         btnTextColor = MaterialTheme.colorScheme.onPrimary.toArgb(),
         btnBgColor = MaterialTheme.colorScheme.surfaceTint.toArgb(),
@@ -160,7 +159,6 @@ class EditMangaDialogColors(
     @ColorInt val textHighlightColor: Int,
     @ColorInt val iconColor: Int,
     @ColorInt val tagColor: Int,
-    @ColorInt val tagFocusColor: Int,
     @ColorInt val tagTextColor: Int,
     @ColorInt val btnTextColor: Int,
     @ColorInt val btnBgColor: Int,
@@ -355,18 +353,7 @@ private fun ChipGroup.setChips(
 ) {
     removeAllViews()
 
-    val colorStateList = ColorStateList(
-        arrayOf(
-            intArrayOf(android.R.attr.state_focused),
-            intArrayOf(android.R.attr.state_pressed),
-            intArrayOf(-android.R.attr.state_active),
-        ),
-        intArrayOf(
-            colors.tagFocusColor,
-            colors.tagFocusColor,
-            colors.tagColor,
-        ),
-    )
+    val colorStateList = ColorStateList.valueOf(colors.tagColor)
 
     items.asSequence().map { item ->
         Chip(context).apply {
