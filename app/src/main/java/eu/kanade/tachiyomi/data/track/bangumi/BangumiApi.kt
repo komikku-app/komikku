@@ -182,8 +182,8 @@ class BangumiApi(
     )
 
     companion object {
-        private const val clientId = "bgm291665acbd06a4c28"
-        private const val clientSecret = "43e5ce36b207de16e5d3cfd3e79118db"
+        private const val clientId = "bgm31586666817a5d03b"
+        private const val clientSecret = "3dad27cf8edcac6f55361d7971d219e1"
 
         private const val apiUrl = "https://api.bgm.tv"
         private const val oauthUrl = "https://bgm.tv/oauth/access_token"
