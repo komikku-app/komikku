@@ -73,11 +73,8 @@
     <string name="action_search_hint">Search…</string>
     <string name="action_search_settings">Search settings</string>
     <string name="action_global_search">Global search</string>
-    <string name="action_source_search">Search for source</string>
-    <string name="action_toggle_nsfw_only">Toggle NSFW only</string>
     <string name="action_select_all">Select all</string>
     <string name="action_select_inverse">Select inverse</string>
-    <string name="action_bulk_select">Bulk selection mode</string>
     <string name="action_mark_as_read">Mark as read</string>
     <string name="action_mark_as_unread">Mark as unread</string>
     <string name="action_mark_previous_as_read">Mark previous as read</string>
@@ -163,7 +160,6 @@
     <string name="action_webview_forward">Forward</string>
     <string name="action_webview_refresh">Refresh</string>
     <string name="action_start_downloading_now">Start downloading now</string>
-    <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_not_now">Not now</string>
     <string name="action_add_anyway">Add anyway</string>
     <string name="action_migrate_duplicate">Migrate existing entry</string>
@@ -240,10 +236,6 @@
     <!-- "Today" instead of "2023-12-31" -->
     <string name="pref_relative_format_summary">\"%1$s\" instead of \"%2$s\"</string>
     <string name="pref_date_format">Date format</string>
-    <string name="pref_details_page_theme">Details page</string>
-    <string name="pref_details_page_theme_cover_based">Details page theme based on cover</string>
-    <string name="pref_theme_cover_based_style">Theme style</string>
-    <string name="pref_theme_cover_based_animate">Theme animate</string>
 
     <string name="pref_manage_notifications">Manage notifications</string>
     <string name="pref_app_language">App language</string>
@@ -322,14 +314,12 @@
     <string name="ext_installing">Installing</string>
     <string name="ext_installed">Installed</string>
     <string name="ext_trust">Trust</string>
-    <string name="ext_unofficial">Unofficial</string>
     <string name="ext_untrusted">Untrusted</string>
     <string name="ext_uninstall">Uninstall</string>
     <string name="ext_app_info">App info</string>
     <string name="untrusted_extension">Untrusted extension</string>
     <string name="untrusted_extension_message">Malicious extensions can read any stored login credentials or execute arbitrary code.\n\nBy trusting this extension, you accept these risks.</string>
     <string name="obsolete_extension_message">This extension is no longer available. It may not function properly and can cause issues with the app. Uninstalling it is recommended.</string>
-    <string name="unofficial_extension_message">This extension is not from the official repo.</string>
     <string name="extension_api_error">Failed to fetch available extensions</string>
     <string name="ext_info_version">Version</string>
     <string name="ext_info_language">Language</string>
@@ -493,20 +483,10 @@
     <string name="save_chapter_as_cbz">Save as CBZ archive</string>
     <string name="split_tall_images">Split tall images</string>
     <string name="split_tall_images_summary">Improves reader performance</string>
-    <string name="download_cache_renew_interval">Download cache renew interval</string>
-    <string name="download_cache_renew_interval_manual">Manual</string>
-    <string name="download_cache_renew_interval_1hour">1 hour</string>
-    <string name="download_cache_renew_interval_2hour">2 hours</string>
-    <string name="download_cache_renew_interval_6hour">6 hours</string>
-    <string name="download_cache_renew_interval_12hour">12 hours</string>
-    <string name="download_cache_renew_interval_24hour">1 day</string>
-    <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
 
     <!-- Tracking section -->
     <string name="tracking_guide">Tracking guide</string>
     <string name="pref_auto_update_manga_sync">Update progress after reading</string>
-    <string name="pref_update_tracking_marked_read">Update progress when marked as read</string>
-    <string name="pref_auto_sync_read_chapters">Auto sync read chapters from Trackers</string>
     <string name="services">Trackers</string>
     <string name="tracking_info">One-way sync to update the chapter progress in external tracker services. Set up tracking for individual entries from their tracking button.</string>
     <string name="enhanced_services">Enhanced trackers</string>
@@ -576,12 +556,6 @@
     <string name="pref_reset_user_agent_string">Reset default user agent string</string>
     <string name="requires_app_restart">Requires app restart to take effect</string>
     <string name="cookies_cleared">Cookies cleared</string>
-    <!-- KMK >> -->
-    <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
-    <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
-    <string name="invalid_downloads_cleaned">Invalid downloads cleaned</string>
-    <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
-    <!-- KMK << -->
     <string name="pref_invalidate_download_cache">Invalidate downloads index</string>
     <string name="pref_invalidate_download_cache_summary">Force app to recheck downloaded chapters</string>
     <string name="download_cache_invalidated">Downloads index invalidated</string>
@@ -615,7 +589,6 @@
     <string name="website">Website</string>
     <string name="version">Version</string>
     <string name="whats_new">What\'s new</string>
-    <string name="whats_coming">What\'s coming (soon)</string>
     <string name="help_translate">Help translate</string>
     <string name="licenses">Open source licenses</string>
     <string name="privacy_policy">Privacy policy</string>
@@ -695,10 +668,6 @@
     <string name="remove_from_library">Remove from library</string>
     <string name="unknown_title">Unknown title</string>
     <string name="confirm_add_duplicate_manga">You have an entry in your library with the same name.\n\nDo you still wish to continue?</string>
-    <string name="action_allow_duplicate_manga">Allow it</string>
-    <string name="action_skip_duplicate_manga">Skip it</string>
-    <string name="action_allow_all_duplicate_manga">Allow all</string>
-    <string name="action_skip_all_duplicate_manga">Skip all</string>
     <string name="manga_added_library">Added to library</string>
     <string name="manga_removed_library">Removed from library</string>
     <string name="manga_info_expand">More</string>
@@ -905,7 +874,6 @@
 
     <!--UpdateCheck-->
     <string name="update_check_confirm">Download</string>
-    <string name="update_check_try_now">Try now</string>
     <string name="update_check_open">Open on GitHub</string>
     <!-- reserved for future use -->
     <string name="update_check_eol">This Android version is no longer supported</string>
@@ -916,7 +884,6 @@
     <string name="update_check_notification_download_complete">Tap to install update</string>
     <string name="update_check_notification_download_error">Download error</string>
     <string name="update_check_notification_update_available">New version available!</string>
-    <string name="update_check_notification_preview_available">Coming (soon) updates!</string>
     <string name="update_check_fdroid_migration_info">A new version is available from the official releases. Tap to learn how to migrate from unofficial F-Droid releases.</string>
 
     <!-- Information Text -->

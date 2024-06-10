@@ -3,7 +3,6 @@ package eu.kanade.presentation.more.settings.screen
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
 import android.webkit.WebStorage
 import android.webkit.WebView
@@ -91,6 +90,7 @@ import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.i18n.stringResource
@@ -221,11 +221,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                 ),
                 // KMK -->
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_clean_invalid_downloads),
-                    subtitle = stringResource(MR.strings.pref_clean_invalid_downloads_summary),
+                    title = stringResource(KMR.strings.pref_clean_invalid_downloads),
+                    subtitle = stringResource(KMR.strings.pref_clean_invalid_downloads_summary),
                     onClick = {
                         Injekt.get<DownloadCache>().invalidateCache()
-                        context.toast(MR.strings.invalid_downloads_cleaned)
+                        context.toast(KMR.strings.invalid_downloads_cleaned)
                     },
                 ),
                 // KMK <--
@@ -451,7 +451,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         }
                     },
                 ),
-                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_private_installer_warning)),
+                Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.pref_private_installer_warning)),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.ext_revoke_trust),
                     onClick = {

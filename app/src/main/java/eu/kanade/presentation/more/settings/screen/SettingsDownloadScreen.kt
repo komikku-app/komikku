@@ -20,6 +20,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -200,21 +201,21 @@ object SettingsDownloadScreen : SearchableSettings {
         downloadPreferences: DownloadPreferences,
     ): Preference.PreferenceGroup {
         return Preference.PreferenceGroup(
-            title = stringResource(MR.strings.download_cache_renew_interval),
+            title = stringResource(KMR.strings.download_cache_renew_interval),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = downloadPreferences.downloadCacheRenewInterval(),
-                    title = stringResource(MR.strings.download_cache_renew_interval),
+                    title = stringResource(KMR.strings.download_cache_renew_interval),
                     entries = persistentMapOf(
-                        -1 to stringResource(MR.strings.download_cache_renew_interval_manual),
-                        1 to stringResource(MR.strings.download_cache_renew_interval_1hour),
-                        2 to stringResource(MR.strings.download_cache_renew_interval_2hour),
-                        6 to stringResource(MR.strings.download_cache_renew_interval_6hour),
-                        12 to stringResource(MR.strings.download_cache_renew_interval_12hour),
-                        24 to stringResource(MR.strings.download_cache_renew_interval_24hour),
+                        -1 to stringResource(KMR.strings.download_cache_renew_interval_manual),
+                        1 to stringResource(KMR.strings.download_cache_renew_interval_1hour),
+                        2 to stringResource(KMR.strings.download_cache_renew_interval_2hour),
+                        6 to stringResource(KMR.strings.download_cache_renew_interval_6hour),
+                        12 to stringResource(KMR.strings.download_cache_renew_interval_12hour),
+                        24 to stringResource(KMR.strings.download_cache_renew_interval_24hour),
                     ),
                 ),
-                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.download_cache_renew_interval_info)),
+                Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.download_cache_renew_interval_info)),
             ),
         )
     }

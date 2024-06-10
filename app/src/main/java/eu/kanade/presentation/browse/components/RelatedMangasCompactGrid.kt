@@ -18,7 +18,7 @@ import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.tachiyomi.ui.manga.RelatedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
@@ -59,9 +59,9 @@ fun RelatedMangasCompactGrid(
                 header(key = "${related.keyword}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
-                            stringResource(SYMR.strings.related_mangas_more)
+                            stringResource(KMR.strings.related_mangas_more)
                         } else {
-                            stringResource(SYMR.strings.pref_source_related_mangas)
+                            stringResource(KMR.strings.pref_source_related_mangas)
                         },
                         subtitle = null,
                         onClick = {

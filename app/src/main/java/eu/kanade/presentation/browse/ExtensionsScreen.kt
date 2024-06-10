@@ -57,6 +57,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -360,7 +361,7 @@ private fun ExtensionItemContent(
 
                 val warning = when {
                     extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                    extension is Extension.Installed && extension.isUnofficial -> MR.strings.ext_unofficial
+                    extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
                     // SY -->
                     extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant

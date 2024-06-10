@@ -33,6 +33,7 @@ import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -162,7 +163,7 @@ fun DuplicateMangasDialog(
                         },
                         Modifier.align(Alignment.CenterHorizontally),
                     ) {
-                        Text(text = stringResource(MR.strings.action_allow_duplicate_manga))
+                        Text(text = stringResource(KMR.strings.action_allow_duplicate_manga))
                     }
 
                     TextButton(
@@ -172,7 +173,7 @@ fun DuplicateMangasDialog(
                         },
                         Modifier.align(Alignment.CenterHorizontally),
                     ) {
-                        Text(text = stringResource(MR.strings.action_allow_all_duplicate_manga))
+                        Text(text = stringResource(KMR.strings.action_allow_all_duplicate_manga))
                     }
                 }
 
@@ -184,7 +185,7 @@ fun DuplicateMangasDialog(
                         },
                         Modifier.align(Alignment.CenterHorizontally),
                     ) {
-                        Text(text = stringResource(MR.strings.action_skip_duplicate_manga))
+                        Text(text = stringResource(KMR.strings.action_skip_duplicate_manga))
                     }
 
                     TextButton(
@@ -194,7 +195,7 @@ fun DuplicateMangasDialog(
                         },
                         Modifier.align(Alignment.CenterHorizontally),
                     ) {
-                        Text(text = stringResource(MR.strings.action_skip_all_duplicate_manga))
+                        Text(text = stringResource(KMR.strings.action_skip_all_duplicate_manga))
                     }
                 }
 

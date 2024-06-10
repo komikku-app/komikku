@@ -44,6 +44,7 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.LinkIcon
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -185,7 +186,7 @@ object AboutScreen : Screen() {
                 if (isReleaseBuildType || isDevFlavor) {
                     item {
                         TextPreferenceWidget(
-                            title = stringResource(MR.strings.whats_coming),
+                            title = stringResource(KMR.strings.whats_coming),
                             widget = {
                                 AnimatedVisibility(visible = isCheckingWhatsComing) {
                                     CircularProgressIndicator(

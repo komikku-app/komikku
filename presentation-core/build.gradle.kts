@@ -16,6 +16,9 @@ android {
 dependencies {
     api(projects.core.common)
     api(projects.i18n)
+    // KMK -->
+    api(projects.i18nKmk)
+    // KMK <--
     // SY -->
     api(projects.i18nSy)
     // SY <--

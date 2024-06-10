@@ -100,7 +100,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
@@ -584,7 +584,7 @@ private fun MangaScreenSmallImpl(
                         ) {
                             Column {
                                 RelatedMangaTitle(
-                                    title = stringResource(SYMR.strings.pref_source_related_mangas),
+                                    title = stringResource(KMR.strings.pref_source_related_mangas),
                                     subtitle = null,
                                     onClick = onRelatedMangasScreenClick,
                                     onLongClick = null,
@@ -953,7 +953,7 @@ private fun MangaScreenLargeImpl(
                                 ) {
                                     Column {
                                         RelatedMangaTitle(
-                                            title = stringResource(SYMR.strings.pref_source_related_mangas),
+                                            title = stringResource(KMR.strings.pref_source_related_mangas),
                                             subtitle = null,
                                             onClick = onRelatedMangasScreenClick,
                                             onLongClick = null,

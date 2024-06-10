@@ -19,6 +19,9 @@ android {
 
 dependencies {
     implementation(projects.i18n)
+    // KMK -->
+    implementation(projects.i18nKmk)
+    // KMK <--
     // SY -->
     implementation(projects.i18nSy)
     // SY <--

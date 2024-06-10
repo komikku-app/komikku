@@ -57,6 +57,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -107,7 +108,7 @@ fun ExtensionDetailsScreen(
                                     )
                                     add(
                                         AppBar.Action(
-                                            title = stringResource(MR.strings.action_faq_and_guides),
+                                            title = stringResource(KMR.strings.action_faq_and_guides),
                                             icon = Icons.AutoMirrored.Outlined.HelpOutline,
                                             onClick = onClickReadme,
                                         ),
@@ -190,7 +191,7 @@ private fun ExtensionDetails(
         // SY <--
         if (extension.isUnofficial) {
             item {
-                WarningBanner(MR.strings.unofficial_extension_message)
+                WarningBanner(KMR.strings.unofficial_extension_message)
             }
         }
         if (extension.isObsolete) {

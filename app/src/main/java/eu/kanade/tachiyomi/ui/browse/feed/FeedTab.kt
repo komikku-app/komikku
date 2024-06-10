@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -196,7 +197,7 @@ fun feedTab(
             // KMK <--
 
             val internalErrString = stringResource(MR.strings.internal_error)
-            val tooManyFeedsString = stringResource(SYMR.strings.too_many_in_feed)
+            val tooManyFeedsString = stringResource(KMR.strings.too_many_in_feed)
             LaunchedEffect(Unit) {
                 screenModel.events.collectLatest { event ->
                     when (event) {

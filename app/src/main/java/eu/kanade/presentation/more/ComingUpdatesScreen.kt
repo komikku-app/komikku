@@ -21,6 +21,7 @@ import com.halilibo.richtext.ui.material3.RichText
 import com.halilibo.richtext.ui.string.RichTextStringStyle
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -36,9 +37,9 @@ fun ComingUpdatesScreen(
 ) {
     InfoScreen(
         icon = Icons.Outlined.NewReleases,
-        headingText = stringResource(MR.strings.update_check_notification_preview_available),
+        headingText = stringResource(KMR.strings.update_check_notification_preview_available),
         subtitleText = stringResource(SYMR.strings.latest_, versionName),
-        acceptText = stringResource(MR.strings.update_check_try_now),
+        acceptText = stringResource(KMR.strings.update_check_try_now),
         onAcceptClick = onAcceptUpdate,
         rejectText = stringResource(MR.strings.action_not_now),
         onRejectClick = onRejectUpdate,

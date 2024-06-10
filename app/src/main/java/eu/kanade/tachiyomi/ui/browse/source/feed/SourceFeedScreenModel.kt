@@ -50,6 +50,7 @@ import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -272,7 +273,7 @@ open class SourceFeedScreenModel(
         screenModelScope.launchIO {
             if (hasTooManyFeeds()) {
                 withUIContext {
-                    onToast(SYMR.strings.too_many_in_feed)
+                    onToast(KMR.strings.too_many_in_feed)
                 }
                 return@launchIO
             }

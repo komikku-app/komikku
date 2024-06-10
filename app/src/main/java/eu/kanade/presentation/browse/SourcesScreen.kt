@@ -63,6 +63,7 @@ import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.LabeledCheckbox
@@ -109,7 +110,7 @@ fun SourcesScreen(
                 listState = lazyListState,
                 searchQuery = state.searchQuery,
                 onChangeSearchQuery = onChangeSearchQuery,
-                placeholderText = stringResource(MR.strings.action_source_search),
+                placeholderText = stringResource(KMR.strings.action_source_search),
             )
 
             FastScrollLazyColumn(

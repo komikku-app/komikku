@@ -47,6 +47,9 @@ include(":core:common")
 include(":data")
 include(":domain")
 include(":i18n")
+// KMK -->
+include(":i18n-kmk")
+// KMK <--
 // SY -->
 include(":i18n-sy")
 // SY <--

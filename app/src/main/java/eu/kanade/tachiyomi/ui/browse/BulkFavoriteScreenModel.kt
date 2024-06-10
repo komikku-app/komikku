@@ -50,7 +50,7 @@ import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.service.SourceManager
-import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -493,7 +493,7 @@ fun AllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
 @Composable
 fun bulkSelectionButton(toggleSelectionMode: () -> Unit) =
     AppBar.Action(
-        title = stringResource(MR.strings.action_bulk_select),
+        title = stringResource(KMR.strings.action_bulk_select),
         icon = Icons.Outlined.Checklist,
         onClick = toggleSelectionMode,
     )

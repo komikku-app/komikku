@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -113,15 +114,15 @@ object SettingsAppearanceScreen : SearchableSettings {
             Injekt.get<UiPreferences>().detailsPageThemeCoverBased().asState(scope)
         }
         return Preference.PreferenceGroup(
-            title = stringResource(MR.strings.pref_details_page_theme),
+            title = stringResource(KMR.strings.pref_details_page_theme),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.detailsPageThemeCoverBased(),
-                    title = stringResource(MR.strings.pref_details_page_theme_cover_based),
+                    title = stringResource(KMR.strings.pref_details_page_theme_cover_based),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.themeCoverBasedStyle(),
-                    title = stringResource(MR.strings.pref_theme_cover_based_style),
+                    title = stringResource(KMR.strings.pref_theme_cover_based_style),
                     enabled = detailsPageThemeCoverBased,
                     entries = PaletteStyle.entries
                         .associateWith { it.name }
@@ -129,7 +130,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.themeCoverBasedAnimate(),
-                    title = stringResource(MR.strings.pref_theme_cover_based_animate),
+                    title = stringResource(KMR.strings.pref_theme_cover_based_animate),
                     enabled = detailsPageThemeCoverBased,
                 ),
             ),

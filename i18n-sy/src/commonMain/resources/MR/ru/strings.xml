@@ -418,7 +418,6 @@
     <!-- Feed Tab -->
     <string name="feed">Лента</string>
     <string name="feed_delete">Удалить элемент из ленты?</string>
-    <string name="too_many_in_feed">Слишком большое количество источников в вашей ленте. Количество не должно превышать 10</string>
     <string name="feed_tab_empty">Ваша лента не имеет отслеживаемых источников. Чтобы добавить источник нажмите «+»</string>
     <string name="feed_add">Добавить %1$s в ленту?</string>
 

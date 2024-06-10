@@ -57,6 +57,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
@@ -127,11 +128,11 @@ object SettingsTrackingScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.SwitchPreference(
                 pref = trackPreferences.updateTrackMarkedRead(),
-                title = stringResource(MR.strings.pref_update_tracking_marked_read),
+                title = stringResource(KMR.strings.pref_update_tracking_marked_read),
             ),
             Preference.PreferenceItem.SwitchPreference(
                 pref = trackPreferences.autoSyncReadChapters(),
-                title = stringResource(MR.strings.pref_auto_sync_read_chapters),
+                title = stringResource(KMR.strings.pref_auto_sync_read_chapters),
             ),
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.services),

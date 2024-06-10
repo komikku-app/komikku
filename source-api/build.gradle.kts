@@ -14,6 +14,9 @@ kotlin {
                 api(libs.injekt.core)
                 api(libs.rxjava)
                 api(libs.jsoup)
+                // KMK -->
+                api(projects.i18nKmk)
+                // KMK <--
                 // SY -->
                 api(projects.i18n)
                 api(projects.i18nSy)

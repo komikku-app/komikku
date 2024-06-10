@@ -371,7 +371,6 @@
     <!-- Feed Tab -->
     <string name="feed">订阅</string>
     <string name="feed_delete">删除订阅项？</string>
-    <string name="too_many_in_feed">你订阅的图源太多了，不能大于 10</string>
     <string name="feed_tab_empty">没有订阅任何图源，请使用右上角按钮添加一个</string>
     <string name="feed_add">添加 %1$s 到订阅？</string>
 

@@ -34,6 +34,7 @@ import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -51,7 +52,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
         title = { Text(text = stringResource(MR.strings.updated_version, BuildConfig.VERSION_NAME)) },
         dismissButton = {
             TextButton(onClick = { context.openInBrowser(RELEASE_URL) }) {
-                Text(text = stringResource(SYMR.strings.changelogs))
+                Text(text = stringResource(KMR.strings.changelogs))
             }
         },
         text = {

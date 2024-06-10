@@ -28,7 +28,6 @@
 
     <!-- About -->
     <string name="changelog_version">Version %1$s</string>
-    <string name="changelogs">Change Logs</string>
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
@@ -202,9 +201,6 @@
     <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
     <string name="pref_local_source_hidden_folders">Local source hidden folders</string>
     <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
-    <string name="pref_source_related_mangas">Related titles</string>
-    <string name="pref_source_related_mangas_summary">Show related titles while viewing entry</string>
-    <string name="related_mangas_more">More like these...</string>
 
     <!-- Backup settings -->
     <string name="custom_entry_info">Custom entry info</string>
@@ -434,7 +430,6 @@
     <!-- Feed Tab -->
     <string name="feed">Feed</string>
     <string name="feed_delete">Delete feed item?</string>
-    <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited</string>
     <string name="feed_tab_empty">You don\'t have any sources in your feed, navigate to the top right to add one</string>
     <string name="feed_add">Add %1$s to feed?</string>
 
@@ -466,7 +461,6 @@
     <string name="skip_this_step_next_time">Skip this step next time</string>
     <string name="hide_not_found_entries">Hide not found entries</string>
     <string name="search_parameter">Search parameter (e.g. language:english)</string>
-    <string name="current_">Current: %1$s</string>
     <string name="latest_">Latest: %1$s</string>
     <string name="migrating_to">migrating to</string>
     <string name="match_pinned_sources">Match pinned sources</string>
