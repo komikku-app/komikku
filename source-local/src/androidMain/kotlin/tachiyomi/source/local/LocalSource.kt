@@ -1,7 +1,6 @@
 package tachiyomi.source.local
 
 import android.content.Context
-import android.os.Build
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
@@ -21,7 +20,6 @@ import logcat.LogPriority
 import nl.adaptivity.xmlutil.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.storage.addStreamToZip
 import tachiyomi.core.common.storage.extension
 import tachiyomi.core.common.storage.getCoverStreamFromZip
@@ -64,7 +62,6 @@ actual class LocalSource(
 
     private val json: Json by injectLazy()
     private val xml: XML by injectLazy()
-    private val tempFileManager: UniFileTempFileManager by injectLazy()
 
     private val POPULAR_FILTERS = FilterList(OrderBy.Popular(context))
     private val LATEST_FILTERS = FilterList(OrderBy.Latest(context))
@@ -291,11 +288,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Rar -> {
-                    val archive = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                        JunrarArchive(tempFileManager.createTempFile(chapter))
-                    } else {
-                        JunrarArchive(chapter.openInputStream())
-                    }
+                    val archive = JunrarArchive(chapter.openInputStream())
 
                     archive.use { rar ->
                         rar.fileHeaders.firstOrNull { it.fileName == COMIC_INFO_FILE }?.let { comicInfoFile ->
@@ -428,11 +421,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Rar -> {
-                    val rarArchive = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                        JunrarArchive(tempFileManager.createTempFile(format.file))
-                    } else {
-                        JunrarArchive(format.file.openInputStream())
-                    }
+                    val rarArchive = JunrarArchive(format.file.openInputStream())
                     rarArchive.use { archive ->
                         // SY <--
                         val entry = archive.fileHeaders

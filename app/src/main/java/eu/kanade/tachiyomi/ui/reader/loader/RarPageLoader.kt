@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.app.Application
-import android.os.Build
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
 import com.hippo.unifile.UniFile
@@ -16,7 +15,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -31,13 +29,7 @@ import java.util.concurrent.Executors
 internal class RarPageLoader(file: UniFile) : PageLoader() {
 
     // SY -->
-    private val tempFileManager: UniFileTempFileManager by injectLazy()
-
-    private val rar = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-        Archive(tempFileManager.createTempFile(file))
-    } else {
-        Archive(file.openInputStream())
-    }
+    private val rar = Archive(file.openInputStream())
 
     private val context: Application by injectLazy()
     private val readerPreferences: ReaderPreferences by injectLazy()

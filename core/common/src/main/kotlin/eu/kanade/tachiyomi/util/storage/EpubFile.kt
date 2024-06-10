@@ -1,15 +1,12 @@
 package eu.kanade.tachiyomi.util.storage
 
 import android.content.Context
-import android.os.Build
 import com.hippo.unifile.UniFile
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipFile
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import tachiyomi.core.common.storage.UniFileTempFileManager
 import tachiyomi.core.common.storage.openReadOnlyChannel
-import uy.kohesive.injekt.injectLazy
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
@@ -20,16 +17,10 @@ import java.io.InputStream
 // SY -->
 class EpubFile(file: UniFile, context: Context) : Closeable {
 
-    private val tempFileManager: UniFileTempFileManager by injectLazy()
-
     /**
      * Zip file of this epub.
      */
-    private val zip = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-        ZipFile.Builder().setFile(tempFileManager.createTempFile(file)).get()
-    } else {
-        ZipFile.Builder().setSeekableByteChannel(file.openReadOnlyChannel(context)).get()
-    }
+    private val zip = ZipFile.Builder().setSeekableByteChannel(file.openReadOnlyChannel(context)).get()
     // SY <--
 
     /**
