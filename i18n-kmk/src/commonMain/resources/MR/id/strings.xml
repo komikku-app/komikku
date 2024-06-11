@@ -5,7 +5,7 @@
   <string name="action_bulk_select">Bulk selection mode</string>
   <string name="action_faq_and_guides">FAQ and Guides</string>
   <string name="pref_details_page_theme">Details page</string>
-  <string name="pref_theme_cover_based">Details page theme based on cover</string>
+  <string name="pref_theme_cover_based">Theme based on cover</string>
   <string name="pref_theme_cover_based_style">Theme style</string>
   <string name="ext_unofficial">Unofficial</string>
   <string name="unofficial_extension_message">This extension is not from the official repo.</string>

@@ -5,7 +5,7 @@
   <string name="action_bulk_select">Režim hromadného výběru</string>
   <string name="action_faq_and_guides">FAQ a návody</string>
   <string name="pref_details_page_theme">Stránka s podrobnostmi</string>
-  <string name="pref_theme_cover_based">Šablona stránky s podrobnostmi na základě obalu</string>
+  <string name="pref_theme_cover_based">Šablona založená na obálce</string>
   <string name="pref_theme_cover_based_style">Styl motivu</string>
   <string name="ext_unofficial">Neoficiální</string>
   <string name="unofficial_extension_message">Toto rozšíření není z oficiálního repozitáře.</string>

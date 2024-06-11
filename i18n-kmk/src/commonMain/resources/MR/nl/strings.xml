@@ -5,7 +5,7 @@
   <string name="action_bulk_select">Bulk selectiemodus</string>
   <string name="action_faq_and_guides">FAQ en handleidingen</string>
   <string name="pref_details_page_theme">Details pagina</string>
-  <string name="pref_theme_cover_based">Details pagina thema gebaseerd op cover</string>
+  <string name="pref_theme_cover_based">Thema gebaseerd op cover</string>
   <string name="pref_theme_cover_based_style">Thema stijl</string>
   <string name="ext_unofficial">Onofficiële</string>
   <string name="unofficial_extension_message">Deze uitbreiding komt niet uit de officiële repo.</string>

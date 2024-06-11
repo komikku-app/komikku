@@ -5,7 +5,7 @@
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
   <string name="pref_details_page_theme">详细信息页面</string>
-  <string name="pref_theme_cover_based">基于封面的详细页面主题</string>
+  <string name="pref_theme_cover_based">基于封面的主题</string>
   <string name="pref_theme_cover_based_style">主题样式</string>
   <string name="ext_unofficial">非官方的</string>
   <string name="unofficial_extension_message">这个扩展不是官方仓库的扩展。</string>

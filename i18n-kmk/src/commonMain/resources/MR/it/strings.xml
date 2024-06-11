@@ -5,7 +5,7 @@
   <string name="action_bulk_select">Modalità selezione Bulk</string>
   <string name="action_faq_and_guides">FAQ e guide</string>
   <string name="pref_details_page_theme">Pagina dettagli</string>
-  <string name="pref_theme_cover_based">Dettagli tema pagina basato sulla copertina</string>
+  <string name="pref_theme_cover_based">Tema basato sulla copertina</string>
   <string name="pref_theme_cover_based_style">Stile tema</string>
   <string name="ext_unofficial">Non Ufficiale</string>
   <string name="unofficial_extension_message">Questa estensione non proviene dal repo ufficiale.</string>

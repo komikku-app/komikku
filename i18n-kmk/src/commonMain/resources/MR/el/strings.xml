@@ -5,7 +5,7 @@
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
   <string name="pref_details_page_theme">Σελίδα λεπτομερειών</string>
-  <string name="pref_theme_cover_based">Θέμα λεπτομερειών σελίδας με βάση το εξώφυλλο</string>
+  <string name="pref_theme_cover_based">Θέμα βασισμένο στο εξώφυλλο</string>
   <string name="pref_theme_cover_based_style">Στυλ θέματος</string>
   <string name="ext_unofficial">Ανεπίσημη</string>
   <string name="unofficial_extension_message">Η επέκταση αυτή δεν προέρχεται από την επίσημη αποχώρηση.</string>
