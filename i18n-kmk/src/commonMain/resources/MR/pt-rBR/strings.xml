@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Modo de seleção em massa</string>
   <string name="action_faq_and_guides">FAQ e Guias</string>
   <string name="pref_details_page_theme">Página de detalhes</string>
-  <string name="pref_details_page_theme_cover_based">Detalhe o tema da página baseado na capa</string>
+  <string name="pref_theme_cover_based">Detalhe o tema da página baseado na capa</string>
   <string name="pref_theme_cover_based_style">Estilo do tema</string>
-  <string name="pref_theme_cover_based_animate">Animação do tema</string>
   <string name="ext_unofficial">Não-oficial</string>
   <string name="unofficial_extension_message">Essa extensão não é do repositório oficial.</string>
   <string name="download_cache_renew_interval">Baixar intervalo de renovação do cache</string>

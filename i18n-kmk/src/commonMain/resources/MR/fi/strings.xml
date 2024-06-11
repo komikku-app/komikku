@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>
   <string name="pref_details_page_theme">Yksityiskohdat sivu</string>
-  <string name="pref_details_page_theme_cover_based">Yksityiskohtaiset tiedot sivun teema kannen perusteella</string>
+  <string name="pref_theme_cover_based">Yksityiskohtaiset tiedot sivun teema kannen perusteella</string>
   <string name="pref_theme_cover_based_style">Teeman tyyli</string>
-  <string name="pref_theme_cover_based_animate">Teema animoitu</string>
   <string name="ext_unofficial">Epävirallinen</string>
   <string name="unofficial_extension_message">Tämä laajennus ei ole virallisesta reposta.</string>
   <string name="download_cache_renew_interval">Lataa välimuistin uusimisväli</string>

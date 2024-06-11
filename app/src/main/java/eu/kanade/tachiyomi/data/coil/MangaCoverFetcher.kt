@@ -331,7 +331,7 @@ class MangaCoverFetcher(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        onlyFavorite: Boolean = !uiPreferences.detailsPageThemeCoverBased().get(),
+        onlyFavorite: Boolean = !uiPreferences.themeCoverBased().get(),
         force: Boolean = false,
     ) {
         fileScope.launch {

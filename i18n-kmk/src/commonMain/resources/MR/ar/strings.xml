@@ -5,9 +5,8 @@
   <string name="action_bulk_select">وضع التحديد بالجملة</string>
   <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
   <string name="pref_details_page_theme">صفحة التفاصيل</string>
-  <string name="pref_details_page_theme_cover_based">تفاصيل سمة الصفحة استنادًا إلى الغلاف</string>
+  <string name="pref_theme_cover_based">تفاصيل سمة الصفحة استنادًا إلى الغلاف</string>
   <string name="pref_theme_cover_based_style">نمط السمة</string>
-  <string name="pref_theme_cover_based_animate">الرسوم المتحركة للسمة</string>
   <string name="ext_unofficial">غير رسمي</string>
   <string name="unofficial_extension_message">وهذا التمديد ليس من المستودع الرسمي.</string>
   <string name="download_cache_renew_interval">الفاصل الزمني لتجديد التحميل</string>

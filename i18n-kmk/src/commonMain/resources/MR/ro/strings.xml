@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Mod selecţie în masă</string>
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
   <string name="pref_details_page_theme">Pagina de detalii</string>
-  <string name="pref_details_page_theme_cover_based">Tema paginii cu detalii bazate pe copertă</string>
+  <string name="pref_theme_cover_based">Tema paginii cu detalii bazate pe copertă</string>
   <string name="pref_theme_cover_based_style">Stil temă</string>
-  <string name="pref_theme_cover_based_animate">Animare temă</string>
   <string name="ext_unofficial">Neoficial.</string>
   <string name="unofficial_extension_message">Această extensie nu este din repo-ul oficial.</string>
   <string name="download_cache_renew_interval">Interval reînnoire descărcare geocutie</string>

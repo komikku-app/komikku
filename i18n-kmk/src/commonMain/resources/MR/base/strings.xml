@@ -9,9 +9,8 @@
     <!-- Preferences -->
       <!-- General section -->
     <string name="pref_details_page_theme">Details page</string>
-    <string name="pref_details_page_theme_cover_based">Details page theme based on cover</string>
+    <string name="pref_theme_cover_based">Theme based on cover</string>
     <string name="pref_theme_cover_based_style">Theme style</string>
-    <string name="pref_theme_cover_based_animate">Theme animate</string>
     <string name="pref_expand_related_titles">Expand Related titles</string>
     <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
 
