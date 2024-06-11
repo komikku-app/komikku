@@ -493,14 +493,21 @@ class MangaScreenModel(
         val generatePalette: (Image) -> Unit = { image ->
             val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
             if (bitmap != null) {
-                Palette.from(bitmap).generate { palette ->
+                Palette.from(bitmap).generate {
                     screenModelScope.launchUI {
-                        palette?.getBestColor()?.let { vibrantColor ->
-                            when (model) {
-                                is Manga -> model.asMangaCover().vibrantCoverColor = vibrantColor
-                                is MangaCover -> model.vibrantCoverColor = vibrantColor
+                        if (it == null) return@launchUI
+                        val mangaCover = when (model) {
+                            is Manga -> model.asMangaCover()
+                            is MangaCover -> model
+                            else -> return@launchUI
+                        }
+                        if (mangaCover.isMangaFavorite) {
+                            it.dominantSwatch?.let { swatch ->
+                                mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
                             }
                         }
+                        val vibrantColor = it.getBestColor() ?: return@launchUI
+                        mangaCover.vibrantCoverColor = vibrantColor
                     }
                 }
             }

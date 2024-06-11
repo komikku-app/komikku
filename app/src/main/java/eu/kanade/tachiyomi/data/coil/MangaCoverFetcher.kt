@@ -12,6 +12,7 @@ import coil3.fetch.SourceFetchResult
 import coil3.getOrDefault
 import coil3.request.Options
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
@@ -37,6 +38,8 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.IOException
@@ -66,6 +69,7 @@ class MangaCoverFetcher(
 ) : Fetcher {
 
     private val fileScope by lazy { CoroutineScope(Job() + Dispatchers.IO) }
+    private val uiPreferences = Injekt.get<UiPreferences>()
 
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
@@ -327,10 +331,11 @@ class MangaCoverFetcher(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = false
+        onlyFavorite: Boolean = !uiPreferences.detailsPageThemeCoverBased().get(),
+        force: Boolean = false,
     ) {
         fileScope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, force)
+            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
         }
     }
 
