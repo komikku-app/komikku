@@ -130,11 +130,14 @@ fun MangaInfoBox(
                 .drawWithContent {
                     drawContent()
                     drawRect(
-                        brush = Brush.verticalGradient(colors = backdropGradientColors),
+                        brush = Brush.verticalGradient(
+                            colors = backdropGradientColors,
+                            startY = size.height / 2,
+                        ),
                     )
                 }
-                .background(MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.2f))
-                .blur(4.dp)
+                .background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.4f))
+                .blur(7.dp)
                 .alpha(0.2f),
         )
 
