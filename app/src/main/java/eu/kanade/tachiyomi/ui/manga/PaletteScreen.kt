@@ -40,6 +40,7 @@ class PaletteScreen(
             DynamicMaterialTheme(
                 seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
                 useDarkTheme = isSystemInDarkTheme(),
+                withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
                 animate = uiPreferences.themeCoverBasedAnimate().get(),
                 content = { MaterialThemeContent() },

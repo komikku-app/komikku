@@ -143,6 +143,7 @@ class MangaScreen(
             DynamicMaterialTheme(
                 seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
                 useDarkTheme = isSystemInDarkTheme(),
+                withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
                 animate = uiPreferences.themeCoverBasedAnimate().get(),
                 content = { MaterialThemeContent(context, screenModel, successState) },
