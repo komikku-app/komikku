@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -39,6 +40,7 @@ fun RelatedMangasList(
         relatedMangas.forEach { related ->
             val isLoading = related is RelatedManga.Loading
             if (isLoading) {
+                item(key = "$related#divider") { HorizontalDivider() }
                 stickyHeader(key = "$related#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
@@ -51,6 +53,7 @@ fun RelatedMangasList(
                 item(key = "$related#content") { RelatedMangasLoadingItem() }
             } else {
                 val relatedManga = related as RelatedManga.Success
+                item(key = "${related.keyword}#divider") { HorizontalDivider() }
                 stickyHeader(key = "${related.keyword}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {

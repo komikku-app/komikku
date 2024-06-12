@@ -17,19 +17,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.RelatedMangasComfortableGrid
 import eu.kanade.presentation.browse.components.RelatedMangasCompactGrid
 import eu.kanade.presentation.browse.components.RelatedMangasList
 import eu.kanade.tachiyomi.ui.manga.RelatedManga
-import exh.util.capitalize
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -115,12 +115,14 @@ fun RelatedMangaTitle(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    showArrow: Boolean = true,
 ) {
     Row(
         modifier = modifier
             .padding(
                 start = MaterialTheme.padding.medium,
-                end = MaterialTheme.padding.extraSmall,
+                end = MaterialTheme.padding.small,
+                top = MaterialTheme.padding.small,
             )
             .fillMaxWidth()
             .let {
@@ -130,7 +132,7 @@ fun RelatedMangaTitle(
                     it.combinedClickable(onClick = onClick, onLongClick = onLongClick)
                 }
             },
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = if (showArrow) Arrangement.SpaceBetween else Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
@@ -140,14 +142,14 @@ fun RelatedMangaTitle(
             ),
         ) {
             Text(
-                text = title.capitalize(),
+                text = title.capitalize(Locale.current),
                 style = MaterialTheme.typography.titleMedium,
             )
             if (subtitle != null) {
                 Text(text = subtitle)
             }
         }
-        IconButton(onClick = onClick) {
+        if (showArrow) {
             Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
         }
     }

@@ -26,6 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,6 +52,7 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.RelatedMangaTitle
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
@@ -63,6 +65,7 @@ import eu.kanade.presentation.manga.components.MangaInfoBox
 import eu.kanade.presentation.manga.components.MangaInfoButtons
 import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.MissingChapterCountListItem
+import eu.kanade.presentation.manga.components.OutlinedButtonWithArrow
 import eu.kanade.presentation.manga.components.PagePreviewItems
 import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.RelatedMangas
@@ -382,6 +385,7 @@ private fun MangaScreenSmallImpl(
     // SY <--
     // KMK -->
     val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
+    val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
     // KMK <--
 
     val internalOnBackPressed = {
@@ -578,25 +582,39 @@ private fun MangaScreenSmallImpl(
 
                     // KMK -->
                     if (state.source !is StubSource && relatedMangasEnabled) {
-                        item(
-                            key = MangaScreenItem.RELATED_TITLES,
-                            contentType = MangaScreenItem.RELATED_TITLES,
-                        ) {
-                            Column {
-                                RelatedMangaTitle(
-                                    title = stringResource(KMR.strings.pref_source_related_mangas),
-                                    subtitle = null,
-                                    onClick = onRelatedMangasScreenClick,
-                                    onLongClick = null,
-                                )
-                                if (state.relatedMangasSorted == null || state.relatedMangasSorted.isNotEmpty()) {
-                                    RelatedMangas(
-                                        relatedMangas = state.relatedMangasSorted,
-                                        getMangaState = getMangaState,
-                                        onMangaClick = onRelatedMangaClick,
-                                        onMangaLongClick = onRelatedMangaLongClick,
+                        if (expandRelatedMangas) {
+                            item { HorizontalDivider() }
+                            item(
+                                key = MangaScreenItem.RELATED_TITLES,
+                                contentType = MangaScreenItem.RELATED_TITLES,
+                            ) {
+                                Column {
+                                    RelatedMangaTitle(
+                                        title = stringResource(KMR.strings.pref_source_related_mangas),
+                                        subtitle = null,
+                                        onClick = onRelatedMangasScreenClick,
+                                        onLongClick = null,
                                     )
+                                    if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                                        RelatedMangas(
+                                            relatedMangas = state.relatedMangasSorted,
+                                            getMangaState = getMangaState,
+                                            onMangaClick = onRelatedMangaClick,
+                                            onMangaLongClick = onRelatedMangaLongClick,
+                                        )
+                                    }
                                 }
+                            }
+                            item { HorizontalDivider() }
+                        } else {
+                            item(
+                                key = MangaScreenItem.RELATED_TITLES,
+                                contentType = MangaScreenItem.RELATED_TITLES,
+                            ) {
+                                OutlinedButtonWithArrow(
+                                    text = stringResource(KMR.strings.pref_source_related_mangas),
+                                    onClick = onRelatedMangasScreenClick,
+                                )
                             }
                         }
                     }
@@ -747,6 +765,7 @@ private fun MangaScreenLargeImpl(
     // SY <--
     // KMK -->
     val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
+    val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
     // KMK <--
 
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -947,22 +966,38 @@ private fun MangaScreenLargeImpl(
                         ) {
                             // KMK -->
                             if (state.source !is StubSource && relatedMangasEnabled) {
-                                item(
-                                    key = MangaScreenItem.RELATED_TITLES,
-                                    contentType = MangaScreenItem.RELATED_TITLES,
-                                ) {
-                                    Column {
-                                        RelatedMangaTitle(
-                                            title = stringResource(KMR.strings.pref_source_related_mangas),
-                                            subtitle = null,
+                                if (expandRelatedMangas) {
+                                    item { HorizontalDivider() }
+                                    item(
+                                        key = MangaScreenItem.RELATED_TITLES,
+                                        contentType = MangaScreenItem.RELATED_TITLES,
+                                    ) {
+                                        Column {
+                                            RelatedMangaTitle(
+                                                title = stringResource(KMR.strings.pref_source_related_mangas),
+                                                subtitle = null,
+                                                onClick = onRelatedMangasScreenClick,
+                                                onLongClick = null,
+                                            )
+                                            if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                                                RelatedMangas(
+                                                    relatedMangas = state.relatedMangasSorted,
+                                                    getMangaState = getMangaState,
+                                                    onMangaClick = onRelatedMangaClick,
+                                                    onMangaLongClick = onRelatedMangaLongClick,
+                                                )
+                                            }
+                                        }
+                                    }
+                                    item { HorizontalDivider() }
+                                } else {
+                                    item(
+                                        key = MangaScreenItem.RELATED_TITLES,
+                                        contentType = MangaScreenItem.RELATED_TITLES,
+                                    ) {
+                                        OutlinedButtonWithArrow(
+                                            text = stringResource(KMR.strings.pref_source_related_mangas),
                                             onClick = onRelatedMangasScreenClick,
-                                            onLongClick = null,
-                                        )
-                                        RelatedMangas(
-                                            relatedMangas = state.relatedMangasSorted,
-                                            getMangaState = getMangaState,
-                                            onMangaClick = onRelatedMangaClick,
-                                            onMangaLongClick = onRelatedMangaLongClick
                                         )
                                     }
                                 }

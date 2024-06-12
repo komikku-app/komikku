@@ -12,6 +12,8 @@
     <string name="pref_details_page_theme_cover_based">Details page theme based on cover</string>
     <string name="pref_theme_cover_based_style">Theme style</string>
     <string name="pref_theme_cover_based_animate">Theme animate</string>
+    <string name="pref_expand_related_titles">Expand Related titles</string>
+    <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
 
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>
@@ -58,7 +60,7 @@
     <string name="changelogs">Change Logs</string>
 
     <!-- Browse settings -->
-    <string name="pref_source_related_mangas">Related titles</string>
+    <string name="pref_source_related_mangas">Related Titles</string>
     <string name="pref_source_related_mangas_summary">Show related titles while viewing entry</string>
     <string name="related_mangas_more">More like these...</string>
 

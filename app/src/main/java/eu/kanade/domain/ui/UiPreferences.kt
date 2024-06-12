@@ -45,6 +45,8 @@ class UiPreferences(
 
     fun feedTabInFront() = preferenceStore.getBoolean("latest_tab_position", false)
 
+    fun expandRelatedTitles() = preferenceStore.getBoolean("expand_related_titles", true)
+
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", true)
 
     fun mergeInOverflow() = preferenceStore.getBoolean("merge_in_overflow", true)

@@ -172,8 +172,9 @@ class MangaScreenModel(
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
-    uiPreferences: UiPreferences = Injekt.get(),
+    private val uiPreferences: UiPreferences = Injekt.get(),
     // KMK -->
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val trackPreferences: TrackPreferences = Injekt.get(),
     private val trackChapter: TrackChapter = Injekt.get(),
     // KMK <--
@@ -461,18 +462,14 @@ class MangaScreenModel(
 
             // Fetch info-chapters when needed
             if (screenModelScope.isActive) {
-                // KMK -->
-                launch {
-                    fetchRelatedMangasFromSource(onFinish = {
-                        updateSuccessState { it.copy(isFetchingRelatedMangas = false) }
-                    })
-                }
-                // KMK <--
                 val fetchFromSourceTasks = listOf(
                     async { syncTrackers() },
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                 )
+                // KMK -->
+                launch { fetchRelatedMangasFromSource() }
+                // KMK <--
                 fetchFromSourceTasks.awaitAll()
             }
 
@@ -1115,7 +1112,7 @@ class MangaScreenModel(
         val isLocal = manga.isLocal()
         // SY -->
         val isExhManga = manga.isEhBasedManga()
-        val enabledLanguages = Injekt.get<SourcePreferences>().enabledLanguages().get()
+        val enabledLanguages = sourcePreferences.enabledLanguages().get()
             .filterNot { it in listOf("all", "other") }
         // SY <--
         return map { chapter ->
@@ -1220,9 +1217,25 @@ class MangaScreenModel(
 
     // KMK -->
     /**
+     * Set the fetching related mangas status.
+     * @param state
+     * - false: started & fetching
+     * - true: finished
+     */
+    private fun setRelatedMangasFetchedStatus(state: Boolean) {
+        updateSuccessState { it.copy(isRelatedMangasFetched = state) }
+    }
+
+    /**
      * Requests an list of related mangas from the source.
      */
-    private suspend fun fetchRelatedMangasFromSource(onFinish: () -> Unit) {
+    internal suspend fun fetchRelatedMangasFromSource(onDemand: Boolean = false, onFinish: (() -> Unit)? = null) {
+        val expandRelatedTitles = uiPreferences.expandRelatedTitles().get()
+        if (!onDemand && !expandRelatedTitles) return
+
+        // start fetching related mangas
+        setRelatedMangasFetchedStatus(false)
+
         fun exceptionHandler(e: Throwable) {
             logcat(LogPriority.ERROR, e)
             val message = with(context) { e.formattedMessage }
@@ -1232,33 +1245,36 @@ class MangaScreenModel(
             }
         }
         val state = successState ?: return
-        val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
-        try {
-            if (state.source !is StubSource) {
-                if (relatedMangasEnabled) {
-                    state.source.getRelatedMangaList(state.manga.toSManga(), { e -> exceptionHandler(e) }) { pair, _ ->
-                        /* Push found related mangas into collection */
-                        val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
-                            mangaList.map {
-                                networkToLocalManga.await(it.toDomainManga(state.source.id))
-                            }
-                        }
+        val relatedMangasEnabled = sourcePreferences.relatedMangas().get()
 
-                        updateSuccessState { successState ->
-                            val relatedMangaCollection =
-                                successState.relatedMangaCollection
-                                    ?.toMutableStateList()
-                                    ?.apply { add(relatedManga) }
-                                    ?: listOf(relatedManga)
-                            successState.copy(relatedMangaCollection = relatedMangaCollection)
+        try {
+            if (state.source !is StubSource && relatedMangasEnabled) {
+                state.source.getRelatedMangaList(state.manga.toSManga(), { e -> exceptionHandler(e) }) { pair, _ ->
+                    /* Push found related mangas into collection */
+                    val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
+                        mangaList.map {
+                            networkToLocalManga.await(it.toDomainManga(state.source.id))
                         }
+                    }
+
+                    updateSuccessState { successState ->
+                        val relatedMangaCollection =
+                            successState.relatedMangaCollection
+                                ?.toMutableStateList()
+                                ?.apply { add(relatedManga) }
+                                ?: listOf(relatedManga)
+                        successState.copy(relatedMangaCollection = relatedMangaCollection)
                     }
                 }
             }
         } catch (e: Exception) {
             exceptionHandler(e)
         } finally {
-            onFinish()
+            if (onFinish != null) {
+                onFinish()
+            } else {
+                setRelatedMangasFetchedStatus(true)
+            }
         }
     }
     // KMK <--
@@ -1870,7 +1886,13 @@ class MangaScreenModel(
             val previewsRowCount: Int,
             // SY <--
             // KMK -->
-            val isFetchingRelatedMangas: Boolean = true,
+            /**
+             * status of fetching related mangas
+             * - null: not started
+             * - false: started & fetching
+             * - true: finished
+             */
+            val isRelatedMangasFetched: Boolean? = null,
             /**
              * a list of <keyword, related mangas>
              */
@@ -1888,8 +1910,8 @@ class MangaScreenModel(
                 ?.sorted(manga)
                 ?.removeDuplicates(manga)
                 ?.filter { it.isVisible() }
-                ?.isLoading(isFetchingRelatedMangas)
-                ?: if (!isFetchingRelatedMangas) emptyList() else null
+                ?.isLoading(isRelatedMangasFetched)
+                ?: if (isRelatedMangasFetched == true) emptyList() else null
             // KMK <--
 
             val processedChapters by lazy {
@@ -2051,12 +2073,8 @@ sealed interface RelatedManga {
             }
         }
 
-        internal fun List<RelatedManga>.isLoading(isFetchingRelatedMangas: Boolean): List<RelatedManga> {
-            return if (isFetchingRelatedMangas) {
-                this + listOf(Loading)
-            } else {
-                this
-            }
+        internal fun List<RelatedManga>.isLoading(isRelatedMangaFetched: Boolean?): List<RelatedManga> {
+            return if (isRelatedMangaFetched == false) this + listOf(Loading) else this
         }
     }
 }
