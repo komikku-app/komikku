@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -48,10 +49,15 @@ fun HistoryItem(
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val mangaCover = history.coverData
+        val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
+        val onBgColor = mangaCover.dominantCoverColors?.second
         MangaCover.Book(
             modifier = Modifier.fillMaxHeight(),
-            data = history.coverData,
+            data = mangaCover,
             onClick = onClickCover,
+            bgColor = bgColor,
+            tint = onBgColor,
         )
         Column(
             modifier = Modifier

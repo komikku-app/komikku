@@ -35,9 +35,15 @@ class LibraryPreferences(
     fun lastUpdatedTimestamp() = preferenceStore.getLong(Preference.appStateKey("library_update_last_timestamp"), 0L)
     fun autoUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 0)
 
-    fun coverRatios() = preferenceStore.getStringSet("pref_library_cover_ratios_key", emptySet())
+    fun coverRatios() = preferenceStore.getStringSet(
+        Preference.appStateKey("pref_library_cover_ratios_key"),
+        emptySet(),
+    )
 
-    fun coverColors() = preferenceStore.getStringSet("pref_library_cover_colors_key", emptySet())
+    fun coverColors() = preferenceStore.getStringSet(
+        Preference.appStateKey("pref_library_cover_colors_key"),
+        emptySet(),
+    )
 
     fun autoUpdateDeviceRestrictions() = preferenceStore.getStringSet(
         "library_update_restriction",

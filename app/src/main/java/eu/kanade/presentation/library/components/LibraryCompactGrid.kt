@@ -62,6 +62,7 @@ internal fun LibraryCompactGrid(
                 } else {
                     null
                 },
+                libraryColored = true,
             )
         }
     }

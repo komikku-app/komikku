@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -82,7 +83,6 @@ fun EditMangaDialog(
         textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
         iconColor = MaterialTheme.colorScheme.primary.toArgb(),
         tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
-        tagFocusColor = MaterialTheme.colorScheme.outline.toArgb(),
         tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
         btnTextColor = MaterialTheme.colorScheme.onPrimary.toArgb(),
         btnBgColor = MaterialTheme.colorScheme.surfaceTint.toArgb(),
@@ -159,7 +159,6 @@ class EditMangaDialogColors(
     @ColorInt val textHighlightColor: Int,
     @ColorInt val iconColor: Int,
     @ColorInt val tagColor: Int,
-    @ColorInt val tagFocusColor: Int,
     @ColorInt val tagTextColor: Int,
     @ColorInt val btnTextColor: Int,
     @ColorInt val btnBgColor: Int,
@@ -205,6 +204,14 @@ private fun onViewCreated(
                 else -> 0
             },
         )
+    }
+
+    // Set Spinner's selected item's background color to transparent
+    binding.status.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+            if (view != null) (view as TextView).setBackgroundColor(0x00000000)
+        }
+        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
     }
 
     // Set Spinner's dropdown caret color
@@ -346,18 +353,7 @@ private fun ChipGroup.setChips(
 ) {
     removeAllViews()
 
-    val colorStateList = ColorStateList(
-        arrayOf(
-            intArrayOf(android.R.attr.state_focused),
-            intArrayOf(android.R.attr.state_pressed),
-            intArrayOf(-android.R.attr.state_active),
-        ),
-        intArrayOf(
-            colors.tagFocusColor,
-            colors.tagFocusColor,
-            colors.tagColor,
-        ),
-    )
+    val colorStateList = ColorStateList.valueOf(colors.tagColor)
 
     items.asSequence().map { item ->
         Chip(context).apply {

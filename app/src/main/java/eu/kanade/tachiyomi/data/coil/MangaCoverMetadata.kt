@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.coil
 import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import okio.BufferedSource
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
@@ -65,36 +66,56 @@ object MangaCoverMetadata {
      * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
-     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
+     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
      *
-     * @author Jays2Kings
+     * This is only for loading color first time it appears on Library/Browse. Any new colors caused by loading new
+     * cover when open a manga detail or change cover will be updated separately on [MangaScreenModel.setPaletteColor].
      */
     fun setRatioAndColors(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = true,
+        onlyDominantColor: Boolean = true,
+        force: Boolean = false,
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
+            if (mangaCover.vibrantCoverColor != null) return
         }
+
+        if (mangaCover.isMangaFavorite && onlyDominantColor && mangaCover.dominantCoverColors != null) return
+
+        val options = BitmapFactory.Options()
+
+        val updateColors = mangaCover.isMangaFavorite && mangaCover.dominantCoverColors == null ||
+            !onlyDominantColor && mangaCover.vibrantCoverColor == null || force
+
+        if (updateColors) {
+            /**
+             * + Manga is Favorite & doesn't have dominant color
+             *   For non-favorite, it doesn't care if dominant is there or not, if it has vibrant color then it will
+             *   already be returned from beginning.
+             * + [onlyDominantColor] = false
+             *   - Manga doesn't have vibrant color
+             */
+            options.inSampleSize = 4
+        } else {
+            /**
+             * + [onlyDominantColor] = true
+             *   - Manga is Favorite & already have dominant color
+             * + [onlyDominantColor] = false
+             *   - Manga is Favorite & already have dominant color & vibrant color
+             *   - Manga is not Favorite & already have vibrant color (already skip at beginning)
+             */
+            // Just trying to update ratio without actual reading bitmap (bitmap will be null)
+            options.inJustDecodeBounds = true
+            // Don't even need to update ratio because we don't use it yet.
+            return
+        }
+
         val file = ogFile
             ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
             ?: coverCache.getCoverFile(mangaCover.url)
-
-        val options = BitmapFactory.Options()
-        val hasVibrantColor = if (mangaCover.isMangaFavorite) mangaCover.vibrantCoverColor != null else true
-        // If dominantCoverColors is not null, it means that color is restored from Prefs
-        // and also has vibrantCoverColor (e.g. new color caused by updated cover)
-        val updateRatioOnly = mangaCover.dominantCoverColors != null && hasVibrantColor && !force
-        if (updateRatioOnly) {
-            // Just trying to update ratio without actual reading bitmap (bitmap will be null)
-            // This is often when open a favorite manga
-            options.inJustDecodeBounds = true
-        } else {
-            options.inSampleSize = 4
-        }
 
         val bitmap = when {
             bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)

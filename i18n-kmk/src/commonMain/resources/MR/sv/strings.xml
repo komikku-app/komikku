@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>
   <string name="pref_details_page_theme">Detaljer sida</string>
-  <string name="pref_details_page_theme_cover_based">Detaljer sida tema baserat på omslag</string>
+  <string name="pref_theme_cover_based">Tema baserat på omslag</string>
   <string name="pref_theme_cover_based_style">Tema stil</string>
-  <string name="pref_theme_cover_based_animate">Tema animerat</string>
   <string name="ext_unofficial">Inofficiellt</string>
   <string name="unofficial_extension_message">Denna förlängning kommer inte från den officiella rapo.</string>
   <string name="download_cache_renew_interval">Hämta cache förnyelseintervall</string>

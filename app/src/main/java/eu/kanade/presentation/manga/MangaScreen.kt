@@ -101,6 +101,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.service.missingChaptersCount
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -183,6 +184,8 @@ fun MangaScreen(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -243,6 +246,8 @@ fun MangaScreen(
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
+            onCoverLoaded = onCoverLoaded,
+            onPaletteScreenClick = onPaletteScreenClick,
             // KMK <--
         )
     } else {
@@ -296,6 +301,8 @@ fun MangaScreen(
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
             onSourceClick = onSourceClick,
+            onCoverLoaded = onCoverLoaded,
+            onPaletteScreenClick = onPaletteScreenClick,
             // KMK <--
         )
     }
@@ -366,6 +373,8 @@ private fun MangaScreenSmallImpl(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -437,6 +446,7 @@ private fun MangaScreenSmallImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                onPaletteScreenClick = onPaletteScreenClick,
             )
         },
         bottomBar = {
@@ -520,6 +530,7 @@ private fun MangaScreenSmallImpl(
                             doSearch = onSearch,
                             // KMK -->
                             onSourceClick = onSourceClick,
+                            onCoverLoaded = onCoverLoaded,
                             // KMK <--
                         )
                     }
@@ -747,6 +758,8 @@ private fun MangaScreenLargeImpl(
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
     onSourceClick: () -> Unit,
+    onCoverLoaded: (MangaCover) -> Unit,
+    onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -809,6 +822,7 @@ private fun MangaScreenLargeImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                onPaletteScreenClick = onPaletteScreenClick,
             )
         },
         bottomBar = {
@@ -893,6 +907,7 @@ private fun MangaScreenLargeImpl(
                             doSearch = onSearch,
                             // KMK -->
                             onSourceClick = onSourceClick,
+                            onCoverLoaded = onCoverLoaded,
                             // KMK <--
                         )
                         MangaActionRow(

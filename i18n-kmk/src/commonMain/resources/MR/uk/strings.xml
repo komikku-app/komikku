@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Масовий режим вибору</string>
   <string name="action_faq_and_guides">ЧаПи та керівництва</string>
   <string name="pref_details_page_theme">Сторінка подробиць</string>
-  <string name="pref_details_page_theme_cover_based">Тема сторінки подробиць на основі обкладинки</string>
+  <string name="pref_theme_cover_based">Тему на основі обкладинки</string>
   <string name="pref_theme_cover_based_style">Стиль теми</string>
-  <string name="pref_theme_cover_based_animate">Анімація теми</string>
   <string name="ext_unofficial">Неофіційна</string>
   <string name="unofficial_extension_message">Це розширення не з офіційного репозиторію.</string>
   <string name="download_cache_renew_interval">Завантажити інтервал оновлення кешу</string>

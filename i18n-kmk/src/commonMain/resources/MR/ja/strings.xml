@@ -5,10 +5,9 @@
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>
   <string name="pref_details_page_theme">詳細ページ</string>
-  <string name="pref_details_page_theme_cover_based">カバーに基づく詳細ページのテーマ</string>
+  <string name="pref_theme_cover_based">カバーに基づくテーマ</string>
   <string name="pref_theme_cover_based_style">テーマのスタイル</string>
-  <string name="pref_theme_cover_based_animate">テーマのアニメーション</string>
-  <string name="ext_unofficial">&lt;unk&gt;</string>
+  <string name="ext_unofficial">Unofficial</string>
   <string name="unofficial_extension_message">この拡張機能は公式リポジトリからのものではありません。</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>

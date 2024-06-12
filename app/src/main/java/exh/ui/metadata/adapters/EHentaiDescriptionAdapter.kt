@@ -29,8 +29,8 @@ fun EHentaiDescription(
     search: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
-    val iconColor = MaterialTheme.colorScheme.secondary.toArgb()
+    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     AndroidView(
         modifier = Modifier.fillMaxWidth(),

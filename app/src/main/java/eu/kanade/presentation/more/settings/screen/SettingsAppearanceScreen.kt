@@ -112,14 +112,14 @@ object SettingsAppearanceScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
         val detailsPageThemeCoverBased by remember {
-            Injekt.get<UiPreferences>().detailsPageThemeCoverBased().asState(scope)
+            Injekt.get<UiPreferences>().themeCoverBased().asState(scope)
         }
         return Preference.PreferenceGroup(
             title = stringResource(KMR.strings.pref_details_page_theme),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.detailsPageThemeCoverBased(),
-                    title = stringResource(KMR.strings.pref_details_page_theme_cover_based),
+                    pref = uiPreferences.themeCoverBased(),
+                    title = stringResource(KMR.strings.pref_theme_cover_based),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.themeCoverBasedStyle(),
@@ -128,11 +128,6 @@ object SettingsAppearanceScreen : SearchableSettings {
                     entries = PaletteStyle.entries
                         .associateWith { it.name }
                         .toImmutableMap(),
-                ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.themeCoverBasedAnimate(),
-                    title = stringResource(KMR.strings.pref_theme_cover_based_animate),
-                    enabled = detailsPageThemeCoverBased,
                 ),
             ),
         )

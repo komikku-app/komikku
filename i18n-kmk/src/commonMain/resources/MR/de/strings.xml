@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Massenauswahlmodus</string>
   <string name="action_faq_and_guides">FAQ und Anleitungen</string>
   <string name="pref_details_page_theme">Detailseite</string>
-  <string name="pref_details_page_theme_cover_based">Detailseitenthema basierend auf Cover</string>
+  <string name="pref_theme_cover_based">Theme basierend auf Cover</string>
   <string name="pref_theme_cover_based_style">Design-Stil</string>
-  <string name="pref_theme_cover_based_animate">Theme animieren</string>
   <string name="ext_unofficial">Ungültig</string>
   <string name="unofficial_extension_message">Diese Erweiterung ist nicht vom offiziellen Repo.</string>
   <string name="download_cache_renew_interval">Download-Cache Erneuerungsintervall</string>

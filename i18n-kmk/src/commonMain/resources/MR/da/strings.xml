@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Masse valg tilstand</string>
   <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
   <string name="pref_details_page_theme">Detaljer side</string>
-  <string name="pref_details_page_theme_cover_based">Detaljer sidetema baseret på omslag</string>
+  <string name="pref_theme_cover_based">Tema baseret på omslag</string>
   <string name="pref_theme_cover_based_style">Tema stil</string>
-  <string name="pref_theme_cover_based_animate">Tema animere</string>
   <string name="ext_unofficial">Uofficiel</string>
   <string name="unofficial_extension_message">Denne udvidelse er ikke fra den officielle repo.</string>
   <string name="download_cache_renew_interval">Download cache forny interval</string>

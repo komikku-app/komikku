@@ -69,6 +69,7 @@ internal fun LibraryList(
                 } else {
                     null
                 },
+                libraryColored = true,
             )
         }
     }

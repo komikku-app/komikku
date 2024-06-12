@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
@@ -59,6 +60,7 @@ fun MangaToolbar(
 
     modifier: Modifier = Modifier,
     backgroundAlphaProvider: () -> Float = titleAlphaProvider,
+    onPaletteScreenClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -191,6 +193,14 @@ fun MangaToolbar(
                                 }
                                 // SY <--
                                 // KMK -->
+                                if (BuildConfig.DEBUG) {
+                                    add(
+                                        AppBar.OverflowAction(
+                                            title = "Colors Palette",
+                                            onClick = onPaletteScreenClick,
+                                        ),
+                                    )
+                                }
 //                                add(
 //                                    AppBar.OverflowAction(
 //                                        title = stringResource(MR.strings.pref_invalidate_download_cache),
@@ -204,7 +214,6 @@ fun MangaToolbar(
 //                                    ),
 //                                )
                                 // KMK <--
-
                             }
                             .build(),
                     )

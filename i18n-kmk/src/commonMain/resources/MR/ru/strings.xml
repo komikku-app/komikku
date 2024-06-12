@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Режим массового выбора</string>
   <string name="action_faq_and_guides">FAQ и руководства</string>
   <string name="pref_details_page_theme">Детали</string>
-  <string name="pref_details_page_theme_cover_based">Детали темы на основе обложки</string>
+  <string name="pref_theme_cover_based">Тема на основе обложки</string>
   <string name="pref_theme_cover_based_style">Стиль темы</string>
-  <string name="pref_theme_cover_based_animate">Тема анимации</string>
   <string name="ext_unofficial">Неофициальный</string>
   <string name="unofficial_extension_message">Это расширение не из официального репозитория.</string>
   <string name="download_cache_renew_interval">Загрузить интервал обновления кэша</string>

@@ -5,9 +5,8 @@
   <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
   <string name="action_faq_and_guides">FAQ i przewodniki</string>
   <string name="pref_details_page_theme">Strona szczegółów</string>
-  <string name="pref_details_page_theme_cover_based">Szczegółowy motyw strony oparty na okładce</string>
+  <string name="pref_theme_cover_based">Motyw oparty na okładce</string>
   <string name="pref_theme_cover_based_style">Styl motywu</string>
-  <string name="pref_theme_cover_based_animate">Animacja motywu</string>
   <string name="ext_unofficial">Nieoficjalne</string>
   <string name="unofficial_extension_message">To rozszerzenie nie pochodzi z oficjalnego repozytorium.</string>
   <string name="download_cache_renew_interval">Częstotliwość odnawiania pamięci podręcznej pobierania</string>

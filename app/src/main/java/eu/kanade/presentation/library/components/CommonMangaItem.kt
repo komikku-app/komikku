@@ -27,18 +27,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.kanade.presentation.manga.components.CoverPlaceholderColor
 import eu.kanade.presentation.manga.components.MangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
@@ -74,7 +71,10 @@ fun MangaCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    libraryColored: Boolean? = null,
 ) {
+    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
+    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
     GridItemSelectable(
         isSelected = isSelected,
         onClick = onClick,
@@ -84,15 +84,11 @@ fun MangaCompactGridItem(
             cover = {
                 MangaCover.Book(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                                ?: MaterialTheme.colorScheme.surface
-                        ),
+                        .fillMaxWidth(),
                     alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                     data = coverData,
-                    tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
-                        ?: MaterialTheme.colorScheme.onSurface.toArgb(),
+                    bgColor = bgColor,
+                    tint = onBgColor,
                 )
             },
             badgesStart = coverBadgeStart,
@@ -182,7 +178,10 @@ fun MangaComfortableGridItem(
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
     onClickContinueReading: (() -> Unit)? = null,
+    libraryColored: Boolean? = null,
 ) {
+    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
+    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
     GridItemSelectable(
         isSelected = isSelected,
         onClick = onClick,
@@ -193,15 +192,11 @@ fun MangaComfortableGridItem(
                 cover = {
                     MangaCover.Book(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                                    ?: MaterialTheme.colorScheme.surface
-                            ),
+                            .fillMaxWidth(),
                         alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                         data = coverData,
-                        tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
-                            ?: MaterialTheme.colorScheme.onSurface.toArgb(),
+                        bgColor = bgColor,
+                        tint = onBgColor,
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -339,7 +334,10 @@ fun MangaListItem(
     isSelected: Boolean = false,
     coverAlpha: Float = 1f,
     onClickContinueReading: (() -> Unit)? = null,
+    libraryColored: Boolean? = null,
 ) {
+    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
+    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
     Row(
         modifier = Modifier
             .selectedBackground(isSelected)
@@ -353,15 +351,11 @@ fun MangaListItem(
     ) {
         MangaCover.Square(
             modifier = Modifier
-                .fillMaxHeight()
-                .background(
-                    color = DomainMangaCover.coverColorMap[coverData.mangaId]?.first?.let { Color(it) }
-                        ?: MaterialTheme.colorScheme.surface
-                ),
+                .fillMaxHeight(),
             alpha = coverAlpha,
             data = coverData,
-            tint = DomainMangaCover.coverColorMap[coverData.mangaId]?.second
-                ?: MaterialTheme.colorScheme.onSurface.toArgb(),
+            bgColor = bgColor,
+            tint = onBgColor,
         )
         Text(
             text = title,

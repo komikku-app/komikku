@@ -68,8 +68,8 @@ class MangaCoverFetcher(
     private val imageLoader: ImageLoader,
 ) : Fetcher {
 
-    private val uiPreferences: UiPreferences = Injekt.get()
-    private val fileScope = CoroutineScope(Job() + Dispatchers.IO)
+    private val fileScope by lazy { CoroutineScope(Job() + Dispatchers.IO) }
+    private val uiPreferences = Injekt.get<UiPreferences>()
 
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
@@ -325,18 +325,17 @@ class MangaCoverFetcher(
      * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true (default) then it will always re-calculate ratio & color for favorite mangas.
-     *  This is useful when a favorite manga updates/changes its cover. If false then it will only update ratio.
+     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
      */
     private fun setRatioAndColorsInScope(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        force: Boolean = true
+        onlyFavorite: Boolean = !uiPreferences.themeCoverBased().get(),
+        force: Boolean = false,
     ) {
-        if (!uiPreferences.detailsPageThemeCoverBased().get()) return
         fileScope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, force)
+            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
         }
     }
 

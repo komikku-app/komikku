@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -168,12 +169,17 @@ private fun UpdatesUiItem(
             .padding(horizontal = MaterialTheme.padding.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val mangaCover = update.coverData
+        val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
+        val onBgColor = mangaCover.dominantCoverColors?.second
         MangaCover.Square(
             modifier = Modifier
                 .padding(vertical = 6.dp)
                 .fillMaxHeight(),
-            data = update.coverData,
+            data = mangaCover,
             onClick = onClickCover,
+            bgColor = bgColor,
+            tint = onBgColor,
         )
 
         Column(
