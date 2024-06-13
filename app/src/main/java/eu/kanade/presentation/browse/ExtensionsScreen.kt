@@ -189,14 +189,14 @@ private fun ExtensionContent(
                             }
                         ExtensionHeader(
                             textRes = header.textRes,
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateItemPlacement(),
                             action = action,
                         )
                     }
                     is ExtensionUiModel.Header.Text -> {
                         ExtensionHeader(
                             text = header.text,
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }
@@ -214,7 +214,7 @@ private fun ExtensionContent(
                 },
             ) { item ->
                 ExtensionItem(
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(),
                     item = item,
                     onClickItem = {
                         when (it) {

@@ -26,7 +26,7 @@ fun SourceCategoryContent(
     ) {
         items(categories, key = { it }) { category ->
             SourceCategoryListItem(
-                modifier = Modifier.animateItem(),
+                modifier = Modifier.animateItemPlacement(),
                 category = category,
                 onRename = { onClickRename(category) },
                 onDelete = { onClickDelete(category) },

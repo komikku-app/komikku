@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ElevatedSuggestionChip
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
@@ -157,7 +157,7 @@ fun TagsChip(
     borderM3: BorderStroke? = null,
     pureDarkMode: Boolean = false,
 ) {
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+    CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
         if (onClick != null) {
             if (borderM3 != null || pureDarkMode) {
                 SuggestionChip(

@@ -46,7 +46,7 @@ fun ExtensionReposContent(
         repos.forEach {
             item {
                 ExtensionRepoListItem(
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(),
                     repo = it,
                     onOpenWebsite = { onOpenWebsite(it) },
                     onDelete = { onClickDelete(it.baseUrl) },

@@ -111,7 +111,8 @@ import tachiyomi.presentation.core.components.material.ExtendedFloatingActionBut
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.shouldExpandFAB
+import tachiyomi.presentation.core.util.isScrolledToEnd
+import tachiyomi.presentation.core.util.isScrollingUp
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -484,7 +485,7 @@ private fun MangaScreenSmallImpl(
                     },
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
+                    expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
                 )
             }
         },
@@ -867,7 +868,7 @@ private fun MangaScreenLargeImpl(
                     },
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
+                    expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
                 )
             }
         },

@@ -9,18 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 @Composable
-fun LazyListState.shouldExpandFAB(): Boolean {
-    return remember {
-        derivedStateOf {
-            (firstVisibleItemIndex == 0 && firstVisibleItemScrollOffset == 0) ||
-                lastScrolledBackward ||
-                !canScrollForward
-        }
-    }
-        .value
-}
-
-@Composable
 fun LazyListState.isScrolledToStart(): Boolean {
     return remember {
         derivedStateOf {

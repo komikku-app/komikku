@@ -107,7 +107,7 @@ fun FeedScreen(
                         key = { it.feed.id },
                     ) { item ->
                         GlobalSearchResultItem(
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateItemPlacement(),
                             title = item.title,
                             subtitle = item.subtitle,
                             onLongClick = {

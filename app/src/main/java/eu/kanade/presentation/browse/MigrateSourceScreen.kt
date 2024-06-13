@@ -144,7 +144,7 @@ private fun MigrateSourceList(
             key = { (source, _) -> "migrate-${source.id}" },
         ) { (source, count) ->
             MigrateSourceItem(
-                modifier = Modifier.animateItem(),
+                modifier = Modifier.animateItemPlacement(),
                 source = source,
                 count = count,
                 onClickItem = { onClickItem(source) },
