@@ -765,7 +765,7 @@
     <string name="information_empty_repos">Nincsenek beállítva tárolók.</string>
     <string name="action_add_repo">Tároló felvétele</string>
     <string name="label_add_repo_input">Tároló URL</string>
-    <string name="action_add_repo_message">További tárolók hozzáadása a Mihonhoz. Ennek az URL-nek \"index.min.json\"-ra végződő URL-nek kell lennie.</string>
+    <string name="action_add_repo_message">További tárolók hozzáadása a Komikkuhoz. Ennek az URL-nek \"index.min.json\"-ra végződő URL-nek kell lennie.</string>
     <string name="error_repo_exists">Ez a tároló már létezik!</string>
     <string name="action_delete_repo">Tároló törlése</string>
     <string name="invalid_repo_name">Érvénytelen tároló URL</string>

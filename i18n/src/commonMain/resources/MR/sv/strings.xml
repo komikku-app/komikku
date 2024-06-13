@@ -789,7 +789,7 @@
     <string name="information_empty_repos">Du har inga förråd inställda.</string>
     <string name="action_add_repo">Lägg till förråd</string>
     <string name="label_add_repo_input">Förråd URL</string>
-    <string name="action_add_repo_message">Lägg till ytterliga förråd till Mihon. Detta ska vara en URL som slutar med \"index.min.json\".</string>
+    <string name="action_add_repo_message">Lägg till ytterliga förråd till Komikku. Detta ska vara en URL som slutar med \"index.min.json\".</string>
     <string name="error_repo_exists">Detta förråd existerar redan!</string>
     <string name="action_delete_repo">Ta bort förråd</string>
     <string name="invalid_repo_name">Ogiltig förråds URL</string>

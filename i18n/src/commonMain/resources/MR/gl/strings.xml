@@ -713,7 +713,7 @@
     <string name="pref_relative_format">Marcas de tempo relativas</string>
     <string name="pref_library_update_smart_update">Actualizacións intelixentes</string>
     <string name="action_add_repo">Engadir un repositorio</string>
-    <string name="action_add_repo_message">Engade máis repositorios a Mihon. Debe ser unha dirección URL que remate en \"index.min.json\".</string>
+    <string name="action_add_repo_message">Engade máis repositorios a Komikku. Debe ser unha dirección URL que remate en \"index.min.json\".</string>
     <string name="action_delete_repo">Borrar repositorio</string>
     <string name="invalid_repo_name">A dirección URL do repositorio non é válida</string>
     <string name="delete_repo_confirmation">Queres eliminar o repositorio \"%s\"?</string>

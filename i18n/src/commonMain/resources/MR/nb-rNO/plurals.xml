@@ -68,8 +68,4 @@
         <item quantity="one">%d pakkebrønn</item>
         <item quantity="other">%d pakkebrønner</item>
     </plurals>
-    <plurals name="num_repos">
-        <item quantity="one">%d pakkebr├╕nn</item>
-        <item quantity="other">%d pakkebr├╕nner</item>
-    </plurals>
 </resources>

@@ -787,7 +787,7 @@
     <string name="label_upcoming">Sắp tới</string>
     <string name="action_migrate_duplicate">Chuyển vào các mục hiện có</string>
     <string name="onboarding_storage_help_info">Cập nhật từ phiên bản cũ hơn và không biết nên chọn gì? Tham khảo hướng dẫn để biết thêm thông tin.</string>
-    <string name="action_add_repo_message">Thêm nguồn bổ sung vào Mihon. Địa chỉ URL này cần phải kết thúc với \"index.min.json\".</string>
+    <string name="action_add_repo_message">Thêm nguồn bổ sung vào Komikku. Địa chỉ URL này cần phải kết thúc với \"index.min.json\".</string>
     <string name="action_replace_repo_message">Kho lưu trữ %1$s có Dấu vân tay Khóa ký giống hệt như %2$s.
 \nNếu điều này là dự kiến, %2$s sẽ bị thay thế. Nếu không, vui lòng liên hệ với người quản lý kho lưu trữ của bạn.</string>
     <string name="information_empty_repos">Bạn chưa có nguồn nào.</string>

@@ -766,7 +766,7 @@
     <string name="onboarding_guides_new_user">Novo no %s? Recomendamos dar uma olhada no guia de introdução.</string>
     <string name="theme_nord">Nord</string>
     <string name="pref_relative_format_summary">\"%1$s\" ao invés de \"%2$s\"</string>
-    <string name="action_add_repo_message">Adiciona repositórios adicionais ao Mihon. Deve ser uma URL que termine com \"index.min.json\".</string>
+    <string name="action_add_repo_message">Adiciona repositórios adicionais ao Komikku. Deve ser uma URL que termine com \"index.min.json\".</string>
     <string name="invalid_repo_name">URL do repositório inválido</string>
     <string name="delete_repo_confirmation">Deseja deletar o repositório \"%s\"?</string>
     <string name="action_open_repo">Abrir repositório da fonte</string>

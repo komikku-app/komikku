@@ -765,7 +765,7 @@
     <string name="label_extension_repos">Repozitoriu extensii</string>
     <string name="information_empty_repos">Nu aveți nici un repozitoriu configurat.</string>
     <string name="action_add_repo">Adăugați repozitoriu</string>
-    <string name="action_add_repo_message">Adăugați repozitorii adiționale pentru Mihon. Acestea ar trebuii să fie URL-uri care se încheie cu \"index.min.json\".</string>
+    <string name="action_add_repo_message">Adăugați repozitorii adiționale pentru Komikku. Acestea ar trebuii să fie URL-uri care se încheie cu \"index.min.json\".</string>
     <string name="delete_repo_confirmation">Doriți să ștergeți repozitoriul \"%s\"?</string>
     <string name="action_open_repo">Repozitoriu open source</string>
     <string name="no_location_set">Nici o locație pentru stocare nu a fost setată</string>

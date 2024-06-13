@@ -794,7 +794,7 @@
     <string name="pref_library_update_smart_update">Aggiornamento intelligente</string>
     <string name="ext_revoke_trust">Revoca le estensioni sconosciute affidabili</string>
     <string name="information_empty_repos">Non hai repository impostate.</string>
-    <string name="action_add_repo_message">Aggiungi altri repository a Mihon. Questo dovrebbe essere un URL che termina con \"index.min.json\".</string>
+    <string name="action_add_repo_message">Aggiungi altri repository a Komikku. Questo dovrebbe essere un URL che termina con \"index.min.json\".</string>
     <string name="delete_repo_confirmation">Vuoi eleminare la repository \"%s\"?</string>
     <string name="invalid_backup_file_error">Errore completo:</string>
     <string name="manga_interval_expected_update">Si prevede che i nuovi capitoli saranno rilasciati tra circa %1$s, con controlli ogni %2$s.</string>
