@@ -9,6 +9,6 @@ simularity = "info.debatty:java-string-similarity:2.0.0"
 xlog = "com.elvishew:xlog:1.11.0"
 
 ratingbar = "me.zhanghai.android.materialratingbar:library:1.4.0"
-composeRatingbar = "com.github.a914-gowtham:compose-ratingbar:1.2.3"
+composeRatingbar = "com.github.a914-gowtham:compose-ratingbar:1.3.12"
 
 versionsx = "com.github.ben-manes:gradle-versions-plugin:0.51.0"
