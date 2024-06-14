@@ -30,7 +30,7 @@ jobs:
           echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 0
 
@@ -62,7 +62,7 @@ jobs:
     needs: prepare-build
     steps:
       - name: Clone Repository (${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }})
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 0
 
