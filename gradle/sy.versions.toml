@@ -3,7 +3,7 @@
 [libraries]
 firebase-analytics = "com.google.firebase:firebase-analytics:22.0.1"
 firebase-crashlytics-ktx = "com.google.firebase:firebase-crashlytics:19.0.1"
-firebase-crashlytics-gradle = "com.google.firebase:firebase-crashlytics-gradle:2.9.9"
+firebase-crashlytics-gradle = "com.google.firebase:firebase-crashlytics-gradle:3.0.1"
 
 simularity = "info.debatty:java-string-similarity:2.0.0"
 xlog = "com.elvishew:xlog:1.11.0"
