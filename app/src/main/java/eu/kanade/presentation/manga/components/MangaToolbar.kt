@@ -22,12 +22,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -193,7 +193,7 @@ fun MangaToolbar(
                                 }
                                 // SY <--
                                 // KMK -->
-                                if (BuildConfig.DEBUG) {
+                                if (!isReleaseBuildType) {
                                     add(
                                         AppBar.OverflowAction(
                                             title = "Colors Palette",

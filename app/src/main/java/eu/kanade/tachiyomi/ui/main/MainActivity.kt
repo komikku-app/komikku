@@ -62,6 +62,7 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
@@ -74,12 +75,10 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
-import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
-import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
@@ -527,7 +526,7 @@ class MainActivity : BaseActivity() {
 
     // SY -->
     private fun addAnalytics() {
-        if (!isDevFlavor && (isReleaseBuildType || isPreviewBuildType)) {
+        if (!isDevFlavor && (isPreviewBuildType)) {
             Firebase.analytics.setUserProperty("preview_version", BuildConfig.COMMIT_COUNT)
         }
     }

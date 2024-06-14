@@ -79,7 +79,6 @@ android {
             versionNameSuffix = "-${getCommitCount()}"
             applicationIdSuffix = ".beta"
             signingConfig = signingConfigs.getByName("debug")
-            // signingConfig = signingConfigs.getByName("debug")
         }
         create("benchmark") {
             initWith(getByName("release"))
