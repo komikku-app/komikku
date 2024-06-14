@@ -1,29 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="Latest (r8894)" changeDate="May 17, 2024">
+    <changelogversion versionName="r8998" changeDate="June 14, 2024">
+        <changelogtext>[b]New[/b] New app icon</changelogtext>
+        <changelogtext>[b]New[/b] Support only Android 8+</changelogtext>
+        <changelogtext>[b]New[/b] Add NSFW filter &amp; source search into Merge screen</changelogtext>
+        <changelogtext>[b]Improve[/b] Theme cover based performance</changelogtext>
+        <changelogtext>[b]Improve[/b] Option to not show Related titles by default but using a button to open that screen</changelogtext>
+        <changelogtext>[b]Fix[/b] laggy with scroll</changelogtext>
+        <changelogtext>[b]Fix[/b] chapter's date wrong color randomly</changelogtext>
+        <changelogtext>[b]Fix[/b] Bangumi tracker for Komikku, thanks @jimlee0824</changelogtext>
+        <changelogtext>[b]Fix[/b] chapter number parsing when number is after unwanted tag</changelogtext>
+        <changelogtext>[b]Fix[/b] sources' NSFW filter was being reverted</changelogtext>
+        <changelogtext>[b]Improve[/b] Hide Related titles completely if not found any</changelogtext>
+        <changelogtext>[b]Improve[/b] Translation for Komikku's string</changelogtext>
+        <changelogtext>[b]Improve[/b] Default to put ShowRecommendation in overflow menu</changelogtext>
+        <changelogtext>[b]Improve[/b] Check category order before restoring from backup</changelogtext>
+        <changelogtext>[b]Improve[/b] Remove some legacy folder/file name lookup for download</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r8957" changeDate="June 05, 2024">
+        <changelogtext>[b]New[/b] Theme based on entry's cover</changelogtext>
+        <changelogtext>[b]New[/b] Library &amp; Browse cover's styling: color tint &amp; loading animation</changelogtext>
+        <changelogtext>[b]New[/b] Add Namicomi support for external chapters on MD</changelogtext>
+        <changelogtext>[b]Improved[/b] Warning to private installer</changelogtext>
+        <changelogtext>[b]Fix[/b] Genre tag search while browsing related-titles or from Feed Screen</changelogtext>
+        <changelogtext>[b]Fix[/b] storage permission request for non-conforming devices</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r8931" changeDate="May 30, 2024">
+        <changelogtext>[b]Improved[/b] Won't show Related title row if nothing found</changelogtext>
+        <changelogtext>[b]Improved[/b] Won't sync when click Tracker if Auto-sync is disabled</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r8928" changeDate="May 24, 2024">
+        <changelogtext>[b]New[/b] Auto sync read chapters from Trackers &amp; mark read to update</changelogtext>
+        <changelogtext>[b]Improved[/b] Improve Related Mangas fetching</changelogtext>
+        <changelogtext>[b]New[/b] Komikku's Discord channel</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r8923" changeDate="May 20, 2024">
         <changelogtext>[b]New[/b] A dedicated screen for related entries, fetching directly from sources</changelogtext>
         <changelogtext>[b]Improved[/b] Faster loading of related entries</changelogtext>
         <changelogtext>[b]Improved[/b] Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
-        <changelogtext>Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
+        <changelogtext>[b]Improved[/b]Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
         <changelogtext>[b]Improved[/b] Auto sync read chapters from Trackers &amp; mark read to update</changelogtext>
         <changelogtext>[b]New[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
+        <changelogtext>[b]New[/b] Trust extension by repo</changelogtext>
+        <changelogtext>[b]Improved[/b] Massively improve findFile performance</changelogtext>
         <changelogtext>[b]Update to TachiyomiSY preview-142[/b]</changelogtext>
     </changelogversion>
-    <changelogversion versionName="r8852" changeDate="May 9,2024">
+    <changelogversion versionName="r8853" changeDate="May 10,2024">
         <changelogtext>Beta build switch to 'preview' repo</changelogtext>
     </changelogversion>
-    <changelogversion versionName="1.10.5" changeDate="May 9,2024">
+    <changelogversion versionName="1.10.5 (r8851)" changeDate="May 9,2024">
         <changelogtext>[b]New[/b] Show related mangas for all sources</changelogtext>
         <changelogtext>[b]New[/b] Bulk select multiple entries to favorite/category</changelogtext>
         <changelogtext>[b]New[/b] Search for sources in Browse screen</changelogtext>
         <changelogtext>[b]New[/b] Quick NSFW sources filter in both Extensions/Browse screen</changelogtext>
         <changelogtext>[b]Improved[/b] Feeds screen support all sources</changelogtext>
         <changelogtext>[b]Improved[/b] More Feed's entries</changelogtext>
-        <changelogtext>Built-in official extensions repo</changelogtext>
+        <changelogtext>[b]New[/b] Built-in official extensions repo</changelogtext>
         <changelogtext>[b]Improved[/b] Click manga's source name will jump to source browsing</changelogtext>
         <changelogtext>[b]Improved[/b] Show extensions/sources NSFW &amp; languages tag</changelogtext>
         <changelogtext>[b]Improved[/b] Jump to extensions' settings from Source screen</changelogtext>
-        <changelogtext>Migrate to Komikku's own Tracking clients</changelogtext>
+        <changelogtext>[b]New[/b] Migrate to Komikku's own Tracking clients</changelogtext>
         <changelogtext>[b]New[/b] Configurable interval to refresh entries from downloaded storage</changelogtext>
         <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
         <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
