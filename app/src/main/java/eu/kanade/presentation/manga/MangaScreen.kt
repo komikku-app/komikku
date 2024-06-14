@@ -595,19 +595,19 @@ private fun MangaScreenSmallImpl(
                     // KMK -->
                     if (state.source !is StubSource && relatedMangasEnabled) {
                         if (expandRelatedMangas) {
-                            item { HorizontalDivider() }
-                            item(
-                                key = MangaScreenItem.RELATED_TITLES,
-                                contentType = MangaScreenItem.RELATED_TITLES,
-                            ) {
-                                Column {
-                                    RelatedMangaTitle(
-                                        title = stringResource(KMR.strings.pref_source_related_mangas),
-                                        subtitle = null,
-                                        onClick = onRelatedMangasScreenClick,
-                                        onLongClick = null,
-                                    )
-                                    if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                            if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                                item { HorizontalDivider() }
+                                item(
+                                    key = MangaScreenItem.RELATED_TITLES,
+                                    contentType = MangaScreenItem.RELATED_TITLES,
+                                ) {
+                                    Column {
+                                        RelatedMangaTitle(
+                                            title = stringResource(KMR.strings.pref_source_related_mangas),
+                                            subtitle = null,
+                                            onClick = onRelatedMangasScreenClick,
+                                            onLongClick = null,
+                                        )
                                         RelatedMangas(
                                             relatedMangas = state.relatedMangasSorted,
                                             getMangaState = getMangaState,
@@ -616,8 +616,8 @@ private fun MangaScreenSmallImpl(
                                         )
                                     }
                                 }
+                                item { HorizontalDivider() }
                             }
-                            item { HorizontalDivider() }
                         } else {
                             item(
                                 key = MangaScreenItem.RELATED_TITLES,
@@ -983,19 +983,19 @@ private fun MangaScreenLargeImpl(
                             // KMK -->
                             if (state.source !is StubSource && relatedMangasEnabled) {
                                 if (expandRelatedMangas) {
-                                    item { HorizontalDivider() }
-                                    item(
-                                        key = MangaScreenItem.RELATED_TITLES,
-                                        contentType = MangaScreenItem.RELATED_TITLES,
-                                    ) {
-                                        Column {
-                                            RelatedMangaTitle(
-                                                title = stringResource(KMR.strings.pref_source_related_mangas),
-                                                subtitle = null,
-                                                onClick = onRelatedMangasScreenClick,
-                                                onLongClick = null,
-                                            )
-                                            if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                                    if (state.relatedMangasSorted?.isNotEmpty() != false) {
+                                        item { HorizontalDivider() }
+                                        item(
+                                            key = MangaScreenItem.RELATED_TITLES,
+                                            contentType = MangaScreenItem.RELATED_TITLES,
+                                        ) {
+                                            Column {
+                                                RelatedMangaTitle(
+                                                    title = stringResource(KMR.strings.pref_source_related_mangas),
+                                                    subtitle = null,
+                                                    onClick = onRelatedMangasScreenClick,
+                                                    onLongClick = null,
+                                                )
                                                 RelatedMangas(
                                                     relatedMangas = state.relatedMangasSorted,
                                                     getMangaState = getMangaState,
@@ -1004,8 +1004,8 @@ private fun MangaScreenLargeImpl(
                                                 )
                                             }
                                         }
+                                        item { HorizontalDivider() }
                                     }
-                                    item { HorizontalDivider() }
                                 } else {
                                     item(
                                         key = MangaScreenItem.RELATED_TITLES,
