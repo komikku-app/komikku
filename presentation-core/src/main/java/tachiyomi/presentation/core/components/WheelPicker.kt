@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -147,23 +148,29 @@ private fun <T> WheelPicker(
             }
 
             val scope = rememberCoroutineScope()
+            fun onDone() {
+                scope.launch {
+                    items
+                        .indexOfFirst { it.toString() == value.text }
+                        .takeIf { it >= 0 }
+                        ?.apply {
+                            internalOnSelectionChanged(this)
+                            lazyListState.scrollToItem(this)
+                        }
+
+                    showManualInput = false
+                }
+            }
             BasicTextField(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .showSoftKeyboard(true)
-                    .clearFocusOnSoftKeyboardHide {
-                        scope.launch {
-                            items
-                                .indexOfFirst { it.toString() == value.text }
-                                .takeIf { it >= 0 }
-                                ?.apply {
-                                    internalOnSelectionChanged(this)
-                                    lazyListState.scrollToItem(this)
-                                }
-
-                            showManualInput = false
-                        }
-                    },
+                    // KMK -->
+                    .clearFocusOnSoftKeyboardHide { onDone() },
+                /* clearFocusOnSoftKeyboardHide doesn't work because onSoftKeyboardHide won't trigger
+                    a recomposition => use keyboardActions instead */
+                keyboardActions = KeyboardActions(onDone = { onDone() }),
+                // KMK <--
                 value = value,
                 onValueChange = { value = it },
                 singleLine = true,
