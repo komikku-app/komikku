@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.IconButton
@@ -32,15 +31,12 @@ import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun MangaToolbar(
     title: String,
     titleAlphaProvider: () -> Float,
-    hasFilters: Boolean,
     onBackClicked: () -> Unit,
-    onClickFilter: () -> Unit,
     onClickShare: (() -> Unit)?,
     onClickDownload: ((DownloadAction) -> Unit)?,
     onClickEditCategory: (() -> Unit)?,
@@ -107,7 +103,6 @@ fun MangaToolbar(
                         )
                     }
 
-                    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
                     AppBarActions(
                         actions = persistentListOf<AppBar.AppBarAction>().builder()
                             .apply {
@@ -120,14 +115,6 @@ fun MangaToolbar(
                                         ),
                                     )
                                 }
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.action_filter),
-                                        icon = Icons.Outlined.FilterList,
-                                        iconTint = filterTint,
-                                        onClick = onClickFilter,
-                                    ),
-                                )
                                 add(
                                     AppBar.OverflowAction(
                                         title = stringResource(MR.strings.action_webview_refresh),

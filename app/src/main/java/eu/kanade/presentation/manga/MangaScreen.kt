@@ -430,9 +430,7 @@ private fun MangaScreenSmallImpl(
                 title = state.manga.title,
                 titleAlphaProvider = { animatedTitleAlpha },
                 backgroundAlphaProvider = { animatedBgAlpha },
-                hasFilters = state.filterActive,
                 onBackClicked = internalOnBackPressed,
-                onClickFilter = onFilterClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
                 onClickEditCategory = onEditCategoryClicked,
@@ -671,6 +669,7 @@ private fun MangaScreenSmallImpl(
                             chapterCount = chapters.size,
                             missingChapterCount = missingChapterCount,
                             onClick = onFilterClicked,
+                            hasFilters = state.filterActive,
                         )
                     }
 
@@ -806,9 +805,7 @@ private fun MangaScreenLargeImpl(
                 title = state.manga.title,
                 titleAlphaProvider = { if (isAnySelected) 1f else 0f },
                 backgroundAlphaProvider = { 1f },
-                hasFilters = state.filterActive,
                 onBackClicked = internalOnBackPressed,
-                onClickFilter = onFilterButtonClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
                 onClickEditCategory = onEditCategoryClicked,
@@ -1032,6 +1029,7 @@ private fun MangaScreenLargeImpl(
                                     chapterCount = chapters.size,
                                     missingChapterCount = missingChapterCount,
                                     onClick = onFilterButtonClicked,
+                                    hasFilters = state.filterActive,
                                 )
                             }
 

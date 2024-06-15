@@ -21,6 +21,7 @@ import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun ChapterHeader(
@@ -28,8 +29,10 @@ fun ChapterHeader(
     chapterCount: Int?,
     missingChapterCount: Int,
     onClick: () -> Unit,
+    hasFilters: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else MaterialTheme.colorScheme.primary
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -60,7 +63,7 @@ fun ChapterHeader(
         Icon(
             imageVector = Icons.Outlined.FilterList,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = filterTint,
         )
     }
 }
