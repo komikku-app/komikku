@@ -116,7 +116,7 @@ internal fun Modifier.highlightBackground(highlighted: Boolean): Modifier = comp
         },
         label = "highlight",
     )
-    Modifier.background(color = highlight)
+    this then Modifier.background(color = highlight)
 }
 
 internal val TrailingWidgetBuffer = 16.dp
