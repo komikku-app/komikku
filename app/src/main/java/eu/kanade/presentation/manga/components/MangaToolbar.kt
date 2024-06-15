@@ -26,7 +26,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
-import eu.kanade.tachiyomi.util.system.isReleaseBuildType
+import eu.kanade.tachiyomi.util.system.isDevFlavor
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -182,7 +182,7 @@ fun MangaToolbar(
                                 }
                                 // SY <--
                                 // KMK -->
-                                if (!isReleaseBuildType) {
+                                if (isDevFlavor) {
                                     add(
                                         AppBar.OverflowAction(
                                             title = "Colors Palette",
