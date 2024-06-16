@@ -44,6 +44,7 @@ val Options.customDecoder: Boolean
 
 private val customDecoderKey = Extras.Key(default = false)
 
+// KMK -->
 /**
  * Calculate the best [Palette.Swatch] from [Palette]
  * @author Jays2Kings
@@ -82,3 +83,4 @@ fun Palette.getBestColor(): Int? {
             }
     }?.rgb
 }
+// KMK <--

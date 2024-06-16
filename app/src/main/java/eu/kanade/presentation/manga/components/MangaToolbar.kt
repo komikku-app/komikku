@@ -56,7 +56,9 @@ fun MangaToolbar(
 
     modifier: Modifier = Modifier,
     backgroundAlphaProvider: () -> Float = titleAlphaProvider,
+    // KMK -->
     onPaletteScreenClick: () -> Unit,
+    // KMK <--
 ) {
     Column(
         modifier = modifier,

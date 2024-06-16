@@ -98,7 +98,10 @@ fun SourcesScreen(
 
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
-        state.isEmpty && state.searchQuery.isNullOrBlank() -> EmptyScreen(
+        // KMK -->
+        state.searchQuery.isNullOrBlank() &&
+            // KMK <--
+            state.isEmpty -> EmptyScreen(
             MR.strings.source_empty_screen,
             modifier = Modifier.padding(contentPadding),
         )

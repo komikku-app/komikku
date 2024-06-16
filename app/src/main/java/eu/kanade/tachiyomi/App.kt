@@ -101,8 +101,10 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     @SuppressLint("LaunchActivityFromNotification")
     override fun onCreate() {
         super<Application>.onCreate()
+        // KMK -->
         Firebase.initialize(this)
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        // KMK <--
 
         // SY -->
         if (!isDevFlavor) {
@@ -168,7 +170,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         setAppCompatDelegateThemeMode(Injekt.get<UiPreferences>().themeMode().get())
 
+        // KMK -->
         MangaCoverMetadata.load()
+        // KMK <--
 
         // Updates widget update
         with(WidgetManager(Injekt.get(), Injekt.get())) {

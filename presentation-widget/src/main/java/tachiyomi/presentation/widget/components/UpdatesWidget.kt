@@ -88,7 +88,9 @@ fun UpdatesWidget(
                                     UpdatesMangaCover(
                                         cover = cover,
                                         modifier = GlanceModifier.clickable(actionStartActivity(intent)),
+                                        // KMK -->
                                         color = MangaCover.coverColorMap[mangaId]?.first?.let { Color(it) },
+                                        // KMK <--
                                     )
                                 }
                             }

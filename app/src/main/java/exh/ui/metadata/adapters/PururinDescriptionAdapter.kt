@@ -25,9 +25,11 @@ import kotlin.math.round
 @Composable
 fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    // KMK -->
     val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -44,29 +46,39 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                     it.second
                 } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
             }
+            // KMK -->
             binding.genre.setTextColor(textColor)
+            // KMK <--
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
+            // KMK -->
             binding.uploader.setTextColor(textColor)
+            // KMK <--
 
             binding.size.text = meta.fileSize ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24, iconColor)
             binding.size.setTextColor(textColor)
+            // KMK <--
 
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
+            // KMK -->
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
             binding.pages.setTextColor(textColor)
+            // KMK <--
 
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
+            // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.setTextColor(textColor)
+            // KMK <--
 
             listOf(
                 binding.genre,

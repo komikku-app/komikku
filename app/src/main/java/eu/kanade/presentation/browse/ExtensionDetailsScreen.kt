@@ -70,8 +70,10 @@ fun ExtensionDetailsScreen(
     navigateUp: () -> Unit,
     state: ExtensionDetailsScreenModel.State,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
+    // KMK -->
     onClickWhatsNew: () -> Unit,
     onClickReadme: () -> Unit,
+    // KMK <--
     onClickEnableAll: () -> Unit,
     onClickDisableAll: () -> Unit,
     onClickClearCookies: () -> Unit,

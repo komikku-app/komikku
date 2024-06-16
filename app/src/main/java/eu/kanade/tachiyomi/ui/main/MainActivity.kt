@@ -337,10 +337,12 @@ class MainActivity : BaseActivity() {
         // SY -->
     }
 
+    // KMK -->
     override fun onPause() {
         super.onPause()
         MangaCoverMetadata.savePrefs()
     }
+    // KMK <--
 
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)

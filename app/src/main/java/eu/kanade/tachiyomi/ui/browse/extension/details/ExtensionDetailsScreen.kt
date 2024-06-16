@@ -30,14 +30,18 @@ data class ExtensionDetailsScreen(
         }
 
         val navigator = LocalNavigator.currentOrThrow
+        // KMK -->
         val uriHandler = LocalUriHandler.current
+        // KMK <--
 
         ExtensionDetailsScreen(
             navigateUp = navigator::pop,
             state = state,
             onClickSourcePreferences = { navigator.push(SourcePreferencesScreen(it)) },
+            // KMK -->
             onClickWhatsNew = { uriHandler.openUri(screenModel.getChangelogUrl()) },
             onClickReadme = { uriHandler.openUri(screenModel.getReadmeUrl()) },
+            // KMK <--
             onClickEnableAll = { screenModel.toggleSources(true) },
             onClickDisableAll = { screenModel.toggleSources(false) },
             onClickClearCookies = screenModel::clearCookies,

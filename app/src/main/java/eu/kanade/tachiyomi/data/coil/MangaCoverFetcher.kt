@@ -56,8 +56,11 @@ import java.io.IOException
  */
 @Suppress("LongParameterList")
 class MangaCoverFetcher(
+    // KMK -->
     private val mangaCover: MangaCover,
     private val url: String? = mangaCover.url,
+    // private val url: String?,
+    // KMK <--
     private val isLibraryManga: Boolean,
     private val options: Options,
     private val coverFileLazy: Lazy<File?>,
@@ -68,8 +71,10 @@ class MangaCoverFetcher(
     private val imageLoader: ImageLoader,
 ) : Fetcher {
 
+    // KMK -->
     private val fileScope by lazy { CoroutineScope(Job() + Dispatchers.IO) }
     private val uiPreferences = Injekt.get<UiPreferences>()
+    // KMK <--
 
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
@@ -98,7 +103,9 @@ class MangaCoverFetcher(
     }
 
     private fun fileLoader(file: File): FetchResult {
+        // KMK -->
         setRatioAndColorsInScope(mangaCover, ogFile = file)
+        // KMK <--
         return SourceFetchResult(
             source = ImageSource(
                 file = file.toOkioPath(),
@@ -111,7 +118,9 @@ class MangaCoverFetcher(
     }
 
     private fun fileUriLoader(uri: String): FetchResult {
+        // KMK -->
         setRatioAndColorsInScope(mangaCover)
+        // KMK <--
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
             .source()
@@ -145,7 +154,9 @@ class MangaCoverFetcher(
                 }
 
                 // Read from snapshot
+                // KMK -->
                 setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
+                // KMK <--
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
@@ -166,7 +177,9 @@ class MangaCoverFetcher(
                 // Read from disk cache
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
+                    // KMK -->
                     setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
+                    // KMK <--
                     return SourceFetchResult(
                         source = snapshot.toImageSource(),
                         mimeType = "image/*",
@@ -174,6 +187,7 @@ class MangaCoverFetcher(
                     )
                 }
 
+                // KMK -->
                 setRatioAndColorsInScope(
                     mangaCover,
                     bufferedSource = ImageSource(
@@ -181,6 +195,7 @@ class MangaCoverFetcher(
                         fileSystem = FileSystem.SYSTEM,
                     ).source(),
                 )
+                // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
                     source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
@@ -319,6 +334,7 @@ class MangaCoverFetcher(
         }
     }
 
+    // KMK -->
     /**
      * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
      *
@@ -338,6 +354,7 @@ class MangaCoverFetcher(
             MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
         }
     }
+    // KMK <--
 
     private enum class Type {
         File,
@@ -354,7 +371,10 @@ class MangaCoverFetcher(
 
         override fun create(data: Manga, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
+                // KMK -->
+                // url = data.thumbnailUrl,
                 mangaCover = data.asMangaCover(),
+                // KMK <--
                 isLibraryManga = data.favorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.thumbnailUrl) },
@@ -376,7 +396,10 @@ class MangaCoverFetcher(
 
         override fun create(data: MangaCover, options: Options, imageLoader: ImageLoader): Fetcher {
             return MangaCoverFetcher(
+                // KMK -->
+                // url = data.url,
                 mangaCover = data,
+                // KMK <--
                 isLibraryManga = data.isMangaFavorite,
                 options = options,
                 coverFileLazy = lazy { coverCache.getCoverFile(data.url) },

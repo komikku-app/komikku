@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.util.drawVerticalScrollbar
 
 /**
- * LazyColumn with scrollbar.
+ * LazyColumn with scrollbar (non-controllable).
  */
 @Composable
 fun ScrollbarLazyColumn(

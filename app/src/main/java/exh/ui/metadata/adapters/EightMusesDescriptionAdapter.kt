@@ -20,8 +20,10 @@ import tachiyomi.i18n.MR
 @Composable
 fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    // KMK -->
     val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -33,10 +35,12 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
             val binding = DescriptionAdapter8mBinding.bind(it)
 
             binding.title.text = meta.title ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.title.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.setTextColor(textColor)
+            // KMK <--
 
             binding.title.setOnLongClickListener {
                 context.copyToClipboard(
@@ -45,7 +49,9 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
                 )
                 true
             }
+            // KMK -->
             binding.title.setTextColor(textColor)
+            // KMK <--
 
             binding.moreInfo.setOnClickListener {
                 openMetadataViewer()

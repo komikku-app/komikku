@@ -19,6 +19,7 @@ class SyncChapterProgressWithTrack(
     private val getChaptersByMangaId: GetChaptersByMangaId,
 ) {
     val trackPreferences: TrackPreferences = Injekt.get()
+
     suspend fun await(
         mangaId: Long,
         remoteTrack: Track,
@@ -32,12 +33,15 @@ class SyncChapterProgressWithTrack(
 
         // Current chapters in database
         val dbChapters = getChaptersByMangaId.await(mangaId)
+            // KMK -->
             .reversed()
+            // KMK <--
             .filter { it.isRecognizedNumber }
 
         val sortedChapters = dbChapters
             .sortedBy { it.chapterNumber }
 
+        // KMK -->
         // Chapters to update to follow tracker: only continuous incremental chapters
         // any abnormal chapter number will stop it from updating read status further
         var lastCheckChapter: Double
@@ -49,6 +53,7 @@ class SyncChapterProgressWithTrack(
                 chapter.chapterNumber >= lastCheckChapter && chapter.chapterNumber <= remoteTrack.lastChapterRead
             }
             .filter { chapter -> !chapter.read }
+            // KMK <--
             .map { it.copy(read = true).toChapterUpdate() }
 
         // only take into account continuous reading

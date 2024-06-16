@@ -166,7 +166,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {
                             screenModel.onMangaDexRandom {
+                                // KMK -->
+                                // navigator.replace(
                                 navigator.push(
+                                // KMK <--
                                     BrowseSourceScreen(
                                         sourceId,
                                         "id:$it",
@@ -179,7 +182,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                     openMangaDexFollows = if (screenModel.sourceIsMangaDex) {
                         {
+                            // KMK -->
+                            // navigator.replace(MangaDexFollowsScreen(sourceId))
                             navigator.push(MangaDexFollowsScreen(sourceId))
+                            // KMK <--
                         }
                     } else {
                         null
@@ -221,19 +227,31 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
     }
 
     fun onBrowseClick(navigator: Navigator, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
+        // KMK -->
+        // navigator.replace(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
         navigator.push(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
+        // KMK <--
     }
 
     private fun onLatestClick(navigator: Navigator, source: Source) {
+        // KMK -->
+        // navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
         navigator.push(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_LATEST))
+        // KMK <--
     }
 
     fun onBrowseClick(navigator: Navigator, source: Source) {
+        // KMK -->
+        // navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
         navigator.push(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
+        // KMK <--
     }
 
     private fun onSavedSearchClick(navigator: Navigator, source: Source, savedSearch: SavedSearch) {
+        // KMK -->
+        // navigator.replace(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
         navigator.push(BrowseSourceScreen(source.id, listingQuery = null, savedSearch = savedSearch.id))
+        // KMK <--
     }
 
     private fun onSearchClick(navigator: Navigator, source: Source, query: String) {

@@ -131,8 +131,9 @@ open class FeedScreenModel(
                         source,
                         (
                             // KMK -->
+                            // (if (source.supportsLatest) persistentListOf(null) else persistentListOf()) +
                             persistentListOf(null) +
-                            // KMK <-->
+                                // KMK <-->
                                 getSourceSavedSearches(source.id)
                             ).toImmutableList(),
                     ),
@@ -152,7 +153,7 @@ open class FeedScreenModel(
     }
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchGlobal.await() > MAX_FEED_ITEMS
+        return countFeedSavedSearchGlobal.await() > MaxFeedItems
     }
 
     fun getEnabledSources(): ImmutableList<CatalogueSource> {
@@ -234,10 +235,13 @@ open class FeedScreenModel(
                             withContext(coroutineDispatcher) {
                                 if (itemUI.savedSearch == null) {
                                     // KMK -->
-                                    if (itemUI.source.supportsLatest)
+                                    if (itemUI.source.supportsLatest) {
+                                        // KMK <--
                                         itemUI.source.getLatestUpdates(1)
-                                    else
+                                        // KMK -->
+                                    } else {
                                         itemUI.source.getPopularManga(1)
+                                    }
                                     // KMK <--
                                 } else {
                                     itemUI.source.getSearchManga(
@@ -331,4 +335,4 @@ data class FeedScreenState(
         get() = items?.fastAny { it.results == null } != false
 }
 
-const val MAX_FEED_ITEMS = 20
+const val MaxFeedItems = 20

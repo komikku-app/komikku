@@ -29,11 +29,15 @@ fun ChapterHeader(
     chapterCount: Int?,
     missingChapterCount: Int,
     onClick: () -> Unit,
+    // KMK -->
     hasFilters: Boolean,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
+    // KMK -->
     val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else MaterialTheme.colorScheme.primary
     Row(
+        // KMK <--
         modifier = modifier
             .fillMaxWidth()
             .clickable(
@@ -41,9 +45,11 @@ fun ChapterHeader(
                 onClick = onClick,
             )
             .padding(horizontal = 16.dp, vertical = 4.dp),
+        // KMK -->
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // KMK <--
         Column(
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
         ) {
@@ -60,11 +66,13 @@ fun ChapterHeader(
             MissingChaptersWarning(missingChapterCount)
         }
 
+        // KMK -->
         Icon(
             imageVector = Icons.Outlined.FilterList,
             contentDescription = null,
             tint = filterTint,
         )
+        // KMK <--
     }
 }
 

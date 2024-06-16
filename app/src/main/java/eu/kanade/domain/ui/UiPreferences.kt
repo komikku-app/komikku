@@ -25,9 +25,11 @@ class UiPreferences(
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
+    // KMK -->
     fun themeCoverBased() = preferenceStore.getBoolean("pref_theme_cover_based_key", true)
 
     fun themeCoverBasedStyle() = preferenceStore.getEnum("pref_theme_cover_based_style_key", PaletteStyle.Vibrant)
+    // KMK <--
 
     fun relativeTime() = preferenceStore.getBoolean("relative_time_v2", true)
 
@@ -43,7 +45,9 @@ class UiPreferences(
 
     fun feedTabInFront() = preferenceStore.getBoolean("latest_tab_position", false)
 
+    // KMK -->
     fun expandRelatedTitles() = preferenceStore.getBoolean("expand_related_titles", true)
+    // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", true)
 

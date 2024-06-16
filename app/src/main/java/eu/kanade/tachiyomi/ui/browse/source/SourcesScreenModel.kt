@@ -98,6 +98,7 @@ class SourcesScreenModel(
         // KMK -->
         filters: Pair<String?, Boolean>,
         unfilteredSources: List<Source>,
+        // sources: List<Source>,
         // KMK <--
         categories: List<String>,
         showLatest: Boolean,

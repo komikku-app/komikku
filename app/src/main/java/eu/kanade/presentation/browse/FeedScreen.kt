@@ -210,12 +210,15 @@ fun FeedAddSearchDialog(
             val context = LocalContext.current
             val savedSearchStrings = remember {
                 savedSearches.map {
-                    // KMK -->
-                    it?.name ?: if (source.supportsLatest) {
-                        context.stringResource(MR.strings.latest)
-                    } else {
-                        context.stringResource(MR.strings.popular)
-                    }
+                    it?.name
+                        // KMK -->
+                        ?: if (source.supportsLatest) {
+                            // KMK <--
+                            context.stringResource(MR.strings.latest)
+                            // KMK -->
+                        } else {
+                            context.stringResource(MR.strings.popular)
+                        }
                     // KMK <--
                 }.toImmutableList()
             }
@@ -244,8 +247,8 @@ fun FeedAddSearchDialog(
 @Composable
 fun <T> RadioSelector(
     options: ImmutableList<T>,
-    selected: Int?,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
+    selected: Int?,
     onSelectOption: (Int) -> Unit = {},
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {

@@ -58,7 +58,6 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
-import timber.log.Timber
 
 @Composable
 fun EditMangaDialog(
@@ -78,6 +77,7 @@ fun EditMangaDialog(
     var binding by remember {
         mutableStateOf<EditMangaDialogBinding?>(null)
     }
+    // KMK -->
     val colors = EditMangaDialogColors(
         textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
         textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
@@ -89,6 +89,7 @@ fun EditMangaDialog(
         dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant.toArgb(),
         dialogBgColor = MaterialTheme.colorScheme.surfaceContainerHigh.toArgb(),
     )
+    // KMK <--
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -142,7 +143,9 @@ fun EditMangaDialog(
                                     factoryContext,
                                     this,
                                     scope,
+                                    // KMK -->
                                     colors,
+                                    // KMK <--
                                 )
                             }
                             .root
@@ -154,6 +157,7 @@ fun EditMangaDialog(
     )
 }
 
+// KMK -->
 class EditMangaDialogColors(
     @ColorInt val textColor: Int,
     @ColorInt val textHighlightColor: Int,
@@ -165,17 +169,23 @@ class EditMangaDialogColors(
     @ColorInt val dropdownBgColor: Int,
     @ColorInt val dialogBgColor: Int,
 )
+// KMK <--
 
 private fun onViewCreated(
     manga: Manga,
     context: Context,
     binding: EditMangaDialogBinding,
     scope: CoroutineScope,
+    // KMK -->
     colors: EditMangaDialogColors,
+    // KMK <--
 ) {
     loadCover(manga, binding)
 
+    // KMK -->
+    // val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
     val statusAdapter = SpinnerAdapter(
+        // KMK <--
         context,
         android.R.layout.simple_spinner_dropdown_item,
         listOf(
@@ -187,7 +197,9 @@ private fun onViewCreated(
             MR.strings.cancelled,
             MR.strings.on_hiatus,
         ).map { context.stringResource(it) },
+        // KMK -->
         colors,
+        // KMK <--
     )
 
     binding.status.adapter = statusAdapter
@@ -206,6 +218,7 @@ private fun onViewCreated(
         )
     }
 
+    // KMK -->
     // Set Spinner's selected item's background color to transparent
     binding.status.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
@@ -216,6 +229,7 @@ private fun onViewCreated(
 
     // Set Spinner's dropdown caret color
     binding.status.backgroundTintList = ColorStateList.valueOf(colors.iconColor)
+    // KMK
 
     if (manga.isLocal()) {
         if (manga.title != manga.url) {
@@ -265,6 +279,7 @@ private fun onViewCreated(
     }
     binding.mangaGenresTags.clearFocus()
 
+    // KMK -->
     listOf(
         binding.title,
         binding.mangaAuthor,
@@ -308,6 +323,7 @@ private fun onViewCreated(
     binding.resetTags.setBackgroundColor(colors.btnBgColor)
     binding.resetInfo.setTextColor(colors.btnTextColor)
     binding.resetInfo.setBackgroundColor(colors.btnBgColor)
+    // KMK <--
 
     binding.resetTags.setOnClickListener { resetTags(manga, binding, scope, colors) }
     binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope, colors) }
@@ -317,7 +333,9 @@ private fun resetTags(
     manga: Manga,
     binding: EditMangaDialogBinding,
     scope: CoroutineScope,
+    // KMK -->
     colors: EditMangaDialogColors,
+    // KMK <--
 ) {
     if (manga.genre.isNullOrEmpty() || manga.isLocal()) {
         binding.mangaGenresTags.setChips(emptyList(), scope, colors)
@@ -336,7 +354,9 @@ private fun resetInfo(
     manga: Manga,
     binding: EditMangaDialogBinding,
     scope: CoroutineScope,
+    // KMK -->
     colors: EditMangaDialogColors,
+    // KMK <--
 ) {
     binding.title.setText("")
     binding.mangaAuthor.setText("")
@@ -349,24 +369,35 @@ private fun resetInfo(
 private fun ChipGroup.setChips(
     items: List<String>,
     scope: CoroutineScope,
+    // KMK -->
     colors: EditMangaDialogColors,
+    // KMK <--
 ) {
     removeAllViews()
 
+    // KMK -->
     val colorStateList = ColorStateList.valueOf(colors.tagColor)
+    // KMK <--
 
     items.asSequence().map { item ->
         Chip(context).apply {
             text = item
+            // KMK -->
             setTextColor(colors.tagTextColor)
+            // KMK <--
 
             isCloseIconVisible = true
+            // KMK -->
+            // closeIcon?.setTint(context.getResourceColor(R.attr.colorAccent))
             closeIcon?.setTint(colors.iconColor)
+            // KMK <--
             setOnCloseIconClickListener {
                 removeView(this)
             }
 
+            // KMK -->
             chipBackgroundColor = colorStateList
+            // KMK <--
         }
     }.forEach {
         addView(it)
@@ -374,16 +405,24 @@ private fun ChipGroup.setChips(
 
     val addTagChip = Chip(context).apply {
         text = SYMR.strings.add_tag.getString(context)
+        // KMK -->
         setTextColor(colors.tagTextColor)
+        // KMK <--
 
         chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)?.apply {
             isChipIconVisible = true
+            // KMK -->
+            // setTint(context.getResourceColor(R.attr.colorAccent))
             setTint(colors.iconColor)
+            // KMK <--
         }
 
+        // KMK -->
         chipBackgroundColor = colorStateList
+        // KMK <--
 
         setOnClickListener {
+            // KMK -->
             var dialog: AlertDialog? = null
 
             val builder = MaterialAlertDialogBuilder(context)
@@ -391,8 +430,10 @@ private fun ChipGroup.setChips(
                 .setTitle(SYMR.strings.add_tag.getString(context))
                 .setPositiveButton(MR.strings.action_ok.getString(context)) {
                     dialog?.dismissDialog()
+                    // KMK <--
                     val newTag = it.trimOrNull()
                     if (newTag != null) setChips(items + listOfNotNull(newTag), scope, colors)
+                    // KMK -->
                 }
                 .setNegativeButton(MR.strings.action_cancel.getString(context)) {
                     dialog?.dismissDialog()
@@ -403,6 +444,7 @@ private fun ChipGroup.setChips(
             dialog = builder.create()
             dialog.setView(binding.root)
             dialog.show()
+            // KMK <--
         }
     }
     addView(addTagChip)
@@ -416,6 +458,7 @@ private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
     }
 }.toList()
 
+// KMK -->
 private class SpinnerAdapter(
     context: Context,
     @LayoutRes val resource: Int,
@@ -447,7 +490,6 @@ private class SpinnerAdapter(
             //  If no custom field is assigned, assume the whole resource is a TextView
             text = view as TextView
         } catch (e: ClassCastException) {
-            Timber.e("You must supply a resource ID for a TextView")
             throw IllegalStateException("ArrayAdapter requires the resource ID to be a TextView", e)
         }
 
@@ -460,3 +502,4 @@ private class SpinnerAdapter(
         return view
     }
 }
+// KMK <--

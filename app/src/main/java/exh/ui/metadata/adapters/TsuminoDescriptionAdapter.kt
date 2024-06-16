@@ -26,9 +26,11 @@ import kotlin.math.round
 @Composable
 fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
+    // KMK -->
     val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -43,31 +45,43 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                 binding.genre.setBackgroundColor(it.first)
                 it.second
             } ?: meta.category ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.genre.setTextColor(textColor)
+            // KMK <--
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
+            // KMK -->
             binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
             binding.favorites.setTextColor(textColor)
+            // KMK <--
 
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
+            // KMK -->
             binding.whenPosted.setTextColor(textColor)
+            // KMK <--
 
             binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.uploader.setTextColor(textColor)
+            // KMK <--
 
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            // KMK -->
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
             binding.pages.setTextColor(textColor)
+            // KMK <--
 
             binding.ratingBar.rating = meta.averageRating ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
+            // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.setTextColor(textColor)
+            // KMK <--
 
             listOf(
                 binding.favorites,

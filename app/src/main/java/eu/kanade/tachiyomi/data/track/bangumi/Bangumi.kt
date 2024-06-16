@@ -148,5 +148,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
             .toImmutableList()
     }
 
+    // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
+    // KMK <--
 }

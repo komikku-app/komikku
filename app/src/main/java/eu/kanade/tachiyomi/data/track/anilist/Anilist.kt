@@ -241,5 +241,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         }
     }
 
+    // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
+    // KMK <--
 }

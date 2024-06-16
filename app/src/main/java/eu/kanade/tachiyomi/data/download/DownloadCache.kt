@@ -85,11 +85,11 @@ class DownloadCache(
      * The interval after which this cache should be invalidated. 1 hour shouldn't cause major
      * issues, as the cache is only used for UI feedback.
      */
-    private val renewInterval //= 1.hours.inWholeMilliseconds
+    private val renewInterval // = 1.hours.inWholeMilliseconds
         // KMK -->
         get() = downloadPreferences.downloadCacheRenewInterval().get()
             .hours.inWholeMilliseconds
-        // KMK <--
+    // KMK <--
 
     /**
      * The last time the cache was refreshed.
@@ -330,7 +330,11 @@ class DownloadCache(
         lastRenew = 0L
         renewalJob?.cancel()
         diskCacheFile.delete()
-        renewCache(/* KMK --> */ 0L /* KMK <-- */)
+        renewCache(
+            // KMK -->
+            renewInterval = 0L,
+            // KMK <--
+        )
     }
 
     // KMK -->
@@ -345,9 +349,18 @@ class DownloadCache(
     /**
      * Renews the downloads cache.
      */
-    private fun renewCache(/* KMK --> */ renewInterval: Long = this.renewInterval /* KMK <-- */) {
+    private fun renewCache(
+        // KMK -->
+        renewInterval: Long = this.renewInterval,
+        // KMK <--
+    ) {
         // Avoid renewing cache if in the process nor too often
-        if (/* KMK --> */ renewInterval < 0L || /* KMK <-- */ lastRenew + renewInterval >= System.currentTimeMillis() || renewalJob?.isActive == true) {
+        if (lastRenew + renewInterval >= System.currentTimeMillis() ||
+            // KMK -->
+            renewInterval < 0L ||
+            // KMK <--
+            renewalJob?.isActive == true
+        ) {
             return
         }
 

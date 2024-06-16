@@ -50,11 +50,13 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
             }
         },
         title = { Text(text = stringResource(MR.strings.updated_version, BuildConfig.VERSION_NAME)) },
+        // KMK -->
         dismissButton = {
             TextButton(onClick = { context.openInBrowser(RELEASE_URL) }) {
                 Text(text = stringResource(KMR.strings.changelogs))
             }
         },
+        // KMK <--
         text = {
             Column {
                 val changelog by produceState<List<DisplayChangelog>?>(initialValue = null) {

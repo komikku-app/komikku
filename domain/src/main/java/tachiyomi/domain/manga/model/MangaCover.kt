@@ -25,6 +25,7 @@ data class MangaCover(
     val url: String? = customThumbnailUrl ?: ogUrl
     // SY <--
 
+    // KMK -->
     /**
      * [vibrantCoverColor] is used to set the color theme in manga detail page.
      * It contains color for all mangas, both in library or browsing.
@@ -66,8 +67,6 @@ data class MangaCover(
             coverRatioMap[mangaId] = value
         }
     companion object {
-        private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
-
         /**
          * [vibrantCoverColorMap] store color generated while browsing library.
          * It always empty at beginning each time app starts, then add more color while browsing.
@@ -84,6 +83,11 @@ data class MangaCover(
         var coverColorMap = ConcurrentHashMap<Long, Pair<Int, Int>>()
 
         var coverRatioMap = ConcurrentHashMap<Long, Float>()
+        // KMK <--
+
+        // SY -->
+        private val getCustomMangaInfo: GetCustomMangaInfo by injectLazy()
+        // SY <--
     }
 }
 

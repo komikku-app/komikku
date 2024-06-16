@@ -62,7 +62,9 @@ internal fun LibraryCompactGrid(
                 } else {
                     null
                 },
+                // KMK -->
                 libraryColored = true,
+                // KMK <--
             )
         }
     }

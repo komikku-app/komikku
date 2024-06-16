@@ -64,10 +64,14 @@ object MetadataUIUtil {
     fun TextView.bindDrawable(
         context: Context,
         @DrawableRes drawable: Int,
+        // KMK -->
         @ColorInt color: Int = context.getResourceColor(R.attr.colorAccent),
+        // KMK <--
     ) {
         ContextCompat.getDrawable(context, drawable)?.apply {
+            // KMK -->
             setTint(color)
+            // KMK <--
             setBounds(0, 0, 20.dpToPx, 20.dpToPx)
             setCompoundDrawables(this, null, null, null)
         }

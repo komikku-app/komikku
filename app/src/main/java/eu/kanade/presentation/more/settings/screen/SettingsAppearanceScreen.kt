@@ -47,7 +47,9 @@ object SettingsAppearanceScreen : SearchableSettings {
 
         return listOf(
             getThemeGroup(uiPreferences = uiPreferences),
+            // KMK -->
             getDetailsPageThemeGroup(uiPreferences = uiPreferences),
+            // KMK <--
             getDisplayGroup(uiPreferences = uiPreferences),
             // SY -->
             getNavbarGroup(uiPreferences = uiPreferences),
@@ -106,6 +108,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         )
     }
 
+    // KMK -->
     @Composable
     private fun getDetailsPageThemeGroup(
         uiPreferences: UiPreferences,
@@ -132,6 +135,7 @@ object SettingsAppearanceScreen : SearchableSettings {
             ),
         )
     }
+    // KMK <--
 
     @Composable
     private fun getDisplayGroup(
@@ -192,7 +196,9 @@ object SettingsAppearanceScreen : SearchableSettings {
     @Composable
     fun getForkGroup(uiPreferences: UiPreferences): Preference.PreferenceGroup {
         val previewsRowCount by uiPreferences.previewsRowCount().collectAsState()
+        // KMK -->
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
+        // KMK <--
 
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_category_fork),
@@ -201,12 +207,14 @@ object SettingsAppearanceScreen : SearchableSettings {
                     pref = uiPreferences.expandFilters(),
                     title = stringResource(SYMR.strings.toggle_expand_search_filters),
                 ),
+                // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.expandRelatedTitles(),
                     title = stringResource(KMR.strings.pref_expand_related_titles),
                     subtitle = stringResource(KMR.strings.pref_expand_related_titles_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
                 ),
+                // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.recommendsInOverflow(),
                     title = stringResource(SYMR.strings.put_recommends_in_overflow),

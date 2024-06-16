@@ -49,15 +49,19 @@ fun HistoryItem(
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // KMK -->
         val mangaCover = history.coverData
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
+        // KMK <--
         MangaCover.Book(
             modifier = Modifier.fillMaxHeight(),
             data = mangaCover,
             onClick = onClickCover,
+            // KMK -->
             bgColor = bgColor,
             tint = onBgColor,
+            // KMK <--
         )
         Column(
             modifier = Modifier

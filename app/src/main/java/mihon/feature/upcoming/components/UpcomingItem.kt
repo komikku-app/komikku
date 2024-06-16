@@ -39,9 +39,11 @@ fun UpcomingItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.large),
     ) {
+        // KMK -->
         val mangaCover = upcoming.asMangaCover()
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
+        // KMK <--
         MangaCover.Book(
             modifier = Modifier.fillMaxHeight(),
             data = mangaCover,

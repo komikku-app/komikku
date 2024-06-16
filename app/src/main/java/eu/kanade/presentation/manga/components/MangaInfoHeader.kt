@@ -132,12 +132,17 @@ fun MangaInfoBox(
                     drawRect(
                         brush = Brush.verticalGradient(
                             colors = backdropGradientColors,
+                            // KMK -->
                             startY = size.height / 2,
+                            // KMKM <--
                         ),
                     )
                 }
+                // KMK -->
                 .background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.4f))
                 .blur(7.dp)
+                // .blur(4.dp)
+                // KMK <--
                 .alpha(0.2f),
         )
 
@@ -234,7 +239,11 @@ fun MangaActionRow(
                 )
             },
             icon = Icons.Default.HourglassEmpty,
-            color = if (isUserIntervalMode || nextUpdateDays?.let { it <= 1 } == true) {
+            color = if (isUserIntervalMode ||
+                // KMK -->
+                nextUpdateDays?.let { it <= 1 } == true
+                // KMK <--
+            ) {
                 MaterialTheme.colorScheme.primary
             } else {
                 defaultActionButtonColor
@@ -255,7 +264,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(MR.strings.action_web_view),
                 icon = Icons.Outlined.Public,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.primary, // KMK: defaultActionButtonColor
                 onClick = onWebViewClicked,
                 onLongClick = onWebViewLongClicked,
             )
@@ -265,7 +274,7 @@ fun MangaActionRow(
             MangaActionButton(
                 title = stringResource(SYMR.strings.merge),
                 icon = Icons.AutoMirrored.Outlined.CallMerge,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.primary, // KMK: defaultActionButtonColor
                 onClick = onMergeClicked,
             )
         }
@@ -286,8 +295,10 @@ fun ExpandableMangaDescription(
     // SY <--
     modifier: Modifier = Modifier,
 ) {
+    // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
     val pureDarkMode = uiPreferences.themeDarkAmoled().get()
+    // KMK <--
     Column(modifier = modifier) {
         val (expanded, onExpanded) = rememberSaveable {
             mutableStateOf(defaultExpandState)
@@ -355,7 +366,9 @@ fun ExpandableMangaDescription(
                                 tagSelected = it
                                 showMenu = true
                             },
+                            // KMK -->
                             pureDarkMode = pureDarkMode,
+                            // KMK <--
                         )
                     } else {
                         // SY <--
@@ -371,7 +384,9 @@ fun ExpandableMangaDescription(
                                         tagSelected = it
                                         showMenu = true
                                     },
+                                    // KMK -->
                                     pureDarkMode = pureDarkMode,
+                                    // KMK <--
                                 )
                             }
                         }
@@ -389,7 +404,9 @@ fun ExpandableMangaDescription(
                                     tagSelected = it
                                     showMenu = true
                                 },
+                                // KMK -->
                                 pureDarkMode = pureDarkMode,
+                                // KMK <--
                             )
                         }
                     }
@@ -427,7 +444,9 @@ private fun MangaAndSourceTitlesLarge(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
+            // KMK -->
             onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
+            // KMK <--
         )
         Spacer(modifier = Modifier.height(16.dp))
         MangaContentInfo(
@@ -477,7 +496,9 @@ private fun MangaAndSourceTitlesSmall(
             data = coverDataProvider(),
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
+            // KMK -->
             onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
+            // KMK <--
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -636,6 +657,7 @@ private fun ColumnScope.MangaContentInfo(
                 text = sourceName,
                 modifier = Modifier.clickableNoIndication {
                     // KMK -->
+                    // doSearch(sourceName, false)
                     onSourceClick()
                     // KMK <--
                 },
@@ -695,7 +717,9 @@ private fun MangaSummary(
                         contentDescription = stringResource(
                             if (expanded) MR.strings.manga_info_collapse else MR.strings.manga_info_expand,
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        // KMK -->
+                        tint = MaterialTheme.colorScheme.primary, // KMK: onBackground
+                        // KMK <--
                         modifier = Modifier.background(Brush.radialGradient(colors = colors.asReversed())),
                     )
                 }

@@ -290,6 +290,9 @@ object LibraryTab : Tab {
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = {
+                        // KMK -->
+                        // screenModel.clearSelection()
+                        // KMK <--
                         navigator.push(CategoryScreen())
                     },
                     onConfirm = { include, exclude ->

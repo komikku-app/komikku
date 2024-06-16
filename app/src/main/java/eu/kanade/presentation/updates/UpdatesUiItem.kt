@@ -169,17 +169,21 @@ private fun UpdatesUiItem(
             .padding(horizontal = MaterialTheme.padding.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // KMK -->
         val mangaCover = update.coverData
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
+        // KMK <--
         MangaCover.Square(
             modifier = Modifier
                 .padding(vertical = 6.dp)
                 .fillMaxHeight(),
             data = mangaCover,
             onClick = onClickCover,
+            // KMK -->
             bgColor = bgColor,
             tint = onBgColor,
+            // KMK <--
         )
 
         Column(

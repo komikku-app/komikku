@@ -42,7 +42,9 @@ import uy.kohesive.injekt.api.get
 class MetadataViewScreen(
     private val mangaId: Long,
     private val sourceId: Long,
+    // KMK -->
     private val seedColor: Color? = null,
+    // KMK <--
 ) : Screen() {
 
     @Composable
@@ -109,6 +111,7 @@ class MetadataViewScreen(
             }
         }
 
+        // KMK -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
         if (uiPreferences.themeCoverBased().get()) {
@@ -123,5 +126,6 @@ class MetadataViewScreen(
         } else {
             content()
         }
+        // KMK <--
     }
 }

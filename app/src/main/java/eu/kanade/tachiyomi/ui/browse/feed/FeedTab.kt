@@ -112,9 +112,9 @@ fun feedTab(
                             listingQuery = if (!source.supportsLatest) {
                                 GetRemoteManga.QUERY_POPULAR
                             } else {
+                                // KMK <--
                                 GetRemoteManga.QUERY_LATEST
                             },
-                            // KMK <--
                         ),
                     )
                 },

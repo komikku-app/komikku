@@ -145,5 +145,7 @@ class Kavita(id: Long) : BaseTracker(id, "Kavita"), EnhancedTracker {
         authentications = oauth
     }
 
+    // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == UNREAD
+    // KMK <--
 }

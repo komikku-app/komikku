@@ -221,7 +221,9 @@ class MangaScreenModel(
 
     val loggedInTrackers by lazy { trackerManager.trackers.filter { it.isLoggedIn } }
 
+    // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
+    // KMK <--
 
     val manga: Manga?
         get() = successState?.manga
@@ -462,7 +464,9 @@ class MangaScreenModel(
             // Fetch info-chapters when needed
             if (screenModelScope.isActive) {
                 val fetchFromSourceTasks = listOf(
+                    // KMK -->
                     async { syncTrackers() },
+                    // KMK <--
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                 )
@@ -477,6 +481,7 @@ class MangaScreenModel(
         }
     }
 
+    // KMK -->
     /**
      * Get the color of the manga cover by loading cover with ImageRequest directly from network.
      */
@@ -530,7 +535,6 @@ class MangaScreenModel(
         )
     }
 
-    // KMK -->
     private suspend fun syncTrackers() {
         if (!trackPreferences.autoSyncReadChapters().get()) return
 
@@ -558,7 +562,9 @@ class MangaScreenModel(
         screenModelScope.launch {
             updateSuccessState { it.copy(isRefreshingData = true) }
             val fetchFromSourceTasks = listOf(
+                // KMK -->
                 async { syncTrackers() },
+                // KMK <--
                 async { fetchMangaFromSource(manualFetch) },
                 async { fetchChaptersFromSource(manualFetch) },
             )
@@ -1103,6 +1109,7 @@ class MangaScreenModel(
             } else {
                 downloadManager.getQueuedDownloadOrNull(chapter.id)
             }
+
             // SY -->
             @Suppress("NAME_SHADOWING")
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
@@ -1769,6 +1776,7 @@ class MangaScreenModel(
         ) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
+
         /* SY -->
         data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
         SY <-- */

@@ -126,6 +126,7 @@ object SettingsTrackingScreen : SearchableSettings {
                 pref = trackPreferences.autoUpdateTrack(),
                 title = stringResource(MR.strings.pref_auto_update_manga_sync),
             ),
+            // KMK -->
             Preference.PreferenceItem.SwitchPreference(
                 pref = trackPreferences.updateTrackMarkedRead(),
                 title = stringResource(KMR.strings.pref_update_tracking_marked_read),
@@ -134,6 +135,7 @@ object SettingsTrackingScreen : SearchableSettings {
                 pref = trackPreferences.autoSyncReadChapters(),
                 title = stringResource(KMR.strings.pref_auto_sync_read_chapters),
             ),
+            // KMK <--
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.services),
                 preferenceItems = persistentListOf(

@@ -136,6 +136,7 @@ class MangaScreen(
         }
 
         val successState = state as MangaScreenModel.State.Success
+        // KMK -->
         val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
@@ -159,6 +160,7 @@ class MangaScreen(
         screenModel: MangaScreenModel,
         successState: MangaScreenModel.State.Success,
     ) {
+        // KMK <--
         val navigator = LocalNavigator.currentOrThrow
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
@@ -254,7 +256,15 @@ class MangaScreen(
             previewsRowCount = successState.previewsRowCount,
             // SY -->
             onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
-            onMetadataViewerClicked = { openMetadataViewer(navigator, successState.manga, successState.seedColor) },
+            onMetadataViewerClicked = {
+                openMetadataViewer(
+                    navigator,
+                    successState.manga,
+                    // KMK -->
+                    successState.seedColor,
+                    // KMK <--
+                )
+            },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = { openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga) },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
@@ -524,21 +534,33 @@ class MangaScreen(
             return
         }
 
+        // KMK -->
         navigator.popUntil { screen ->
             navigator.size < 2 || screen is BrowseSourceScreen ||
                 screen is HomeScreen || screen is SourceFeedScreen
         }
+        // KMK <--
 
         when (val previousController = navigator.lastItem) {
             is HomeScreen -> {
+                // KMK -->
+                // navigator.pop()
+                // KMK <--
                 previousController.search(query)
             }
             is BrowseSourceScreen -> {
+                // KMK -->
+                // navigator.pop()
+                // KMK <--
                 previousController.search(query)
             }
             // SY -->
             is SourceFeedScreen -> {
+                // KMK -->
+                // navigator.pop()
+                // navigator.replace(BrowseSourceScreen(previousController.sourceId, query))
                 navigator.push(BrowseSourceScreen(previousController.sourceId, query))
+                // KMK <--
             }
             // SY <--
         }
@@ -559,10 +581,14 @@ class MangaScreen(
         while (idx >= 0) {
             previousController = navigator.items[idx--]
             if (previousController is BrowseSourceScreen && source is HttpSource) {
+                // KMK -->
+                // navigator.pop()
                 navigator.popUntil { navigator.size == idx + 2 }
+                // KMK <--
                 previousController.searchGenre(genreName)
                 return
             }
+            // KMK -->
             if (previousController is SourceFeedScreen && source is HttpSource) {
                 navigator.popUntil { navigator.size == idx + 2 }
                 navigator.push(BrowseSourceScreen(previousController.sourceId, ""))
@@ -570,6 +596,7 @@ class MangaScreen(
                 previousController.searchGenre(genreName)
                 return
             }
+            // KMK <--
         }
         performSearch(navigator, genreName, global = false)
     }
@@ -599,7 +626,13 @@ class MangaScreen(
         // SY <--
     }
 
-    private fun openMetadataViewer(navigator: Navigator, manga: Manga, seedColor: Color? = null) {
+    private fun openMetadataViewer(
+        navigator: Navigator,
+        manga: Manga,
+        // KMK -->
+        seedColor: Color? = null,
+        // KMK <--
+    ) {
         navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor))
     }
 

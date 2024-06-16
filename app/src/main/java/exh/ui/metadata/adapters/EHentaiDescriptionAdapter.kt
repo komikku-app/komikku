@@ -29,9 +29,11 @@ fun EHentaiDescription(
     search: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    // KMK -->
     val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
+    // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { factoryContext ->
@@ -50,26 +52,38 @@ fun EHentaiDescription(
                     }
                     ?: meta.genre
                     ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.genre.setTextColor(textColor)
+            // KMK <--
 
             binding.visible.text = context.stringResource(SYMR.strings.is_visible, meta.visible ?: context.stringResource(MR.strings.unknown))
+            // KMK -->
             binding.visible.setTextColor(textColor)
+            // KMK <--
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
+            // KMK -->
             binding.favorites.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
             binding.favorites.setTextColor(textColor)
+            // KMK <--
 
             binding.uploader.text = meta.uploader ?: context.stringResource(MR.strings.unknown)
+            // KMK -->
             binding.uploader.setTextColor(textColor)
+            // KMK <--
 
             binding.size.text = MetadataUtil.humanReadableByteCount(meta.size ?: 0, true)
+            // KMK -->
             binding.size.bindDrawable(context, R.drawable.ic_outline_sd_card_24, iconColor)
             binding.size.setTextColor(textColor)
+            // KMK <--
 
             val length = meta.length ?: 0
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, length, length)
+            // KMK -->
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
             binding.pages.setTextColor(textColor)
+            // KMK <--
 
             val language = meta.language ?: context.stringResource(MR.strings.unknown)
             binding.language.text = if (meta.translated == true) {
@@ -77,18 +91,22 @@ fun EHentaiDescription(
             } else {
                 language
             }
+            // KMK -->
             binding.language.setTextColor(textColor)
+            // KMK <--
 
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
             binding.rating.text = (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
+            // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.setTextColor(textColor)
+            // KMK <--
 
             listOf(
                 binding.favorites,

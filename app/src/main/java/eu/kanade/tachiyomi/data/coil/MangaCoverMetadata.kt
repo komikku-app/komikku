@@ -70,6 +70,8 @@ object MangaCoverMetadata {
      *
      * This is only for loading color first time it appears on Library/Browse. Any new colors caused by loading new
      * cover when open a manga detail or change cover will be updated separately on [MangaScreenModel.setPaletteColor].
+     *
+     * @author Jays2Kings, cuong-tran
      */
     fun setRatioAndColors(
         mangaCover: MangaCover,

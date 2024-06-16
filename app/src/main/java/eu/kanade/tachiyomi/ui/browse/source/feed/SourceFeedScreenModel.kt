@@ -17,7 +17,7 @@ import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
-import eu.kanade.tachiyomi.ui.browse.feed.MAX_FEED_ITEMS
+import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
 import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
@@ -109,7 +109,7 @@ open class SourceFeedScreenModel(
     }
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchBySourceId.await(source.id) > MAX_FEED_ITEMS
+        return countFeedSavedSearchBySourceId.await(source.id) > MaxFeedItems
     }
 
     fun createFeed(savedSearchId: Long) {

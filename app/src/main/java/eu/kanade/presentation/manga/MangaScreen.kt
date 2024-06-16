@@ -445,7 +445,9 @@ private fun MangaScreenSmallImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                // KMK -->
                 onPaletteScreenClick = onPaletteScreenClick,
+                // KMK <--
             )
         },
         bottomBar = {
@@ -669,7 +671,9 @@ private fun MangaScreenSmallImpl(
                             chapterCount = chapters.size,
                             missingChapterCount = missingChapterCount,
                             onClick = onFilterClicked,
+                            // KMK -->
                             hasFilters = state.filterActive,
+                            // KMK <--
                         )
                     }
 
@@ -820,7 +824,9 @@ private fun MangaScreenLargeImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                // KMK -->
                 onPaletteScreenClick = onPaletteScreenClick,
+                // KMK <--
             )
         },
         bottomBar = {
@@ -1029,7 +1035,9 @@ private fun MangaScreenLargeImpl(
                                     chapterCount = chapters.size,
                                     missingChapterCount = missingChapterCount,
                                     onClick = onFilterButtonClicked,
+                                    // KMK -->
                                     hasFilters = state.filterActive,
+                                    // KMK <--
                                 )
                             }
 

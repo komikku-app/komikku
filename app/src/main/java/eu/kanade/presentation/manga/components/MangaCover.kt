@@ -41,11 +41,14 @@ enum class MangaCover(val ratio: Float) {
         contentDescription: String = "",
         shape: Shape = MaterialTheme.shapes.extraSmall,
         onClick: (() -> Unit)? = null,
+        // KMK -->
         alpha: Float = 1f,
         bgColor: Color? = null,
         @ColorInt tint: Int? = null,
         onCoverLoaded: ((DomainMangaCover) -> Unit)? = null,
+        // KMK <--
     ) {
+        // KMK -->
         val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
         var atEnd by remember { mutableStateOf(false) }
 
@@ -61,9 +64,12 @@ enum class MangaCover(val ratio: Float) {
         }
 
         var succeed by remember { mutableStateOf(false) }
+        // KMK <--
 
         AsyncImage(
             model = data,
+            // KMK -->
+            // placeholder = ColorPainter(CoverPlaceholderColor),
             placeholder = rememberAnimatedVectorPainter(animatedImageVector = animatedImageVector, atEnd = atEnd),
             error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
             fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
@@ -76,12 +82,15 @@ enum class MangaCover(val ratio: Float) {
                     }
                 }
             },
+            // KMK <--
             contentDescription = contentDescription,
             modifier = modifier
                 .aspectRatio(ratio)
                 .clip(shape)
+                // KMK -->
                 .alpha(if (succeed) alpha else 1f)
                 .background(bgColor ?: Color.Transparent)
+                // KMK <--
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(

@@ -80,5 +80,7 @@ interface Tracker {
 
     suspend fun setRemoteFinishDate(track: Track, epochMillis: Long)
 
+    // KMK -->
     fun hasNotStartedReading(status: Long): Boolean
+    // KMK <--
 }

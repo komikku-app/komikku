@@ -99,11 +99,10 @@ internal fun BrowseSourceCompactGridItem(
             ogUrl = manga.thumbnailUrl,
             lastModified = manga.coverLastModified,
         ),
+        // KMK -->
         isSelected = isSelected,
-        coverAlpha = when {
-            manga.favorite -> CommonMangaItemDefaults.BrowseFavoriteCoverAlpha
-            else -> 1f
-        },
+        // KMK <--
+        coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         coverBadgeStart = {
             InLibraryBadge(enabled = manga.favorite)
         },

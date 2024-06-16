@@ -71,10 +71,14 @@ fun MangaCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    // KMK -->
     libraryColored: Boolean? = null,
+    // KMK <--
 ) {
+    // KMK -->
     val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
     val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
         onClick = onClick,
@@ -84,11 +88,16 @@ fun MangaCompactGridItem(
             cover = {
                 MangaCover.Book(
                     modifier = Modifier
+                        // KMK -->
+                        // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                        // KMK <--
                         .fillMaxWidth(),
-                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                     data = coverData,
+                    // KMK -->
+                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                     bgColor = bgColor,
                     tint = onBgColor,
+                    // KMK <--
                 )
             },
             badgesStart = coverBadgeStart,
@@ -178,10 +187,14 @@ fun MangaComfortableGridItem(
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
     onClickContinueReading: (() -> Unit)? = null,
+    // KMK -->
     libraryColored: Boolean? = null,
+    // KMK <--
 ) {
+    // KMK -->
     val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
     val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
         onClick = onClick,
@@ -192,11 +205,16 @@ fun MangaComfortableGridItem(
                 cover = {
                     MangaCover.Book(
                         modifier = Modifier
+                            // KMK -->
+                            // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                            // KMK <--
                             .fillMaxWidth(),
-                        alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                         data = coverData,
+                        // KMK -->
+                        alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
                         bgColor = bgColor,
                         tint = onBgColor,
+                        // KMK <--
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -334,10 +352,14 @@ fun MangaListItem(
     isSelected: Boolean = false,
     coverAlpha: Float = 1f,
     onClickContinueReading: (() -> Unit)? = null,
+    // KMK -->
     libraryColored: Boolean? = null,
+    // KMK <--
 ) {
+    // KMK -->
     val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
     val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    // KMK <--
     Row(
         modifier = Modifier
             .selectedBackground(isSelected)
@@ -351,11 +373,16 @@ fun MangaListItem(
     ) {
         MangaCover.Square(
             modifier = Modifier
+                // KMK -->
+                // .alpha(coverAlpha)
+                // KMK <--
                 .fillMaxHeight(),
-            alpha = coverAlpha,
             data = coverData,
+            // KMK -->
+            alpha = coverAlpha,
             bgColor = bgColor,
             tint = onBgColor,
+            // KMK <--
         )
         Text(
             text = title,

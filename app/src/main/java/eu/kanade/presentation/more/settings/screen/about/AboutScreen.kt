@@ -329,6 +329,7 @@ object AboutScreen : Screen() {
         }
     }
 
+    // KMK -->
     private suspend fun getReleaseNotes(
         context: Context,
         onAvailableUpdate: (GetApplicationRelease.Result.NewUpdate) -> Unit,
@@ -351,6 +352,7 @@ object AboutScreen : Screen() {
             }
         }
     }
+    // KMK <--
 
     fun getVersionName(withBuildDate: Boolean): String {
         return when {

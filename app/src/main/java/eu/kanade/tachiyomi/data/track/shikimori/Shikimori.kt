@@ -152,5 +152,7 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
         interceptor.newAuth(null)
     }
 
+    // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == PLAN_TO_READ
+    // KMK <--
 }
