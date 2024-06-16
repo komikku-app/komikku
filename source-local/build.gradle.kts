@@ -10,9 +10,6 @@ kotlin {
             dependencies {
                 implementation(projects.sourceApi)
                 api(projects.i18n)
-                // KMK -->
-                api(projects.i18nKmk)
-                // KMK <--
                 // SY -->
                 api(projects.i18nSy)
                 // SY <--
