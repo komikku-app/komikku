@@ -58,8 +58,9 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-@Suppress("JavaIoSerializableObjectMustHaveReadResolve")
 object AboutScreen : Screen() {
+    @Suppress("unused")
+    private fun readResolve(): Any = AboutScreen
 
     @Composable
     override fun Content() {

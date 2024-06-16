@@ -38,6 +38,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object UpdatesTab : Tab {
+    @Suppress("unused")
+    private fun readResolve(): Any = UpdatesTab
 
     override val options: TabOptions
         @Composable

@@ -65,6 +65,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object HomeScreen : Screen() {
+    @Suppress("unused")
+    private fun readResolve(): Any = HomeScreen
 
     private val librarySearchEvent = Channel<String>()
     private val openTabEvent = Channel<Tab>()
@@ -148,6 +150,7 @@ object HomeScreen : Screen() {
                                     materialFadeThroughOut(durationMillis = TabFadeDuration)
                             },
                             label = "tabContent",
+                            contentKey = { it.key }
                         ) {
                             tabNavigator.saveableState(key = "currentTab", it) {
                                 it.Content()
@@ -194,8 +197,10 @@ object HomeScreen : Screen() {
 
     @Composable
     private fun RowScope.NavigationBarItem(
-        tab: eu.kanade.presentation.util.Tab/* SY --> */,
-        alwaysShowLabel: Boolean, /* SY <-- */
+        tab: eu.kanade.presentation.util.Tab,
+        // SY -->
+        alwaysShowLabel: Boolean,
+        // SY <--
     ) {
         val tabNavigator = LocalTabNavigator.current
         val navigator = LocalNavigator.currentOrThrow
@@ -224,7 +229,12 @@ object HomeScreen : Screen() {
     }
 
     @Composable
-    fun NavigationRailItem(tab: eu.kanade.presentation.util.Tab/* SY --> */, alwaysShowLabel: Boolean/* SY <-- */) {
+    fun NavigationRailItem(
+        tab: eu.kanade.presentation.util.Tab,
+        // SY -->
+        alwaysShowLabel: Boolean,
+        // SY <--
+    ) {
         val tabNavigator = LocalTabNavigator.current
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()

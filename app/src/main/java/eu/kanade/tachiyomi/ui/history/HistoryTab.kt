@@ -39,6 +39,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object HistoryTab : Tab {
+    @Suppress("unused")
+    private fun readResolve(): Any = HistoryTab
 
     private val snackbarHostState = SnackbarHostState()
 

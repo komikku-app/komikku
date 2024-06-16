@@ -76,6 +76,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object LibraryTab : Tab {
+    @Suppress("unused")
+    private fun readResolve(): Any = LibraryTab
 
     override val options: TabOptions
         @Composable
