@@ -158,7 +158,7 @@ fun EditMangaDialog(
 }
 
 // KMK -->
-class EditMangaDialogColors(
+data class EditMangaDialogColors(
     @ColorInt val textColor: Int,
     @ColorInt val textHighlightColor: Int,
     @ColorInt val iconColor: Int,
@@ -358,11 +358,11 @@ private fun resetInfo(
     colors: EditMangaDialogColors,
     // KMK <--
 ) {
-    binding.title.setText("")
-    binding.mangaAuthor.setText("")
-    binding.mangaArtist.setText("")
-    binding.thumbnailUrl.setText("")
-    binding.mangaDescription.setText("")
+    binding.title.text?.clear()
+    binding.mangaAuthor.text?.clear()
+    binding.mangaArtist.text?.clear()
+    binding.thumbnailUrl.text?.clear()
+    binding.mangaDescription.text?.clear()
     resetTags(manga, binding, scope, colors)
 }
 
