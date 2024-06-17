@@ -3,6 +3,6 @@
     <item
         android:width="72dp"
         android:height="72dp"
-        android:drawable="@drawable/ic_komikku_dark"
+        android:drawable="@drawable/ic_komikku"
         android:gravity="center" />
 </layer-list>
