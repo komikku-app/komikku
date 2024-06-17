@@ -4,6 +4,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.newSingleThreadContext
@@ -43,6 +44,7 @@ class MigratorTest {
 
         execute.await()
 
+        @Suppress("DeferredResultUnused")
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(1, migrations.captured.size)
         verify { migrationCompletedListener() }
@@ -58,6 +60,7 @@ class MigratorTest {
         val result = execute.await()
         assertFalse(result)
 
+        @Suppress("DeferredResultUnused")
         verify(exactly = 0) { migrationJobFactory.create(any()) }
     }
 
@@ -71,6 +74,7 @@ class MigratorTest {
         val result = execute.await()
         assertFalse(result)
 
+        @Suppress("DeferredResultUnused")
         verify(exactly = 0) { migrationJobFactory.create(any()) }
     }
 
@@ -84,6 +88,7 @@ class MigratorTest {
 
         execute.await()
 
+        @Suppress("DeferredResultUnused")
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(2, migrations.captured.size)
         verify { migrationCompletedListener() }
@@ -112,6 +117,7 @@ class MigratorTest {
 
         execute.await()
 
+        @Suppress("DeferredResultUnused")
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(10, migrations.captured.size)
         verify { migrationCompletedListener() }
@@ -133,6 +139,7 @@ class MigratorTest {
 
         execute.await()
 
+        @Suppress("DeferredResultUnused")
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(2, migrations.captured.size)
         verify { migrationCompletedListener() }
@@ -140,6 +147,7 @@ class MigratorTest {
 
     companion object {
 
+        @OptIn(DelicateCoroutinesApi::class)
         val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
         @BeforeAll
