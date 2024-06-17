@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
     <string name="action_skip_entry">不要遷移</string>
@@ -66,11 +66,11 @@
     <string name="show_favorite_sync_notes">顯示收藏夾同步注意事項</string>
     <string name="show_favorite_sync_notes_summary">顯示一些關於收藏夾同步功能的注意事項</string>
     <string name="please_login">請登入！</string>
-    <string name="ignore_sync_errors">儘可能忽略同步錯誤</string>
+    <string name="ignore_sync_errors">盡可能忽略同步錯誤</string>
     <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止。當同步完成時，錯誤仍然會顯示。在某些情況下可能會導致收藏夾的遺失。在同步大型資料庫時很有用。</string>
-    <string name="force_sync_state_reset">強制重置同步狀態</string>
+    <string name="force_sync_state_reset">強制重設同步狀態</string>
     <string name="force_sync_state_reset_summary">在下次同步時執行完全的重新同步。刪除的內容將不會被同步。應用程式中所有收藏夾將被重新上傳到 ExHentai，ExHentai 上的所有收藏夾將被重新下載。有助於在同步被中斷後修復同步。</string>
-    <string name="sync_state_reset">同步狀態重置</string>
+    <string name="sync_state_reset">同步狀態重設</string>
     <string name="gallery_update_checker">畫廊更新檢查器</string>
     <string name="auto_update_restrictions">自動更新限制</string>
     <string name="time_between_batches">更新批次之間的間隔時間</string>
@@ -105,7 +105,7 @@
     <string name="recheck_login_status">重新檢查登入狀態</string>
     <string name="alternative_login_page">備用登入頁面</string>
     <string name="skip_page_restyling">跳過頁面重排</string>
-    <string name="custom_igneous_cookie">自定義 igneous cookie</string>
+    <string name="custom_igneous_cookie">自訂 igneous cookie</string>
     <string name="custom_igneous_cookie_message">某些使用者無法正常存取 ExHentai，必須輸入特定的 igneous cookie，此選項為這些使用者設計。</string>
 
     <!-- Advanced Settings -->
@@ -176,7 +176,10 @@
     <string name="pref_mark_read_dupe_chapters_summary">閱讀後將重複章節標記為已讀</string>
     <string name="pref_library_mark_duplicate_chapters">標記新的重複章節為已讀</string>
     <string name="pref_library_mark_duplicate_chapters_summary">自動將讀過的新章節標記為已讀</string>
-
+    <string name="update_30min">每30分鐘</string>
+    <string name="update_1hour">每小時</string>
+    <string name="update_3hour">每3小時</string>
+    
     <!-- Browse settings -->
     <string name="pref_hide_feed">隱藏訂閱標籤</string>
     <string name="pref_feed_position">訂閱標籤位置</string>
@@ -184,14 +187,56 @@
     <string name="pref_source_source_filtering">在目錄中過濾來源</string>
     <string name="pref_source_source_filtering_summery">篩選屬於類別的來源，使屬於某個類別的來源不會被放在語言下</string>
     <string name="pref_source_navigation">替換最新按鈕</string>
-    <string name="pref_source_navigation_summery">用一個包括最新和瀏覽的自定義瀏覽檢視取代最新按鈕</string>
+    <string name="pref_source_navigation_summery">用一個包括最新和瀏覽的自訂瀏覽檢視取代最新按鈕</string>
     <string name="pref_local_source_hidden_folders">本機來源隱藏資料夾</string>
     <string name="pref_local_source_hidden_folders_summery">允許本機源讀取隱藏資料夾</string>
 
     <!-- Backup settings -->
-    <string name="custom_entry_info">自定義作品資訊</string>
+    <string name="custom_entry_info">自訂作品資訊</string>
     <string name="all_read_entries">所有已閱讀的作品</string>
+    <string name="label_sync">同步</string>
+    <string name="label_triggers">觸發條件</string>
 
+    <!-- Sync settings -->
+    <string name="sync_error">書櫃同步失敗</string>
+    <string name="sync_complete">書櫃同步完成</string>
+    <string name="sync_in_progress">同步已在進行中</string>
+    <string name="pref_sync_host">主機</string>
+    <string name="pref_sync_host_summ">輸入用於同步書櫃的主機地址</string>
+    <string name="pref_sync_api_key">API 金鑰</string>
+    <string name="pref_sync_api_key_summ">輸入 API 金以同步書櫃</string>
+    <string name="pref_sync_now_group_title">同步動作</string>
+    <string name="pref_sync_now">立即同步</string>
+    <string name="pref_sync_now_subtitle">立即同步您的資料</string>
+    <string name="pref_sync_service">服務</string>
+    <string name="pref_sync_service_category">同步</string>
+    <string name="pref_sync_automatic_category">自動同步</string>
+    <string name="pref_sync_interval">同步頻率</string>
+    <string name="pref_choose_what_to_sync">選擇要同步的內容</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="last_synchronization">上次同步時間：%1$s</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="pref_google_drive_sign_in">登入</string>
+    <string name="pref_google_drive_purge_sync_data">從 Google Drive 清除同步資料</string>
+    <string name="google_drive_sync_data_purged">已從 Google Drive 清除同步資料</string>
+    <string name="google_drive_sync_data_not_found">在 Google Drive 中找不到同步資料</string>
+    <string name="google_drive_sync_data_purge_error">清除 Google Drive 同步資料時出錯，請再次嘗試登入。</string>
+    <string name="google_drive_login_success">成功登入 Google Drive</string>
+    <string name="google_drive_login_failed">無法登入 Google Drive：%s</string>
+    <string name="google_drive_not_signed_in">未登入 Google Drive</string>
+    <string name="error_uploading_sync_data">上傳同步數據至 Google Drive 時出錯</string>
+    <string name="error_deleting_google_drive_lock_file">刪除 Google Drive 鎖定文件時出錯</string>
+    <string name="error_before_sync_gdrive">同步前出錯：%s</string>
+    <string name="pref_purge_confirmation_title">清除確認</string>
+    <string name="pref_purge_confirmation_message">清除同步資料將從 Google Drive 中刪除所有同步資料。您確定要繼續嗎？</string>
+    <string name="pref_sync_options">創建同步觸發條件</string>
+    <string name="pref_sync_options_summ">可用於設置同步觸發條件</string>
+    <string name="sync_on_chapter_read">閱讀章節時同步</string>
+    <string name="sync_on_chapter_open">打開章節時同步</string>
+    <string name="sync_on_app_start">啟動應用時同步</string>
+    <string name="sync_on_app_resume">重返應用時同步</string>
+    <string name="sync_library">同步書櫃</string>
+    
     <!-- Security settings -->
     <string name="biometric_lock_times">生物識別鎖定時間表</string>
     <string name="action_edit_biometric_lock_times">編輯鎖定時間表</string>
@@ -244,7 +289,7 @@
     <string name="reader_preload_amount_20_pages">20 頁</string>
     <string name="reader_preload_amount_summary">要預載入的的頁面數量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的快取使用量，建議在使用更大的值時增加你分配的快取量。</string>
     <string name="reader_cache_size">閱讀器快取大小</string>
-    <string name="reader_cache_size_summary">閱讀時儲存在裝置上的圖片量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的存儲空間使用率。</string>
+    <string name="reader_cache_size_summary">閱讀時儲存在裝置上的圖片量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的儲存空間使用率。</string>
     <string name="preserve_reading_position">保留已閱讀作品的閱讀位置</string>
     <string name="auto_webtoon_mode">自動 Webtoon 模式</string>
     <string name="auto_webtoon_mode_summary">檢測到可能為長條形格式的作品時自動使用 Webtoon 模式</string>
@@ -252,7 +297,7 @@
     <string name="tap_scroll_page">點按按頁滾動</string>
     <string name="tap_scroll_page_summary">啟用此選項後，點擊將按頁面而不是螢幕大小滾動</string>
     <string name="reader_bottom_buttons">閱讀器底部按鈕</string>
-    <string name="reader_bottom_buttons_summary">自定義顯示在閱讀器底部的按鈕</string>
+    <string name="reader_bottom_buttons_summary">自訂顯示在閱讀器底部的按鈕</string>
     <string name="pref_show_vert_seekbar_landscape">橫向畫面時顯示垂直進度條</string>
     <string name="pref_show_vert_seekbar_landscape_summary">在橫向畫面時啟用垂直進度條</string>
     <string name="pref_left_handed_vertical_seekbar">將垂直進度條放在左側</string>
@@ -316,11 +361,11 @@
     <string name="pref_center_margin_summary">插入空白以適應可摺疊裝置的螢幕死角。</string>
 
     <!-- Archive reader mode -->
-    <string name="archive_mode_load_from_file">從文件加載</string>
-    <string name="archive_mode_load_into_memory">加載到記憶體中</string>
+    <string name="archive_mode_load_from_file">從文件載入</string>
+    <string name="archive_mode_load_into_memory">載入到記憶體中</string>
     <string name="archive_mode_cache_to_disk">複製到磁碟</string>
     <string name="pref_archive_reader_mode">檔案讀取模式</string>
-    <string name="pref_archive_reader_mode_summary">加載壓縮文件（如CBZ或CBR）中圖像的方式</string>
+    <string name="pref_archive_reader_mode_summary">載入壓縮文件（如CBZ或CBR）中圖像的方式</string>
 
     <!-- Entry Page -->
     <!-- Entry Info -->
@@ -334,8 +379,9 @@
     <string name="merge_duplicate">此已合併的作品重複了！</string>
 
     <!-- Entry Info Edit -->
-    <string name="reset_tags">重置標籤</string>
+    <string name="reset_tags">重設標籤</string>
     <string name="add_tag">新增標籤</string>
+    <string name="reset_info">重設資訊</string>
     <string name="title_hint">標題：%1$s</string>
     <string name="description_hint">描述：%1$s</string>
     <string name="author_hint">作者：%1$s</string>
@@ -394,7 +440,7 @@
     <string name="migration">遷移</string>
     <string name="skip_pre_migration">跳過預遷移</string>
     <string name="pre_migration_skip_toast">要重新顯示此頁面，請到設定 -> 書櫃。</string>
-    <string name="use_intelligent_search">搜尋標題 +標題關鍵詞</string>
+    <string name="use_intelligent_search">搜尋標題 +標題關鍵字</string>
     <string name="data_to_include_in_migration">遷移中包含的資料</string>
     <string name="include_extra_search_parameter">搜尋時包含額外的搜尋參數</string>
     <string name="use_most_chapters">使用具有最多章節的來源（較慢）。</string>
@@ -463,13 +509,13 @@
     <string name="favorites_sync_notes">重要的收藏夾同步注意事項</string>
     <string name="favorites_sync_notes_message"><![CDATA[1. 在應用程式中變更分類名稱是<b>不</b>同步的！請<i>在 ExHentai 上變更名稱</i>。分類名稱會在每次同步時從 ExHentai 伺服器上複製<br><br>2. <b>應用程式中前10個類別與</b> ExHentai 上的最愛類別相對應（除了 \'預設\' 類別）。<i>在其他類別的畫廊將<b>不會</b>被同步！</i><br><br>3. <font color=\'red\'><b>在同步過程中請確保有穩定的網路連線！</b></font>如果在同步過程中網路連線中斷，你的收藏夾可能會停留在<i>部分同步狀態</i>。<br><br>4. 當在同步時應保持應用程式開啟。Android 有時會關閉背景應用程式，如果正在同步這會很糟糕。<br><br>5. <b>不要將收藏夾放到多個類別</b>（本應用程式支援這樣做）。 這可能會導致同步演算法混亂，因為 ExHentai 只允許每個收藏夾在一個類別中。<br><br>此對話框僅會彈出一次。你可以到 \'設定 > E-Hentai > 顯示收藏夾同步注意事項\' 閱讀多次。]]></string>
     <string name="favorites_sync_reset">你確定嗎？</string>
-    <string name="favorites_sync_reset_message">重置同步狀態會導致下一次同步變得非常慢。</string>
+    <string name="favorites_sync_reset_message">重設同步狀態會導致下一次同步變得非常慢。</string>
     <string name="favorites_sync_conformation_message">你確定要與 E-Hentai 同步收藏嗎？</string>
 
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">批次匯入</string>
-    <string name="eh_batch_add_description">示例：\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\n它還支援 E-H 存取過的匯出資料\n</string>
+    <string name="eh_batch_add_description">範例：\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\n它還支援 E-H 存取過的匯出資料\n</string>
     <string name="eh_batch_add_title">輸入要新增的畫廊（每行一個）：</string>
     <string name="eh_batch_add_button">新增畫廊</string>
     <string name="eh_batch_add_adding_galleries">新增畫廊中……</string>
@@ -637,4 +683,3 @@
     <!-- Humanize time -->
     <string name="humanize_fallback">不久前</string>
 </resources>
-
