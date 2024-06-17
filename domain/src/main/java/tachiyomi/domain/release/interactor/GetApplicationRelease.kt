@@ -37,16 +37,8 @@ class GetApplicationRelease(
                     it.version
                 )
             }
-        val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
 
-        val release = releases.firstOrNull()
-            ?.copy(
-                info = releases.joinToString("\r---\r") {
-                    "## ${it.version}\r\r" +
-                        it.info.replace(checksumRegex, "")
-                }
-            )
-        if (release == null) return Result.NoNewUpdate
+        val latest = releases.getLatest() ?: return Result.NoNewUpdate
         // KMK <--
 
         lastChecked.set(now.toEpochMilli())
@@ -56,11 +48,11 @@ class GetApplicationRelease(
             isPreview = arguments.isPreview,
             commitCount = arguments.commitCount,
             versionName = arguments.versionName,
-            versionTag = release.version,
+            versionTag = latest.version,
         )
         return when {
             isNewVersion && arguments.isThirdParty -> Result.ThirdPartyInstallation
-            isNewVersion -> Result.NewUpdate(release)
+            isNewVersion -> Result.NewUpdate(latest)
             else -> Result.NoNewUpdate
         }
     }
@@ -153,4 +145,16 @@ class GetApplicationRelease(
         data object OsTooOld : Result
         data object ThirdPartyInstallation : Result
     }
+}
+
+internal fun List<Release>.getLatest(): Release? {
+    val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
+
+    return firstOrNull()
+        ?.copy(
+            info = joinToString("\r---\r") {
+                "## ${it.version}\r\r" +
+                    it.info.replace(checksumRegex, "")
+            }
+        )
 }

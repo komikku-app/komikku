@@ -35,12 +35,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        coEvery { releaseService.latest(any()) } returns Release(
-            "v2.0.0",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "v2.0.0",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
+
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -60,14 +64,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "r2000",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "r2000",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -80,7 +86,7 @@ class GetApplicationReleaseTest {
         )
 
         // KMK: Don't cast, will throw exception if the result is different from expected
-        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+        result shouldBe GetApplicationRelease.Result.NewUpdate(releases.getLatest()!!)
     }
 
     @Test
@@ -88,14 +94,17 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "v2.0.0",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
-        )
+        val releases =
+            listOf(
+                Release(
+                    "v2.0.0",
+                    "info",
+                    "http://example.com/release_link",
+                    listOf("http://example.com/assets"),
+                )
+            )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -108,7 +117,7 @@ class GetApplicationReleaseTest {
         )
 
         // KMK: Don't cast, will throw exception if the result is different from expected
-        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+        result shouldBe GetApplicationRelease.Result.NewUpdate(releases.getLatest()!!)
     }
 
     @Test
@@ -116,14 +125,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "v1.0.0",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "v1.0.0",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -143,14 +154,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns Instant.now().toEpochMilli()
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "v2.0.0",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "v2.0.0",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -163,6 +176,7 @@ class GetApplicationReleaseTest {
         )
 
         coVerify(exactly = 0) { releaseService.latest(any()) }
+        coVerify(exactly = 0) { releaseService.releaseNotes(any()) }
         result shouldBe GetApplicationRelease.Result.NoNewUpdate
     }
 
@@ -173,14 +187,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "r1234",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "r1234",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -192,7 +208,7 @@ class GetApplicationReleaseTest {
             ),
         )
 
-        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+        result shouldBe GetApplicationRelease.Result.NewUpdate(releases.getLatest()!!)
     }
 
     @Test
@@ -200,14 +216,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "r1234",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "r1234",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -227,14 +245,16 @@ class GetApplicationReleaseTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
 
-        val release = Release(
-            "v2.0.0",
-            "info",
-            "http://example.com/release_link",
-            listOf("http://example.com/assets"),
+        val releases = listOf(
+            Release(
+                "v2.0.0",
+                "info",
+                "http://example.com/release_link",
+                listOf("http://example.com/assets"),
+            )
         )
 
-        coEvery { releaseService.latest(any()) } returns release
+        coEvery { releaseService.releaseNotes(any()) } returns releases
 
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
@@ -246,7 +266,7 @@ class GetApplicationReleaseTest {
             ),
         )
 
-        result shouldBe GetApplicationRelease.Result.NewUpdate(release)
+        result shouldBe GetApplicationRelease.Result.NewUpdate(releases.getLatest()!!)
     }
     // KMK <--
 }
