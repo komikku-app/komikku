@@ -1,16 +1,23 @@
 name: CI
 on:
-#  push:
-#    branches:
-#      - develop
-#    paths-ignore:
-#      - '**.md'
+  push:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - '**.md'
+  # pull_request:
+  #   paths-ignore:
+  #     - '**.md'
   # Dispatch or Manual triggers
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -19,26 +26,54 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@d9336dac04dea2507a617466bc058a3def92b18b # v3
+        uses: gradle/actions/wrapper-validation@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
+
+      - name: Setup Android SDK
+        run: |
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
 
       - name: Set up JDK
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
         with:
           java-version: 17
-          distribution: adopt
+          distribution: temurin
+
+      - name: Write google-services.json
+        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
+        with:
+          path: app/google-services.json
+          contents: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          write-mode: overwrite
+
+      - name: Write client_secrets.json
+        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
+        with:
+          path: app/src/main/assets/client_secrets.json
+          contents: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
+          write-mode: overwrite
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@d9336dac04dea2507a617466bc058a3def92b18b # v3
+        uses: gradle/actions/setup-gradle@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
 
-      - name: Build app
-        run: ./gradlew assembleDevPreview testDevPreviewUnitTest --stacktrace
+      - name: Build app and run unit tests
+        run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
+        with:
+          releaseDirectory: app/build/outputs/apk/standard/preview
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload APK
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: Komikku-${{ github.sha }}.apk
-          path: app/build/outputs/apk/dev/preview/app-dev-universal-preview.apk
+          path: app/build/outputs/apk/standard/preview/app-standard-universal-preview-signed.apk
           retention-days: 1

@@ -1,6 +1,6 @@
 {
   "baseBranches": [
-    "develop"
+    "master"
   ],
   "rebaseWhen": "conflicted",
   "labels": [

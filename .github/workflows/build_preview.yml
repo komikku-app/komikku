@@ -1,4 +1,5 @@
 name: Preview Builder
+# Manually build a standard preview
 
 on:
   # Dispatch or Manual triggers
@@ -37,12 +38,12 @@ jobs:
           echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@d9336dac04dea2507a617466bc058a3def92b18b # v3
+        uses: gradle/actions/wrapper-validation@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
 
       - name: Prepare env
         id: prepare_env
@@ -69,19 +70,16 @@ jobs:
     needs: prepare-build
     steps:
       - name: Clone Repository (${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }})
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-
-      - name: Set up gradle
-        uses: gradle/actions/setup-gradle@d9336dac04dea2507a617466bc058a3def92b18b # v3
 
       - name: Setup Android SDK
         run: |
           ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
 
       - name: Set up JDK
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
         with:
           java-version: 17
           distribution: temurin
@@ -100,16 +98,14 @@ jobs:
           contents: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
           write-mode: overwrite
 
-      # - name: Build app and run unit tests
-      #   uses: gradle/gradle-command-action@v2
-      #   with:
-      #     arguments: detekt assembleStandardPreview testStandardPreviewUnitTest
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
 
       - name: Build Preview app and run unit tests
-        run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest --stacktrace
+        run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           path: "**/*.apk"
           retention-days: 1
@@ -121,7 +117,7 @@ jobs:
       - build-app
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
           merge-multiple: true
 

@@ -1,24 +1,25 @@
 name: Remote Dispatch Preview Build
- 
+# Manually send a dispatch to build standard preview (master) or dev preview (other refs)
+
 on:
   # Dispatch or Manual triggers
   workflow_dispatch:
 
-  push:
-    branches:
-      - master
-      # - develop
-    paths:
-      - '**'
-      - '!**.md'
-      - '!.github/**'
-      - '.github/scripts/**'
-      - '.github/workflows/**'
+#  push:
+#    branches:
+#      - master
+#      # - develop
+#    paths:
+#      - '**'
+#      - '!**.md'
+#      - '!.github/**'
+#      - '.github/scripts/**'
+#      - '.github/workflows/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
- 
+
 jobs:
   trigger_preview_build:
     name: Trigger preview build
@@ -26,12 +27,12 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@26ffd686eccbbcbf168186b5363c8ee8edbe39f6 # v3
+        uses: gradle/actions/wrapper-validation@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
 
       - name: Prepare build
         id: prepare_build
@@ -49,10 +50,10 @@ jobs:
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8
+        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8.0.1
 
       - name: Invoke workflow in preview repo
-        uses: benc-uk/workflow-dispatch@25b02cc069be46d637e8fe2f1e8484008e9e9609 # v1
+        uses: benc-uk/workflow-dispatch@25b02cc069be46d637e8fe2f1e8484008e9e9609 # v1.2.3
         with:
           workflow: build_app.yml
           repo: komikku-app/komikku-preview
