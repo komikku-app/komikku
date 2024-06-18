@@ -83,7 +83,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          
+
       - name: Write google-services.json
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
@@ -182,7 +182,7 @@ jobs:
             | armeabi-v7a | ${{ steps.get_sha.outputs.APK_ARMEABI_V7A_SHA }} |
             | x86 | ${{ steps.get_sha.outputs.APK_X86_SHA }} |
             | x86_64 | ${{ steps.get_sha.outputs.APK_X86_64_SHA }} |
-            
+
             ## If you are unsure which apk to download then go with Komikku-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk
           files: |
             Komikku-${{ needs.prepare-build.outputs.TAG_PREFIX }}${{ needs.prepare-build.outputs.COMMIT_COUNT }}.apk

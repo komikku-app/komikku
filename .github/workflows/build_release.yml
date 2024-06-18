@@ -135,7 +135,7 @@ jobs:
             | armeabi-v7a | ${{ steps.get_sha.outputs.APK_ARMEABI_V7A_SHA }} |
             | x86 | ${{ steps.get_sha.outputs.APK_X86_SHA }} |
             | x86_64 | ${{ steps.get_sha.outputs.APK_X86_64_SHA }} |
-            
+
             ## If you are unsure which apk to download then go with Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk
           files: |
             Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk
