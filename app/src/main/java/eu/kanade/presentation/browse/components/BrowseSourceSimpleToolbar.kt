@@ -1,10 +1,8 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ViewModule
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -15,6 +13,7 @@ import androidx.compose.runtime.setValue
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -25,7 +24,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 fun BrowseSourceSimpleToolbar(
     navigateUp: () -> Unit,
     title: String,
-    displayMode: LibraryDisplayMode?,
+    displayMode: LibraryDisplayMode,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
@@ -42,7 +41,11 @@ fun BrowseSourceSimpleToolbar(
                 actions = persistentListOf(
                     AppBar.Action(
                         title = stringResource(MR.strings.action_display_mode),
-                        icon = Icons.Outlined.ViewModule,
+                        icon = if (displayMode == LibraryDisplayMode.List) {
+                            Icons.AutoMirrored.Filled.ViewList
+                        } else {
+                            Icons.Filled.ViewModule
+                        },
                         onClick = { selectingDisplayMode = true },
                     ),
                     // KMK -->
@@ -54,42 +57,27 @@ fun BrowseSourceSimpleToolbar(
                 expanded = selectingDisplayMode,
                 onDismissRequest = { selectingDisplayMode = false },
             ) {
-                DropdownMenuItem(
+                RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_comfortable_grid)) },
-                    onClick = { onDisplayModeChange(LibraryDisplayMode.ComfortableGrid) },
-                    trailingIcon = {
-                        if (displayMode == LibraryDisplayMode.ComfortableGrid) {
-                            Icon(
-                                imageVector = Icons.Outlined.Check,
-                                contentDescription = "",
-                            )
-                        }
-                    },
-                )
-                DropdownMenuItem(
+                    isChecked = displayMode == LibraryDisplayMode.ComfortableGrid,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.ComfortableGrid)
+                }
+                RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_grid)) },
-                    onClick = { onDisplayModeChange(LibraryDisplayMode.CompactGrid) },
-                    trailingIcon = {
-                        if (displayMode == LibraryDisplayMode.CompactGrid) {
-                            Icon(
-                                imageVector = Icons.Outlined.Check,
-                                contentDescription = "",
-                            )
-                        }
-                    },
-                )
-                DropdownMenuItem(
+                    isChecked = displayMode == LibraryDisplayMode.CompactGrid,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.CompactGrid)
+                }
+                RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_list)) },
-                    onClick = { onDisplayModeChange(LibraryDisplayMode.List) },
-                    trailingIcon = {
-                        if (displayMode == LibraryDisplayMode.List) {
-                            Icon(
-                                imageVector = Icons.Outlined.Check,
-                                contentDescription = "",
-                            )
-                        }
-                    },
-                )
+                    isChecked = displayMode == LibraryDisplayMode.List,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.List)
+                }
             }
         },
         scrollBehavior = scrollBehavior,
