@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
+import androidx.annotation.ColorInt
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,29 +30,30 @@ import uy.kohesive.injekt.api.get
  * A screen that displays a colors palette of current theme.
  */
 class PaletteScreen(
-    private val seedColor: Color?,
+    @ColorInt private val seedColor: Int?,
 ) : Screen() {
 
     @Composable
     override fun Content() {
+        val seedColor = seedColor?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
         if (uiPreferences.themeCoverBased().get()) {
             DynamicMaterialTheme(
-                seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
+                seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
                 withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
                 animate = true,
-                content = { MaterialThemeContent() },
+                content = { MaterialThemeContent(seedColor) },
             )
         } else {
-            MaterialThemeContent()
+            MaterialThemeContent(seedColor)
         }
     }
 
     @Composable
-    fun MaterialThemeContent() {
+    fun MaterialThemeContent(seedColor: Color) {
         val navigator = LocalNavigator.currentOrThrow
 
         Scaffold(
@@ -68,9 +70,9 @@ class PaletteScreen(
             ) {
                 ButtonsColor(
                     "accent & onPrimary",
-                    seedColor ?: MaterialTheme.colorScheme.primary,
+                    seedColor,
                     "accent & contentColor",
-                    seedColor ?: MaterialTheme.colorScheme.primary,
+                    seedColor,
                     MaterialTheme.colorScheme.onPrimary,
                 )
 

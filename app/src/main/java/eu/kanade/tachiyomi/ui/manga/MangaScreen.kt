@@ -316,7 +316,7 @@ class MangaScreen(
                 }
             },
             onCoverLoaded = screenModel::setPaletteColor,
-            onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor)) }
+            onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) }
             // KMK <--
         )
 
