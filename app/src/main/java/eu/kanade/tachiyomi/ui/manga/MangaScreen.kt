@@ -2,8 +2,10 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -15,15 +17,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.net.toUri
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -54,7 +59,6 @@ import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.RelatedMangasScreen
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
@@ -83,12 +87,15 @@ import exh.ui.ifSourcesLoaded
 import exh.ui.metadata.MetadataViewScreen
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import soup.compose.material.motion.animation.materialSharedAxisX
+import soup.compose.material.motion.animation.rememberSlideDistance
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
@@ -124,7 +131,9 @@ class MangaScreen(
             return
         }
 
+        val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
+        val scope = rememberCoroutineScope()
         val screenModel =
             rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
 
@@ -136,9 +145,57 @@ class MangaScreen(
         }
 
         val successState = state as MangaScreenModel.State.Success
+
         // KMK -->
-        val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
+        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+
+        val showingRelatedMangasScreen = rememberSaveable { mutableStateOf(false) }
+
+        BackHandler(enabled = bulkFavoriteState.selectionMode || showingRelatedMangasScreen.value) {
+            when {
+                bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.toggleSelectionMode()
+                showingRelatedMangasScreen.value -> showingRelatedMangasScreen.value = false
+            }
+        }
+
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
+        val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
+
+        val content = @Composable {
+            val slideDistance = rememberSlideDistance()
+            AnimatedContent(
+                targetState = showingRelatedMangasScreen.value,
+                transitionSpec = {
+                    materialSharedAxisX(
+                        forward = navigator.lastEvent != StackEvent.Pop,
+                        slideDistance = slideDistance,
+                    )
+                },
+                label = "manga_related_transition",
+                contentKey = { "showingRelatedMangasScreen#$it" }
+            ) { showRelatedMangasScreen ->
+                when (showRelatedMangasScreen) {
+                    true -> RelatedMangasScreen(
+                        screenModel = screenModel,
+                        successState = successState,
+                        bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+                        navigateUp = { showingRelatedMangasScreen.value = false },
+                        navigator = navigator,
+                        scope = scope,
+                    )
+                    false -> MangaDetailContent(
+                        context = context,
+                        screenModel = screenModel,
+                        successState = successState,
+                        bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+                        showRelatedMangasScreen = { showingRelatedMangasScreen.value = true },
+                        navigator = navigator,
+                        scope = scope,
+                    )
+                }
+            }
+        }
 
         if (uiPreferences.themeCoverBased().get()) {
             DynamicMaterialTheme(
@@ -147,30 +204,47 @@ class MangaScreen(
                 withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
                 animate = true,
-                content = { MaterialThemeContent(context, screenModel, successState) },
+                content = { content() },
             )
         } else {
-            MaterialThemeContent(context, screenModel, successState)
+            content()
         }
+
+        // KMK -->
+        when (bulkFavoriteState.dialog) {
+            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
+                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+
+            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
+                RemoveMangaDialog(bulkFavoriteScreenModel)
+
+            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
+                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+
+            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
+                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+
+            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
+                AllowDuplicateDialog(bulkFavoriteScreenModel)
+
+            else -> {}
+        }
+        // KMK <--
     }
 
     @Composable
-    fun MaterialThemeContent(
+    fun MangaDetailContent(
         context: Context,
         screenModel: MangaScreenModel,
         successState: MangaScreenModel.State.Success,
+        bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+        showRelatedMangasScreen: () -> Unit,
+        navigator: Navigator,
+        scope: CoroutineScope,
     ) {
         // KMK <--
-        val navigator = LocalNavigator.currentOrThrow
         val haptic = LocalHapticFeedback.current
-        val scope = rememberCoroutineScope()
-
         val isHttpSource = remember { successState.source is HttpSource }
-
-        // KMK -->
-        val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
-        val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
-        // KMK <--
 
         LaunchedEffect(successState.manga, screenModel.source) {
             if (isHttpSource) {
@@ -196,6 +270,7 @@ class MangaScreen(
                 .launchIn(this)
         }
         // SY <--
+
         MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
@@ -289,17 +364,7 @@ class MangaScreen(
                 if (successState.isRelatedMangasFetched == null) {
                     screenModel.screenModelScope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
                 }
-                navigator.push(
-                    RelatedMangasScreen(
-                        mangaScreenModel = screenModel,
-                        onKeywordClick = { query ->
-                            navigator.push(BrowseSourceScreen(successState.source.id, query))
-                        },
-                        onKeywordLongClick = { query ->
-                            navigator.push(GlobalSearchScreen(query))
-                        },
-                    )
-                )
+                showRelatedMangasScreen()
             },
             onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
             onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
@@ -449,27 +514,6 @@ class MangaScreen(
                 onConfirm = screenModel::setExcludedScanlators,
             )
         }
-
-        // KMK -->
-        when (bulkFavoriteState.dialog) {
-            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
-                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
-
-            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
-                RemoveMangaDialog(bulkFavoriteScreenModel)
-
-            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
-                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
-
-            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
-                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                AllowDuplicateDialog(bulkFavoriteScreenModel)
-
-            else -> {}
-        }
-        // KMK <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {

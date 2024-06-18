@@ -80,10 +80,11 @@ fun RelatedMangasContent(
                 selection = selection,
             )
         }
-        LibraryDisplayMode.List -> {
-            RelatedMangasList(
+        LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
+            RelatedMangasCompactGrid(
                 relatedMangas = relatedMangas,
                 getManga = getMangaState,
+                columns = columns,
                 contentPadding = contentPadding,
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
@@ -92,11 +93,10 @@ fun RelatedMangasContent(
                 selection = selection,
             )
         }
-        LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
-            RelatedMangasCompactGrid(
+        LibraryDisplayMode.List -> {
+            RelatedMangasList(
                 relatedMangas = relatedMangas,
                 getManga = getMangaState,
-                columns = columns,
                 contentPadding = contentPadding,
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
