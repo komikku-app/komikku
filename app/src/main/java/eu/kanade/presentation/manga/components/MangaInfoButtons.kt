@@ -31,14 +31,10 @@ fun MangaInfoButtons(
                 }
             }
             if (showRecommendsButton) {
-                Button(
+                OutlinedButtonWithArrow(
+                    text = stringResource(SYMR.strings.az_recommends),
                     onClick = onRecommendClicked,
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                ) {
-                    Text(stringResource(SYMR.strings.az_recommends))
-                }
+                )
             }
         }
     }

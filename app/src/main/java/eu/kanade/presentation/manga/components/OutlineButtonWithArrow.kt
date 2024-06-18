@@ -33,7 +33,10 @@ fun OutlinedButtonWithArrow(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .padding(MaterialTheme.padding.small),
+            .padding(
+                horizontal = MaterialTheme.padding.medium,
+                vertical = MaterialTheme.padding.small,
+            ),
         colors = ButtonDefaults.outlinedButtonColors(),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -43,7 +46,7 @@ fun OutlinedButtonWithArrow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = text.uppercase(),
+                text = text,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(

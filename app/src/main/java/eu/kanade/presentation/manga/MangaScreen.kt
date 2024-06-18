@@ -624,7 +624,8 @@ private fun MangaScreenSmallImpl(
                                 contentType = MangaScreenItem.RELATED_TITLES,
                             ) {
                                 OutlinedButtonWithArrow(
-                                    text = stringResource(KMR.strings.pref_source_related_mangas),
+                                    text = stringResource(KMR.strings.pref_source_related_mangas)
+                                        .uppercase(),
                                     onClick = onRelatedMangasScreenClick,
                                 )
                             }
@@ -994,7 +995,8 @@ private fun MangaScreenLargeImpl(
                                         ) {
                                             Column {
                                                 RelatedMangaTitle(
-                                                    title = stringResource(KMR.strings.pref_source_related_mangas),
+                                                    title = stringResource(KMR.strings.pref_source_related_mangas)
+                                                        .uppercase(),
                                                     subtitle = null,
                                                     onClick = onRelatedMangasScreenClick,
                                                     onLongClick = null,
