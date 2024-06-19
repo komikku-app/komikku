@@ -7,10 +7,19 @@
     <string name="action_faq_and_guides">FAQ and Guides</string>
 
     <!-- Preferences -->
-      <!-- General section -->
+      <!-- Appearance section -->
     <string name="pref_details_page_theme">Details page</string>
     <string name="pref_theme_cover_based">Theme based on cover</string>
     <string name="pref_theme_cover_based_style">Theme style</string>
+    <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
+    <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+    <string name="pref_theme_cover_based_style_vibrant">Vibrant</string>
+    <string name="pref_theme_cover_based_style_expressive">Expressive</string>
+    <string name="pref_theme_cover_based_style_rainbow">Rainbow</string>
+    <string name="pref_theme_cover_based_style_fruitsalad">Fruit Salad</string>
+    <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
+    <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
+    <string name="pref_theme_cover_based_style_content">Content</string>
     <string name="pref_expand_related_titles">Expand Related titles</string>
     <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
 
