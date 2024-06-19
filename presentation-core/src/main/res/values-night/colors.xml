@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash">#1F0000</color>
+        <color name="splash">#1A0A0A</color>
 
     <color name="error">#FFB4A9</color>
     <color name="errorContainer">#930006</color>
