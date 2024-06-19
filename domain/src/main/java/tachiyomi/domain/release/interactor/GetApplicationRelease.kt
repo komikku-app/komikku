@@ -147,6 +147,7 @@ class GetApplicationRelease(
     }
 }
 
+// KMK --.
 internal fun List<Release>.getLatest(): Release? {
     val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
 
@@ -158,3 +159,4 @@ internal fun List<Release>.getLatest(): Release? {
             }
         )
 }
+// KMK <--

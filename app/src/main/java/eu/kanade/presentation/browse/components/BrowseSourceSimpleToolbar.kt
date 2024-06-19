@@ -41,11 +41,13 @@ fun BrowseSourceSimpleToolbar(
                 actions = persistentListOf(
                     AppBar.Action(
                         title = stringResource(MR.strings.action_display_mode),
+                        // KMK -->
                         icon = if (displayMode == LibraryDisplayMode.List) {
                             Icons.AutoMirrored.Filled.ViewList
                         } else {
                             Icons.Filled.ViewModule
                         },
+                        // KMK <--
                         onClick = { selectingDisplayMode = true },
                     ),
                     // KMK -->
@@ -57,6 +59,7 @@ fun BrowseSourceSimpleToolbar(
                 expanded = selectingDisplayMode,
                 onDismissRequest = { selectingDisplayMode = false },
             ) {
+                // KMK -->
                 RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_comfortable_grid)) },
                     isChecked = displayMode == LibraryDisplayMode.ComfortableGrid,
@@ -78,6 +81,7 @@ fun BrowseSourceSimpleToolbar(
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.List)
                 }
+                // KMK <--
             }
         },
         scrollBehavior = scrollBehavior,
