@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -197,9 +196,10 @@ class MangaScreen(
             }
         }
 
-        if (uiPreferences.themeCoverBased().get()) {
+        val seedColor = seedColorState.value
+        if (uiPreferences.themeCoverBased().get() && seedColor != null) {
             DynamicMaterialTheme(
-                seedColor = seedColorState.value ?: MaterialTheme.colorScheme.primary,
+                seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
                 withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),
@@ -674,7 +674,7 @@ class MangaScreen(
         navigator: Navigator,
         manga: Manga,
         // KMK -->
-        seedColor: Color? = null,
+        seedColor: Color?,
         // KMK <--
     ) {
         navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor))

@@ -6,7 +6,6 @@ import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -21,18 +20,22 @@ import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -48,9 +51,12 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
+import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingMode
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.DisplayRefreshHost
 import eu.kanade.presentation.reader.OrientationSelectDialog
@@ -119,6 +125,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -127,6 +134,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.seconds
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 class ReaderActivity : BaseActivity() {
 
@@ -150,6 +158,13 @@ class ReaderActivity : BaseActivity() {
 
     private val readerPreferences = Injekt.get<ReaderPreferences>()
     private val preferences = Injekt.get<BasePreferences>()
+
+    // KMK -->
+    private val uiPreferences = Injekt.get<UiPreferences>()
+    private val themeCoverBased = uiPreferences.themeCoverBased().get()
+    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+    // KMK <--
 
     lateinit var binding: ReaderActivityBinding
 
@@ -370,7 +385,12 @@ class ReaderActivity : BaseActivity() {
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
     private fun initializeMenu() {
-        binding.pageNumber.setComposeContent {
+        // KMK -->
+        val seedColor = viewModel.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
+
+        @Composable
+        fun pageNumberContent() {
+            // KMK <--
             val state by viewModel.state.collectAsState()
             val showPageNumber by viewModel.readerPreferences.showPageNumber().collectAsState()
 
@@ -384,7 +404,25 @@ class ReaderActivity : BaseActivity() {
             }
         }
 
-        binding.dialogRoot.setComposeContent {
+        // KMK -->
+        binding.pageNumber.setComposeContent {
+            if (uiPreferences.themeCoverBased().get() && seedColor != null) {
+                DynamicMaterialTheme(
+                    seedColor = seedColor,
+                    useDarkTheme = isSystemInDarkTheme(),
+                    withAmoled = themeDarkAmoled,
+                    style = themeCoverBasedStyle,
+                    animate = true,
+                    content = { pageNumberContent() },
+                )
+            } else {
+                pageNumberContent()
+            }
+        }
+
+        @Composable
+        fun dialogRootContent() {
+            // KMK <--
             val state by viewModel.state.collectAsState()
             val settingsScreenModel = remember {
                 ReaderSettingsScreenModel(
@@ -396,7 +434,7 @@ class ReaderActivity : BaseActivity() {
             }
 
             if (!ifSourcesLoaded()) {
-                return@setComposeContent
+                return
             }
 
             val isHttpSource = viewModel.getSource() is HttpSource
@@ -650,8 +688,40 @@ class ReaderActivity : BaseActivity() {
             }
         }
 
+        // KMK -->
+        binding.dialogRoot.setComposeContent {
+            if (themeCoverBased && seedColor != null) {
+                DynamicMaterialTheme(
+                    seedColor = seedColor,
+                    useDarkTheme = isSystemInDarkTheme(),
+                    withAmoled = themeDarkAmoled,
+                    style = themeCoverBasedStyle,
+                    animate = true,
+                    content = { dialogRootContent() },
+                )
+            } else {
+                dialogRootContent()
+            }
+        }
+
+        val colorScheme = seedColor?.let {
+            dynamicColorScheme(
+                seedColor = seedColor,
+                isDark = isNightMode(),
+                isAmoled = themeDarkAmoled,
+                style = themeCoverBasedStyle,
+            )
+        }
+        // KMK <--
+
         val toolbarColor = ColorUtils.setAlphaComponent(
-            SurfaceColors.SURFACE_2.getColor(this),
+            // KMK -->
+            if (themeCoverBased && colorScheme != null) {
+                colorScheme.surfaceColorAtElevation(3.dp).toArgb()
+            } else {
+                // KMK <--
+                SurfaceColors.SURFACE_2.getColor(this)
+            },
             if (isNightMode()) 230 else 242, // 90% dark 95% light
         )
         window.statusBarColor = toolbarColor

@@ -43,7 +43,7 @@ class MetadataViewScreen(
     private val mangaId: Long,
     private val sourceId: Long,
     // KMK -->
-    private val seedColor: Color? = null,
+    private val seedColor: Color?,
     // KMK <--
 ) : Screen() {
 
@@ -114,9 +114,9 @@ class MetadataViewScreen(
         // KMK -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
-        if (uiPreferences.themeCoverBased().get()) {
+        if (uiPreferences.themeCoverBased().get() && seedColor != null) {
             DynamicMaterialTheme(
-                seedColor = seedColor ?: MaterialTheme.colorScheme.primary,
+                seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
                 withAmoled = uiPreferences.themeDarkAmoled().get(),
                 style = uiPreferences.themeCoverBasedStyle().get(),

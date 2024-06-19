@@ -69,9 +69,9 @@ class PaletteScreen(
                 modifier = Modifier.padding(contentPadding),
             ) {
                 ButtonsColor(
-                    "accent & onPrimary",
+                    "seedColor & onPrimary",
                     seedColor,
-                    "accent & contentColor",
+                    "seedColor & contentColor",
                     seedColor,
                     MaterialTheme.colorScheme.onPrimary,
                 )
