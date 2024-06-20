@@ -47,6 +47,13 @@ class MetadataViewScreen(
     // KMK <--
 ) : Screen() {
 
+    // KMK -->
+    private val uiPreferences = Injekt.get<UiPreferences>()
+    private val themeCoverBased = uiPreferences.themeCoverBased().get()
+    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+    // KMK <--
+
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { MetadataViewScreenModel(mangaId, sourceId) }
@@ -112,14 +119,12 @@ class MetadataViewScreen(
         }
 
         // KMK -->
-        val uiPreferences = remember { Injekt.get<UiPreferences>() }
-
-        if (uiPreferences.themeCoverBased().get() && seedColor != null) {
+        if (themeCoverBased && seedColor != null) {
             DynamicMaterialTheme(
                 seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = uiPreferences.themeDarkAmoled().get(),
-                style = uiPreferences.themeCoverBasedStyle().get(),
+                withAmoled = themeDarkAmoled,
+                style = themeCoverBasedStyle,
                 animate = true,
                 content = { content() },
             )

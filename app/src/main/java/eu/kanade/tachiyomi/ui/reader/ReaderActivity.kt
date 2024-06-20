@@ -406,7 +406,7 @@ class ReaderActivity : BaseActivity() {
 
         // KMK -->
         binding.pageNumber.setComposeContent {
-            if (uiPreferences.themeCoverBased().get() && seedColor != null) {
+            if (themeCoverBased && seedColor != null) {
                 DynamicMaterialTheme(
                     seedColor = seedColor,
                     useDarkTheme = isSystemInDarkTheme(),

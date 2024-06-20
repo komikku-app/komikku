@@ -122,6 +122,13 @@ class MangaScreen(
 
     override fun onProvideAssistUrl() = assistUrl
 
+    // KMK -->
+    private val uiPreferences = Injekt.get<UiPreferences>()
+    private val themeCoverBased = uiPreferences.themeCoverBased().get()
+    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+    // KMK <--
+
     @Composable
     override fun Content() {
         if (!ifSourcesLoaded()) {
@@ -156,8 +163,6 @@ class MangaScreen(
                 showingRelatedMangasScreen.value -> showingRelatedMangasScreen.value = false
             }
         }
-
-        val uiPreferences = remember { Injekt.get<UiPreferences>() }
 
         val content = @Composable {
             val slideDistance = rememberSlideDistance()
@@ -195,12 +200,12 @@ class MangaScreen(
         }
 
         val seedColor = successState.seedColor
-        if (uiPreferences.themeCoverBased().get() && seedColor != null) {
+        if (themeCoverBased && seedColor != null) {
             DynamicMaterialTheme(
                 seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = uiPreferences.themeDarkAmoled().get(),
-                style = uiPreferences.themeCoverBasedStyle().get(),
+                withAmoled = themeDarkAmoled,
+                style = themeCoverBasedStyle,
                 animate = true,
                 content = { content() },
             )
@@ -208,7 +213,6 @@ class MangaScreen(
             content()
         }
 
-        // KMK -->
         when (bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
                 AddDuplicateMangaDialog(bulkFavoriteScreenModel)
@@ -227,7 +231,6 @@ class MangaScreen(
 
             else -> {}
         }
-        // KMK <--
     }
 
     @Composable
@@ -378,8 +381,8 @@ class MangaScreen(
                     navigator.push(ExtensionsScreen(searchSource = successState.source.name))
                 }
             },
-            onCoverLoaded = screenModel::setPaletteColor,
-            onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) }
+            onCoverLoaded = { if (themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it) },
+            onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             // KMK <--
         )
 
