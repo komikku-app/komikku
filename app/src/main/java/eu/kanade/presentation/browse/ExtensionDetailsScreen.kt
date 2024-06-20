@@ -224,7 +224,7 @@ private fun ExtensionDetails(
             key = { "extension-details-${it.source.id}" },
         ) { source ->
             SourceSwitchPreference(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 source = source,
                 onClickSourcePreferences = onClickSourcePreferences,
                 onClickSource = onClickSource,

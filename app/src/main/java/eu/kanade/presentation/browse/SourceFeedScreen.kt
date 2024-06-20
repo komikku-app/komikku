@@ -210,7 +210,7 @@ fun SourceFeedList(
             key = { "source-feed-${it.id}" },
         ) { item ->
             GlobalSearchResultItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 title = item.title,
                 subtitle = null,
                 onLongClick = if (item is SourceFeedUI.SourceSavedSearch) {

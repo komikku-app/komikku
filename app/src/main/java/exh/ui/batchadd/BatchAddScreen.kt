@@ -76,7 +76,7 @@ class BatchAddScreen : Screen() {
                                     text = stringResource(SYMR.strings.eh_batch_add_description),
                                 )
                             },
-                            keyboardOptions = KeyboardOptions(autoCorrect = false),
+                            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
                             textStyle = MaterialTheme.typography.bodyLarge,
 
                         )
