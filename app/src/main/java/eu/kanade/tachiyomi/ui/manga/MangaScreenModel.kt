@@ -513,6 +513,9 @@ class MangaScreenModel(
                         }
                         val vibrantColor = it.getBestColor() ?: return@launchUI
                         mangaCover.vibrantCoverColor = vibrantColor
+                        updateSuccessState {
+                            it.copy(seedColor = Color(vibrantColor))
+                        }
                     }
                 }
             }
@@ -1887,11 +1890,10 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
+            val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
             // KMK <--
         ) : State {
             // KMK -->
-            val seedColor: Color? = MangaCover.vibrantCoverColorMap[manga.id]?.let { Color(it) }
-
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list

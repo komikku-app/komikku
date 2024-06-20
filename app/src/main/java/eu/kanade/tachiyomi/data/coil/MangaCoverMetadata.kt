@@ -34,7 +34,7 @@ object MangaCoverMetadata {
             }.toMap(),
         )
         val colors = preferences.coverColors().get()
-        MangaCover.coverColorMap = ConcurrentHashMap(
+        MangaCover.dominantCoverColorMap = ConcurrentHashMap(
             colors.mapNotNull {
                 val splits = it.split("|")
                 val id = splits.firstOrNull()?.toLongOrNull()
@@ -54,7 +54,7 @@ object MangaCoverMetadata {
      * It's called along with [MangaCoverFetcher.fetch] everytime a cover is **displayed** (anywhere).
      *
      * When called:
-     *  - It removes saved colors from saved Prefs of [MangaCover.coverColorMap] if manga is not favorite.
+     *  - It removes saved colors from saved Prefs of [MangaCover.dominantCoverColorMap] if manga is not favorite.
      *  - If a favorite manga already restored [MangaCover.dominantCoverColors] then it
      * will skip actually reading bitmap, only extract ratio. Except when [MangaCover.vibrantCoverColor]
      * is not loaded then it will read bitmap & extract vibrant color.
@@ -145,13 +145,13 @@ object MangaCoverMetadata {
 
     fun MangaCover.remove() {
         MangaCover.coverRatioMap.remove(mangaId)
-        MangaCover.coverColorMap.remove(mangaId)
+        MangaCover.dominantCoverColorMap.remove(mangaId)
     }
 
     fun savePrefs() {
         val mapCopy = MangaCover.coverRatioMap.toMap()
         preferences.coverRatios().set(mapCopy.map { "${it.key}|${it.value}" }.toSet())
-        val mapColorCopy = MangaCover.coverColorMap.toMap()
+        val mapColorCopy = MangaCover.dominantCoverColorMap.toMap()
         preferences.coverColors().set(mapColorCopy.map { "${it.key}|${it.value.first}|${it.value.second}" }.toSet())
     }
 }

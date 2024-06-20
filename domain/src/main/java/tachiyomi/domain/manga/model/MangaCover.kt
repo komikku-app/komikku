@@ -42,7 +42,7 @@ data class MangaCover(
      * [dominantCoverColors] is used to set cover/text's color in Library (Favorite) grid view.
      * It contains only color for in-library (favorite) mangas.
      *
-     * It reads/saves to a hashmap in [MangaCover.coverColorMap].
+     * It reads/saves to a hashmap in [MangaCover.dominantCoverColorMap].
      *
      * Format: <first: cover color, second: text color>.
      *
@@ -54,10 +54,10 @@ data class MangaCover(
      */
     @Suppress("KDocUnresolvedReference")
     var dominantCoverColors: Pair<Int, Int>?
-        get() = coverColorMap[mangaId]
+        get() = dominantCoverColorMap[mangaId]
         set(value) {
             value ?: return
-            coverColorMap[mangaId] = value.first to value.second
+            dominantCoverColorMap[mangaId] = value.first to value.second
         }
 
     var ratio: Float?
@@ -66,6 +66,7 @@ data class MangaCover(
             value ?: return
             coverRatioMap[mangaId] = value
         }
+
     companion object {
         /**
          * [vibrantCoverColorMap] store color generated while browsing library.
@@ -74,13 +75,13 @@ data class MangaCover(
         val vibrantCoverColorMap: HashMap<Long, Int?> = hashMapOf()
 
         /**
-         * [coverColorMap] stores favorite manga's cover & text's color as a joined string in Prefs.
+         * [dominantCoverColorMap] stores favorite manga's cover & text's color as a joined string in Prefs.
          * They will be loaded each time *[App]* is initialized with *[MangaCoverMetadata.load]*.
          *
          * They will be saved back when *[MainActivity.onPause]* is triggered.
          */
         @Suppress("KDocUnresolvedReference")
-        var coverColorMap = ConcurrentHashMap<Long, Pair<Int, Int>>()
+        var dominantCoverColorMap = ConcurrentHashMap<Long, Pair<Int, Int>>()
 
         var coverRatioMap = ConcurrentHashMap<Long, Float>()
         // KMK <--

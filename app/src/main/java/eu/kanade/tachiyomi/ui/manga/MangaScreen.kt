@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -159,7 +158,6 @@ class MangaScreen(
         }
 
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
-        val seedColorState = rememberUpdatedState(newValue = successState.seedColor)
 
         val content = @Composable {
             val slideDistance = rememberSlideDistance()
@@ -196,7 +194,7 @@ class MangaScreen(
             }
         }
 
-        val seedColor = seedColorState.value
+        val seedColor = successState.seedColor
         if (uiPreferences.themeCoverBased().get() && seedColor != null) {
             DynamicMaterialTheme(
                 seedColor = seedColor,
