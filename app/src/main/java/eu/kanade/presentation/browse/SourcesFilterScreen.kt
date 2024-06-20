@@ -92,7 +92,7 @@ private fun SourcesFilterContent(
                         // KMK -->
                         .padding(end = MaterialTheme.padding.small)
                         // KMK <--
-                        .animateItemPlacement(),
+                        .animateItem(),
                     language = language,
                     enabled = enabled,
                     onClickItem = onClickLanguage,
@@ -115,7 +115,7 @@ private fun SourcesFilterContent(
                             .background(MaterialTheme.colorScheme.background)
                             .padding(end = MaterialTheme.padding.small)
                             // KMK <--
-                            .animateItemPlacement(),
+                            .animateItem(),
                         isEnabled = toggleEnabled,
                         onClickItem = {
                             onClickSources(!toggleEnabled, sources)
@@ -133,7 +133,7 @@ private fun SourcesFilterContent(
                             // KMK -->
                             .padding(end = MaterialTheme.padding.small)
                             // KMK <--
-                            .animateItemPlacement(),
+                            .animateItem(),
                         source = source,
                         enabled = "${source.id}" !in state.disabledSources,
                         onClickItem = onClickSource,
