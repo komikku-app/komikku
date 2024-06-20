@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9036" changeDate="June 20, 2024">
+        <changelogtext>[b]New:[/b] theme cover based for Reader</changelogtext>
+        <changelogtext>[b]Improve:[/b] update theme color when change cover in reader &amp; performance</changelogtext>
+        <changelogtext>[b]Improve:[/b] update splash color</changelogtext>
+        <changelogtext>[b]Improve:[/b] update translation</changelogtext>
+        <changelogtext>[b]Improve:[/b] Change Recommendation button style</changelogtext>
+        <changelogtext>[b]Improve:[/b] better Display Mode selection for SimpleToolbar</changelogtext>
+        <changelogtext>enable help translate menu</changelogtext>
+        <changelogtext>[b]Fix:[/b] navigator back on ExtensionsScreen</changelogtext>
+        <changelogtext>[b]Fix[/b] manual edit on Tracker's chapter (must hit Done on keyboard)</changelogtext>
+        <changelogtext>[b]Fix[/b] RelatedMangasScreen crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] `NoSuchMethodError` crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] remove duplicate chapter's filter icon</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r8998" changeDate="June 14, 2024">
         <changelogtext>[b]New[/b] New app icon</changelogtext>
         <changelogtext>[b]New[/b] Support only Android 8+</changelogtext>
