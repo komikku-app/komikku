@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Modo de selección masiva</string>
   <string name="action_faq_and_guides">Preguntas frecuentes y guías</string>
   <string name="pref_details_page_theme">Página de detalles</string>
-  <string name="pref_theme_cover_based">Tema basado en portada</string>
   <string name="pref_theme_cover_based_style">Estilo del tema</string>
   <string name="ext_unofficial">No oficial</string>
   <string name="unofficial_extension_message">Esta extensión no es del repositorio oficial.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Más así...</string>
   <string name="too_many_in_feed">Demasiadas fuentes en su fuente, no se puede añadir más de limitado (20)</string>
   <string name="current_">Actual: %1$s</string>
+  <string name="pref_theme_cover_based">Tema basado en portada</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Spot Tonal</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibrante</string>
+  <string name="pref_theme_cover_based_style_expressive">Expresivo</string>
+  <string name="pref_theme_cover_based_style_rainbow">Arco Rainbow</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Ensalada de frutas</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monocromo</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelidad</string>
+  <string name="pref_theme_cover_based_style_content">Contenido</string>
+  <string name="pref_expand_related_titles">Expandir títulos relacionados</string>
+  <string name="pref_expand_related_titles_summary">Si se desactiva, los títulos relacionados no cargarán automáticamente &amp; mostrar expandido</string>
 </resources>

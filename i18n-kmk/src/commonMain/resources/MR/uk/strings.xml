@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Масовий режим вибору</string>
   <string name="action_faq_and_guides">ЧаПи та керівництва</string>
   <string name="pref_details_page_theme">Сторінка подробиць</string>
-  <string name="pref_theme_cover_based">Тему на основі обкладинки</string>
   <string name="pref_theme_cover_based_style">Стиль теми</string>
   <string name="ext_unofficial">Неофіційна</string>
   <string name="unofficial_extension_message">Це розширення не з офіційного репозиторію.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Подобається це...</string>
   <string name="too_many_in_feed">Занадто багато джерел у вашій стрічці, не можуть додати більше ніж обмежений (20)</string>
   <string name="current_">Поточна: %1$s</string>
+  <string name="pref_theme_cover_based">Тему на основі обкладинки</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Тональна цятка</string>
+  <string name="pref_theme_cover_based_style_neutral">Нейтрально</string>
+  <string name="pref_theme_cover_based_style_vibrant">Вібрація</string>
+  <string name="pref_theme_cover_based_style_expressive">Експресивний</string>
+  <string name="pref_theme_cover_based_style_rainbow">Веселка</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Фруктовий салат</string>
+  <string name="pref_theme_cover_based_style_monochrome">Монотонні</string>
+  <string name="pref_theme_cover_based_style_fidelity">Чесність</string>
+  <string name="pref_theme_cover_based_style_content">Зміст</string>
+  <string name="pref_expand_related_titles">Розгорнути Пов\'язані заголовки</string>
+  <string name="pref_expand_related_titles_summary">Якщо вимкнено, пов’язані заголовки не будуть автоматично завантажувати &amp; показати розширене</string>
 </resources>

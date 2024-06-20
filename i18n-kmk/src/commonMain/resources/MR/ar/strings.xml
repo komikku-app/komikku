@@ -5,7 +5,6 @@
   <string name="action_bulk_select">وضع التحديد بالجملة</string>
   <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
   <string name="pref_details_page_theme">صفحة التفاصيل</string>
-  <string name="pref_theme_cover_based">السمة المبنية على الغلاف</string>
   <string name="pref_theme_cover_based_style">نمط السمة</string>
   <string name="ext_unofficial">غير رسمي</string>
   <string name="unofficial_extension_message">وهذا التمديد ليس من المستودع الرسمي.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">أكثر مثل هذه...</string>
   <string name="too_many_in_feed">العديد من المصادر في موجز الويب الخاص بك، لا يمكن إضافة أكثر من محدودة (20)</string>
   <string name="current_">حاليا: %1$s</string>
+  <string name="pref_theme_cover_based">السمة المبنية على الغلاف</string>
+  <string name="pref_theme_cover_based_style_tonalspot">بقعة الطون</string>
+  <string name="pref_theme_cover_based_style_neutral">محايد</string>
+  <string name="pref_theme_cover_based_style_vibrant">حيوية</string>
+  <string name="pref_theme_cover_based_style_expressive">تعبيري</string>
+  <string name="pref_theme_cover_based_style_rainbow">قوس قزح</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">صلاد الفاكهة</string>
+  <string name="pref_theme_cover_based_style_monochrome">أحادية</string>
+  <string name="pref_theme_cover_based_style_fidelity">التلاعب</string>
+  <string name="pref_theme_cover_based_style_content">محتوى</string>
+  <string name="pref_expand_related_titles">توسيع العناوين ذات الصلة</string>
+  <string name="pref_expand_related_titles_summary">إذا تم إيقاف التشغيل، لن يتم تحميل العناوين ذات الصلة تلقائيًا &amp; إظهار الموسعة</string>
 </resources>

@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Mod selecţie în masă</string>
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
   <string name="pref_details_page_theme">Pagina de detalii</string>
-  <string name="pref_theme_cover_based">Temă bazată pe copertă</string>
   <string name="pref_theme_cover_based_style">Stil temă</string>
   <string name="ext_unofficial">Neoficial.</string>
   <string name="unofficial_extension_message">Această extensie nu este din repo-ul oficial.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Mai asemănător cu acestea...</string>
   <string name="too_many_in_feed">Prea multe surse în fluxul tău, nu pot adăuga mai mult decât limitat (20)</string>
   <string name="current_">Curent: %1$s</string>
+  <string name="pref_theme_cover_based">Temă bazată pe copertă</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Punct tonal</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibrant</string>
+  <string name="pref_theme_cover_based_style_expressive">Expresiv</string>
+  <string name="pref_theme_cover_based_style_rainbow">Curcubeu</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Salata de fructe</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monocrom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelitate</string>
+  <string name="pref_theme_cover_based_style_content">Conținut</string>
+  <string name="pref_expand_related_titles">Extindeți titlurile legate de</string>
+  <string name="pref_expand_related_titles_summary">Dacă este dezactivat, titlurile asociate nu vor încărca automat &amp; Arată extins</string>
 </resources>

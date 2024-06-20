@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Режим массового выбора</string>
   <string name="action_faq_and_guides">FAQ и руководства</string>
   <string name="pref_details_page_theme">Детали</string>
-  <string name="pref_theme_cover_based">Тема на основе обложки</string>
   <string name="pref_theme_cover_based_style">Стиль темы</string>
   <string name="ext_unofficial">Неофициальный</string>
   <string name="unofficial_extension_message">Это расширение не из официального репозитория.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Больше похожих...</string>
   <string name="too_many_in_feed">Слишком много источников в вашем канале, нельзя добавить больше лимита (20)</string>
   <string name="current_">Текущий: %1$s</string>
+  <string name="pref_theme_cover_based">Тема на основе обложки</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Тональная точка</string>
+  <string name="pref_theme_cover_based_style_neutral">Нейтральный</string>
+  <string name="pref_theme_cover_based_style_vibrant">Вибрировать</string>
+  <string name="pref_theme_cover_based_style_expressive">Эксклюзивный</string>
+  <string name="pref_theme_cover_based_style_rainbow">Радуга</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Фруктовый салат</string>
+  <string name="pref_theme_cover_based_style_monochrome">Монохромный</string>
+  <string name="pref_theme_cover_based_style_fidelity">Верность</string>
+  <string name="pref_theme_cover_based_style_content">Содержание</string>
+  <string name="pref_expand_related_titles">Развернуть связанные заголовки</string>
+  <string name="pref_expand_related_titles_summary">Если выключено, соответствующие заголовки не будут автоматически загружать &amp; будут развернуты</string>
 </resources>

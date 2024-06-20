@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Modalità selezione Bulk</string>
   <string name="action_faq_and_guides">FAQ e guide</string>
   <string name="pref_details_page_theme">Pagina dettagli</string>
-  <string name="pref_theme_cover_based">Tema basato sulla copertina</string>
   <string name="pref_theme_cover_based_style">Stile tema</string>
   <string name="ext_unofficial">Non Ufficiale</string>
   <string name="unofficial_extension_message">Questa estensione non proviene dal repo ufficiale.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Più come questi...</string>
   <string name="too_many_in_feed">Troppe fonti nel tuo feed, non puoi aggiungere più del limite (20)</string>
   <string name="current_">Attuale: %1$s</string>
+  <string name="pref_theme_cover_based">Tema basato sulla copertina</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Punto Tonale</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutro</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibrante</string>
+  <string name="pref_theme_cover_based_style_expressive">Espressivo</string>
+  <string name="pref_theme_cover_based_style_rainbow">Arcobaleno</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Insalata Di Frutta</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monocromatico</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fedeltà</string>
+  <string name="pref_theme_cover_based_style_content">Contenuto</string>
+  <string name="pref_expand_related_titles">Espandi titoli correlati</string>
+  <string name="pref_expand_related_titles_summary">Se disattivato, i titoli correlati non caricheranno automaticamente &amp; mostra espansa</string>
 </resources>
