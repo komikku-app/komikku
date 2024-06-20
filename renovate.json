@@ -7,6 +7,7 @@
     "Dependencies"
   ],
   "extends": [
+    ":semanticCommits",
     "config:best-practices",
     "github>mihonapp/mihon//.github/renovate.json5"
   ]
