@@ -27,7 +27,7 @@ fun SortTagContent(
     ) {
         itemsIndexed(tags, key = { _, tag -> tag }) { index, tag ->
             SortTagListItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 tag = tag,
                 canMoveUp = index != 0,
                 canMoveDown = index != tags.lastIndex,
