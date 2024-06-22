@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.annotation.ColorInt
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -10,15 +12,26 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
+import com.materialkolor.DynamicMaterialTheme
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterTransition
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.local.isLocal
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
-class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+class ReaderTransitionView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
+) :
     AbstractComposeView(context, attrs) {
 
     private var data: Data? by mutableStateOf(null)
@@ -50,7 +63,10 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
     @Composable
     override fun Content() {
         data?.let {
-            TachiyomiTheme {
+            // KMK -->
+            @Composable
+            fun content() {
+                // KMK <--
                 CompositionLocalProvider(
                     LocalTextStyle provides MaterialTheme.typography.bodySmall,
                     LocalContentColor provides MaterialTheme.colorScheme.onBackground,
@@ -60,6 +76,26 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
                         currChapterDownloaded = it.currChapterDownloaded,
                         goingToChapterDownloaded = it.goingToChapterDownloaded,
                     )
+                }
+            }
+            // KMK -->
+            val uiPreferences = Injekt.get<UiPreferences>()
+            val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+            val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+            if (seedColor != null) {
+                DynamicMaterialTheme(
+                    seedColor = Color(seedColor),
+                    useDarkTheme = isSystemInDarkTheme(),
+                    withAmoled = themeDarkAmoled,
+                    style = themeCoverBasedStyle,
+                    animate = true,
+                ) {
+                    content()
+                }
+            } else {
+                // KMK <--
+                TachiyomiTheme {
+                    content()
                 }
             }
         }

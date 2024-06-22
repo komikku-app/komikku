@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
@@ -19,7 +20,12 @@ import kotlin.math.max
 /**
  * Pager adapter used by this [viewer] to where [ViewerChapters] updates are posted.
  */
-class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
+class PagerViewerAdapter(
+    private val viewer: PagerViewer,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
+) : ViewPagerAdapter() {
 
     /**
      * Paired list of currently set items.
@@ -162,8 +168,23 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         val item = joinedItems[position].first
         val item2 = joinedItems[position].second
         return when (item) {
-            is ReaderPage -> PagerPageHolder(readerThemedContext, viewer, item, item2 as? ReaderPage)
-            is ChapterTransition -> PagerTransitionHolder(readerThemedContext, viewer, item)
+            is ReaderPage -> PagerPageHolder(
+                readerThemedContext,
+                viewer,
+                item,
+                item2 as? ReaderPage,
+                // KMK -->
+                seedColor = seedColor,
+                // KMK <--
+            )
+            is ChapterTransition -> PagerTransitionHolder(
+                readerThemedContext,
+                viewer,
+                item,
+                // KMK -->
+                seedColor = seedColor,
+                // KMK <--
+            )
             // SY --> else -> throw NotImplementedError("Holder for ${item.javaClass} not implemented") SY <--
         }
     }
@@ -378,10 +399,12 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             oldCurrent?.second == current ||
                 (current.index + 1) < (
                     (
-                        oldCurrent?.second
-                            ?: oldCurrent?.first
-                        ) as? ReaderPage
-                    )?.index ?: 0,
+                        (
+                            oldCurrent?.second
+                                ?: oldCurrent?.first
+                            ) as? ReaderPage
+                        )?.index ?: 0
+                    ),
         )
 
         // The listener may be removed when we split a page, so the ui may not have updated properly

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
@@ -15,7 +16,12 @@ import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 /**
  * RecyclerView Adapter used by this [viewer] to where [ViewerChapters] updates are posted.
  */
-class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class WebtoonAdapter(
+    val viewer: WebtoonViewer,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /**
      * List of currently set items.
@@ -117,11 +123,23 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerV
         return when (viewType) {
             PAGE_VIEW -> {
                 val view = ReaderPageImageView(readerThemedContext, isWebtoon = true)
-                WebtoonPageHolder(view, viewer)
+                WebtoonPageHolder(
+                    view,
+                    viewer,
+                    // KMK -->
+                    seedColor = seedColor,
+                    // KMK <--
+                )
             }
             TRANSITION_VIEW -> {
                 val view = LinearLayout(readerThemedContext)
-                WebtoonTransitionHolder(view, viewer)
+                WebtoonTransitionHolder(
+                    view,
+                    viewer,
+                    // KMK -->
+                    seedColor = seedColor,
+                    // KMK <--
+                )
             }
             else -> error("Unknown view type")
         }

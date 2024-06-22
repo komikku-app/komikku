@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
@@ -580,7 +581,11 @@ class ReaderActivity : BaseActivity() {
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                CircularProgressIndicator()
+                                CircularProgressIndicator(
+                                    // KMK -->
+                                    color = MaterialTheme.colorScheme.primary,
+                                    // KMK <--
+                                )
                                 Text(stringResource(MR.strings.loading))
                             }
                         },
@@ -901,8 +906,17 @@ class ReaderActivity : BaseActivity() {
      * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer.
      */
     private fun updateViewer() {
+        // KMK -->
+        val manga = viewModel.manga
+        // KMK <--
         val prevViewer = viewModel.state.value.viewer
-        val newViewer = ReadingMode.toViewer(viewModel.getMangaReadingMode(), this)
+        val newViewer = ReadingMode.toViewer(
+            viewModel.getMangaReadingMode(),
+            this,
+            // KMK -->
+            seedColor = manga?.asMangaCover()?.vibrantCoverColor,
+            // KMK <--
+        )
 
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
@@ -930,7 +944,6 @@ class ReaderActivity : BaseActivity() {
             viewModel.state.value.lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
         }
 
-        val manga = viewModel.state.value.manga
         val defaultReaderType = manga?.defaultReaderType(
             manga.mangaType(sourceName = sourceManager.get(manga.source)?.name),
         )
@@ -947,7 +960,12 @@ class ReaderActivity : BaseActivity() {
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
-        loadingIndicator = ReaderProgressIndicator(this)
+        loadingIndicator = ReaderProgressIndicator(
+            context = this,
+            // KMK -->
+            seedColor = manga?.asMangaCover()?.vibrantCoverColor,
+            // KMK <--
+        )
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
