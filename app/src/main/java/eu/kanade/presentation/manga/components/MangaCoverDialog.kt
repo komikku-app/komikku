@@ -68,6 +68,10 @@ fun MangaCoverDialog(
     modifier: Modifier = Modifier,
     // KMK <--
 ) {
+    // KMK -->
+    val iconColor = contentColorFor(MaterialTheme.colorScheme.secondaryContainer)
+    val dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant
+    // KMK <--
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -94,7 +98,7 @@ fun MangaCoverDialog(
                                 imageVector = Icons.Outlined.Close,
                                 contentDescription = stringResource(MR.strings.action_close),
                                 // KMK -->
-                                tint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                tint = iconColor,
                                 // KMK <--
                             )
                         }
@@ -108,7 +112,7 @@ fun MangaCoverDialog(
                                     icon = Icons.Outlined.Share,
                                     onClick = onShareClick,
                                     // KMK -->
-                                    iconTint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                    iconTint = iconColor,
                                     // KMK <--
                                 ),
                                 AppBar.Action(
@@ -116,7 +120,7 @@ fun MangaCoverDialog(
                                     icon = Icons.Outlined.Save,
                                     onClick = onSaveClick,
                                     // KMK -->
-                                    iconTint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                    iconTint = iconColor,
                                     // KMK <--
                                 ),
                             ),
@@ -137,7 +141,7 @@ fun MangaCoverDialog(
                                         imageVector = Icons.Outlined.Edit,
                                         contentDescription = stringResource(MR.strings.action_edit_cover),
                                         // KMK -->
-                                        tint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                        tint = iconColor,
                                         // KMK <--
                                     )
                                 }
@@ -146,7 +150,7 @@ fun MangaCoverDialog(
                                     onDismissRequest = { expanded = false },
                                     offset = DpOffset(8.dp, 0.dp),
                                     // KMK -->
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+                                    modifier = Modifier.background(dropdownBgColor),
                                     // KMK <--
                                 ) {
                                     DropdownMenuItem(
@@ -157,7 +161,7 @@ fun MangaCoverDialog(
                                         },
                                         // KMK -->
                                         colors = MenuDefaults.itemColors().copy(
-                                            textColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
+                                            textColor = contentColorFor(dropdownBgColor),
                                         ),
                                         // KMK <--
                                     )
@@ -169,7 +173,7 @@ fun MangaCoverDialog(
                                         },
                                         // KMK -->
                                         colors = MenuDefaults.itemColors().copy(
-                                            textColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
+                                            textColor = contentColorFor(dropdownBgColor),
                                         ),
                                         // KMK <--
                                     )

@@ -234,6 +234,9 @@ fun ExhUtils(
                     Icons.Outlined.KeyboardArrowDown
                 },
                 contentDescription = null,
+                // KMK -->
+                tint = MaterialTheme.colorScheme.primary,
+                // KMK <--
             )
         }
     }
