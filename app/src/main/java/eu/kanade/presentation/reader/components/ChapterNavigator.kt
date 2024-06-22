@@ -86,6 +86,9 @@ fun ChapterNavigator(
     val buttonColor = IconButtonDefaults.filledIconButtonColors(
         containerColor = backgroundColor,
         disabledContainerColor = backgroundColor,
+        // KMK -->
+        contentColor = MaterialTheme.colorScheme.primary,
+        // KMK <--
     )
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
@@ -198,6 +201,9 @@ fun ChapterNavigatorVert(
         val buttonColor = IconButtonDefaults.filledIconButtonColors(
             containerColor = backgroundColor,
             disabledContainerColor = backgroundColor,
+            // KMK -->
+            contentColor = MaterialTheme.colorScheme.primary,
+            // KMK <--
         )
         FilledIconButton(
             enabled = enabledPrevious,
