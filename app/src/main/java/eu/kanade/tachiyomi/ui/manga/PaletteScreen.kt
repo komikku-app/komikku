@@ -10,7 +10,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -33,15 +32,13 @@ class PaletteScreen(
     @ColorInt private val seedColor: Int?,
 ) : Screen() {
 
-    // KMK -->
-    private val uiPreferences = Injekt.get<UiPreferences>()
-    private val themeCoverBased = uiPreferences.themeCoverBased().get()
-    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
-    // KMK <--
-
     @Composable
     override fun Content() {
+        val uiPreferences = Injekt.get<UiPreferences>()
+        val themeCoverBased = uiPreferences.themeCoverBased().get()
+        val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+        val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+
         val seedColor = seedColor?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
 
         if (themeCoverBased) {

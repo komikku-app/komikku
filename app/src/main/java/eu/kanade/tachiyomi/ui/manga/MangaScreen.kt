@@ -36,7 +36,6 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.ChapterSettingsDialog
@@ -124,13 +123,6 @@ class MangaScreen(
 
     override fun onProvideAssistUrl() = assistUrl
 
-    // KMK -->
-    private val uiPreferences = Injekt.get<UiPreferences>()
-    private val themeCoverBased = uiPreferences.themeCoverBased().get()
-    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
-    // KMK <--
-
     @Composable
     override fun Content() {
         if (!ifSourcesLoaded()) {
@@ -202,12 +194,12 @@ class MangaScreen(
         }
 
         val seedColor = successState.seedColor
-        if (themeCoverBased && seedColor != null) {
+        if (screenModel.themeCoverBased && seedColor != null) {
             DynamicMaterialTheme(
                 seedColor = seedColor,
                 useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = themeDarkAmoled,
-                style = themeCoverBasedStyle,
+                withAmoled = screenModel.themeDarkAmoled,
+                style = screenModel.themeCoverBasedStyle,
                 animate = true,
                 content = { content() },
             )
@@ -387,7 +379,9 @@ class MangaScreen(
                     navigator.push(ExtensionsScreen(searchSource = successState.source.name))
                 }
             },
-            onCoverLoaded = { if (themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it) },
+            onCoverLoaded = {
+                if (screenModel.themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it)
+            },
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             hazeState = hazeState,
             // KMK <--
@@ -691,7 +685,7 @@ class MangaScreen(
         seedColor: Color?,
         // KMK <--
     ) {
-        navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor))
+        navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor?.toArgb()))
     }
 
     private fun openMergedMangaWebview(context: Context, navigator: Navigator, mergedMangaData: MergedMangaData) {

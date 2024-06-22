@@ -1,5 +1,6 @@
 package exh.ui.metadata
 
+import androidx.annotation.ColorInt
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,7 +25,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.materialkolor.DynamicMaterialTheme
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -36,24 +36,14 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.plus
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 class MetadataViewScreen(
     private val mangaId: Long,
     private val sourceId: Long,
     // KMK -->
-    private val seedColor: Color?,
+    @ColorInt private val seedColor: Int?,
     // KMK <--
 ) : Screen() {
-
-    // KMK -->
-    private val uiPreferences = Injekt.get<UiPreferences>()
-    private val themeCoverBased = uiPreferences.themeCoverBased().get()
-    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
-    // KMK <--
-
     @Composable
     override fun Content() {
         val screenModel = rememberScreenModel { MetadataViewScreenModel(mangaId, sourceId) }
@@ -119,12 +109,12 @@ class MetadataViewScreen(
         }
 
         // KMK -->
-        if (themeCoverBased && seedColor != null) {
+        if (screenModel.themeCoverBased && seedColor != null) {
             DynamicMaterialTheme(
-                seedColor = seedColor,
+                seedColor = Color(seedColor),
                 useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = themeDarkAmoled,
-                style = themeCoverBasedStyle,
+                withAmoled = screenModel.themeDarkAmoled,
+                style = screenModel.themeCoverBasedStyle,
                 animate = true,
                 content = { content() },
             )

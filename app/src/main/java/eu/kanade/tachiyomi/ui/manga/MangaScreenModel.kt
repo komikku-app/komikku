@@ -223,6 +223,9 @@ class MangaScreenModel(
 
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
+    val themeCoverBased = uiPreferences.themeCoverBased().get()
+    val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+    val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
     // KMK <--
 
     val manga: Manga?
