@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.LinearInterpolator
+import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -37,6 +38,9 @@ class WebtoonViewer(
     val activity: ReaderActivity,
     val isContinuous: Boolean = true,
     private val tapByPage: Boolean = false,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
 ) : Viewer {
 
     val downloadManager: DownloadManager by injectLazy()
@@ -66,7 +70,12 @@ class WebtoonViewer(
     /**
      * Adapter of the recycler view.
      */
-    private val adapter = WebtoonAdapter(this)
+    private val adapter = WebtoonAdapter(
+        this,
+        // KMK -->
+        seedColor = seedColor,
+        // KMK <--
+    )
 
     /**
      * Distance to scroll when the user taps on one side of the recycler view.

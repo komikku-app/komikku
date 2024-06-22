@@ -5,18 +5,25 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.materialkolor.DynamicMaterialTheme
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
 import tachiyomi.presentation.core.components.CombinedCircularProgressIndicator
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * A wrapper for [CircularProgressIndicator] that always rotates.
@@ -27,6 +34,9 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
 ) : AbstractComposeView(context, attrs, defStyleAttr) {
 
     init {
@@ -38,8 +48,25 @@ class ReaderProgressIndicator @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
-        TachiyomiTheme {
-            CombinedCircularProgressIndicator(progress = { progress })
+        // KMK -->
+        val uiPreferences = Injekt.get<UiPreferences>()
+        val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+        val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+        if (seedColor != null) {
+            DynamicMaterialTheme(
+                seedColor = Color(seedColor),
+                useDarkTheme = isSystemInDarkTheme(),
+                withAmoled = themeDarkAmoled,
+                style = themeCoverBasedStyle,
+                animate = true,
+            ) {
+                CombinedCircularProgressIndicator(progress = { progress })
+            }
+        } else {
+            // KMK <--
+            TachiyomiTheme {
+                CombinedCircularProgressIndicator(progress = { progress })
+            }
         }
     }
 

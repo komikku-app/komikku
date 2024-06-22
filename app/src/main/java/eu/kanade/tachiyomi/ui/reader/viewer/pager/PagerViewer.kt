@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import androidx.annotation.ColorInt
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -30,7 +31,12 @@ import kotlin.math.min
  * Implementation of a [Viewer] to display pages with a [ViewPager].
  */
 @Suppress("LeakingThis")
-abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
+abstract class PagerViewer(
+    val activity: ReaderActivity,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
+) : Viewer {
 
     val downloadManager: DownloadManager by injectLazy()
 
@@ -50,7 +56,12 @@ abstract class PagerViewer(val activity: ReaderActivity) : Viewer {
     /**
      * Adapter of the pager.
      */
-    private val adapter = PagerViewerAdapter(this)
+    private val adapter = PagerViewerAdapter(
+        this,
+        // KMK -->
+        seedColor = seedColor,
+        // KMK <--
+    )
 
     /**
      * Currently active item. It can be a chapter page or a chapter transition.

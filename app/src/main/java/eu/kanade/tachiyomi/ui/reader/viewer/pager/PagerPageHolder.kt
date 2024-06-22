@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
+import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
@@ -38,6 +39,9 @@ class PagerPageHolder(
     val viewer: PagerViewer,
     val page: ReaderPage,
     private var extraPage: ReaderPage? = null,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
 
     /**
@@ -49,7 +53,12 @@ class PagerPageHolder(
     /**
      * Loading progress bar to indicate the current progress.
      */
-    private val progressIndicator: ReaderProgressIndicator = ReaderProgressIndicator(readerThemedContext)
+    private val progressIndicator: ReaderProgressIndicator = ReaderProgressIndicator(
+        context = readerThemedContext,
+        // KMK -->
+        seedColor = seedColor,
+        // KMK <--
+    )
 
     /**
      * Error layout to show when the image fails to load.
