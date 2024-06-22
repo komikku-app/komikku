@@ -32,6 +32,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.materialkolor.DynamicMaterialTheme
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.ui.UiPreferences
@@ -272,6 +274,10 @@ class MangaScreen(
         }
         // SY <--
 
+        // KMK -->
+        val hazeState = remember { HazeState() }
+        // KMK <--
+
         MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
@@ -383,6 +389,7 @@ class MangaScreen(
             },
             onCoverLoaded = { if (themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it) },
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
+            hazeState = hazeState,
             // KMK <--
         )
 
@@ -472,6 +479,12 @@ class MangaScreen(
                             }
                         },
                         onDismissRequest = onDismissRequest,
+                        // KMK -->
+                        modifier = Modifier
+                            .hazeChild(
+                                state = hazeState,
+                            ),
+                        // KMK <--
                     )
                 } else {
                     LoadingScreen(Modifier.systemBarsPadding())

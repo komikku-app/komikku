@@ -260,6 +260,7 @@ dependencies {
     implementation(libs.compose.grid)
     implementation(libs.palette.ktx)
     implementation(libs.material.kolor)
+    implementation(libs.haze)
 
     implementation(libs.google.api.services.drive)
     implementation(libs.google.api.client.oauth)

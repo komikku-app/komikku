@@ -62,6 +62,9 @@ fun MangaCoverDialog(
     onSaveClick: () -> Unit,
     onEditClick: ((EditCoverAction) -> Unit)?,
     onDismissRequest: () -> Unit,
+    // KMK -->
+    modifier: Modifier = Modifier,
+    // KMK <--
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -71,6 +74,9 @@ fun MangaCoverDialog(
         ),
     ) {
         Scaffold(
+            // KMK -->
+            modifier = modifier,
+            // KMK <--
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             containerColor = Color.Transparent,
             bottomBar = {
