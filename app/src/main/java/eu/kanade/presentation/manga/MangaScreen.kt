@@ -498,6 +498,9 @@ private fun MangaScreenSmallImpl(
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
                     expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
+                    // KMK -->
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    // KMK <--
                 )
             }
         },
@@ -897,6 +900,9 @@ private fun MangaScreenLargeImpl(
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
                     expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
+                    // KMK -->
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    // KMK <--
                 )
             }
         },
@@ -1022,7 +1028,6 @@ private fun MangaScreenLargeImpl(
                             if (state.source !is StubSource && relatedMangasEnabled) {
                                 if (expandRelatedMangas) {
                                     if (state.relatedMangasSorted?.isNotEmpty() != false) {
-                                        item { HorizontalDivider() }
                                         item(
                                             key = MangaScreenItem.RELATED_TITLES,
                                             contentType = MangaScreenItem.RELATED_TITLES,

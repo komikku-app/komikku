@@ -19,9 +19,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -91,6 +93,9 @@ fun MangaCoverDialog(
                             Icon(
                                 imageVector = Icons.Outlined.Close,
                                 contentDescription = stringResource(MR.strings.action_close),
+                                // KMK -->
+                                tint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                // KMK <--
                             )
                         }
                     }
@@ -102,11 +107,17 @@ fun MangaCoverDialog(
                                     title = stringResource(MR.strings.action_share),
                                     icon = Icons.Outlined.Share,
                                     onClick = onShareClick,
+                                    // KMK -->
+                                    iconTint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                    // KMK <--
                                 ),
                                 AppBar.Action(
                                     title = stringResource(MR.strings.action_save),
                                     icon = Icons.Outlined.Save,
                                     onClick = onSaveClick,
+                                    // KMK -->
+                                    iconTint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                    // KMK <--
                                 ),
                             ),
                         )
@@ -125,12 +136,18 @@ fun MangaCoverDialog(
                                     Icon(
                                         imageVector = Icons.Outlined.Edit,
                                         contentDescription = stringResource(MR.strings.action_edit_cover),
+                                        // KMK -->
+                                        tint = contentColorFor(MaterialTheme.colorScheme.secondaryContainer),
+                                        // KMK <--
                                     )
                                 }
                                 DropdownMenu(
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false },
                                     offset = DpOffset(8.dp, 0.dp),
+                                    // KMK -->
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+                                    // KMK <--
                                 ) {
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(MR.strings.action_edit)) },
@@ -138,6 +155,11 @@ fun MangaCoverDialog(
                                             onEditClick(EditCoverAction.EDIT)
                                             expanded = false
                                         },
+                                        // KMK -->
+                                        colors = MenuDefaults.itemColors().copy(
+                                            textColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
+                                        ),
+                                        // KMK <--
                                     )
                                     DropdownMenuItem(
                                         text = { Text(text = stringResource(MR.strings.action_delete)) },
@@ -145,6 +167,11 @@ fun MangaCoverDialog(
                                             onEditClick(EditCoverAction.DELETE)
                                             expanded = false
                                         },
+                                        // KMK -->
+                                        colors = MenuDefaults.itemColors().copy(
+                                            textColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
+                                        ),
+                                        // KMK <--
                                     )
                                 }
                             }
@@ -204,7 +231,9 @@ private fun ActionsPill(content: @Composable () -> Unit) {
     Row(
         modifier = Modifier
             .clip(MaterialTheme.shapes.extraLarge)
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f)),
+            // KMK -->
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.95f)),
+        // KMK <--
     ) {
         content()
     }
