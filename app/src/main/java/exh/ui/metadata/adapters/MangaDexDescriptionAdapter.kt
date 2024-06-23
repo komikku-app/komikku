@@ -18,6 +18,8 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import exh.ui.metadata.adapters.MetadataUIUtil.getRatingString
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.sy.SYMR
 import kotlin.math.round
 
 @Composable
@@ -51,6 +53,7 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(textColor)
             // KMK <--
 

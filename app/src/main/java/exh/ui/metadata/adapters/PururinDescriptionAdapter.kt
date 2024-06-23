@@ -77,6 +77,7 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(textColor)
             // KMK <--
 

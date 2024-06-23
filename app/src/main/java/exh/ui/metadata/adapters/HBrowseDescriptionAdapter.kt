@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import tachiyomi.core.common.i18n.pluralStringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.sy.SYMR
 
 @Composable
@@ -40,6 +41,7 @@ fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.pages.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(textColor)
             // KMK <--
 
