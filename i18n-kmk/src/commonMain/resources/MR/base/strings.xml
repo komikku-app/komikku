@@ -22,6 +22,8 @@
     <string name="pref_theme_cover_based_style_content">Content</string>
     <string name="pref_expand_related_titles">Expand Related titles</string>
     <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
+    <string name="pref_show_home_on_related_titles">Home from Related titles</string>
+    <string name="pref_show_home_on_related_titles_summary">Show an icon while browsing Related titles to navigate directly back to Home</string>
 
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>

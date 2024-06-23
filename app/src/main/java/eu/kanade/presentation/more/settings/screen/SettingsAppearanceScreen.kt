@@ -236,6 +236,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                     subtitle = stringResource(KMR.strings.pref_expand_related_titles_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.showHomeOnRelatedTitles(),
+                    title = stringResource(KMR.strings.pref_show_home_on_related_titles),
+                    subtitle = stringResource(KMR.strings.pref_show_home_on_related_titles_summary),
+                    enabled = sourcePreferences.relatedMangas().get(),
+                ),
                 // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.recommendsInOverflow(),
