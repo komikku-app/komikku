@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.util.SourceTagsUtil.genreTextColor
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
@@ -41,13 +42,14 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             if (meta == null || meta !is TsuminoSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterTsBinding.bind(it)
 
-            binding.genre.text = meta.category?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
-                binding.genre.setBackgroundColor(it.first)
-                it.second
-            } ?: meta.category ?: context.stringResource(MR.strings.unknown)
-            // KMK -->
-            binding.genre.setTextColor(textColor)
-            // KMK <--
+            binding.genre.text = meta.category?.let { genre -> MetadataUIUtil.getGenreAndColour(context, genre) }
+                ?.let { (genre, name) ->
+                    binding.genre.setBackgroundColor(genre.color)
+                    // KMK -->
+                    binding.genre.setTextColor(genreTextColor(genre))
+                    // KMK <--
+                    name
+                } ?: meta.category ?: context.stringResource(MR.strings.unknown)
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
             // KMK -->
@@ -80,6 +82,7 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(textColor)
             // KMK <--
 

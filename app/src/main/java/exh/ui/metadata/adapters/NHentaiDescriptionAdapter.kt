@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.util.SourceTagsUtil.genreTextColor
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
@@ -46,14 +47,15 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             }.let { tags ->
                 if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
             }.let { categoriesString ->
-                categoriesString?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
-                    binding.genre.setBackgroundColor(it.first)
-                    it.second
-                } ?: categoriesString ?: context.stringResource(MR.strings.unknown)
+                categoriesString?.let { genre -> MetadataUIUtil.getGenreAndColour(context, genre) }
+                    ?.let { (genre, name) ->
+                        binding.genre.setBackgroundColor(genre.color)
+                        // KMK -->
+                        binding.genre.setTextColor(genreTextColor(genre))
+                        // KMK <--
+                        name
+                    } ?: categoriesString ?: context.stringResource(MR.strings.unknown)
             }
-            // KMK -->
-            binding.genre.setTextColor(textColor)
-            // KMK <--
 
             meta.favoritesCount?.let {
                 if (it == 0L) return@let
@@ -89,6 +91,7 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.id.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(textColor)
             // KMK <--
 

@@ -78,7 +78,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        val description = "meta"
+        val description = null
 
         return manga.copy(
             url = key ?: manga.url,
