@@ -57,7 +57,7 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
         // Copy tags -> genres
         val genres = tagsToGenreString()
 
-        val description = "meta"
+        val description = null
 
         return manga.copy(
             title = title ?: manga.title,

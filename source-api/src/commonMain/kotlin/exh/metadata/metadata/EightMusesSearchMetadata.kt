@@ -28,7 +28,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
 
         val genres = tagsToGenreString()
 
-        val description = "meta"
+        val description = null
 
         return manga.copy(
             url = key,
