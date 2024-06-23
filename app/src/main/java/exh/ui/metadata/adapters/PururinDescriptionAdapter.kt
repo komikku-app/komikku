@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.util.SourceTagsUtil.genreTextColor
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
@@ -41,14 +42,15 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             val binding = DescriptionAdapterPuBinding.bind(it)
 
             binding.genre.text = meta.tags.find { it.namespace == PururinSearchMetadata.TAG_NAMESPACE_CATEGORY }.let { genre ->
-                genre?.let { MetadataUIUtil.getGenreAndColour(context, it.name) }?.let {
-                    binding.genre.setBackgroundColor(it.first)
-                    it.second
-                } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
+                genre?.let { tag -> MetadataUIUtil.getGenreAndColour(context, tag.name) }
+                    ?.let { (genre, name) ->
+                        binding.genre.setBackgroundColor(genre.color)
+                        // KMK -->
+                        binding.genre.setTextColor(genreTextColor(genre))
+                        // KMK <--
+                        name
+                    } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
             }
-            // KMK -->
-            binding.genre.setTextColor(textColor)
-            // KMK <--
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
             // KMK -->
