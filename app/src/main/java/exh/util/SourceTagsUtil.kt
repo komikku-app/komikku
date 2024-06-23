@@ -1,6 +1,7 @@
 package exh.util
 
 import android.graphics.Color
+import androidx.annotation.ColorInt
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -89,19 +90,34 @@ object SourceTagsUtil {
     private const val TAG_TYPE_EXCLUDE = 69 // why not
 
     enum class GenreColor(val color: Int) {
-        DOUJINSHI_COLOR("#f44336"),
+        DOUJINSHI_COLOR("#ff614d"),
         MANGA_COLOR("#ff9800"),
         ARTIST_CG_COLOR("#fbc02d"),
         GAME_CG_COLOR("#4caf50"),
         WESTERN_COLOR("#8bc34a"),
-        NON_H_COLOR("#2196f3"),
-        IMAGE_SET_COLOR("#3f51b5"),
-        COSPLAY_COLOR("#9c27b0"),
-        ASIAN_PORN_COLOR("#9575cd"),
-        MISC_COLOR("#f06292"),
+        NON_H_COLOR("#2c9bf8"),
+        IMAGE_SET_COLOR("#3c4fb3"),
+        COSPLAY_COLOR("#921aa6"),
+        ASIAN_PORN_COLOR("#a685df"),
+        MISC_COLOR("#f36594"),
         ;
 
         constructor(color: String) : this(Color.parseColor(color))
+    }
+
+    @ColorInt fun genreTextColor(genre: GenreColor): Int {
+        return when (genre) {
+            GenreColor.DOUJINSHI_COLOR -> Color.parseColor("#000000")
+            GenreColor.MANGA_COLOR -> Color.parseColor("#000000")
+            GenreColor.ARTIST_CG_COLOR -> Color.parseColor("#000000")
+            GenreColor.GAME_CG_COLOR -> Color.parseColor("#000000")
+            GenreColor.WESTERN_COLOR -> Color.parseColor("#000000")
+            GenreColor.NON_H_COLOR -> Color.parseColor("#000000")
+            GenreColor.IMAGE_SET_COLOR -> Color.parseColor("#FFFFFF")
+            GenreColor.COSPLAY_COLOR -> Color.parseColor("#FFFFFF")
+            GenreColor.ASIAN_PORN_COLOR -> Color.parseColor("#000000")
+            GenreColor.MISC_COLOR -> Color.parseColor("#000000")
+        }
     }
 
     fun getLocaleSourceUtil(language: String?) = when (language) {

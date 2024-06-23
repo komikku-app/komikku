@@ -58,7 +58,7 @@ object MetadataUIUtil {
         "Video" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to SYMR.strings.video
         else -> null
     }?.let { (genreColor, stringId) ->
-        genreColor.color to context.stringResource(stringId)
+        genreColor to context.stringResource(stringId)
     }
 
     fun TextView.bindDrawable(
