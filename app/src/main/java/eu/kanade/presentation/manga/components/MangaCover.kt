@@ -61,7 +61,11 @@ enum class MangaCover(val ratio: Float) {
             Size.Medium -> rememberResourceBitmapPainter(id = R.drawable.cover_error_medium, tint)
             else -> rememberResourceBitmapPainter(id = R.drawable.cover_error, tint)
         }
-        val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
+        val animatedImageVector = when (size) {
+            Size.Big -> AnimatedImageVector.animatedVectorResource(R.drawable.anim_loading_big)
+            Size.Medium -> AnimatedImageVector.animatedVectorResource(R.drawable.anim_loading_medium)
+            else -> AnimatedImageVector.animatedVectorResource(R.drawable.anim_loading)
+        }
         var atEnd by remember { mutableStateOf(false) }
 
         suspend fun runAnimation() {
