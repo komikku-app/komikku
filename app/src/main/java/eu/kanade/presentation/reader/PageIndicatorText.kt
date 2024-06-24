@@ -26,7 +26,9 @@ fun PageIndicatorText(
     val text = "$currentPage / $totalPages"
 
     val style = TextStyle(
-        color = Color(235, 235, 235),
+        // KMK -->
+        color = MaterialTheme.colorScheme.primary,
+        // KMK <--
         fontSize = MaterialTheme.typography.bodySmall.fontSize,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp,
