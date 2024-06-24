@@ -1,7 +1,6 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -11,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
@@ -53,22 +51,15 @@ fun SourcesFilterScreen(
             )
             return@Scaffold
         }
-        // KMK -->
-        // Wrap around so we can use sticky header
-        Column(
-            modifier = Modifier.padding(contentPadding)
-        ) {
-            // KMK <--
-            SourcesFilterContent(
-                contentPadding = PaddingValues(Dp.Hairline),
-                state = state,
-                onClickLanguage = onClickLanguage,
-                onClickSource = onClickSource,
-                // SY -->
-                onClickSources = onClickSources,
-                // SY <--
-            )
-        }
+        SourcesFilterContent(
+            contentPadding = contentPadding,
+            state = state,
+            onClickLanguage = onClickLanguage,
+            onClickSource = onClickSource,
+            // SY -->
+            onClickSources = onClickSources,
+            // SY <--
+        )
     }
 }
 
@@ -83,7 +74,10 @@ private fun SourcesFilterContent(
     // SY <--
 ) {
     FastScrollLazyColumn(
-        contentPadding = contentPadding,
+        // KMK -->
+        // Using modifier instead of contentPdding so we can use stickyHeader
+        modifier = Modifier.padding(contentPadding),
+        // KMK <--
     ) {
         state.items.forEach { (language, sources) ->
             val enabled = language in state.enabledLanguages

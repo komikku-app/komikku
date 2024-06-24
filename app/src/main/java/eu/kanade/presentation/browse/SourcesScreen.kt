@@ -107,6 +107,7 @@ fun SourcesScreen(
         )
         // KMK -->
         else -> Column(
+            // Wrap around so we can use stickyHeader
             modifier = Modifier.padding(contentPadding),
         ) {
             AnimatedFloatingSearchBox(
