@@ -189,7 +189,11 @@ private fun ExtensionContent(
                             }
                         ExtensionHeader(
                             textRes = header.textRes,
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier
+                                // KMK -->
+                                .padding(end = MaterialTheme.padding.small)
+                                // KMK <--
+                                .animateItemPlacement(),
                             action = action,
                         )
                     }
