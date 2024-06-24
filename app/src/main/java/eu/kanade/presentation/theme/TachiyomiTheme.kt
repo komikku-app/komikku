@@ -5,7 +5,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
@@ -36,6 +38,37 @@ fun TachiyomiTheme(
         isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get(),
         content = content,
     )
+}
+
+@Composable
+fun TachiyomiTheme(
+    appTheme: AppTheme? = null,
+    amoled: Boolean? = null,
+    // KMK -->
+    seedColor: Color?,
+    // KMK <--
+    content: @Composable () -> Unit,
+) {
+    val uiPreferences = Injekt.get<UiPreferences>()
+    // KMK -->
+    val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
+    if (seedColor != null) {
+        DynamicMaterialTheme(
+            seedColor = seedColor,
+            useDarkTheme = isSystemInDarkTheme(),
+            withAmoled = isAmoled,
+            style = uiPreferences.themeCoverBasedStyle().get(),
+            animate = true,
+            content = content,
+        )
+    } else {
+        // KMK <--
+        BaseTachiyomiTheme(
+            appTheme = appTheme ?: uiPreferences.appTheme().get(),
+            isAmoled = isAmoled,
+            content = content,
+        )
+    }
 }
 
 @Composable

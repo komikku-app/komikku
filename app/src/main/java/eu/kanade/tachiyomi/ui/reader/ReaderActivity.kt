@@ -20,7 +20,6 @@ import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
@@ -52,7 +51,6 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
-import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
@@ -68,6 +66,7 @@ import eu.kanade.presentation.reader.ReadingModeSelectDialog
 import eu.kanade.presentation.reader.appbars.NavBarType
 import eu.kanade.presentation.reader.appbars.ReaderAppBars
 import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
+import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -407,16 +406,9 @@ class ReaderActivity : BaseActivity() {
 
         // KMK -->
         binding.pageNumber.setComposeContent {
-            if (themeCoverBased && seedColor != null) {
-                DynamicMaterialTheme(
-                    seedColor = seedColor,
-                    useDarkTheme = isSystemInDarkTheme(),
-                    withAmoled = themeDarkAmoled,
-                    style = themeCoverBasedStyle,
-                    animate = true,
-                    content = { pageNumberContent() },
-                )
-            } else {
+            TachiyomiTheme(
+                seedColor = seedColor.takeIf { themeCoverBased }
+            ) {
                 pageNumberContent()
             }
         }
@@ -695,16 +687,9 @@ class ReaderActivity : BaseActivity() {
 
         // KMK -->
         binding.dialogRoot.setComposeContent {
-            if (themeCoverBased && seedColor != null) {
-                DynamicMaterialTheme(
-                    seedColor = seedColor,
-                    useDarkTheme = isSystemInDarkTheme(),
-                    withAmoled = themeDarkAmoled,
-                    style = themeCoverBasedStyle,
-                    animate = true,
-                    content = { dialogRootContent() },
-                )
-            } else {
+            TachiyomiTheme(
+                seedColor = seedColor.takeIf { themeCoverBased }
+            ) {
                 dialogRootContent()
             }
         }

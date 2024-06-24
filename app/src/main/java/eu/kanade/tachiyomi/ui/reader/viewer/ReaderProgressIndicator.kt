@@ -7,7 +7,6 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +17,6 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import com.google.android.material.progressindicator.CircularProgressIndicator
-import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
 import tachiyomi.presentation.core.components.CombinedCircularProgressIndicator
@@ -50,23 +48,14 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     override fun Content() {
         // KMK -->
         val uiPreferences = Injekt.get<UiPreferences>()
-        val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-        val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
-        if (seedColor != null) {
-            DynamicMaterialTheme(
-                seedColor = Color(seedColor),
-                useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = themeDarkAmoled,
-                style = themeCoverBasedStyle,
-                animate = true,
-            ) {
-                CombinedCircularProgressIndicator(progress = { progress })
-            }
-        } else {
+        val themeCoverBased = uiPreferences.themeCoverBased().get()
+        // KMK <--
+        TachiyomiTheme(
+            // KMK -->
+            seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased }
             // KMK <--
-            TachiyomiTheme {
-                CombinedCircularProgressIndicator(progress = { progress })
-            }
+        ) {
+            CombinedCircularProgressIndicator(progress = { progress })
         }
     }
 

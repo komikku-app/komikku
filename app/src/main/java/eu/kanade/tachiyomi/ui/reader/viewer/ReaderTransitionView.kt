@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 import android.content.Context
 import android.util.AttributeSet
 import androidx.annotation.ColorInt
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -14,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
-import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterTransition
 import eu.kanade.presentation.theme.TachiyomiTheme
@@ -64,9 +62,14 @@ class ReaderTransitionView @JvmOverloads constructor(
     override fun Content() {
         data?.let {
             // KMK -->
-            @Composable
-            fun content() {
+            val uiPreferences = Injekt.get<UiPreferences>()
+            val themeCoverBased = uiPreferences.themeCoverBased().get()
+            // KMK <--
+            TachiyomiTheme(
+                // KMK -->
+                seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased }
                 // KMK <--
+            ) {
                 CompositionLocalProvider(
                     LocalTextStyle provides MaterialTheme.typography.bodySmall,
                     LocalContentColor provides MaterialTheme.colorScheme.onBackground,
@@ -76,26 +79,6 @@ class ReaderTransitionView @JvmOverloads constructor(
                         currChapterDownloaded = it.currChapterDownloaded,
                         goingToChapterDownloaded = it.goingToChapterDownloaded,
                     )
-                }
-            }
-            // KMK -->
-            val uiPreferences = Injekt.get<UiPreferences>()
-            val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-            val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
-            if (seedColor != null) {
-                DynamicMaterialTheme(
-                    seedColor = Color(seedColor),
-                    useDarkTheme = isSystemInDarkTheme(),
-                    withAmoled = themeDarkAmoled,
-                    style = themeCoverBasedStyle,
-                    animate = true,
-                ) {
-                    content()
-                }
-            } else {
-                // KMK <--
-                TachiyomiTheme {
-                    content()
                 }
             }
         }

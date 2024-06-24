@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
 import androidx.annotation.ColorInt
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,9 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.Screen
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Button
@@ -36,21 +35,12 @@ class PaletteScreen(
     override fun Content() {
         val uiPreferences = Injekt.get<UiPreferences>()
         val themeCoverBased = uiPreferences.themeCoverBased().get()
-        val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-        val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
 
         val seedColor = seedColor?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
 
-        if (themeCoverBased) {
-            DynamicMaterialTheme(
-                seedColor = seedColor,
-                useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = themeDarkAmoled,
-                style = themeCoverBasedStyle,
-                animate = true,
-                content = { MaterialThemeContent(seedColor) },
-            )
-        } else {
+        TachiyomiTheme(
+            seedColor = seedColor.takeIf { themeCoverBased }
+        ) {
             MaterialThemeContent(seedColor)
         }
     }

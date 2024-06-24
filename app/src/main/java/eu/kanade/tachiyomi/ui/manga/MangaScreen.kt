@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,7 +30,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.materialkolor.DynamicMaterialTheme
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 import eu.kanade.domain.manga.model.hasCustomCover
@@ -46,6 +44,7 @@ import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
 import eu.kanade.presentation.manga.components.SetIntervalDialog
+import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
@@ -194,16 +193,9 @@ class MangaScreen(
         }
 
         val seedColor = successState.seedColor
-        if (screenModel.themeCoverBased && seedColor != null) {
-            DynamicMaterialTheme(
-                seedColor = seedColor,
-                useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = screenModel.themeDarkAmoled,
-                style = screenModel.themeCoverBasedStyle,
-                animate = true,
-                content = { content() },
-            )
-        } else {
+        TachiyomiTheme(
+            seedColor = seedColor.takeIf { screenModel.themeCoverBased }
+        ) {
             content()
         }
 

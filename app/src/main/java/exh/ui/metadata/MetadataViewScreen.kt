@@ -1,7 +1,6 @@
 package exh.ui.metadata
 
 import androidx.annotation.ColorInt
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -24,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.i18n.MR
@@ -109,18 +108,11 @@ class MetadataViewScreen(
         }
 
         // KMK -->
-        if (screenModel.themeCoverBased && seedColor != null) {
-            DynamicMaterialTheme(
-                seedColor = Color(seedColor),
-                useDarkTheme = isSystemInDarkTheme(),
-                withAmoled = screenModel.themeDarkAmoled,
-                style = screenModel.themeCoverBasedStyle,
-                animate = true,
-                content = { content() },
-            )
-        } else {
+        TachiyomiTheme(
+            seedColor = seedColor?.let { Color(seedColor) }.takeIf { screenModel.themeCoverBased }
+        ) {
+            // KMK <--
             content()
         }
-        // KMK <--
     }
 }
