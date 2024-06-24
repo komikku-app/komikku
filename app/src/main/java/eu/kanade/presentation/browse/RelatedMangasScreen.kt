@@ -119,11 +119,7 @@ fun RelatedMangaTitle(
 ) {
     Row(
         modifier = modifier
-            .padding(
-                start = MaterialTheme.padding.medium,
-                end = MaterialTheme.padding.small,
-                top = MaterialTheme.padding.small,
-            )
+            .padding(top = MaterialTheme.padding.small)
             .fillMaxWidth()
             .let {
                 if (onLongClick == null) {
