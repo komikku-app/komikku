@@ -30,6 +30,8 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import kotlinx.collections.immutable.persistentListOf
@@ -69,7 +71,9 @@ fun MangaToolbar(
 ) {
     // KMK -->
     val navigator = LocalNavigator.current
-    fun onHomeClicked() = navigator?.popUntil { screen -> screen !is MangaScreen }
+    fun onHomeClicked() = navigator?.popUntil { screen ->
+        screen is SourceFeedScreen || screen is BrowseSourceScreen
+    }
     val isHomeEnabled = Injekt.get<UiPreferences>().showHomeOnRelatedTitles().get()
     // KMK <--
     Column(
@@ -92,14 +96,14 @@ fun MangaToolbar(
                     }
                     // KMK -->
                     navigator?.let {
-                        if (isHomeEnabled && navigator.size >= 3 &&
-                            navigator.items[navigator.size - 2] is MangaScreen
+                        if (navigator.size >= 2 && navigator.items[navigator.size - 2] is MangaScreen ||
+                            navigator.size >= 5
                         ) {
                             IconButton(onClick = { onHomeClicked() }) {
                                 UpIcon(navigationIcon = Icons.Filled.Home)
                             }
                         }
-                    }
+                    }.takeIf { isHomeEnabled }
                     // KMK <--
                 }
             },
