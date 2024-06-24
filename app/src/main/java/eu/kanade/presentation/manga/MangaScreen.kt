@@ -117,6 +117,7 @@ import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrollingUp
@@ -632,6 +633,8 @@ private fun MangaScreenSmallImpl(
                                             subtitle = null,
                                             onClick = onRelatedMangasScreenClick,
                                             onLongClick = null,
+                                            modifier = Modifier
+                                                .padding(horizontal = MaterialTheme.padding.medium),
                                         )
                                         RelatedMangas(
                                             relatedMangas = state.relatedMangasSorted,
@@ -1039,6 +1042,8 @@ private fun MangaScreenLargeImpl(
                                                     subtitle = null,
                                                     onClick = onRelatedMangasScreenClick,
                                                     onLongClick = null,
+                                                    modifier = Modifier
+                                                        .padding(horizontal = MaterialTheme.padding.medium),
                                                 )
                                                 RelatedMangas(
                                                     relatedMangas = state.relatedMangasSorted,

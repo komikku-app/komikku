@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
@@ -36,9 +36,11 @@ fun RelatedMangasCompactGrid(
     onKeywordLongClick: (String) -> Unit,
     selection: List<Manga>,
 ) {
-    LazyVerticalGrid(
+    FastScrollLazyVerticalGrid(
         columns = columns,
-        contentPadding = contentPadding + PaddingValues(MaterialTheme.padding.small),
+        contentPadding = contentPadding + PaddingValues(horizontal = MaterialTheme.padding.small),
+        // padding for scrollbar
+        topContentPadding = contentPadding.calculateTopPadding(),
         verticalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridVerticalSpacer),
         horizontalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridHorizontalSpacer),
     ) {
