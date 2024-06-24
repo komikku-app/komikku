@@ -69,7 +69,7 @@ class PaletteScreen(
             },
         ) { contentPadding ->
             ScrollbarLazyColumn(
-                // Using modifier instead of contentPdding so we can use stickyHeader
+                // Using modifier instead of contentPadding so we can use stickyHeader
                 modifier = Modifier.padding(contentPadding),
             ) {
                 item {

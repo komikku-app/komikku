@@ -75,7 +75,7 @@ private fun SourcesFilterContent(
 ) {
     FastScrollLazyColumn(
         // KMK -->
-        // Using modifier instead of contentPdding so we can use stickyHeader
+        // Using modifier instead of contentPadding so we can use stickyHeader
         modifier = Modifier.padding(contentPadding),
         // KMK <--
     ) {
