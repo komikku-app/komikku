@@ -92,7 +92,9 @@ fun MangaToolbar(
                     }
                     // KMK -->
                     navigator?.let {
-                        if (isHomeEnabled && navigator.size >= 3) {
+                        if (isHomeEnabled && navigator.size >= 3 &&
+                            navigator.items[navigator.size - 2] is MangaScreen
+                        ) {
                             IconButton(onClick = { onHomeClicked() }) {
                                 UpIcon(navigationIcon = Icons.Filled.Home)
                             }
