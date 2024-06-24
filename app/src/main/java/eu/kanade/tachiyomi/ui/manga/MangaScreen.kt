@@ -362,11 +362,27 @@ class MangaScreen(
             onSourceClick = {
                 if (successState.source !is StubSource) {
                     val screen = when {
+                        // Clicked on source of an entry being merged with previous entry or
+                        // source of an recommending entry (to search again)
                         smartSearchConfig != null -> SmartSearchScreen(successState.source.id, smartSearchConfig)
                         screenModel.useNewSourceNavigation -> SourceFeedScreen(successState.source.id)
                         else -> BrowseSourceScreen(successState.source.id, GetRemoteManga.QUERY_POPULAR)
                     }
-                    navigator.push(screen)
+                    when (screen) {
+                        // When doing a migrate/recommend => replace previous screen to perform search again.
+                        is SmartSearchScreen -> {
+                            navigator.popUntil { it is SmartSearchScreen }
+                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+                        }
+                        is SourceFeedScreen -> {
+                            navigator.popUntil { it is SourceFeedScreen }
+                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+                        }
+                        else -> {
+                            navigator.popUntil { it is BrowseSourceScreen }
+                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+                        }
+                    }
                 } else {
                     navigator.push(ExtensionsScreen(searchSource = successState.source.name))
                 }
@@ -708,6 +724,9 @@ class MangaScreen(
     // SY <--
 
     // EXH -->
+    /**
+     * Called when click Merge on an entry to search for entries to merge.
+     */
     private fun openSmartSearch(navigator: Navigator, manga: Manga) {
         val smartSearchConfig = SourcesScreen.SmartSearchConfig(manga.title, manga.id)
 

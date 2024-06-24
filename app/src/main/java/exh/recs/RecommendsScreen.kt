@@ -147,6 +147,9 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         // KMK <--
     }
 
+    /**
+     * Called when click on an recommending entry to search sources for it.
+     */
     private fun openSmartSearch(navigator: Navigator, title: String) {
         val smartSearchConfig = SourcesScreen.SmartSearchConfig(title)
         navigator.push(SourcesScreen(smartSearchConfig))

@@ -63,6 +63,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
 import exh.ui.ifSourcesLoaded
+import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -85,6 +86,8 @@ data class BrowseSourceScreen(
     // SY -->
     private val filtersJson: String? = null,
     private val savedSearch: Long? = null,
+    /** being set when called from [SmartSearchScreen] or when click on a manga from this screen
+     * which was previously opened from `SmartSearchScreen` */
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
     // SY <--
 ) : Screen(), AssistContentScreen {
