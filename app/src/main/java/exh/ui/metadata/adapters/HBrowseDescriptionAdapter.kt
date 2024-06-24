@@ -2,6 +2,7 @@ package exh.ui.metadata.adapters
 
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,8 +23,8 @@ import tachiyomi.i18n.sy.SYMR
 fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = LocalContentColor.current.toArgb()
     // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
@@ -42,7 +43,7 @@ fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
-            binding.moreInfo.setTextColor(textColor)
+            binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
             binding.pages.setOnLongClickListener {

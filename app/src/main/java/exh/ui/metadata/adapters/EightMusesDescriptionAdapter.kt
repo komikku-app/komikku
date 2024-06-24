@@ -22,7 +22,7 @@ import tachiyomi.i18n.sy.SYMR
 fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
+    val titleColor = MaterialTheme.colorScheme.primary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     // KMK <--
     AndroidView(
@@ -37,11 +37,11 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
 
             binding.title.text = meta.title ?: context.stringResource(MR.strings.unknown)
             // KMK -->
-            binding.title.setTextColor(textColor)
+            binding.title.setTextColor(titleColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
-            binding.moreInfo.setTextColor(textColor)
+            binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
             binding.title.setOnLongClickListener {
@@ -51,9 +51,6 @@ fun EightMusesDescription(state: State.Success, openMetadataViewer: () -> Unit) 
                 )
                 true
             }
-            // KMK -->
-            binding.title.setTextColor(textColor)
-            // KMK <--
 
             binding.moreInfo.setOnClickListener {
                 openMetadataViewer()
