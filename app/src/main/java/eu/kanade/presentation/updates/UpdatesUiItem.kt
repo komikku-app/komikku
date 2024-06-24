@@ -183,6 +183,7 @@ private fun UpdatesUiItem(
             // KMK -->
             bgColor = bgColor,
             tint = onBgColor,
+            size = MangaCover.Size.Big,
             // KMK <--
         )
 

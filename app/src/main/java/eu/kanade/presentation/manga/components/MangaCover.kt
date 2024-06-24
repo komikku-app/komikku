@@ -34,6 +34,12 @@ enum class MangaCover(val ratio: Float) {
     Book(2f / 3f),
     ;
 
+    enum class Size {
+        Normal,
+        Medium,
+        Big,
+    }
+
     @Composable
     operator fun invoke(
         data: Any?,
@@ -46,9 +52,15 @@ enum class MangaCover(val ratio: Float) {
         bgColor: Color? = null,
         @ColorInt tint: Int? = null,
         onCoverLoaded: ((DomainMangaCover) -> Unit)? = null,
+        size: Size = Size.Normal,
         // KMK <--
     ) {
         // KMK -->
+        val coverErrorPainter = when (size) {
+            Size.Big -> rememberResourceBitmapPainter(id = R.drawable.cover_error_big, tint)
+            Size.Medium -> rememberResourceBitmapPainter(id = R.drawable.cover_error_medium, tint)
+            else -> rememberResourceBitmapPainter(id = R.drawable.cover_error, tint)
+        }
         val animatedImageVector = AnimatedImageVector.animatedVectorResource(R.drawable.anim_waiting)
         var atEnd by remember { mutableStateOf(false) }
 
@@ -71,8 +83,8 @@ enum class MangaCover(val ratio: Float) {
             // KMK -->
             // placeholder = ColorPainter(CoverPlaceholderColor),
             placeholder = rememberAnimatedVectorPainter(animatedImageVector = animatedImageVector, atEnd = atEnd),
-            error = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
-            fallback = rememberResourceBitmapPainter(id = R.drawable.cover_error, tint),
+            error = coverErrorPainter,
+            fallback = coverErrorPainter,
             onSuccess = {
                 succeed = true
                 if (onCoverLoaded != null) {

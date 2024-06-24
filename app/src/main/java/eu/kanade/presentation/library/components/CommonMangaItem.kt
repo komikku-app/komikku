@@ -382,6 +382,7 @@ fun MangaListItem(
             alpha = coverAlpha,
             bgColor = bgColor,
             tint = onBgColor,
+            size = MangaCover.Size.Big,
             // KMK <--
         )
         Text(

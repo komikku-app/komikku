@@ -6,10 +6,10 @@
     </item>
 
     <item
-        android:top="48dp"
-        android:bottom="48dp"
-        android:left="48dp"
-        android:right="48dp"
+        android:top="24dp"
+        android:bottom="24dp"
+        android:left="24dp"
+        android:right="24dp"
         android:drawable="@drawable/cover_error_vector"
         />
 
