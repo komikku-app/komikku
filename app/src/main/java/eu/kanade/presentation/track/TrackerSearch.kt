@@ -195,7 +195,7 @@ fun TrackerSearch(
                     ) {
                         items(
                             items = availableTracks,
-                            key = { it.hashCode() },
+                            key = { "tracker-search-${it.hashCode()}" },
                         ) {
                             SearchResultItem(
                                 trackSearch = it,

@@ -205,7 +205,7 @@ fun SourceFeedList(
     ) {
         items(
             items,
-            key = { it.id },
+            key = { "source-feed-${it.id}" },
         ) { item ->
             GlobalSearchResultItem(
                 modifier = Modifier.animateItemPlacement(),

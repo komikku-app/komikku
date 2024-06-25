@@ -47,7 +47,7 @@ fun RelatedMangasCompactGrid(
         relatedMangas.forEach { related ->
             val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                header(key = "$related#header") {
+                header(key = "${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -56,11 +56,11 @@ fun RelatedMangasCompactGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                header(key = "$related#content") { RelatedMangasLoadingItem() }
+                header(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
             } else {
                 val relatedManga = related as RelatedManga.Success
-                header(key = "${related.keyword}#divider") { HorizontalDivider() }
-                header(key = "${related.keyword}#header") {
+                header(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                header(key = "${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(KMR.strings.related_mangas_more)
@@ -77,7 +77,10 @@ fun RelatedMangasCompactGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
+                items(
+                    key = { "related-compact-${relatedManga.mangaList[it].id}" },
+                    count = relatedManga.mangaList.size,
+                ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceCompactGridItem(
                         manga = manga,

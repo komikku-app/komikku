@@ -232,7 +232,7 @@ private fun SearchResult(
                 ) {
                     items(
                         items = it,
-                        key = { i -> i.hashCode() },
+                        key = { i -> "settings-search-${i.hashCode()}" },
                     ) { item ->
                         Column(
                             modifier = Modifier

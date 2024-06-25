@@ -25,7 +25,7 @@ fun SortTagContent(
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
-        itemsIndexed(tags, key = { _, tag -> tag }) { index, tag ->
+        itemsIndexed(tags, key = { _, tag -> "sort-tag-$tag" }) { index, tag ->
             SortTagListItem(
                 modifier = Modifier.animateItemPlacement(),
                 tag = tag,

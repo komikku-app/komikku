@@ -39,8 +39,8 @@ fun RelatedMangasList(
         relatedMangas.forEach { related ->
             val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                item(key = "$related#divider") { HorizontalDivider() }
-                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX$related#header") {
+                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -54,11 +54,11 @@ fun RelatedMangasList(
                             .background(MaterialTheme.colorScheme.background),
                     )
                 }
-                item(key = "$related#content") { RelatedMangasLoadingItem() }
+                item(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
             } else {
                 val relatedManga = related as RelatedManga.Success
-                item(key = "${related.keyword}#divider") { HorizontalDivider() }
-                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.keyword}#header") {
+                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(KMR.strings.related_mangas_more)
@@ -80,7 +80,10 @@ fun RelatedMangasList(
                             .background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
+                items(
+                    key = { "related-list-${relatedManga.mangaList[it].id}" },
+                    count = relatedManga.mangaList.size,
+                ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceListItem(
                         manga = manga,

@@ -24,7 +24,7 @@ fun BiometricTimesContent(
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
-        items(timeRanges, key = { it.formattedString }) { timeRange ->
+        items(timeRanges, key = { "biometric-${it.formattedString}" }) { timeRange ->
             BiometricTimesListItem(
                 modifier = Modifier.animateItemPlacement(),
                 timeRange = timeRange,

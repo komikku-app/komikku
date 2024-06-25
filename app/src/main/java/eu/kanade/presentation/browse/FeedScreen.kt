@@ -104,7 +104,7 @@ fun FeedScreen(
                 ) {
                     items(
                         state.items.orEmpty(),
-                        key = { it.feed.id },
+                        key = { "feed-${it.feed.id}" },
                     ) { item ->
                         GlobalSearchResultItem(
                             modifier = Modifier.animateItemPlacement(),

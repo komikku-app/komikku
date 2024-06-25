@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material.icons.outlined.Done
@@ -91,7 +90,7 @@ fun MigrationListScreen(
         ScrollbarLazyColumn(
             contentPadding = contentPadding + topSmallPaddingValues,
         ) {
-            items(items, key = { it.manga.id }) { migrationItem ->
+            items(items, key = { "migration-list-${it.manga.id}" }) { migrationItem ->
                 Row(
                     Modifier
                         .fillMaxWidth()

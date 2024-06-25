@@ -90,7 +90,7 @@ private fun AppThemesList(
     ) {
         items(
             items = appThemes,
-            key = { it.name },
+            key = { "theme-${it.name}" },
         ) { appTheme ->
             Column(
                 modifier = Modifier

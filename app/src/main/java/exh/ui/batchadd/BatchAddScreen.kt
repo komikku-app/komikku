@@ -125,7 +125,7 @@ class BatchAddScreen : Screen() {
                         }
                         itemsIndexed(
                             state.events,
-                            key = { index, text -> index + text.hashCode() },
+                            key = { index, text -> "batch-add-${index + text.hashCode()}" },
                         ) { _, text ->
                             Text(
                                 text = text,

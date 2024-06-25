@@ -119,7 +119,7 @@ internal fun GlobalSearchContent(
         contentPadding = contentPadding,
     ) {
         items.forEach { (source, result) ->
-            item(key = source.id) {
+            item(key = "global-search-${source.id}") {
                 // KMK -->
                 val domainSource = DomainSource(
                     source.id,
