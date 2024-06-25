@@ -596,8 +596,7 @@ class MangaScreen(
 
         // KMK -->
         navigator.popUntil { screen ->
-            navigator.size < 2 || screen is BrowseSourceScreen ||
-                screen is HomeScreen || screen is SourceFeedScreen
+            screen is BrowseSourceScreen || screen is HomeScreen || screen is SourceFeedScreen
         }
         // KMK <--
 
