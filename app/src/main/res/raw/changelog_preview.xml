@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9066" changeDate="June 25, 2024">
+        <changelogtext>[b]New:[/b] Home icon in manga view</changelogtext>
+        <changelogtext>[b]New:[/b] Showing changelog in preview build</changelogtext>
+        <changelogtext>[b]Improve:[/b] Full color for Reader &amp; Cover</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better background for full cover view</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better cover_error &amp; cover_loading size</changelogtext>
+        <changelogtext>[b]Improve:[/b] navigation flow when click on manga's source</changelogtext>
+        <changelogtext>[b]Improve:[/b] Sticky header &amp; language for sources filter</changelogtext>
+        <changelogtext>[b]Improve:[/b] Metadata view</changelogtext>
+        <changelogtext>[b]Improve:[/b] Scrollbar for related mangas screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] other UI improvements</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Related titles screens</changelogtext>
+        <changelogtext>[b]Fix:[/b] unexpected skips in strong skipping mode</changelogtext>
+        <changelogtext>Translations update from Hosted Weblate (mihonapp/mihon#904)</changelogtext>
+        <changelogtext>Add log &amp; improve key generation to better debug crashing issues</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9036" changeDate="June 20, 2024">
         <changelogtext>[b]New:[/b] theme cover based for Reader</changelogtext>
         <changelogtext>[b]Improve:[/b] update theme color when change cover in reader &amp; performance</changelogtext>
