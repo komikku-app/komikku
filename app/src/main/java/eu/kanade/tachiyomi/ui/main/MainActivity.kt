@@ -79,6 +79,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
@@ -97,6 +98,8 @@ import kotlinx.coroutines.launch
 import logcat.LogPriority
 import mihon.core.migration.Migrator
 import tachiyomi.core.common.Constants
+import tachiyomi.core.common.preference.Preference
+import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
@@ -104,6 +107,8 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 import androidx.compose.ui.graphics.Color.Companion as ComposeColor
@@ -304,12 +309,31 @@ class MainActivity : BaseActivity() {
             }
             // SY <--
 
-            var showChangelog by remember { mutableStateOf(didMigration && !BuildConfig.DEBUG) }
+            // KMK -->
+            val previewLastVersion = Injekt.get<PreferenceStore>().getInt(
+                Preference.appStateKey("preview_last_version_code"),
+                0,
+            )
+            val previewCurrentVersion = BuildConfig.COMMIT_COUNT.toInt()
+            // KMK <--
+
+            var showChangelog by remember {
+                mutableStateOf(
+                    // KMK -->
+                    // BuildConfig.DEBUG ||
+                    isReleaseBuildType && didMigration ||
+                        isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()
+                    // KMK <--
+                )
+            }
             if (showChangelog) {
                 // SY -->
                 WhatsNewDialog(onDismissRequest = { showChangelog = false })
                 // SY <--
             }
+            // KMK -->
+            previewLastVersion.set(previewCurrentVersion)
+            // KMK <--
 
             // SY -->
             ConfigureExhDialog(run = runExhConfigureDialog, onRunning = { runExhConfigureDialog = false })

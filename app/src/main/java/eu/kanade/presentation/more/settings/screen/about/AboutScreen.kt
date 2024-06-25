@@ -294,6 +294,7 @@ object AboutScreen : Screen() {
         }
 
         // SY -->
+        // KMK: Unused now
         if (showWhatsNewDialog) {
             WhatsNewDialog(onDismissRequest = { showWhatsNewDialog = false })
         }
