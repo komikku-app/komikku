@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.net.toUri
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -92,8 +91,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
-import soup.compose.material.motion.animation.materialSharedAxisX
-import soup.compose.material.motion.animation.rememberSlideDistance
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
@@ -158,17 +155,9 @@ class MangaScreen(
         }
 
         val content = @Composable {
-            val slideDistance = rememberSlideDistance()
-            AnimatedContent(
+            Crossfade(
                 targetState = showingRelatedMangasScreen.value,
-                transitionSpec = {
-                    materialSharedAxisX(
-                        forward = navigator.lastEvent != StackEvent.Pop,
-                        slideDistance = slideDistance,
-                    )
-                },
-                label = "manga_related_transition",
-                contentKey = { "showingRelatedMangasScreen#$it" }
+                label = "manga_related_crossfade",
             ) { showRelatedMangasScreen ->
                 when (showRelatedMangasScreen) {
                     true -> RelatedMangasScreen(
