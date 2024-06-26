@@ -1962,8 +1962,8 @@
     <ID>TooGenericExceptionThrown:EHentai.kt$EHentai$throw Exception(it.text())</ID>
     <ID>TooGenericExceptionThrown:ExtensionLoader.kt$ExtensionLoader$throw Exception("Unknown source class type: ${obj.javaClass}")</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": ${e.message}", e)</ID>
-    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive) + ": Max retries reached.")</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive, e.message ?: "Exception"), e)</ID>
+    <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_before_sync_gdrive, "Max retries reached."))</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_deleting_google_drive_lock_file), e)</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.error_uploading_sync_data) + ": ${e.message}", e)</ID>
     <ID>TooGenericExceptionThrown:GoogleDriveSyncService.kt$GoogleDriveSyncService$throw Exception(context.stringResource(MR.strings.google_drive_not_signed_in))</ID>

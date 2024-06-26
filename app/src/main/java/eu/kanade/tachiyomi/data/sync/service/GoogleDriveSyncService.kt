@@ -154,11 +154,11 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
 
             if (retries >= maxRetries) {
                 logcat(LogPriority.ERROR) { "Max retries reached, exiting sync process" }
-                throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive) + ": Max retries reached.")
+                throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive, "Max retries reached."))
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e) { "Error in GoogleDrive beforeSync" }
-            throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive) + ": ${e.message}", e)
+            throw Exception(context.stringResource(SYMR.strings.error_before_sync_gdrive, e.message ?: "Exception"), e)
         }
     }
 
