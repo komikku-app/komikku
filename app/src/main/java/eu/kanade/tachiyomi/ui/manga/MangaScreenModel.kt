@@ -2050,15 +2050,15 @@ sealed interface RelatedManga {
         }
 
         internal fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
-            val mangaUrls = HashSet<String>().apply { add(manga.url) }
+            val mangaIds = HashSet<Long>().apply { add(manga.id) }
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
                     Success(
                         relatedManga.keyword,
                         relatedManga.mangaList
-                            .filterNot { mangaUrls.contains(it.url) }
-                            .onEach { mangaUrls.add(it.url) },
+                            .filterNot { mangaIds.contains(it.id) }
+                            .onEach { mangaIds.add(it.id) },
                     )
                 } else {
                     relatedManga
