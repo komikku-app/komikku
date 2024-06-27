@@ -110,7 +110,7 @@ detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plug
 detekt-rules-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detekt-rules-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
 
-google-api-services-drive = "com.google.apis:google-api-services-drive:v3-rev197-1.25.0"
+google-api-services-drive = "com.google.apis:google-api-services-drive:v3-rev20240521-2.0.0"
 google-api-client-oauth = "com.google.oauth-client:google-oauth-client:1.36.0"
 
 [bundles]
