@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">腥红</string>
+  <string name="theme_matrix">黑客</string>
+  <string name="theme_mocha">摩卡</string>
+  <string name="theme_sapphire">蓝宝石</string>
   <string name="action_source_search">搜索源</string>
   <string name="action_toggle_nsfw_only">仅切换 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>

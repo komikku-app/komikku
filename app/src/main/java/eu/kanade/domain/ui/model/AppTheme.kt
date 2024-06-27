@@ -4,10 +4,20 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 enum class AppTheme(val titleRes: StringResource?) {
     DEFAULT(MR.strings.label_default),
     MONET(MR.strings.theme_monet),
+
+    // Aniyomi themes
+    CLOUDFLARE(KMR.strings.theme_cloudflare),
+    COTTONCANDY(KMR.strings.theme_cottoncandy),
+    DOOM(KMR.strings.theme_doom),
+    MATRIX(KMR.strings.theme_matrix),
+    MOCHA(KMR.strings.theme_mocha),
+    SAPPHIRE(KMR.strings.theme_sapphire),
+
     GREEN_APPLE(MR.strings.theme_greenapple),
     LAVENDER(MR.strings.theme_lavender),
     MIDNIGHT_DUSK(MR.strings.theme_midnightdusk),
