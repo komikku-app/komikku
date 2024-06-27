@@ -182,7 +182,7 @@ dependencies {
 
     implementation(libs.bundles.sqlite)
     // SY -->
-    implementation(libs.sqlcipher)
+    implementation(sylibs.sqlcipher)
     // SY <--
 
     implementation(kotlinx.reflect)
@@ -262,9 +262,6 @@ dependencies {
     implementation(libs.material.kolor)
     implementation(libs.haze)
 
-    implementation(libs.google.api.services.drive)
-    implementation(libs.google.api.client.oauth)
-
     // Logging
     implementation(libs.timber)
     implementation(libs.logcat)
@@ -298,6 +295,10 @@ dependencies {
     // RatingBar (SY)
     implementation(sylibs.ratingbar)
     implementation(sylibs.composeRatingbar)
+
+    // Google drive
+    implementation(sylibs.google.api.services.drive)
+    implementation(sylibs.google.api.client.oauth)
 }
 
 androidComponents {
