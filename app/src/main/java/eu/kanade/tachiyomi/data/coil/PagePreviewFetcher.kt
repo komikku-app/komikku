@@ -260,5 +260,7 @@ class PagePreviewFetcher(
     companion object {
         private val CACHE_CONTROL_NO_STORE = CacheControl.Builder().noStore().build()
         private val CACHE_CONTROL_NO_NETWORK_NO_CACHE = CacheControl.Builder().noCache().onlyIfCached().build()
+
+        private const val HTTP_NOT_MODIFIED = 304
     }
 }
