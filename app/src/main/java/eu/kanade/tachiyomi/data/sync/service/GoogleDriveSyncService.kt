@@ -18,7 +18,6 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.backup.models.BackupSerializer
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -123,7 +122,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
             drive.files().get(gdriveFileId).executeMediaAsInputStream().use { inputStream ->
                 GZIPInputStream(inputStream).use { gzipInputStream ->
                     val byteArray = gzipInputStream.readBytes()
-                    val backup = protoBuf.decodeFromByteArray(BackupSerializer, byteArray)
+                    val backup = protoBuf.decodeFromByteArray(Backup.serializer(), byteArray)
                     val deviceId = fileList[0].appProperties["deviceId"] ?: ""
                     return SyncData(deviceId = deviceId, backup = backup)
                 }
@@ -141,7 +140,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
         val fileList = getAppDataFileList(drive)
         val backup = syncData.backup ?: return
 
-        val byteArray = protoBuf.encodeToByteArray(BackupSerializer, backup)
+        val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
         if (byteArray.isEmpty()) {
             throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
         }

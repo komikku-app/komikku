@@ -1,5 +1,5 @@
 
-import eu.kanade.tachiyomi.data.backup.models.BackupSerializer
+import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.favorites.LocalFavoritesStorage
@@ -39,9 +39,9 @@ class Tester {
             .inputStream().source().buffer()
             .gzip().buffer()
             .readByteArray()
-        val backup = ProtoBuf.decodeFromByteArray(BackupSerializer, bytes)
+        val backup = ProtoBuf.decodeFromByteArray(Backup.serializer(), bytes)
         val newBytes = ProtoBuf.encodeToByteArray(
-            BackupSerializer,
+            Backup.serializer(),
             backup.copy(
                 backupManga = backup.backupManga.filter { it.favorite },
             ),
