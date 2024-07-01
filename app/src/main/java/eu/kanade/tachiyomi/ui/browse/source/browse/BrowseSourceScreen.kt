@@ -127,12 +127,16 @@ data class BrowseSourceScreen(
         val context = LocalContext.current
         // SY <--
 
-        if (screenModel.source is StubSource) {
-            MissingSourceScreen(
-                source = screenModel.source,
-                navigateUp = navigateUp,
-            )
-            return
+        // KMK -->
+        screenModel.source.let {
+            // KMK <--
+            if (it is StubSource) {
+                MissingSourceScreen(
+                    source = it,
+                    navigateUp = navigateUp,
+                )
+                return
+            }
         }
 
         val scope = rememberCoroutineScope()
