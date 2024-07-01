@@ -83,6 +83,7 @@ fun ChapterNavigator(
     val backgroundColor = MaterialTheme.colorScheme
         .surfaceColorAtElevation(3.dp)
         .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+    val textColor = MaterialTheme.colorScheme.onSurface
     val buttonColor = IconButtonDefaults.filledIconButtonColors(
         containerColor = backgroundColor,
         disabledContainerColor = backgroundColor,
@@ -123,7 +124,12 @@ fun ChapterNavigator(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         // SY -->
-                        Text(text = currentPageText)
+                        Text(
+                            text = currentPageText,
+                            // KMK -->
+                            color = textColor,
+                            // KMK <--
+                        )
                         // SY <--
 
                         val interactionSource = remember { MutableInteractionSource() }
@@ -146,7 +152,12 @@ fun ChapterNavigator(
                             interactionSource = interactionSource,
                         )
 
-                        Text(text = totalPages.toString())
+                        Text(
+                            text = totalPages.toString(),
+                            // KMK -->
+                            color = textColor,
+                            // KMK <--
+                        )
                     }
                 }
             } else {

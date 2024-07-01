@@ -125,6 +125,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
@@ -386,8 +387,6 @@ class ReaderActivity : BaseActivity() {
      */
     private fun initializeMenu() {
         // KMK -->
-        val seedColor = viewModel.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
-
         @Composable
         fun pageNumberContent() {
             // KMK <--
@@ -407,7 +406,7 @@ class ReaderActivity : BaseActivity() {
         // KMK -->
         binding.pageNumber.setComposeContent {
             TachiyomiTheme(
-                seedColor = seedColor.takeIf { themeCoverBased }
+                seedColor = seedColorState().takeIf { themeCoverBased },
             ) {
                 pageNumberContent()
             }
@@ -688,15 +687,15 @@ class ReaderActivity : BaseActivity() {
         // KMK -->
         binding.dialogRoot.setComposeContent {
             TachiyomiTheme(
-                seedColor = seedColor.takeIf { themeCoverBased }
+                seedColor = seedColorState().takeIf { themeCoverBased },
             ) {
                 dialogRootContent()
             }
         }
 
-        val colorScheme = seedColor?.let {
+        val colorScheme = seedColorStatic()?.let {
             dynamicColorScheme(
-                seedColor = seedColor,
+                seedColor = it,
                 isDark = isNightMode(),
                 isAmoled = themeDarkAmoled,
                 style = themeCoverBasedStyle,
@@ -724,6 +723,22 @@ class ReaderActivity : BaseActivity() {
 
         enableExhAutoScroll()
     }
+
+    // KMK -->
+    @Composable
+    private fun seedColorState(): ComposeColor? {
+        val state by viewModel.state.collectAsState()
+        return state.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
+            ?: seedColorStatic()
+    }
+
+    private fun seedColorStatic(): ComposeColor? {
+        return viewModel.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
+            ?: intent.extras?.getLong("manga")?.takeIf { it > 0 }
+                ?.let { MangaCover.vibrantCoverColorMap[it] }
+                ?.let { ComposeColor(it) }
+    }
+    // KMK <--
 
     private fun enableExhAutoScroll() {
         readerPreferences.autoscrollInterval().changes()
@@ -891,15 +906,12 @@ class ReaderActivity : BaseActivity() {
      * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer.
      */
     private fun updateViewer() {
-        // KMK -->
-        val manga = viewModel.manga
-        // KMK <--
         val prevViewer = viewModel.state.value.viewer
         val newViewer = ReadingMode.toViewer(
             viewModel.getMangaReadingMode(),
             this,
             // KMK -->
-            seedColor = manga?.asMangaCover()?.vibrantCoverColor,
+            seedColor = seedColorStatic()?.toArgb(),
             // KMK <--
         )
 
@@ -929,6 +941,7 @@ class ReaderActivity : BaseActivity() {
             viewModel.state.value.lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
         }
 
+        val manga = viewModel.state.value.manga
         val defaultReaderType = manga?.defaultReaderType(
             manga.mangaType(sourceName = sourceManager.get(manga.source)?.name),
         )
@@ -948,7 +961,7 @@ class ReaderActivity : BaseActivity() {
         loadingIndicator = ReaderProgressIndicator(
             context = this,
             // KMK -->
-            seedColor = manga?.asMangaCover()?.vibrantCoverColor,
+            seedColor = seedColorStatic()?.toArgb(),
             // KMK <--
         )
         binding.readerContainer.addView(loadingIndicator)
