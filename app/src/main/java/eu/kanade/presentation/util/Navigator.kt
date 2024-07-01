@@ -45,7 +45,7 @@ interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
 abstract class Screen : Screen {
     // known bug: https://github.com/mihonapp/mihon/issues/712
     // This is where it create a key Screen#uuid:transition which causes exception Key ... was used multiple times
-    override val key: ScreenKey = "${this::class.simpleName}#$uniqueScreenKey"
+    override val key: ScreenKey = "$uniqueScreenKey#${this::class.simpleName}"
 }
 
 /**

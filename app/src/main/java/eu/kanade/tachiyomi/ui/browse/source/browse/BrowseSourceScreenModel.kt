@@ -35,6 +35,7 @@ import exh.source.mangaDexSourceIds
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -118,7 +119,7 @@ open class BrowseSourceScreenModel(
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
 
-    val source = sourceManager.getOrStub(sourceId)
+    var source = sourceManager.getOrStub(sourceId)
 
     // SY -->
     val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(screenModelScope)
@@ -131,7 +132,18 @@ open class BrowseSourceScreenModel(
     // SY <--
 
     init {
-        if (source is CatalogueSource) {
+        // KMK -->
+        screenModelScope.launchIO {
+            var retry = 10
+            while (source !is CatalogueSource && retry-- > 0) {
+                // Sometime source is late to load, so we need to wait a bit
+                delay(100)
+                source = sourceManager.getOrStub(sourceId)
+            }
+            val source = source
+            if (source !is CatalogueSource) return@launchIO
+            // KMK <--
+
             mutableState.update {
                 var query: String? = null
                 var listing = it.listing
@@ -147,38 +159,36 @@ open class BrowseSourceScreenModel(
                     toolbarQuery = query,
                 )
             }
-        }
 
-        if (!basePreferences.incognitoMode().get()) {
-            sourcePreferences.lastUsedSource().set(source.id)
-        }
-
-        // SY -->
-        val savedSearchFilters = savedSearch
-        val jsonFilters = filtersJson
-        val filters = state.value.filters
-        if (savedSearchFilters != null) {
-            val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
-            if (savedSearch != null) {
-                search(query = savedSearch.query, filters = savedSearch.filterList)
+            if (!basePreferences.incognitoMode().get()) {
+                sourcePreferences.lastUsedSource().set(source.id)
             }
-        } else if (jsonFilters != null) {
-            runCatching {
-                val filtersJson = Json.decodeFromString<JsonArray>(jsonFilters)
-                filterSerializer.deserialize(filters, filtersJson)
-                search(filters = filters)
-            }
-        }
 
-        if (source is CatalogueSource) {
+            // SY -->
+            val savedSearchFilters = savedSearch
+            val jsonFilters = filtersJson
+            val filters = state.value.filters
+            if (savedSearchFilters != null) {
+                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
+                if (savedSearch != null) {
+                    search(query = savedSearch.query, filters = savedSearch.filterList)
+                }
+            } else if (jsonFilters != null) {
+                runCatching {
+                    val filtersJson = Json.decodeFromString<JsonArray>(jsonFilters)
+                    filterSerializer.deserialize(filters, filtersJson)
+                    search(filters = filters)
+                }
+            }
+
             getExhSavedSearch.subscribe(source.id, source::getFilterList)
                 .map { it.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name)) }
                 .onEach { savedSearches ->
                     mutableState.update { it.copy(savedSearches = savedSearches.toImmutableList()) }
                 }
                 .launchIn(screenModelScope)
+            // SY <--
         }
-        // SY <--
     }
 
     /**
@@ -235,6 +245,9 @@ open class BrowseSourceScreenModel(
     // SY <--
 
     fun resetFilters() {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return
 
         mutableState.update { it.copy(filters = source.getFilterList()) }
@@ -255,6 +268,10 @@ open class BrowseSourceScreenModel(
     }
 
     fun search(query: String? = null, filters: FilterList? = null) {
+        // KMK -->
+        val source = source
+        // KMK <--
+
         if (source !is CatalogueSource) return
         // SY -->
         if (filters != null && filters !== state.value.filters) {
@@ -276,6 +293,10 @@ open class BrowseSourceScreenModel(
     }
 
     fun searchGenre(genreName: String) {
+        // KMK -->
+        val source = source
+        // KMK <--
+
         if (source !is CatalogueSource) return
 
         val defaultFilters = source.getFilterList()
@@ -493,6 +514,9 @@ open class BrowseSourceScreenModel(
         onToast: (StringResource) -> Unit,
     ) {
         screenModelScope.launchIO {
+            // KMK -->
+            val source = source
+            // KMK <--
             if (source !is CatalogueSource) return@launchIO
 
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
@@ -529,6 +553,9 @@ open class BrowseSourceScreenModel(
     fun saveSearch(
         name: String,
     ) {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return
         screenModelScope.launchNonCancellable {
             val query = state.value.toolbarQuery?.takeUnless {
