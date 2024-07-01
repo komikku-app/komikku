@@ -238,6 +238,10 @@
         <item name="colorOnTertiary">@color/mocha_onTertiary</item>
         <item name="colorTertiaryContainer">@color/mocha_tertiaryContainer</item>
         <item name="colorOnTertiaryContainer">@color/mocha_onTertiaryContainer</item>
+        <item name="colorError">@color/mocha_error</item>
+        <item name="colorOnError">@color/mocha_onError</item>
+        <item name="colorErrorContainer">@color/mocha_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/mocha_onErrorContainer</item>
         <item name="android:colorBackground">@color/mocha_background</item>
         <item name="colorOnBackground">@color/mocha_onBackground</item>
         <item name="colorSurface">@color/mocha_surface</item>
@@ -245,9 +249,29 @@
         <item name="colorSurfaceVariant">@color/mocha_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/mocha_onSurfaceVariant</item>
         <item name="colorOutline">@color/mocha_outline</item>
-        <item name="colorOnSurfaceInverse">@color/mocha_inverseOnSurface</item>
+        <item name="colorOutlineVariant">@color/mocha_outlineVariant</item>
         <item name="colorSurfaceInverse">@color/mocha_inverseSurface</item>
-        <item name="colorPrimaryInverse">@color/mocha_primaryInverse</item>
+        <item name="colorOnSurfaceInverse">@color/mocha_inverseOnSurface</item>
+        <item name="colorPrimaryInverse">@color/mocha_inversePrimary</item>
+        <item name="colorPrimaryFixed">@color/mocha_primaryFixed</item>
+        <item name="colorOnPrimaryFixed">@color/mocha_onPrimaryFixed</item>
+        <item name="colorPrimaryFixedDim">@color/mocha_primaryFixedDim</item>
+        <item name="colorOnPrimaryFixedVariant">@color/mocha_onPrimaryFixedVariant</item>
+        <item name="colorSecondaryFixed">@color/mocha_secondaryFixed</item>
+        <item name="colorOnSecondaryFixed">@color/mocha_onSecondaryFixed</item>
+        <item name="colorSecondaryFixedDim">@color/mocha_secondaryFixedDim</item>
+        <item name="colorOnSecondaryFixedVariant">@color/mocha_onSecondaryFixedVariant</item>
+        <item name="colorTertiaryFixed">@color/mocha_tertiaryFixed</item>
+        <item name="colorOnTertiaryFixed">@color/mocha_onTertiaryFixed</item>
+        <item name="colorTertiaryFixedDim">@color/mocha_tertiaryFixedDim</item>
+        <item name="colorOnTertiaryFixedVariant">@color/mocha_onTertiaryFixedVariant</item>
+        <item name="colorSurfaceDim">@color/mocha_surfaceDim</item>
+        <item name="colorSurfaceBright">@color/mocha_surfaceBright</item>
+        <item name="colorSurfaceContainerLowest">@color/mocha_surfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">@color/mocha_surfaceContainerLow</item>
+        <item name="colorSurfaceContainer">@color/mocha_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/mocha_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/mocha_surfaceContainerHighest</item>
     </style>
 
     <!--== Strawberry Daiquiri Theme ==-->
