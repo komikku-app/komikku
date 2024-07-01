@@ -92,6 +92,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
+            navigateUp = { navigator.pop() },
             onWebViewClick = {
                 val source = screenModel.source as? HttpSource ?: return@SourceFeedScreen
                 navigator.push(
@@ -223,14 +224,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         }
         // KMK <--
 
-        BackHandler(state.searchQuery != null || bulkFavoriteState.selectionMode) {
+        BackHandler(bulkFavoriteState.selectionMode) {
             // KMK -->
-            if (bulkFavoriteState.selectionMode) {
-                bulkFavoriteScreenModel.backHandler()
-            } else {
-                // KMK <--
-                screenModel.search(null)
-            }
+            bulkFavoriteScreenModel.backHandler()
+            // KMK <--
         }
     }
 
