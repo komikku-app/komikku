@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Núvem</string>
+  <string name="theme_cottoncandy">Algodão doce</string>
+  <string name="theme_doom">Vermelho</string>
+  <string name="theme_matrix">Verde</string>
+  <string name="theme_mocha">Café</string>
+  <string name="theme_sapphire">Safira</string>
   <string name="action_source_search">Pesquisar fonte</string>
   <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
   <string name="action_bulk_select">Modo de seleção em massa</string>

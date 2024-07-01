@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Algodón de azúcar</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Moca</string>
+  <string name="theme_sapphire">Zafiro</string>
   <string name="action_source_search">Buscar fuente</string>
   <string name="action_toggle_nsfw_only">Alternar sólo NSFW</string>
   <string name="action_bulk_select">Modo de selección masiva</string>

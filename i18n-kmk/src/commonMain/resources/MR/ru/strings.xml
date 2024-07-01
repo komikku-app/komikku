@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Сахарная Вата</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Мокко</string>
+  <string name="theme_sapphire">Сапфир</string>
   <string name="action_source_search">Поиск источника</string>
   <string name="action_toggle_nsfw_only">Переключить только NSFW</string>
   <string name="action_bulk_select">Режим массового выбора</string>
