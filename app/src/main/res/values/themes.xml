@@ -104,6 +104,10 @@
         <item name="colorOnTertiary">@color/cottoncandy_onTertiary</item>
         <item name="colorTertiaryContainer">@color/cottoncandy_tertiaryContainer</item>
         <item name="colorOnTertiaryContainer">@color/cottoncandy_onTertiaryContainer</item>
+        <item name="colorError">@color/cottoncandy_error</item>
+        <item name="colorOnError">@color/cottoncandy_onError</item>
+        <item name="colorErrorContainer">@color/cottoncandy_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/cottoncandy_onErrorContainer</item>
         <item name="android:colorBackground">@color/cottoncandy_background</item>
         <item name="colorOnBackground">@color/cottoncandy_onBackground</item>
         <item name="colorSurface">@color/cottoncandy_surface</item>
@@ -111,9 +115,29 @@
         <item name="colorSurfaceVariant">@color/cottoncandy_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/cottoncandy_onSurfaceVariant</item>
         <item name="colorOutline">@color/cottoncandy_outline</item>
-        <item name="colorOnSurfaceInverse">@color/cottoncandy_inverseOnSurface</item>
+        <item name="colorOutlineVariant">@color/cottoncandy_outlineVariant</item>
         <item name="colorSurfaceInverse">@color/cottoncandy_inverseSurface</item>
-        <item name="colorPrimaryInverse">@color/cottoncandy_primaryInverse</item>
+        <item name="colorOnSurfaceInverse">@color/cottoncandy_inverseOnSurface</item>
+        <item name="colorPrimaryInverse">@color/cottoncandy_inversePrimary</item>
+        <item name="colorPrimaryFixed">@color/cottoncandy_primaryFixed</item>
+        <item name="colorOnPrimaryFixed">@color/cottoncandy_onPrimaryFixed</item>
+        <item name="colorPrimaryFixedDim">@color/cottoncandy_primaryFixedDim</item>
+        <item name="colorOnPrimaryFixedVariant">@color/cottoncandy_onPrimaryFixedVariant</item>
+        <item name="colorSecondaryFixed">@color/cottoncandy_secondaryFixed</item>
+        <item name="colorOnSecondaryFixed">@color/cottoncandy_onSecondaryFixed</item>
+        <item name="colorSecondaryFixedDim">@color/cottoncandy_secondaryFixedDim</item>
+        <item name="colorOnSecondaryFixedVariant">@color/cottoncandy_onSecondaryFixedVariant</item>
+        <item name="colorTertiaryFixed">@color/cottoncandy_tertiaryFixed</item>
+        <item name="colorOnTertiaryFixed">@color/cottoncandy_onTertiaryFixed</item>
+        <item name="colorTertiaryFixedDim">@color/cottoncandy_tertiaryFixedDim</item>
+        <item name="colorOnTertiaryFixedVariant">@color/cottoncandy_onTertiaryFixedVariant</item>
+        <item name="colorSurfaceDim">@color/cottoncandy_surfaceDim</item>
+        <item name="colorSurfaceBright">@color/cottoncandy_surfaceBright</item>
+        <item name="colorSurfaceContainerLowest">@color/cottoncandy_surfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">@color/cottoncandy_surfaceContainerLow</item>
+        <item name="colorSurfaceContainer">@color/cottoncandy_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/cottoncandy_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/cottoncandy_surfaceContainerHighest</item>
     </style>
 
     <!--== Green Apple Theme ==-->
