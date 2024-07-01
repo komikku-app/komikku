@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9075" changeDate="July 02, 2024">
+        <changelogtext>[b]New:[/b] More themes</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reader color</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9066" changeDate="June 25, 2024">
         <changelogtext>[b]New:[/b] Home icon in manga view</changelogtext>
         <changelogtext>[b]New:[/b] Showing changelog in preview build</changelogtext>
