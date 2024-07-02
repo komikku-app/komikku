@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -94,6 +95,10 @@ fun SourcesScreen(
 ) {
     // KMK -->
     val lazyListState = rememberLazyListState()
+
+    BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
+        onChangeSearchQuery(null)
+    }
     // KMK <--
 
     when {
