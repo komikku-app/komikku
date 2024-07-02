@@ -2054,11 +2054,17 @@ sealed interface RelatedManga {
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
+                    val stripedList = relatedManga.mangaList.mapNotNull {
+                        if (!mangaIds.contains(it.id)) {
+                            mangaIds.add(it.id)
+                            it
+                        } else {
+                            null
+                        }
+                    }
                     Success(
                         relatedManga.keyword,
-                        relatedManga.mangaList
-                            .filterNot { mangaIds.contains(it.id) }
-                            .onEach { mangaIds.add(it.id) },
+                        stripedList,
                     )
                 } else {
                     relatedManga
