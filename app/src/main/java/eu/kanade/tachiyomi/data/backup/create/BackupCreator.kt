@@ -6,12 +6,14 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.creators.CategoriesBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.FeedBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.MangaBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.PreferenceBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SavedSearchBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SourcesBackupCreator
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
+import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
@@ -52,10 +54,13 @@ class BackupCreator(
     private val mangaBackupCreator: MangaBackupCreator = MangaBackupCreator(),
     private val preferenceBackupCreator: PreferenceBackupCreator = PreferenceBackupCreator(),
     private val sourcesBackupCreator: SourcesBackupCreator = SourcesBackupCreator(),
+    // KMK -->
+    private val feedBackupCreator: FeedBackupCreator = FeedBackupCreator(),
+    // KMK <--
     // SY -->
     private val savedSearchBackupCreator: SavedSearchBackupCreator = SavedSearchBackupCreator(),
     private val getMergedManga: GetMergedManga = Injekt.get(),
-    private val handler: DatabaseHandler = Injekt.get()
+    private val handler: DatabaseHandler = Injekt.get(),
     // SY <--
 ) {
 
@@ -100,6 +105,9 @@ class BackupCreator(
                 // SY -->
                 backupSavedSearches = backupSavedSearches(),
                 // SY <--
+                // KMK -->
+                backupFeeds = backupFeeds(),
+                // KMK <--
             )
 
             val byteArray = parser.encodeToByteArray(BackupSerializer, backup)
@@ -163,6 +171,15 @@ class BackupCreator(
         return savedSearchBackupCreator.backupSavedSearches()
     }
     // SY <--
+
+    // KMK -->
+    /**
+     * Backup global Popular/Latest feeds
+     */
+    suspend fun backupFeeds(): List<BackupFeed> {
+        return feedBackupCreator.backupFeeds()
+    }
+    // KMK <--
 
     companion object {
         private const val MAX_AUTO_BACKUPS: Int = 4

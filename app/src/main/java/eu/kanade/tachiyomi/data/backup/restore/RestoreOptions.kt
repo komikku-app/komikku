@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.data.backup.restore
 import dev.icerock.moko.resources.StringResource
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.kmk.KMR
 
 data class RestoreOptions(
     val library: Boolean = true,
@@ -44,7 +44,7 @@ data class RestoreOptions(
             ),
             // SY -->
             Entry(
-                label = SYMR.strings.saved_searches,
+                label = KMR.strings.saved_searches_feeds,
                 getter = RestoreOptions::savedSearches,
                 setter = { options, enabled -> options.copy(savedSearches = enabled) },
             ),

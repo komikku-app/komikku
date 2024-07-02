@@ -5,11 +5,13 @@ import android.net.Uri
 import eu.kanade.tachiyomi.data.backup.BackupDecoder
 import eu.kanade.tachiyomi.data.backup.BackupNotifier
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
+import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
 import eu.kanade.tachiyomi.data.backup.restore.restorers.CategoriesRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.FeedRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
@@ -21,7 +23,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.kmk.KMR
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,6 +40,9 @@ class BackupRestorer(
     // SY -->
     private val savedSearchRestorer: SavedSearchRestorer = SavedSearchRestorer(),
     // SY <--
+    // KMK -->
+    private val feedRestorer: FeedRestorer = FeedRestorer(),
+    // KMK <--
 ) {
 
     private var restoreAmount = 0
@@ -95,7 +100,12 @@ class BackupRestorer(
             }
             // SY -->
             if (options.savedSearches) {
-                restoreSavedSearches(backup.backupSavedSearches)
+                restoreSavedSearches(
+                    backup.backupSavedSearches,
+                    // KMK -->
+                    backup.backupFeeds,
+                    // KMK <--
+                )
             }
             // SY <--
             if (options.appSettings) {
@@ -126,13 +136,21 @@ class BackupRestorer(
     }
 
     // SY -->
-    private fun CoroutineScope.restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) = launch {
+    private fun CoroutineScope.restoreSavedSearches(
+        backupSavedSearches: List<BackupSavedSearch>,
+        // KMK -->
+        backupFeeds: List<BackupFeed>,
+        // KMK <--
+    ) = launch {
         ensureActive()
+        // KMK -->
+        feedRestorer.restoreFeeds(backupFeeds)
+        // KMK <--
         savedSearchRestorer.restoreSavedSearches(backupSavedSearches)
 
         restoreProgress += 1
         notifier.showRestoreProgress(
-            context.stringResource(SYMR.strings.saved_searches),
+            context.stringResource(KMR.strings.saved_searches_feeds),
             restoreProgress,
             restoreAmount,
             isSync,

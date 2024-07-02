@@ -55,3 +55,6 @@ ON saved_search._id = M.saved_search;
 
 selectLastInsertedRowId:
 SELECT last_insert_rowid();
+
+selectAllGlobalNonSavedSearch:
+SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL;
