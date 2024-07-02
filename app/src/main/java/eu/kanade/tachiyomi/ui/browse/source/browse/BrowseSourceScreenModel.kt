@@ -133,7 +133,7 @@ open class BrowseSourceScreenModel(
 
     init {
         // KMK -->
-        screenModelScope.launchIO {
+        screenModelScope.launch {
             var retry = 10
             while (source !is CatalogueSource && retry-- > 0) {
                 // Sometime source is late to load, so we need to wait a bit
@@ -141,23 +141,25 @@ open class BrowseSourceScreenModel(
                 source = sourceManager.getOrStub(sourceId)
             }
             val source = source
-            if (source !is CatalogueSource) return@launchIO
+            if (source !is CatalogueSource) return@launch
             // KMK <--
 
-            mutableState.update {
-                var query: String? = null
-                var listing = it.listing
+            screenModelScope.launchIO {
+                mutableState.update {
+                    var query: String? = null
+                    var listing = it.listing
 
-                if (listing is Listing.Search) {
-                    query = listing.query
-                    listing = Listing.Search(query, source.getFilterList())
+                    if (listing is Listing.Search) {
+                        query = listing.query
+                        listing = Listing.Search(query, source.getFilterList())
+                    }
+
+                    it.copy(
+                        listing = listing,
+                        filters = source.getFilterList(),
+                        toolbarQuery = query,
+                    )
                 }
-
-                it.copy(
-                    listing = listing,
-                    filters = source.getFilterList(),
-                    toolbarQuery = query,
-                )
             }
 
             if (!basePreferences.incognitoMode().get()) {

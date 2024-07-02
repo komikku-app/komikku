@@ -84,7 +84,7 @@ open class SourceFeedScreenModel(
 
     init {
         // KMK -->
-        screenModelScope.launchIO {
+        screenModelScope.launch {
             var retry = 10
             while (source !is CatalogueSource && retry-- > 0) {
                 // Sometime source is late to load, so we need to wait a bit
@@ -92,7 +92,7 @@ open class SourceFeedScreenModel(
                 source = sourceManager.getOrStub(sourceId)
             }
             val source = source
-            if (source !is CatalogueSource) return@launchIO
+            if (source !is CatalogueSource) return@launch
             // KMK <--
 
             setFilters(source.getFilterList())
