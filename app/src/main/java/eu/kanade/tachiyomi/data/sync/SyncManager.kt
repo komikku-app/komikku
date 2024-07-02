@@ -106,6 +106,10 @@ class SyncManager(
             // SY -->
             backupSavedSearches = backupCreator.backupSavedSearches(),
             // SY <--
+
+            // KMK -->
+            backupFeeds = backupCreator.backupFeeds(),
+            // KMK <--
         )
         logcat(LogPriority.DEBUG) { "End create backup" }
 
