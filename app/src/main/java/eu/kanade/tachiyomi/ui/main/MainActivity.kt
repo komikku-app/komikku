@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
@@ -61,10 +62,12 @@ import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -189,6 +192,11 @@ class MainActivity : BaseActivity() {
             val incognito by preferences.incognitoMode().collectAsState()
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
+            // KMK -->
+            val context = LocalContext.current
+            val syncing by rememberUpdatedState { SyncDataJob.isRunning(context) }
+            val restoring by rememberUpdatedState { BackupRestoreJob.isRunning(context) }
+            // KMK <--
 
             // Set status bar color considering the top app state banner
             val systemUiController = rememberSystemUiController()
@@ -208,7 +216,6 @@ class MainActivity : BaseActivity() {
             }
 
             // Set navigation bar color
-            val context = LocalContext.current
             val navbarScrimColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
             LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
                 systemUiController.setNavigationBarColor(
@@ -260,6 +267,10 @@ class MainActivity : BaseActivity() {
                             downloadedOnlyMode = downloadOnly,
                             incognitoMode = incognito,
                             indexing = indexing,
+                            // KMK -->
+                            restoring = restoring(),
+                            syncing = syncing(),
+                            // KMK <--
                             modifier = Modifier.windowInsetsPadding(scaffoldInsets),
                         )
                     },

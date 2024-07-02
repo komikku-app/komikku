@@ -18,6 +18,10 @@ import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
@@ -70,6 +74,11 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
     }
 
     companion object {
+        private val _isInitializing = MutableStateFlow(false)
+        val isInitializing = _isInitializing
+            .debounce(1000L) // Don't notify if it finishes quickly enough
+            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+
         fun isRunning(context: Context): Boolean {
             return context.workManager.isRunning(TAG)
         }
