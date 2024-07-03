@@ -8,25 +8,39 @@ import uy.kohesive.injekt.api.get
 
 class SavedSearchRestorer(
     private val handler: DatabaseHandler = Injekt.get(),
+    // KMK -->
+    private val feedRestorer: FeedRestorer = FeedRestorer(),
+    // KMK <--
 ) {
     suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
         if (backupSavedSearches.isEmpty()) return
 
-        val currentSavedSearches = handler.awaitList {
-            saved_searchQueries.selectNamesAndSources()
-        }
+        // KMK -->
+        handler.await(true) {
+            // KMK <--
+            val currentSavedSearches = handler.awaitList {
+                saved_searchQueries.selectNamesAndSources()
+            }
 
-        handler.await {
             backupSavedSearches.filter { backupSavedSearch ->
                 currentSavedSearches.none { it.source == backupSavedSearch.source && it.name == backupSavedSearch.name }
-            }.forEach {
-                saved_searchQueries.insert(
-                    source = it.source,
-                    name = it.name,
-                    query = it.query.nullIfBlank(),
-                    filtersJson = it.filterList.nullIfBlank()
-                        ?.takeUnless { it == "[]" },
-                )
+            }.forEach { backupSavedSearch ->
+                // KMK -->
+                val savedSearchId = handler.awaitOneExecutable(true) {
+                    // KMK <--
+                    saved_searchQueries.insert(
+                        source = backupSavedSearch.source,
+                        name = backupSavedSearch.name,
+                        query = backupSavedSearch.query.nullIfBlank(),
+                        filtersJson = backupSavedSearch.filterList.nullIfBlank()
+                            ?.takeUnless { it == "[]" },
+                    )
+                    // KMK -->
+                    saved_searchQueries.selectLastInsertedRowId()
+                }
+
+                feedRestorer.restoreFeeds(backupSavedSearch.backupFeeds, savedSearchId)
+                // KMK <--
             }
         }
     }

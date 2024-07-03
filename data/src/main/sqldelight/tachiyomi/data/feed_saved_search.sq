@@ -58,3 +58,6 @@ SELECT last_insert_rowid();
 
 selectAllGlobalNonSavedSearch:
 SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL;
+
+selectAllFeedHasSavedSearch:
+SELECT * FROM feed_saved_search WHERE saved_search IS NOT NULL;

@@ -8,18 +8,14 @@ import uy.kohesive.injekt.api.get
 class FeedRestorer(
     private val handler: DatabaseHandler = Injekt.get(),
 ) {
-
-    /**
-     * Restore global Popular/Latest feeds
-     */
-    suspend fun restoreFeeds(backupFeeds: List<BackupFeed>) {
+    suspend fun restoreFeeds(backupFeeds: List<BackupFeed>, savedSearchId: Long? = null) {
         if (backupFeeds.isEmpty()) return
 
-        val currentFeeds = handler.awaitList {
-            feed_saved_searchQueries.selectAllGlobalNonSavedSearch()
-        }
+        handler.await(true) {
+            val currentFeeds = handler.awaitList {
+                feed_saved_searchQueries.selectAllGlobalNonSavedSearch()
+            }
 
-        handler.await {
             backupFeeds.filter { backupFeed ->
                 // Filter if source's global Popular/Latest feed already existed
                 currentFeeds.none {
@@ -28,7 +24,7 @@ class FeedRestorer(
             }.forEach {
                 feed_saved_searchQueries.insert(
                     sourceId = it.source,
-                    savedSearch = null,
+                    savedSearch = savedSearchId,
                     global = it.global,
                 )
             }
