@@ -18,7 +18,7 @@
         <changelogtext>[b]Improve:[/b] other UI improvements</changelogtext>
         <changelogtext>[b]Fix:[/b] crashing issues with Related titles screens</changelogtext>
         <changelogtext>[b]Fix:[/b] unexpected skips in strong skipping mode</changelogtext>
-        <changelogtext>Translations update from Hosted Weblate (mihonapp/mihon#904)</changelogtext>
+        <changelogtext>Translations update from Hosted Weblate</changelogtext>
         <changelogtext>Add log &amp; improve key generation to better debug crashing issues</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9036" changeDate="June 20, 2024">
@@ -98,8 +98,8 @@
         <changelogtext>[b]New[/b] Configurable interval to refresh entries from downloaded storage</changelogtext>
         <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
         <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
-        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5(Mar 2,2024)[/b]</changelogtext>
-        <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5 (Mar 2,2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.16.4 (from 0.16.3)[/b]</changelogtext>
         <changelogtext>Minor fix for marking duplicate chapters as read</changelogtext>
         <changelogtext>Include the delayed tracker update fix</changelogtext>
     </changelogversion>
