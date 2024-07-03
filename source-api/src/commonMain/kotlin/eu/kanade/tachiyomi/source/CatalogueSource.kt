@@ -196,6 +196,11 @@ interface CatalogueSource : Source {
     }
     // KMK <--
 
+    /**
+     * Returns an observable containing a page with a list of manga.
+     *
+     * @param page the page number to retrieve.
+     */
     @Deprecated(
         "Use the non-RxJava API instead",
         ReplaceWith("getPopularManga"),
@@ -203,6 +208,13 @@ interface CatalogueSource : Source {
     fun fetchPopularManga(page: Int): Observable<MangasPage> =
         throw IllegalStateException("Not used")
 
+    /**
+     * Returns an observable containing a page with a list of manga.
+     *
+     * @param page the page number to retrieve.
+     * @param query the search query.
+     * @param filters the list of filters to apply.
+     */
     @Deprecated(
         "Use the non-RxJava API instead",
         ReplaceWith("getSearchManga"),
@@ -210,6 +222,11 @@ interface CatalogueSource : Source {
     fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         throw IllegalStateException("Not used")
 
+    /**
+     * Returns an observable containing a page with a list of latest manga updates.
+     *
+     * @param page the page number to retrieve.
+     */
     @Deprecated(
         "Use the non-RxJava API instead",
         ReplaceWith("getLatestUpdates"),

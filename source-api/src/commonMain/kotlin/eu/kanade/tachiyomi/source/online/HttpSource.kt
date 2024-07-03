@@ -250,6 +250,12 @@ abstract class HttpSource : CatalogueSource {
         return fetchMangaDetails(manga).awaitSingle()
     }
 
+    /**
+     * Returns an observable with the updated details for a manga. Normally it's not needed to
+     * override this method.
+     *
+     * @param manga the manga to be updated.
+     */
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
@@ -342,6 +348,12 @@ abstract class HttpSource : CatalogueSource {
         return fetchChapterList(manga).awaitSingle()
     }
 
+    /**
+     * Returns an observable with the updated chapter list for a manga. Normally it's not needed to
+     * override this method.
+     *
+     * @param manga the manga to look for chapters.
+     */
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return if (manga.status != SManga.LICENSED) {
@@ -391,6 +403,11 @@ abstract class HttpSource : CatalogueSource {
         return fetchPageList(chapter).awaitSingle()
     }
 
+    /**
+     * Returns an observable with the page list for a chapter.
+     *
+     * @param chapter the chapter whose page list has to be fetched.
+     */
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return client.newCall(pageListRequest(chapter))
@@ -418,8 +435,7 @@ abstract class HttpSource : CatalogueSource {
     protected abstract fun pageListParse(response: Response): List<Page>
 
     /**
-     * Returns an observable with the page containing the source url of the image. If there's any
-     * error, it will return null instead of throwing an exception.
+     * Returns the source url of the image.
      *
      * @since extensions-lib 1.5
      * @param page the page whose source image has to be fetched.
@@ -429,6 +445,12 @@ abstract class HttpSource : CatalogueSource {
         return fetchImageUrl(page).awaitSingle()
     }
 
+    /**
+     * Returns an observable with the page containing the source url of the image. If there's any
+     * error, it will return null instead of throwing an exception.
+     *
+     * @param page the page whose source image has to be fetched.
+     */
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     open fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
