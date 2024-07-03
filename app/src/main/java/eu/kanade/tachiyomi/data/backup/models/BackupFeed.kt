@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.backup.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
+import tachiyomi.data.SelectAllFeedHasSavedSearch
 
 @Serializable
 data class BackupFeed(
@@ -16,3 +17,5 @@ val backupFeedMapper =
             global = global,
         )
     }
+
+fun SelectAllFeedHasSavedSearch.backupFeedMapper() = backupFeedMapper(_id, source, saved_search, global)
