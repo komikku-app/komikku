@@ -65,6 +65,7 @@ fun RelatedMangasList(
                         } else {
                             stringResource(KMR.strings.pref_source_related_mangas)
                         },
+                        showArrow = relatedManga.keyword.isNotBlank(),
                         subtitle = null,
                         onClick = {
                             if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
