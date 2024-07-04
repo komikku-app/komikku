@@ -8,10 +8,21 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
-import rx.Observable
-import tachiyomi.core.common.util.lang.awaitSingle
 import tachiyomi.core.common.util.system.logcat
 
+/**
+ * A basic interface for creating a source. It could be an online source, a local source, etc.
+ *
+ * Supposedly, it expects extensions to overwrite get...() methods while leaving those fetch...() alone.
+ * Hence in extensions-lib, it will leave get...() methods as unimplemented
+ * and fetch...() as IllegalStateException("Not used").
+ *
+ * Prior to extensions-lib 1.5, all extensions still using fetch...(). Because of this,
+ * in extensions-lib all get...() methods will be implemented as Exception("Stub!") while
+ * all fetch...() methods will leave unimplemented.
+ * But if we want to migrate extensions to use get...() then those fetch...()
+ * should still be implemented as IllegalStateException("Not used").
+ */
 interface CatalogueSource : Source {
 
     /**
@@ -30,10 +41,7 @@ interface CatalogueSource : Source {
      * @since extensions-lib 1.5
      * @param page the page number to retrieve.
      */
-    @Suppress("DEPRECATION")
-    suspend fun getPopularManga(page: Int): MangasPage {
-        return fetchPopularManga(page).awaitSingle()
-    }
+    suspend fun getPopularManga(page: Int): MangasPage
 
     /**
      * Get a page with a list of manga.
@@ -43,10 +51,7 @@ interface CatalogueSource : Source {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
-    @Suppress("DEPRECATION")
-    suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
-        return fetchSearchManga(page, query, filters).awaitSingle()
-    }
+    suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage
 
     /**
      * Get a page with a list of latest manga updates.
@@ -54,10 +59,7 @@ interface CatalogueSource : Source {
      * @since extensions-lib 1.5
      * @param page the page number to retrieve.
      */
-    @Suppress("DEPRECATION")
-    suspend fun getLatestUpdates(page: Int): MangasPage {
-        return fetchLatestUpdates(page).awaitSingle()
-    }
+    suspend fun getLatestUpdates(page: Int): MangasPage
 
     /**
      * Returns the list of filters for the source.
@@ -132,8 +134,7 @@ interface CatalogueSource : Source {
      * @return the related mangas for the current manga.
      * @throws UnsupportedOperationException if a source doesn't support related mangas.
      */
-    suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> =
-        throw IllegalStateException("Not used")
+    suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> = throw UnsupportedOperationException("Unsupported!")
 
     /**
      * Slit & strip manga's title into separate searchable keywords.
@@ -195,42 +196,4 @@ interface CatalogueSource : Source {
         }
     }
     // KMK <--
-
-    /**
-     * Returns an observable containing a page with a list of manga.
-     *
-     * @param page the page number to retrieve.
-     */
-    @Deprecated(
-        "Use the non-RxJava API instead",
-        ReplaceWith("getPopularManga"),
-    )
-    fun fetchPopularManga(page: Int): Observable<MangasPage> =
-        throw IllegalStateException("Not used")
-
-    /**
-     * Returns an observable containing a page with a list of manga.
-     *
-     * @param page the page number to retrieve.
-     * @param query the search query.
-     * @param filters the list of filters to apply.
-     */
-    @Deprecated(
-        "Use the non-RxJava API instead",
-        ReplaceWith("getSearchManga"),
-    )
-    fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        throw IllegalStateException("Not used")
-
-    /**
-     * Returns an observable containing a page with a list of latest manga updates.
-     *
-     * @param page the page number to retrieve.
-     */
-    @Deprecated(
-        "Use the non-RxJava API instead",
-        ReplaceWith("getLatestUpdates"),
-    )
-    fun fetchLatestUpdates(page: Int): Observable<MangasPage> =
-        throw IllegalStateException("Not used")
 }
