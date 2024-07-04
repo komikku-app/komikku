@@ -73,17 +73,20 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Rename apk
+        id: current_commit
         run: |
           set -x
           version_tag=${GITHUB_REF/refs\/heads\//}
           commit_count=$(git rev-list --count HEAD)
-          echo "VERSION_TAG=$version_tag" >> $GITHUB_ENV
-          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_ENV
+          echo "VERSION_TAG=$version_tag"
+          echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
+          echo "COMMIT_COUNT=$commit_count"
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
           mv app/build/outputs/apk/standard/preview/app-standard-universal-preview-signed.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          name: Komikku-${{ env.VERSION_TAG }}-r${{ env.COMMIT_COUNT }}.apk
+          name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
           retention-days: 1
