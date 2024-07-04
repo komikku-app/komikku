@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.11.1" changeDate="July 03, 2024">
+    <changelogversion versionName="1.11.1" changeDate="July 04, 2024">
         <changelogtext>[b]Komikku's Discord channel[/b]</changelogtext>
         <changelogtext>[b]New:[/b] App icon</changelogtext>
         <changelogtext>[b]New:[/b] More App themes</changelogtext>
@@ -15,6 +15,8 @@
         <changelogtext>[b]Fix:[/b] Allow manual edit on Tracker's chapter (must hit Done on keyboard)</changelogtext>
         <changelogtext>[b]Fix:[/b] Genre tag search while browsing related titles or from Feed Screen</changelogtext>
         <changelogtext>[b]Fix:[/b] Bangumi tracker</changelogtext>
+        <changelogtext>[b]Fix:[/b] sometimes it's loading forever if app sleeps for too long (in Source's feed &amp; browse screens)</changelogtext>
+        <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
         <changelogtext>[b]New:[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
         <changelogtext>[b]New:[/b] Support only Android 8+</changelogtext>
         <changelogtext>[b]Improve:[/b] Update translation</changelogtext>

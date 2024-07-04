@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="r9075" changeDate="July 02, 2024">
+    <changelogversion versionName="r9075-r9078" changeDate="July 02, 2024">
+        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+        <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
         <changelogtext>[b]New:[/b] More themes</changelogtext>
         <changelogtext>[b]Improve:[/b] Reader color</changelogtext>
-        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+        <changelogtext>[b]Fix:[/b] sometimes it's loading forever if app sleeps for too long (in Source's feed &amp; browse screens)</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9066" changeDate="June 25, 2024">
         <changelogtext>[b]New:[/b] Home icon in manga view</changelogtext>

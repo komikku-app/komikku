@@ -13,12 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-app:
-    if: startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku'
-    name: Build release app
+  prepare-build:
     runs-on: ubuntu-latest
     outputs:
       VERSION_TAG: ${{ steps.get_tag.outputs.VERSION_TAG }}
+      CURRENT_SHA: ${{ steps.current_commit.outputs.CURRENT_SHA }}
+      PREV_RELEASE_SHA: ${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}
+      COMMIT_LOGS: ${{ steps.commit_logs.outputs.COMMIT_LOGS }}
+      PREV_TAG_NAME: ${{ steps.previous_commit.outputs.PREV_TAG_NAME }}
     steps:
       - name: Get tag name
         id: get_tag
@@ -27,6 +29,73 @@ jobs:
           echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
+
+      - name: Get previous release
+        id: last_release
+        uses: InsonusK/get-latest-release@7a9ff16c8c6b7ead5d71c0f1cc61f2703170eade # v1.1.0
+        with:
+          myToken: ${{ github.token }}
+          exclude_types: "draft|prerelease"
+          view_top: 1
+
+      - name: Curren commit
+        id: current_commit
+        run: |
+          set -e
+
+          commit_count=$(git rev-list --count HEAD)
+          echo "COMMIT_COUNT=$commit_count"
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
+          current_sha=$(git rev-parse --short HEAD)
+          echo "CURRENT_SHA=$current_sha"
+          echo "CURRENT_SHA=$current_sha" >> $GITHUB_OUTPUT
+
+      - name: Previous commit
+        id: previous_commit
+        run: |
+          set -e
+
+          prev_commit_count=$(echo "${{ steps.last_release.outputs.tag_name }}" | sed -e "s/^r//")
+          echo "prev_commit_count=$prev_commit_count"
+
+          # Fake at least 1 commits (to avoid no changes)
+          if [ "${{ steps.current_commit.outputs.COMMIT_COUNT }}" -gt "$prev_commit_count" ]; then
+            commit_count_diff="$(expr ${{ steps.current_commit.outputs.COMMIT_COUNT }} - $prev_commit_count)"
+          else
+            commit_count_diff=1
+          fi
+
+          echo "commit_count_diff=$commit_count_diff"
+          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
+          echo "PREV_RELEASE_SHA=$prev_release_sha"
+          echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_OUTPUT
+          echo "PREV_TAG_NAME=${{ steps.last_release.outputs.tag_name }}" >> $GITHUB_OUTPUT
+
+      - name: Commit logs
+        id: commit_logs
+        run: |
+          set -e
+
+          echo "COMMIT_LOGS<<{delimiter}
+          $(curl -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/komikku-app/komikku/compare/${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}...${{ steps.current_commit.outputs.CURRENT_SHA }}" \
+            | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
+            | jq -r '.[]|"- \(.message | first) (@\(.username))"')
+          {delimiter}" >> $GITHUB_OUTPUT
+
+  build-app:
+    if: startsWith(github.ref, 'refs/tags/') && github.repository == 'komikku-app/komikku'
+    name: Build release app
+    runs-on: ubuntu-latest
+    needs: prepare-build
+    steps:
+      - name: Clone Repository (${{ needs.prepare-build.outputs.VERSION_TAG }})
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
@@ -73,6 +142,7 @@ jobs:
   release-app:
     runs-on: ubuntu-latest
     needs:
+      - prepare-build
       - build-app
     steps:
       - name: Download artifacts
@@ -98,32 +168,45 @@ jobs:
         run: |
           set -e
 
-          mv app/build/outputs/apk/standard/release/app-standard-universal-release-unsigned-signed.apk Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
+          mv app/build/outputs/apk/standard/release/app-standard-universal-release-unsigned-signed.apk Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          sha=`sha256sum Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
           echo "APK_UNIVERSAL_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/standard/release/app-standard-arm64-v8a-release-unsigned-signed.apk Komikku-arm64-v8a-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-arm64-v8a-${{ needs.build-app.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
+          mv app/build/outputs/apk/standard/release/app-standard-arm64-v8a-release-unsigned-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          sha=`sha256sum Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
           echo "APK_ARM64_V8A_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/standard/release/app-standard-armeabi-v7a-release-unsigned-signed.apk Komikku-armeabi-v7a-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-armeabi-v7a-${{ needs.build-app.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
+          mv app/build/outputs/apk/standard/release/app-standard-armeabi-v7a-release-unsigned-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          sha=`sha256sum Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
           echo "APK_ARMEABI_V7A_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/standard/release/app-standard-x86-release-unsigned-signed.apk Komikku-x86-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-x86-${{ needs.build-app.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
+          mv app/build/outputs/apk/standard/release/app-standard-x86-release-unsigned-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          sha=`sha256sum Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
           echo "APK_X86_SHA=$sha" >> $GITHUB_OUTPUT
 
-          mv app/build/outputs/apk/standard/release/app-standard-x86_64-release-unsigned-signed.apk Komikku-x86_64-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-x86_64-${{ needs.build-app.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
+          mv app/build/outputs/apk/standard/release/app-standard-x86_64-release-unsigned-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          sha=`sha256sum Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
           echo "APK_X86_64_SHA=$sha" >> $GITHUB_OUTPUT
 
       - name: Create release
         uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2.0.6
         with:
-          tag_name: ${{ needs.build-app.outputs.VERSION_TAG }}
-          name: Komikku ${{ needs.build-app.outputs.VERSION_TAG }}
+          tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
+          name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
           body: |
+            ## What's Changed
+            ### New
+
+            ### Improve
+
+            ### Fix
+
+            #### Based on
+            
+            **Full Changelog**: https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}
+
+            ${{ needs.prepare-build.outputs.COMMIT_LOGS }}
+
             ---
 
             ### Checksums
@@ -136,13 +219,13 @@ jobs:
             | x86 | ${{ steps.get_sha.outputs.APK_X86_SHA }} |
             | x86_64 | ${{ steps.get_sha.outputs.APK_X86_64_SHA }} |
 
-            ## If you are unsure which apk to download then go with Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk
+            ### If you are unsure which apk to download then go with `Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk`
           files: |
-            Komikku-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-            Komikku-arm64-v8a-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-            Komikku-armeabi-v7a-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-            Komikku-x86-${{ needs.build-app.outputs.VERSION_TAG }}.apk
-            Komikku-x86_64-${{ needs.build-app.outputs.VERSION_TAG }}.apk
+            Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
           draft: true
           prerelease: false
         env:
