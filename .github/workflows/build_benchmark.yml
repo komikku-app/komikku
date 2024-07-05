@@ -86,7 +86,7 @@ jobs:
         run: ./gradlew assembleDevBenchmark testDevBenchmarkUnitTest testReleaseUnitTest --stacktrace
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           path: "**/*.apk"
           retention-days: 1
@@ -141,13 +141,13 @@ jobs:
           echo "APK_X86_64_SHA=$sha" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           path: "Komikku-${{ needs.prepare-build.outputs.TAG_NAME }}.apk"
           retention-days: 90
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           path: "Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk"
           retention-days: 90
