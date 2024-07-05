@@ -17,6 +17,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -55,6 +56,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -93,6 +95,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -131,6 +134,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns the details of a manga.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -148,7 +152,7 @@ abstract class ParsedHttpSource : HttpSource() {
     // KMK -->
     /**
      * Parses the response from the site and returns a list of related mangas.
-     * If using this, must also: 'override val supportsRelatedMangas = true'
+     * Normally it's not needed to override this method.
      *
      * @since komikku/extensions-lib 1.6
      * @param response the response from the site.
@@ -160,7 +164,6 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Returns the Jsoup selector that returns a list of [Element] corresponding to each related mangas.
-     * If using this, must also: 'override val supportsRelatedMangas = true'
      *
      * @since komikku/extensions-lib 1.6
      */
@@ -168,7 +171,6 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Returns a manga from the given element.
-     * If using this, must also: 'override val supportsRelatedMangas = true'
      *
      * @since komikku/extensions-lib 1.6
      * @param element an element obtained from [relatedMangaListSelector].
@@ -178,6 +180,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns a list of chapters.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -200,6 +203,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parses the response from the site and returns the page list.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
@@ -216,6 +220,7 @@ abstract class ParsedHttpSource : HttpSource() {
 
     /**
      * Parse the response from the site and returns the absolute url to the source image.
+     * Normally it's not needed to override this method.
      *
      * @param response the response from the site.
      */
