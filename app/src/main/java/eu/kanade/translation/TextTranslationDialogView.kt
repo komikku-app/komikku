@@ -78,10 +78,10 @@ class TextTranslationsComposeView :
             val imgWidth = size.width
             val imgHeight = size.height
             translations.forEach { translation ->
-                val xPx = ((translation.x - 0.02) * imgWidth).toFloat()
-                val yPx = ((translation.y - 0.02) * imgHeight).toFloat()
-                val width = ((translation.width + 0.04) * imgWidth).toFloat()
-                val height = ((translation.height + 0.04) * imgHeight).toFloat()
+                val xPx = ((translation.x -translation.symWidth/2) * imgWidth)
+                val yPx = ((translation.y - translation.symHeight/2) * imgHeight)
+                val width = ((translation.width +translation.symWidth) * imgWidth)
+                val height = ((translation.height+  translation.symHeight) * imgHeight)
                 TextBlock(
                     translation = translation,
                     modifier = Modifier
@@ -105,6 +105,7 @@ class TextTranslationsComposeView :
                 alignment = Alignment.Center,
                 modifier = Modifier
                     .background(Color.Red.copy(alpha = 0.4f))
+//                    .background(Color.White)
                     .padding(1.dp),
 
                 )

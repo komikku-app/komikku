@@ -95,7 +95,8 @@ class ChapterTranslator(
                     val b2 = resultant[i]
                     val bottom = b2.height + b2.y
 //                    logcat { "RES : ${b2.text} | ${bottom} | ${b2.x - bX} | ${(bY - bottom)} | ${thresholdX} | ${thresholdY}" }
-                    if (bY - bottom < 20 && abs(b2.x - bX) < 20) {
+                    logcat {"${  symbolBound.height()*2 }"}
+                    if (bY - bottom < symbolBound.height()*2 && abs(b2.x - bX) < 20) {
 //                        logcat { "ADDED : ${block.text.replace("\n", " ")}" }
                         passed = false
                         b2.text += " " + block.text.replace("\n", " ")
@@ -113,6 +114,8 @@ class ChapterTranslator(
                             y = bY,
                             width = bounds.width().toFloat(),
                             height = bounds.height().toFloat(),
+                            symHeight = symbolBound.height().toFloat(),
+                            symWidth = symbolBound.width().toFloat(),
                             angle = block.lines.first().angle,
                         ),
                     )
@@ -126,7 +129,11 @@ class ChapterTranslator(
                 tt.x /= width
                 tt.y /= height
                 tt.width /= width
+                tt.symHeight/=height
+                tt.symWidth/=width
+
                 tt.height /= height
+
             }
         }
 
