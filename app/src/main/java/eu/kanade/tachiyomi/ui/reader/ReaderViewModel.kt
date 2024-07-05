@@ -51,6 +51,7 @@ import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.MAX_FILE_NAME_BYTES
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
+import eu.kanade.translation.TranslationManager
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
@@ -124,6 +125,7 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getManga: GetManga = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
+    private  val translationManager: TranslationManager = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
@@ -391,12 +393,16 @@ class ReaderViewModel @JvmOverloads constructor(
                         downloadManager = downloadManager,
                         downloadProvider = downloadProvider,
                         manga = manga,
-                        source = source, /* SY --> */
+                        source = source,
+                        // SY -->
                         sourceManager = sourceManager,
                         readerPrefs = readerPreferences,
                         mergedReferences = mergedReferences,
-                        mergedManga = mergedManga, /* SY <-- */
-                    )
+                        mergedManga = mergedManga,
+                        // SY <--
+                        translationManager=translationManager,
+                        downloadPreferences=downloadPreferences,
+                        )
 
                     loadChapter(
                         loader!!,

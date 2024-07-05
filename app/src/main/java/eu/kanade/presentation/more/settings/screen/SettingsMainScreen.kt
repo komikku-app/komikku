@@ -205,6 +205,12 @@ object SettingsMainScreen : Screen() {
             screen = SettingsDownloadScreen,
         ),
         Item(
+            titleRes =MR.strings.pref_category_translation,
+            subtitleRes = MR.strings.pref_translation_summary,
+            icon = Icons.Outlined.GetApp,
+            screen = SettingsTranslationScreen,
+        ),
+        Item(
             titleRes = MR.strings.pref_category_tracking,
             subtitleRes = MR.strings.pref_tracking_summary,
             icon = Icons.Outlined.Sync,

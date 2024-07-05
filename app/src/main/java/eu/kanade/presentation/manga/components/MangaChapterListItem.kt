@@ -1,5 +1,7 @@
 package eu.kanade.presentation.manga.components
 
+import ChapterTranslationAction
+import ChapterTranslationIndicator
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.translation.Translation
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
@@ -56,6 +59,7 @@ fun MangaChapterListItem(
     // SY <--
     read: Boolean,
     bookmark: Boolean,
+    translationStateProvider: () -> Translation.State,
     selected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> Download.State,
@@ -64,9 +68,10 @@ fun MangaChapterListItem(
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
+    onTranslateClick: ((ChapterTranslationAction) -> Unit)?,
     onDownloadClick: ((ChapterDownloadAction) -> Unit)?,
     onChapterSwipe: (LibraryPreferences.ChapterSwipeAction) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier, translationEnabled: Boolean =false
 ) {
     val start = getSwipeAction(
         action = chapterSwipeStartAction,
@@ -188,13 +193,18 @@ fun MangaChapterListItem(
                     }
                 }
             }
-
+            if(downloadStateProvider()==Download.State.DOWNLOADED)ChapterTranslationIndicator(
+                enabled = downloadIndicatorEnabled,
+                modifier = Modifier.padding(start = 4.dp),
+                translationStateProvider=translationStateProvider,
+                onClick = { onTranslateClick?.invoke(it) }
+            )
             ChapterDownloadIndicator(
                 enabled = downloadIndicatorEnabled,
                 modifier = Modifier.padding(start = 4.dp),
                 downloadStateProvider = downloadStateProvider,
                 downloadProgressProvider = downloadProgressProvider,
-                onClick = { onDownloadClick?.invoke(it) },
+                onClick = { onDownloadClick?.invoke(it) },translationEnabled=translationEnabled
             )
         }
     }

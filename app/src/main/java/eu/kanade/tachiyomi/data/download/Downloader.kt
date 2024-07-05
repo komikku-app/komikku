@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.model.getComicInfo
@@ -15,6 +17,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.NOMEDIA_FILE
 import eu.kanade.tachiyomi.util.storage.saveTo
+import eu.kanade.translation.TranslationManager
 import exh.source.isEhBasedSource
 import exh.util.DataSaver
 import exh.util.DataSaver.Companion.getImage
@@ -37,6 +40,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
@@ -82,6 +87,7 @@ class Downloader(
     private val chapterCache: ChapterCache = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val xml: XML = Injekt.get(),
+    private val translationManager: TranslationManager = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     // SY -->
@@ -113,7 +119,7 @@ class Downloader(
      */
     val isRunning: Boolean
         get() = downloaderJob?.isActive ?: false
-
+    private var translateOnDownload = false
     /**
      * Whether the downloader is paused
      */
@@ -124,6 +130,10 @@ class Downloader(
         launchNow {
             val chapters = async { store.restore() }
             addAllToQueue(chapters.await())
+                downloadPreferences.translateOnDownload().changes().onEach {
+                    translateOnDownload=it
+                }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
+
         }
     }
 

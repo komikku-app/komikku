@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.AndroidSourceManager
+import eu.kanade.translation.TranslationManager
 import exh.eh.EHentaiUpdateHelper
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
@@ -168,6 +169,8 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { LocalSourceFileSystem(get()) }
         addSingletonFactory { LocalCoverManager(app, get()) }
         addSingletonFactory { StorageManager(app, get()) }
+        //TachiyomiAT
+        addSingletonFactory { TranslationManager(app) }
 
         // SY -->
         addSingletonFactory { EHentaiUpdateHelper(app) }

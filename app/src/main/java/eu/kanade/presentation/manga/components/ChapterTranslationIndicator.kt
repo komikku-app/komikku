@@ -1,19 +1,13 @@
-package eu.kanade.presentation.manga.components
-
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -33,47 +27,54 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.translation.Translation
+import tachiyomi.core.common.util.lang.launchNow
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.IconButtonTokens
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
-enum class ChapterDownloadAction {
+
+
+enum class ChapterTranslationAction {
     START,
-    START_NOW,
     CANCEL,
     DELETE,
 }
 
 @Composable
-fun ChapterDownloadIndicator(
+fun ChapterTranslationIndicator(
     enabled: Boolean,
-    downloadStateProvider: () -> Download.State,
-    downloadProgressProvider: () -> Int,
-    onClick: (ChapterDownloadAction) -> Unit,
-    modifier: Modifier = Modifier,translationEnabled: Boolean =false
+    translationStateProvider: () -> Translation.State,
+    onClick: (ChapterTranslationAction) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    when (val downloadState = downloadStateProvider()) {
-        Download.State.NOT_DOWNLOADED -> NotDownloadedIndicator(
-            enabled = enabled,
-            modifier = modifier,
-            onClick = onClick
-        )
-        Download.State.QUEUE, Download.State.DOWNLOADING -> DownloadingIndicator(
-            enabled = enabled,
-            modifier = modifier,
-            downloadState = downloadState,
-            downloadProgressProvider = downloadProgressProvider,
-            onClick = onClick,  translationEnabled=translationEnabled
-        )
-        Download.State.DOWNLOADED -> DownloadedIndicator(
+
+    when (val state = translationStateProvider()) {
+
+        Translation.State.NOT_TRANSLATED -> NotTranslatedIndicator(
             enabled = enabled,
             modifier = modifier,
             onClick = onClick,
-
         )
-        Download.State.ERROR -> ErrorIndicator(
+
+        Translation.State.TRANSLATING -> TranslatingIndicator(
+            enabled = enabled,
+            modifier = modifier,
+            onClick = onClick,
+        )
+        Translation.State.QUEUE -> TranslatingIndicator(
+            enabled = enabled,
+            modifier = modifier,
+            onClick = onClick,
+        )
+
+        Translation.State.TRANSLATED -> TranslatedIndicator(
+            enabled = enabled,
+            modifier = modifier,
+            onClick = onClick,
+        )
+        Translation.State.ERROR-> ErrorIndicator(
             enabled = enabled,
             modifier = modifier,
             onClick = onClick,
@@ -82,10 +83,10 @@ fun ChapterDownloadIndicator(
 }
 
 @Composable
-private fun NotDownloadedIndicator(
+private fun NotTranslatedIndicator(
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    onClick: (ChapterDownloadAction) -> Unit
+    onClick: (ChapterTranslationAction) -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -93,28 +94,26 @@ private fun NotDownloadedIndicator(
             .commonClickable(
                 enabled = enabled,
                 hapticFeedback = LocalHapticFeedback.current,
-                onLongClick = { onClick(ChapterDownloadAction.START_NOW) },
-                onClick = { onClick(ChapterDownloadAction.START) },
+                onLongClick = { onClick(ChapterTranslationAction.START) },
+                onClick = { onClick(ChapterTranslationAction.START) },
             )
             .secondaryItemAlpha(),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_download_chapter_24dp),
+            painter = painterResource(R.drawable.ic_translate_circle),
             contentDescription = stringResource(MR.strings.manga_download),
             modifier = Modifier.size(IndicatorSize),
-            tint = MaterialTheme.colorScheme.primary, // KMK: onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
 @Composable
-private fun DownloadingIndicator(
+private fun TranslatingIndicator(
     enabled: Boolean,
-    downloadState: Download.State,
-    downloadProgressProvider: () -> Int,
-    onClick: (ChapterDownloadAction) -> Unit,
-    modifier: Modifier = Modifier,translationEnabled: Boolean =false
+    onClick: (ChapterTranslationAction) -> Unit,
+    modifier: Modifier = Modifier, translationEnabled: Boolean = false,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -123,97 +122,46 @@ private fun DownloadingIndicator(
             .commonClickable(
                 enabled = enabled,
                 hapticFeedback = LocalHapticFeedback.current,
-                onLongClick = { onClick(ChapterDownloadAction.CANCEL) },
+                onLongClick = { onClick(ChapterTranslationAction.CANCEL) },
                 onClick = { isMenuExpanded = true },
             ),
         contentAlignment = Alignment.Center,
     ) {
         val arrowColor: Color
-        val strokeColor = MaterialTheme.colorScheme.primary // KMK: onSurfaceVariant
-        var isTranslating = false;
-        val downloadProgress = downloadProgressProvider()
-        val indeterminate = downloadState == Download.State.QUEUE ||
-            (downloadState == Download.State.DOWNLOADING && downloadProgress == 0)
-        if (indeterminate) {
-            arrowColor = strokeColor
-            CircularProgressIndicator(
-                modifier = IndicatorModifier,
-                color = strokeColor,
-                strokeWidth = IndicatorStrokeWidth,
-                trackColor = Color.Transparent,
-                strokeCap = StrokeCap.Butt,
-            )
-        } else {
-            val animatedProgress by animateFloatAsState(
-                targetValue = downloadProgress / 100f,
-                animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-            )
-            isTranslating= translationEnabled && animatedProgress==1f
-            if (isTranslating) {
-                arrowColor = strokeColor
-                CircularProgressIndicator(
-                    modifier = IndicatorModifier,
-                    color = strokeColor,
-                    strokeWidth = IndicatorStrokeWidth,
-                    trackColor = Color.Transparent,
-                    strokeCap = StrokeCap.Butt,
-                )
-            }else{
-                arrowColor = if (animatedProgress < 0.5f) {
-                    strokeColor
-                } else {
-                    MaterialTheme.colorScheme.background
-                }
-                CircularProgressIndicator(
-                    progress = { animatedProgress },
-                    modifier = IndicatorModifier,
-                    color = strokeColor,
-                    strokeWidth = IndicatorSize / 2,
-                    trackColor = Color.Transparent,
-                    strokeCap = StrokeCap.Butt,
-                    gapSize = 0.dp,
-                )
-            }
-        }
+        val strokeColor = MaterialTheme.colorScheme.onSurfaceVariant
+        arrowColor = strokeColor
+        CircularProgressIndicator(
+            modifier = IndicatorModifier,
+            color = strokeColor,
+            strokeWidth = IndicatorStrokeWidth,
+            trackColor = Color.Transparent,
+            strokeCap = StrokeCap.Butt,
+        )
+
         DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
-            DropdownMenuItem(
-                text = { Text(text = stringResource(MR.strings.action_start_downloading_now)) },
-                onClick = {
-                    onClick(ChapterDownloadAction.START_NOW)
-                    isMenuExpanded = false
-                },
-            )
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_cancel)) },
                 onClick = {
-                    onClick(ChapterDownloadAction.CANCEL)
+                    launchNow {  onClick(ChapterTranslationAction.CANCEL)}
+
                     isMenuExpanded = false
                 },
             )
         }
-        if (isTranslating) {
-            Icon(
-                painter = painterResource(R.drawable.ic_translate),
-                contentDescription = null,
-                modifier = ArrowModifier,
-                tint = arrowColor,
-            )
-        }else{
-            Icon(
-                imageVector = Icons.Outlined.ArrowDownward,
-                contentDescription = null,
-                modifier = ArrowModifier,
-                tint = arrowColor,
-            )
-        }
+        Icon(
+            painter = painterResource(R.drawable.ic_translate),
+            contentDescription = null,
+            modifier = ArrowModifier,
+            tint = arrowColor,
+        )
     }
 }
 
 @Composable
-private fun DownloadedIndicator(
+private fun TranslatedIndicator(
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    onClick: (ChapterDownloadAction) -> Unit,
+    onClick: (ChapterTranslationAction) -> Unit,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -228,16 +176,16 @@ private fun DownloadedIndicator(
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = Icons.Filled.CheckCircle,
+            painter = painterResource(R.drawable.ic_translate_circle_filled),
             contentDescription = null,
             modifier = Modifier.size(IndicatorSize),
-            tint = MaterialTheme.colorScheme.primary, // KMK: onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_delete)) },
                 onClick = {
-                    onClick(ChapterDownloadAction.DELETE)
+                    launchNow {  onClick(ChapterTranslationAction.DELETE)}
                     isMenuExpanded = false
                 },
             )
@@ -245,11 +193,12 @@ private fun DownloadedIndicator(
     }
 }
 
+
 @Composable
 private fun ErrorIndicator(
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    onClick: (ChapterDownloadAction) -> Unit,
+    onClick: (ChapterTranslationAction) -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -257,8 +206,8 @@ private fun ErrorIndicator(
             .commonClickable(
                 enabled = enabled,
                 hapticFeedback = LocalHapticFeedback.current,
-                onLongClick = { onClick(ChapterDownloadAction.START) },
-                onClick = { onClick(ChapterDownloadAction.START) },
+                onLongClick = { onClick(ChapterTranslationAction.DELETE) },
+                onClick = { onClick(ChapterTranslationAction.DELETE) },
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -291,7 +240,7 @@ private fun Modifier.commonClickable(
     ),
 )
 
-private val IndicatorSize = 26.dp
+private val IndicatorSize = 23.dp
 private val IndicatorPadding = 2.dp
 
 // To match composable parameter name when used later
