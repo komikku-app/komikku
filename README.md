@@ -1,32 +1,40 @@
-| Releases | Preview | PR builds | Discussions |
+<p align="center">
+ <img width=200px height=200px src="./.github/readme-images/app-icon.png"/>
+</p>
+
+<h1 align="center"> Komikku </h1>
+
+| Releases | Preview | CI builds | Discussions |
 |----------|---------|-----------|-------------|
 | [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/total?label=Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases) [![Stable](https://img.shields.io/github/release/komikku-app/komikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/komikku/releases/latest) [![Build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_release.yml?labelColor=27303D)](https://github.com/komikku-app/komikku/actions/workflows/build_push.yml) | [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku-preview/total?label=Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku-preview/releases) [![Beta](https://img.shields.io/github/v/release/komikku-app/komikku-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/komikku-preview/releases/latest) [![Beta build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku-preview/build_app.yml?labelColor=27303D)](https://github.com/komikku-app/komikku-preview/actions/workflows/build_app.yml) | [![CI](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_check.yml?labelColor=27303D)](https://github.com/komikku-app/komikku/actions/workflows/build_check.yml) | [![Discord](https://img.shields.io/discord/1242381704459452488?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/85jB7V5AJR) |
 
 
-# ![app icon](./.github/readme-images/app-icon.png) Komikku
-Mihon/Tachiyomi is a free and open source manga reader for Android 8.0 and above. This version of Mihon/Tachiyomi, Komikku was based off TachiyomiSY. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like SY, J2K and Neko.
+A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachiyomi. This fork is meant to provide new & useful features while regularly take features/updates from Mihon or other forks like SY, J2K and Neko...
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
 ## Features
 
-Features of Komikku include:
-- [x] Built-in & official extensions repository
-- [x] Show list of related titles (must enable in Settings/Browse) for all sources.
-- [x] Bulk selection to add to library & change categories of multiple entries all at once, everywhere.
-It can detect duplication being added and give option to allow/skip one by one or allow/skip all duplication.
-Also allow long-click to add/remove single entry to/from library, everywhere.
-- [x] Feed now supports all extensions
-- [x] More Feed items (20 for now)
-- [x] Search for sources in Browse screen when too many sources installed
-- [x] Quick NSFW sources filter in both Extensions/Browse screen
-- [x] Show which source is NSFW in Browse tab
-- [x] Settings button to jump to source's package settings page (to uninstall unwanted sources)
-- [ ] Show photo’s size so you can compare which source has better quality
-- [ ] Support other sources just like E-Hentai: Lucious...
-- [ ] History of searched query
+### Komikku's key features:
+- [x] Built-in extensions repository, always up-to-date with Keiyoushi with a few more sources & improvements.
+- [x] Automatically show `Related Titles` to current entry for all sources.
+- [x] Auto theme color based on each entry's cover for entry View & Reader.
+- [x] 2-way sync progress with trackers, automatically.
+- [x] `Feed` now supports all sources, with more items (20 for now).
+- [x] `Bulk-selection` to add to library & change categories of multiple entries all at once, everywhere.
+- [x] Long-click to add/remove single entry to/from library, everywhere.
+- [x] Search for sources & Quick NSFW sources filter in both Extensions/Browse screen.
+- [x] `Feed` backup/restore.
+- [x] Banner shows Lybrary syncing / Backup restoring / Library updating progress.
+- [x] Configurable interval to refresh entries from downloaded storage.
+- [x] More app themes & better UI, improvements...
 
-Features of Mihon/Tachiyomi(original) include:
+
+<details>
+  <summary>Features from Mihon/Tachiyomi</summary>
+
+#### All up-to-date features from Mihon/Tachiyomi (original), include:
+
 * Online reading from a variety of sources
 * Local reading of downloaded content
 * A configurable reader with multiple viewers, reading directions and other settings.
@@ -35,11 +43,17 @@ Features of Mihon/Tachiyomi(original) include:
 * Light and dark themes
 * Schedule updating your library for new chapters
 * Create backups locally to read offline or to your desired cloud service
+* Continue reading button in library
 
-Features of TachiyomiSY include:
-* Latest tab, store up to 5 sources where you can easily view the latest manga by viewing the tab
+</details>
+
+<details>
+  <summary>Features from Tachiyomi SY</summary>
+
+#### All features from TachiyomiSY:
+* Feed tab, where you can easily view the latest entries or saved search from multiple sources at same time.
 * Automatic webtoon detection, allowing the reader to switch to webtoon mode automatically when viewing one
-* Manga recommendations, uses MAL and Anilist, as well as Neko Similar Manga for Mangadex manga(Thanks to Az, She11Shocked, Carlos, and Goldbattle)
+* Manga recommendations, uses MAL and Anilist, as well as Neko Similar Manga for Mangadex manga (Thanks to Az, She11Shocked, Carlos, and Goldbattle)
 * Lewd filter, hide the lewd manga in your library when you want to
 * Tracking filter, filter your tracked manga so you can see them or see non-tracked manga, made by She11Shocked
 * Search tracking status in library, made by She11Shocked
@@ -49,7 +63,6 @@ Features of TachiyomiSY include:
 * Dynamic Categories, view the library in multiple ways
 * Smart background for reading modes like LTR or Vertical, changes the background based on the page color
 * Force disable webtoon zoom
-* Continue reading button in library
 * Hentai features enable/disable, in advanced settings
 * Quick clean titles
 * Source migration, migrate all your manga from one source to another
@@ -77,6 +90,8 @@ Additional features for some extensions, features include custom description, op
 * NHentai
 * Puruin
 * Tsumino
+
+</details>
 
 ## Download
 Get the app from our [releases page](https://github.com/komikku-app/komikku/releases/latest).
@@ -110,10 +125,8 @@ Use the [issue forms](https://github.com/komikku-app/komikku/issues/new/choose) 
 
 <details><summary>Feature Requests</summary>
 
-* Write a detailed issue, explaining what it should do or how. Avoid writing just "like X app does"
-* Include screenshot (if needed)
-
-Source requests are not accepted.
+* Write a detailed issue, explaining what it should do or how.
+* Include screenshot (if needed).
 </details>
 
 <details><summary>Contributing</summary>
