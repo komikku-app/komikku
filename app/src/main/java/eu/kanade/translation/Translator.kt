@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNow
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -67,7 +68,7 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
         // If there is a next translation, start translating it.
         if (nextTranslation != null) {
             nextTranslation.status = Translation.State.TRANSLATING
-            currentTranslationJob = scope.launch {
+            currentTranslationJob = scope.launchIO{
                 startTranslationNow(nextTranslation)
             }
             currentTranslationJob?.invokeOnCompletion {
@@ -85,6 +86,7 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
     private suspend fun startTranslationNow(translation: Translation) {
         try {
             chapterTranslator.translateChapter(translation)
+
             translation.status = Translation.State.TRANSLATED
             logcat { "Translated chapter ${translation.chapter.id}" }
         } catch (e: Exception) {
@@ -124,31 +126,33 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
         return currentTranslationJobID
     }
 
-    fun translateChapters(chapterIds: List<Long>) {
+    suspend fun translateChapters(chapterIds: List<Long>) {
         // Update the queue state directly.
-        _queueState.value += chapterIds.mapNotNull {
-            runBlocking {
-                val ts=Translation.fromChapterId(
-                    it,
-                )
-                if (ts != null) {
-                    ts.status= Translation.State.QUEUE
-                }
-                ts
+            _queueState.value += chapterIds.mapNotNull {
+
+                    val ts = Translation.fromChapterId(
+                        it,
+                    )
+                    if (ts != null) {
+                        ts.status = Translation.State.QUEUE
+                    }
+                    ts
+
             }
-        }
-        // Start the translator if it's not already running.
-        startTranslations()
+            // Start the translator if it's not already running.
+            startTranslations()
+
+
     }
 
-    fun translateChapter(chapterId: Long) {
-        // Update the queue state directly.
-        val translation =
-            runBlocking { Translation.fromChapterId(chapterId) } ?: return
-        translation.status= Translation.State.QUEUE
-        _queueState.value += translation
-        // Start the translator if it's not already running.
-        startTranslations()
+    suspend fun translateChapter(chapterId: Long) {
+            // Update the queue state directly.
+            val translation =
+                Translation.fromChapterId(chapterId)  ?: return
+            translation.status = Translation.State.QUEUE
+            _queueState.value += translation
+            // Start the translator if it's not already running.
+            startTranslations()
     }
 
 }

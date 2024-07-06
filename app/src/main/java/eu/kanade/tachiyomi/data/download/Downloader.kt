@@ -431,7 +431,7 @@ class Downloader(
             DiskUtil.createNoMediaFile(tmpDir, context)
 
             download.status = Download.State.DOWNLOADED
-            if (translateOnDownload) translationManager.translateChapter(chapterID =download.chapter.id )
+            if (translateOnDownload) scope.launchIO {  translationManager.translateChapter(chapterID =download.chapter.id ) }
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
             // If the page list threw, it will resume here

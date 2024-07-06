@@ -16,6 +16,7 @@ import uy.kohesive.injekt.api.get
 data class Translation(
     val chapter: Chapter, val manga: Manga,
     val dir: UniFile,
+    val saveFile: UniFile,
     private val state: State = State.NOT_TRANSLATED,
 ) {
     @Transient
@@ -44,6 +45,7 @@ data class Translation(
             getManga: GetManga = Injekt.get(),
             sourceManager: SourceManager = Injekt.get(),
             downloadProvider: DownloadProvider = Injekt.get(),
+            translationProvider: TranslationProvider= Injekt.get(),
             state: State = State.NOT_TRANSLATED,
         ): Translation? {
             val chapter = getChapter.await(chapterId) ?: return null
@@ -55,7 +57,9 @@ data class Translation(
                 manga.title,
                 source,
             )
-            return dir?.let { Translation(chapter, manga, it, state) }
+            val saveFile=translationProvider.getMangaDir(manga.title,source).createFile(translationProvider.getValidChapterName(chapter.name, chapter.scanlator))
+            if(saveFile!=null&&dir!=null)return Translation(chapter,manga,dir,saveFile,state)
+            return null;
         }
 
     }

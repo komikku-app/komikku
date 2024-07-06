@@ -76,7 +76,7 @@ class ChapterTranslator(
         //Translate All Pages
 
         textTranslator.translate(pages)
-        Json.encodeToStream(pages, translation.dir.createFile("translations.json")!!.openOutputStream())
+        Json.encodeToStream(pages, translation.saveFile.openOutputStream())
     }
 
     private fun toTextTranslation(blocks: List<TextBlock>, width: Int, height: Int): ArrayList<TextTranslation> {

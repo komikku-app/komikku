@@ -76,9 +76,7 @@ internal class DownloadPageLoader(
             }
         }
         //Load Translations
-
-        val translationFile = chapterDir?.findFile("translations.json")
-        val pageTranslations: Map<String, List<TextTranslation>>? = if(translationFile?.exists() == true)translationManager.getChapterTranslation(translationFile) else null
+        val pageTranslations: Map<String, List<TextTranslation>>? =translationManager.getChapterTranslation(chapter.chapter.name,chapter.chapter.scanlator,manga.title,source)
         if (pageTranslations!=null) {
             return pages.mapIndexed{i,page ->
                 ReaderPage(page.index, page.url, page.imageUrl, translations = pageTranslations[files[i].name!!]) {

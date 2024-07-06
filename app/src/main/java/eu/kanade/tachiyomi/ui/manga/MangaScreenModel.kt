@@ -49,6 +49,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
+import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.data.coil.getBestColor
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -1353,14 +1354,26 @@ class MangaScreenModel(
     ) {
         when (action) {
             ChapterTranslationAction.START -> {
-                translationManager.translateChapter(item.chapter.id)
+                ioCoroutineScope.launchIO {
+                    try {
+                        translationManager.translateChapter(item.chapter.id)
+                    } catch (e: Throwable) {
+                        logcat(LogPriority.ERROR, e)
+                    }
+                }
             }
 
             ChapterTranslationAction.CANCEL -> {
                 val trans=translationManager.translator.getQueuedTranslationOrNull(item.chapter.id)
                 translationManager.cancelTranslation(item.chapter.id)
                 trans?.apply { status = Translation.State.NOT_TRANSLATED }?.let { updateTranslationState(it) }
-                launchNow{ translationManager.deleteTranslation(item.chapter.id) }
+                ioCoroutineScope.launchIO {
+                    try {
+                        translationManager.deleteTranslation(item.chapter.id)
+                    } catch (e: Throwable) {
+                        logcat(LogPriority.ERROR, e)
+                    }
+                }
             }
 
             ChapterTranslationAction.DELETE -> {

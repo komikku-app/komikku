@@ -22,7 +22,7 @@ import uy.kohesive.injekt.api.get
 
 class TranslationManager(
     context: Context,
-    private val downloadProvider: DownloadProvider = Injekt.get(),
+    private val translationProvider: TranslationProvider =Injekt.get(),
     private val getChapter: GetChapter = Injekt.get(), private val getManga: GetManga = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) {
@@ -44,12 +44,12 @@ class TranslationManager(
         try {
             val chapter = getChapter.await(chapterId)!!
             val manga = getManga.await(chapter.mangaId)!!
-            downloadProvider.findChapterDir(
+            translationProvider.findChapterTranslation(
                 chapter.name,
                 chapter.scanlator,
                 manga.title,
                 sourceManager.getOrStub(manga.source),
-            )?.findFile("translations.json")?.delete()
+            )?.delete()
 
             logcat { "Deleted translation for ${chapter.name}" }
         } catch (e: Exception) {
@@ -68,14 +68,15 @@ class TranslationManager(
         source: Source,
     ): Map<String, List<TextTranslation>>? {
         try {
-            val dir = downloadProvider.findChapterDir(
+            val file = translationProvider.findChapterTranslation(
                 chapterName,
                 scanlator,
                 title,
                 source,
             ) ?: return null;
-            return dir.findFile("translations.json")?.let { getChapterTranslation(it) }
-        } catch (e: Exception) {
+            return getChapterTranslation(file)
+        } catch (_: Exception) {
+
         }
         return null
 
@@ -92,7 +93,7 @@ class TranslationManager(
         return null
     }
 
-    fun translateChapter(chapterID: Long) {
+   suspend fun translateChapter(chapterID: Long) {
         translator.translateChapter(chapterID)
     }
 
@@ -106,13 +107,13 @@ class TranslationManager(
         if (translator.getActiveTranslationID() == chapterId) return Translation.State.TRANSLATING
         if (translator.getQueuedTranslationOrNull(chapterId) != null) return Translation.State.QUEUE
 
-        val dir = downloadProvider.findChapterDir(
+        val file = translationProvider.findChapterTranslation(
             chapterName,
             scanlator,
             title,
             source,
         ) ?: return Translation.State.NOT_TRANSLATED
-        if (dir.findFile("translations.json")?.exists() == true) return Translation.State.TRANSLATED
+        if (file.exists()) return Translation.State.TRANSLATED
         return Translation.State.NOT_TRANSLATED;
     }
 
