@@ -68,6 +68,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -177,18 +178,24 @@ class LibraryScreenModel(
                     ::Pair,
                 ),
                 // SY <--
-            ) { searchQuery, library, tracks, (loggedInTrackers, _), (groupType, sort) ->
+            ) { searchQuery, library, tracks, (trackingFiler, _), (groupType, sort) ->
                 library
                     // SY -->
                     .applyGrouping(groupType)
                     // SY <--
-                    .applyFilters(tracks, loggedInTrackers)
-                    .applySort(tracks, /* SY --> */sort.takeIf { groupType != LibraryGroup.BY_DEFAULT } /* SY <-- */)
+                    .applyFilters(tracks, trackingFiler)
+                    .applySort(
+                        tracks,
+                        trackingFiler.keys,
+                        // SY -->
+                        sort.takeIf { groupType != LibraryGroup.BY_DEFAULT },
+                        // SY <--
+                    )
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
                             // Filter query
                             // SY -->
-                            filterLibrary(value, searchQuery, loggedInTrackers)
+                            filterLibrary(value, searchQuery, trackingFiler)
                             // SY <--
                         } else {
                             // Don't do anything
@@ -277,9 +284,10 @@ class LibraryScreenModel(
     /**
      * Applies library filters to the given map of manga.
      */
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private suspend fun LibraryMap.applyFilters(
         trackMap: Map<Long, List<Track>>,
-        loggedInTrackers: Map<Long, TriState>,
+        trackingFiler: Map<Long, TriState>,
     ): LibraryMap {
         val prefs = getLibraryItemPreferencesFlow().first()
         val downloadedOnly = prefs.globalFilterDownloaded
@@ -291,10 +299,10 @@ class LibraryScreenModel(
         val filterCompleted = prefs.filterCompleted
         val filterIntervalCustom = prefs.filterIntervalCustom
 
-        val isNotLoggedInAnyTrack = loggedInTrackers.isEmpty()
+        val isNotLoggedInAnyTrack = trackingFiler.isEmpty()
 
-        val excludedTracks = loggedInTrackers.mapNotNull { if (it.value == TriState.ENABLED_NOT) it.key else null }
-        val includedTracks = loggedInTrackers.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
+        val excludedTracks = trackingFiler.mapNotNull { if (it.value == TriState.ENABLED_NOT) it.key else null }
+        val includedTracks = trackingFiler.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
         val trackFiltersIsIgnored = includedTracks.isEmpty() && excludedTracks.isEmpty()
 
         // SY -->
@@ -371,9 +379,11 @@ class LibraryScreenModel(
     /**
      * Applies library sorting to the given map of manga.
      */
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun LibraryMap.applySort(
         // Map<MangaId, List<Track>>
         trackMap: Map<Long, List<Track>>,
+        loggedInTrackerIds: Set<Long>,
         /* SY --> */
         groupSort: LibrarySort? = null, /* SY <-- */
     ): LibraryMap {
@@ -397,7 +407,7 @@ class LibraryScreenModel(
 
         val defaultTrackerScoreSortValue = -1.0
         val trackerScores by lazy {
-            val trackerMap = trackerManager.loggedInTrackers().associateBy { e -> e.id }
+            val trackerMap = trackerManager.getAll(loggedInTrackerIds).associateBy { e -> e.id }
             trackMap.mapValues { entry ->
                 when {
                     entry.value.isEmpty() -> null
@@ -596,18 +606,17 @@ class LibraryScreenModel(
      * @return map of track id with the filter value
      */
     private fun getTrackingFilterFlow(): Flow<Map<Long, TriState>> {
-        val loggedInTrackers = trackerManager.loggedInTrackers()
-        return if (loggedInTrackers.isNotEmpty()) {
-            val prefFlows = loggedInTrackers
-                .map { libraryPreferences.filterTracking(it.id.toInt()).changes() }
-                .toTypedArray()
-            combine(*prefFlows) {
+        return trackerManager.loggedInTrackersFlow().flatMapLatest { loggedInTrackers ->
+            if (loggedInTrackers.isEmpty()) return@flatMapLatest flowOf(emptyMap())
+
+            val prefFlows = loggedInTrackers.map { tracker ->
+                libraryPreferences.filterTracking(tracker.id.toInt()).changes()
+            }
+            combine(prefFlows) {
                 loggedInTrackers
                     .mapIndexed { index, tracker -> tracker.id to it[index] }
                     .toMap()
             }
-        } else {
-            flowOf(emptyMap())
         }
     }
 
@@ -878,7 +887,6 @@ class LibraryScreenModel(
     }
 
     // SY -->
-
     fun getCategoryName(
         context: Context,
         category: Category?,

@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.suwayomi.Suwayomi
+import kotlinx.coroutines.flow.combine
 
 class TrackerManager {
 
@@ -40,5 +41,13 @@ class TrackerManager {
 
     fun loggedInTrackers() = trackers.filter { it.isLoggedIn }
 
+    fun loggedInTrackersFlow() = combine(trackers.map { it.isLoggedInFlow }) {
+        it.mapIndexedNotNull { index, isLoggedIn ->
+            if (isLoggedIn) trackers[index] else null
+        }
+    }
+
     fun get(id: Long) = trackers.find { it.id == id }
+
+    fun getAll(ids: Set<Long>) = trackers.filter { it.id in ids }
 }
