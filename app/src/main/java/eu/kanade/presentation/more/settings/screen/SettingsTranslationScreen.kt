@@ -11,6 +11,8 @@ import eu.kanade.translation.translators.LanguageTranslators
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -82,14 +84,14 @@ object SettingsTranslationScreen : SearchableSettings {
     private fun getTranslateEngineGroup(
         downloadPreferences: DownloadPreferences,
     ): Preference.PreferenceGroup {
-        val opts = LanguageTranslators.entries.map { v -> v.name }
+        val opts = LanguageTranslators.entries.map { v -> v.label }
         return Preference.PreferenceGroup(
             title = "Translation Engine",
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = downloadPreferences.translationEngine(),
                     title = "Translator",
-                    entries = listOf(0, 1, 2, 3)
+                    entries = listOf(0, 1, 2,3)
                         .associateWith {
                             opts[it]
                         }
@@ -97,8 +99,18 @@ object SettingsTranslationScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = downloadPreferences.translationApiKey(),
+                    subtitle = "Secret Key",
                     title = "Translator API Key",
                 ),
+                Preference.PreferenceItem.EditTextPreference(
+                    pref = downloadPreferences.translationEngineModel(),
+                    subtitle = "Model for open router",
+                    title = "Translator Model",
+                ),
+
+                Preference.PreferenceItem.InfoPreference("Please Read the Github page Instructions for Setting up Open Router"),
+
+
             ),
         )
     }

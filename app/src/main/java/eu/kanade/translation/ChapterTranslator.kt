@@ -10,9 +10,12 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.Text.TextBlock
 import eu.kanade.tachiyomi.R
+import eu.kanade.translation.translators.GeminiTranslator
+import eu.kanade.translation.translators.GoogleTranslator
 import eu.kanade.translation.translators.LanguageTranslator
 import eu.kanade.translation.translators.LanguageTranslators
 import eu.kanade.translation.translators.MLKitTranslator
+import eu.kanade.translation.translators.OpenRouterTranslator
 import eu.kanade.translation.translators.ScanLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -95,7 +98,6 @@ class ChapterTranslator(
                     val b2 = resultant[i]
                     val bottom = b2.height + b2.y
 //                    logcat { "RES : ${b2.text} | ${bottom} | ${b2.x - bX} | ${(bY - bottom)} | ${thresholdX} | ${thresholdY}" }
-                    logcat {"${  symbolBound.height()*2 }"}
                     if (bY - bottom < symbolBound.height()*2 && abs(b2.x - bX) < 20) {
 //                        logcat { "ADDED : ${block.text.replace("\n", " ")}" }
                         passed = false
@@ -143,12 +145,9 @@ class ChapterTranslator(
     private fun getTranslator(engine: LanguageTranslators, langFrom: ScanLanguage,  langTo: Locale,key: String): LanguageTranslator {
         return when (engine) {
             LanguageTranslators.MLKIT -> MLKitTranslator(langFrom,langTo)
-//            LanguageTranslators.GOOGLE -> GoogleTranslator(langFrom,langTo)
-//            LanguageTranslators.CHATGPT -> ChatGPTTranslator(langFrom,langTo, key)
-//            LanguageTranslators.GEMINI -> GeminiTranslator(langFrom,langTo, key)
-            LanguageTranslators.GOOGLE -> TODO()
-            LanguageTranslators.GEMINI -> TODO()
-            LanguageTranslators.CHATGPT -> TODO()
+            LanguageTranslators.GOOGLE -> GoogleTranslator(langFrom,langTo)
+            LanguageTranslators.OPENROUTER -> OpenRouterTranslator(langFrom,langTo, key)
+            LanguageTranslators.GEMINI -> GeminiTranslator(langFrom,langTo, key)
         }
     }
 

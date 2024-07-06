@@ -6,8 +6,8 @@ interface LanguageTranslator {    suspend fun translate(pages:   HashMap<String,
 
 }
 enum class LanguageTranslators(var label: String) {
-    MLKIT("MlKit (Offline Version)"),
+    MLKIT("MlKit (On Device)"),
     GOOGLE("Google Translate"),
-    GEMINI("Gemini AI (Key Needed)"),
-    CHATGPT("ChatGPT (Key Needed) (Not Stable)")
+    GEMINI("Gemini AI [API KEY]"),
+    OPENROUTER("OpenRouter [API KEY] [MODEL]")
 }

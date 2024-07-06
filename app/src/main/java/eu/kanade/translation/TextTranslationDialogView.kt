@@ -4,11 +4,13 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,9 +105,10 @@ class TextTranslationsComposeView :
                 lineSpacingRatio = 1.2f,
                 overflow = TextOverflow.Clip,
                 alignment = Alignment.Center,
+
                 modifier = Modifier
-                    .background(Color.Red.copy(alpha = 0.4f))
-//                    .background(Color.White)
+//                    .background(Color.Red.copy(alpha = 0.4f))
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .padding(1.dp),
 
                 )

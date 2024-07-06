@@ -12,6 +12,7 @@ class DownloadPreferences(
     fun translateToLanguage() = preferenceStore.getString("auto_translate_language_to", "en")
     fun translationFont() = preferenceStore.getInt("auto_translate_font",0)
     fun translationEngine() = preferenceStore.getInt("auto_translation_engine", 0)
+    fun translationEngineModel() = preferenceStore.getString("translation_engine_model", "google/gemma-2-9b-it:free")
     fun translationApiKey() = preferenceStore.getString("auto_translation_api_key", "")
 
 
