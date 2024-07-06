@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Masse valg tilstand</string>
   <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
   <string name="pref_details_page_theme">Detaljer side</string>
-  <string name="pref_theme_cover_based">Tema baseret på omslag</string>
   <string name="pref_theme_cover_based_style">Tema stil</string>
   <string name="ext_unofficial">Uofficiel</string>
   <string name="unofficial_extension_message">Denne udvidelse er ikke fra den officielle repo.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Mere som disse...</string>
   <string name="too_many_in_feed">For mange kilder i dit feed, kan ikke tilføje mere end begrænset (20)</string>
   <string name="current_">Nuværende: %1$s</string>
+  <string name="pref_theme_cover_based">Tema baseret på omslag</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+  <string name="pref_theme_cover_based_style_vibrant">Levende</string>
+  <string name="pref_theme_cover_based_style_expressive">Udtryksfuldt</string>
+  <string name="pref_theme_cover_based_style_rainbow">Regnbue</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Frugt Salat</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelitet</string>
+  <string name="pref_theme_cover_based_style_content">Indhold</string>
+  <string name="pref_expand_related_titles">Udvid Relaterede titler</string>
+  <string name="pref_expand_related_titles_summary">Hvis slået fra, vil relaterede titler ikke automatisk indlæse &amp; Vis udvidet</string>
 </resources>

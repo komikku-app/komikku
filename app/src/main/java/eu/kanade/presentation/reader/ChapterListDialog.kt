@@ -50,7 +50,7 @@ fun ChapterListDialog(
         ) {
             items(
                 items = chapters,
-                key = { "chapter-${it.chapter.id}" },
+                key = { "chapter-list-${it.chapter.id}" },
             ) { chapterItem ->
                 MangaChapterListItem(
                     title = chapterItem.chapter.name,

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.updater.RELEASE_URL
-import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.AndroidXmlReader
@@ -64,7 +64,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                         XML.decodeFromReader<Changelog>(
                             AndroidXmlReader(
                                 context.resources.openRawResource(
-                                    if (isPreviewBuildType) R.raw.changelog_preview else R.raw.changelog_release,
+                                    if (isReleaseBuildType) R.raw.changelog_release else R.raw.changelog_preview,
                                 ).bufferedReader(),
                             ),
                         ).toDisplayChangelog()

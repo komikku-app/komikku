@@ -29,6 +29,10 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
 
     private val notifier = SyncNotifier(context)
 
+    // KMK -->
+    private val syncStatus: SyncStatus = Injekt.get()
+    // KMK <--
+
     override suspend fun doWork(): Result {
         if (tags.contains(TAG_AUTO)) {
             // Find a running manual worker. If exists, try again later
@@ -36,6 +40,10 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
                 return Result.retry()
             }
         }
+
+        // KMK -->
+        syncStatus.start()
+        // KMK <--
 
         setForegroundSafely()
 
@@ -48,6 +56,9 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             Result.success() // try again next time
         } finally {
             context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+            // KMK -->
+            syncStatus.stop()
+            // KMK <--
         }
     }
 

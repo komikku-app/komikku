@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
@@ -36,16 +36,18 @@ fun RelatedMangasCompactGrid(
     onKeywordLongClick: (String) -> Unit,
     selection: List<Manga>,
 ) {
-    LazyVerticalGrid(
+    FastScrollLazyVerticalGrid(
         columns = columns,
-        contentPadding = contentPadding + PaddingValues(MaterialTheme.padding.small),
+        contentPadding = contentPadding + PaddingValues(horizontal = MaterialTheme.padding.small),
+        // padding for scrollbar
+        topContentPadding = contentPadding.calculateTopPadding(),
         verticalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridVerticalSpacer),
         horizontalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridHorizontalSpacer),
     ) {
         relatedMangas.forEach { related ->
             val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                header(key = "$related#header") {
+                header(key = "${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
@@ -54,17 +56,18 @@ fun RelatedMangasCompactGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                header(key = "$related#content") { RelatedMangasLoadingItem() }
+                header(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
             } else {
                 val relatedManga = related as RelatedManga.Success
-                header(key = "${related.keyword}#divider") { HorizontalDivider() }
-                header(key = "${related.keyword}#header") {
+                header(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                header(key = "${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(KMR.strings.related_mangas_more)
                         } else {
                             stringResource(KMR.strings.pref_source_related_mangas)
                         },
+                        showArrow = relatedManga.keyword.isNotBlank(),
                         subtitle = null,
                         onClick = {
                             if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
@@ -75,7 +78,10 @@ fun RelatedMangasCompactGrid(
                         modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
+                items(
+                    key = { "related-compact-${relatedManga.mangaList[it].id}" },
+                    count = relatedManga.mangaList.size,
+                ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceCompactGridItem(
                         manga = manga,

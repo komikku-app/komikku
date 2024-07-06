@@ -58,6 +58,6 @@ dependencies {
     implementation(sylibs.xlog)
     implementation(libs.zip4j)
     implementation(libs.injekt.core)
-    implementation(libs.exifinterface)
+    implementation(sylibs.exifinterface)
     // SY <--
 }

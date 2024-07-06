@@ -29,8 +29,8 @@ android {
     defaultConfig {
         applicationId = "app.komikku"
 
-        versionCode = 67
-        versionName = "1.10.5"
+        versionCode = 68
+        versionName = "1.11.1"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -182,7 +182,7 @@ dependencies {
 
     implementation(libs.bundles.sqlite)
     // SY -->
-    implementation(libs.sqlcipher)
+    implementation(sylibs.sqlcipher)
     // SY <--
 
     implementation(kotlinx.reflect)
@@ -260,9 +260,7 @@ dependencies {
     implementation(libs.compose.grid)
     implementation(libs.palette.ktx)
     implementation(libs.material.kolor)
-
-    implementation(libs.google.api.services.drive)
-    implementation(libs.google.api.client.oauth)
+    implementation(libs.haze)
 
     // Logging
     implementation(libs.timber)
@@ -297,6 +295,10 @@ dependencies {
     // RatingBar (SY)
     implementation(sylibs.ratingbar)
     implementation(sylibs.composeRatingbar)
+
+    // Google drive
+    implementation(sylibs.google.api.services.drive)
+    implementation(sylibs.google.api.client.oauth)
 }
 
 androidComponents {
@@ -318,7 +320,7 @@ androidComponents {
 tasks {
     // See https://kotlinlang.org/docs/reference/experimental.html#experimental-status-of-experimental-api(-markers)
     withType<KotlinCompile> {
-        kotlinOptions.freeCompilerArgs += listOf(
+        compilerOptions.freeCompilerArgs.addAll(
             "-Xcontext-receivers",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-opt-in=androidx.compose.material.ExperimentalMaterialApi",

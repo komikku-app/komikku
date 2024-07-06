@@ -21,6 +21,7 @@ import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.source.NHENTAI_SOURCE_ID
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import exh.util.urlImportFetchSearchMangaSuspend
@@ -214,7 +215,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     companion object {
-        const val otherId = 7309872737163460316L
+        const val otherId = NHENTAI_SOURCE_ID
 
         private val jsonParser = Json {
             ignoreUnknownKeys = true

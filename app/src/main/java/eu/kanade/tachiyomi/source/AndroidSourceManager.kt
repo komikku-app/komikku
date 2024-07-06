@@ -53,6 +53,9 @@ class AndroidSourceManager(
     private val sourceRepository: StubSourceRepository,
 ) : SourceManager {
 
+    private val _isInitialized = MutableStateFlow(false)
+    override val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+
     private val downloadManager: DownloadManager by injectLazy()
 
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
@@ -189,9 +192,6 @@ class AndroidSourceManager(
     }
 
     // SY -->
-    private val _isInitialized = MutableStateFlow(false)
-    override val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
     override fun getVisibleOnlineSources() = sourcesMapFlow.value.values
         .filterIsInstance<HttpSource>()
         .filter {

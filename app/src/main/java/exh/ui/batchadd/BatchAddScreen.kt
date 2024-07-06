@@ -76,7 +76,7 @@ class BatchAddScreen : Screen() {
                                     text = stringResource(SYMR.strings.eh_batch_add_description),
                                 )
                             },
-                            keyboardOptions = KeyboardOptions(autoCorrect = false),
+                            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
                             textStyle = MaterialTheme.typography.bodyLarge,
 
                         )
@@ -125,7 +125,7 @@ class BatchAddScreen : Screen() {
                         }
                         itemsIndexed(
                             state.events,
-                            key = { index, text -> index + text.hashCode() },
+                            key = { index, text -> "batch-add-${index + text.hashCode()}" },
                         ) { _, text ->
                             Text(
                                 text = text,

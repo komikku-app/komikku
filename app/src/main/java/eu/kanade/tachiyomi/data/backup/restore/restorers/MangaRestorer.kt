@@ -68,6 +68,9 @@ class MangaRestorer(
             )
     }
 
+    /**
+     * Restore a single manga
+     */
     suspend fun restoreManga(
         backupManga: BackupManga,
         backupCategories: List<BackupCategory>,

@@ -1,5 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9075-r9078" changeDate="July 02, 2024">
+        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+        <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
+        <changelogtext>[b]New:[/b] More themes</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reader color</changelogtext>
+        <changelogtext>[b]Fix:[/b] sometimes it's loading forever if app sleeps for too long (in Source's feed &amp; browse screens)</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9066" changeDate="June 25, 2024">
+        <changelogtext>[b]New:[/b] Home icon in manga view</changelogtext>
+        <changelogtext>[b]New:[/b] Showing changelog in preview build</changelogtext>
+        <changelogtext>[b]Improve:[/b] Full color for Reader &amp; Cover</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better background for full cover view</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better cover_error &amp; cover_loading size</changelogtext>
+        <changelogtext>[b]Improve:[/b] navigation flow when click on manga's source</changelogtext>
+        <changelogtext>[b]Improve:[/b] Sticky header &amp; language for sources filter</changelogtext>
+        <changelogtext>[b]Improve:[/b] Metadata view</changelogtext>
+        <changelogtext>[b]Improve:[/b] Scrollbar for related mangas screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] other UI improvements</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Related titles screens</changelogtext>
+        <changelogtext>[b]Fix:[/b] unexpected skips in strong skipping mode</changelogtext>
+        <changelogtext>Translations update from Hosted Weblate</changelogtext>
+        <changelogtext>Add log &amp; improve key generation to better debug crashing issues</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9036" changeDate="June 20, 2024">
+        <changelogtext>[b]New:[/b] theme cover based for Reader</changelogtext>
+        <changelogtext>[b]Improve:[/b] update theme color when change cover in reader &amp; performance</changelogtext>
+        <changelogtext>[b]Improve:[/b] update splash color</changelogtext>
+        <changelogtext>[b]Improve:[/b] update translation</changelogtext>
+        <changelogtext>[b]Improve:[/b] Change Recommendation button style</changelogtext>
+        <changelogtext>[b]Improve:[/b] better Display Mode selection for SimpleToolbar</changelogtext>
+        <changelogtext>enable help translate menu</changelogtext>
+        <changelogtext>[b]Fix:[/b] navigator back on ExtensionsScreen</changelogtext>
+        <changelogtext>[b]Fix[/b] manual edit on Tracker's chapter (must hit Done on keyboard)</changelogtext>
+        <changelogtext>[b]Fix[/b] RelatedMangasScreen crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] `NoSuchMethodError` crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] remove duplicate chapter's filter icon</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r8998" changeDate="June 14, 2024">
         <changelogtext>[b]New[/b] New app icon</changelogtext>
         <changelogtext>[b]New[/b] Support only Android 8+</changelogtext>
@@ -63,8 +100,8 @@
         <changelogtext>[b]New[/b] Configurable interval to refresh entries from downloaded storage</changelogtext>
         <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
         <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
-        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5(Mar 2,2024)[/b]</changelogtext>
-        <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5 (Mar 2,2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.16.4 (from 0.16.3)[/b]</changelogtext>
         <changelogtext>Minor fix for marking duplicate chapters as read</changelogtext>
         <changelogtext>Include the delayed tracker update fix</changelogtext>
     </changelogversion>

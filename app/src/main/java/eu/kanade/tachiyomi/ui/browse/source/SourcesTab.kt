@@ -91,6 +91,7 @@ fun Screen.sourcesTab(
                 onClickItem = { source, listing ->
                     // SY -->
                     val screen = when {
+                        // Search selected source for entries to merge or for the recommending entry
                         smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
                         listing == Listing.Popular && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
                         else -> BrowseSourceScreen(source.id, listing.query)

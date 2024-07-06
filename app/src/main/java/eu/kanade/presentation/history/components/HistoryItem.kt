@@ -61,6 +61,7 @@ fun HistoryItem(
             // KMK -->
             bgColor = bgColor,
             tint = onBgColor,
+            size = MangaCover.Size.Medium,
             // KMK <--
         )
         Column(

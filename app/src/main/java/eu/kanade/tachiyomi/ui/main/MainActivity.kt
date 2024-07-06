@@ -61,10 +61,12 @@ import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.data.sync.SyncStatus
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -79,6 +81,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
@@ -97,6 +100,8 @@ import kotlinx.coroutines.launch
 import logcat.LogPriority
 import mihon.core.migration.Migrator
 import tachiyomi.core.common.Constants
+import tachiyomi.core.common.preference.Preference
+import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
@@ -104,6 +109,8 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 import androidx.compose.ui.graphics.Color.Companion as ComposeColor
@@ -116,6 +123,11 @@ class MainActivity : BaseActivity() {
     // SY -->
     private val unsortedPreferences: UnsortedPreferences by injectLazy()
     // SY <--
+
+    // KMK -->
+    private val backupRestoreStatus: BackupRestoreStatus by injectLazy()
+    private val syncStatus: SyncStatus by injectLazy()
+    // KMK <--
 
     private val downloadCache: DownloadCache by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
@@ -184,6 +196,10 @@ class MainActivity : BaseActivity() {
             val incognito by preferences.incognitoMode().collectAsState()
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
+            // KMK -->
+            val syncing by syncStatus.isRunning.collectAsState()
+            val restoring by backupRestoreStatus.isRunning.collectAsState()
+            // KMK <--
 
             // Set status bar color considering the top app state banner
             val systemUiController = rememberSystemUiController()
@@ -255,6 +271,10 @@ class MainActivity : BaseActivity() {
                             downloadedOnlyMode = downloadOnly,
                             incognitoMode = incognito,
                             indexing = indexing,
+                            // KMK -->
+                            restoring = restoring,
+                            syncing = syncing,
+                            // KMK <--
                             modifier = Modifier.windowInsetsPadding(scaffoldInsets),
                         )
                     },
@@ -304,12 +324,31 @@ class MainActivity : BaseActivity() {
             }
             // SY <--
 
-            var showChangelog by remember { mutableStateOf(didMigration && !BuildConfig.DEBUG) }
+            // KMK -->
+            val previewLastVersion = Injekt.get<PreferenceStore>().getInt(
+                Preference.appStateKey("preview_last_version_code"),
+                0,
+            )
+            val previewCurrentVersion = BuildConfig.COMMIT_COUNT.toInt()
+            // KMK <--
+
+            var showChangelog by remember {
+                mutableStateOf(
+                    // KMK -->
+                    // BuildConfig.DEBUG ||
+                    isReleaseBuildType && didMigration ||
+                        isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()
+                    // KMK <--
+                )
+            }
             if (showChangelog) {
                 // SY -->
                 WhatsNewDialog(onDismissRequest = { showChangelog = false })
                 // SY <--
             }
+            // KMK -->
+            previewLastVersion.set(previewCurrentVersion)
+            // KMK <--
 
             // SY -->
             ConfigureExhDialog(run = runExhConfigureDialog, onRunning = { runExhConfigureDialog = false })

@@ -2,6 +2,7 @@ package exh.ui.metadata.adapters
 
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,14 +16,15 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import tachiyomi.core.common.i18n.pluralStringResource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.sy.SYMR
 
 @Composable
 fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = LocalContentColor.current.toArgb()
     // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
@@ -40,7 +42,8 @@ fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.pages.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
-            binding.moreInfo.setTextColor(textColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
+            binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
             binding.pages.setOnLongClickListener {

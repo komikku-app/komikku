@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -94,6 +95,10 @@ fun SourcesScreen(
 ) {
     // KMK -->
     val lazyListState = rememberLazyListState()
+
+    BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
+        onChangeSearchQuery(null)
+    }
     // KMK <--
 
     when {
@@ -107,6 +112,7 @@ fun SourcesScreen(
         )
         // KMK -->
         else -> Column(
+            // Wrap around so we can use stickyHeader
             modifier = Modifier.padding(contentPadding),
         ) {
             AnimatedFloatingSearchBox(
@@ -130,7 +136,7 @@ fun SourcesScreen(
                     },
                     key = {
                         when (it) {
-                            is SourceUiModel.Header -> it.hashCode()
+                            is SourceUiModel.Header -> "header-${it.hashCode()}"
                             is SourceUiModel.Item -> "source-${it.source.key()}"
                         }
                     },
@@ -138,7 +144,7 @@ fun SourcesScreen(
                     when (model) {
                         is SourceUiModel.Header -> {
                             SourceHeader(
-                                modifier = Modifier.animateItemPlacement(),
+                                modifier = Modifier.animateItem(),
                                 language = model.language,
                                 // SY -->
                                 isCategory = model.isCategory,
@@ -146,7 +152,7 @@ fun SourcesScreen(
                             )
                         }
                         is SourceUiModel.Item -> SourceItem(
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                             source = model.source,
                             // SY -->
                             showLatest = state.showLatest,

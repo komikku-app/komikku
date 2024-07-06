@@ -1,0 +1,22 @@
+# Sync repo to the Codeberg mirror
+name: Mirror Sync
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch: # Manual dispatch
+  # schedule:
+  #   - cron: "0 */8 * * *"
+
+jobs:
+  codeberg:
+    if: github.repository == 'komikku-app/komikku'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@674e65a7d483ca28dafaacba0d07351bdcc8bd75 # v1.1.1
+        with:
+          target_repo_url: "git@codeberg.org:cuong-tran/komikku.git"
+          ssh_private_key: ${{ secrets.CODEBERG_SSH }}

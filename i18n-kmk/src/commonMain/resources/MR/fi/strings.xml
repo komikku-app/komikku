@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>
   <string name="pref_details_page_theme">Yksityiskohdat sivu</string>
-  <string name="pref_theme_cover_based">Teema perustuu kanteen</string>
   <string name="pref_theme_cover_based_style">Teeman tyyli</string>
   <string name="ext_unofficial">Epävirallinen</string>
   <string name="unofficial_extension_message">Tämä laajennus ei ole virallisesta reposta.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Enemmän näiden...</string>
   <string name="too_many_in_feed">Liian monta lähdettä rehussa, ei voi lisätä enemmän kuin rajoitettu (20)</string>
   <string name="current_">Nykyinen: %1$s</string>
+  <string name="pref_theme_cover_based">Teema perustuu kanteen</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonaalinen Spot</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutraali</string>
+  <string name="pref_theme_cover_based_style_vibrant">Elinvoimainen</string>
+  <string name="pref_theme_cover_based_style_expressive">Ilmeinen</string>
+  <string name="pref_theme_cover_based_style_rainbow">Sateenkaari</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Hedelmäsalaatti</string>
+  <string name="pref_theme_cover_based_style_monochrome">Yksivärinen</string>
+  <string name="pref_theme_cover_based_style_fidelity">Uskottomuus</string>
+  <string name="pref_theme_cover_based_style_content">Sisältö</string>
+  <string name="pref_expand_related_titles">Laajenna liittyvät otsikot</string>
+  <string name="pref_expand_related_titles_summary">Jos pois päältä, aiheeseen liittyvät otsikot eivät lataudu automaattisesti &amp; näytä laajennettu</string>
 </resources>

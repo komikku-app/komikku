@@ -129,7 +129,29 @@ object SettingsAppearanceScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_theme_cover_based_style),
                     enabled = detailsPageThemeCoverBased,
                     entries = PaletteStyle.entries
-                        .associateWith { it.name }
+                        .associateWith {
+                            when (it) {
+                                PaletteStyle.TonalSpot ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_tonalspot)
+                                PaletteStyle.Neutral ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_neutral)
+                                PaletteStyle.Vibrant ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_vibrant)
+                                PaletteStyle.Expressive ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_expressive)
+                                PaletteStyle.Rainbow ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_rainbow)
+                                PaletteStyle.FruitSalad ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fruitsalad)
+                                PaletteStyle.Monochrome ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_monochrome)
+                                PaletteStyle.Fidelity ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fidelity)
+                                PaletteStyle.Content ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_content)
+                                else -> it.name
+                            }
+                        }
                         .toImmutableMap(),
                 ),
             ),
@@ -212,6 +234,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                     pref = uiPreferences.expandRelatedTitles(),
                     title = stringResource(KMR.strings.pref_expand_related_titles),
                     subtitle = stringResource(KMR.strings.pref_expand_related_titles_summary),
+                    enabled = sourcePreferences.relatedMangas().get(),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.showHomeOnRelatedTitles(),
+                    title = stringResource(KMR.strings.pref_show_home_on_related_titles),
+                    subtitle = stringResource(KMR.strings.pref_show_home_on_related_titles_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
                 ),
                 // KMK <--

@@ -4,13 +4,14 @@ import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderTransitionView
 import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.Job
@@ -26,12 +27,20 @@ import tachiyomi.i18n.MR
 class WebtoonTransitionHolder(
     val layout: LinearLayout,
     viewer: WebtoonViewer,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
 ) : WebtoonBaseHolder(layout, viewer) {
 
     private val scope = MainScope()
     private var stateJob: Job? = null
 
-    private val transitionView = ReaderTransitionView(context)
+    private val transitionView = ReaderTransitionView(
+        context,
+        // KMK -->
+        seedColor = seedColor,
+        // KMK <--
+    )
 
     /**
      * View container of the current status of the transition page. Child views will be added
@@ -102,8 +111,12 @@ class WebtoonTransitionHolder(
      * Sets the loading state on the pages container.
      */
     private fun setLoading() {
-        val progress = CircularProgressIndicator(context)
-        progress.isIndeterminate = true
+        // KMK -->
+        val progress = ReaderProgressIndicator(
+            context = context,
+            seedColor = seedColor,
+        )
+        // KMK <--
 
         val textView = AppCompatTextView(context).apply {
             wrapContent()

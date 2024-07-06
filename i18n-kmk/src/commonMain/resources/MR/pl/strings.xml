@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
   <string name="action_faq_and_guides">FAQ i przewodniki</string>
   <string name="pref_details_page_theme">Strona szczegółów</string>
-  <string name="pref_theme_cover_based">Motyw oparty na okładce</string>
   <string name="pref_theme_cover_based_style">Styl motywu</string>
   <string name="ext_unofficial">Nieoficjalne</string>
   <string name="unofficial_extension_message">To rozszerzenie nie pochodzi z oficjalnego repozytorium.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Więcej takich informacji...</string>
   <string name="too_many_in_feed">Zbyt wiele źródeł w Twoim kanale, nie można dodać więcej niż ograniczonej liczby źródeł (20)</string>
   <string name="current_">Aktualnie: %1$s</string>
+  <string name="pref_theme_cover_based">Motyw oparty na okładce</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Punkt tonalny</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutralny</string>
+  <string name="pref_theme_cover_based_style_vibrant">Żywotne</string>
+  <string name="pref_theme_cover_based_style_expressive">Ekspresywny</string>
+  <string name="pref_theme_cover_based_style_rainbow">Tęczowa</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Sałata owocowa</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochromatyczne</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
+  <string name="pref_theme_cover_based_style_content">Zawartość</string>
+  <string name="pref_expand_related_titles">Rozwiń powiązane tytuły</string>
+  <string name="pref_expand_related_titles_summary">Jeśli wyłączone, powiązane tytuły nie załadują się automatycznie &amp; pokaż rozszerzone</string>
 </resources>

@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>
   <string name="pref_details_page_theme">Detaljer sida</string>
-  <string name="pref_theme_cover_based">Tema baserat på omslag</string>
   <string name="pref_theme_cover_based_style">Tema stil</string>
   <string name="ext_unofficial">Inofficiellt</string>
   <string name="unofficial_extension_message">Denna förlängning kommer inte från den officiella rapo.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Mer som dessa...</string>
   <string name="too_many_in_feed">För många källor i ditt flöde, kan inte lägga till mer än begränsat (20)</string>
   <string name="current_">Nuvarande: %1$s</string>
+  <string name="pref_theme_cover_based">Tema baserat på omslag</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonal plats</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutrala</string>
+  <string name="pref_theme_cover_based_style_vibrant">Livlig</string>
+  <string name="pref_theme_cover_based_style_expressive">Uttryck</string>
+  <string name="pref_theme_cover_based_style_rainbow">Regnbåge</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Frukt Sallad</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
+  <string name="pref_theme_cover_based_style_content">Innehåll</string>
+  <string name="pref_expand_related_titles">Expandera relaterade titlar</string>
+  <string name="pref_expand_related_titles_summary">Om inaktiverad, kommer relaterade titlar inte automatiskt ladda &amp; visa utökad</string>
 </resources>

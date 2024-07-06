@@ -2,7 +2,9 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.view.LayoutInflater
+import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
@@ -38,6 +40,9 @@ class PagerPageHolder(
     val viewer: PagerViewer,
     val page: ReaderPage,
     private var extraPage: ReaderPage? = null,
+    // KMK -->
+    @ColorInt private val seedColor: Int? = null,
+    // KMK <--
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
 
     /**
@@ -49,7 +54,12 @@ class PagerPageHolder(
     /**
      * Loading progress bar to indicate the current progress.
      */
-    private val progressIndicator: ReaderProgressIndicator = ReaderProgressIndicator(readerThemedContext)
+    private val progressIndicator: ReaderProgressIndicator = ReaderProgressIndicator(
+        context = readerThemedContext,
+        // KMK -->
+        seedColor = seedColor,
+        // KMK <--
+    )
 
     /**
      * Error layout to show when the image fails to load.
@@ -244,16 +254,7 @@ class PagerPageHolder(
     private fun mergePages(imageSource: BufferedSource, imageSource2: BufferedSource?): BufferedSource {
         // Handle adding a center margin to wide images if requested
         if (imageSource2 == null) {
-            return if (
-                !ImageUtil.isAnimatedAndSupported(imageSource) &&
-                ImageUtil.isWideImage(imageSource) &&
-                viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
-                !viewer.config.imageCropBorders
-            ) {
-                ImageUtil.addHorizontalCenterMargin(imageSource, height, context)
-            } else {
-                imageSource
-            }
+            return handleWideImage(imageSource)
         }
 
         if (page.fullPage) return imageSource
@@ -268,12 +269,7 @@ class PagerPageHolder(
             return imageSource
         }
 
-        val imageBitmap = try {
-            ImageDecoder.newInstance(imageSource.inputStream())?.decode()
-        } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
-            null
-        }
+        val imageBitmap = decodeImage(imageSource)
         if (imageBitmap == null) {
             imageSource2.close()
             page.fullPage = true
@@ -281,23 +277,16 @@ class PagerPageHolder(
             logcat(LogPriority.ERROR) { "Cannot combine pages" }
             return imageSource
         }
-        scope.launch { progressIndicator.setProgress(96) }
-        val height = imageBitmap.height
-        val width = imageBitmap.width
 
-        if (height < width) {
+        scope.launch { progressIndicator.setProgress(96) }
+        if (imageBitmap.height < imageBitmap.width) {
             imageSource2.close()
             page.fullPage = true
             splitDoublePages()
             return imageSource
         }
 
-        val imageBitmap2 = try {
-            ImageDecoder.newInstance(imageSource2.inputStream())?.decode()
-        } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
-            null
-        }
+        val imageBitmap2 = decodeImage(imageSource2)
         if (imageBitmap2 == null) {
             imageSource2.close()
             extraPage?.fullPage = true
@@ -306,35 +295,63 @@ class PagerPageHolder(
             logcat(LogPriority.ERROR) { "Cannot combine pages" }
             return imageSource
         }
-        scope.launch { progressIndicator.setProgress(97) }
-        val height2 = imageBitmap2.height
-        val width2 = imageBitmap2.width
 
-        if (height2 < width2) {
+        scope.launch { progressIndicator.setProgress(97) }
+        if (imageBitmap2.height < imageBitmap2.width) {
             imageSource2.close()
             extraPage?.fullPage = true
             page.isolatedPage = true
             splitDoublePages()
             return imageSource
         }
+
         val isLTR = (viewer !is R2LPagerViewer) xor viewer.config.invertDoublePages
+        val centerMargin = calculateCenterMargin(imageBitmap.height, imageBitmap2.height)
 
         imageSource.close()
         imageSource2.close()
 
-        val centerMargin = if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 && !viewer.config.imageCropBorders) {
+        return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, centerMargin, viewer.config.pageCanvasColor) {
+            updateProgress(it)
+        }
+    }
+
+    private fun handleWideImage(imageSource: BufferedSource): BufferedSource {
+        return if (
+            !ImageUtil.isAnimatedAndSupported(imageSource) &&
+                ImageUtil.isWideImage(imageSource) &&
+                viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
+                !viewer.config.imageCropBorders
+        ) {
+            ImageUtil.addHorizontalCenterMargin(imageSource, height, context)
+        } else {
+            imageSource
+        }
+    }
+
+    private fun decodeImage(imageSource: BufferedSource): Bitmap? {
+        return try {
+            ImageDecoder.newInstance(imageSource.inputStream())?.decode()
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Cannot decode image" }
+            null
+        }
+    }
+
+    private fun calculateCenterMargin(height: Int, height2: Int): Int {
+        return if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 && !viewer.config.imageCropBorders) {
             96 / (this.height.coerceAtLeast(1) / max(height, height2).coerceAtLeast(1)).coerceAtLeast(1)
         } else {
             0
         }
+    }
 
-        return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, centerMargin, viewer.config.pageCanvasColor) {
-            scope.launch {
-                if (it == 100) {
-                    progressIndicator.hide()
-                } else {
-                    progressIndicator.setProgress(it)
-                }
+    private fun updateProgress(progress: Int) {
+        scope.launch {
+            if (progress == 100) {
+                progressIndicator.hide()
+            } else {
+                progressIndicator.setProgress(progress)
             }
         }
     }

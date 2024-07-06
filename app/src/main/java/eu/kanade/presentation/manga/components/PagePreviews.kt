@@ -147,7 +147,7 @@ fun LazyListScope.PagePreviewItems(
         pagePreviewState is PagePreviewState.Success -> {
             val itemPerRowCount = (maxWidth / 120.dp).floor()
             items(
-                key = { "${MangaScreenItem.CHAPTER_PREVIEW_ROW}-$it" },
+                key = { "${MangaScreenItem.CHAPTER_PREVIEW_ROW}-${it.hashCode()}" },
                 contentType = { MangaScreenItem.CHAPTER_PREVIEW_ROW },
                 items = pagePreviewState.pagePreviews.take(rowCount * itemPerRowCount).chunked(itemPerRowCount),
             ) {

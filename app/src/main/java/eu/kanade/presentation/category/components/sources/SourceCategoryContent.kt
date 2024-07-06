@@ -24,9 +24,9 @@ fun SourceCategoryContent(
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
-        items(categories, key = { it }) { category ->
+        items(categories, key = { "source-category-$it" }) { category ->
             SourceCategoryListItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 category = category,
                 onRename = { onClickRename(category) },
                 onDelete = { onClickDelete(category) },

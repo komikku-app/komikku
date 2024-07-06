@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Režim hromadného výběru</string>
   <string name="action_faq_and_guides">FAQ a návody</string>
   <string name="pref_details_page_theme">Stránka s podrobnostmi</string>
-  <string name="pref_theme_cover_based">Šablona založená na obálce</string>
   <string name="pref_theme_cover_based_style">Styl motivu</string>
   <string name="ext_unofficial">Neoficiální</string>
   <string name="unofficial_extension_message">Toto rozšíření není z oficiálního repozitáře.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Líbí se mi to...</string>
   <string name="too_many_in_feed">Příliš mnoho zdrojů ve vašem feedu, nemůže přidat více než omezené (20)</string>
   <string name="current_">Aktuální: %1$s</string>
+  <string name="pref_theme_cover_based">Šablona založená na obálce</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonální terč</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutrální</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibrace</string>
+  <string name="pref_theme_cover_based_style_expressive">Výrazný</string>
+  <string name="pref_theme_cover_based_style_rainbow">dub</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Ovocný salát</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochromní</string>
+  <string name="pref_theme_cover_based_style_fidelity">Věrnost</string>
+  <string name="pref_theme_cover_based_style_content">Obsah</string>
+  <string name="pref_expand_related_titles">Rozbalit související názvy</string>
+  <string name="pref_expand_related_titles_summary">Pokud je vypnuto, související názvy nebudou automaticky načteny &amp; Zobrazit rozšířené</string>
 </resources>

@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Núvem</string>
+  <string name="theme_cottoncandy">Algodão doce</string>
+  <string name="theme_doom">Vermelho</string>
+  <string name="theme_matrix">Verde</string>
+  <string name="theme_mocha">Café</string>
+  <string name="theme_sapphire">Safira</string>
   <string name="action_source_search">Pesquisar fonte</string>
   <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
   <string name="action_bulk_select">Modo de seleção em massa</string>
   <string name="action_faq_and_guides">FAQ e Guias</string>
   <string name="pref_details_page_theme">Página de detalhes</string>
-  <string name="pref_theme_cover_based">Tema baseado na capa</string>
   <string name="pref_theme_cover_based_style">Estilo do tema</string>
   <string name="ext_unofficial">Não-oficial</string>
   <string name="unofficial_extension_message">Essa extensão não é do repositório oficial.</string>
@@ -36,4 +41,16 @@
   <string name="related_mangas_more">Mais parecido com estas...</string>
   <string name="too_many_in_feed">Muitas fontes no seu feed, não é possível adicionar mais do que limitado (20)</string>
   <string name="current_">Atual: %1$s</string>
+  <string name="pref_theme_cover_based">Tema baseado na capa</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Ponto Tonal</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutro</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibrante</string>
+  <string name="pref_theme_cover_based_style_expressive">Expressivo</string>
+  <string name="pref_theme_cover_based_style_rainbow">Arco-íris</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Salada de frutas</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monocromático</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelidade</string>
+  <string name="pref_theme_cover_based_style_content">Conteúdo</string>
+  <string name="pref_expand_related_titles">Expandir títulos relacionados</string>
+  <string name="pref_expand_related_titles_summary">Se desativado, os títulos relacionados não irão carregar automaticamente &amp; mostrar expandido</string>
 </resources>

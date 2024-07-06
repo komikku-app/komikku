@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
@@ -26,6 +27,7 @@ class ExtensionsScreen(private val searchSource: String? = null) : Screen() {
     @Composable
     override fun Content() {
         val context = LocalContext.current
+        val navigator = LocalNavigator.current
 
         val extensionsScreenModel = rememberScreenModel { ExtensionsScreenModel() }
         val extensionsState by extensionsScreenModel.state.collectAsState()
@@ -40,6 +42,7 @@ class ExtensionsScreen(private val searchSource: String? = null) : Screen() {
             topBar = {
                 val searchEnabled = extensionsTab.searchEnabled
                 SearchToolbar(
+                    navigateUp = { navigator?.pop() },
                     titleContent = { AppBarTitle(stringResource(MR.strings.label_extensions)) },
                     searchEnabled = searchEnabled,
                     searchQuery = if (searchEnabled) searchQuery else null,

@@ -49,6 +49,7 @@ import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
+import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.HttpException
@@ -166,8 +167,10 @@ import androidx.compose.runtime.State as RuntimeState
 class MangaScreenModel(
     val context: Context,
     val mangaId: Long,
+    // SY -->
     private val isFromSource: Boolean,
     val smartSearched: Boolean,
+    // SY <--
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
@@ -219,10 +222,9 @@ class MangaScreenModel(
     private val successState: State.Success?
         get() = state.value as? State.Success
 
-    val loggedInTrackers by lazy { trackerManager.trackers.filter { it.isLoggedIn } }
-
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
+    val themeCoverBased = uiPreferences.themeCoverBased().get()
     // KMK <--
 
     val manga: Manga?
@@ -245,7 +247,8 @@ class MangaScreenModel(
 
     private val skipFiltered by readerPreferences.skipFiltered().asState(screenModelScope)
 
-    val isUpdateIntervalEnabled = LibraryPreferences.MANGA_OUTSIDE_RELEASE_PERIOD in libraryPreferences.autoUpdateMangaRestrictions().get()
+    val isUpdateIntervalEnabled =
+        LibraryPreferences.MANGA_OUTSIDE_RELEASE_PERIOD in libraryPreferences.autoUpdateMangaRestrictions().get()
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
@@ -258,6 +261,7 @@ class MangaScreenModel(
     data class EXHRedirect(val mangaId: Long)
     // EXH <--
 
+    // SY -->
     private data class CombineState(
         val manga: Manga,
         val chapters: List<Chapter>,
@@ -268,6 +272,7 @@ class MangaScreenModel(
         constructor(pair: Pair<Manga, List<Chapter>>, flatMetadata: FlatMetadata?) :
             this(pair.first, pair.second, flatMetadata)
     }
+    // SY <--
 
     /**
      * Helper function to update the UI state only if it's currently in success state
@@ -283,8 +288,7 @@ class MangaScreenModel(
 
     init {
         screenModelScope.launchIO {
-            getMangaAndChapters.subscribe(mangaId, applyScanlatorFilter = true)
-                .distinctUntilChanged()
+            getMangaAndChapters.subscribe(mangaId, applyScanlatorFilter = true).distinctUntilChanged()
                 // SY -->
                 .combine(
                     getMergedChaptersByMangaId.subscribe(mangaId, true, applyScanlatorFilter = true)
@@ -396,6 +400,16 @@ class MangaScreenModel(
                 }
         }
 
+        screenModelScope.launchIO {
+            trackerManager.loggedInTrackersFlow()
+                .distinctUntilChanged()
+                .collectLatest { trackers ->
+                    updateSuccessState {
+                        it.copy(loggedInTracker = trackers)
+                    }
+                }
+        }
+
         observeDownloads()
 
         screenModelScope.launchIO {
@@ -424,7 +438,9 @@ class MangaScreenModel(
 
             // Show what we have earlier
             mutableState.update {
+                // SY -->
                 val source = sourceManager.getOrStub(manga.source)
+                // SY <--
                 State.Success(
                     manga = manga,
                     source = source,
@@ -513,6 +529,9 @@ class MangaScreenModel(
                         }
                         val vibrantColor = it.getBestColor() ?: return@launchUI
                         mangaCover.vibrantCoverColor = vibrantColor
+                        updateSuccessState {
+                            it.copy(seedColor = Color(vibrantColor))
+                        }
                     }
                 }
             }
@@ -1095,7 +1114,9 @@ class MangaScreenModel(
 
     private fun List<Chapter>.toChapterListItems(
         manga: Manga,
+        // SY -->
         mergedData: MergedMangaData?,
+        // SY <--
     ): List<ChapterList.Item> {
         val isLocal = manga.isLocal()
         // SY -->
@@ -1171,7 +1192,9 @@ class MangaScreenModel(
         val state = successState ?: return
         try {
             withIOContext {
+                // SY -->
                 if (state.source !is MergedSource) {
+                    // SY <--
                     val chapters = state.source.getChapterList(state.manga.toSManga())
 
                     val newChapters = syncChaptersWithSource.await(
@@ -1184,9 +1207,11 @@ class MangaScreenModel(
                     if (manualFetch) {
                         downloadNewChapters(newChapters)
                     }
+                    // SY -->
                 } else {
                     state.source.fetchChaptersForMergedManga(state.manga, manualFetch)
                 }
+                // SY <--
             }
         } catch (e: Throwable) {
             val message = if (e is NoChaptersException) {
@@ -1467,6 +1492,7 @@ class MangaScreenModel(
      * @param chapters the list of chapters to download.
      */
     private fun downloadChapters(chapters: List<Chapter>) {
+        // SY -->
         val state = successState ?: return
         if (state.source is MergedSource) {
             chapters.groupBy { it.mangaId }.forEach { map ->
@@ -1474,7 +1500,7 @@ class MangaScreenModel(
                 downloadManager.downloadChapters(manga, map.value)
             }
         } else {
-            /* SY <-- */
+            // SY <--
             val manga = state.manga
             downloadManager.downloadChapters(manga, chapters)
         }
@@ -1520,7 +1546,15 @@ class MangaScreenModel(
         screenModelScope.launchNonCancellable {
             val manga = successState?.manga ?: return@launchNonCancellable
             val categories = getCategories.await(manga.id).map { it.id }
-            if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(categories, downloadPreferences) || manga.isEhBasedManga()) return@launchNonCancellable
+            if (
+                chapters.isEmpty() ||
+                !manga.shouldDownloadNewChapters(categories, downloadPreferences) ||
+                // EXH -->
+                manga.isEhBasedManga()
+                // EXH <--
+            ) {
+                return@launchNonCancellable
+            }
             downloadChapters(chapters)
         }
     }
@@ -1717,15 +1751,16 @@ class MangaScreenModel(
         val manga = state?.manga ?: return
 
         screenModelScope.launchIO {
-            getTracks.subscribe(manga.id)
-                .catch { logcat(LogPriority.ERROR, it) }
-                .map { tracks ->
-                    loggedInTrackers
-                        // Map to TrackItem
-                        .map { service -> TrackItem(tracks.find { it.trackerId == service.id }, service) }
-                        // Show only if the service supports this manga's source
-                        .filter { (it.tracker as? EnhancedTracker)?.accept(source!!) ?: true }
-                }
+            combine(
+                getTracks.subscribe(manga.id).catch { logcat(LogPriority.ERROR, it) },
+                trackerManager.loggedInTrackersFlow(),
+            ) { mangaTracks, loggedInTrackers ->
+                loggedInTrackers
+                    // Map to TrackItem
+                    .map { service -> TrackItem(mangaTracks.find { it.trackerId == service.id }, service) }
+                    // Show only if the service supports this manga's source
+                    .filter { (it.tracker as? EnhancedTracker)?.accept(source!!) ?: true }
+            }
                 // SY -->
                 .map { trackItems ->
                     if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any {
@@ -1865,6 +1900,8 @@ class MangaScreenModel(
             val isRefreshingData: Boolean = false,
             val dialog: MangaScreenModel.Dialog? = null,
             val hasPromptedToAddBefore: Boolean = false,
+            val loggedInTracker: List<Tracker> = emptyList(),
+
             // SY -->
             val meta: RaisedSearchMetadata?,
             val mergedData: MergedMangaData?,
@@ -1887,11 +1924,10 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
+            val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
             // KMK <--
         ) : State {
             // KMK -->
-            val seedColor: Color? = MangaCover.vibrantCoverColorMap[manga.id]?.let { Color(it) }
-
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list
@@ -1947,7 +1983,10 @@ class MangaScreenModel(
 
             val trackingCount: Int
                 get() = trackItems.count {
-                    it.track != null && ((it.tracker is MdList && it.track.status != FollowStatus.UNFOLLOWED.long) || it.tracker !is MdList)
+                    it.track != null && (
+                        it.tracker !is MdList ||
+                            it.track.status != FollowStatus.UNFOLLOWED.long
+                        )
                 }
 
             /**
@@ -1969,11 +2008,13 @@ class MangaScreenModel(
     }
 }
 
+// SY -->
 data class MergedMangaData(
     val references: List<MergedMangaReference>,
     val manga: Map<Long, Manga>,
     val sources: List<Source>,
 )
+// SY <--
 
 @Immutable
 sealed class ChapterList {
@@ -2047,15 +2088,21 @@ sealed interface RelatedManga {
         }
 
         internal fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
-            val mangaUrls = HashSet<String>().apply { add(manga.url) }
+            val mangaIds = HashSet<Long>().apply { add(manga.id) }
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
+                    val stripedList = relatedManga.mangaList.mapNotNull {
+                        if (!mangaIds.contains(it.id)) {
+                            mangaIds.add(it.id)
+                            it
+                        } else {
+                            null
+                        }
+                    }
                     Success(
                         relatedManga.keyword,
-                        relatedManga.mangaList
-                            .filterNot { mangaUrls.contains(it.url) }
-                            .onEach { mangaUrls.add(it.url) },
+                        stripedList,
                     )
                 } else {
                     relatedManga
