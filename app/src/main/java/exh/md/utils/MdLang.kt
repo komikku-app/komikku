@@ -5,7 +5,7 @@ enum class MdLang(val lang: String, val extLang: String = lang) {
     ENGLISH("en"),
     JAPANESE("ja"),
     POLISH("pl"),
-    SERBO_CROATIAN("rs", "sh"),
+    SERBIAN("sh"),
     DUTCH("nl"),
     ITALIAN("it"),
     RUSSIAN("ru"),
@@ -29,7 +29,7 @@ enum class MdLang(val lang: String, val extLang: String = lang) {
     MONGOLIAN("mn"),
     TURKISH("tr"),
     INDONESIAN("id"),
-    KOREAN("kr", "ko"),
+    KOREAN("ko"),
     SPANISH_LATAM("es-la", "es-419"),
     PERSIAN("fa"),
     MALAY("ms"),
@@ -51,12 +51,12 @@ enum class MdLang(val lang: String, val extLang: String = lang) {
 
     companion object {
         fun fromIsoCode(isoCode: String): MdLang? =
-            values().firstOrNull {
+            entries.firstOrNull {
                 it.lang == isoCode
             }
 
         fun fromExt(extLang: String): MdLang? =
-            values().firstOrNull {
+            entries.firstOrNull {
                 it.extLang == extLang
             }
     }

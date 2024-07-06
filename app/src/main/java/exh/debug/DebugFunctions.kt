@@ -8,13 +8,13 @@ import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.source.AndroidSourceManager
-import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.source.NHENTAI_SOURCE_ID
 import exh.source.nHentaiSourceIds
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
@@ -299,9 +299,9 @@ object DebugFunctions {
     }
 
     fun migrateLangNhentaiToMultiLangSource() {
-        val sources = nHentaiSourceIds - NHentai.otherId
+        val sources = nHentaiSourceIds - NHENTAI_SOURCE_ID
 
-        runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) } }
+        runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHENTAI_SOURCE_ID, sources) } }
     }
 
     fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(Backup.serializer().descriptor)

@@ -5,7 +5,6 @@
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>
   <string name="pref_details_page_theme">詳細ページ</string>
-  <string name="pref_theme_cover_based">カバーに基づくテーマ</string>
   <string name="pref_theme_cover_based_style">テーマのスタイル</string>
   <string name="ext_unofficial">Unofficial</string>
   <string name="unofficial_extension_message">この拡張機能は公式リポジトリからのものではありません。</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">これらのような...</string>
   <string name="too_many_in_feed">フィードのソースが多すぎます。制限を超えることはできません（20）</string>
   <string name="current_">現在: %1$s</string>
+  <string name="pref_theme_cover_based">カバーに基づくテーマ</string>
+  <string name="pref_theme_cover_based_style_tonalspot">トーナルスポット</string>
+  <string name="pref_theme_cover_based_style_neutral">ニュートラル</string>
+  <string name="pref_theme_cover_based_style_vibrant">バイブ</string>
+  <string name="pref_theme_cover_based_style_expressive">表現的</string>
+  <string name="pref_theme_cover_based_style_rainbow">Rainbow</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">フルーツサラダ</string>
+  <string name="pref_theme_cover_based_style_monochrome">モノクローム</string>
+  <string name="pref_theme_cover_based_style_fidelity">忠実度</string>
+  <string name="pref_theme_cover_based_style_content">コンテンツ</string>
+  <string name="pref_expand_related_titles">関連するタイトルを展開</string>
+  <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
 </resources>

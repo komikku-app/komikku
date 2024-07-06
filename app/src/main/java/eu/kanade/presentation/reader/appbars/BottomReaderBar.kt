@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,9 @@ fun BottomReaderBar(
     onClickShiftPage: () -> Unit,
     // SY <--
 ) {
+    // KMK -->
+    val iconColor = MaterialTheme.colorScheme.primary
+    // KMK <--
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,6 +69,9 @@ fun BottomReaderBar(
                 Icon(
                     imageVector = Icons.Outlined.FormatListNumbered,
                     contentDescription = stringResource(MR.strings.chapters),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -74,6 +81,9 @@ fun BottomReaderBar(
                 Icon(
                     imageVector = Icons.Outlined.Public,
                     contentDescription = stringResource(MR.strings.action_open_in_web_view),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -83,6 +93,9 @@ fun BottomReaderBar(
                 Icon(
                     imageVector = Icons.Outlined.Share,
                     contentDescription = stringResource(MR.strings.action_share),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -92,6 +105,9 @@ fun BottomReaderBar(
                 Icon(
                     painter = painterResource(readingMode.iconRes),
                     contentDescription = stringResource(MR.strings.viewer),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -101,6 +117,9 @@ fun BottomReaderBar(
                 Icon(
                     imageVector = orientation.icon,
                     contentDescription = stringResource(MR.strings.pref_rotation_type),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -117,6 +136,9 @@ fun BottomReaderBar(
                         if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp,
                     ),
                     contentDescription = stringResource(MR.strings.pref_crop_borders),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -130,6 +152,9 @@ fun BottomReaderBar(
                 Icon(
                     painter = painterResource(R.drawable.ic_book_open_variant_24dp),
                     contentDescription = stringResource(SYMR.strings.page_layout),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -139,6 +164,9 @@ fun BottomReaderBar(
                 Icon(
                     painter = painterResource(R.drawable.ic_page_next_outline_24dp),
                     contentDescription = stringResource(SYMR.strings.shift_double_pages),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
                 )
             }
         }
@@ -147,6 +175,9 @@ fun BottomReaderBar(
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = stringResource(MR.strings.action_settings),
+                // KMK -->
+                tint = iconColor,
+                // KMK <--
             )
         }
         // SY <--

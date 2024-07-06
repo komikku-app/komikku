@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">腥紅</string>
+  <string name="theme_matrix">駭客</string>
+  <string name="theme_mocha">摩卡</string>
+  <string name="theme_sapphire">藍寶石</string>
   <string name="action_source_search">搜尋來源</string>
   <string name="action_toggle_nsfw_only">切換僅 NSFW</string>
   <string name="action_bulk_select">批量選擇模式</string>
   <string name="action_faq_and_guides">常見問題和指南</string>
   <string name="pref_details_page_theme">詳情頁面</string>
-  <string name="pref_theme_cover_based">基於封面的主題</string>
   <string name="pref_theme_cover_based_style">主題風格</string>
   <string name="ext_unofficial">非官方版本</string>
   <string name="unofficial_extension_message">此擴充功能不是來自官方儲存庫</string>
-  <string name="download_cache_renew_interval">下載快取更新間隔</string>
+  <string name="download_cache_renew_interval">下載更新間隔</string>
   <string name="download_cache_renew_interval_manual">手動</string>
-  <string name="download_cache_renew_interval_1hour">1小時</string>
-  <string name="download_cache_renew_interval_2hour">2小時</string>
-  <string name="download_cache_renew_interval_6hour">6小時</string>
-  <string name="download_cache_renew_interval_12hour">12小時</string>
-  <string name="download_cache_renew_interval_24hour">1天</string>
-  <string name="download_cache_renew_interval_info">如果設置為「手動」，可以刷新每個漫畫，或者在「高級」選項中使用「使下載索引失效」的操作</string>
+  <string name="download_cache_renew_interval_1hour">每 1 小時</string>
+  <string name="download_cache_renew_interval_2hour">每 2 小時</string>
+  <string name="download_cache_renew_interval_6hour">每 6 小時</string>
+  <string name="download_cache_renew_interval_12hour">每 12 小時</string>
+  <string name="download_cache_renew_interval_24hour">每 1 天</string>
+  <string name="download_cache_renew_interval_info">如果設置為「手動」，則需刷新每本漫畫或使用「進階」選項中的「清除下載索引」功能</string>
   <string name="pref_update_tracking_marked_read">標記為已讀時更新章節進度</string>
   <string name="pref_auto_sync_read_chapters">自動同步歷程中的已讀章節</string>
   <string name="pref_clean_invalid_downloads">清理無效下載</string>
@@ -34,6 +39,18 @@
   <string name="pref_source_related_mangas">相關標題</string>
   <string name="pref_source_related_mangas_summary">查看條目時顯示相關標題</string>
   <string name="related_mangas_more">更多類似這些...</string>
-  <string name="too_many_in_feed">您的訂閱來源過多，無法添加超過限制數的來源 (20)</string>
+  <string name="too_many_in_feed">您的訂閱來源過多，無法添加超過限制數(20)</string>
   <string name="current_">當前：%1$s</string>
+  <string name="pref_theme_cover_based">基於封面的主題</string>
+  <string name="pref_theme_cover_based_style_tonalspot">色調點</string>
+  <string name="pref_theme_cover_based_style_neutral">中性</string>
+  <string name="pref_theme_cover_based_style_vibrant">繽紛</string>
+  <string name="pref_theme_cover_based_style_expressive">生動</string>
+  <string name="pref_theme_cover_based_style_rainbow">彩虹</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">水果沙拉</string>
+  <string name="pref_theme_cover_based_style_monochrome">黑白</string>
+  <string name="pref_theme_cover_based_style_fidelity">清晰度</string>
+  <string name="pref_theme_cover_based_style_content">內容</string>
+  <string name="pref_expand_related_titles">展開相關標題</string>
+  <string name="pref_expand_related_titles_summary">如果關閉，相關標題將不會自動載入 &amp; 並顯示展開內容</string>
 </resources>

@@ -366,6 +366,13 @@
     <string name="pref_page_transitions">Animate page transitions</string>
     <string name="pref_flash_page">Flash on page change</string>
     <string name="pref_flash_page_summ">Reduces ghosting on e-ink displays</string>
+    <string name="pref_flash_duration">Flash duration</string>
+    <string name="pref_flash_duration_summary">%1$s ms</string>
+    <string name="pref_flash_page_interval">Flash every</string>
+    <string name="pref_flash_with">Flash with</string>
+    <string name="pref_flash_style_black">Black</string>
+    <string name="pref_flash_style_white">White</string>
+    <string name="pref_flash_style_white_black">White and Black</string>
     <string name="pref_double_tap_anim_speed">Double tap animation speed</string>
     <string name="pref_show_page_number">Show page number</string>
     <string name="pref_show_reading_mode">Show reading mode</string>
@@ -686,6 +693,7 @@
     <string name="manga_display_modified_interval_title">Set to update every</string>
     <!-- "... around 2 days" -->
     <string name="manga_interval_expected_update">New chapters predicted to be released in around %1$s, checking around every %2$s.</string>
+    <string name="manga_interval_expected_update_null">This manga is either completed, or there is no predicted release date.</string>
     <string name="manga_interval_expected_update_soon">Soon</string>
     <string name="manga_interval_custom_amount">Custom update frequency:</string>
     <string name="chapter_downloading_progress">Downloading (%1$d/%2$d)</string>

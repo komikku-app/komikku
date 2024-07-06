@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Zuckerwatte</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Mokka</string>
+  <string name="theme_sapphire">Saphir</string>
   <string name="action_source_search">Nach Quelle suchen</string>
   <string name="action_toggle_nsfw_only">Nur NSFW umschalten</string>
   <string name="action_bulk_select">Massenauswahlmodus</string>
   <string name="action_faq_and_guides">FAQ und Anleitungen</string>
   <string name="pref_details_page_theme">Detailseite</string>
-  <string name="pref_theme_cover_based">Theme basierend auf Cover</string>
   <string name="pref_theme_cover_based_style">Design-Stil</string>
   <string name="ext_unofficial">Ungültig</string>
   <string name="unofficial_extension_message">Diese Erweiterung ist nicht vom offiziellen Repo.</string>
@@ -36,4 +41,16 @@
   <string name="related_mangas_more">Mehr davon...</string>
   <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed, kann nicht mehr als begrenzt hinzufügen (20)</string>
   <string name="current_">Aktuell: %1$s</string>
+  <string name="pref_theme_cover_based">Theme basierend auf Cover</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonaler Spot</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+  <string name="pref_theme_cover_based_style_vibrant">Vibriert</string>
+  <string name="pref_theme_cover_based_style_expressive">Ausdrucksvoll</string>
+  <string name="pref_theme_cover_based_style_rainbow">Regenbogen</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Obstsalat</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochrom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelität</string>
+  <string name="pref_theme_cover_based_style_content">Inhalt</string>
+  <string name="pref_expand_related_titles">Verwandte Titel erweitern</string>
+  <string name="pref_expand_related_titles_summary">Wenn ausgeschaltet, laden verwandte Titel nicht automatisch &amp; zeigen erweiterte</string>
 </resources>

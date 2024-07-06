@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -48,9 +49,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
+import com.materialkolor.ktx.blend
+import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.RelatedMangaTitle
@@ -110,9 +117,9 @@ import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.isScrolledToEnd
-import tachiyomi.presentation.core.util.isScrollingUp
+import tachiyomi.presentation.core.util.shouldExpandFAB
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -187,6 +194,7 @@ fun MangaScreen(
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
+    hazeState: HazeState,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -249,6 +257,7 @@ fun MangaScreen(
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
             onPaletteScreenClick = onPaletteScreenClick,
+            hazeState = hazeState,
             // KMK <--
         )
     } else {
@@ -304,6 +313,7 @@ fun MangaScreen(
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
             onPaletteScreenClick = onPaletteScreenClick,
+            hazeState = hazeState,
             // KMK <--
         )
     }
@@ -376,6 +386,7 @@ private fun MangaScreenSmallImpl(
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
+    hazeState: HazeState,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -396,6 +407,7 @@ private fun MangaScreenSmallImpl(
     // KMK -->
     val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
     val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
+    val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
     val internalOnBackPressed = {
@@ -485,17 +497,30 @@ private fun MangaScreenSmallImpl(
                     },
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
-                    expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
+                    expanded = chapterListState.shouldExpandFAB(),
+                    // KMK -->
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    // KMK <--
                 )
             }
         },
+        // KMK -->
+        modifier = Modifier
+            .haze(
+                state = hazeState,
+                style = HazeStyle(
+                    tint = HazeDefaults.tint(fullCoverBackground),
+                    blurRadius = 10.dp,
+                )
+            ),
+        // KMK <--
     ) { contentPadding ->
         val topPadding = contentPadding.calculateTopPadding()
 
         PullRefresh(
             refreshing = state.isRefreshingData,
             onRefresh = onRefresh,
-            enabled = { !isAnySelected },
+            enabled = !isAnySelected,
             indicatorPadding = PaddingValues(top = topPadding),
         ) {
             val layoutDirection = LocalLayoutDirection.current
@@ -607,6 +632,8 @@ private fun MangaScreenSmallImpl(
                                             subtitle = null,
                                             onClick = onRelatedMangasScreenClick,
                                             onLongClick = null,
+                                            modifier = Modifier
+                                                .padding(horizontal = MaterialTheme.padding.medium),
                                         )
                                         RelatedMangas(
                                             relatedMangas = state.relatedMangasSorted,
@@ -624,7 +651,8 @@ private fun MangaScreenSmallImpl(
                                 contentType = MangaScreenItem.RELATED_TITLES,
                             ) {
                                 OutlinedButtonWithArrow(
-                                    text = stringResource(KMR.strings.pref_source_related_mangas),
+                                    text = stringResource(KMR.strings.pref_source_related_mangas)
+                                        .uppercase(),
                                     onClick = onRelatedMangasScreenClick,
                                 )
                             }
@@ -764,6 +792,7 @@ private fun MangaScreenLargeImpl(
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
+    hazeState: HazeState,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -783,6 +812,7 @@ private fun MangaScreenLargeImpl(
     // KMK -->
     val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
     val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
+    val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -871,15 +901,28 @@ private fun MangaScreenLargeImpl(
                     },
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
-                    expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
+                    expanded = chapterListState.shouldExpandFAB(),
+                    // KMK -->
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    // KMK <--
                 )
             }
         },
+        // KMK -->
+        modifier = Modifier
+            .haze(
+                state = hazeState,
+                style = HazeStyle(
+                    tint = HazeDefaults.tint(fullCoverBackground),
+                    blurRadius = 10.dp,
+                )
+            ),
+        // KMK <--
     ) { contentPadding ->
         PullRefresh(
             refreshing = state.isRefreshingData,
             onRefresh = onRefresh,
-            enabled = { !isAnySelected },
+            enabled = !isAnySelected,
             indicatorPadding = PaddingValues(
                 start = insetPadding.calculateStartPadding(layoutDirection),
                 top = with(density) { topBarHeight.toDp() },
@@ -987,17 +1030,19 @@ private fun MangaScreenLargeImpl(
                             if (state.source !is StubSource && relatedMangasEnabled) {
                                 if (expandRelatedMangas) {
                                     if (state.relatedMangasSorted?.isNotEmpty() != false) {
-                                        item { HorizontalDivider() }
                                         item(
                                             key = MangaScreenItem.RELATED_TITLES,
                                             contentType = MangaScreenItem.RELATED_TITLES,
                                         ) {
                                             Column {
                                                 RelatedMangaTitle(
-                                                    title = stringResource(KMR.strings.pref_source_related_mangas),
+                                                    title = stringResource(KMR.strings.pref_source_related_mangas)
+                                                        .uppercase(),
                                                     subtitle = null,
                                                     onClick = onRelatedMangasScreenClick,
                                                     onLongClick = null,
+                                                    modifier = Modifier
+                                                        .padding(horizontal = MaterialTheme.padding.medium),
                                                 )
                                                 RelatedMangas(
                                                     relatedMangas = state.relatedMangasSorted,

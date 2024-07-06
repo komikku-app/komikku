@@ -1,7 +1,9 @@
 package eu.kanade.presentation.manga.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FlipToBack
@@ -21,16 +23,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
+import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun MangaToolbar(
@@ -60,6 +69,13 @@ fun MangaToolbar(
     onPaletteScreenClick: () -> Unit,
     // KMK <--
 ) {
+    // KMK -->
+    val navigator = LocalNavigator.current
+    fun onHomeClicked() = navigator?.popUntil { screen ->
+        screen is SourceFeedScreen || screen is BrowseSourceScreen
+    }
+    val isHomeEnabled = Injekt.get<UiPreferences>().showHomeOnRelatedTitles().get()
+    // KMK <--
     Column(
         modifier = modifier,
     ) {
@@ -74,8 +90,21 @@ fun MangaToolbar(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = onBackClicked) {
-                    UpIcon(navigationIcon = Icons.Outlined.Close.takeIf { isActionMode })
+                Row {
+                    IconButton(onClick = onBackClicked) {
+                        UpIcon(navigationIcon = Icons.Outlined.Close.takeIf { isActionMode })
+                    }
+                    // KMK -->
+                    navigator?.let {
+                        if (navigator.size >= 2 && navigator.items[navigator.size - 2] is MangaScreen ||
+                            navigator.size >= 5
+                        ) {
+                            IconButton(onClick = { onHomeClicked() }) {
+                                UpIcon(navigationIcon = Icons.Filled.Home)
+                            }
+                        }
+                    }.takeIf { isHomeEnabled }
+                    // KMK <--
                 }
             },
             actions = {

@@ -6,7 +6,6 @@ import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -25,14 +24,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -48,9 +51,11 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
+import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingMode
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.DisplayRefreshHost
 import eu.kanade.presentation.reader.OrientationSelectDialog
@@ -61,6 +66,7 @@ import eu.kanade.presentation.reader.ReadingModeSelectDialog
 import eu.kanade.presentation.reader.appbars.NavBarType
 import eu.kanade.presentation.reader.appbars.ReaderAppBars
 import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
+import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -119,6 +125,8 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -127,6 +135,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.seconds
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 class ReaderActivity : BaseActivity() {
 
@@ -150,6 +159,13 @@ class ReaderActivity : BaseActivity() {
 
     private val readerPreferences = Injekt.get<ReaderPreferences>()
     private val preferences = Injekt.get<BasePreferences>()
+
+    // KMK -->
+    private val uiPreferences = Injekt.get<UiPreferences>()
+    private val themeCoverBased = uiPreferences.themeCoverBased().get()
+    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
+    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+    // KMK <--
 
     lateinit var binding: ReaderActivityBinding
 
@@ -370,7 +386,10 @@ class ReaderActivity : BaseActivity() {
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
     private fun initializeMenu() {
-        binding.pageNumber.setComposeContent {
+        // KMK -->
+        @Composable
+        fun pageNumberContent() {
+            // KMK <--
             val state by viewModel.state.collectAsState()
             val showPageNumber by viewModel.readerPreferences.showPageNumber().collectAsState()
 
@@ -384,7 +403,18 @@ class ReaderActivity : BaseActivity() {
             }
         }
 
-        binding.dialogRoot.setComposeContent {
+        // KMK -->
+        binding.pageNumber.setComposeContent {
+            TachiyomiTheme(
+                seedColor = seedColorState().takeIf { themeCoverBased },
+            ) {
+                pageNumberContent()
+            }
+        }
+
+        @Composable
+        fun dialogRootContent() {
+            // KMK <--
             val state by viewModel.state.collectAsState()
             val settingsScreenModel = remember {
                 ReaderSettingsScreenModel(
@@ -396,7 +426,7 @@ class ReaderActivity : BaseActivity() {
             }
 
             if (!ifSourcesLoaded()) {
-                return@setComposeContent
+                return
             }
 
             val isHttpSource = viewModel.getSource() is HttpSource
@@ -542,7 +572,11 @@ class ReaderActivity : BaseActivity() {
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                CircularProgressIndicator()
+                                CircularProgressIndicator(
+                                    // KMK -->
+                                    color = MaterialTheme.colorScheme.primary,
+                                    // KMK <--
+                                )
                                 Text(stringResource(MR.strings.loading))
                             }
                         },
@@ -650,8 +684,33 @@ class ReaderActivity : BaseActivity() {
             }
         }
 
+        // KMK -->
+        binding.dialogRoot.setComposeContent {
+            TachiyomiTheme(
+                seedColor = seedColorState().takeIf { themeCoverBased },
+            ) {
+                dialogRootContent()
+            }
+        }
+
+        val colorScheme = seedColorStatic()?.let {
+            dynamicColorScheme(
+                seedColor = it,
+                isDark = isNightMode(),
+                isAmoled = themeDarkAmoled,
+                style = themeCoverBasedStyle,
+            )
+        }
+        // KMK <--
+
         val toolbarColor = ColorUtils.setAlphaComponent(
-            SurfaceColors.SURFACE_2.getColor(this),
+            // KMK -->
+            if (themeCoverBased && colorScheme != null) {
+                colorScheme.surfaceColorAtElevation(3.dp).toArgb()
+            } else {
+                // KMK <--
+                SurfaceColors.SURFACE_2.getColor(this)
+            },
             if (isNightMode()) 230 else 242, // 90% dark 95% light
         )
         window.statusBarColor = toolbarColor
@@ -664,6 +723,22 @@ class ReaderActivity : BaseActivity() {
 
         enableExhAutoScroll()
     }
+
+    // KMK -->
+    @Composable
+    private fun seedColorState(): ComposeColor? {
+        val state by viewModel.state.collectAsState()
+        return state.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
+            ?: seedColorStatic()
+    }
+
+    private fun seedColorStatic(): ComposeColor? {
+        return viewModel.manga?.asMangaCover()?.vibrantCoverColor?.let { ComposeColor(it) }
+            ?: intent.extras?.getLong("manga")?.takeIf { it > 0 }
+                ?.let { MangaCover.vibrantCoverColorMap[it] }
+                ?.let { ComposeColor(it) }
+    }
+    // KMK <--
 
     private fun enableExhAutoScroll() {
         readerPreferences.autoscrollInterval().changes()
@@ -832,7 +907,13 @@ class ReaderActivity : BaseActivity() {
      */
     private fun updateViewer() {
         val prevViewer = viewModel.state.value.viewer
-        val newViewer = ReadingMode.toViewer(viewModel.getMangaReadingMode(), this)
+        val newViewer = ReadingMode.toViewer(
+            viewModel.getMangaReadingMode(),
+            this,
+            // KMK -->
+            seedColor = seedColorStatic()?.toArgb(),
+            // KMK <--
+        )
 
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
@@ -877,7 +958,12 @@ class ReaderActivity : BaseActivity() {
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
-        loadingIndicator = ReaderProgressIndicator(this)
+        loadingIndicator = ReaderProgressIndicator(
+            context = this,
+            // KMK -->
+            seedColor = seedColorStatic()?.toArgb(),
+            // KMK <--
+        )
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()

@@ -1,11 +1,7 @@
 package eu.kanade.tachiyomi.data.backup.models
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.protobuf.ProtoNumber
-
-@Serializer(forClass = Backup::class)
-object BackupSerializer
 
 @Serializable
 data class Backup(
@@ -17,4 +13,8 @@ data class Backup(
     @ProtoNumber(105) var backupSourcePreferences: List<BackupSourcePreferences> = emptyList(),
     // SY specific values
     @ProtoNumber(600) var backupSavedSearches: List<BackupSavedSearch> = emptyList(),
+    // KMK -->
+    // Global Popular/Latest feeds
+    @ProtoNumber(610) var backupFeeds: List<BackupFeed> = emptyList(),
+    // KMK <--
 )

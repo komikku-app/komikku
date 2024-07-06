@@ -35,13 +35,13 @@ fun GlobalSearchResultItem(
     subtitle: String?,
     // SY <--
     onClick: () -> Unit,
-    // SY -->
     modifier: Modifier = Modifier,
+    // SY -->
     onLongClick: (() -> Unit)? = null,
     // SY <--
     content: @Composable () -> Unit,
 ) {
-    Column(modifier) {
+    Column(modifier = modifier) {
         Row(
             modifier = Modifier
                 .padding(

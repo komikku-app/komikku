@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,14 +19,16 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import exh.ui.metadata.adapters.MetadataUIUtil.getRatingString
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.sy.SYMR
 import kotlin.math.round
 
 @Composable
 fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = LocalContentColor.current.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     // KMK <--
     AndroidView(
@@ -51,7 +54,8 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
-            binding.moreInfo.setTextColor(textColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
+            binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
             binding.rating.setOnLongClickListener {

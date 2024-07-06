@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk selectiemodus</string>
   <string name="action_faq_and_guides">FAQ en handleidingen</string>
   <string name="pref_details_page_theme">Details pagina</string>
-  <string name="pref_theme_cover_based">Thema gebaseerd op cover</string>
   <string name="pref_theme_cover_based_style">Thema stijl</string>
   <string name="ext_unofficial">Onofficiële</string>
   <string name="unofficial_extension_message">Deze uitbreiding komt niet uit de officiële repo.</string>
@@ -36,4 +35,16 @@
   <string name="related_mangas_more">Meer van deze...</string>
   <string name="too_many_in_feed">Te veel bronnen in je feed, kan niet meer dan beperkt toevoegen (20)</string>
   <string name="current_">Huidige: %1$s</string>
+  <string name="pref_theme_cover_based">Thema gebaseerd op cover</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonale Spot</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutraal</string>
+  <string name="pref_theme_cover_based_style_vibrant">Levendig</string>
+  <string name="pref_theme_cover_based_style_expressive">Expressief</string>
+  <string name="pref_theme_cover_based_style_rainbow">Regenboog</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Fruit salade</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochroom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fideliteit</string>
+  <string name="pref_theme_cover_based_style_content">Inhoud</string>
+  <string name="pref_expand_related_titles">Verwante titels uitvouwen</string>
+  <string name="pref_expand_related_titles_summary">Als uitgeschakeld, zullen gerelateerde titels niet automatisch laden &amp; tonen uitgebreid</string>
 </resources>

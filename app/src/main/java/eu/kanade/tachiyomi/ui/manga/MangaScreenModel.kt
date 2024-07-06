@@ -223,6 +223,7 @@ class MangaScreenModel(
 
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
+    val themeCoverBased = uiPreferences.themeCoverBased().get()
     // KMK <--
 
     val manga: Manga?
@@ -513,6 +514,9 @@ class MangaScreenModel(
                         }
                         val vibrantColor = it.getBestColor() ?: return@launchUI
                         mangaCover.vibrantCoverColor = vibrantColor
+                        updateSuccessState {
+                            it.copy(seedColor = Color(vibrantColor))
+                        }
                     }
                 }
             }
@@ -1887,11 +1891,10 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
+            val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
             // KMK <--
         ) : State {
             // KMK -->
-            val seedColor: Color? = MangaCover.vibrantCoverColorMap[manga.id]?.let { Color(it) }
-
             /**
              * a value of null will be treated as still loading, so if all searching were failed and won't update
              * 'relatedMangaCollection` then we should return empty list
@@ -2047,15 +2050,21 @@ sealed interface RelatedManga {
         }
 
         internal fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
-            val mangaUrls = HashSet<String>().apply { add(manga.url) }
+            val mangaIds = HashSet<Long>().apply { add(manga.id) }
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
+                    val stripedList = relatedManga.mangaList.mapNotNull {
+                        if (!mangaIds.contains(it.id)) {
+                            mangaIds.add(it.id)
+                            it
+                        } else {
+                            null
+                        }
+                    }
                     Success(
                         relatedManga.keyword,
-                        relatedManga.mangaList
-                            .filterNot { mangaUrls.contains(it.url) }
-                            .onEach { mangaUrls.add(it.url) },
+                        stripedList,
                     )
                 } else {
                     relatedManga

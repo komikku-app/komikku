@@ -22,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.plus
+import logcat.LogPriority
+import logcat.logcat
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 
@@ -41,8 +43,9 @@ interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
 }
 
 abstract class Screen : Screen {
-
-    override val key: ScreenKey = uniqueScreenKey
+    // known bug: https://github.com/mihonapp/mihon/issues/712
+    // This is where it create a key Screen#uuid:transition which causes exception Key ... was used multiple times
+    override val key: ScreenKey = "$uniqueScreenKey#${this::class.simpleName}"
 }
 
 /**
@@ -86,9 +89,10 @@ fun ScreenTransition(
         targetState = navigator.lastItem,
         transitionSpec = transition,
         modifier = modifier,
-        label = "transition",
+        label = "screen-transition",
     ) { screen ->
-        navigator.saveableState("transition", screen) {
+        logcat(LogPriority.ERROR) { "ScreenTransition: ${screen.key}" }
+        navigator.saveableState("screen-transition", screen) {
             content(screen)
         }
     }

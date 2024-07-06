@@ -133,7 +133,7 @@ object SettingsMainScreen : Screen() {
                 ) {
                     itemsIndexed(
                         items = items,
-                        key = { _, item -> item.hashCode() },
+                        key = { _, item -> "settings-main-${item.hashCode()}" },
                     ) { index, item ->
                         val selected = indexSelected == index
                         var modifier: Modifier = Modifier

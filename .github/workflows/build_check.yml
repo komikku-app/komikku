@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - develop
+      # - develop
       - master
     paths-ignore:
       - '**.md'
@@ -27,9 +27,11 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
+        uses: gradle/actions/wrapper-validation@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
 
       - name: Setup Android SDK
         run: |
@@ -56,7 +58,7 @@ jobs:
           write-mode: overwrite
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@31ae3562f68c96d481c31bc1a8a55cc1be162f83 # v3.4.1
+        uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
 
       - name: Build app and run unit tests
         run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
@@ -70,10 +72,21 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
+      - name: Rename apk
+        id: current_commit
+        run: |
+          set -x
+          version_tag=${GITHUB_REF/refs\/heads\//}
+          commit_count=$(git rev-list --count HEAD)
+          echo "VERSION_TAG=$version_tag"
+          echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
+          echo "COMMIT_COUNT=$commit_count"
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
+          mv app/build/outputs/apk/standard/preview/app-standard-universal-preview-signed.apk Komikku-$version_tag-r$commit_count.apk
+
       - name: Upload APK
-        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          name: Komikku-${{ github.sha }}.apk
-          path: app/build/outputs/apk/standard/preview/app-standard-universal-preview-signed.apk
+          name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
+          path: ./*.apk
           retention-days: 1

@@ -3,7 +3,6 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,6 +16,8 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -31,36 +32,40 @@ fun RelatedMangasList(
     onKeywordLongClick: (String) -> Unit,
     selection: List<Manga>,
 ) {
-    LazyColumn(
-        modifier = Modifier.padding(
-            top = contentPadding.calculateTopPadding(),
-        ),
-        contentPadding = PaddingValues(MaterialTheme.padding.small),
+    FastScrollLazyColumn(
+        // Using modifier instead of contentPadding so we can use stickyHeader
+        modifier = Modifier.padding(contentPadding),
     ) {
         relatedMangas.forEach { related ->
             val isLoading = related is RelatedManga.Loading
             if (isLoading) {
-                item(key = "$related#divider") { HorizontalDivider() }
-                stickyHeader(key = "$related#header") {
+                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = stringResource(MR.strings.loading),
                         subtitle = null,
                         onClick = {},
                         onLongClick = null,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        modifier = Modifier
+                            .padding(
+                                start = MaterialTheme.padding.small,
+                                end = MaterialTheme.padding.medium,
+                            )
+                            .background(MaterialTheme.colorScheme.background),
                     )
                 }
-                item(key = "$related#content") { RelatedMangasLoadingItem() }
+                item(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
             } else {
                 val relatedManga = related as RelatedManga.Success
-                item(key = "${related.keyword}#divider") { HorizontalDivider() }
-                stickyHeader(key = "${related.keyword}#header") {
+                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
+                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
                     RelatedMangaTitle(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(KMR.strings.related_mangas_more)
                         } else {
                             stringResource(KMR.strings.pref_source_related_mangas)
                         },
+                        showArrow = relatedManga.keyword.isNotBlank(),
                         subtitle = null,
                         onClick = {
                             if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
@@ -68,10 +73,18 @@ fun RelatedMangasList(
                         onLongClick = {
                             if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
                         },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        modifier = Modifier
+                            .padding(
+                                start = MaterialTheme.padding.small,
+                                end = MaterialTheme.padding.medium,
+                            )
+                            .background(MaterialTheme.colorScheme.background),
                     )
                 }
-                items(key = { relatedManga.mangaList[it].id }, count = relatedManga.mangaList.size) { index ->
+                items(
+                    key = { "related-list-${relatedManga.mangaList[it].id}" },
+                    count = relatedManga.mangaList.size,
+                ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])
                     BrowseSourceListItem(
                         manga = manga,

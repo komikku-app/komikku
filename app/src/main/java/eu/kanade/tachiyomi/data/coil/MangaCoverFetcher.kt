@@ -74,6 +74,7 @@ class MangaCoverFetcher(
     // KMK -->
     private val fileScope by lazy { CoroutineScope(Job() + Dispatchers.IO) }
     private val uiPreferences = Injekt.get<UiPreferences>()
+    private val themeCoverBased = uiPreferences.themeCoverBased().get()
     // KMK <--
 
     private val diskCacheKey: String
@@ -347,7 +348,7 @@ class MangaCoverFetcher(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
-        onlyFavorite: Boolean = !uiPreferences.themeCoverBased().get(),
+        onlyFavorite: Boolean = !themeCoverBased,
         force: Boolean = false,
     ) {
         fileScope.launch {

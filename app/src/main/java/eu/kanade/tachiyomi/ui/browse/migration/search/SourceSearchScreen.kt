@@ -37,6 +37,9 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
 
+/**
+ * Opened when click on a source in [MigrateSearchScreen]
+ */
 data class SourceSearchScreen(
     private val oldManga: Manga,
     private val sourceId: Long,

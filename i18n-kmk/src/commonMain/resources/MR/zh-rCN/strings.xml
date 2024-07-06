@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">腥红</string>
+  <string name="theme_matrix">黑客</string>
+  <string name="theme_mocha">摩卡</string>
+  <string name="theme_sapphire">蓝宝石</string>
   <string name="action_source_search">搜索源</string>
   <string name="action_toggle_nsfw_only">仅切换 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
   <string name="pref_details_page_theme">详细信息页面</string>
-  <string name="pref_theme_cover_based">基于封面的主题</string>
   <string name="pref_theme_cover_based_style">主题样式</string>
   <string name="ext_unofficial">非官方的</string>
   <string name="unofficial_extension_message">这个扩展不是官方仓库的扩展。</string>
@@ -36,4 +41,16 @@
   <string name="related_mangas_more">更像这样...</string>
   <string name="too_many_in_feed">你的新闻源太多，不能添加超过限制 (20)</string>
   <string name="current_">当前: %1$s</string>
+  <string name="pref_theme_cover_based">基于封面的主题</string>
+  <string name="pref_theme_cover_based_style_tonalspot">倾斜点</string>
+  <string name="pref_theme_cover_based_style_neutral">中性的</string>
+  <string name="pref_theme_cover_based_style_vibrant">振动</string>
+  <string name="pref_theme_cover_based_style_expressive">表达式</string>
+  <string name="pref_theme_cover_based_style_rainbow">彩虹灯</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">水果沙拉德</string>
+  <string name="pref_theme_cover_based_style_monochrome">单色</string>
+  <string name="pref_theme_cover_based_style_fidelity">幻影性</string>
+  <string name="pref_theme_cover_based_style_content">内容</string>
+  <string name="pref_expand_related_titles">展开相关标题</string>
+  <string name="pref_expand_related_titles_summary">如果关闭，相关标题不会自动加载 &amp; 显示扩展</string>
 </resources>

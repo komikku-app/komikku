@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.util.SourceTagsUtil.genreTextColor
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
@@ -30,8 +32,8 @@ fun EHentaiDescription(
 ) {
     val context = LocalContext.current
     // KMK -->
-    val textColor = MaterialTheme.colorScheme.secondary.toArgb()
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val textColor = LocalContentColor.current.toArgb()
     val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     // KMK <--
     AndroidView(
@@ -45,16 +47,16 @@ fun EHentaiDescription(
             val binding = DescriptionAdapterEhBinding.bind(it)
 
             binding.genre.text =
-                meta.genre?.let { MetadataUIUtil.getGenreAndColour(context, it) }
-                    ?.let {
-                        binding.genre.setBackgroundColor(it.first)
-                        it.second
+                meta.genre?.let { genre -> MetadataUIUtil.getGenreAndColour(context, genre) }
+                    ?.let { (genre, name) ->
+                        binding.genre.setBackgroundColor(genre.color)
+                        // KMK -->
+                        binding.genre.setTextColor(genreTextColor(genre))
+                        // KMK <--
+                        name
                     }
                     ?: meta.genre
                     ?: context.stringResource(MR.strings.unknown)
-            // KMK -->
-            binding.genre.setTextColor(textColor)
-            // KMK <--
 
             binding.visible.text = context.stringResource(SYMR.strings.is_visible, meta.visible ?: context.stringResource(MR.strings.unknown))
             // KMK -->
@@ -105,7 +107,8 @@ fun EHentaiDescription(
             binding.rating.setTextColor(textColor)
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
-            binding.moreInfo.setTextColor(textColor)
+            binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
+            binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
             listOf(
