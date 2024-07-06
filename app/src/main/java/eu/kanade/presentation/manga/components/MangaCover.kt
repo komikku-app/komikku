@@ -51,6 +51,7 @@ enum class MangaCover(val ratio: Float) {
         alpha: Float = 1f,
         bgColor: Color? = null,
         @ColorInt tint: Int? = null,
+        /** Perform action when cover loaded, specifically generating color map */
         onCoverLoaded: ((DomainMangaCover) -> Unit)? = null,
         size: Size = Size.Normal,
         // KMK <--

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cloudflare">كلاودفلير</string>
+  <string name="theme_cottoncandy">حلوى القطن</string>
+  <string name="theme_doom">الهلاك</string>
+  <string name="theme_matrix">ماتريكس</string>
+  <string name="theme_mocha">موكا</string>
+  <string name="theme_sapphire">ياقوت</string>
   <string name="action_source_search">البحث عن مصدر</string>
   <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
   <string name="action_bulk_select">وضع التحديد بالجملة</string>

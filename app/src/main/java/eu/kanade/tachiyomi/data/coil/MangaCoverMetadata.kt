@@ -100,7 +100,7 @@ object MangaCoverMetadata {
              * + [onlyDominantColor] = false
              *   - Manga doesn't have vibrant color
              */
-            options.inSampleSize = 4
+            options.inSampleSize = SUB_SAMPLE
         } else {
             /**
              * + [onlyDominantColor] = true
@@ -154,4 +154,6 @@ object MangaCoverMetadata {
         val mapColorCopy = MangaCover.dominantCoverColorMap.toMap()
         preferences.coverColors().set(mapColorCopy.map { "${it.key}|${it.value.first}|${it.value.second}" }.toSet())
     }
+
+    const val SUB_SAMPLE = 4
 }

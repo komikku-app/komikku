@@ -27,6 +27,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -73,7 +74,7 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
-    val source = sourceManager.getOrStub(sourceId)
+    var source = sourceManager.getOrStub(sourceId)
 
     val sourceIsMangaDex = sourceId in mangaDexSourceIds
 
@@ -82,14 +83,23 @@ open class SourceFeedScreenModel(
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
 
     init {
-        if (source is CatalogueSource) {
-            setFilters(source.getFilterList())
+        // KMK -->
+        screenModelScope.launch {
+            var retry = 10
+            while (source !is CatalogueSource && retry-- > 0) {
+                // Sometime source is late to load, so we need to wait a bit
+                delay(100)
+                source = sourceManager.getOrStub(sourceId)
+            }
+            val source = source
+            if (source !is CatalogueSource) return@launch
+            // KMK <--
 
+            setFilters(source.getFilterList())
             screenModelScope.launchIO {
                 val searches = loadSearches()
                 mutableState.update { it.copy(savedSearches = searches) }
             }
-
             getFeedSavedSearchBySourceId.subscribe(source.id)
                 .onEach {
                     val items = getSourcesToGetFeed(it)
@@ -132,6 +142,9 @@ open class SourceFeedScreenModel(
     }
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): ImmutableList<SourceFeedUI> {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return persistentListOf()
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
             .associateBy { it.id }
@@ -154,6 +167,9 @@ open class SourceFeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return
         screenModelScope.launch {
             feedSavedSearch.map { sourceFeed ->
@@ -222,6 +238,9 @@ open class SourceFeedScreenModel(
             .toImmutableList()
 
     fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return
         screenModelScope.launchIO {
             val allDefault = state.value.filters == source.getFilterList()
@@ -245,6 +264,9 @@ open class SourceFeedScreenModel(
         onBrowseClick: (query: String?, searchId: Long) -> Unit,
         onToast: (StringResource) -> Unit,
     ) {
+        // KMK -->
+        val source = source
+        // KMK <--
         if (source !is CatalogueSource) return
         screenModelScope.launchIO {
             if (search.filterList == null && state.value.filters.isNotEmpty()) {

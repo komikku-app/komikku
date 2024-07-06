@@ -49,6 +49,11 @@ class SourcePreferences(
         emptySet(),
     )
 
+    fun globalSearchFilterState() = preferenceStore.getBoolean(
+        Preference.appStateKey("has_filters_toggle_state"),
+        false,
+    )
+
     // SY -->
     fun enableSourceBlacklist() = preferenceStore.getBoolean("eh_enable_source_blacklist", true)
 

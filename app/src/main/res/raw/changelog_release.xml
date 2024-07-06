@@ -1,14 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.10.6" changeDate="2024">
-        <changelogtext>[b]New[/b] A dedicated screen for related entries, fetching directly from sources</changelogtext>
-        <changelogtext>[b]Improved[/b] Faster loading of related entries</changelogtext>
-        <changelogtext>[b]Improved[/b] Enable fetching related entries from site's entry page (things like "More like this", "Recommendations" etc.)</changelogtext>
-        <changelogtext>Improve &amp; fix bugs of algorithm looking for related entries</changelogtext>
-        <changelogtext>[b]Improved[/b] Auto sync read chapters from Trackers &amp; mark read to update</changelogtext>
-        <changelogtext>[b]New[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
-        <changelogtext>[b]Update to TachiyomiSY 1.10.6[/b]</changelogtext>
-        <changelogtext>[b]Update to Mihon 0.16.6[/b]</changelogtext>
+    <changelogversion versionName="1.11.1" changeDate="July 04, 2024">
+        <changelogtext>[b]Komikku's Discord channel[/b]</changelogtext>
+        <changelogtext>[b]New:[/b] App icon</changelogtext>
+        <changelogtext>[b]New:[/b] More App themes</changelogtext>
+        <changelogtext>[b]New:[/b] Theme based on entry's cover color</changelogtext>
+        <changelogtext>[b]New:[/b] More related titles with a dedicated screen</changelogtext>
+        <changelogtext>[b]Improved:[/b] Faster loading of related entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better background for full cover view</changelogtext>
+        <changelogtext>[b]Improve:[/b] Better cover-error &amp; cover-loading</changelogtext>
+        <changelogtext>[b]New:[/b] Auto 2-way sync read chapters from Trackers &amp; swipe read to update</changelogtext>
+        <changelogtext>[b]New:[/b] Add NSFW filter &amp; source search into Merge screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Sticky header &amp; language for sources filter</changelogtext>
+        <changelogtext>[b]Fix:[/b] Allow manual edit on Tracker's chapter (must hit Done on keyboard)</changelogtext>
+        <changelogtext>[b]Fix:[/b] Genre tag search while browsing related titles or from Feed Screen</changelogtext>
+        <changelogtext>[b]Fix:[/b] Bangumi tracker</changelogtext>
+        <changelogtext>[b]Fix:[/b] sometimes it's loading forever if app sleeps for too long (in Source's feed &amp; browse screens)</changelogtext>
+        <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
+        <changelogtext>[b]New:[/b] A peek into Preview-build's 'What's New' in About screen</changelogtext>
+        <changelogtext>[b]New:[/b] Support only Android 8+</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update translation</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.10.6 (Mar 4, 2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.16.5 (Apr 9, 2024)[/b]</changelogtext>
+        <changelogtext>[b]New:[/b] Trust all extensions by repo</changelogtext>
+        <changelogtext>[b]New:[/b] Add Namicomi support for external chapters on MD</changelogtext>
+        <changelogtext>[b]Improved:[/b] Massively improve findFile performance</changelogtext>
+        <changelogtext>[b]Fix:[/b] storage permission request for non-conforming devices</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.10.5" changeDate="May 9,2024">
         <changelogtext>[b]New[/b] Show related mangas for all sources</changelogtext>
@@ -25,8 +42,8 @@
         <changelogtext>[b]New[/b] Configurable interval to refresh entries from downloaded storage</changelogtext>
         <changelogtext>Updater switched to method similar to Mihon's</changelogtext>
         <changelogtext>Revert back support to show extensions' changelog &amp; readme</changelogtext>
-        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5(Mar 2,2024)[/b]</changelogtext>
-        <changelogtext>[b]Based on Mihon stable 0.16.4(from 0.16.3)[/b]</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.10.5 (Mar 2,2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.16.4 (from 0.16.3)[/b]</changelogtext>
         <changelogtext>Minor fix for marking duplicate chapters as read</changelogtext>
         <changelogtext>Include the delayed tracker update fix</changelogtext>
     </changelogversion>

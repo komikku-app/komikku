@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_cloudflare">Cloudflare</string>
+    <string name="theme_cottoncandy">솜사탕</string>
+    <string name="theme_doom">둠</string>
+    <string name="theme_matrix">매트릭스</string>
+    <string name="theme_mocha">모카</string>
+    <string name="theme_sapphire">사파이어</string>
+</resources>

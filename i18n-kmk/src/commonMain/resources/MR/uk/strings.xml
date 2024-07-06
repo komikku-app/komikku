@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="theme_cottoncandy">Бавовняні цукерки</string>
+  <string name="theme_mocha">Моча</string>
   <string name="action_source_search">Пошук джерела</string>
   <string name="action_toggle_nsfw_only">Лише NSFW</string>
   <string name="action_bulk_select">Масовий режим вибору</string>

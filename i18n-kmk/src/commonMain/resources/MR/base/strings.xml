@@ -24,6 +24,12 @@
     <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
     <string name="pref_show_home_on_related_titles">Home from Related titles</string>
     <string name="pref_show_home_on_related_titles_summary">Show an icon while browsing Related titles to navigate directly back to Home</string>
+    <string name="theme_cloudflare">Cloudflare</string>
+    <string name="theme_cottoncandy">Cotton Candy</string>
+    <string name="theme_doom">Doom</string>
+    <string name="theme_matrix">Matrix</string>
+    <string name="theme_mocha">Mocha</string>
+    <string name="theme_sapphire">Sapphire</string>
 
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>
@@ -50,6 +56,7 @@
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
     <string name="invalid_downloads_cleaned">Invalid downloads cleaned</string>
     <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
+    <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
 
       <!-- About section -->
     <string name="whats_coming">What\'s coming (soon)</string>

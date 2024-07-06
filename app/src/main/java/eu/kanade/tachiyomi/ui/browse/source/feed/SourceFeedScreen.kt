@@ -10,6 +10,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
@@ -33,6 +34,7 @@ import exh.util.nullIfBlank
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {
@@ -50,6 +52,16 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val context = LocalContext.current
 
         // KMK -->
+        screenModel.source.let {
+            if (it is StubSource) {
+                MissingSourceScreen(
+                    source = it,
+                    navigateUp = navigator::pop,
+                )
+                return
+            }
+        }
+
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -80,6 +92,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onSearchQueryChange = screenModel::search,
             getMangaState = { screenModel.getManga(initialManga = it) },
             // KMK -->
+            navigateUp = { navigator.pop() },
             onWebViewClick = {
                 val source = screenModel.source as? HttpSource ?: return@SourceFeedScreen
                 navigator.push(
@@ -169,7 +182,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                                 // KMK -->
                                 // navigator.replace(
                                 navigator.push(
-                                // KMK <--
+                                    // KMK <--
                                     BrowseSourceScreen(
                                         sourceId,
                                         "id:$it",
@@ -211,14 +224,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         }
         // KMK <--
 
-        BackHandler(state.searchQuery != null || bulkFavoriteState.selectionMode) {
+        BackHandler(bulkFavoriteState.selectionMode) {
             // KMK -->
-            if (bulkFavoriteState.selectionMode) {
-                bulkFavoriteScreenModel.backHandler()
-            } else {
-                // KMK <--
-                screenModel.search(null)
-            }
+            bulkFavoriteScreenModel.backHandler()
+            // KMK <--
         }
     }
 

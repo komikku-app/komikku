@@ -110,6 +110,7 @@ fun SourceFeedScreen(
     onSearchQueryChange: (String?) -> Unit,
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
+    navigateUp: () -> Unit,
     onWebViewClick: () -> Unit,
     sourceId: Long,
     onLongClickManga: (Manga) -> Unit,
@@ -147,6 +148,7 @@ fun SourceFeedScreen(
                     scrollBehavior = scrollBehavior,
                     onClickSearch = onClickSearch,
                     // KMK -->
+                    navigateUp = navigateUp,
                     onWebViewClick = onWebViewClick,
                     sourceId = sourceId,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
@@ -208,7 +210,7 @@ fun SourceFeedList(
             key = { "source-feed-${it.id}" },
         ) { item ->
             GlobalSearchResultItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 title = item.title,
                 subtitle = null,
                 onLongClick = if (item is SourceFeedUI.SourceSavedSearch) {
@@ -280,6 +282,7 @@ fun SourceFeedToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     onClickSearch: (String) -> Unit,
     // KMK -->
+    navigateUp: () -> Unit,
     onWebViewClick: () -> Unit,
     sourceId: Long,
     toggleSelectionMode: () -> Unit,
@@ -290,7 +293,10 @@ fun SourceFeedToolbar(
         searchQuery = searchQuery,
         onChangeSearchQuery = onSearchQueryChange,
         onSearch = onClickSearch,
-        onClickCloseSearch = { onSearchQueryChange(null) },
+        // KMK -->
+        navigateUp = navigateUp,
+        onClickCloseSearch = navigateUp,
+        // KMK <--
         scrollBehavior = scrollBehavior,
         placeholderText = stringResource(MR.strings.action_search_hint),
         // KMK -->
