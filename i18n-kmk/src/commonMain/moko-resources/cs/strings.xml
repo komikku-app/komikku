@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Hledat zdroj</string>
+  <string name="action_search_for_source">Hledat zdroj</string>
   <string name="action_toggle_nsfw_only">Přepnout pouze NSFW</string>
   <string name="action_bulk_select">Režim hromadného výběru</string>
   <string name="action_faq_and_guides">FAQ a návody</string>

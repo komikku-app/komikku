@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">ソースを検索</string>
+  <string name="action_search_for_source">ソースを検索</string>
   <string name="action_toggle_nsfw_only">NSFWのみ切り替え</string>
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>

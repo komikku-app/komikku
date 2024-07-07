@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Sök efter källa</string>
+  <string name="action_search_for_source">Sök efter källa</string>
   <string name="action_toggle_nsfw_only">Växla endast NSFW</string>
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>

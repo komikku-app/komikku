@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Szukaj źródła</string>
+  <string name="action_search_for_source">Szukaj źródła</string>
   <string name="action_toggle_nsfw_only">Przełącz tylko NSFW</string>
   <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
   <string name="action_faq_and_guides">FAQ i przewodniki</string>

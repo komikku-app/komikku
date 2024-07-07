@@ -6,7 +6,7 @@
   <string name="theme_matrix">Verde</string>
   <string name="theme_mocha">Café</string>
   <string name="theme_sapphire">Safira</string>
-  <string name="action_source_search">Pesquisar fonte</string>
+  <string name="action_search_for_source">Pesquisar fonte</string>
   <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
   <string name="action_bulk_select">Modo de seleção em massa</string>
   <string name="action_faq_and_guides">FAQ e Guias</string>
