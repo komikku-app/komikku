@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Caută sursa</string>
+  <string name="action_search_for_source">Caută sursa</string>
   <string name="action_toggle_nsfw_only">Comută numai NSFW</string>
   <string name="action_bulk_select">Mod selecţie în masă</string>
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>

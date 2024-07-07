@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Αναζήτηση πηγής</string>
+  <string name="action_search_for_source">Αναζήτηση πηγής</string>
   <string name="action_toggle_nsfw_only">Εναλλαγή μόνο NSFW</string>
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>

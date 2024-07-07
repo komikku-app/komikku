@@ -6,7 +6,7 @@
   <string name="theme_matrix">Matrix</string>
   <string name="theme_mocha">Mocha</string>
   <string name="theme_sapphire">Zaffiro</string>
-  <string name="action_source_search">Cerca la sorgente</string>
+  <string name="action_search_for_source">Cerca la sorgente</string>
   <string name="action_toggle_nsfw_only">Attiva/disattiva solo NSFW</string>
   <string name="action_bulk_select">Modalità selezione Bulk</string>
   <string name="action_faq_and_guides">FAQ e guide</string>

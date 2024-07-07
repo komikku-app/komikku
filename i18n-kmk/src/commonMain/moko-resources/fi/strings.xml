@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">Hae lähdekoodia</string>
+  <string name="action_search_for_source">Hae lähdekoodia</string>
   <string name="action_toggle_nsfw_only">Vaihda vain NSFW</string>
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>

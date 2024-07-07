@@ -6,7 +6,7 @@
   <string name="theme_matrix">ماتريكس</string>
   <string name="theme_mocha">موكا</string>
   <string name="theme_sapphire">ياقوت</string>
-  <string name="action_source_search">البحث عن مصدر</string>
+  <string name="action_search_for_source">البحث عن مصدر</string>
   <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
   <string name="action_bulk_select">وضع التحديد بالجملة</string>
   <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>

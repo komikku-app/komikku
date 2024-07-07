@@ -80,6 +80,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.components.material.padding
@@ -111,6 +112,7 @@ fun MangaInfoBox(
     doSearch: (query: String, global: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -134,7 +136,7 @@ fun MangaInfoBox(
                             colors = backdropGradientColors,
                             // KMK -->
                             startY = size.height / 2,
-                            // KMKM <--
+                            // KMK <--
                         ),
                     )
                 }
@@ -161,6 +163,7 @@ fun MangaInfoBox(
                     sourceName = sourceName,
                     isStubSource = isStubSource,
                     // KMK -->
+                    librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
                     // KMK <--
@@ -178,6 +181,7 @@ fun MangaInfoBox(
                     sourceName = sourceName,
                     isStubSource = isStubSource,
                     // KMK -->
+                    librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
                     // KMK <--
@@ -429,6 +433,7 @@ private fun MangaAndSourceTitlesLarge(
     sourceName: String,
     isStubSource: Boolean,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -459,6 +464,7 @@ private fun MangaAndSourceTitlesLarge(
             isStubSource = isStubSource,
             textAlign = TextAlign.Center,
             // KMK -->
+            librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             // KMK <--
         )
@@ -478,6 +484,7 @@ private fun MangaAndSourceTitlesSmall(
     sourceName: String,
     isStubSource: Boolean,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -512,6 +519,7 @@ private fun MangaAndSourceTitlesSmall(
                 sourceName = sourceName,
                 isStubSource = isStubSource,
                 // KMK -->
+                librarySearch = librarySearch,
                 onSourceClick = onSourceClick,
                 // KMK <--
             )
@@ -519,6 +527,7 @@ private fun MangaAndSourceTitlesSmall(
     }
 }
 
+@Suppress("UnusedReceiverParameter")
 @Composable
 private fun ColumnScope.MangaContentInfo(
     title: String,
@@ -530,20 +539,52 @@ private fun ColumnScope.MangaContentInfo(
     isStubSource: Boolean,
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     // KMK <--
 ) {
     val context = LocalContext.current
+    // KMK -->
+    var showMenu by remember { mutableStateOf(false) }
+    DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { showMenu = false },
+    ) {
+        DropdownMenuItem(
+            text = { Text(text = stringResource(KMR.strings.action_library_search)) },
+            onClick = {
+                librarySearch(title)
+                showMenu = false
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(text = stringResource(MR.strings.action_global_search)) },
+            onClick = {
+                doSearch(title, true)
+                showMenu = false
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
+            onClick = {
+                context.copyToClipboard(
+                    title,
+                    title,
+                )
+                showMenu = false
+            },
+        )
+    }
+    // KMK <--
     Text(
         text = title.ifBlank { stringResource(MR.strings.unknown_title) },
         style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.clickableNoIndication(
             onLongClick = {
                 if (title.isNotBlank()) {
-                    context.copyToClipboard(
-                        title,
-                        title,
-                    )
+                    // KMK -->
+                    showMenu = true
+                    // KMK <--
                 }
             },
             onClick = { if (title.isNotBlank()) doSearch(title, true) },

@@ -6,7 +6,7 @@
   <string name="theme_matrix">黑客</string>
   <string name="theme_mocha">摩卡</string>
   <string name="theme_sapphire">蓝宝石</string>
-  <string name="action_source_search">搜索源</string>
+  <string name="action_search_for_source">搜索源</string>
   <string name="action_toggle_nsfw_only">仅切换 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
