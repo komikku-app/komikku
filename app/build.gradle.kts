@@ -124,6 +124,7 @@ android {
                 "META-INF/README.md",
                 "META-INF/NOTICE",
                 "META-INF/*.kotlin_module",
+                "META-INF/INDEX.LIST",
             ),
         )
     }
@@ -298,7 +299,6 @@ dependencies {
 
     // Google drive
     implementation(sylibs.google.api.services.drive)
-    implementation(sylibs.google.api.client.oauth)
 }
 
 androidComponents {
