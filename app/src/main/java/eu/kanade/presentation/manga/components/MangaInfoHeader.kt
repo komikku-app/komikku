@@ -546,6 +546,7 @@ private fun ColumnScope.MangaContentInfo(
     val context = LocalContext.current
     // KMK -->
     var showMenu by remember { mutableStateOf(false) }
+    var tagSelected by remember { mutableStateOf("") }
     DropdownMenu(
         expanded = showMenu,
         onDismissRequest = { showMenu = false },
@@ -553,14 +554,14 @@ private fun ColumnScope.MangaContentInfo(
         DropdownMenuItem(
             text = { Text(text = stringResource(KMR.strings.action_library_search)) },
             onClick = {
-                librarySearch(title)
+                librarySearch(tagSelected)
                 showMenu = false
             },
         )
         DropdownMenuItem(
             text = { Text(text = stringResource(MR.strings.action_global_search)) },
             onClick = {
-                doSearch(title, true)
+                doSearch(tagSelected, true)
                 showMenu = false
             },
         )
@@ -568,8 +569,8 @@ private fun ColumnScope.MangaContentInfo(
             text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
             onClick = {
                 context.copyToClipboard(
-                    title,
-                    title,
+                    tagSelected,
+                    tagSelected,
                 )
                 showMenu = false
             },
@@ -583,6 +584,7 @@ private fun ColumnScope.MangaContentInfo(
             onLongClick = {
                 if (title.isNotBlank()) {
                     // KMK -->
+                    tagSelected = title
                     showMenu = true
                     // KMK <--
                 }
@@ -612,10 +614,10 @@ private fun ColumnScope.MangaContentInfo(
                 .clickableNoIndication(
                     onLongClick = {
                         if (!author.isNullOrBlank()) {
-                            context.copyToClipboard(
-                                author,
-                                author,
-                            )
+                            // KMK -->
+                            tagSelected = author
+                            showMenu = true
+                            // KMK <--
                         }
                     },
                     onClick = { if (!author.isNullOrBlank()) doSearch(author, true) },
@@ -640,7 +642,12 @@ private fun ColumnScope.MangaContentInfo(
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier
                     .clickableNoIndication(
-                        onLongClick = { context.copyToClipboard(artist, artist) },
+                        onLongClick = {
+                            // KMK -->
+                            tagSelected = artist
+                            showMenu = true
+                            // KMK <--
+                        },
                         onClick = { doSearch(artist, true) },
                     ),
                 textAlign = textAlign,
@@ -696,12 +703,17 @@ private fun ColumnScope.MangaContentInfo(
             }
             Text(
                 text = sourceName,
-                modifier = Modifier.clickableNoIndication {
+                modifier = Modifier.clickableNoIndication(
                     // KMK -->
-                    // doSearch(sourceName, false)
-                    onSourceClick()
+                    onLongClick = {
+                        tagSelected = sourceName
+                        showMenu = true
+                    },
+                    onClick = {
+                        onSourceClick()
+                    },
                     // KMK <--
-                },
+                ),
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
