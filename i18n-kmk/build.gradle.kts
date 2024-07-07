@@ -11,13 +11,10 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(libs.moko.core)
             }
-        }
-        androidMain {
-            dependsOn(commonMain) // https://github.com/icerockdev/moko-resources/issues/562
         }
     }
 }
@@ -37,8 +34,8 @@ android {
 }
 
 multiplatformResources {
-    multiplatformResourcesClassName = "KMR"
-    multiplatformResourcesPackage = "tachiyomi.i18n.kmk"
+    resourcesClassName.set("KMR")
+    resourcesPackage.set("tachiyomi.i18n.kmk")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
