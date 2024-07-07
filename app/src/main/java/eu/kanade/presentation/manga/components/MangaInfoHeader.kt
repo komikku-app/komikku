@@ -112,6 +112,7 @@ fun MangaInfoBox(
     doSearch: (query: String, global: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -162,6 +163,7 @@ fun MangaInfoBox(
                     sourceName = sourceName,
                     isStubSource = isStubSource,
                     // KMK -->
+                    librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
                     // KMK <--
@@ -179,6 +181,7 @@ fun MangaInfoBox(
                     sourceName = sourceName,
                     isStubSource = isStubSource,
                     // KMK -->
+                    librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
                     // KMK <--
@@ -430,6 +433,7 @@ private fun MangaAndSourceTitlesLarge(
     sourceName: String,
     isStubSource: Boolean,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -460,6 +464,7 @@ private fun MangaAndSourceTitlesLarge(
             isStubSource = isStubSource,
             textAlign = TextAlign.Center,
             // KMK -->
+            librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             // KMK <--
         )
@@ -479,6 +484,7 @@ private fun MangaAndSourceTitlesSmall(
     sourceName: String,
     isStubSource: Boolean,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
     // KMK <--
@@ -513,6 +519,7 @@ private fun MangaAndSourceTitlesSmall(
                 sourceName = sourceName,
                 isStubSource = isStubSource,
                 // KMK -->
+                librarySearch = librarySearch,
                 onSourceClick = onSourceClick,
                 // KMK <--
             )
@@ -532,6 +539,7 @@ private fun ColumnScope.MangaContentInfo(
     isStubSource: Boolean,
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
     // KMK -->
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     // KMK <--
 ) {
@@ -545,7 +553,7 @@ private fun ColumnScope.MangaContentInfo(
         DropdownMenuItem(
             text = { Text(text = stringResource(KMR.strings.action_library_search)) },
             onClick = {
-                doSearch(title, false)
+                librarySearch(title)
                 showMenu = false
             },
         )

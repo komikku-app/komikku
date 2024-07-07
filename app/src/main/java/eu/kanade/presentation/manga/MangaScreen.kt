@@ -192,6 +192,7 @@ fun MangaScreen(
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
@@ -255,6 +256,7 @@ fun MangaScreen(
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
+            librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
             onPaletteScreenClick = onPaletteScreenClick,
@@ -311,6 +313,7 @@ fun MangaScreen(
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
+            librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
             onPaletteScreenClick = onPaletteScreenClick,
@@ -384,6 +387,7 @@ private fun MangaScreenSmallImpl(
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
@@ -556,6 +560,7 @@ private fun MangaScreenSmallImpl(
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
+                            librarySearch = librarySearch,
                             onSourceClick = onSourceClick,
                             onCoverLoaded = onCoverLoaded,
                             // KMK <--
@@ -790,6 +795,7 @@ private fun MangaScreenLargeImpl(
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
+    librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
     onPaletteScreenClick: () -> Unit,
@@ -954,6 +960,7 @@ private fun MangaScreenLargeImpl(
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
+                            librarySearch = librarySearch,
                             onSourceClick = onSourceClick,
                             onCoverLoaded = onCoverLoaded,
                             // KMK <--

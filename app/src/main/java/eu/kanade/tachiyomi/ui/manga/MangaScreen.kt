@@ -301,6 +301,11 @@ class MangaScreen(
             onRefresh = screenModel::fetchAllFromSource,
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
             onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
+            // KMK -->
+            librarySearch = { query ->
+                scope.launch { performSearch(navigator, query, global = false, library = true) }
+            },
+            // KMK <--
             onCoverClicked = screenModel::showCoverDialog,
             onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
@@ -573,7 +578,14 @@ class MangaScreen(
      *
      * @param query the search query to the parent controller
      */
-    private suspend fun performSearch(navigator: Navigator, query: String, global: Boolean) {
+    private suspend fun performSearch(
+        navigator: Navigator,
+        query: String,
+        global: Boolean,
+        // KMK -->
+        library: Boolean = false,
+        // KMK <--
+    ) {
         if (global) {
             navigator.push(GlobalSearchScreen(query))
             return
@@ -585,7 +597,8 @@ class MangaScreen(
 
         // KMK -->
         navigator.popUntil { screen ->
-            screen is BrowseSourceScreen || screen is HomeScreen || screen is SourceFeedScreen
+            screen is HomeScreen ||
+                !library && (screen is BrowseSourceScreen || screen is SourceFeedScreen)
         }
         // KMK <--
 
