@@ -12,8 +12,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.JsonFactory
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
@@ -290,7 +289,7 @@ class GoogleDriveService(private val context: Context) {
      * @return The authorization URL.
      */
     private fun generateAuthorizationUrl(): String {
-        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
         val secrets = GoogleClientSecrets.load(
             jsonFactory,
             context.assets.open("client_secrets.json").reader(),
@@ -311,7 +310,7 @@ class GoogleDriveService(private val context: Context) {
     internal suspend fun refreshToken() = withIOContext {
         val refreshToken = syncPreferences.googleDriveRefreshToken().get()
 
-        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
         val secrets = GoogleClientSecrets.load(
             jsonFactory,
             context.assets.open("client_secrets.json").reader(),
@@ -362,7 +361,7 @@ class GoogleDriveService(private val context: Context) {
      * @param refreshToken The refresh token obtained from the SyncPreferences.
      */
     private fun setupGoogleDriveService(accessToken: String, refreshToken: String) {
-        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
         val secrets = GoogleClientSecrets.load(
             jsonFactory,
             context.assets.open("client_secrets.json").reader(),
@@ -401,7 +400,7 @@ class GoogleDriveService(private val context: Context) {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit,
     ) {
-        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
         val secrets = GoogleClientSecrets.load(
             jsonFactory,
             context.assets.open("client_secrets.json").reader(),
