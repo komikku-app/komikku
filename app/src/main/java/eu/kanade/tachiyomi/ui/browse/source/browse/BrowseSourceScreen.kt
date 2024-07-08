@@ -423,6 +423,7 @@ data class BrowseSourceScreen(
                     // SY <--
                 )
             }
+
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
@@ -443,6 +444,7 @@ data class BrowseSourceScreen(
                     // KMK <--
                 )
             }
+
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {
                 RemoveMangaDialog(
                     onDismissRequest = onDismissRequest,
@@ -452,6 +454,7 @@ data class BrowseSourceScreen(
                     mangaToRemove = dialog.manga,
                 )
             }
+
             is BrowseSourceScreenModel.Dialog.ChangeMangaCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,

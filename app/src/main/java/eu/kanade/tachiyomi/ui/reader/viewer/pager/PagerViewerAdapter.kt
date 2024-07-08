@@ -14,7 +14,10 @@ import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.delay
 import tachiyomi.core.common.util.lang.launchUI
+import eu.kanade.translation.TranslationManager
 import tachiyomi.core.common.util.system.logcat
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Pager adapter used by this [viewer] to where [ViewerChapters] updates are posted.
@@ -24,6 +27,7 @@ class PagerViewerAdapter(
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
+    private val translationManager: TranslationManager = Injekt.get(),
 ) : ViewPagerAdapter() {
 
     /**
@@ -177,6 +181,7 @@ class PagerViewerAdapter(
                 // KMK -->
                 seedColor = seedColor,
                 // KMK <--
+                font = translationManager.font,
             )
             is ChapterTransition -> PagerTransitionHolder(
                 readerThemedContext,
@@ -220,6 +225,7 @@ class PagerViewerAdapter(
             is L2RPagerViewer,
             is VerticalPagerViewer,
             -> currentIndex + 1
+
             else -> currentIndex
         }
 

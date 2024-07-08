@@ -208,6 +208,7 @@ fun BrowseSourceContent(
                 // KMK <--
             )
         }
+
         LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
             BrowseSourceCompactGrid(
                 mangaList = mangaList,

@@ -176,14 +176,17 @@ class UpdatesScreenModel(
                         downloadManager.startDownloads()
                     }
                 }
+
                 ChapterDownloadAction.START_NOW -> {
                     val chapterId = items.singleOrNull()?.update?.chapterId ?: return@launch
                     startDownloadingNow(chapterId)
                 }
+
                 ChapterDownloadAction.CANCEL -> {
                     val chapterId = items.singleOrNull()?.update?.chapterId ?: return@launch
                     cancelDownload(chapterId)
                 }
+
                 ChapterDownloadAction.DELETE -> {
                     deleteChapters(items)
                 }

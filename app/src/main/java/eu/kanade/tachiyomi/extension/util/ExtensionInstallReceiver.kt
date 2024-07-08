@@ -58,6 +58,7 @@ internal class ExtensionInstallReceiver(private val listener: Listener) : Broadc
                     }
                 }
             }
+
             Intent.ACTION_PACKAGE_REPLACED, ACTION_EXTENSION_REPLACED -> {
                 scope.launch {
                     when (val result = getExtensionFromIntent(context, intent)) {
@@ -67,6 +68,7 @@ internal class ExtensionInstallReceiver(private val listener: Listener) : Broadc
                     }
                 }
             }
+
             Intent.ACTION_PACKAGE_REMOVED, ACTION_EXTENSION_REMOVED -> {
                 if (isReplacing(intent)) return
 

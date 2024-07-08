@@ -48,9 +48,11 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                     userAction.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     service.startActivity(userAction)
                 }
+
                 PackageInstaller.STATUS_FAILURE_ABORTED -> {
                     continueQueue(InstallStep.Idle)
                 }
+
                 PackageInstaller.STATUS_SUCCESS -> continueQueue(InstallStep.Installed)
                 else -> continueQueue(InstallStep.Error)
             }

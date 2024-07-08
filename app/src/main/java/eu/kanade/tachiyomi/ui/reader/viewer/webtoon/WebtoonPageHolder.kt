@@ -7,6 +7,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
+import androidx.compose.ui.text.font.FontFamily
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
@@ -19,8 +20,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.translation.TextTranslation
-import eu.kanade.translation.TextTranslationsComposeView
+import eu.kanade.translation.WebtoonTranslationsView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -52,11 +52,12 @@ class WebtoonPageHolder(
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
+    private val font: FontFamily,
     private val readerPreferences: ReaderPreferences = Injekt.get(),
 ) : WebtoonBaseHolder(frame, viewer) {
-    private var textTranslationsComposeView: TextTranslationsComposeView? = null
-    private var showTranslations=false
 
+    private var showTranslations = true
+    private var translationsView: WebtoonTranslationsView? = null
 
     /**
      * Loading progress bar to indicate the current progress.
@@ -98,13 +99,13 @@ class WebtoonPageHolder(
         frame.onImageLoaded = { onImageDecoded() }
         frame.onImageLoadError = { setError() }
         frame.onScaleChanged = { viewer.activity.hideMenu() }
-        showTranslations=readerPreferences.showTranslations().get()
+        showTranslations = readerPreferences.showTranslations().get()
         readerPreferences.showTranslations().changes().onEach {
-            showTranslations=it
-            if(it){
-                textTranslationsComposeView?.show()
-            }else{
-                textTranslationsComposeView?.hide()
+            showTranslations = it
+            if (it) {
+                translationsView?.show()
+            } else {
+                translationsView?.hide()
             }
 
         }.launchIn(scope)
@@ -118,6 +119,7 @@ class WebtoonPageHolder(
         loadJob?.cancel()
         loadJob = scope.launch { loadPageAndProcessStatus() }
         refreshLayoutParams()
+
     }
 
     private fun refreshLayoutParams() {
@@ -143,8 +145,6 @@ class WebtoonPageHolder(
         frame.recycle()
         progressIndicator.setProgress(0)
         progressContainer.isVisible = true
-        textTranslationsComposeView?.let{frame.removeView(textTranslationsComposeView)}
-        textTranslationsComposeView=null
     }
 
     /**
@@ -174,9 +174,9 @@ class WebtoonPageHolder(
 
                     Page.State.READY -> {
                         setImage()
-                        page.translations?.let { createTranslationTextDialog(it) }
-                    }
+                        addTranslationsView()
 
+                    }
 
                     Page.State.ERROR -> setError()
                 }
@@ -190,7 +190,6 @@ class WebtoonPageHolder(
     private fun setQueued() {
         progressContainer.isVisible = true
         progressIndicator.show()
-        textTranslationsComposeView?.hide()
         removeErrorLayout()
     }
 
@@ -200,7 +199,6 @@ class WebtoonPageHolder(
     private fun setLoading() {
         progressContainer.isVisible = true
         progressIndicator.show()
-        textTranslationsComposeView?.hide()
         removeErrorLayout()
     }
 
@@ -210,7 +208,6 @@ class WebtoonPageHolder(
     private fun setDownloading() {
         progressContainer.isVisible = true
         progressIndicator.show()
-        textTranslationsComposeView?.hide()
         removeErrorLayout()
     }
 
@@ -281,8 +278,8 @@ class WebtoonPageHolder(
      */
     private fun setError() {
         progressContainer.isVisible = false
-        textTranslationsComposeView?.hide()
         initErrorLayout()
+        translationsView?.hide()
     }
 
     /**
@@ -290,22 +287,18 @@ class WebtoonPageHolder(
      */
     private fun onImageDecoded() {
         progressContainer.isVisible = false
-        if(showTranslations) textTranslationsComposeView?.show()
         removeErrorLayout()
+        translationsView?.show()
     }
 
-    private fun createTranslationTextDialog(textTranslations: List<TextTranslation>) {
-        textTranslationsComposeView?.let { frame.removeView(textTranslationsComposeView) }
-        textTranslationsComposeView = TextTranslationsComposeView(itemView.context, translations = textTranslations)
-
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT,
-        )
-
-        frame.addView(textTranslationsComposeView, layoutParams)
-        if(!showTranslations) textTranslationsComposeView?.hide()
+    private fun addTranslationsView() {
+        if (page?.translations == null) return
+        frame.removeView(translationsView)
+        translationsView = WebtoonTranslationsView(context, translations = page!!.translations!!, font = font)
+        if (!showTranslations) translationsView?.hide()
+        frame.addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
+
     /**
      * Creates a new progress bar.
      */

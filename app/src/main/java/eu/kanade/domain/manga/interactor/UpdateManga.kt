@@ -61,6 +61,7 @@ class UpdateManga(
                     coverCache.deleteFromCache(localManga, false)
                     null
                 }
+
                 else -> {
                     coverCache.deleteFromCache(localManga, false)
                     Instant.now().toEpochMilli()

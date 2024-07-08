@@ -193,12 +193,14 @@ fun WebViewScreenContent(
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter),
                     )
+
                     is LoadingState.Loading -> LinearProgressIndicator(
                         progress = { (loadingState as? LoadingState.Loading)?.progress ?: 1f },
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter),
                     )
+
                     else -> {}
                 }
             }

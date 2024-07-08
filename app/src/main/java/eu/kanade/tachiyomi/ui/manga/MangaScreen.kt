@@ -655,6 +655,7 @@ class MangaScreen(
                 // KMK <--
                 previousController.search(query)
             }
+
             is BrowseSourceScreen -> {
                 // KMK -->
                 // navigator.pop()

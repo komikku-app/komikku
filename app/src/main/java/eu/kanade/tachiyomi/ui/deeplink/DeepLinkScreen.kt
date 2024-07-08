@@ -45,9 +45,11 @@ class DeepLinkScreen(
                 is DeepLinkScreenModel.State.Loading -> {
                     LoadingScreen(Modifier.padding(contentPadding))
                 }
+
                 is DeepLinkScreenModel.State.NoResults -> {
                     navigator.replace(GlobalSearchScreen(query))
                 }
+
                 is DeepLinkScreenModel.State.Result -> {
                     val resultState = state as DeepLinkScreenModel.State.Result
                     if (resultState.chapterId == null) {

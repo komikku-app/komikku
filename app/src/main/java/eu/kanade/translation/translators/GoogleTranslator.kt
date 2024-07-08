@@ -1,11 +1,11 @@
 package eu.kanade.translation.translators
 
-import eu.kanade.translation.TextTranslation
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.extractor.ts.PsExtractor
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.translation.TextTranslations
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
@@ -19,15 +19,20 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
     private val client1 = "gtx"
     private val client2 = "webapp"
     val okHttpClient = OkHttpClient()
-    override suspend fun translate(pages: HashMap<String, List<TextTranslation>>) {
+    override suspend fun translate(pages: HashMap<String, TextTranslations>) {
         try {
-            pages.forEach { (k,v)->v.forEach { b->b.translated=translateText(langTo.language,b.text) }}
+            pages.forEach { (k, v) ->
+                v.translations.forEach { b ->
+                    b.translated = translateText(langTo.language, b.text)
+                }
+            }
 
         } catch (e: Exception) {
             logcat { "Image Translation Error : ${e.message}" }
         }
 
     }
+
     private fun rshift(j: Long, j2: Long): Long {
         var j = j
         if (j < 0) {
@@ -35,6 +40,7 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
         }
         return j shr (j2.toInt())
     }
+
     private fun getTranslateUrl(lang: String, text: String): String {
         try {
             val client = client1
@@ -120,7 +126,7 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
         return Character.codePointAt(str, i)
     }
 
-    suspend fun translateText(lang: String, text: String) :String{
+    suspend fun translateText(lang: String, text: String): String {
 
         val access = getTranslateUrl(lang, text)
         val build: Request = Request.Builder().url(access).build()
@@ -138,11 +144,11 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
                     str += jSONArray.getJSONArray(i).getString(0)
                 }
             }
-            return str;
+            return str
 
         } catch (e: Exception) {
-            logcat { "Image Translation Error : ${e.toString()}" }
+            logcat { "Image Translation Error : $e" }
         }
-        return "";
+        return ""
     }
 }

@@ -3,21 +3,29 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.PointF
 import android.view.LayoutInflater
 import androidx.annotation.ColorInt
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.compose.ui.text.font.FontFamily
 import androidx.core.view.isVisible
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
+import eu.kanade.translation.PagedTranslationsView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
@@ -30,6 +38,8 @@ import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import kotlin.math.max
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * View of the ViewPager that contains a page of a chapter.
@@ -43,7 +53,11 @@ class PagerPageHolder(
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
+    private val font: FontFamily,
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
+    private var showTranslations = true
+    private var translationsView: PagedTranslationsView? = null
 
     /**
      * Item that identifies this view. Needed by the adapter to not recreate views.
@@ -78,6 +92,16 @@ class PagerPageHolder(
         // SY -->
         extraLoadJob = scope.launch { loadPageAndProcessStatus(2) }
         // SY <--
+        showTranslations = readerPreferences.showTranslations().get()
+        readerPreferences.showTranslations().changes().onEach {
+            showTranslations = it
+            if (it) {
+                translationsView?.show()
+            } else {
+                translationsView?.hide()
+            }
+
+        }.launchIn(scope)
     }
 
     /**
@@ -130,7 +154,12 @@ class PagerPageHolder(
                             progressIndicator?.setProgress(value)
                         }
                     }
-                    Page.State.READY -> setImage()
+
+                    Page.State.READY -> {
+                        setImage()
+                        addTranslationsView()
+                    }
+
                     Page.State.ERROR -> setError()
                 }
             }
@@ -417,12 +446,24 @@ class PagerPageHolder(
      */
     private fun setError() {
         progressIndicator?.hide()
+        translationsView?.hide()
         showErrorLayout()
+
     }
 
     override fun onImageLoaded() {
         super.onImageLoaded()
         progressIndicator?.hide()
+        translationsView?.show()
+        updateTranslationCoords(pageView as SubsamplingScaleImageView)
+    }
+
+    private fun addTranslationsView() {
+        if (page.translations == null) return
+        removeView(translationsView)
+        translationsView = PagedTranslationsView(context, translations = page.translations!!, font = font)
+        if (!showTranslations) translationsView?.hide()
+        addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
 
     /**
@@ -431,6 +472,7 @@ class PagerPageHolder(
     override fun onImageLoadError() {
         super.onImageLoadError()
         setError()
+        translationsView?.hide()
     }
 
     /**
@@ -439,6 +481,23 @@ class PagerPageHolder(
     override fun onScaleChanged(newScale: Float) {
         super.onScaleChanged(newScale)
         viewer.activity.hideMenu()
+
+        updateTranslationCoords(pageView as SubsamplingScaleImageView)
+    }
+
+    override fun onCenterChanged(newCenter: PointF?) {
+        super.onCenterChanged(newCenter)
+        updateTranslationCoords(pageView as SubsamplingScaleImageView)
+
+    }
+
+    private fun updateTranslationCoords(vi: SubsamplingScaleImageView) {
+        if (page.translations == null) return
+        val coords = vi.sourceToViewCoord(0f, 0f)
+        if (coords != null) {
+            translationsView?.viewTLState?.value = coords
+        }
+        translationsView?.scaleState?.value = vi.scale
     }
 
     private fun showErrorLayout(): ReaderErrorBinding {

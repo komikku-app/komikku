@@ -35,7 +35,6 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 
-
 enum class ChapterTranslationAction {
     START,
     CANCEL,
@@ -63,6 +62,7 @@ fun ChapterTranslationIndicator(
             modifier = modifier,
             onClick = onClick,
         )
+
         Translation.State.QUEUE -> TranslatingIndicator(
             enabled = enabled,
             modifier = modifier,
@@ -74,7 +74,8 @@ fun ChapterTranslationIndicator(
             modifier = modifier,
             onClick = onClick,
         )
-        Translation.State.ERROR-> ErrorIndicator(
+
+        Translation.State.ERROR -> ErrorIndicator(
             enabled = enabled,
             modifier = modifier,
             onClick = onClick,
@@ -142,7 +143,7 @@ private fun TranslatingIndicator(
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_cancel)) },
                 onClick = {
-                    launchNow {  onClick(ChapterTranslationAction.CANCEL)}
+                    launchNow { onClick(ChapterTranslationAction.CANCEL) }
 
                     isMenuExpanded = false
                 },
@@ -185,7 +186,7 @@ private fun TranslatedIndicator(
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_delete)) },
                 onClick = {
-                    launchNow {  onClick(ChapterTranslationAction.DELETE)}
+                    launchNow { onClick(ChapterTranslationAction.DELETE) }
                     isMenuExpanded = false
                 },
             )

@@ -2,7 +2,9 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.app.Application
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
@@ -13,15 +15,21 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import eu.kanade.translation.TextTranslations
+import eu.kanade.translation.TranslationManager
 import mihon.core.archive.ArchiveReader
 import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File
+import tachiyomi.domain.manga.model.Manga
 
 /**
  * Loader used to load a chapter from an archive file.
  */
-internal class ArchivePageLoader(private val reader: ArchiveReader) : PageLoader() {
+internal class ArchivePageLoader(
+    private val reader: ArchiveReader, private val chapter: ReaderChapter? = null, private val manga: Manga? = null,
+    private val source: Source? = null, private val translationManager: TranslationManager? = null,
+) : PageLoader() {
     // SY -->
     private val mutex = Mutex()
     private val context: Application by injectLazy()
@@ -59,7 +67,18 @@ internal class ArchivePageLoader(private val reader: ArchiveReader) : PageLoader
 
     override var isLocal: Boolean = true
 
-    override suspend fun getPages(): List<ReaderPage> = reader.useEntries { entries ->
+    override suspend fun getPages(): List<ReaderPage> {
+        val pageTranslations: Map<String, TextTranslations> =
+            if (translationManager != null && chapter != null && manga != null && source != null) {
+                translationManager.getChapterTranslation(
+                    chapter.chapter.name,
+                    chapter.chapter.scanlator,
+                    manga.title,
+                    source,
+                )
+            } else emptyMap()
+
+        return reader.useEntries { entries ->
         // SY -->
         if (readerPreferences.archiveReaderMode().get() == ReaderPreferences.ArchiveReaderMode.CACHE_TO_DISK) {
             return DirectoryPageLoader(UniFile.fromFile(tmpDir)!!).getPages()
@@ -91,6 +110,7 @@ internal class ArchivePageLoader(private val reader: ArchiveReader) : PageLoader
                     stream = { imageBytes?.copyOf()?.inputStream() ?: reader.getInputStream(entry.name)!! }
                     // SY <--
                     status = Page.State.READY
+                    translations = pageTranslations[entry.name]
                 }
             }
             .toList()

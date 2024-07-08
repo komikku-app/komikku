@@ -153,6 +153,7 @@ private fun HistoryScreenContent(
                         text = relativeDateText(item.date),
                     )
                 }
+
                 is HistoryUiModel.Item -> {
                     val value = item.item
                     HistoryItem(

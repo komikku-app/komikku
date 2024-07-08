@@ -536,6 +536,7 @@ class MainActivity : BaseActivity() {
                 navigator.popUntilRoot()
                 HomeScreen.Tab.Library(idToOpen)
             }
+
             Constants.SHORTCUT_UPDATES -> HomeScreen.Tab.Updates
             Constants.SHORTCUT_HISTORY -> HomeScreen.Tab.History
             Constants.SHORTCUT_SOURCES -> HomeScreen.Tab.Browse(false)
@@ -562,6 +563,7 @@ class MainActivity : BaseActivity() {
                 }
                 null
             }
+
             INTENT_SEARCH -> {
                 val query = intent.getStringExtra(INTENT_SEARCH_QUERY)
                 if (!query.isNullOrEmpty()) {
@@ -571,6 +573,7 @@ class MainActivity : BaseActivity() {
                 }
                 null
             }
+
             Intent.ACTION_VIEW -> {
                 // Handling opening of backup files
                 if (intent.data.toString().endsWith(".tachibk")) {
@@ -586,6 +589,7 @@ class MainActivity : BaseActivity() {
                 }
                 null
             }
+
             else -> return false
         }
 

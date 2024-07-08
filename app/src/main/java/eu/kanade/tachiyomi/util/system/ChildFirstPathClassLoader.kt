@@ -26,7 +26,8 @@ class ChildFirstPathClassLoader(
         if (c == null && systemClassLoader != null) {
             try {
                 c = systemClassLoader.loadClass(name)
-            } catch (_: ClassNotFoundException) {}
+            } catch (_: ClassNotFoundException) {
+            }
         }
 
         if (c == null) {

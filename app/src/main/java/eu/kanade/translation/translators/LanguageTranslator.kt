@@ -1,10 +1,12 @@
 package eu.kanade.translation.translators
 
-import eu.kanade.translation.TextTranslation
+import eu.kanade.translation.TextTranslations
 
-interface LanguageTranslator {    suspend fun translate(pages:   HashMap<String, List<TextTranslation>>)
+interface LanguageTranslator {
+    suspend fun translate(pages: HashMap<String, TextTranslations>)
 
 }
+
 enum class LanguageTranslators(var label: String) {
     MLKIT("MlKit (On Device)"),
     GOOGLE("Google Translate"),

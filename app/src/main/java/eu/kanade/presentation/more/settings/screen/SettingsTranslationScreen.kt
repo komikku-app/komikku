@@ -7,12 +7,11 @@ import androidx.compose.runtime.remember
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
+import eu.kanade.translation.TranslationFonts
 import eu.kanade.translation.translators.LanguageTranslators
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.domain.download.service.DownloadPreferences
-import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -34,7 +33,7 @@ object SettingsTranslationScreen : SearchableSettings {
             getTranslateFromLanguage(downloadPreferences = downloadPreferences),
             getTranslateToLanguage(downloadPreferences = downloadPreferences),
             getTranslateFont(downloadPreferences = downloadPreferences),
-            getTranslateEngineGroup(downloadPreferences = downloadPreferences)
+            getTranslateEngineGroup(downloadPreferences = downloadPreferences),
         )
     }
 
@@ -53,6 +52,7 @@ object SettingsTranslationScreen : SearchableSettings {
                 .toImmutableMap(),
         )
     }
+
     @Composable
     private fun getTranslateToLanguage(
         downloadPreferences: DownloadPreferences,
@@ -60,15 +60,17 @@ object SettingsTranslationScreen : SearchableSettings {
         return Preference.PreferenceItem.ListPreference(
             pref = downloadPreferences.translateToLanguage(),
             title = "Translate To",
-            entries =Locale.getAvailableLocales().distinctBy { it.language }.associate { Pair(it.language, it.displayLanguage )}
+            entries = Locale.getAvailableLocales().distinctBy { it.language }.sortedBy { it.displayLanguage }
+                .associate { Pair(it.language, it.displayLanguage) }
                 .toImmutableMap(),
         )
     }
+
     @Composable
     private fun getTranslateFont(
         downloadPreferences: DownloadPreferences,
     ): Preference {
-        val opts = listOf("Anime Ace", "Manga Master BB", "Comic Font")
+        val opts = TranslationFonts.entries.map { v -> v.label }
         return Preference.PreferenceItem.ListPreference(
             pref = downloadPreferences.translationFont(),
             title = "Translation Font",
@@ -91,7 +93,7 @@ object SettingsTranslationScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = downloadPreferences.translationEngine(),
                     title = "Translator",
-                    entries = listOf(0, 1, 2,3)
+                    entries = listOf(0, 1, 2, 3)
                         .associateWith {
                             opts[it]
                         }
@@ -111,7 +113,7 @@ object SettingsTranslationScreen : SearchableSettings {
                 Preference.PreferenceItem.InfoPreference("Please Read the Github page Instructions for Setting up Open Router"),
 
 
-            ),
+                ),
         )
     }
 }

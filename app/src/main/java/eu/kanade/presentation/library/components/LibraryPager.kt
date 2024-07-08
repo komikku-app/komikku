@@ -85,6 +85,7 @@ fun LibraryPager(
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
             }
+
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
                 LibraryCompactGrid(
                     items = library,
@@ -99,6 +100,7 @@ fun LibraryPager(
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
             }
+
             LibraryDisplayMode.ComfortableGrid -> {
                 LibraryComfortableGrid(
                     items = library,

@@ -1,15 +1,9 @@
 package eu.kanade.translation.translators
 
 
-import eu.kanade.translation.TextTranslation
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.BlockThreshold
-import com.google.ai.client.generativeai.type.HarmCategory
-import com.google.ai.client.generativeai.type.SafetySetting
-import com.google.ai.client.generativeai.type.content
-import com.google.ai.client.generativeai.type.generationConfig
 import eu.kanade.tachiyomi.network.await
-import kotlinx.serialization.json.JsonObject
+import eu.kanade.translation.BlockTranslation
+import eu.kanade.translation.TextTranslations
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -23,19 +17,24 @@ import org.json.JSONObject
 import tachiyomi.core.common.util.system.logcat
 import java.util.Locale
 
-class OpenRouterTranslator(private val langFrom: ScanLanguage, private val langTo: Locale, private var apiKey: String,private var model:String="google/gemma-2-9b-it:free",) : LanguageTranslator {
+class OpenRouterTranslator(
+    private val langFrom: ScanLanguage,
+    private val langTo: Locale,
+    private var apiKey: String,
+    private var model: String = "google/gemma-2-9b-it:free",
+) : LanguageTranslator {
     val okHttpClient = OkHttpClient()
-    override suspend fun translate(pages: HashMap<String, List<TextTranslation>>){
+    override suspend fun translate(pages: HashMap<String, TextTranslations>) {
         try {
-            val data= pages.mapValues { (k,v)->v.map { b -> b.text}}
+            val data = pages.mapValues { (k, v) -> v.translations.map { b -> b.text } }
             val json = JSONObject(data)
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val jsonObject = buildJsonObject {
-                put("model",model)
-                putJsonObject("response_format"){put("type","json_object")}
-                put("top_p",0.5f)
-                put("top_k",30)
-                put("max_tokens",8192)
+                put("model", model)
+                putJsonObject("response_format") { put("type", "json_object") }
+                put("top_p", 0.5f)
+                put("top_k", 30)
+                put("max_tokens", 8192)
                 putJsonArray("messages") {
                     addJsonObject {
                         put("role", "system")
@@ -73,7 +72,7 @@ class OpenRouterTranslator(private val langFrom: ScanLanguage, private val langT
                                 "\n" +
                                 "* Prioritize accurate and natural-sounding translations.\n" +
                                 "* Be meticulous in removing all watermarks and site links.\n" +
-                                "* Ensure the output JSON structure perfectly mirrors the input structure."
+                                "* Ensure the output JSON structure perfectly mirrors the input structure.",
                         )
                     }
                     addJsonObject {
@@ -87,23 +86,28 @@ class OpenRouterTranslator(private val langFrom: ScanLanguage, private val langT
             logcat { "Image : $jsonObject" }
             val access = "https://openrouter.ai/api/v1/chat/completions"
             val build: Request =
-                Request.Builder().url(access).header("Authorization", "Bearer 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").header("Content-Type","application/json").post(body).build()
+                Request.Builder().url(access).header(
+                    "Authorization",
+                    "Bearer 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",
+                ).header("Content-Type", "application/json").post(body).build()
             val response = okHttpClient.newCall(build).await()
             val rBody = response.body
             val json2 = JSONObject(rBody.string())
             logcat { "Image Process result : $json2" }
-            val resJson= JSONObject(json2.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content"));
+            val resJson =
+                JSONObject(json2.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content"))
             logcat { "Image Process result : $resJson" }
 
 
-            for ((k,v) in pages){
-                v.forEachIndexed { i, b ->
+            for ((k, v) in pages) {
+                v.translations.forEachIndexed { i, b ->
                     run {
                         val res = resJson.optJSONArray(k)?.optString(i, "NULL")
-                        b.translated = if(res==null||res=="NULL") b.text else res
+                        b.translated = if (res == null || res == "NULL") b.text else res
                     }
                 }
-                pages[k]= v.filterNot{ it.translated.contains("RTMTH") }
+                v.translations =
+                    v.translations.filterNot { it.translated.contains("RTMTH") } as ArrayList<BlockTranslation>
                 logcat { "Image Process result : $v" }
             }
 

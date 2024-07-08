@@ -18,10 +18,12 @@ fun UpdatesDeleteConfirmationDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = {
-                onConfirm()
-                onDismissRequest()
-            }) {
+            TextButton(
+                onClick = {
+                    onConfirm()
+                    onDismissRequest()
+                },
+            ) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },

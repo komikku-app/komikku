@@ -101,12 +101,14 @@ object HistoryTab : Tab {
                     },
                 )
             }
+
             is HistoryScreenModel.Dialog.DeleteAll -> {
                 HistoryDeleteAllDialog(
                     onDismissRequest = onDismissRequest,
                     onDelete = screenModel::removeAllHistory,
                 )
             }
+
             null -> {}
         }
 
@@ -121,8 +123,10 @@ object HistoryTab : Tab {
                 when (e) {
                     HistoryScreenModel.Event.InternalError ->
                         snackbarHostState.showSnackbar(context.stringResource(MR.strings.internal_error))
+
                     HistoryScreenModel.Event.HistoryCleared ->
                         snackbarHostState.showSnackbar(context.stringResource(MR.strings.clear_history_completed))
+
                     is HistoryScreenModel.Event.OpenChapter -> openChapter(context, e.chapter)
                 }
             }

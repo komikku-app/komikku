@@ -70,6 +70,7 @@ fun MigrateSourceScreen(
             stringRes = MR.strings.information_empty_library,
             modifier = Modifier.padding(contentPadding),
         )
+
         else ->
             MigrateSourceList(
                 list = state.items,

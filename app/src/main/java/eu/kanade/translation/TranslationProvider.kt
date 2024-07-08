@@ -80,10 +80,16 @@ class TranslationProvider(
      * @param mangaTitle the title of the manga to query.
      * @param source the source of the chapter.
      */
-    fun findChapterTranslation(chapterName: String, chapterScanlator: String?, mangaTitle: String, source: Source): UniFile? {
+    fun findChapterTranslation(
+        chapterName: String,
+        chapterScanlator: String?,
+        mangaTitle: String,
+        source: Source,
+    ): UniFile? {
         val mangaDir = findMangaDir(mangaTitle, source)
-        return  mangaDir?.findFile(getValidChapterName(chapterName, chapterScanlator))
+        return mangaDir?.findFile(getValidChapterName(chapterName, chapterScanlator))
     }
+
     /**
      * Returns a list of downloaded directories for the chapters that exist.
      *

@@ -68,6 +68,7 @@ fun ChapterTransition(
                     chapterGap = calculateChapterGap(currChapter, goingToChapter),
                 )
             }
+
             is ChapterTransition.Next -> {
                 TransitionText(
                     topLabel = stringResource(MR.strings.transition_finished),
@@ -283,6 +284,7 @@ private fun previewChapter(name: String, scanlator: String, chapterNumber: Doubl
     scanlator = scanlator,
     chapterNumber = chapterNumber,
 )
+
 private val FakeChapter = previewChapter(
     name = "Vol.1, Ch.1 - Fake Chapter Title",
     scanlator = "Scanlator Name",

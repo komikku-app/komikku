@@ -177,7 +177,7 @@ fun AutoSizeText(
 ) {
     // Change font scale to 1F
     CompositionLocalProvider(
-        LocalDensity provides Density(density = LocalDensity.current.density, fontScale = 1F)
+        LocalDensity provides Density(density = LocalDensity.current.density, fontScale = 1F),
     ) {
         BoxWithConstraints(
             modifier = modifier,
@@ -249,7 +249,7 @@ fun AutoSizeText(
                       |  1. Providing 'suggestedFontSizes' with smaller values that can be utilized.
                       |  2. Decreasing the 'stepGranularityTextSize' value.
                       |  3. Adjusting the 'minTextSize' parameter to a suitable value and ensuring the overflow parameter is set to "TextOverflow.Ellipsis".
-                    """.trimMargin()
+                    """.trimMargin(),
                 )
 
             Text(
@@ -422,7 +422,7 @@ fun PreviewAutoSizeTextWithMaxLinesSetToOne() {
                 modifier = Modifier.fillMaxSize(),
                 alignment = Alignment.Center,
                 maxLines = 1,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }
@@ -459,7 +459,7 @@ fun PreviewAutoSizeTextWithYCharacter() {
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
                         trim = LineHeightStyle.Trim.Both,
-                    )
+                    ),
                 ),
             )
         }

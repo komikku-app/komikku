@@ -12,6 +12,9 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.calculateChapterGap
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
+import eu.kanade.translation.TranslationManager
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * RecyclerView Adapter used by this [viewer] to where [ViewerChapters] updates are posted.
@@ -21,6 +24,7 @@ class WebtoonAdapter(
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
+    private val translationManager: TranslationManager = Injekt.get(),
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /**
@@ -129,8 +133,10 @@ class WebtoonAdapter(
                     // KMK -->
                     seedColor = seedColor,
                     // KMK <--
+                    font = translationManager.font,
                 )
             }
+
             TRANSITION_VIEW -> {
                 val view = LinearLayout(readerThemedContext)
                 WebtoonTransitionHolder(
@@ -141,6 +147,7 @@ class WebtoonAdapter(
                     // KMK <--
                 )
             }
+
             else -> error("Unknown view type")
         }
     }

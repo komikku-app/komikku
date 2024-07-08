@@ -55,6 +55,7 @@ fun SourceIcon(
                 modifier = modifier.then(defaultModifier),
             )
         }
+
         icon != null -> {
             Image(
                 bitmap = icon,
@@ -62,6 +63,7 @@ fun SourceIcon(
                 modifier = modifier.then(defaultModifier),
             )
         }
+
         source.isLocal() -> {
             Image(
                 painter = painterResource(R.mipmap.ic_local_source),
@@ -69,6 +71,7 @@ fun SourceIcon(
                 modifier = modifier.then(defaultModifier),
             )
         }
+
         else -> {
             Image(
                 painter = painterResource(R.mipmap.ic_default_source),
@@ -96,6 +99,7 @@ fun ExtensionIcon(
                     .clip(MaterialTheme.shapes.extraSmall),
             )
         }
+
         is Extension.Installed -> {
             val icon by extension.getIcon(density)
             when (icon) {
@@ -105,6 +109,7 @@ fun ExtensionIcon(
                     contentDescription = null,
                     modifier = modifier,
                 )
+
                 Result.Error -> Image(
                     bitmap = ImageBitmap.imageResource(id = R.mipmap.ic_default_source),
                     contentDescription = null,
@@ -112,6 +117,7 @@ fun ExtensionIcon(
                 )
             }
         }
+
         is Extension.Untrusted -> Image(
             imageVector = Icons.Filled.Dangerous,
             contentDescription = null,

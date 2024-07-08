@@ -45,7 +45,7 @@ data class Translation(
             getManga: GetManga = Injekt.get(),
             sourceManager: SourceManager = Injekt.get(),
             downloadProvider: DownloadProvider = Injekt.get(),
-            translationProvider: TranslationProvider= Injekt.get(),
+            translationProvider: TranslationProvider = Injekt.get(),
             state: State = State.NOT_TRANSLATED,
         ): Translation? {
             val chapter = getChapter.await(chapterId) ?: return null
@@ -57,9 +57,10 @@ data class Translation(
                 manga.title,
                 source,
             )
-            val saveFile=translationProvider.getMangaDir(manga.title,source).createFile(translationProvider.getValidChapterName(chapter.name, chapter.scanlator))
-            if(saveFile!=null&&dir!=null)return Translation(chapter,manga,dir,saveFile,state)
-            return null;
+            val saveFile = translationProvider.getMangaDir(manga.title, source)
+                .createFile(translationProvider.getValidChapterName(chapter.name, chapter.scanlator))
+            if (saveFile != null && dir != null) return Translation(chapter, manga, dir, saveFile, state)
+            return null
         }
 
     }

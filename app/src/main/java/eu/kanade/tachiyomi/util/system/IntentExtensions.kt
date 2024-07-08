@@ -18,6 +18,7 @@ fun Uri.toShareIntent(context: Context, type: String = "image/*", message: Strin
             "http", "https" -> {
                 putExtra(Intent.EXTRA_TEXT, uri.toString())
             }
+
             "content" -> {
                 message?.let { putExtra(Intent.EXTRA_TEXT, it) }
                 putExtra(Intent.EXTRA_STREAM, uri)
