@@ -24,3 +24,4 @@ CHANGELOG.md
 /captures
 build.sh
 /app/src/main/assets/client_secrets.json
+*.jks
