@@ -17,19 +17,32 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 ## Features
 
 ### Komikku's key features:
-- [x] Built-in extensions repository, always up-to-date with Keiyoushi with a few more sources & improvements.
-- [x] `Suggestions` automatically showing source-website's recommendations/suggestions/related to current entry for all sources.
-- [x] Auto theme color based on each entry's cover for entry View & Reader.
-- [x] 2-way sync progress with trackers, automatically.
-- [x] `Feed` now supports all sources, with more items (20 for now).
-- [x] `Bulk-selection` to add to library & change categories of multiple entries all at once, everywhere.
-- [x] Long-click to add/remove single entry to/from library, everywhere.
-- [x] Search for sources & Quick NSFW sources filter in Extensions, Browse & Migration screen.
-- [x] `Feed` backup/restore/sync/re-order.
-- [x] Banner shows Library syncing / Backup restoring / Library updating progress.
-- [x] Configurable interval to refresh entries from downloaded storage.
-- [x] App custom theme, more app themes & better UI, improvements...
-
+* Built-in extensions repository, always up-to-date with Keiyoushi with a few more sources & improvements.
+* `Suggestions` automatically showing source-website's recommendations/suggestions/related to current entry for all sources.
+* Auto theme color based on each entry's cover for entry View & Reader.
+* 2-way sync progress with trackers, automatically.
+* `Feed` now supports all sources, with more items (20 for now).
+* `Bulk-selection` to add to library & change categories of multiple entries all at once, everywhere.
+* Long-click to add/remove single entry to/from library, everywhere.
+* Search for sources & Quick NSFW sources filter in Extensions, Browse & Migration screen.
+* `Feed` backup/restore/sync/re-order.
+* Banner shows Library syncing / Backup restoring / Library updating progress.
+* Configurable interval to refresh entries from downloaded storage.
+* App custom theme, more app themes & better UI, improvements...
+  * Translate Chapters into any language
+  * Choose Font You Like
+  * Automatic Translation on Download
+  * Many options for Translators
+  * Supported Languages (Translate From These to Any Other Language)
+    * Chinese
+    * Korean
+    * Japanese
+  * Available Translators
+    * MLkit : On Device Translations
+    * Google Translate : Web Based
+    * Gemini : [Get API Key Here](https://makersuite.google.com/app/apikey "Get API Key Here")
+    * OpenRouter: [Get API Key Here](https://openrouter.ai/ "Get API Key Here")
+      * Must provide the model you want to use in settings default is : google/gemma-2-9b-it:free
 
 <details>
   <summary>Features from Mihon/Tachiyomi</summary>
