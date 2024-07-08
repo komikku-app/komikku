@@ -12,6 +12,8 @@ import exh.md.network.MangaDexAuthInterceptor
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -170,6 +172,10 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
 
     override val isLoggedIn: Boolean
         get() = trackPreferences.trackToken(this).get().isNotEmpty()
+
+    override val isLoggedInFlow: Flow<Boolean> by lazy {
+        trackPreferences.trackToken(this).changes().map { it.isNotEmpty() }
+    }
 
     class MangaDexNotFoundException : Exception("Mangadex not enabled")
 
