@@ -44,6 +44,14 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
     * OpenRouter: [Get API Key Here](https://openrouter.ai/ "Get API Key Here")
       * Must provide the model you want to use in settings default is : google/gemma-2-9b-it:free
 
+### Translation Comparison
+
+Source : Tian Zuan : Chapter 615
+
+| Gemini                                     | Google Translate                   | MLKit (On Device)                              | Raw                                |
+|--------------------------------------------|------------------------------------|------------------------------------------------|------------------------------------|
+| ![ManhuaPlus](./.github/assets/gemini.png) | ![Gemini](./.github/assets/gt.png) | ![GoogleTranslate](./.github/assets/mlkit.png) | ![mlkit](./.github/assets/raw.png) |
+
 <details>
   <summary>Features from Mihon/Tachiyomi</summary>
 
