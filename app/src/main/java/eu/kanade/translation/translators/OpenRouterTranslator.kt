@@ -83,21 +83,17 @@ class OpenRouterTranslator(
 
             }.toString()
             val body = jsonObject.toRequestBody(mediaType)
-            logcat { "Image : $jsonObject" }
             val access = "https://openrouter.ai/api/v1/chat/completions"
             val build: Request =
                 Request.Builder().url(access).header(
                     "Authorization",
-                    "Bearer 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",
+                    "Bearer $apiKey",
                 ).header("Content-Type", "application/json").post(body).build()
             val response = okHttpClient.newCall(build).await()
             val rBody = response.body
             val json2 = JSONObject(rBody.string())
-            logcat { "Image Process result : $json2" }
             val resJson =
                 JSONObject(json2.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content"))
-            logcat { "Image Process result : $resJson" }
-
 
             for ((k, v) in pages) {
                 v.translations.forEachIndexed { i, b ->
@@ -108,7 +104,6 @@ class OpenRouterTranslator(
                 }
                 v.translations =
                     v.translations.filterNot { it.translated.contains("RTMTH") } as ArrayList<BlockTranslation>
-                logcat { "Image Process result : $v" }
             }
 
 

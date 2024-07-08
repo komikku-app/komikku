@@ -73,10 +73,7 @@ class GeminiTranslator(private val langFrom: ScanLanguage, private val langTo: L
         try {
             val data = pages.mapValues { (k, v) -> v.translations.map { b -> b.text } }
             val json = JSONObject(data)
-            logcat { "Model count ${model.countTokens(json.toString()).totalTokens}" }
             val response = model.generateContent(json.toString())
-            logcat { "Request : $json" }
-            logcat { "Response : ${response.text}" }
             val resJson = JSONObject("${response.text}")
             for ((k, v) in pages) {
                 v.translations.forEachIndexed { i, b ->
