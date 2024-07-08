@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
 
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
@@ -62,3 +64,32 @@ jobs:
 
       - name: Build app and run unit tests
         run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
+        with:
+          releaseDirectory: app/build/outputs/apk/standard/preview
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Rename apk
+        id: current_commit
+        run: |
+          set -x
+          echo "The git ref is: ${{ github.ref }}"
+          version_tag=p$(echo ${{ github.ref }} | cut -d '/' -f 3)
+          commit_count=$(git rev-list --count HEAD)
+          echo "VERSION_TAG=$version_tag"
+          echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
+          echo "COMMIT_COUNT=$commit_count"
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
+          mv app/build/outputs/apk/standard/preview/app-standard-universal-preview-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
+          path: ./*.apk
+          retention-days: 1

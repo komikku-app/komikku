@@ -2,6 +2,8 @@ import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     id("mihon.android.application")
@@ -53,6 +55,15 @@ android {
         }
     }
 
+    signingConfigs {
+        create("preview") {
+            storeFile = rootProject.file(readPropertyFromLocalProperties("keystore") ?: "keystore.jks")
+            storePassword = readPropertyFromLocalProperties("storePassword")
+            keyAlias = readPropertyFromLocalProperties("keyAlias")
+            keyPassword = readPropertyFromLocalProperties("keyPassword")
+        }
+    }
+
     buildTypes {
         named("debug") {
             versionNameSuffix = "-${getCommitCount()}"
@@ -78,8 +89,8 @@ android {
             matchingFallbacks.add("release")
             versionNameSuffix = "-${getCommitCount()}"
             applicationIdSuffix = ".beta"
-            signingConfig = signingConfigs.getByName("debug")
         }
+        // Profilers build, overwrite dev's signing configuration by 'debug' key then re-sign with GitHub's workflow
         create("benchmark") {
             initWith(getByName("release"))
 
@@ -100,6 +111,7 @@ android {
     flavorDimensions.add("default")
 
     productFlavors {
+        // Include Google service & build unsigned, for GitHub workflow build
         create("standard") {
             buildConfigField("boolean", "INCLUDE_UPDATER", "true")
             dimension = "default"
@@ -107,10 +119,13 @@ android {
         create("fdroid") {
             dimension = "default"
         }
+        // Signed, dev build with Android Studio if it's not a debug build
         create("dev") {
             // Include pseudolocales: https://developer.android.com/guide/topics/resources/pseudolocales
             resourceConfigurations.addAll(listOf("en", "en_XA", "ar_XB", "xxhdpi"))
             dimension = "default"
+            // Default signing for dev flavor, would be overridden by buildTypes config
+            signingConfig = signingConfigs.getByName("preview")
         }
     }
 
@@ -343,4 +358,17 @@ buildscript {
     dependencies {
         classpath(kotlinx.gradle)
     }
+}
+
+// Config local store's signing key
+fun readPropertyFromLocalProperties(propertyName: String): String? {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        val properties = Properties()
+        FileInputStream(localPropertiesFile).use { inputStream ->
+            properties.load(inputStream)
+        }
+        return properties.getProperty(propertyName)
+    }
+    return null // Property not found
 }
