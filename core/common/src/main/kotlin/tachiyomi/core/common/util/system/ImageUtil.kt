@@ -14,7 +14,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
-import android.webkit.MimeTypeMap
 import androidx.annotation.ColorInt
 import androidx.core.graphics.alpha
 import androidx.core.graphics.applyCanvas
@@ -32,7 +31,6 @@ import tachiyomi.decoder.Format
 import tachiyomi.decoder.ImageDecoder
 import java.io.File
 import java.io.InputStream
-import java.net.URLConnection
 import java.security.SecureRandom
 import java.util.Locale
 import kotlin.math.abs
@@ -47,12 +45,8 @@ object ImageUtil {
         if (File(name).extension.equals("cbi", ignoreCase = true)) return true
         // SY <--
 
-        val contentType = try {
-            URLConnection.guessContentTypeFromName(name)
-        } catch (e: Exception) {
-            null
-        } ?: openStream?.let { findImageType(it)?.mime }
-        return contentType?.startsWith("image/") ?: false
+        val extension = name.substringAfterLast('.')
+        return ImageType.entries.any { it.extension == extension } || openStream?.let { findImageType(it) } != null
     }
 
     fun findImageType(openStream: () -> InputStream): ImageType? {
@@ -76,10 +70,9 @@ object ImageUtil {
         }
     }
 
-    fun getExtensionFromMimeType(mime: String?): String {
-        return MimeTypeMap.getSingleton().getExtensionFromMimeType(mime)
-            ?: SUPPLEMENTARY_MIMETYPE_MAPPING[mime]
-            ?: "jpg"
+    fun getExtensionFromMimeType(mime: String?, openStream: () -> InputStream): String {
+        val type = mime?.let { ImageType.entries.find { it.mime == mime } } ?: findImageType(openStream)
+        return type?.extension ?: "jpg"
     }
 
     fun isAnimatedAndSupported(source: BufferedSource): Boolean {
@@ -217,7 +210,6 @@ object ImageUtil {
      * new image with added center padding scaled relative to the height of the display view
      * to compensate for scaling.
      */
-
     fun addHorizontalCenterMargin(imageSource: BufferedSource, viewHeight: Int, backgroundContext: Context): BufferedSource {
         val imageBitmap = ImageDecoder.newInstance(imageSource.inputStream())?.decode()!!
         val height = imageBitmap.height
@@ -623,12 +615,7 @@ object ImageUtil {
 
     private val optimalImageHeight = getDisplayMaxHeightInPx * 2
 
-    // Android doesn't include some mappings
-    private val SUPPLEMENTARY_MIMETYPE_MAPPING = mapOf(
-        // https://issuetracker.google.com/issues/182703810
-        "image/jxl" to "jxl",
-    )
-
+    // SY -->
     fun mergeBitmaps(
         imageBitmap: Bitmap,
         imageBitmap2: Bitmap,
@@ -674,6 +661,7 @@ object ImageUtil {
 
     private val Bitmap.rect: Rect
         get() = Rect(0, 0, width, height)
+    // SY <--
 }
 
 val getDisplayMaxHeightInPx: Int

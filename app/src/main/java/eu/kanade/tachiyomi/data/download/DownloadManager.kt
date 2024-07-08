@@ -21,6 +21,7 @@ import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.extension
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.model.Chapter
@@ -170,7 +171,7 @@ class DownloadManager(
             source,
         )
         val files = chapterDir?.listFiles().orEmpty()
-            .filter { "image" in it.type.orEmpty() }
+            .filter { it.isFile && ImageUtil.isImage(it.name) { it.openInputStream() } }
 
         if (files.isEmpty()) {
             throw Exception(context.stringResource(MR.strings.page_list_empty_error))

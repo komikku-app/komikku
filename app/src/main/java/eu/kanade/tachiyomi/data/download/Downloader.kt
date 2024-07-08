@@ -553,14 +553,8 @@ class Downloader(
      * @param file the file where the image is already downloaded.
      */
     private fun getImageExtension(response: Response, file: UniFile): String {
-        // Read content type if available.
         val mime = response.body.contentType()?.run { if (type == "image") "image/$subtype" else null }
-            // Else guess from the uri.
-            ?: context.contentResolver.getType(file.uri)
-            // Else read magic numbers.
-            ?: ImageUtil.findImageType { file.openInputStream() }?.mime
-
-        return ImageUtil.getExtensionFromMimeType(mime)
+        return ImageUtil.getExtensionFromMimeType(mime) { file.openInputStream() }
     }
 
     private fun splitTallImageIfNeeded(page: Page, tmpDir: UniFile) {
@@ -758,7 +752,7 @@ class Downloader(
                     download.status = Download.State.NOT_DOWNLOADED
                 }
             }
-            queue - downloads
+            queue - downloads.toSet()
         }
     }
 
