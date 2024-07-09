@@ -65,6 +65,7 @@ import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
+import eu.kanade.tachiyomi.data.library.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.sync.SyncStatus
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
@@ -127,6 +128,7 @@ class MainActivity : BaseActivity() {
     // KMK -->
     private val backupRestoreStatus: BackupRestoreStatus by injectLazy()
     private val syncStatus: SyncStatus by injectLazy()
+    private val libraryUpdateStatus: LibraryUpdateStatus by injectLazy()
     // KMK <--
 
     private val downloadCache: DownloadCache by injectLazy()
@@ -197,8 +199,9 @@ class MainActivity : BaseActivity() {
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
             // KMK -->
-            val syncing by syncStatus.isRunning.collectAsState()
             val restoring by backupRestoreStatus.isRunning.collectAsState()
+            val syncing by syncStatus.isRunning.collectAsState()
+            val updating by libraryUpdateStatus.isRunning.collectAsState()
             // KMK <--
 
             // Set status bar color considering the top app state banner
@@ -274,6 +277,7 @@ class MainActivity : BaseActivity() {
                             // KMK -->
                             restoring = restoring,
                             syncing = syncing,
+                            updating = updating,
                             // KMK <--
                             modifier = Modifier.windowInsetsPadding(scaffoldInsets),
                         )

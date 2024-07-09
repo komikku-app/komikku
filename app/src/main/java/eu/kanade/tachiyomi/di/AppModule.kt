@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
+import eu.kanade.tachiyomi.data.library.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.sync.SyncStatus
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
@@ -177,6 +178,7 @@ class AppModule(val app: Application) : InjektModule {
         // KMK -->
         addSingletonFactory { BackupRestoreStatus() }
         addSingletonFactory { SyncStatus() }
+        addSingletonFactory { LibraryUpdateStatus() }
         // KMK <--
 
         // Asynchronously init expensive components for a faster cold start

@@ -134,6 +134,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
     private val notifier = LibraryUpdateNotifier(context)
 
+    // KMK -->
+    private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    // KMK <--
+
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
 
     override suspend fun doWork(): Result {
@@ -149,6 +153,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 return Result.retry()
             }
         }
+
+        // KMK -->
+        libraryUpdateStatus.start()
+        // KMK <--
 
         setForegroundSafely()
 
@@ -187,6 +195,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 }
             } finally {
                 notifier.cancelProgressNotification()
+                // KMK -->
+                libraryUpdateStatus.stop()
+                // KMK <--
             }
         }
     }
