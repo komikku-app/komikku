@@ -13,6 +13,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.tachiyomi.data.SyncStatus
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isRunning
