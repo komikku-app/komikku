@@ -66,6 +66,7 @@ fun AppStateBanners(
     // KMK -->
     restoring: Boolean,
     syncing: Boolean,
+    updating: Boolean,
     // KMK <--
     modifier: Modifier = Modifier,
 ) {
@@ -76,7 +77,7 @@ fun AppStateBanners(
         val indexingPlaceable = subcompose(0) {
             AnimatedVisibility(
                 // KMK -->
-                visible = indexing || restoring || syncing,
+                visible = indexing || restoring || syncing || updating,
                 // KMK <--
                 enter = expandVertically(),
                 exit = shrinkVertically(),
@@ -85,6 +86,7 @@ fun AppStateBanners(
                     modifier = Modifier.windowInsetsPadding(mainInsets),
                     // KMK -->
                     text = when {
+                        updating -> stringResource(MR.strings.updating_library)
                         syncing -> stringResource(MR.strings.syncing_library)
                         restoring -> stringResource(MR.strings.restoring_backup)
                         else -> stringResource(MR.strings.download_notifier_cache_renewal)
