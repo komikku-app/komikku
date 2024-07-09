@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9124" changeDate="July 09, 2024">
+        <changelogtext>[b]New:[/b] Add progress-banner for sync/restore/update</changelogtext>
+        <changelogtext>[b]New:[/b] long-click search drop-down menu for entry's author/artist/source</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix login prompts despite being logged in to trackers in Manga screen</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix some issues when reading/saving images</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix MdList isLoggedInFlow</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9115" changeDate="July 07, 2024">
+        <changelogtext>[b]New:[/b] search entry's title in library</changelogtext>
+        <changelogtext>[b]New:[/b] Add restoring &amp; syncing banner</changelogtext>
+        <changelogtext>[b]New:[/b] Add support for backing up and storing source's feeds along with saved searches</changelogtext>
+        <changelogtext>[b]New:[/b] Add support for backing up and restoring global popular/latest feeds</changelogtext>
+        <changelogtext>[b]New:[/b] Added configuration options to e-ink page flashes</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add back navigation to clear source search query</changelogtext>
+        <changelogtext>[b]Improve:[/b] Observe tracker login state instead of fetching once</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update LewdMangaChecker</changelogtext>
+        <changelogtext>[b]Improve:[/b] google drive sync</changelogtext>
+        <changelogtext>[b]Improve:[/b] Make global search 'Has result' sticky</changelogtext>
+        <changelogtext>[b]Improve:[/b] Smart Update Dialog Tweak</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix some MDLang issues</changelogtext>
+        <changelogtext>[b]Fix:[/b] Correct tako variable colours</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update image-decoder revision</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9075-r9078" changeDate="July 02, 2024">
         <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
         <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
