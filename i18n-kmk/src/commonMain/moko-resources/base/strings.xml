@@ -33,6 +33,9 @@
     <string name="theme_mocha">Mocha</string>
     <string name="theme_sapphire">Sapphire</string>
 
+    <!-- Library section -->
+    <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
+
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>
     <string name="unofficial_extension_message">This extension is not from the official repo.</string>
@@ -53,6 +56,8 @@
     <string name="pref_auto_sync_read_chapters">Auto sync read chapters from Trackers</string>
 
     <!-- Sync section -->
+    <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
+    <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
       <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>

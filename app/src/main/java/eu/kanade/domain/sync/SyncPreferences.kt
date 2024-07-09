@@ -98,4 +98,11 @@ class SyncPreferences(
         preferenceStore.getBoolean("sync_on_app_resume", false)
             .set(syncTriggerOptions.syncOnAppResume)
     }
+
+    // KMK -->
+    fun showSyncingProgressBanner() = preferenceStore.getBoolean(
+        Preference.appStateKey("pref_show_syncing_progress_banner_key"),
+        true,
+    )
+    // KMK <--
 }

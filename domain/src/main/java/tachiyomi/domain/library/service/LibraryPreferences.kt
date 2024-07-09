@@ -36,6 +36,12 @@ class LibraryPreferences(
     fun autoUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 0)
 
     // KMK -->
+    fun showUpdatingProgressBanner() = preferenceStore.getBoolean(
+        Preference.appStateKey("pref_show_updating_progress_banner_key"),
+        true,
+    )
+    // KMK <--
+
     fun coverRatios() = preferenceStore.getStringSet(
         Preference.appStateKey("pref_library_cover_ratios_key"),
         emptySet(),
