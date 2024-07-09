@@ -23,4 +23,10 @@ class LibraryUpdateStatus {
     suspend fun stop() {
         _isRunning.emit(false)
     }
+
+    val progress = MutableStateFlow(0f)
+
+    suspend fun updateProgress(progress: Float) {
+        this.progress.emit(progress)
+    }
 }
