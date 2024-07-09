@@ -24,6 +24,7 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -134,6 +135,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
     private val notifier = LibraryUpdateNotifier(context)
 
+    // KMK -->
+    private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    // KMK <--
+
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
 
     override suspend fun doWork(): Result {
@@ -149,6 +154,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 return Result.retry()
             }
         }
+
+        // KMK -->
+        libraryUpdateStatus.start()
+        // KMK <--
 
         setForegroundSafely()
 
@@ -187,6 +196,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 }
             } finally {
                 notifier.cancelProgressNotification()
+                // KMK -->
+                libraryUpdateStatus.stop()
+                // KMK <--
             }
         }
     }

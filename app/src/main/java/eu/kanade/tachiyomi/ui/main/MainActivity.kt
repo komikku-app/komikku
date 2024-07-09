@@ -54,6 +54,9 @@ import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
 import eu.kanade.presentation.components.IndexingBannerBackgroundColor
+import eu.kanade.presentation.components.RestoringBannerBackgroundColor
+import eu.kanade.presentation.components.SyncingBannerBackgroundColor
+import eu.kanade.presentation.components.UpdatingBannerBackgroundColor
 import eu.kanade.presentation.more.settings.screen.ConfigureExhDialog
 import eu.kanade.presentation.more.settings.screen.about.WhatsNewDialog
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
@@ -61,12 +64,13 @@ import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreStatus
+import eu.kanade.tachiyomi.data.BackupRestoreStatus
+import eu.kanade.tachiyomi.data.LibraryUpdateStatus
+import eu.kanade.tachiyomi.data.SyncStatus
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
-import eu.kanade.tachiyomi.data.sync.SyncStatus
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -127,6 +131,7 @@ class MainActivity : BaseActivity() {
     // KMK -->
     private val backupRestoreStatus: BackupRestoreStatus by injectLazy()
     private val syncStatus: SyncStatus by injectLazy()
+    private val libraryUpdateStatus: LibraryUpdateStatus by injectLazy()
     // KMK <--
 
     private val downloadCache: DownloadCache by injectLazy()
@@ -197,14 +202,23 @@ class MainActivity : BaseActivity() {
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
             // KMK -->
-            val syncing by syncStatus.isRunning.collectAsState()
             val restoring by backupRestoreStatus.isRunning.collectAsState()
+            val syncing by syncStatus.isRunning.collectAsState()
+            val updating by libraryUpdateStatus.isRunning.collectAsState()
+            val restoringProgress by backupRestoreStatus.progress.collectAsState()
+            val syncingProgress by syncStatus.progress.collectAsState()
+            val updatingProgress by libraryUpdateStatus.progress.collectAsState()
             // KMK <--
 
             // Set status bar color considering the top app state banner
             val systemUiController = rememberSystemUiController()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val statusBarBackgroundColor = when {
+                // KMK -->
+                updating -> UpdatingBannerBackgroundColor
+                syncing -> SyncingBannerBackgroundColor
+                restoring -> RestoringBannerBackgroundColor
+                // KMK <--
                 indexing -> IndexingBannerBackgroundColor
                 downloadOnly -> DownloadedOnlyBannerBackgroundColor
                 incognito -> IncognitoModeBannerBackgroundColor
@@ -274,6 +288,10 @@ class MainActivity : BaseActivity() {
                             // KMK -->
                             restoring = restoring,
                             syncing = syncing,
+                            updating = updating,
+                            progress = updatingProgress.takeIf { updating }
+                                ?: syncingProgress.takeIf { syncing }
+                                ?: restoringProgress.takeIf { restoring },
                             // KMK <--
                             modifier = Modifier.windowInsetsPadding(scaffoldInsets),
                         )
