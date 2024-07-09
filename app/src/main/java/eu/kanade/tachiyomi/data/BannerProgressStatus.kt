@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.data.library
+package eu.kanade.tachiyomi.data
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 
-class LibraryUpdateStatus {
+open class BannerProgressStatus {
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val _isRunning = MutableStateFlow(false)
@@ -30,3 +30,7 @@ class LibraryUpdateStatus {
         this.progress.emit(progress)
     }
 }
+
+class LibraryUpdateStatus : BannerProgressStatus()
+class SyncStatus : BannerProgressStatus()
+class BackupRestoreStatus : BannerProgressStatus()

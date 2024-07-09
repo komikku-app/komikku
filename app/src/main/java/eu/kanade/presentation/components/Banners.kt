@@ -43,6 +43,15 @@ val IncognitoModeBannerBackgroundColor
 val IndexingBannerBackgroundColor
     @Composable get() = MaterialTheme.colorScheme.secondary
 
+// KMK -->
+val RestoringBannerBackgroundColor
+    @Composable get() = MaterialTheme.colorScheme.error
+val SyncingBannerBackgroundColor
+    @Composable get() = MaterialTheme.colorScheme.secondary
+val UpdatingBannerBackgroundColor
+    @Composable get() = MaterialTheme.colorScheme.tertiary
+// KMK <--
+
 @Composable
 fun WarningBanner(
     textRes: StringResource,
@@ -104,8 +113,12 @@ fun AppStateBanners(
                                 percentFormatter.format(it),
                             )
                         } ?: stringResource(MR.strings.updating_library)
-                        syncing -> stringResource(MR.strings.syncing_library)
-                        restoring -> stringResource(MR.strings.restoring_backup)
+                        syncing -> progress?.let {
+                            stringResource(MR.strings.syncing_library) + " (${percentFormatter.format(it)})"
+                        } ?: stringResource(MR.strings.syncing_library)
+                        restoring -> progress?.let {
+                            stringResource(MR.strings.restoring_backup) + " (${percentFormatter.format(it)})"
+                        } ?: stringResource(MR.strings.restoring_backup)
                         else -> stringResource(MR.strings.download_notifier_cache_renewal)
                     },
                     // KMK <--
