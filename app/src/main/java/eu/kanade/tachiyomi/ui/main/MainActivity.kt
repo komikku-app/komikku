@@ -202,6 +202,7 @@ class MainActivity : BaseActivity() {
             val restoring by backupRestoreStatus.isRunning.collectAsState()
             val syncing by syncStatus.isRunning.collectAsState()
             val updating by libraryUpdateStatus.isRunning.collectAsState()
+            val progress by libraryUpdateStatus.progress.collectAsState()
             // KMK <--
 
             // Set status bar color considering the top app state banner
@@ -278,6 +279,7 @@ class MainActivity : BaseActivity() {
                             restoring = restoring,
                             syncing = syncing,
                             updating = updating,
+                            progress = progress.takeIf { updating },
                             // KMK <--
                             modifier = Modifier.windowInsetsPadding(scaffoldInsets),
                         )

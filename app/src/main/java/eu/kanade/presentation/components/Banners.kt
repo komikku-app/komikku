@@ -33,6 +33,8 @@ import androidx.compose.ui.util.fastMaxBy
 import dev.icerock.moko.resources.StringResource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import java.math.RoundingMode
+import java.text.NumberFormat
 
 val DownloadedOnlyBannerBackgroundColor
     @Composable get() = MaterialTheme.colorScheme.tertiary
@@ -58,6 +60,13 @@ fun WarningBanner(
     )
 }
 
+// KMK -->
+private val percentFormatter = NumberFormat.getPercentInstance().apply {
+    roundingMode = RoundingMode.DOWN
+    maximumFractionDigits = 0
+}
+// KMK <--
+
 @Composable
 fun AppStateBanners(
     downloadedOnlyMode: Boolean,
@@ -69,6 +78,9 @@ fun AppStateBanners(
     updating: Boolean,
     // KMK <--
     modifier: Modifier = Modifier,
+    // KMK -->
+    progress: Float? = null,
+    // KMK <--
 ) {
     val density = LocalDensity.current
     val mainInsets = WindowInsets.statusBars
@@ -86,7 +98,12 @@ fun AppStateBanners(
                     modifier = Modifier.windowInsetsPadding(mainInsets),
                     // KMK -->
                     text = when {
-                        updating -> stringResource(MR.strings.updating_library)
+                        updating -> progress?.let {
+                            stringResource(
+                                MR.strings.notification_updating_progress,
+                                percentFormatter.format(it),
+                            )
+                        } ?: stringResource(MR.strings.updating_library)
                         syncing -> stringResource(MR.strings.syncing_library)
                         restoring -> stringResource(MR.strings.restoring_backup)
                         else -> stringResource(MR.strings.download_notifier_cache_renewal)

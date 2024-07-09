@@ -49,6 +49,9 @@ class LibraryUpdateNotifier(
     private val securityPreferences: SecurityPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) {
+    // KMK -->
+    private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    // KMK <--
 
     private val percentFormatter = NumberFormat.getPercentInstance().apply {
         roundingMode = RoundingMode.DOWN
@@ -90,7 +93,7 @@ class LibraryUpdateNotifier(
      * @param current the current progress.
      * @param total the total progress.
      */
-    fun showProgressNotification(manga: List<Manga>, current: Int, total: Int) {
+    suspend fun showProgressNotification(manga: List<Manga>, current: Int, total: Int) {
         progressNotificationBuilder
             .setContentTitle(
                 context.stringResource(
@@ -98,6 +101,10 @@ class LibraryUpdateNotifier(
                     percentFormatter.format(current.toFloat() / total),
                 ),
             )
+
+        // KMK -->
+        libraryUpdateStatus.updateProgress(current.toFloat() / total)
+        // KMK <--
 
         if (!securityPreferences.hideNotificationContent().get()) {
             val updatingText = manga.joinToString("\n") { it.title.chop(40) }
