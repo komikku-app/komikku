@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.flow.MutableStateFlow
+import tachiyomi.core.common.util.system.logcat
 
 
 class PagedTranslationsView :
@@ -41,6 +42,7 @@ class PagedTranslationsView :
 
     private val translations: TextTranslations
     private val font: FontFamily
+    private val translationOffset: TranslationOffset
 
     constructor(
         context: Context,
@@ -48,6 +50,7 @@ class PagedTranslationsView :
         defStyleAttr: Int = 0,
     ) : super(context, attrs, defStyleAttr) {
         this.translations = TextTranslations(imgWidth = 0f, imgHeight = 0f)
+        this.translationOffset = TranslationOffset()
         this.font = Font(
             resId = R.font.animeace, // Resource ID of the font file
             weight = FontWeight.Bold, // Weight of the font
@@ -60,8 +63,10 @@ class PagedTranslationsView :
         defStyleAttr: Int = 0,
         translations: TextTranslations,
         font: FontFamily? = null,
+        translationOffset: TranslationOffset? = null,
     ) : super(context, attrs, defStyleAttr) {
         this.translations = translations
+        this.translationOffset = translationOffset ?: TranslationOffset()
         this.font = font ?: Font(
             resId = R.font.animeace, // Resource ID of the font file
             weight = FontWeight.Bold, // Weight of the font
@@ -92,17 +97,33 @@ class PagedTranslationsView :
             val scale = scaleState.collectAsState().value
             val viewTL = viewTLState.collectAsState().value
             translations.translations.forEach { translation ->
-                val xPx = viewTL.x + (translation.x - translation.symWidth / 2) * scale
-                val yPx = viewTL.y + (translation.y - translation.symHeight / 2) * scale
 
-                val width = (translation.width + translation.symWidth) * scale
-                val height = (translation.height + translation.symHeight) * scale
+                var width = translation.width + translation.symWidth
+                var height = translation.height + translation.symHeight
+
+                var xPx = translation.x - translation.symWidth / 2
+                var yPx = translation.y - translation.symHeight / 2
+
+
+                xPx += if(translationOffset.asPercentage) width*((translationOffset.x.toFloat()-(translationOffset.width.toFloat()/2))/100)else (translationOffset.x - (translationOffset.width .toFloat()/ 2))
+                yPx += if(translationOffset.asPercentage) height*((translationOffset.y.toFloat()-(translationOffset.height.toFloat()/2))/100) else (translationOffset.y - (translationOffset.height .toFloat()/ 2))
+
+                height += if(translationOffset.asPercentage)( height*(translationOffset.height.toFloat()/100)).toInt() else  translationOffset.height
+                width +=  if(translationOffset.asPercentage)( width*(translationOffset.width.toFloat()/100)).toInt() else  translationOffset.width
+                xPx *= scale
+                yPx *= scale
+                xPx += viewTL.x
+                yPx += viewTL.y
+                height *= scale
+                width *= scale
+
 
                 TextBlock(
                     translation = translation,
                     modifier = Modifier
                         .offset(pxToDp(xPx), pxToDp(yPx))
-                        .requiredSize(pxToDp(width), pxToDp(height)),
+                        .requiredSize(pxToDp(width), pxToDp(height))
+                        .background(Color.White, shape = RoundedCornerShape(8.dp)),
                 )
             }
         }
@@ -140,3 +161,4 @@ class PagedTranslationsView :
         return Dp(px / (context.resources.displayMetrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT))
     }
 }
+

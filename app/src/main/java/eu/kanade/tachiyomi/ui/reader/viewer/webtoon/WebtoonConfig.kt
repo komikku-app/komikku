@@ -52,6 +52,7 @@ class WebtoonConfig(
 
     // SY <--
     init {
+
         readerPreferences.cropBordersWebtoon()
             .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 

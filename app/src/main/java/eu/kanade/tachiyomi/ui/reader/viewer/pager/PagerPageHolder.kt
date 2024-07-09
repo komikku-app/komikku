@@ -461,7 +461,7 @@ class PagerPageHolder(
     private fun addTranslationsView() {
         if (page.translations == null) return
         removeView(translationsView)
-        translationsView = PagedTranslationsView(context, translations = page.translations!!, font = font)
+        translationsView = PagedTranslationsView(context, translations = page.translations!!, font = font,translationOffset=viewer.config.translationOffset)
         if (!showTranslations) translationsView?.hide()
         addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }

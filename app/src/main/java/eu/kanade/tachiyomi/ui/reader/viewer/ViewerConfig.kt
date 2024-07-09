@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.viewer
 
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.translation.TranslationOffset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -11,6 +12,8 @@ import tachiyomi.core.common.preference.Preference
  * Common configuration for all viewers.
  */
 abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val scope: CoroutineScope) {
+
+    var translationOffset=TranslationOffset()
 
     var imagePropertyChangedListener: (() -> Unit)? = null
 
@@ -45,6 +48,16 @@ abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val sc
         protected set
 
     init {
+        readerPreferences.translationOffsetX()
+            .register({ translationOffset.x = it }, { imagePropertyChangedListener?.invoke() })
+        readerPreferences.translationOffsetY()
+            .register({  translationOffset.y = it }, { imagePropertyChangedListener?.invoke() })
+        readerPreferences.translationOffsetWidth()
+            .register({  translationOffset.width = it }, { imagePropertyChangedListener?.invoke() })
+        readerPreferences.translationOffsetHeight()
+            .register({  translationOffset.height = it }, { imagePropertyChangedListener?.invoke() })
+        readerPreferences.translationOffsetPercentage()
+            .register({  translationOffset.asPercentage = it }, { imagePropertyChangedListener?.invoke() })
         readerPreferences.readWithLongTap()
             .register({ longTapEnabled = it })
 

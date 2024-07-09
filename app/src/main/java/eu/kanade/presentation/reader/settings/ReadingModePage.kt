@@ -28,10 +28,53 @@ import java.text.NumberFormat
 internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.pref_category_for_this_series)
     val manga by screenModel.mangaFlow.collectAsState()
+
     CheckboxItem(
         label = "Show Translations",
         pref = screenModel.preferences.showTranslations(),
     )
+    val translationOffsetX by screenModel.preferences.translationOffsetX().collectAsState()
+    val translationOffsetY by screenModel.preferences.translationOffsetY().collectAsState()
+    val translationOffsetWidth by screenModel.preferences.translationOffsetWidth().collectAsState()
+    val translationOffsetHeight by screenModel.preferences.translationOffsetHeight().collectAsState()
+    val translationOffsetPercentage by screenModel.preferences.translationOffsetPercentage().collectAsState()
+    CheckboxItem(
+        label = "Offsets as Percentage",
+        pref = screenModel.preferences.translationOffsetPercentage(),
+    )
+    SliderItem(
+        label = "Offset X",
+        value = translationOffsetX,
+        valueText = "$translationOffsetX${if(translationOffsetPercentage)"%" else "px"}",
+        onChange = { screenModel.preferences.translationOffsetX().set(it) },
+        max = 100,
+        min = -100,
+    )
+    SliderItem(
+        label = "Offset Y",
+        value = translationOffsetY,
+        valueText ="$translationOffsetY${if(translationOffsetPercentage)"%" else "px"}",
+        onChange = { screenModel.preferences.translationOffsetY().set(it) },
+        max = 100,
+        min = -100,
+    )
+    SliderItem(
+        label = "Offset Width",
+        value = translationOffsetWidth,
+        valueText = "$translationOffsetWidth${if(translationOffsetPercentage)"%" else "px"}",
+        onChange = { screenModel.preferences.translationOffsetWidth().set(it) },
+        max = 100,
+        min = -100,
+    )
+    SliderItem(
+        label = "Offset Height",
+        value = translationOffsetHeight,
+        valueText = "$translationOffsetHeight${if(translationOffsetPercentage)"%" else "px"}",
+        onChange = { screenModel.preferences.translationOffsetHeight().set(it) },
+        max = 100,
+        min = -100,
+    )
+
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }
     SettingsChipRow(MR.strings.pref_category_reading_mode) {
         ReadingMode.entries.map {

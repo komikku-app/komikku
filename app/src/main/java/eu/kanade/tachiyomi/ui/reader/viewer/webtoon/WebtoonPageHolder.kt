@@ -294,7 +294,7 @@ class WebtoonPageHolder(
     private fun addTranslationsView() {
         if (page?.translations == null) return
         frame.removeView(translationsView)
-        translationsView = WebtoonTranslationsView(context, translations = page!!.translations!!, font = font)
+        translationsView = WebtoonTranslationsView(context, translations = page!!.translations!!, font = font, translationOffset = viewer.config.translationOffset)
         if (!showTranslations) translationsView?.hide()
         frame.addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }

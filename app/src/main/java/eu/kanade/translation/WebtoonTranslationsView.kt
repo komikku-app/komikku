@@ -38,6 +38,7 @@ class WebtoonTranslationsView :
 
     private val translations: TextTranslations
     private val font: FontFamily
+    private val translationOffset: TranslationOffset
 
     constructor(
         context: Context,
@@ -45,6 +46,7 @@ class WebtoonTranslationsView :
         defStyleAttr: Int = 0,
     ) : super(context, attrs, defStyleAttr) {
         this.translations = TextTranslations(imgWidth = 0f, imgHeight = 0f)
+        this.translationOffset = TranslationOffset()
         this.font = Font(
             resId = R.font.animeace, // Resource ID of the font file
             weight = FontWeight.Bold, // Weight of the font
@@ -56,9 +58,11 @@ class WebtoonTranslationsView :
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0,
         translations: TextTranslations,
+        translationOffset: TranslationOffset? = null,
         font: FontFamily? = null,
     ) : super(context, attrs, defStyleAttr) {
         this.translations = translations
+        this.translationOffset = translationOffset ?: TranslationOffset()
         this.font = font ?: Font(
             resId = R.font.animeace, // Resource ID of the font file
             weight = FontWeight.Bold, // Weight of the font
@@ -88,15 +92,29 @@ class WebtoonTranslationsView :
 
 
             translations.translations.forEach { translation ->
-                val xPx = ((translation.x - translation.symWidth / 2) * scaleFactor)
-                val yPx = ((translation.y - translation.symHeight / 2) * scaleFactor)
-                val width = ((translation.width + translation.symWidth) * scaleFactor)
-                val height = ((translation.height + translation.symHeight) * scaleFactor)
+                var xPx = translation.x - translation.symWidth / 2
+                var yPx = translation.y - translation.symHeight / 2
+                var width = translation.width + translation.symWidth
+                var height = translation.height + translation.symHeight
+
+
+                xPx += if (translationOffset.asPercentage) width * ((translationOffset.x.toFloat() - (translationOffset.width.toFloat() / 2)) / 100) else (translationOffset.x - (translationOffset.width.toFloat() / 2))
+                yPx += if (translationOffset.asPercentage) height * ((translationOffset.y.toFloat() - (translationOffset.height.toFloat() / 2)) / 100) else (translationOffset.y - (translationOffset.height.toFloat() / 2))
+
+                height += if (translationOffset.asPercentage) (height * (translationOffset.height.toFloat() / 100)).toInt() else translationOffset.height
+                width += if (translationOffset.asPercentage) (width * (translationOffset.width.toFloat() / 100)).toInt() else translationOffset.width
+
+                xPx *= scaleFactor
+                yPx *= scaleFactor
+                height *= scaleFactor
+                width *= scaleFactor
+
                 TextBlock(
                     translation = translation,
                     modifier = Modifier
                         .absoluteOffset(pxToDp(xPx), pxToDp(yPx))
-                        .size(pxToDp(width), pxToDp(height)),
+                        .size(pxToDp(width), pxToDp(height))
+                        .background(Color.White, shape = RoundedCornerShape(8.dp)),
                 )
             }
         }
