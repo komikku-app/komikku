@@ -40,6 +40,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_C
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -242,6 +243,12 @@ object SettingsLibraryScreen : SearchableSettings {
                     subtitle = stringResource(SYMR.strings.pref_library_mark_duplicate_chapters_summary),
                 ),
                 // SY <--
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = libraryPreferences.showUpdatingProgressBanner(),
+                    title = stringResource(KMR.strings.pref_show_updating_progress_banner),
+                ),
+                // KMK <--
             ),
         )
     }
