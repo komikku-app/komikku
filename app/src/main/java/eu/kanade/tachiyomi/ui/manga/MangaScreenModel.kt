@@ -107,7 +107,6 @@ import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
-import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.lang.withUIContext
@@ -504,19 +503,19 @@ class MangaScreenModel(
             val bitmap = image.asDrawable(context.resources).getBitmapOrNull()
             if (bitmap != null) {
                 Palette.from(bitmap).generate {
-                    screenModelScope.launchUI {
-                        if (it == null) return@launchUI
+                    screenModelScope.launchIO {
+                        if (it == null) return@launchIO
                         val mangaCover = when (model) {
                             is Manga -> model.asMangaCover()
                             is MangaCover -> model
-                            else -> return@launchUI
+                            else -> return@launchIO
                         }
                         if (mangaCover.isMangaFavorite) {
                             it.dominantSwatch?.let { swatch ->
                                 mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
                             }
                         }
-                        val vibrantColor = it.getBestColor() ?: return@launchUI
+                        val vibrantColor = it.getBestColor() ?: return@launchIO
                         mangaCover.vibrantCoverColor = vibrantColor
                         updateSuccessState {
                             it.copy(seedColor = Color(vibrantColor))
