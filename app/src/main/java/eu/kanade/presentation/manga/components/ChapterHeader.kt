@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +18,6 @@ import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun ChapterHeader(
@@ -29,13 +25,8 @@ fun ChapterHeader(
     chapterCount: Int?,
     missingChapterCount: Int,
     onClick: () -> Unit,
-    // KMK -->
-    hasFilters: Boolean,
-    // KMK <--
     modifier: Modifier = Modifier,
 ) {
-    // KMK -->
-    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else MaterialTheme.colorScheme.primary
     Row(
         // KMK <--
         modifier = modifier
@@ -65,14 +56,6 @@ fun ChapterHeader(
 
             MissingChaptersWarning(missingChapterCount)
         }
-
-        // KMK -->
-        Icon(
-            imageVector = Icons.Outlined.FilterList,
-            contentDescription = null,
-            tint = filterTint,
-        )
-        // KMK <--
     }
 }
 
