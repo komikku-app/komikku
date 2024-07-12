@@ -1,6 +1,8 @@
 package eu.kanade.presentation.reader.settings
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
+import tachiyomi.presentation.core.components.IconItem
 import tachiyomi.presentation.core.components.SettingsChipRow
 import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.i18n.stringResource
@@ -28,24 +31,22 @@ import java.text.NumberFormat
 internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.pref_category_for_this_series)
     val manga by screenModel.mangaFlow.collectAsState()
+    val translationOffsetX by screenModel.preferences.translationOffsetX().collectAsState()
+    val translationOffsetY by screenModel.preferences.translationOffsetY().collectAsState()
+    val translationOffsetWidth by screenModel.preferences.translationOffsetWidth().collectAsState()
+    val translationOffsetHeight by screenModel.preferences.translationOffsetHeight().collectAsState()
 
     CheckboxItem(
         label = "Show Translations",
         pref = screenModel.preferences.showTranslations(),
     )
-    val translationOffsetX by screenModel.preferences.translationOffsetX().collectAsState()
-    val translationOffsetY by screenModel.preferences.translationOffsetY().collectAsState()
-    val translationOffsetWidth by screenModel.preferences.translationOffsetWidth().collectAsState()
-    val translationOffsetHeight by screenModel.preferences.translationOffsetHeight().collectAsState()
-    val translationOffsetPercentage by screenModel.preferences.translationOffsetPercentage().collectAsState()
-    CheckboxItem(
-        label = "Offsets as Percentage",
-        pref = screenModel.preferences.translationOffsetPercentage(),
-    )
+
+
+
     SliderItem(
         label = "Offset X",
         value = translationOffsetX,
-        valueText = "$translationOffsetX${if(translationOffsetPercentage)"%" else "px"}",
+        valueText = "$translationOffsetX$%",
         onChange = { screenModel.preferences.translationOffsetX().set(it) },
         max = 100,
         min = -100,
@@ -53,7 +54,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Y",
         value = translationOffsetY,
-        valueText ="$translationOffsetY${if(translationOffsetPercentage)"%" else "px"}",
+        valueText = "$translationOffsetY$%",
         onChange = { screenModel.preferences.translationOffsetY().set(it) },
         max = 100,
         min = -100,
@@ -61,7 +62,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Width",
         value = translationOffsetWidth,
-        valueText = "$translationOffsetWidth${if(translationOffsetPercentage)"%" else "px"}",
+        valueText =  "$translationOffsetWidth$%",
         onChange = { screenModel.preferences.translationOffsetWidth().set(it) },
         max = 100,
         min = -100,
@@ -69,10 +70,20 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Height",
         value = translationOffsetHeight,
-        valueText = "$translationOffsetHeight${if(translationOffsetPercentage)"%" else "px"}",
+        valueText =  "$translationOffsetHeight$%",
         onChange = { screenModel.preferences.translationOffsetHeight().set(it) },
         max = 100,
         min = -100,
+    )
+    IconItem(
+        label = "Reset Offsets",
+        icon = Icons.Rounded.Refresh,
+        onClick = {
+            screenModel.preferences.translationOffsetX().set(0)
+            screenModel.preferences.translationOffsetY().set(0)
+            screenModel.preferences.translationOffsetWidth().set(0)
+            screenModel.preferences.translationOffsetHeight().set(0)
+        }
     )
 
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }

@@ -5,9 +5,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TextTranslations(
     var translations: ArrayList<BlockTranslation> = ArrayList(),
-    var imgWidth: Float,
-    var imgHeight: Float,
-)
+    var imgWidth: Float = 0f,
+    var imgHeight: Float = 0f,
+
+    ) {
+    companion object {
+        val EMPTY = TextTranslations()
+    }
+}
 
 @Serializable
 data class BlockTranslation(

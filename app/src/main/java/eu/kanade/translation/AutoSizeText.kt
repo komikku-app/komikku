@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -255,6 +256,7 @@ fun AutoSizeText(
             Text(
                 text = text,
                 overflow = overflow,
+                color = Color.White,
                 softWrap = softWrap,
                 maxLines = maxLines,
                 minLines = minLines,
@@ -262,6 +264,21 @@ fun AutoSizeText(
                 onTextLayout = onTextLayout,
                 style = combinedTextStyle.copy(
                     fontSize = electedFontSize,
+                    drawStyle = Stroke(8f),
+                    lineHeight = electedFontSize * coercedLineSpacingRatio,
+                ),
+            )
+            Text(
+                text = text,
+                overflow = overflow,
+                softWrap = softWrap,
+                maxLines = maxLines,
+                minLines = minLines,
+                inlineContent = inlineContent.value,
+                onTextLayout = onTextLayout,
+                style = combinedTextStyle.copy(
+                    fontSize = electedFontSize,
+
                     lineHeight = electedFontSize * coercedLineSpacingRatio,
                 ),
             )

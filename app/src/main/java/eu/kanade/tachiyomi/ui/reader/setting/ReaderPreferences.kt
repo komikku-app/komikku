@@ -18,7 +18,6 @@ class ReaderPreferences(
     fun translationOffsetY() = preferenceStore.getInt("translation_offset_y", 0)
     fun translationOffsetWidth() = preferenceStore.getInt("translation_offset_width", 0)
     fun translationOffsetHeight() = preferenceStore.getInt("translation_offset_height", 0)
-    fun translationOffsetPercentage() = preferenceStore.getBoolean("translation_offset_percentage", false)
     // region General
 
     // SY -->

@@ -56,8 +56,6 @@ abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val sc
             .register({  translationOffset.width = it }, { imagePropertyChangedListener?.invoke() })
         readerPreferences.translationOffsetHeight()
             .register({  translationOffset.height = it }, { imagePropertyChangedListener?.invoke() })
-        readerPreferences.translationOffsetPercentage()
-            .register({  translationOffset.asPercentage = it }, { imagePropertyChangedListener?.invoke() })
         readerPreferences.readWithLongTap()
             .register({ longTapEnabled = it })
 

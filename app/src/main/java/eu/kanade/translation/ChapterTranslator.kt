@@ -40,7 +40,7 @@ class ChapterTranslator(
         getTranslator(translationEngine, scanLanguage, translateLanguage, apiKey)
     private val textPaint = TextPaint()
     private val fonts = arrayOf(R.font.animeace, R.font.manga_master_bb, R.font.comic_book)
-    private val widthMAX = 800
+    private val maxWidth = 800
 
     init {
         textPaint.color = Color.BLACK
@@ -48,24 +48,18 @@ class ChapterTranslator(
     }
 
     suspend fun translateChapter(translation: Translation) {
-        val files = translation.dir.listFiles()!!.filter { "image" in it.type.orEmpty() }
+        val files = translation.dir.listFiles()?.filter { "image" in it.type.orEmpty() } ?: emptyList()
         val pages = HashMap<String, TextTranslations>()
         for (file in files) {
             try {
                 var result: Text
-                var image: InputImage
                 val bitmap = BitmapFactory.decodeStream(file.openInputStream())
-                var width = bitmap.width
-                var height = bitmap.height
-                var resized = bitmap
-                var scale = 1f
-                if (width > widthMAX) {
-                    scale = width.toFloat() / widthMAX
-                    height = (height * widthMAX / width).toInt()
-                    width = widthMAX
-                    resized = Bitmap.createScaledBitmap(bitmap, width, height, true)
-                }
-                image = InputImage.fromBitmap(resized, 0)
+
+                val (resizedBitmap, scale) = resizeBitmap(bitmap)
+                val width = resizedBitmap.width
+                val height = resizedBitmap.height
+
+                val image = InputImage.fromBitmap(resizedBitmap, 0)
                 result = recognizer.recognize(image)
                 val blocks = result.textBlocks.filter { it.boundingBox != null && it.text.length > 1 }
                 val resultant = toTextTranslation(blocks, width.toFloat(), height.toFloat(), scale)
@@ -80,6 +74,19 @@ class ChapterTranslator(
         Json.encodeToStream(pages, translation.saveFile.openOutputStream())
     }
 
+    private fun resizeBitmap(bitmap: Bitmap): Pair<Bitmap, Float> {
+        var width = bitmap.width
+        var height = bitmap.height
+        var scale = 1f
+        if (width > maxWidth) {
+            scale = width.toFloat() / maxWidth
+            height = (height * maxWidth / width).toInt()
+            width = maxWidth
+            return Bitmap.createScaledBitmap(bitmap, width, height, true) to scale
+        }
+        return bitmap to scale
+    }
+
     private fun toTextTranslation(
         blocks: List<TextBlock>,
         width: Float,
@@ -87,61 +94,55 @@ class ChapterTranslator(
         scale: Float,
     ): TextTranslations {
         val resultant = TextTranslations(imgHeight = height * scale, imgWidth = width * scale)
-        for (block in blocks) {
-            try {
-                var passed = true
-                val bounds = block.boundingBox!!
-                val symbolBound = block.lines.first().elements.first().symbols.first().boundingBox!!
-                val bWidth = bounds.width().toFloat()
-                val bHeight = bounds.height().toFloat()
-                val bX = symbolBound.left.toFloat()
-                val bY = symbolBound.top.toFloat()
-//                val thresholdX=20f/width
-//                val thresholdY=20f/height
-//                logcat { "BLOCK : ${block.text} | ${bY} | ${bounds.bottom} | ${bX}" }
-                val translations = resultant.translations
-                for (i in translations.lastIndex downTo (translations.lastIndex - 5).coerceAtLeast(0)) {
-                    val b2 = translations[i]
-                    val bottom = b2.height + b2.y
-//                    logcat { "RES : ${b2.text} | ${bottom} | ${b2.x - bX} | ${(bY - bottom)} | ${thresholdX} | ${thresholdY}" }
-                    if (bY - bottom < symbolBound.height() * 2 && abs(b2.x - bX) < 20) {
-//                        logcat { "ADDED : ${block.text.replace("\n", " ")}" }
-                        passed = false
-                        b2.text += " " + block.text.replace("\n", " ")
-                        b2.height += bHeight + 16
-                        b2.width = max(bWidth, b2.width)
-                        b2.x = min(bX, b2.x)
-                        break
-                    }
-                }
-                if (passed) {
-                    translations.add(
-                        BlockTranslation(
-                            text = block.text.replace("\n", " "),
-                            x = bX,
-                            y = bY,
-                            width = bounds.width().toFloat(),
-                            height = bounds.height().toFloat(),
-                            symHeight = symbolBound.height().toFloat(),
-                            symWidth = symbolBound.width().toFloat(),
-                            angle = block.lines.first().angle,
-                        ),
-                    )
-                }
-            } catch (e: Exception) {
-                logcat { "ERROR : ${e.stackTraceToString()}" }
-            }
-        }
-        resultant.translations.forEach { tt ->
-            run {
-                tt.x *= scale
-                tt.y *= scale
-                tt.width *= scale
-                tt.height *= scale
-                tt.symWidth *= scale
-                tt.symHeight *= scale
+        val translations = resultant.translations
+        val sortedBlocks = blocks.sortedBy { it.boundingBox?.top ?: 0 }
+        for (block in sortedBlocks) {
 
+            val bounds = block.boundingBox ?: continue
+            val symbolBound =
+                block.lines.firstOrNull()?.elements?.firstOrNull()?.symbols?.firstOrNull()?.boundingBox
+                    ?: continue
+            val bWidth = bounds.width().toFloat()
+            val bHeight = bounds.height().toFloat()
+            val bX = symbolBound.left.toFloat()
+            val bY = symbolBound.top.toFloat()
+            var merged = false
+            for (i in translations.size - 1 downTo 0) {
+                val existingTranslation = translations[i]
+                val bottom = existingTranslation.height + existingTranslation.y
+
+                if (bY - bottom < symbolBound.height() * 2 && abs(existingTranslation.x - bX) < 20) {
+                    existingTranslation.text += " " + block.text.replace("\n", " ")
+                    existingTranslation.height += bHeight + symbolBound.height() / 4
+                    existingTranslation.width = max(bWidth, existingTranslation.width)
+                    existingTranslation.x = min(bX, existingTranslation.x)
+                    merged = true
+                    break
+                }
             }
+            if (!merged) {
+                translations.add(
+                    BlockTranslation(
+                        text = block.text.replace("\n", " "),
+                        x = bX,
+                        y = bY,
+                        width = bWidth,
+                        height = bHeight,
+                        symHeight = symbolBound.height().toFloat(),
+                        symWidth = symbolBound.width().toFloat(),
+                        angle = block.lines.firstOrNull()?.angle ?: 0f, // Handle potential null
+                    ),
+                )
+            }
+
+        }
+        for (tt in translations) {
+            tt.x *= scale
+            tt.y *= scale
+            tt.width *= scale
+            tt.height *= scale
+            tt.symWidth *= scale
+            tt.symHeight *= scale
         }
 
         return resultant
@@ -186,7 +187,7 @@ class ChapterTranslator(
         this.textTranslator = getTranslator(translationEngine, scanLanguage, translateLanguage, apiKey)
     }
 
-    fun updateFont(context: Context, fontIndex: Int) {
+    fun updateFont(fontIndex: Int) {
         this.font = fontIndex
         this.textPaint.typeface = ResourcesCompat.getFont(context, fonts[font])
     }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -45,7 +44,7 @@ class WebtoonTranslationsView :
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0,
     ) : super(context, attrs, defStyleAttr) {
-        this.translations = TextTranslations(imgWidth = 0f, imgHeight = 0f)
+        this.translations = TextTranslations.EMPTY
         this.translationOffset = TranslationOffset()
         this.font = Font(
             resId = R.font.animeace, // Resource ID of the font file
@@ -89,32 +88,35 @@ class WebtoonTranslationsView :
             if (size == IntSize.Zero) return
             val scaleFactor = size.width / translations.imgWidth
 
-
+            val offsetX = translationOffset.x.toFloat() / 100 - translationOffset.width.toFloat() / 200
+            val offsetY = translationOffset.y.toFloat() / 100 - translationOffset.height.toFloat() / 200
+            val heightMultiplier = 1 + translationOffset.height.toFloat() / 100
+            val widthMultiplier = 1 + translationOffset.width.toFloat() / 100
 
             translations.translations.forEach { translation ->
-                var xPx = translation.x - translation.symWidth / 2
-                var yPx = translation.y - translation.symHeight / 2
-                var width = translation.width + translation.symWidth
-                var height = translation.height + translation.symHeight
+                val xPx =
+                    (translation.x - (translation.symWidth / 2) + (offsetX * (translation.width + translation.symWidth))) * scaleFactor
+                val yPx =
+                    (translation.y - (translation.symHeight / 2) + (offsetY * (translation.height + translation.symHeight))) * scaleFactor
+                val width = (translation.width + translation.symWidth) * scaleFactor * widthMultiplier
+                val height = (translation.height + translation.symHeight) * scaleFactor * heightMultiplier
+                val bgWidth = (translation.width + translation.symWidth / 2) * scaleFactor
+                val bgHeight = (translation.height + translation.symHeight / 2) * scaleFactor
+                val bgX = (translation.x - translation.symWidth / 4) * scaleFactor
+                val bgY = (translation.y - translation.symHeight / 4) * scaleFactor
+                Box(
+                    modifier = Modifier
+                        .absoluteOffset(pxToDp(bgX), pxToDp(bgY))
+                        .size(pxToDp(bgWidth), pxToDp(bgHeight))
+                        .rotate(if (translation.angle < 88) translation.angle else 0f)
+                        .background(Color.White, shape = RoundedCornerShape(4.dp)),
 
-
-                xPx += if (translationOffset.asPercentage) width * ((translationOffset.x.toFloat() - (translationOffset.width.toFloat() / 2)) / 100) else (translationOffset.x - (translationOffset.width.toFloat() / 2))
-                yPx += if (translationOffset.asPercentage) height * ((translationOffset.y.toFloat() - (translationOffset.height.toFloat() / 2)) / 100) else (translationOffset.y - (translationOffset.height.toFloat() / 2))
-
-                height += if (translationOffset.asPercentage) (height * (translationOffset.height.toFloat() / 100)).toInt() else translationOffset.height
-                width += if (translationOffset.asPercentage) (width * (translationOffset.width.toFloat() / 100)).toInt() else translationOffset.width
-
-                xPx *= scaleFactor
-                yPx *= scaleFactor
-                height *= scaleFactor
-                width *= scaleFactor
-
+                    )
                 TextBlock(
                     translation = translation,
                     modifier = Modifier
                         .absoluteOffset(pxToDp(xPx), pxToDp(yPx))
-                        .size(pxToDp(width), pxToDp(height))
-                        .background(Color.White, shape = RoundedCornerShape(8.dp)),
+                        .size(pxToDp(width), pxToDp(height)),
                 )
             }
         }
@@ -130,13 +132,9 @@ class WebtoonTranslationsView :
                 lineSpacingRatio = 1.2f,
                 overflow = TextOverflow.Clip,
                 alignment = Alignment.Center,
-
                 modifier = Modifier
-                    .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    .rotate(if (translation.angle < 88) translation.angle else 0f)
-                    .padding(1.dp),
-
-                )
+                    .rotate(if (translation.angle < 88) translation.angle else 0f),
+            )
         }
     }
 

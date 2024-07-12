@@ -44,7 +44,7 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
                 chapterTranslator.updateAPIKey(it)
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
             downloadPreferences.translationFont().changes().onEach {
-                chapterTranslator.updateFont(context, it)
+                chapterTranslator.updateFont(it)
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
             downloadPreferences.translationEngine().changes().onEach {
                 chapterTranslator.updateEngine(LanguageTranslators.entries[it])
