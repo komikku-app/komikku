@@ -33,6 +33,7 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.advanced.ClearDatabaseScreen
 import eu.kanade.presentation.more.settings.screen.debug.DebugInfoScreen
@@ -100,6 +101,8 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
+    @Suppress("unused")
+    private fun readResolve(): Any = SettingsAdvancedScreen
 
     @ReadOnlyComposable
     @Composable
@@ -333,6 +336,9 @@ object SettingsAdvancedScreen : SearchableSettings {
     private fun getLibraryGroup(): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
+        // KMK -->
+        val uiPreferences = remember { Injekt.get<UiPreferences>() }
+        // KMK <--
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_library),
@@ -341,6 +347,12 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_refresh_library_covers),
                     onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.COVERS) },
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.preloadLibraryColor(),
+                    title = "Preload library's cover color",
+                ),
+                // KMK <--
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_reset_viewer_flags),
                     subtitle = stringResource(MR.strings.pref_reset_viewer_flags_summary),
