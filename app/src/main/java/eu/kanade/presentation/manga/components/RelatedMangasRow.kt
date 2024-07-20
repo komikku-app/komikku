@@ -26,7 +26,7 @@ import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.presentation.core.components.material.padding
 
 @Composable
-fun RelatedMangas(
+fun RelatedMangasRow(
     relatedMangas: List<RelatedManga>?,
     getMangaState: @Composable (Manga) -> State<Manga>,
     onMangaClick: (Manga) -> Unit,

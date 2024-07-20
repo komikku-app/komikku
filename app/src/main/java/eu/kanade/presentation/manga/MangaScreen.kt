@@ -75,7 +75,7 @@ import eu.kanade.presentation.manga.components.MissingChapterCountListItem
 import eu.kanade.presentation.manga.components.OutlinedButtonWithArrow
 import eu.kanade.presentation.manga.components.PagePreviewItems
 import eu.kanade.presentation.manga.components.PagePreviews
-import eu.kanade.presentation.manga.components.RelatedMangas
+import eu.kanade.presentation.manga.components.RelatedMangasRow
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -641,7 +641,7 @@ private fun MangaScreenSmallImpl(
                                             modifier = Modifier
                                                 .padding(horizontal = MaterialTheme.padding.medium),
                                         )
-                                        RelatedMangas(
+                                        RelatedMangasRow(
                                             relatedMangas = state.relatedMangasSorted,
                                             getMangaState = getMangaState,
                                             onMangaClick = onRelatedMangaClick,
@@ -1052,7 +1052,7 @@ private fun MangaScreenLargeImpl(
                                                     modifier = Modifier
                                                         .padding(horizontal = MaterialTheme.padding.medium),
                                                 )
-                                                RelatedMangas(
+                                                RelatedMangasRow(
                                                     relatedMangas = state.relatedMangasSorted,
                                                     getMangaState = getMangaState,
                                                     onMangaClick = onRelatedMangaClick,
