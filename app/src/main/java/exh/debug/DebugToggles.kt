@@ -21,6 +21,10 @@ enum class DebugToggles(val default: Boolean) {
 
     // Pretend that all galleries only have a single version
     INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS(false),
+
+    // KMK -->
+    HIDE_COVER_IMAGE_ONLY_SHOW_COLOR(false),
+    // KMK <--
     ;
 
     private val prefKey = "eh_debug_toggle_${name.lowercase(Locale.US)}"

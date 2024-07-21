@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.MangaCoverHide
+import exh.debug.DebugToggles
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
@@ -93,19 +95,30 @@ fun MangaCompactGridItem(
     ) {
         MangaGridCover(
             cover = {
-                MangaCover.Book(
-                    modifier = Modifier
-                        // KMK -->
-                        // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
-                        // KMK <--
-                        .fillMaxWidth(),
-                    data = coverData,
-                    // KMK -->
-                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
-                    bgColor = bgColor,
-                    tint = onBgColor,
+                // KMK -->
+                if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+                    MangaCoverHide.Book(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        bgColor = bgColor,
+                        tint = onBgColor,
+                    )
+                } else {
                     // KMK <--
-                )
+                    MangaCover.Book(
+                        modifier = Modifier
+                            // KMK -->
+                            // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                            // KMK <--
+                            .fillMaxWidth(),
+                        data = coverData,
+                        // KMK -->
+                        alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
+                        bgColor = bgColor,
+                        tint = onBgColor,
+                        // KMK <--
+                    )
+                }
             },
             badgesStart = coverBadgeStart,
             badgesEnd = coverBadgeEnd,
@@ -214,19 +227,30 @@ fun MangaComfortableGridItem(
         Column {
             MangaGridCover(
                 cover = {
-                    MangaCover.Book(
-                        modifier = Modifier
-                            // KMK -->
-                            // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
-                            // KMK <--
-                            .fillMaxWidth(),
-                        data = coverData,
-                        // KMK -->
-                        alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
-                        bgColor = bgColor,
-                        tint = onBgColor,
+                    // KMK -->
+                    if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+                        MangaCoverHide.Book(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            bgColor = bgColor,
+                            tint = onBgColor,
+                        )
+                    } else {
                         // KMK <--
-                    )
+                        MangaCover.Book(
+                            modifier = Modifier
+                                // KMK -->
+                                // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                // KMK <--
+                                .fillMaxWidth(),
+                            data = coverData,
+                            // KMK -->
+                            alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
+                            bgColor = bgColor,
+                            tint = onBgColor,
+                            // KMK <--
+                        )
+                    }
                 },
                 badgesStart = coverBadgeStart,
                 badgesEnd = coverBadgeEnd,
@@ -384,20 +408,31 @@ fun MangaListItem(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MangaCover.Square(
-            modifier = Modifier
-                // KMK -->
-                // .alpha(coverAlpha)
-                // KMK <--
-                .fillMaxHeight(),
-            data = coverData,
-            // KMK -->
-            alpha = coverAlpha,
-            bgColor = bgColor,
-            tint = onBgColor,
-            size = MangaCover.Size.Big,
+        // KMK -->
+        if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+            MangaCoverHide.Square(
+                modifier = Modifier
+                    .fillMaxHeight(),
+                bgColor = bgColor,
+                tint = onBgColor,
+            )
+        } else {
             // KMK <--
-        )
+            MangaCover.Square(
+                modifier = Modifier
+                    // KMK -->
+                    // .alpha(coverAlpha)
+                    // KMK <--
+                    .fillMaxHeight(),
+                data = coverData,
+                // KMK -->
+                alpha = coverAlpha,
+                bgColor = bgColor,
+                tint = onBgColor,
+                size = MangaCover.Size.Big,
+                // KMK <--
+            )
+        }
         Text(
             text = title,
             modifier = Modifier
