@@ -2,8 +2,7 @@
 <resources>
     <color name="splash">#FBEDED</color>
 
-    <color name="cover_placeholder">#2F888888</color>
-    <color name="cover_placeholder_loading">#888888</color>
+    <color name="cover_placeholder">#4F888888</color>
 
     <color name="error">#BA1B1B</color>
     <color name="errorContainer">#FFDAD4</color>
