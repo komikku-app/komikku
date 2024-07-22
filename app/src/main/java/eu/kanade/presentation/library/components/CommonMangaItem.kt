@@ -100,7 +100,7 @@ fun MangaCompactGridItem(
                     MangaCoverHide.Book(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        bgColor = bgColor,
+                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                         tint = onBgColor,
                     )
                 } else {
@@ -114,7 +114,7 @@ fun MangaCompactGridItem(
                         data = coverData,
                         // KMK -->
                         alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
-                        bgColor = bgColor,
+                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                         tint = onBgColor,
                         // KMK <--
                     )
@@ -232,7 +232,7 @@ fun MangaComfortableGridItem(
                         MangaCoverHide.Book(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            bgColor = bgColor,
+                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                             tint = onBgColor,
                         )
                     } else {
@@ -246,7 +246,7 @@ fun MangaComfortableGridItem(
                             data = coverData,
                             // KMK -->
                             alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
-                            bgColor = bgColor,
+                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                             tint = onBgColor,
                             // KMK <--
                         )
@@ -413,7 +413,7 @@ fun MangaListItem(
             MangaCoverHide.Square(
                 modifier = Modifier
                     .fillMaxHeight(),
-                bgColor = bgColor,
+                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                 tint = onBgColor,
             )
         } else {
@@ -427,7 +427,7 @@ fun MangaListItem(
                 data = coverData,
                 // KMK -->
                 alpha = coverAlpha,
-                bgColor = bgColor,
+                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                 tint = onBgColor,
                 size = MangaCover.Size.Big,
                 // KMK <--
