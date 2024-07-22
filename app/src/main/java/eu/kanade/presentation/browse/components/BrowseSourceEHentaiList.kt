@@ -22,18 +22,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.presentation.library.components.CommonMangaItemDefaults
+import eu.kanade.presentation.library.components.GridSelectedCoverAlpha
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.MangaCoverHide
+import exh.debug.DebugToggles
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
@@ -44,12 +48,12 @@ import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.MR
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.selectedBackground
 import java.time.Instant
 import java.time.ZoneId
 
@@ -59,6 +63,9 @@ fun BrowseSourceEHentaiList(
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    // KMK -->
+    selection: List<Manga>,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = contentPadding,
@@ -81,6 +88,9 @@ fun BrowseSourceEHentaiList(
                 // SY <--
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
+                // KMK -->
+                isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                // KMK <--
             )
         }
 
@@ -100,9 +110,18 @@ fun BrowseSourceEHentaiListItem(
     // SY <--
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
+    // KMK -->
+    isSelected: Boolean = false,
+    libraryColored: Boolean = true,
+    // KMK <--
 ) {
     if (metadata !is EHentaiSearchMetadata) return
-    val overlayColor = MaterialTheme.colorScheme.background.copy(alpha = 0.66f)
+    // KMK -->
+    val coverData = manga.asMangaCover()
+    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+    val coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f
+    // KMK <--
 
     val context = LocalContext.current
     val languageText by produceState("", metadata) {
@@ -162,6 +181,7 @@ fun BrowseSourceEHentaiListItem(
 
     Row(
         modifier = Modifier
+            .selectedBackground(isSelected)
             .height(148.dp)
             .combinedClickable(
                 onClick = onClick,
@@ -171,24 +191,36 @@ fun BrowseSourceEHentaiListItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box {
-            MangaCover.Book(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .drawWithContent {
-                        drawContent()
-                        if (manga.favorite) {
-                            drawRect(overlayColor)
-                        }
-                    },
-                data = manga,
-            )
+            // KMK -->
+            if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+                MangaCoverHide.Book(
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                    tint = onBgColor,
+                )
+            } else {
+                // KMK <--
+                MangaCover.Book(
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    // KMK -->
+                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
+                    bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                    tint = onBgColor,
+                    // KMK <--
+                    data = coverData,
+                )
+            }
             if (manga.favorite) {
                 BadgeGroup(
                     modifier = Modifier
                         .padding(4.dp)
                         .align(Alignment.TopStart),
                 ) {
-                    Badge(stringResource(MR.strings.in_library))
+                    // KMK -->
+                    InLibraryBadge(enabled = true)
+                    // KMK <--
                 }
             }
         }

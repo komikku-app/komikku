@@ -161,6 +161,9 @@ fun BrowseSourceContent(
             contentPadding = contentPadding,
             onMangaClick = onMangaClick,
             onMangaLongClick = onMangaLongClick,
+            // KMK -->
+            selection = selection,
+            // KMK <--
         )
         return
     }
