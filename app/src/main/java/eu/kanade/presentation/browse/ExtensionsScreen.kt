@@ -92,7 +92,7 @@ fun ExtensionScreen(
     PullRefresh(
         refreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        enabled = { !state.isLoading },
+        enabled = !state.isLoading,
     ) {
         when {
             state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
@@ -193,14 +193,14 @@ private fun ExtensionContent(
                                 // KMK -->
                                 .padding(end = MaterialTheme.padding.small)
                                 // KMK <--
-                                .animateItemPlacement(),
+                                .animateItem(),
                             action = action,
                         )
                     }
                     is ExtensionUiModel.Header.Text -> {
                         ExtensionHeader(
                             text = header.text,
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }
@@ -218,7 +218,7 @@ private fun ExtensionContent(
                 },
             ) { item ->
                 ExtensionItem(
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier.animateItem(),
                     item = item,
                     onClickItem = {
                         when (it) {

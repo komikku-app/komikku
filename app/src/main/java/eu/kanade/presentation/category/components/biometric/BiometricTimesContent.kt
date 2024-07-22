@@ -26,7 +26,7 @@ fun BiometricTimesContent(
     ) {
         items(timeRanges, key = { "biometric-${it.formattedString}" }) { timeRange ->
             BiometricTimesListItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 timeRange = timeRange,
                 onDelete = { onClickDelete(timeRange) },
             )
