@@ -81,12 +81,12 @@ fun MangaCompactGridItem(
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     // KMK -->
-    libraryColored: Boolean? = null,
+    libraryColored: Boolean = true,
     // KMK <--
 ) {
     // KMK -->
-    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
-    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
@@ -212,12 +212,12 @@ fun MangaComfortableGridItem(
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
-    libraryColored: Boolean? = null,
+    libraryColored: Boolean = true,
     // KMK <--
 ) {
     // KMK -->
-    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
-    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
@@ -390,12 +390,12 @@ fun MangaListItem(
     coverAlpha: Float = 1f,
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
-    libraryColored: Boolean? = null,
+    libraryColored: Boolean = true,
     // KMK <--
 ) {
     // KMK -->
-    val bgColor = libraryColored?.let { coverData.dominantCoverColors?.first?.let { Color(it) } }
-    val onBgColor = libraryColored?.let { coverData.dominantCoverColors?.second }
+    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
     Row(
         modifier = Modifier
