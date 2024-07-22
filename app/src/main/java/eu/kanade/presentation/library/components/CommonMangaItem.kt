@@ -63,7 +63,7 @@ private val ContinueReadingButtonIconSizeLarge = 20.dp
 private val ContinueReadingButtonGridPadding = 6.dp
 private val ContinueReadingButtonListSpacing = 8.dp
 
-private const val GridSelectedCoverAlpha = 0.76f
+internal const val GridSelectedCoverAlpha = 0.76f
 
 /**
  * Layout of grid list item with title overlaying the cover.
