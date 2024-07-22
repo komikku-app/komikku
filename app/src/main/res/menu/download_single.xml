@@ -25,4 +25,8 @@
         android:id="@+id/cancel_series"
         android:title="@string/cancel_all_for_series" />
 
+    <item
+        android:id="@+id/show_manga"
+        android:title="@string/action_show_manga" />
+
 </menu>

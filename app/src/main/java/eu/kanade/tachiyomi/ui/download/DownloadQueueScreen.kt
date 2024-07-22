@@ -70,7 +70,13 @@ object DownloadQueueScreen : Screen() {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
-        val screenModel = rememberScreenModel { DownloadQueueScreenModel() }
+        val screenModel = rememberScreenModel {
+            DownloadQueueScreenModel(
+                // KMK -->
+                navigator = navigator
+                // KMK <--
+            )
+        }
         val downloadList by screenModel.state.collectAsState()
         val downloadCount by remember {
             derivedStateOf { downloadList.sumOf { it.subItems.size } }
