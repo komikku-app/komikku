@@ -145,5 +145,54 @@ enum class MangaCover(val ratio: Float) {
     }
 }
 
-private val CoverPlaceholderColor = Color(0x1F888888)
-private val CoverPlaceholderOnBgColor = Color(0x8F888888)
+enum class MangaCoverHide(private val ratio: Float) {
+    Square(1f / 1f),
+    Book(2f / 3f),
+    ;
+
+    @Composable
+    operator fun invoke(
+        modifier: Modifier = Modifier,
+        contentDescription: String = "",
+        shape: Shape = MaterialTheme.shapes.extraSmall,
+        onClick: (() -> Unit)? = null,
+        // KMK -->
+        /** background color, which used for loading/error indicator */
+        bgColor: Color? = CoverPlaceholderColor,
+        /** onBackground color, which used for loading/error indicator */
+        @ColorInt tint: Int? = null,
+    ) {
+        val modifierColored = modifier
+            .aspectRatio(ratio)
+            .clip(shape)
+            .background(bgColor ?: CoverPlaceholderColor)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(
+                        role = Role.Button,
+                        onClick = onClick,
+                    )
+                } else {
+                    Modifier
+                },
+            )
+
+        Box(
+            modifier = modifierColored
+        ) {
+            Image(
+                imageVector = ImageVector.vectorResource(R.drawable.ic_baseline_menu_book_24),
+                contentDescription = contentDescription,
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(Alignment.Center),
+                colorFilter = ColorFilter.tint(
+                    tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor
+                ),
+            )
+        }
+    }
+}
+
+internal val CoverPlaceholderColor = Color(0x1F888888)
+internal val CoverPlaceholderOnBgColor = Color(0x8F888888)
