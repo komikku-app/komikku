@@ -61,9 +61,6 @@ internal fun LibraryComfortableGrid(
                 } else {
                     null
                 },
-                // KMK -->
-                libraryColored = true,
-                // KMK <--
             )
         }
     }

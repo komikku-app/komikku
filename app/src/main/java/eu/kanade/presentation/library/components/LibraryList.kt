@@ -69,9 +69,6 @@ internal fun LibraryList(
                 } else {
                     null
                 },
-                // KMK -->
-                libraryColored = true,
-                // KMK <--
             )
         }
     }
