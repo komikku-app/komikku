@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
+import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.browse.source.SourcesFilterScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.source.model.Source
@@ -92,7 +93,7 @@ private fun SourcesFilterContent(
                         // KMK -->
                         .padding(end = MaterialTheme.padding.small)
                         // KMK <--
-                        .animateItem(),
+                        .animateItemFastScroll(),
                     language = language,
                     enabled = enabled,
                     onClickItem = onClickLanguage,
@@ -115,7 +116,7 @@ private fun SourcesFilterContent(
                             .background(MaterialTheme.colorScheme.background)
                             .padding(end = MaterialTheme.padding.small)
                             // KMK <--
-                            .animateItem(),
+                            .animateItemFastScroll(),
                         isEnabled = toggleEnabled,
                         onClickItem = {
                             onClickSources(!toggleEnabled, sources)
@@ -133,7 +134,7 @@ private fun SourcesFilterContent(
                             // KMK -->
                             .padding(end = MaterialTheme.padding.small)
                             // KMK <--
-                            .animateItem(),
+                            .animateItemFastScroll(),
                         source = source,
                         enabled = "${source.id}" !in state.disabledSources,
                         onClickItem = onClickSource,
