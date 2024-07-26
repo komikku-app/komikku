@@ -701,7 +701,7 @@ class ReaderViewModel @JvmOverloads constructor(
                 // SY -->
                 if (readerChapter.chapter.chapter_number > 0 && readerPreferences.markReadDupe().get()) {
                     getChaptersByMangaId.await(manga!!.id).sortedByDescending { it.sourceOrder }
-                        .filter { 
+                        .filter {
                             it.id != readerChapter.chapter.id &&
                                 !it.read &&
                                 it.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
@@ -1156,7 +1156,12 @@ class ReaderViewModel @JvmOverloads constructor(
      * get a path to the file and it has to be decompressed somewhere first. Only the last shared
      * image will be kept so it won't be taking lots of internal disk space.
      */
-    fun shareImage(useExtraPage: Boolean) {
+    fun shareImage(
+        copyToClipboard: Boolean,
+        // SY -->
+        useExtraPage: Boolean,
+        // SY <--
+    ) {
         // SY -->
         val page = if (useExtraPage) {
             (state.value.dialog as? Dialog.PageActions)?.extraPage
@@ -1182,7 +1187,7 @@ class ReaderViewModel @JvmOverloads constructor(
                         location = Location.Cache,
                     ),
                 )
-                eventChannel.send(Event.ShareImage(uri, page))
+                eventChannel.send(if (copyToClipboard) Event.CopyImage(uri) else Event.ShareImage(uri, page))
             }
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
@@ -1190,7 +1195,7 @@ class ReaderViewModel @JvmOverloads constructor(
     }
 
     // SY -->
-    fun shareImages() {
+    fun shareImages(copyToClipboard: Boolean) {
         val (firstPage, secondPage) = (state.value.dialog as? Dialog.PageActions ?: return)
         val viewer = state.value.viewer as? PagerViewer ?: return
         val isLTR = (viewer !is R2LPagerViewer) xor (viewer.config.invertDoublePages)
@@ -1214,7 +1219,7 @@ class ReaderViewModel @JvmOverloads constructor(
                     location = Location.Cache,
                     manga = manga,
                 )
-                eventChannel.send(Event.ShareImage(uri, firstPage, secondPage))
+                eventChannel.send(if (copyToClipboard) Event.CopyImage(uri) else Event.ShareImage(uri, firstPage, secondPage))
             }
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
@@ -1382,5 +1387,6 @@ class ReaderViewModel @JvmOverloads constructor(
             val page: ReaderPage/* SY --> */,
             val secondPage: ReaderPage? = null, /* SY <-- */
         ) : Event
+        data class CopyImage(val uri: Uri) : Event
     }
 }
