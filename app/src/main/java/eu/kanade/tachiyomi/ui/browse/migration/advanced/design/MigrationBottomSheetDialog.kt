@@ -58,12 +58,14 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
         binding.migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
         binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
+        binding.migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteChapters(flags)
 
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migExtra.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+        binding.migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
 
         binding.useSmartSearch.bindToPreference(preferences.smartMigration())
         binding.extraSearchParamText.isVisible = false
