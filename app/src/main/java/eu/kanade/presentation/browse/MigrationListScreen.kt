@@ -71,7 +71,7 @@ fun MigrationListScreen(
                             AppBar.Action(
                                 title = stringResource(MR.strings.copy),
                                 icon = if (items.size == 1) Icons.Outlined.ContentCopy else Icons.Outlined.CopyAll,
-                                onClick = { openMigrationDialog(false) },
+                                onClick = { openMigrationDialog(true) },
                                 enabled = migrationDone,
                             ),
                             AppBar.Action(
