@@ -877,6 +877,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // Should only return one work but just in case
                 .forEach {
                     wm.cancelWorkById(it.id)
+                    // KMK -->
+                    val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+                    runBlocking { libraryUpdateStatus.stop() }
+                    // KMK <--
 
                     // Re-enqueue cancelled scheduled work
                     if (it.tags.contains(WORK_NAME_AUTO)) {

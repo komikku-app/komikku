@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
@@ -108,6 +109,10 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
 
         fun stop(context: Context) {
             context.workManager.cancelUniqueWork(TAG)
+            // KMK -->
+            val backupRestoreStatus: BackupRestoreStatus = Injekt.get()
+            runBlocking { backupRestoreStatus.stop() }
+            // KMK <--
         }
     }
 }
