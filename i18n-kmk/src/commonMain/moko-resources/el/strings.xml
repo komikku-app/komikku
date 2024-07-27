@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Αναζήτηση πηγής</string>
+  <string name="action_source_search">Αναζήτηση πηγής</string>
   <string name="action_toggle_nsfw_only">Εναλλαγή μόνο NSFW</string>
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Περιεχόμενο</string>
   <string name="pref_expand_related_titles">Επέκταση σχετικών τίτλων</string>
   <string name="pref_expand_related_titles_summary">Αν απενεργοποιηθεί, οι σχετικοί τίτλοι δεν θα φορτώνουν αυτόματα το &amp; show extended</string>
+  <string name="action_search_for_source">Αναζήτηση πηγής</string>
+  <string name="action_library_search">Αναζήτηση βιβλιοθήκης</string>
+  <string name="pref_show_home_on_related_titles">Αρχική σελίδα από Σχετικούς τίτλους</string>
+  <string name="pref_show_home_on_related_titles_summary">Εμφάνιση εικονιδίου κατά την περιήγηση σε Σχετικούς τίτλους για πλοήγηση απευθείας πίσω στην Αρχική</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Βαμβακερό Καραμέλα</string>
+  <string name="theme_doom">Έκρηξη</string>
+  <string name="theme_matrix">Πίνακας</string>
+  <string name="theme_mocha">Μόχα</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Εμφάνιση banner προόδου ενημέρωσης</string>
+  <string name="pref_show_restoring_progress_banner">Εμφάνιση του banner προόδου</string>
+  <string name="pref_show_syncing_progress_banner">Εμφάνιση banner προόδου συγχρονισμού</string>
+  <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
 </resources>

@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">Zuckerwatte</string>
-  <string name="theme_doom">Doom</string>
-  <string name="theme_matrix">Matrix</string>
-  <string name="theme_mocha">Mokka</string>
-  <string name="theme_sapphire">Saphir</string>
-  <string name="action_search_for_source">Nach Quelle suchen</string>
+  <string name="action_source_search">Nach Quelle suchen</string>
   <string name="action_toggle_nsfw_only">Nur NSFW umschalten</string>
   <string name="action_bulk_select">Massenauswahlmodus</string>
   <string name="action_faq_and_guides">FAQ und Anleitungen</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Inhalt</string>
   <string name="pref_expand_related_titles">Verwandte Titel erweitern</string>
   <string name="pref_expand_related_titles_summary">Wenn ausgeschaltet, laden verwandte Titel nicht automatisch &amp; zeigen erweiterte</string>
+  <string name="action_search_for_source">Nach Quelle suchen</string>
+  <string name="action_library_search">Bibliothekssuche</string>
+  <string name="pref_show_home_on_related_titles">Home von verwandten Titeln</string>
+  <string name="pref_show_home_on_related_titles_summary">Symbol beim Durchsuchen verwandter Titel anzeigen, um direkt zurück zum Home zu navigieren</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Zuckerwatte</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Mokka</string>
+  <string name="theme_sapphire">Saphir</string>
+  <string name="pref_show_updating_progress_banner">Zeige Aktualisierungsfortschritts-Banner</string>
+  <string name="pref_show_restoring_progress_banner">Wiederherstellungsfortschritts-Banner anzeigen</string>
+  <string name="pref_show_syncing_progress_banner">Zeige Synchronisationsfortschritts-Banner</string>
+  <string name="saved_searches_feeds">Gespeicherte Suche &amp; Feeds</string>
 </resources>

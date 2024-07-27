@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">Zucchero filato</string>
-  <string name="theme_doom">Doom</string>
-  <string name="theme_matrix">Matrix</string>
-  <string name="theme_mocha">Mocha</string>
-  <string name="theme_sapphire">Zaffiro</string>
-  <string name="action_search_for_source">Cerca la sorgente</string>
+  <string name="action_source_search">Cerca la sorgente</string>
   <string name="action_toggle_nsfw_only">Attiva/disattiva solo NSFW</string>
   <string name="action_bulk_select">Modalità selezione Bulk</string>
   <string name="action_faq_and_guides">FAQ e guide</string>
@@ -27,7 +21,7 @@
   <string name="pref_clean_invalid_downloads">Pulisci download non validi</string>
   <string name="pref_clean_invalid_downloads_summary">Trova e rimuovi tutti i download, file, cartelle che non vengono salvate nella tua libreria</string>
   <string name="invalid_downloads_cleaned">Scaricamenti non validi puliti</string>
-  <string name="pref_private_installer_warning">Evitare di utilizzare Installer Privato perché non è ancora stabile, porterà a davvero lenta start/resume App.</string>
+  <string name="pref_private_installer_warning">Evitare di utilizzare Installer Privato perché non è ancora stabile, porterà a un avvio e riavvio dell\'app molto lento.</string>
   <string name="whats_coming">Cosa succederà (presto)</string>
   <string name="action_allow_duplicate_manga">Consenti di farlo</string>
   <string name="action_skip_duplicate_manga">Salta esso</string>
@@ -35,7 +29,7 @@
   <string name="action_skip_all_duplicate_manga">Salta tutto</string>
   <string name="update_check_try_now">Prova ora</string>
   <string name="update_check_notification_preview_available">In arrivo (presto) aggiornamenti!</string>
-  <string name="changelogs">Cambia Log</string>
+  <string name="changelogs">Modifiche</string>
   <string name="pref_source_related_mangas">Titoli correlati</string>
   <string name="pref_source_related_mangas_summary">Mostra i titoli correlati durante la visualizzazione della voce</string>
   <string name="related_mangas_more">Più come questi...</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Contenuto</string>
   <string name="pref_expand_related_titles">Espandi titoli correlati</string>
   <string name="pref_expand_related_titles_summary">Se disattivato, i titoli correlati non caricheranno automaticamente &amp; mostra espansa</string>
+  <string name="action_search_for_source">Cerca la sorgente</string>
+  <string name="action_library_search">Ricerca libreria</string>
+  <string name="pref_show_home_on_related_titles">Home da Titoli correlati</string>
+  <string name="pref_show_home_on_related_titles_summary">Mostra un\'icona durante la navigazione Titoli correlati per navigare direttamente su Home</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Zucchero filato</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrice</string>
+  <string name="theme_mocha">Mocaccino</string>
+  <string name="theme_sapphire">Zaffiro</string>
+  <string name="pref_show_updating_progress_banner">Mostra banner di avanzamento dell\'aggiornamento</string>
+  <string name="pref_show_restoring_progress_banner">Mostra il ripristino del banner di avanzamento</string>
+  <string name="pref_show_syncing_progress_banner">Mostra banner di avanzamento sincronizzazione</string>
+  <string name="saved_searches_feeds">Ricerche Salvate &amp; Feeds</string>
 </resources>

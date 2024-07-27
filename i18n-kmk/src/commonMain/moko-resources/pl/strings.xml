@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Szukaj źródła</string>
+  <string name="action_source_search">Szukaj źródła</string>
   <string name="action_toggle_nsfw_only">Przełącz tylko NSFW</string>
   <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
   <string name="action_faq_and_guides">FAQ i przewodniki</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Zawartość</string>
   <string name="pref_expand_related_titles">Rozwiń powiązane tytuły</string>
   <string name="pref_expand_related_titles_summary">Jeśli wyłączone, powiązane tytuły nie załadują się automatycznie &amp; pokaż rozszerzone</string>
+  <string name="action_search_for_source">Szukaj źródła</string>
+  <string name="action_library_search">Wyszukiwanie biblioteki</string>
+  <string name="pref_show_home_on_related_titles">Strona główna z powiązanych tytułów</string>
+  <string name="pref_show_home_on_related_titles_summary">Pokaż ikonę podczas przeglądania powiązanych tytułów aby wrócić bezpośrednio do strony głównej</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Cukierki bawełniane</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matryca</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Pokaż baner postępu aktualizacji</string>
+  <string name="pref_show_restoring_progress_banner">Pokaż baner postępu przywracania</string>
+  <string name="pref_show_syncing_progress_banner">Pokaż baner postępu synchronizacji</string>
+  <string name="saved_searches_feeds">Zapisane wyszukiwania &amp; Kanały</string>
 </resources>
