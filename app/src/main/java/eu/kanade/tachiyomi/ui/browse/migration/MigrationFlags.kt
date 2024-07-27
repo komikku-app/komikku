@@ -2,11 +2,11 @@ package eu.kanade.tachiyomi.ui.browse.migration
 
 object MigrationFlags {
 
-    const val CHAPTERS = 0b00001
-    const val CATEGORIES = 0b00010
-    const val TRACK = 0b00100
-    const val CUSTOM_COVER = 0b01000
-    const val EXTRA = 0b10000
+    const val CHAPTERS = 0b000001
+    const val CATEGORIES = 0b000010
+    const val TRACK = 0b000100
+    const val CUSTOM_COVER = 0b001000
+    const val EXTRA = 0b010000
     const val DELETE_CHAPTERS = 0b100000
 
     fun hasChapters(value: Int): Boolean {
