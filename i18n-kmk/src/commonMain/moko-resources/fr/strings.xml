@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">Barbe à papa</string>
-  <string name="theme_doom">Doom</string>
-  <string name="theme_matrix">Matrix</string>
-  <string name="theme_mocha">Mocha</string>
-  <string name="theme_sapphire">Saphir</string>
-  <string name="action_search_for_source">Rechercher une source</string>
+  <string name="action_source_search">Rechercher une source</string>
   <string name="action_toggle_nsfw_only">Activer/désactiver uniquement NSFW</string>
   <string name="action_bulk_select">Mode de sélection en bloc</string>
   <string name="action_faq_and_guides">FAQ et tutoriels</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Contenus</string>
   <string name="pref_expand_related_titles">Développer les titres connexes</string>
   <string name="pref_expand_related_titles_summary">Si désactivé, les titres connexes ne chargeront pas automatiquement &amp; afficher étendu</string>
+  <string name="action_search_for_source">Rechercher une source</string>
+  <string name="action_library_search">Recherche de la bibliothèque</string>
+  <string name="pref_show_home_on_related_titles">Accueil des titres connexes</string>
+  <string name="pref_show_home_on_related_titles_summary">Afficher une icône en naviguant sur les titres connexes pour revenir directement à la page d\'accueil</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Barbe à papa</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matrice</string>
+  <string name="theme_mocha">Moka</string>
+  <string name="theme_sapphire">Saphir</string>
+  <string name="pref_show_updating_progress_banner">Afficher la bannière de progression de mise à jour</string>
+  <string name="pref_show_restoring_progress_banner">Afficher la bannière de progression de restauration</string>
+  <string name="pref_show_syncing_progress_banner">Afficher la bannière de progression de la synchronisation</string>
+  <string name="saved_searches_feeds">Recherches enregistrées &amp; Flux</string>
 </resources>

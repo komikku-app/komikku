@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Núvem</string>
-  <string name="theme_cottoncandy">Algodão doce</string>
-  <string name="theme_doom">Vermelho</string>
-  <string name="theme_matrix">Verde</string>
-  <string name="theme_mocha">Café</string>
-  <string name="theme_sapphire">Safira</string>
-  <string name="action_search_for_source">Pesquisar fonte</string>
+  <string name="action_source_search">Pesquisar fonte</string>
   <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
   <string name="action_bulk_select">Modo de seleção em massa</string>
   <string name="action_faq_and_guides">FAQ e Guias</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Conteúdo</string>
   <string name="pref_expand_related_titles">Expandir títulos relacionados</string>
   <string name="pref_expand_related_titles_summary">Se desativado, os títulos relacionados não irão carregar automaticamente &amp; mostrar expandido</string>
+  <string name="action_search_for_source">Pesquisar fonte</string>
+  <string name="action_library_search">Pesquisar na biblioteca</string>
+  <string name="pref_show_home_on_related_titles">Home a partir de títulos relacionados</string>
+  <string name="pref_show_home_on_related_titles_summary">Mostrar um ícone ao navegar títulos relacionados para navegar diretamente para a Página inicial</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Algodão Doce</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matriz</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Safira</string>
+  <string name="pref_show_updating_progress_banner">Mostrar atualização de progresso de banner</string>
+  <string name="pref_show_restoring_progress_banner">Mostrar banner de restauração</string>
+  <string name="pref_show_syncing_progress_banner">Mostrar banner de progresso sincronizado</string>
+  <string name="saved_searches_feeds">Pesquisas salvas &amp; Feeds</string>
 </resources>

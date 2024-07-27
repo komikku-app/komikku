@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">كلاودفلير</string>
-  <string name="theme_cottoncandy">حلوى القطن</string>
-  <string name="theme_doom">الهلاك</string>
-  <string name="theme_matrix">ماتريكس</string>
-  <string name="theme_mocha">موكا</string>
-  <string name="theme_sapphire">ياقوت</string>
-  <string name="action_search_for_source">البحث عن مصدر</string>
+  <string name="action_source_search">البحث عن مصدر</string>
   <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
   <string name="action_bulk_select">وضع التحديد بالجملة</string>
   <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">محتوى</string>
   <string name="pref_expand_related_titles">توسيع العناوين ذات الصلة</string>
   <string name="pref_expand_related_titles_summary">إذا تم إيقاف التشغيل، لن يتم تحميل العناوين ذات الصلة تلقائيًا &amp; إظهار الموسعة</string>
+  <string name="action_search_for_source">البحث عن مصدر</string>
+  <string name="action_library_search">البحث في المكتبة</string>
+  <string name="pref_show_home_on_related_titles">المنزل من العناوين ذات الصلة</string>
+  <string name="pref_show_home_on_related_titles_summary">إظهار أيقونة أثناء تصفح العناوين ذات الصلة للتنقل مباشرة إلى الصفحة الرئيسية</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">حلوى القطن</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">مصفوفة</string>
+  <string name="theme_mocha">موكا</string>
+  <string name="theme_sapphire">الياقوت</string>
+  <string name="pref_show_updating_progress_banner">إظهار التحديث بنر التقدم</string>
+  <string name="pref_show_restoring_progress_banner">إظهار شعار استعادة التقدم</string>
+  <string name="pref_show_syncing_progress_banner">إظهار شعار التقدم في المزامنة</string>
+  <string name="saved_searches_feeds">عمليات البحث المحفوظة &amp; موجز الويب</string>
 </resources>

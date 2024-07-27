@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">ソースを検索</string>
+  <string name="action_source_search">ソースを検索</string>
   <string name="action_toggle_nsfw_only">NSFWのみ切り替え</string>
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>
   <string name="pref_details_page_theme">詳細ページ</string>
   <string name="pref_theme_cover_based_style">テーマのスタイル</string>
-  <string name="ext_unofficial">Unofficial</string>
+  <string name="ext_unofficial">非公式</string>
   <string name="unofficial_extension_message">この拡張機能は公式リポジトリからのものではありません。</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>
@@ -46,5 +46,19 @@
   <string name="pref_theme_cover_based_style_fidelity">忠実度</string>
   <string name="pref_theme_cover_based_style_content">コンテンツ</string>
   <string name="pref_expand_related_titles">関連するタイトルを展開</string>
-  <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
+  <string name="pref_expand_related_titles_summary">オフにすると、関連タイトルは自動的に読み込まれず、展開表示されません。</string>
+  <string name="action_search_for_source">ソースを検索</string>
+  <string name="action_library_search">ライブラリ検索</string>
+  <string name="pref_show_home_on_related_titles">関連タイトルのホーム</string>
+  <string name="pref_show_home_on_related_titles_summary">閲覧中にアイコンを表示する 関連するタイトルを直接ホームに移動する</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">わたあめ</string>
+  <string name="theme_doom">ドゥーム</string>
+  <string name="theme_matrix">マトリクス</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">更新中のバナーを表示</string>
+  <string name="pref_show_restoring_progress_banner">復元中のバナーを表示</string>
+  <string name="pref_show_syncing_progress_banner">同期中の進捗バナーを表示</string>
+  <string name="saved_searches_feeds">保存された検索 &amp; フィード</string>
 </resources>

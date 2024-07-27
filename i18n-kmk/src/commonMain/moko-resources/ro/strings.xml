@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Caută sursa</string>
+  <string name="action_source_search">Caută sursa</string>
   <string name="action_toggle_nsfw_only">Comută numai NSFW</string>
   <string name="action_bulk_select">Mod selecţie în masă</string>
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Conținut</string>
   <string name="pref_expand_related_titles">Extindeți titlurile legate de</string>
   <string name="pref_expand_related_titles_summary">Dacă este dezactivat, titlurile asociate nu vor încărca automat &amp; Arată extins</string>
+  <string name="action_search_for_source">Caută sursa</string>
+  <string name="action_library_search">Căutare bibliotecă</string>
+  <string name="pref_show_home_on_related_titles">Acasă din titluri asociate</string>
+  <string name="pref_show_home_on_related_titles_summary">Arată o pictogramă în timp ce navigați pe titlurile asociate pentru a naviga direct înapoi la Acasă</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Bumbac de bomboane</string>
+  <string name="theme_doom">Ușă</string>
+  <string name="theme_matrix">Matricea</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Arată actualizarea banner-ului de progres</string>
+  <string name="pref_show_restoring_progress_banner">Arată restaurarea banner-ului de progres</string>
+  <string name="pref_show_syncing_progress_banner">Afișare banner de progres sincronizare</string>
+  <string name="saved_searches_feeds">Căutări salvate &amp; Fluxuri</string>
 </resources>

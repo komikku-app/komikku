@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">棉花糖</string>
-  <string name="theme_doom">腥红</string>
-  <string name="theme_matrix">黑客</string>
-  <string name="theme_mocha">摩卡</string>
-  <string name="theme_sapphire">蓝宝石</string>
-  <string name="action_search_for_source">搜索源</string>
+  <string name="action_source_search">搜索源</string>
   <string name="action_toggle_nsfw_only">仅切换 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">内容</string>
   <string name="pref_expand_related_titles">展开相关标题</string>
   <string name="pref_expand_related_titles_summary">如果关闭，相关标题不会自动加载 &amp; 显示扩展</string>
+  <string name="action_search_for_source">搜索源</string>
+  <string name="action_library_search">书库搜索</string>
+  <string name="pref_show_home_on_related_titles">来自相关标题的首页</string>
+  <string name="pref_show_home_on_related_titles_summary">浏览相关标题时显示图标以直接回到主页</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">腥红</string>
+  <string name="theme_matrix">黑客</string>
+  <string name="theme_mocha">摩卡</string>
+  <string name="theme_sapphire">蓝宝石</string>
+  <string name="pref_show_updating_progress_banner">显示更新进度横幅广告</string>
+  <string name="pref_show_restoring_progress_banner">显示恢复进度横幅广告</string>
+  <string name="pref_show_syncing_progress_banner">显示同步进度横幅广告</string>
+  <string name="saved_searches_feeds">已保存的搜索 &amp; Feeds</string>
 </resources>

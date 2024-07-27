@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Hledat zdroj</string>
+  <string name="action_source_search">Hledat zdroj</string>
   <string name="action_toggle_nsfw_only">Přepnout pouze NSFW</string>
   <string name="action_bulk_select">Režim hromadného výběru</string>
   <string name="action_faq_and_guides">FAQ a návody</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Obsah</string>
   <string name="pref_expand_related_titles">Rozbalit související názvy</string>
   <string name="pref_expand_related_titles_summary">Pokud je vypnuto, související názvy nebudou automaticky načteny &amp; Zobrazit rozšířené</string>
+  <string name="action_search_for_source">Hledat zdroj</string>
+  <string name="action_library_search">Vyhledávání knihovny</string>
+  <string name="pref_show_home_on_related_titles">Domů ze souvisejících názvů</string>
+  <string name="pref_show_home_on_related_titles_summary">Zobrazit ikonu při prohlížení souvisejících názvů pro přímý přechod zpět na Domů</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Bavlníkový Candy</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matice</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Zobrazit banner průběhu aktualizace</string>
+  <string name="pref_show_restoring_progress_banner">Zobrazit banner při obnovování</string>
+  <string name="pref_show_syncing_progress_banner">Zobrazit postup synchronizace banneru</string>
+  <string name="saved_searches_feeds">Uložené vyhledávání &amp; kanály</string>
 </resources>

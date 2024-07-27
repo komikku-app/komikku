@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">棉花糖</string>
-  <string name="theme_doom">腥紅</string>
-  <string name="theme_matrix">駭客</string>
-  <string name="theme_mocha">摩卡</string>
-  <string name="theme_sapphire">藍寶石</string>
-  <string name="action_search_for_source">搜尋來源</string>
+  <string name="action_source_search">搜尋來源</string>
   <string name="action_toggle_nsfw_only">切換僅 NSFW</string>
   <string name="action_bulk_select">批量選擇模式</string>
   <string name="action_faq_and_guides">常見問題和指南</string>
@@ -20,7 +14,7 @@
   <string name="download_cache_renew_interval_2hour">每 2 小時</string>
   <string name="download_cache_renew_interval_6hour">每 6 小時</string>
   <string name="download_cache_renew_interval_12hour">每 12 小時</string>
-  <string name="download_cache_renew_interval_24hour">每 1 天</string>
+  <string name="download_cache_renew_interval_24hour">每 24 小時</string>
   <string name="download_cache_renew_interval_info">如果設置為「手動」，則需刷新每本漫畫或使用「進階」選項中的「清除下載索引」功能</string>
   <string name="pref_update_tracking_marked_read">標記為已讀時更新章節進度</string>
   <string name="pref_auto_sync_read_chapters">自動同步歷程中的已讀章節</string>
@@ -53,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">內容</string>
   <string name="pref_expand_related_titles">展開相關標題</string>
   <string name="pref_expand_related_titles_summary">如果關閉，相關標題將不會自動載入 &amp; 並顯示展開內容</string>
+  <string name="action_search_for_source">搜尋來源</string>
+  <string name="action_library_search">搜尋書櫃</string>
+  <string name="pref_show_home_on_related_titles">相關標題首頁</string>
+  <string name="pref_show_home_on_related_titles_summary">在瀏覽相關標題時顯示一個圖標以方便直接導航回首頁</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">末日</string>
+  <string name="theme_matrix">矩陣</string>
+  <string name="theme_mocha">抹茶</string>
+  <string name="theme_sapphire">藍寶石</string>
+  <string name="pref_show_updating_progress_banner">顯示更新進度橫幅</string>
+  <string name="pref_show_restoring_progress_banner">顯示恢復進度橫幅</string>
+  <string name="pref_show_syncing_progress_banner">顯示同步進度橫幅</string>
+  <string name="saved_searches_feeds">儲存的搜尋 &amp; 訂閱</string>
 </resources>

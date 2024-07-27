@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Søg efter kilde</string>
+  <string name="action_source_search">Søg efter kilde</string>
   <string name="action_toggle_nsfw_only">Slå kun NSFW til/fra</string>
   <string name="action_bulk_select">Masse valg tilstand</string>
   <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Indhold</string>
   <string name="pref_expand_related_titles">Udvid Relaterede titler</string>
   <string name="pref_expand_related_titles_summary">Hvis slået fra, vil relaterede titler ikke automatisk indlæse &amp; Vis udvidet</string>
+  <string name="action_search_for_source">Søg efter kilde</string>
+  <string name="action_library_search">Søg i bibliotek</string>
+  <string name="pref_show_home_on_related_titles">Hjem fra relaterede titler</string>
+  <string name="pref_show_home_on_related_titles_summary">Vis et ikon mens du browser Relaterede titler for at navigere direkte tilbage til Hjem</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Bomuld Slik</string>
+  <string name="theme_doom">Dom</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Vis statusbanner for opdatering</string>
+  <string name="pref_show_restoring_progress_banner">Vis genoprettelse af fremdriftsbanner</string>
+  <string name="pref_show_syncing_progress_banner">Vis synkronisering af fremdriftsbanner</string>
+  <string name="saved_searches_feeds">Gemte Søgninger &amp; Feeds</string>
 </resources>

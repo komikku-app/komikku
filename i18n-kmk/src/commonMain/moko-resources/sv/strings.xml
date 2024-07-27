@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_search_for_source">Sök efter källa</string>
+  <string name="action_source_search">Sök efter källa</string>
   <string name="action_toggle_nsfw_only">Växla endast NSFW</string>
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>
@@ -47,4 +47,18 @@
   <string name="pref_theme_cover_based_style_content">Innehåll</string>
   <string name="pref_expand_related_titles">Expandera relaterade titlar</string>
   <string name="pref_expand_related_titles_summary">Om inaktiverad, kommer relaterade titlar inte automatiskt ladda &amp; visa utökad</string>
+  <string name="action_search_for_source">Sök efter källa</string>
+  <string name="action_library_search">Sök i bibliotek</string>
+  <string name="pref_show_home_on_related_titles">Hem från relaterade titlar</string>
+  <string name="pref_show_home_on_related_titles_summary">Visa en ikon medan du surfar Relaterade titlar för att navigera direkt tillbaka till hemmet</string>
+  <string name="theme_cloudflare">Molnflare</string>
+  <string name="theme_cottoncandy">Bomulls Godis</string>
+  <string name="theme_doom">Undergång</string>
+  <string name="theme_matrix">Matris</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner">Visa uppdaterings förloppsbanner</string>
+  <string name="pref_show_restoring_progress_banner">Visa återställning av förloppsbanner</string>
+  <string name="pref_show_syncing_progress_banner">Visa synkronisering av förloppsbanner</string>
+  <string name="saved_searches_feeds">Sparade sökningar &amp; Feeds</string>
 </resources>
