@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
+import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
@@ -127,6 +128,10 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
                 // Should only return one work but just in case
                 .forEach {
                     wm.cancelWorkById(it.id)
+                    // KMK -->
+                    val syncStatus: SyncStatus = Injekt.get()
+                    runBlocking { syncStatus.stop() }
+                    // KMK <--
 
                     // Re-enqueue cancelled scheduled work
                     if (it.tags.contains(TAG_AUTO)) {
