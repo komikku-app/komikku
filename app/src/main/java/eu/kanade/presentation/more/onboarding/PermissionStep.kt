@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
@@ -43,6 +44,10 @@ internal class PermissionStep : OnboardingStep {
 
     private var notificationGranted by mutableStateOf(false)
     private var batteryGranted by mutableStateOf(false)
+
+    // KMK -->
+    private var externalStoragePermissionGranted by mutableStateOf(false)
+    // KMK <--
 
     override val isComplete: Boolean = true
 
@@ -64,6 +69,18 @@ internal class PermissionStep : OnboardingStep {
                     }
                     batteryGranted = context.getSystemService<PowerManager>()!!
                         .isIgnoringBatteryOptimizations(context.packageName)
+                    // KMK -->
+                    externalStoragePermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        context.checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) ==
+                            PackageManager.PERMISSION_GRANTED
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                            PackageManager.PERMISSION_GRANTED
+                    } else {
+                        context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                            PackageManager.PERMISSION_GRANTED
+                    }
+                    // KMK <--
                 }
             }
             lifecycleOwner.lifecycle.addObserver(observer)
@@ -109,6 +126,49 @@ internal class PermissionStep : OnboardingStep {
                     context.startActivity(intent)
                 },
             )
+
+            // KMK -->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val permissionRequester = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = {
+                        // no-op. resulting checks is being done on resume
+                    },
+                )
+                PermissionItem(
+                    title = stringResource(KMR.strings.onboarding_permission_external_storage),
+                    subtitle = stringResource(KMR.strings.onboarding_permission_external_storage_description),
+                    granted = externalStoragePermissionGranted,
+                    onButtonClick = { permissionRequester.launch(Manifest.permission.READ_MEDIA_IMAGES) },
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val permissionRequester = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = {
+                        // no-op. resulting checks is being done on resume
+                    },
+                )
+                PermissionItem(
+                    title = stringResource(KMR.strings.onboarding_permission_external_storage),
+                    subtitle = stringResource(KMR.strings.onboarding_permission_external_storage_description),
+                    granted = externalStoragePermissionGranted,
+                    onButtonClick = { permissionRequester.launch(Manifest.permission.READ_EXTERNAL_STORAGE) },
+                )
+            } else {
+                val permissionRequester = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = {
+                        // no-op. resulting checks is being done on resume
+                    },
+                )
+                PermissionItem(
+                    title = stringResource(KMR.strings.onboarding_permission_external_storage),
+                    subtitle = stringResource(KMR.strings.onboarding_permission_writing_external_storage_description),
+                    granted = externalStoragePermissionGranted,
+                    onButtonClick = { permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) },
+                )
+            }
+            // KMK <--
         }
     }
 
