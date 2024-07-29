@@ -58,12 +58,18 @@
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
-      <!-- Advanced section -->
+
+    <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
     <string name="invalid_downloads_cleaned">Invalid downloads cleaned</string>
     <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
+
+      <!-- Onboarding section -->
+    <string name="onboarding_permission_external_storage">Access media files permission</string>
+    <string name="onboarding_permission_external_storage_description">Allow using custom covers in entry's Edit Info</string>
+    <string name="onboarding_permission_writing_external_storage_description">Allow saving covers &amp; using custom covers in entry's Edit Info</string>
 
       <!-- About section -->
     <string name="whats_coming">What\'s coming (soon)</string>
