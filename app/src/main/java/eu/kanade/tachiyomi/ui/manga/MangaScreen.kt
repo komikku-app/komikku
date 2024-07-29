@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.manga
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -462,12 +465,31 @@ class MangaScreen(
                         if (it == null) return@rememberLauncherForActivityResult
                         sm.editCover(context, it)
                     }
+                    // KMK -->
+                    val externalStoragePermissionNotGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                        context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_DENIED
+                    val saveCoverPermissionRequester = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.RequestPermission(),
+                        onResult = {
+                            sm.saveCover(context)
+                        },
+                    )
+                    // KMK <--
                     MangaCoverDialog(
                         coverDataProvider = { manga!! },
                         snackbarHostState = sm.snackbarHostState,
                         isCustomCover = remember(manga) { manga!!.hasCustomCover() },
                         onShareClick = { sm.shareCover(context) },
-                        onSaveClick = { sm.saveCover(context) },
+                        onSaveClick = {
+                            // KMK -->
+                            if (externalStoragePermissionNotGranted) {
+                                saveCoverPermissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            } else {
+                                // KMK <--
+                                sm.saveCover(context)
+                            }
+                        },
                         onEditClick = {
                             when (it) {
                                 EditCoverAction.EDIT -> getContent.launch("image/*")

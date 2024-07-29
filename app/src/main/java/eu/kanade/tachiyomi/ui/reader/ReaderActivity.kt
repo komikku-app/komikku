@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.assist.AssistContent
@@ -7,6 +8,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.ColorMatrix
@@ -21,6 +23,8 @@ import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -39,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import androidx.core.graphics.ColorUtils
@@ -132,6 +137,7 @@ import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -420,6 +426,7 @@ class ReaderActivity : BaseActivity() {
 
         @Composable
         fun dialogRootContent() {
+            val context = LocalContext.current
             // KMK <--
             val state by viewModel.state.collectAsState()
             val settingsScreenModel = remember {
@@ -478,6 +485,18 @@ class ReaderActivity : BaseActivity() {
                 else -> NavBarType.VerticalRight
             }
             // SY <--
+
+            // KMK -->
+            val externalStoragePermissionNotGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_DENIED
+            val permissionRequester = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {
+                    toast(KMR.strings.permission_writing_external_storage_succeed)
+                },
+            )
+            // KMK <--
 
             ReaderContentOverlay(
                 brightness = state.brightnessOverlayValue,
@@ -623,9 +642,25 @@ class ReaderActivity : BaseActivity() {
                         onDismissRequest = onDismissRequest,
                         onSetAsCover = viewModel::setAsCover,
                         onShare = viewModel::shareImage,
-                        onSave = viewModel::saveImage,
+                        onSave = { extra ->
+                            // KMK -->
+                            if (externalStoragePermissionNotGranted) {
+                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            } else {
+                                // KMK <--
+                                viewModel.saveImage(extra)
+                            }
+                        },
                         onShareCombined = viewModel::shareImages,
-                        onSaveCombined = viewModel::saveImages,
+                        onSaveCombined = {
+                            // KMK -->
+                            if (externalStoragePermissionNotGranted) {
+                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            } else {
+                                // KMK <--
+                                viewModel.saveImages()
+                            }
+                        },
                         hasExtraPage = (state.dialog as? ReaderViewModel.Dialog.PageActions)?.extraPage != null,
                     )
                 }
