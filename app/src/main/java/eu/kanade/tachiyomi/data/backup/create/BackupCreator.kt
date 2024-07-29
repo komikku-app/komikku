@@ -66,24 +66,22 @@ class BackupCreator(
     suspend fun backup(uri: Uri, options: BackupOptions): String {
         var file: UniFile? = null
         try {
-            file = (
-                if (isAutoBackup) {
-                    // Get dir of file and create
-                    val dir = UniFile.fromUri(context, uri)
+            file = if (isAutoBackup) {
+                // Get dir of file and create
+                val dir = UniFile.fromUri(context, uri)
 
-                    // Delete older backups
-                    dir?.listFiles { _, filename -> FILENAME_REGEX.matches(filename) }
-                        .orEmpty()
-                        .sortedByDescending { it.name }
-                        .drop(MAX_AUTO_BACKUPS - 1)
-                        .forEach { it.delete() }
+                // Delete older backups
+                dir?.listFiles { _, filename -> FILENAME_REGEX.matches(filename) }
+                    .orEmpty()
+                    .sortedByDescending { it.name }
+                    .drop(MAX_AUTO_BACKUPS - 1)
+                    .forEach { it.delete() }
 
-                    // Create new file to place backup
-                    dir?.createFile(getFilename())
-                } else {
-                    UniFile.fromUri(context, uri)
-                }
-                )
+                // Create new file to place backup
+                dir?.createFile(getFilename())
+            } else {
+                UniFile.fromUri(context, uri)
+            }
 
             if (file == null || !file.isFile) {
                 throw IllegalStateException(context.stringResource(MR.strings.create_backup_file_error))
@@ -143,27 +141,29 @@ class BackupCreator(
     suspend fun backupCategories(options: BackupOptions): List<BackupCategory> {
         if (!options.categories) return emptyList()
 
-        return categoriesBackupCreator.backupCategories()
+        return categoriesBackupCreator()
     }
 
     suspend fun backupMangas(mangas: List<Manga>, options: BackupOptions): List<BackupManga> {
-        return mangaBackupCreator.backupMangas(mangas, options)
+        if (!options.libraryEntries) return emptyList()
+
+        return mangaBackupCreator(mangas, options)
     }
 
     fun backupSources(mangas: List<BackupManga>): List<BackupSource> {
-        return sourcesBackupCreator.backupSources(mangas)
+        return sourcesBackupCreator(mangas)
     }
 
     fun backupAppPreferences(options: BackupOptions): List<BackupPreference> {
         if (!options.appSettings) return emptyList()
 
-        return preferenceBackupCreator.backupAppPreferences(includePrivatePreferences = options.privateSettings)
+        return preferenceBackupCreator.createApp(includePrivatePreferences = options.privateSettings)
     }
 
     fun backupSourcePreferences(options: BackupOptions): List<BackupSourcePreferences> {
         if (!options.sourceSettings) return emptyList()
 
-        return preferenceBackupCreator.backupSourcePreferences(includePrivatePreferences = options.privateSettings)
+        return preferenceBackupCreator.createSource(includePrivatePreferences = options.privateSettings)
     }
 
     // SY -->

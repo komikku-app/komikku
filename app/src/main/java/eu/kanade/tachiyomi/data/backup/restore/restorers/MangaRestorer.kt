@@ -71,7 +71,7 @@ class MangaRestorer(
     /**
      * Restore a single manga
      */
-    suspend fun restoreManga(
+    suspend fun restore(
         backupManga: BackupManga,
         backupCategories: List<BackupCategory>,
     ) {
@@ -460,7 +460,7 @@ class MangaRestorer(
     /**
      * Restore the categories from Json
      *
-     * @param manga the merge manga for the references
+     * @param mergeMangaId the merge manga for the references
      * @param backupMergedMangaReferences the list of backup manga references for the merged manga
      */
     private suspend fun restoreMergedMangaReferencesForManga(
