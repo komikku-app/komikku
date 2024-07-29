@@ -6,7 +6,8 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 
 data class RestoreOptions(
-    val library: Boolean = true,
+    val libraryEntries: Boolean = true,
+    val categories: Boolean = true,
     val appSettings: Boolean = true,
     val sourceSettings: Boolean = true,
     // SY -->
@@ -15,7 +16,8 @@ data class RestoreOptions(
 ) {
 
     fun asBooleanArray() = booleanArrayOf(
-        library,
+        libraryEntries,
+        categories,
         appSettings,
         sourceSettings,
         // SY -->
@@ -23,14 +25,20 @@ data class RestoreOptions(
         // SY <--
     )
 
-    fun anyEnabled() = library || appSettings || sourceSettings /* SY --> */ || savedSearches /* SY <-- */
+    fun canRestore() = libraryEntries || categories || appSettings || sourceSettings /* SY --> */ ||
+        savedSearches /* SY <-- */
 
     companion object {
         val options = persistentListOf(
             Entry(
                 label = MR.strings.label_library,
-                getter = RestoreOptions::library,
-                setter = { options, enabled -> options.copy(library = enabled) },
+                getter = RestoreOptions::libraryEntries,
+                setter = { options, enabled -> options.copy(libraryEntries = enabled) },
+            ),
+            Entry(
+                label = MR.strings.categories,
+                getter = RestoreOptions::categories,
+                setter = { options, enabled -> options.copy(categories = enabled) },
             ),
             Entry(
                 label = MR.strings.app_settings,
@@ -52,11 +60,12 @@ data class RestoreOptions(
         )
 
         fun fromBooleanArray(array: BooleanArray) = RestoreOptions(
-            library = array[0],
-            appSettings = array[1],
-            sourceSettings = array[2],
+            libraryEntries = array[0],
+            categories = array[1],
+            appSettings = array[2],
+            sourceSettings = array[3],
             // SY -->
-            savedSearches = array[3]
+            savedSearches = array[4]
             // SY <--
         )
     }

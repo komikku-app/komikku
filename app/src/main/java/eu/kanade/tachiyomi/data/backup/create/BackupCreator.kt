@@ -95,10 +95,11 @@ class BackupCreator(
             } else {
                 emptyList()
             } + getMergedManga.await() // SY <--
+            val backupManga = backupMangas(databaseManga, options)
             val backup = Backup(
-                backupManga = backupMangas(databaseManga, options),
+                backupManga = backupManga,
                 backupCategories = backupCategories(options),
-                backupSources = backupSources(databaseManga),
+                backupSources = backupSources(backupManga),
                 backupPreferences = backupAppPreferences(options),
                 backupSourcePreferences = backupSourcePreferences(options),
                 // SY -->
@@ -149,7 +150,7 @@ class BackupCreator(
         return mangaBackupCreator.backupMangas(mangas, options)
     }
 
-    fun backupSources(mangas: List<Manga>): List<BackupSource> {
+    fun backupSources(mangas: List<BackupManga>): List<BackupSource> {
         return sourcesBackupCreator.backupSources(mangas)
     }
 

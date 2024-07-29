@@ -79,8 +79,11 @@ class BackupRestorer(
         val backupMaps = backup.backupSources + backup.backupBrokenSources.map { it.toBackupSource() }
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
 
-        if (options.library) {
-            restoreAmount += backup.backupManga.size + 1 // +1 for categories
+        if (options.libraryEntries) {
+            restoreAmount += backup.backupManga.size
+        }
+        if (options.categories) {
+            restoreAmount += 1
         }
         // SY -->
         if (options.savedSearches) {
@@ -95,7 +98,7 @@ class BackupRestorer(
         }
 
         coroutineScope {
-            if (options.library) {
+            if (options.categories) {
                 restoreCategories(backup.backupCategories)
             }
             // SY -->
@@ -114,8 +117,8 @@ class BackupRestorer(
             if (options.sourceSettings) {
                 restoreSourcePreferences(backup.backupSourcePreferences)
             }
-            if (options.library) {
-                restoreManga(backup.backupManga, backup.backupCategories)
+            if (options.libraryEntries) {
+                restoreManga(backup.backupManga, if (options.categories) backup.backupCategories else emptyList())
             }
 
             // TODO: optionally trigger online library + tracker update

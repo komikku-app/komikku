@@ -95,10 +95,11 @@ class SyncManager(
         )
 
         logcat(LogPriority.DEBUG) { "Begin create backup" }
+        val backupManga = backupCreator.backupMangas(databaseManga, backupOptions)
         val backup = Backup(
-            backupManga = backupCreator.backupMangas(databaseManga, backupOptions),
+            backupManga = backupManga,
             backupCategories = backupCreator.backupCategories(backupOptions),
-            backupSources = backupCreator.backupSources(databaseManga),
+            backupSources = backupCreator.backupSources(backupManga),
             backupPreferences = backupCreator.backupAppPreferences(backupOptions),
             backupSourcePreferences = backupCreator.backupSourcePreferences(backupOptions),
 
@@ -199,11 +200,7 @@ class SyncManager(
                 context,
                 backupUri,
                 sync = true,
-                options = RestoreOptions(
-                    appSettings = true,
-                    sourceSettings = true,
-                    library = true,
-                ),
+                options = RestoreOptions(),
             )
 
             // update the sync timestamp
