@@ -20,6 +20,7 @@ class NetworkPreferences(
         return preferenceStore.getString(
             "default_user_agent",
             "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.3",
+            // "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0",
         )
     }
 }
