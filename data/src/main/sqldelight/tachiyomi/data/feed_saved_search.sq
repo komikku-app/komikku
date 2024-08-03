@@ -23,7 +23,7 @@ SELECT * FROM feed_saved_search WHERE source = :sourceId AND global = 0 ORDER BY
 
 insert:
 INSERT INTO feed_saved_search (source, saved_search, global, feed_order)
- VALUES (:sourceId, :savedSearch, :global, (SELECT MAX(feed_order) + 1 FROM feed_saved_search));
+ VALUES (:sourceId, :savedSearch, :global, (SELECT COALESCE(MAX(feed_order), 0) + 1 FROM feed_saved_search));
 
 deleteById:
 DELETE FROM feed_saved_search WHERE _id = :id;
