@@ -130,6 +130,7 @@ open class SourceFeedScreenModel(
                     source = source.id,
                     savedSearch = savedSearchId,
                     global = false,
+                    feedOrder = 0,
                 ),
             )
         }

@@ -12,4 +12,5 @@ data class FeedSavedSearch(
 
     // If the feed is a global (FeedScreen) or source specific feed (SourceFeedScreen)
     val global: Boolean,
+    val feedOrder: Long,
 )

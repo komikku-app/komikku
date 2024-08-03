@@ -182,6 +182,7 @@ open class FeedScreenModel(
                     source = source.id,
                     savedSearch = savedSearch?.id,
                     global = true,
+                    feedOrder = 0,
                 ),
             )
         }
