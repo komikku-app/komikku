@@ -41,6 +41,7 @@ import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
 import tachiyomi.domain.source.interactor.GetSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
+import tachiyomi.domain.source.interactor.SwapFeedOrder
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
@@ -65,6 +66,9 @@ open class FeedScreenModel(
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
+    // KMK -->
+    private val swapFeedOrder: SwapFeedOrder = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
@@ -152,6 +156,22 @@ open class FeedScreenModel(
         }
     }
 
+    // KMK -->
+    fun openActionsDialog(
+        feed: FeedItemUI,
+        prevFeed: FeedSavedSearch? = null,
+        nextFeed: FeedSavedSearch? = null,
+    ) {
+        screenModelScope.launchIO {
+            mutableState.update { state ->
+                state.copy(
+                    dialog = Dialog.FeedActions(feed, prevFeed, nextFeed),
+                )
+            }
+        }
+    }
+    // KMK <--
+
     private suspend fun hasTooManyFeeds(): Boolean {
         return countFeedSavedSearchGlobal.await() > MaxFeedItems
     }
@@ -182,6 +202,7 @@ open class FeedScreenModel(
                     source = source.id,
                     savedSearch = savedSearch?.id,
                     global = true,
+                    feedOrder = 0,
                 ),
             )
         }
@@ -192,6 +213,20 @@ open class FeedScreenModel(
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
+
+    // KMK -->
+    fun swapFeedOrder(feed1: FeedSavedSearch, feed2: FeedSavedSearch) {
+        screenModelScope.launchNonCancellable {
+            swapFeedOrder.swapOrder(feed1, feed2)
+        }
+    }
+
+    fun moveToBottom(feed: FeedSavedSearch) {
+        screenModelScope.launchNonCancellable {
+            swapFeedOrder.moveToBottom(feed)
+        }
+    }
+    // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<Pair<FeedSavedSearch, SavedSearch?>> {
         val savedSearches = getSavedSearchGlobalFeed.await()
@@ -313,6 +348,14 @@ open class FeedScreenModel(
         data class AddFeed(val options: ImmutableList<CatalogueSource>) : Dialog()
         data class AddFeedSearch(val source: CatalogueSource, val options: ImmutableList<SavedSearch?>) : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
+
+        // KMK -->
+        data class FeedActions(
+            val feedItem: FeedItemUI,
+            val prevFeed: FeedSavedSearch?,
+            val nextFeed: FeedSavedSearch?,
+        ) : Dialog()
+        // KMK <--
     }
 
     sealed class Event {

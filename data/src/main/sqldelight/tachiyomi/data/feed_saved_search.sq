@@ -5,6 +5,7 @@ CREATE TABLE feed_saved_search (
     source INTEGER NOT NULL,
     saved_search INTEGER,
     global INTEGER AS Boolean NOT NULL,
+    feed_order INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY(saved_search) REFERENCES saved_search (_id)
     ON DELETE CASCADE
 );
@@ -12,16 +13,17 @@ CREATE TABLE feed_saved_search (
 CREATE INDEX feed_saved_search_saved_search_index ON feed_saved_search(saved_search);
 
 selectAllGlobal:
-SELECT * FROM feed_saved_search WHERE global = 1;
+SELECT * FROM feed_saved_search WHERE global = 1 ORDER BY feed_order;
 
 countGlobal:
 SELECT count(*) FROM feed_saved_search WHERE global = 1;
 
 selectBySource:
-SELECT * FROM feed_saved_search WHERE source = :sourceId AND global = 0;
+SELECT * FROM feed_saved_search WHERE source = :sourceId AND global = 0 ORDER BY feed_order;
 
 insert:
-INSERT INTO feed_saved_search (source, saved_search, global) VALUES (:sourceId, :savedSearch, :global);
+INSERT INTO feed_saved_search (source, saved_search, global, feed_order)
+ VALUES (:sourceId, :savedSearch, :global, (SELECT COALESCE(MAX(feed_order), 0) + 1 FROM feed_saved_search));
 
 deleteById:
 DELETE FROM feed_saved_search WHERE _id = :id;
@@ -32,7 +34,7 @@ DELETE FROM feed_saved_search;
 selectGlobalFeedSavedSearch:
 SELECT saved_search.*
 FROM (
-    SELECT saved_search FROM feed_saved_search WHERE global = 1
+    SELECT saved_search FROM feed_saved_search WHERE global = 1 ORDER BY feed_order
 ) AS M
 JOIN saved_search
 ON saved_search._id = M.saved_search;
@@ -40,7 +42,7 @@ ON saved_search._id = M.saved_search;
 selectSourceFeedSavedSearch:
 SELECT saved_search.*
 FROM (
-    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId ORDER BY feed_order
 ) AS M
 JOIN saved_search
 ON saved_search._id = M.saved_search;
@@ -48,7 +50,7 @@ ON saved_search._id = M.saved_search;
 countSourceFeedSavedSearch:
 SELECT count(*)
 FROM (
-    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId ORDER BY feed_order
 ) AS M
 JOIN saved_search
 ON saved_search._id = M.saved_search;
@@ -57,7 +59,16 @@ selectLastInsertedRowId:
 SELECT last_insert_rowid();
 
 selectAllGlobalNonSavedSearch:
-SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL;
+SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL ORDER BY feed_order;
 
 selectAllFeedHasSavedSearch:
-SELECT * FROM feed_saved_search WHERE saved_search IS NOT NULL;
+SELECT * FROM feed_saved_search WHERE saved_search IS NOT NULL ORDER BY feed_order;
+
+-- KMK -->
+setOrder:
+UPDATE feed_saved_search SET feed_order = :order WHERE _id = :id;
+
+moveToBottom:
+UPDATE feed_saved_search SET feed_order = (SELECT MAX(feed_order) + 1 FROM feed_saved_search)
+ WHERE _id = :id;
+-- KMK <--

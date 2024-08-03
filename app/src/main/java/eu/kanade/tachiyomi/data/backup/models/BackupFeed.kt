@@ -11,11 +11,11 @@ data class BackupFeed(
 )
 
 val backupFeedMapper =
-    { _: Long, source: Long, _: Long?, global: Boolean ->
+    { _: Long, source: Long, _: Long?, global: Boolean, _: Long ->
         BackupFeed(
             source = source,
             global = global,
         )
     }
 
-fun SelectAllFeedHasSavedSearch.backupFeedMapper() = backupFeedMapper(_id, source, saved_search, global)
+fun SelectAllFeedHasSavedSearch.backupFeedMapper() = backupFeedMapper(_id, source, saved_search, global, feed_order)

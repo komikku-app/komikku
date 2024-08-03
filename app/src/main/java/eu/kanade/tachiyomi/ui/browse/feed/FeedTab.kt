@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.browse.FeedActionsDialog
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
@@ -118,7 +119,9 @@ fun feedTab(
                         ),
                     )
                 },
-                onClickDelete = screenModel::openDeleteDialog,
+                // KMK -->
+                onLongClickFeed = screenModel::openActionsDialog,
+                // KMK <--
                 onClickManga = { manga ->
                     // KMK -->
                     if (bulkFavoriteState.selectionMode) {
@@ -177,6 +180,32 @@ fun feedTab(
                             },
                         )
                     }
+                    // KMK -->
+                    is FeedScreenModel.Dialog.FeedActions -> {
+                        FeedActionsDialog(
+                            feedItem = dialog.feedItem,
+                            hasPrevFeed = dialog.prevFeed != null,
+                            hasNextFeed = dialog.nextFeed != null,
+                            onDismiss = screenModel::dismissDialog,
+                            onClickDelete = {
+                                screenModel.openDeleteDialog(dialog.feedItem.feed)
+                                screenModel.dismissDialog()
+                            },
+                            onMoveUp = {
+                                dialog.prevFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
+                                screenModel.dismissDialog()
+                            },
+                            onMoveDown = {
+                                dialog.nextFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
+                                screenModel.dismissDialog()
+                            },
+                            onMoveBottom = {
+                                dialog.nextFeed?.let { screenModel.moveToBottom(dialog.feedItem.feed) }
+                                screenModel.dismissDialog()
+                            }
+                        )
+                    }
+                    // KMK <--
                 }
             }
 
