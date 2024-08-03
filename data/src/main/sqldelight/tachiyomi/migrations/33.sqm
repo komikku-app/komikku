@@ -1,0 +1,5 @@
+-- Add feed_order column to feed_saved_search --
+ALTER TABLE feed_saved_search ADD COLUMN feed_order INTEGER NOT NULL DEFAULT 0;
+
+-- Using ID as initial feed_order to existed order
+UPDATE feed_saved_search SET feed_order = _id;
