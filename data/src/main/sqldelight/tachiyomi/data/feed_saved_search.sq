@@ -63,3 +63,12 @@ SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL ORDER 
 
 selectAllFeedHasSavedSearch:
 SELECT * FROM feed_saved_search WHERE saved_search IS NOT NULL ORDER BY feed_order;
+
+-- KMK -->
+setOrder:
+UPDATE feed_saved_search SET feed_order = :order WHERE _id = :id;
+
+moveToBottom:
+UPDATE feed_saved_search SET feed_order = (SELECT MAX(feed_order) + 1 FROM feed_saved_search)
+ WHERE _id = :id;
+-- KMK <--

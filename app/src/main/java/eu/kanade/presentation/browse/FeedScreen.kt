@@ -1,7 +1,9 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +44,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -67,7 +70,9 @@ fun FeedScreen(
     contentPadding: PaddingValues,
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
-    onClickDelete: (FeedSavedSearch) -> Unit,
+    // KMK -->
+    onLongClickFeed: (FeedItemUI, FeedSavedSearch?, FeedSavedSearch?) -> Unit,
+    // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
@@ -102,16 +107,26 @@ fun FeedScreen(
                     contentPadding = contentPadding + topSmallPaddingValues,
                     modifier = Modifier.fillMaxSize(),
                 ) {
+                    // KMK -->
+                    val feeds = state.items.orEmpty()
+                    // KMK <--
                     items(
-                        state.items.orEmpty(),
+                        feeds,
                         key = { "feed-${it.feed.id}" },
                     ) { item ->
+                        // KMK -->
+                        val index = feeds.indexOf(item)
+                        val prevFeed = feeds.getOrNull(index - 1)
+                        val nextFeed = feeds.getOrNull(index + 1)
+                        // KMK <--
                         GlobalSearchResultItem(
                             modifier = Modifier.animateItem(),
                             title = item.title,
                             subtitle = item.subtitle,
                             onLongClick = {
-                                onClickDelete(item.feed)
+                                // KMK -->
+                                onLongClickFeed(item, prevFeed?.feed, nextFeed?.feed)
+                                // KMK <--
                             },
                             onClick = {
                                 if (item.savedSearch != null && item.source != null) {
@@ -289,3 +304,43 @@ fun FeedDeleteConfirmDialog(
         },
     )
 }
+
+// KMK -->
+@Composable
+fun FeedActionsDialog(
+    feedItem: FeedItemUI,
+    hasPrevFeed: Boolean,
+    hasNextFeed: Boolean,
+    onDismiss: () -> Unit,
+    onClickDelete: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onMoveBottom: () -> Unit,
+) {
+    AlertDialog(
+        title = {
+            Text(text = stringResource(SYMR.strings.feed))
+        },
+        text = {
+            Text(text = if (feedItem.savedSearch != null) feedItem.savedSearch.name else feedItem.source?.name ?: "")
+        },
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            FlowRow(horizontalArrangement = Arrangement.SpaceEvenly) {
+                TextButton(onClick = onMoveUp, enabled = hasPrevFeed) {
+                    Text(text = stringResource(KMR.strings.action_move_up))
+                }
+                TextButton(onClick = onMoveDown, enabled = hasNextFeed) {
+                    Text(text = stringResource(KMR.strings.action_move_down))
+                }
+                TextButton(onClick = onMoveBottom, enabled = hasNextFeed) {
+                    Text(text = stringResource(KMR.strings.action_move_bottom))
+                }
+                TextButton(onClick = onClickDelete) {
+                    Text(text = stringResource(MR.strings.action_delete))
+                }
+            }
+        },
+    )
+}
+// KMK <--

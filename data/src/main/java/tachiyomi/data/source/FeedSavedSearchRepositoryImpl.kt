@@ -70,4 +70,27 @@ class FeedSavedSearchRepositoryImpl(
             }
         }
     }
+
+    // KMK -->
+    override suspend fun swapOrder(feed1: FeedSavedSearch, feed2: FeedSavedSearch) {
+        return handler.await(true) {
+            feed_saved_searchQueries.setOrder(
+                id = feed2.id,
+                order = feed1.feedOrder,
+            )
+            feed_saved_searchQueries.setOrder(
+                id = feed1.id,
+                order = feed2.feedOrder,
+            )
+        }
+    }
+
+    override suspend fun moveToBottom(feed: FeedSavedSearch) {
+        return handler.await(true) {
+            feed_saved_searchQueries.moveToBottom(
+                id = feed.id,
+            )
+        }
+    }
+    // KMK <--
 }
