@@ -19,14 +19,18 @@ class SavedSearchRestorer(
         handler.await(true) {
             // KMK <--
             val currentSavedSearches = handler.awaitList {
-                saved_searchQueries.selectNamesAndSources()
+                saved_searchQueries.selectAll()
             }
 
-            backupSavedSearches.filter { backupSavedSearch ->
-                currentSavedSearches.none { it.source == backupSavedSearch.source && it.name == backupSavedSearch.name }
-            }.forEach { backupSavedSearch ->
+            backupSavedSearches.forEach { backupSavedSearch ->
+                val existedSavedSearchId = currentSavedSearches.find {
+                    it.source == backupSavedSearch.source &&
+                        it.name == backupSavedSearch.name &&
+                        it.query == backupSavedSearch.query &&
+                        it.filters_json == backupSavedSearch.filterList
+                }?._id
                 // KMK -->
-                val savedSearchId = handler.awaitOneExecutable(true) {
+                val savedSearchId = existedSavedSearchId ?: handler.awaitOneExecutable(true) {
                     // KMK <--
                     saved_searchQueries.insert(
                         source = backupSavedSearch.source,
