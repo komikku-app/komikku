@@ -71,6 +71,9 @@ fun Screen.migrateSourceTab(): TabContent {
                     }
                 },
                 // SY <--
+                // KMK -->
+                onChangeSearchQuery = screenModel::search,
+                // KMK <--
             )
         },
     )
