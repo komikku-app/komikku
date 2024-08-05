@@ -14,6 +14,6 @@ class FeedBackupCreator(
      * Backup global Popular/Latest feeds
      */
     suspend fun backupFeeds(): List<BackupFeed> {
-        return handler.awaitList { feed_saved_searchQueries.selectAllGlobalNonSavedSearch(backupFeedMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectAllFeedWithSavedSearch(backupFeedMapper) }
     }
 }

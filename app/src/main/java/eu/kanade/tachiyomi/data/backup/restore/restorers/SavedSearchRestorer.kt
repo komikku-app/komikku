@@ -8,9 +8,6 @@ import uy.kohesive.injekt.api.get
 
 class SavedSearchRestorer(
     private val handler: DatabaseHandler = Injekt.get(),
-    // KMK -->
-    private val feedRestorer: FeedRestorer = FeedRestorer(),
-    // KMK <--
 ) {
     suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
         if (backupSavedSearches.isEmpty()) return
@@ -19,32 +16,29 @@ class SavedSearchRestorer(
         handler.await(true) {
             // KMK <--
             val currentSavedSearches = handler.awaitList {
+                // KMK -->
+                // saved_searchQueries.selectNamesAndSources()
                 saved_searchQueries.selectAll()
+                // KMK <--
             }
 
-            backupSavedSearches.forEach { backupSavedSearch ->
-                val existedSavedSearchId = currentSavedSearches.find {
-                    it.source == backupSavedSearch.source &&
-                        it.name == backupSavedSearch.name &&
-                        it.query == backupSavedSearch.query &&
-                        it.filters_json == backupSavedSearch.filterList
-                }?._id
-                // KMK -->
-                val savedSearchId = existedSavedSearchId ?: handler.awaitOneExecutable(true) {
+            backupSavedSearches.filter { backupSavedSearch ->
+                currentSavedSearches.none { currentSavedSearch ->
+                    currentSavedSearch.source == backupSavedSearch.source &&
+                        currentSavedSearch.name == backupSavedSearch.name &&
+                        // KMK -->
+                        currentSavedSearch.query.orEmpty() == backupSavedSearch.query &&
+                        (currentSavedSearch.filters_json ?: "[]") == backupSavedSearch.filterList
                     // KMK <--
-                    saved_searchQueries.insert(
-                        source = backupSavedSearch.source,
-                        name = backupSavedSearch.name,
-                        query = backupSavedSearch.query.nullIfBlank(),
-                        filtersJson = backupSavedSearch.filterList.nullIfBlank()
-                            ?.takeUnless { it == "[]" },
-                    )
-                    // KMK -->
-                    saved_searchQueries.selectLastInsertedRowId()
                 }
-
-                feedRestorer.restoreFeeds(backupSavedSearch.backupFeeds, savedSearchId)
-                // KMK <--
+            }.forEach { backupSavedSearch ->
+                saved_searchQueries.insert(
+                    source = backupSavedSearch.source,
+                    name = backupSavedSearch.name,
+                    query = backupSavedSearch.query.nullIfBlank(),
+                    filtersJson = backupSavedSearch.filterList.nullIfBlank()
+                        ?.takeUnless { it == "[]" },
+                )
             }
         }
     }
