@@ -33,7 +33,9 @@ import exh.ui.ifSourcesLoaded
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
 
@@ -179,6 +181,9 @@ data class SourceSearchScreen(
                     onSave = {},
                     savedSearches = persistentListOf(),
                     onSavedSearch = {},
+                    // KMK -->
+                    onSavedSearchPressDesc = stringResource(SYMR.strings.saved_searches),
+                    // KMK <--
                     onSavedSearchPress = {},
                     openMangaDexRandom = null,
                     openMangaDexFollows = null,

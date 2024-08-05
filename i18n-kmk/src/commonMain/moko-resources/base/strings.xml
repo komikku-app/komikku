@@ -97,6 +97,8 @@
     <string name="pref_source_related_mangas">Related Titles</string>
     <string name="pref_source_related_mangas_summary">Show related titles while viewing entry</string>
     <string name="related_mangas_more">More like these...</string>
+    <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
+    <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>
 
     <!-- Feed Tab -->
     <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited (20)</string>

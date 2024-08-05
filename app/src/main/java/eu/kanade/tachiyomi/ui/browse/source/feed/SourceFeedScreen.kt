@@ -35,6 +35,8 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {
@@ -176,6 +178,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                             context.toast(it)
                         }
                     },
+                    // KMK -->
+                    onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_add_feed),
+                    // KMK <--
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {
                             screenModel.onMangaDexRandom {
