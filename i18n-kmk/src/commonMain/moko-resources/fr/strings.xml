@@ -60,5 +60,15 @@
   <string name="pref_show_updating_progress_banner">Afficher la bannière de progression de mise à jour</string>
   <string name="pref_show_restoring_progress_banner">Afficher la bannière de progression de restauration</string>
   <string name="pref_show_syncing_progress_banner">Afficher la bannière de progression de la synchronisation</string>
-  <string name="saved_searches_feeds">Recherches enregistrées &amp; Flux</string>
+  <string name="saved_searches_feeds">Recherches Sauvegardées &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Autorisation d\'accès aux fichiers médias</string>
+  <string name="onboarding_permission_external_storage_description">Autoriser l\'utilisation de couvertures personnalisées dans les infos d\'édition de l\'entrée</string>
+  <string name="onboarding_permission_writing_external_storage_description">Autoriser l\'enregistrement des pochettes &amp; en utilisant des pochettes personnalisées dans les informations d\'édition de l\'entrée</string>
+  <string name="permission_writing_external_storage_succeed">Autorisation accordée. Réessayez.</string>
+  <string name="action_move_up">Déplacer vers le haut</string>
+  <string name="action_move_down">Déplacer vers le bas</string>
+  <string name="action_move_bottom">Déplacer en bas</string>
+  <string name="preload_library_cover_color">Précharger la couleur de couverture de la bibliothèque</string>
+  <string name="saved_searches_add_feed">Recherches Sauvegardées (Maintenir pour ajouter au Feed)</string>
+  <string name="saved_searches_delete">Recherches Sauvegardées (Maintenir pour supprimer)</string>
 </resources>

@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">إظهار شعار استعادة التقدم</string>
   <string name="pref_show_syncing_progress_banner">إظهار شعار التقدم في المزامنة</string>
   <string name="saved_searches_feeds">عمليات البحث المحفوظة &amp; موجز الويب</string>
+  <string name="onboarding_permission_external_storage">الوصول إلى إذن ملفات الوسائط</string>
+  <string name="onboarding_permission_external_storage_description">السماح باستخدام أغلفة مخصصة في تعديل معلومات الإدخال</string>
+  <string name="onboarding_permission_writing_external_storage_description">السماح بحفظ الأغلفة &amp; باستخدام أغلفة مخصصة في تحرير معلومات الإدخال</string>
+  <string name="permission_writing_external_storage_succeed">تم منح الإذن. حاول الإجراء مرة أخرى.</string>
+  <string name="action_move_up">تحريك للأعلى</string>
+  <string name="action_move_down">تحريك للأسفل</string>
+  <string name="action_move_bottom">تحريك أسفل</string>
+  <string name="preload_library_cover_color">تحميل مسبق لون غلاف المكتبة</string>
+  <string name="saved_searches_add_feed">عمليات البحث المحفوظة (اضغط للإضافة إلى التغذية)</string>
+  <string name="saved_searches_delete">عمليات البحث المحفوظة (اضغط للحذف)</string>
 </resources>

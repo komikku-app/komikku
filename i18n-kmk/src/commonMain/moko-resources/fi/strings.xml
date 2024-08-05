@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Näytä palautus edistymisbanneri</string>
   <string name="pref_show_syncing_progress_banner">Näytä edistymisbannerin synkronointi</string>
   <string name="saved_searches_feeds">Tallennetut Haut &amp; Syötteet</string>
+  <string name="onboarding_permission_external_storage">Käytä mediatiedostojen käyttöoikeuksia</string>
+  <string name="onboarding_permission_external_storage_description">Salli mukautettujen kansien käyttö syötön muokkaustiedoissa</string>
+  <string name="onboarding_permission_writing_external_storage_description">Salli kansien tallentaminen &amp; käyttäen mukautettuja kansia kirjauksen muokkaustiedoissa</string>
+  <string name="permission_writing_external_storage_succeed">Lupa myönnetty. Yritä toimia uudelleen.</string>
+  <string name="action_move_up">Siirrä ylös</string>
+  <string name="action_move_down">Siirrä alas</string>
+  <string name="action_move_bottom">Siirrä alimmaksi</string>
+  <string name="preload_library_cover_color">Esilataa kirjaston kansiväri</string>
+  <string name="saved_searches_add_feed">Tallennetut haut (pidä lisätäksesi syötteeseen)</string>
+  <string name="saved_searches_delete">Tallennetut haut (poistettavaksi)</string>
 </resources>

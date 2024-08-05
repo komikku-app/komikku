@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Mostra il ripristino del banner di avanzamento</string>
   <string name="pref_show_syncing_progress_banner">Mostra banner di avanzamento sincronizzazione</string>
   <string name="saved_searches_feeds">Ricerche Salvate &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Accesso ai file multimediali</string>
+  <string name="onboarding_permission_external_storage_description">Consenti l\'utilizzo di copertine personalizzate nelle informazioni di modifica della voce</string>
+  <string name="onboarding_permission_writing_external_storage_description">Consenti il salvataggio delle copertine &amp; utilizzando le copertine personalizzate nelle informazioni di modifica della voce</string>
+  <string name="permission_writing_external_storage_succeed">Autorizzazione concessa. Riprova.</string>
+  <string name="action_move_up">Sposta in alto</string>
+  <string name="action_move_down">Sposta in basso</string>
+  <string name="action_move_bottom">Sposta in basso</string>
+  <string name="preload_library_cover_color">Ricarica il colore della copertina della libreria</string>
+  <string name="saved_searches_add_feed">Ricerche salvate (Si prega di aggiungere al Feed)</string>
+  <string name="saved_searches_delete">Ricerche salvate (Si prega di eliminare)</string>
 </resources>

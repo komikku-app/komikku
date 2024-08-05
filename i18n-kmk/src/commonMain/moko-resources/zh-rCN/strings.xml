@@ -60,5 +60,15 @@
   <string name="pref_show_updating_progress_banner">显示更新进度横幅广告</string>
   <string name="pref_show_restoring_progress_banner">显示恢复进度横幅广告</string>
   <string name="pref_show_syncing_progress_banner">显示同步进度横幅广告</string>
-  <string name="saved_searches_feeds">已保存的搜索 &amp; Feeds</string>
+  <string name="saved_searches_feeds">保存搜索 &amp; 订阅</string>
+  <string name="onboarding_permission_external_storage">访问媒体文件权限</string>
+  <string name="onboarding_permission_external_storage_description">允许在条目编辑信息中使用自定义封面</string>
+  <string name="onboarding_permission_writing_external_storage_description">允许使用条目编辑信息中的自定义封面保存 &amp;</string>
+  <string name="permission_writing_external_storage_succeed">权限已授予。请再试一次。</string>
+  <string name="action_move_up">上移</string>
+  <string name="action_move_down">向下移动</string>
+  <string name="action_move_bottom">底部移动</string>
+  <string name="preload_library_cover_color">预加载库封面颜色</string>
+  <string name="saved_searches_add_feed">保存搜索 (按住即可添加到订阅)</string>
+  <string name="saved_searches_delete">保存搜索 (按住即可删除)</string>
 </resources>

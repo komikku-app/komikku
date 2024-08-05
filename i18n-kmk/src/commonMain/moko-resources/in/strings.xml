@@ -6,4 +6,6 @@
   <string name="theme_mocha">Moka</string>
   <string name="theme_matrix">Matrix</string>
   <string name="theme_sapphire">Safir</string>
+  <string name="saved_searches_add_feed">Penelusuran Disimpan (Tahan untuk menambahkan ke Feed)</string>
+  <string name="saved_searches_delete">Penelusuran Disimpan (Tahan untuk menghapus)</string>
 </resources>

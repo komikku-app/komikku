@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Mostrar banner de restauração</string>
   <string name="pref_show_syncing_progress_banner">Mostrar banner de progresso sincronizado</string>
   <string name="saved_searches_feeds">Pesquisas salvas &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Permissão de acesso a arquivos de mídia</string>
+  <string name="onboarding_permission_external_storage_description">Permitir usar capas personalizadas na edição de informações da entrada</string>
+  <string name="onboarding_permission_writing_external_storage_description">Permitir salvar capas &amp; usando capas personalizadas na informação de edição da entrada</string>
+  <string name="permission_writing_external_storage_succeed">Permissão concedida. Tente a ação novamente.</string>
+  <string name="action_move_up">Mover para cima</string>
+  <string name="action_move_down">Mover para baixo</string>
+  <string name="action_move_bottom">Mover para baixo</string>
+  <string name="preload_library_cover_color">Pré-carregar cor da biblioteca de capa</string>
+  <string name="saved_searches_add_feed">Pesquisas salvas (Segure para adicionar ao Feed)</string>
+  <string name="saved_searches_delete">Pesquisas salvas (Segure para excluir)</string>
 </resources>

@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Показ відновленого банера</string>
   <string name="pref_show_syncing_progress_banner">Показувати банер процесу синхронізації</string>
   <string name="saved_searches_feeds">Збережені пошукові запити &amp; Стрічки</string>
+  <string name="onboarding_permission_external_storage">Доступ до медіафайлів</string>
+  <string name="onboarding_permission_external_storage_description">Дозволити використання обкладинок в редакційній інформації</string>
+  <string name="onboarding_permission_writing_external_storage_description">Дозволити збереження обкладинок &amp; з використанням користувальницьких обкладинок під час редагування інформації про запис</string>
+  <string name="permission_writing_external_storage_succeed">Доступ надано. Спробуйте дію ще раз.</string>
+  <string name="action_move_up">Посунути вгору</string>
+  <string name="action_move_down">Посунути вниз</string>
+  <string name="action_move_bottom">Рухатися вниз</string>
+  <string name="preload_library_cover_color">Попередньо завантажити колір обкладинки бібліотеки</string>
+  <string name="saved_searches_add_feed">Збережені пошуки (Утримуйте, щоб додати на канал)</string>
+  <string name="saved_searches_delete">Збережені пошуки (утримуйте для видалення)</string>
 </resources>

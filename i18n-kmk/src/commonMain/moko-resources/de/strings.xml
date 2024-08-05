@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Wiederherstellungsfortschritts-Banner anzeigen</string>
   <string name="pref_show_syncing_progress_banner">Zeige Synchronisationsfortschritts-Banner</string>
   <string name="saved_searches_feeds">Gespeicherte Suche &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Zugriff auf Mediendateien</string>
+  <string name="onboarding_permission_external_storage_description">Verwende benutzerdefinierte Cover in der Editier-Info des Eintrags</string>
+  <string name="onboarding_permission_writing_external_storage_description">Erlaube das Speichern von Covern &amp; mit eigenen Covern in der Editier-Info des Eintrags</string>
+  <string name="permission_writing_external_storage_succeed">Berechtigung erteilt. Versuchen Sie es erneut.</string>
+  <string name="action_move_up">Nach oben</string>
+  <string name="action_move_down">Nach unten</string>
+  <string name="action_move_bottom">Nach unten</string>
+  <string name="preload_library_cover_color">Titelfarbe der Bibliothek vorladen</string>
+  <string name="saved_searches_add_feed">Gespeicherte Suche (zum Feed hinzufügen)</string>
+  <string name="saved_searches_delete">Gespeicherte Suchanfragen (zum Löschen warten)</string>
 </resources>
