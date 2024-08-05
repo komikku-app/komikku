@@ -26,8 +26,8 @@ class SavedSearchRestorer(
                 val existedSavedSearchId = currentSavedSearches.find {
                     it.source == backupSavedSearch.source &&
                         it.name == backupSavedSearch.name &&
-                        it.query == backupSavedSearch.query &&
-                        it.filters_json == backupSavedSearch.filterList
+                        it.query.orEmpty() == backupSavedSearch.query &&
+                        (it.filters_json ?: "[]") == backupSavedSearch.filterList
                 }?._id
                 // KMK -->
                 val savedSearchId = existedSavedSearchId ?: handler.awaitOneExecutable(true) {
