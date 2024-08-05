@@ -15,15 +15,16 @@ import eu.kanade.presentation.components.SuggestionChip
 import eu.kanade.presentation.components.SuggestionChipDefaults
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.EXHSavedSearch
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
-import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun SavedSearchItem(
     savedSearches: ImmutableList<EXHSavedSearch>,
     onSavedSearch: (EXHSavedSearch) -> Unit,
     onSavedSearchPress: (EXHSavedSearch) -> Unit,
+    // KMK -->
+    onSavedSearchPressDesc: String,
+    // KMK <--
 ) {
     if (savedSearches.isEmpty()) return
     Column(
@@ -35,7 +36,9 @@ fun SavedSearchItem(
             ),
     ) {
         Text(
-            text = stringResource(SYMR.strings.saved_searches),
+            // KMK -->
+            text = onSavedSearchPressDesc,
+            // KMK <--
             style = MaterialTheme.typography.bodySmall,
         )
         FlowRow(

@@ -72,6 +72,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -355,6 +356,9 @@ data class BrowseSourceScreen(
                         }
                     },
                     onSavedSearchPress = screenModel::onSavedSearchPress,
+                    // KMK -->
+                    onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_delete),
+                    // KMK <--
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {
                             screenModel.onMangaDexRandom {

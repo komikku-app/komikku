@@ -50,6 +50,9 @@ fun SourceFilterDialog(
     onSave: () -> Unit,
     onSavedSearch: (EXHSavedSearch) -> Unit,
     onSavedSearchPress: (EXHSavedSearch) -> Unit,
+    // KMK -->
+    onSavedSearchPressDesc: String,
+    // KMK <--
     openMangaDexRandom: (() -> Unit)?,
     openMangaDexFollows: (() -> Unit)?,
     // SY <--
@@ -108,6 +111,9 @@ fun SourceFilterDialog(
                     savedSearches = savedSearches,
                     onSavedSearch = onSavedSearch,
                     onSavedSearchPress = onSavedSearchPress,
+                    // KMK -->
+                    onSavedSearchPressDesc = onSavedSearchPressDesc,
+                    // KMK <--
                 )
             }
 
