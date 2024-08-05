@@ -146,10 +146,10 @@ class BackupRestorer(
         // KMK <--
     ) = launch {
         ensureActive()
+        savedSearchRestorer.restoreSavedSearches(backupSavedSearches)
         // KMK -->
         feedRestorer.restoreFeeds(backupFeeds)
         // KMK <--
-        savedSearchRestorer.restoreSavedSearches(backupSavedSearches)
 
         restoreProgress += 1
         notifier.showRestoreProgress(

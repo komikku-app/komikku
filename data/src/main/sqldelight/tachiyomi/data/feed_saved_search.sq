@@ -58,13 +58,18 @@ ON saved_search._id = M.saved_search;
 selectLastInsertedRowId:
 SELECT last_insert_rowid();
 
+-- KMK -->
 selectAllGlobalNonSavedSearch:
 SELECT * FROM feed_saved_search WHERE global = 1 AND saved_search IS NULL ORDER BY feed_order;
 
 selectAllFeedHasSavedSearch:
 SELECT * FROM feed_saved_search WHERE saved_search IS NOT NULL ORDER BY feed_order;
 
--- KMK -->
+selectAllFeedWithSavedSearch:
+SELECT coalesce(f.source, s.source) source, f.global, f.saved_search, s.name, s.query, s.filters_json
+ FROM feed_saved_search AS f LEFT JOIN saved_search AS s
+ ON f.saved_search = s._id ORDER BY f.feed_order;
+
 setOrder:
 UPDATE feed_saved_search SET feed_order = :order WHERE _id = :id;
 
