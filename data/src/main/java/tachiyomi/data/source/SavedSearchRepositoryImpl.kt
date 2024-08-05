@@ -26,14 +26,29 @@ class SavedSearchRepositoryImpl(
     }
 
     override suspend fun insert(savedSearch: SavedSearch): Long {
-        return handler.awaitOneExecutable(true) {
-            saved_searchQueries.insert(
-                savedSearch.source,
-                savedSearch.name,
-                savedSearch.query,
-                savedSearch.filtersJson,
-            )
-            saved_searchQueries.selectLastInsertedRowId()
+        // KMK -->
+        return handler.await(true) {
+            val currentSavedSearches = handler.awaitList {
+                saved_searchQueries.selectAll(SavedSearchMapper::map)
+            }
+            val existedSavedSearchId = currentSavedSearches.find { currentSavedSearch ->
+                currentSavedSearch.source == savedSearch.source &&
+                    currentSavedSearch.name == savedSearch.name &&
+                    currentSavedSearch.query == savedSearch.query &&
+                    currentSavedSearch.filtersJson == savedSearch.filtersJson
+            }?.id
+
+            existedSavedSearchId
+                // KMK <--
+                ?: handler.awaitOneExecutable(true) {
+                    saved_searchQueries.insert(
+                        savedSearch.source,
+                        savedSearch.name,
+                        savedSearch.query,
+                        savedSearch.filtersJson,
+                    )
+                    saved_searchQueries.selectLastInsertedRowId()
+                }
         }
     }
 
