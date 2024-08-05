@@ -60,5 +60,15 @@
   <string name="pref_show_updating_progress_banner">Показать обновление баннера прогресса</string>
   <string name="pref_show_restoring_progress_banner">Показать восстановление баннера прогресса</string>
   <string name="pref_show_syncing_progress_banner">Показать баннер прогресса синхронизации</string>
-  <string name="saved_searches_feeds">Сохраненные поиски &amp; ленты новостей</string>
+  <string name="saved_searches_feeds">Сохраненные запросы &amp; Ленты</string>
+  <string name="onboarding_permission_external_storage">Доступ к медиа-файлам</string>
+  <string name="onboarding_permission_external_storage_description">Разрешить использование пользовательских обложек в редактировании записи</string>
+  <string name="onboarding_permission_writing_external_storage_description">Разрешить сохранение обложек &amp; с помощью пользовательских обложек в записи Изменить информацию</string>
+  <string name="permission_writing_external_storage_succeed">Разрешение предоставлено. Попробуйте снова.</string>
+  <string name="action_move_up">Вверх</string>
+  <string name="action_move_down">Сдвинуть вниз</string>
+  <string name="action_move_bottom">Двигаться вниз</string>
+  <string name="preload_library_cover_color">Выгрузить цвет обложки библиотеки</string>
+  <string name="saved_searches_add_feed">Сохраненные поиски (Удерживайте, чтобы добавить в Лента)</string>
+  <string name="saved_searches_delete">Сохраненные поиски (удерживаются для удаления)</string>
 </resources>

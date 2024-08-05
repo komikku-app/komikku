@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Zobrazit banner při obnovování</string>
   <string name="pref_show_syncing_progress_banner">Zobrazit postup synchronizace banneru</string>
   <string name="saved_searches_feeds">Uložené vyhledávání &amp; kanály</string>
+  <string name="onboarding_permission_external_storage">Přístup k mediálním souborům</string>
+  <string name="onboarding_permission_external_storage_description">Povolit použití vlastních obálek v informacích o úpravách</string>
+  <string name="onboarding_permission_writing_external_storage_description">Povolit ukládání obálek &amp; pomocí vlastních obálek v informacích o editaci záznamu</string>
+  <string name="permission_writing_external_storage_succeed">Oprávnění uděleno. Zkuste akci znovu.</string>
+  <string name="action_move_up">Posunout nahoru</string>
+  <string name="action_move_down">Přesunout dolů</string>
+  <string name="action_move_bottom">Přesunout dole</string>
+  <string name="preload_library_cover_color">Přednačte barvu obalu knihovny</string>
+  <string name="saved_searches_add_feed">Uložená hledání (přidržením přidejte do kanálu)</string>
+  <string name="saved_searches_delete">Uložená hledání (podržte pro smazání)</string>
 </resources>

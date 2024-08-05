@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Pokaż baner postępu przywracania</string>
   <string name="pref_show_syncing_progress_banner">Pokaż baner postępu synchronizacji</string>
   <string name="saved_searches_feeds">Zapisane wyszukiwania &amp; Kanały</string>
+  <string name="onboarding_permission_external_storage">Dostęp do plików multimedialnych</string>
+  <string name="onboarding_permission_external_storage_description">Zezwalaj na używanie własnych okładek w informacjach edycji wpisu</string>
+  <string name="onboarding_permission_writing_external_storage_description">Zezwalaj na zapisywanie okładek &amp; przy użyciu niestandardowych okładek w informacjach edycji wpisu</string>
+  <string name="permission_writing_external_storage_succeed">Udzielono uprawnień. Spróbuj ponownie.</string>
+  <string name="action_move_up">Przesuń w górę</string>
+  <string name="action_move_down">Przesuń w dół</string>
+  <string name="action_move_bottom">Przesuń w dół</string>
+  <string name="preload_library_cover_color">Kolor okładki biblioteki</string>
+  <string name="saved_searches_add_feed">Zapisane wyszukiwanie (Przytrzymaj aby dodać do listy Wątków)</string>
+  <string name="saved_searches_delete">Zapisane wyszukiwanie (przytrzymaj aby usunąć)</string>
 </resources>

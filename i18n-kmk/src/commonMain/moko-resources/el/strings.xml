@@ -60,5 +60,15 @@
   <string name="pref_show_updating_progress_banner">Εμφάνιση banner προόδου ενημέρωσης</string>
   <string name="pref_show_restoring_progress_banner">Εμφάνιση του banner προόδου</string>
   <string name="pref_show_syncing_progress_banner">Εμφάνιση banner προόδου συγχρονισμού</string>
-  <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
+  <string name="saved_searches_feeds">Αποθηκευμένες έρευνες &amp; Ροή</string>
+  <string name="onboarding_permission_external_storage">Πρόσβαση σε αρχεία πολυμέσων</string>
+  <string name="onboarding_permission_external_storage_description">Να επιτρέπεται η χρήση προσαρμοσμένων καλύψεων στις Πληροφορίες Επεξεργασίας της καταχώρησης</string>
+  <string name="onboarding_permission_writing_external_storage_description">Να επιτρέπεται η αποθήκευση καλύμματα &amp; χρησιμοποιώντας προσαρμοσμένα καλύμματα στις Πληροφορίες Επεξεργασίας της καταχώρησης</string>
+  <string name="permission_writing_external_storage_succeed">Χορηγήθηκε άδεια. Δοκιμάστε ξανά δράση.</string>
+  <string name="action_move_up">Μετακίνηση πάνω</string>
+  <string name="action_move_down">Μετακίνηση κάτω</string>
+  <string name="action_move_bottom">Μετακίνηση κάτω</string>
+  <string name="preload_library_cover_color">Προφόρτωση χρώματος καλύμματος της βιβλιοθήκης</string>
+  <string name="saved_searches_add_feed">Αποθηκευμένες αναζητήσεις (Κρατήστε για προσθήκη στη Ροή)</string>
+  <string name="saved_searches_delete">Αποθηκευμένες αναζητήσεις (Κρατήστε για διαγραφή)</string>
 </resources>

@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">復元中のバナーを表示</string>
   <string name="pref_show_syncing_progress_banner">同期中の進捗バナーを表示</string>
   <string name="saved_searches_feeds">保存された検索 &amp; フィード</string>
+  <string name="onboarding_permission_external_storage">メディアファイルへのアクセス許可</string>
+  <string name="onboarding_permission_external_storage_description">エントリの編集情報でカスタムカバーの使用を許可する</string>
+  <string name="onboarding_permission_writing_external_storage_description">カバーの保存を許可 &amp; エントリの編集情報でカスタム カバーを使用する</string>
+  <string name="permission_writing_external_storage_succeed">権限が付与されました。もう一度アクションを試してください。</string>
+  <string name="action_move_up">上へ移動</string>
+  <string name="action_move_down">下に移動</string>
+  <string name="action_move_bottom">下に移動</string>
+  <string name="preload_library_cover_color">ライブラリのカバーカラーをプリロード</string>
+  <string name="saved_searches_add_feed">保存された検索（フィードに追加するには長押し）</string>
+  <string name="saved_searches_delete">保存された検索（削除する場合は長押し）</string>
 </resources>

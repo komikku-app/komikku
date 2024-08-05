@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Toon terugzetten van voortgang banner</string>
   <string name="pref_show_syncing_progress_banner">Synchroniseer voortgangs banner weergeven</string>
   <string name="saved_searches_feeds">Opgeslagen zoekopdrachten &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Toegang tot mediabestanden</string>
+  <string name="onboarding_permission_external_storage_description">Sta het gebruik van aangepaste covers toe in de Invoer Bewerken Info</string>
+  <string name="onboarding_permission_writing_external_storage_description">Omslagfoto &amp; opslaan met aangepaste omslagen in entry\'s Info bewerken</string>
+  <string name="permission_writing_external_storage_succeed">Toestemming verleend. Probeer opnieuw.</string>
+  <string name="action_move_up">Verplaats omhoog</string>
+  <string name="action_move_down">Verplaats naar beneden</string>
+  <string name="action_move_bottom">Verplaats onderaan</string>
+  <string name="preload_library_cover_color">Voorladen albumhoes cover kleur</string>
+  <string name="saved_searches_add_feed">Opgeslagen zoekopdrachten (houd vast om toe te voegen aan Feed)</string>
+  <string name="saved_searches_delete">Opgeslagen zoekopdrachten (Houd om te verwijderen)</string>
 </resources>

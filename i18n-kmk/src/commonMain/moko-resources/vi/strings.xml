@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Hiển thị biểu ngữ tiến trình khôi phục</string>
   <string name="pref_show_syncing_progress_banner">Hiển thị biểu ngữ tiến trình đồng bộ hóa</string>
   <string name="saved_searches_feeds">Nguồn dữ liệu &amp; Tìm kiếm đã lưu</string>
+  <string name="onboarding_permission_external_storage">Quyền truy cập vào tập tin đa phương tiện</string>
+  <string name="onboarding_permission_external_storage_description">Cho phép dùng ảnh bìa từ tập tin trên thiết bị ở mục Chỉnh sửa thông tin</string>
+  <string name="onboarding_permission_writing_external_storage_description">Cho phép lưu ảnh bìa &amp; dùng ảnh bìa từ tập tin trên thiết bị ở mục Chỉnh sửa thông tin</string>
+  <string name="permission_writing_external_storage_succeed">Đã được cấp quyền. Thử lại hành động lần nữa.</string>
+  <string name="action_move_up">Chuyển lên</string>
+  <string name="action_move_down">Chuyển xuống</string>
+  <string name="action_move_bottom">Xuống cuối</string>
+  <string name="preload_library_cover_color">Tải trước màu bìa trong thư viện</string>
+  <string name="saved_searches_add_feed">Tìm kiếm đã lưu (Giữ để thêm vào Nguồn)</string>
+  <string name="saved_searches_delete">Tìm kiếm đã lưu (Giữ để xóa)</string>
 </resources>

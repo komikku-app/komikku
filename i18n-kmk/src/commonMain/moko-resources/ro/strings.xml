@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Arată restaurarea banner-ului de progres</string>
   <string name="pref_show_syncing_progress_banner">Afișare banner de progres sincronizare</string>
   <string name="saved_searches_feeds">Căutări salvate &amp; Fluxuri</string>
+  <string name="onboarding_permission_external_storage">Accesează permisiunile fișierelor media</string>
+  <string name="onboarding_permission_external_storage_description">Permite utilizarea coperților personalizate în informațiile de editare a intrării</string>
+  <string name="onboarding_permission_writing_external_storage_description">Permite economisirea copertelor &amp; folosind coperți personalizate în informațiile de editare a intrării</string>
+  <string name="permission_writing_external_storage_succeed">Permisiune acordată. Încercați din nou acțiunea.</string>
+  <string name="action_move_up">Mută în sus</string>
+  <string name="action_move_down">Mută în jos</string>
+  <string name="action_move_bottom">Mută jos</string>
+  <string name="preload_library_cover_color">Preîncarcă culoarea coperții bibliotecii</string>
+  <string name="saved_searches_add_feed">Căutări salvate (veche pentru a adăuga la flux)</string>
+  <string name="saved_searches_delete">Căutări salvate (Ține să ștergeți)</string>
 </resources>

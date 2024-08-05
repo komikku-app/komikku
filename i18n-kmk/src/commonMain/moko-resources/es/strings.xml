@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Mostrar banner de restauración</string>
   <string name="pref_show_syncing_progress_banner">Mostrar banner de progreso de sincronización</string>
   <string name="saved_searches_feeds">Búsquedas guardadas &amp; Menos</string>
+  <string name="onboarding_permission_external_storage">Acceso a archivos multimedia</string>
+  <string name="onboarding_permission_external_storage_description">Permitir el uso de portadas personalizadas en la información de edición de la entrada</string>
+  <string name="onboarding_permission_writing_external_storage_description">Permitir guardar portadas &amp; usando portadas personalizadas en la información de edición de la entrada</string>
+  <string name="permission_writing_external_storage_succeed">Permiso concedido. Inténtelo de nuevo.</string>
+  <string name="action_move_up">Subir</string>
+  <string name="action_move_down">Bajar</string>
+  <string name="action_move_bottom">Mover abajo</string>
+  <string name="preload_library_cover_color">precargar el color de portada de la biblioteca</string>
+  <string name="saved_searches_add_feed">Búsqueda guardada (Mantén para añadir al alimento)</string>
+  <string name="saved_searches_delete">Búsquedas guardadas (Mantén para eliminar)</string>
 </resources>

@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Vis genoprettelse af fremdriftsbanner</string>
   <string name="pref_show_syncing_progress_banner">Vis synkronisering af fremdriftsbanner</string>
   <string name="saved_searches_feeds">Gemte Søgninger &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Adgang til mediefiler tilladelse</string>
+  <string name="onboarding_permission_external_storage_description">Tillad brug af brugerdefinerede omslag i indgangen Rediger Info</string>
+  <string name="onboarding_permission_writing_external_storage_description">Tillad lagring dækker &amp; ved hjælp af brugerdefinerede omslag i indgangen Rediger Info</string>
+  <string name="permission_writing_external_storage_succeed">Tilladelse givet. Prøv handling igen.</string>
+  <string name="action_move_up">Flyt op</string>
+  <string name="action_move_down">Flyt ned</string>
+  <string name="action_move_bottom">Flyt bunden</string>
+  <string name="preload_library_cover_color">Forudindlæs bibliotekets dækningsfarve</string>
+  <string name="saved_searches_add_feed">Gemte Søgninger (Hold for at tilføje til Feed)</string>
+  <string name="saved_searches_delete">Gemte Søgninger (Hold til at slette)</string>
 </resources>

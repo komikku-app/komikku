@@ -61,4 +61,14 @@
   <string name="pref_show_restoring_progress_banner">Visa återställning av förloppsbanner</string>
   <string name="pref_show_syncing_progress_banner">Visa synkronisering av förloppsbanner</string>
   <string name="saved_searches_feeds">Sparade sökningar &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage">Behörighet för mediefiler</string>
+  <string name="onboarding_permission_external_storage_description">Tillåt att använda anpassade omslag i postens Redigera information</string>
+  <string name="onboarding_permission_writing_external_storage_description">Tillåt att spara omslag &amp; med hjälp av anpassade omslag i postens Redigera information</string>
+  <string name="permission_writing_external_storage_succeed">Tillstånd beviljad. Försök igen.</string>
+  <string name="action_move_up">Flytta upp</string>
+  <string name="action_move_down">Flytta ner</string>
+  <string name="action_move_bottom">Flytta botten</string>
+  <string name="preload_library_cover_color">Förladda bibliotekets omslagsfärg</string>
+  <string name="saved_searches_add_feed">Sparade sökningar (gamla att lägga till i Feed)</string>
+  <string name="saved_searches_delete">Sparade sökningar (gamla att radera)</string>
 </resources>
