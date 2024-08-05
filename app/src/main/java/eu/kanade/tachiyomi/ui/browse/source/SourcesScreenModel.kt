@@ -196,6 +196,14 @@ class SourcesScreenModel(
     }
     // SY <--
 
+    fun showSourceDialog(source: Source) {
+        mutableState.update { it.copy(dialog = Dialog.SourceLongClick(source)) }
+    }
+
+    fun closeDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
     // KMK -->
     fun search(query: String?) {
         mutableState.update {
@@ -209,14 +217,6 @@ class SourcesScreenModel(
         }
     }
     // KMK <--
-
-    fun showSourceDialog(source: Source) {
-        mutableState.update { it.copy(dialog = Dialog.SourceLongClick(source)) }
-    }
-
-    fun closeDialog() {
-        mutableState.update { it.copy(dialog = null) }
-    }
 
     sealed interface Event {
         data object FailedFetchingSources : Event

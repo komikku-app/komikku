@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -26,14 +28,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
+import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
-import tachiyomi.presentation.core.components.ScrollbarLazyColumn
+import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -54,11 +58,17 @@ fun MigrateSourceScreen(
     // SY -->
     onClickAll: (Source) -> Unit,
     // SY <--
+    // KMK -->
+    onChangeSearchQuery: (String?) -> Unit,
+    // KMK <--
 ) {
     val context = LocalContext.current
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
-        state.isEmpty -> EmptyScreen(
+        // KMK -->
+        state.searchQuery.isNullOrBlank() &&
+            // KMK <--
+            state.isEmpty -> EmptyScreen(
             stringRes = MR.strings.information_empty_library,
             modifier = Modifier.padding(contentPadding),
         )
@@ -78,6 +88,10 @@ fun MigrateSourceScreen(
                 // SY -->
                 onClickAll = onClickAll,
                 // SY <--
+                // KMK -->
+                state = state,
+                onChangeSearchQuery = onChangeSearchQuery,
+                // KMK <--
             )
     }
 }
@@ -95,64 +109,94 @@ private fun MigrateSourceList(
     // SY -->
     onClickAll: (Source) -> Unit,
     // SY <--
+    // KMK -->
+    state: MigrateSourceScreenModel.State,
+    onChangeSearchQuery: (String?) -> Unit,
+    // KMK <--
 ) {
-    ScrollbarLazyColumn(
-        contentPadding = contentPadding + topSmallPaddingValues,
-    ) {
-        stickyHeader(key = STICKY_HEADER_KEY_PREFIX) {
-            Row(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(start = MaterialTheme.padding.medium),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(MR.strings.migration_selection_prompt),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.header,
-                )
+    // KMK -->
+    val lazyListState = rememberLazyListState()
 
-                IconButton(onClick = onToggleSortingMode) {
-                    when (sortingMode) {
-                        SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
-                            Icons.Outlined.SortByAlpha,
-                            contentDescription = stringResource(MR.strings.action_sort_alpha),
-                        )
-                        SetMigrateSorting.Mode.TOTAL -> Icon(
-                            Icons.Outlined.Numbers,
-                            contentDescription = stringResource(MR.strings.action_sort_count),
-                        )
+    BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
+        onChangeSearchQuery(null)
+    }
+
+    Column(
+        // Wrap around so we can use stickyHeader
+        modifier = Modifier.padding(contentPadding + topSmallPaddingValues),
+    ) {
+        AnimatedFloatingSearchBox(
+            listState = lazyListState,
+            searchQuery = state.searchQuery,
+            onChangeSearchQuery = onChangeSearchQuery,
+            placeholderText = stringResource(KMR.strings.action_search_for_source),
+        )
+
+        FastScrollLazyColumn(
+            state = lazyListState,
+            // contentPadding = contentPadding + topSmallPaddingValues,
+            // KMK <--
+        ) {
+            stickyHeader(key = STICKY_HEADER_KEY_PREFIX) {
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(start = MaterialTheme.padding.medium),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.migration_selection_prompt),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.header,
+                    )
+
+                    IconButton(onClick = onToggleSortingMode) {
+                        when (sortingMode) {
+                            SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
+                                Icons.Outlined.SortByAlpha,
+                                contentDescription = stringResource(MR.strings.action_sort_alpha),
+                            )
+
+                            SetMigrateSorting.Mode.TOTAL -> Icon(
+                                Icons.Outlined.Numbers,
+                                contentDescription = stringResource(MR.strings.action_sort_count),
+                            )
+                        }
                     }
-                }
-                IconButton(onClick = onToggleSortingDirection) {
-                    when (sortingDirection) {
-                        SetMigrateSorting.Direction.ASCENDING -> Icon(
-                            Icons.Outlined.ArrowUpward,
-                            contentDescription = stringResource(MR.strings.action_asc),
-                        )
-                        SetMigrateSorting.Direction.DESCENDING -> Icon(
-                            Icons.Outlined.ArrowDownward,
-                            contentDescription = stringResource(MR.strings.action_desc),
-                        )
+                    IconButton(onClick = onToggleSortingDirection) {
+                        when (sortingDirection) {
+                            SetMigrateSorting.Direction.ASCENDING -> Icon(
+                                Icons.Outlined.ArrowUpward,
+                                contentDescription = stringResource(MR.strings.action_asc),
+                            )
+
+                            SetMigrateSorting.Direction.DESCENDING -> Icon(
+                                Icons.Outlined.ArrowDownward,
+                                contentDescription = stringResource(MR.strings.action_desc),
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        items(
-            items = list,
-            key = { (source, _) -> "migrate-${source.id}" },
-        ) { (source, count) ->
-            MigrateSourceItem(
-                modifier = Modifier.animateItem(),
-                source = source,
-                count = count,
-                onClickItem = { onClickItem(source) },
-                onLongClickItem = { onLongClickItem(source) },
-                // SY -->
-                onClickAll = { onClickAll(source) },
-                // SY <--
-            )
+            items(
+                items = list,
+                key = { (source, _) -> "migrate-${source.id}" },
+            ) { (source, count) ->
+                MigrateSourceItem(
+                    // KMK -->
+                    // modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemFastScroll(),
+                    // KMK <--
+                    source = source,
+                    count = count,
+                    onClickItem = { onClickItem(source) },
+                    onLongClickItem = { onLongClickItem(source) },
+                    // SY -->
+                    onClickAll = { onClickAll(source) },
+                    // SY <--
+                )
+            }
         }
     }
 }
