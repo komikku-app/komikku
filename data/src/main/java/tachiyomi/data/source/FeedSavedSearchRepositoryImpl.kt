@@ -49,13 +49,27 @@ class FeedSavedSearchRepositoryImpl(
     }
 
     override suspend fun insert(feedSavedSearch: FeedSavedSearch): Long {
-        return handler.awaitOneExecutable(true) {
-            feed_saved_searchQueries.insert(
-                feedSavedSearch.source,
-                feedSavedSearch.savedSearch,
-                feedSavedSearch.global,
-            )
-            feed_saved_searchQueries.selectLastInsertedRowId()
+        // KMK -->
+        return handler.await(true) {
+            val currentFeeds = handler.awaitList {
+                feed_saved_searchQueries.selectAll(FeedSavedSearchMapper::map)
+            }
+            val existedFeedId = currentFeeds.find { currentFeed ->
+                currentFeed.source == feedSavedSearch.source &&
+                    currentFeed.savedSearch == feedSavedSearch.savedSearch &&
+                    currentFeed.global == feedSavedSearch.global
+            }?.id
+
+            existedFeedId
+                // KMK <--
+                ?: handler.awaitOneExecutable(true) {
+                    feed_saved_searchQueries.insert(
+                        feedSavedSearch.source,
+                        feedSavedSearch.savedSearch,
+                        feedSavedSearch.global,
+                    )
+                    feed_saved_searchQueries.selectLastInsertedRowId()
+                }
         }
     }
 

@@ -12,6 +12,11 @@ CREATE TABLE feed_saved_search (
 
 CREATE INDEX feed_saved_search_saved_search_index ON feed_saved_search(saved_search);
 
+-- KMK -->
+selectAll:
+SELECT * FROM feed_saved_search ORDER BY feed_order;
+-- KMK <--
+
 selectAllGlobal:
 SELECT * FROM feed_saved_search WHERE global = 1 ORDER BY feed_order;
 
