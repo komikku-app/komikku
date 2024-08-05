@@ -68,6 +68,7 @@
     <string name="invalid_downloads_cleaned">Invalid downloads cleaned</string>
     <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
+    <string name="preload_library_cover_color">Preload library's cover color</string>
 
       <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
