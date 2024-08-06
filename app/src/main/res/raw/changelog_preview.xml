@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9197" changeDate="August 06, 2024">
+        <changelogtext>[b]New:[/b] Add sources search to Migrate Source Screen</changelogtext>
+        <changelogtext>[b]New:[/b] change feed's order</changelogtext>
+        <changelogtext>[b]Improve:[/b] avoid adding duplicate feed/saved search</changelogtext>
+        <changelogtext>[b]Improve:[/b] update translation</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong feed order after restoration</changelogtext>
+        <changelogtext>[b]Fix:[/b] missing feed if saved searches already exists</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9180" changeDate="July 30, 2024">
         <changelogtext>[b]New:[/b] Add onboarding permissions request for external storage</changelogtext>
         <changelogtext>[b]New:[/b] Request for writing storage permission when saving pictures (Android P &amp; below)</changelogtext>
