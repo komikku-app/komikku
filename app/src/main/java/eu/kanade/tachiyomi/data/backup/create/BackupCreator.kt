@@ -6,6 +6,7 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.creators.CategoriesBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.ExtensionRepoBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.FeedBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.MangaBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.PreferenceBackupCreator
@@ -13,6 +14,7 @@ import eu.kanade.tachiyomi.data.backup.create.creators.SavedSearchBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SourcesBackupCreator
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
+import eu.kanade.tachiyomi.data.backup.models.BackupExtensionRepos
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
@@ -52,6 +54,7 @@ class BackupCreator(
     private val categoriesBackupCreator: CategoriesBackupCreator = CategoriesBackupCreator(),
     private val mangaBackupCreator: MangaBackupCreator = MangaBackupCreator(),
     private val preferenceBackupCreator: PreferenceBackupCreator = PreferenceBackupCreator(),
+    private val extensionRepoBackupCreator: ExtensionRepoBackupCreator = ExtensionRepoBackupCreator(),
     private val sourcesBackupCreator: SourcesBackupCreator = SourcesBackupCreator(),
     // KMK -->
     private val feedBackupCreator: FeedBackupCreator = FeedBackupCreator(),
@@ -99,10 +102,13 @@ class BackupCreator(
                 backupCategories = backupCategories(options),
                 backupSources = backupSources(backupManga),
                 backupPreferences = backupAppPreferences(options),
+                backupExtensionRepo = backupExtensionRepos(options),
                 backupSourcePreferences = backupSourcePreferences(options),
+
                 // SY -->
                 backupSavedSearches = backupSavedSearches(),
                 // SY <--
+
                 // KMK -->
                 backupFeeds = backupFeeds(),
                 // KMK <--
@@ -158,6 +164,12 @@ class BackupCreator(
         if (!options.appSettings) return emptyList()
 
         return preferenceBackupCreator.createApp(includePrivatePreferences = options.privateSettings)
+    }
+
+    suspend fun backupExtensionRepos(options: BackupOptions): List<BackupExtensionRepos> {
+        if (!options.extensionRepoSettings) return emptyList()
+
+        return extensionRepoBackupCreator()
     }
 
     fun backupSourcePreferences(options: BackupOptions): List<BackupSourcePreferences> {

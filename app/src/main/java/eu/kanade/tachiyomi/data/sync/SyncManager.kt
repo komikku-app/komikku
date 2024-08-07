@@ -101,6 +101,7 @@ class SyncManager(
             backupCategories = backupCreator.backupCategories(backupOptions),
             backupSources = backupCreator.backupSources(backupManga),
             backupPreferences = backupCreator.backupAppPreferences(backupOptions),
+            backupExtensionRepo = backupCreator.backupExtensionRepos(backupOptions),
             backupSourcePreferences = backupCreator.backupSourcePreferences(backupOptions),
 
             // SY -->
