@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.11.2" changeDate="Augh 08, 2024">
+        <changelogtext>[b]New:[/b] Support for backing up and restoring Feeds</changelogtext>
+        <changelogtext>[b]New:[/b] Allow changing feeds' order</changelogtext>
+        <changelogtext>[b]New:[/b] Show progress-banner for sync/restore/update</changelogtext>
+        <changelogtext>[b]New:[/b] Jump to entry from download queue item</changelogtext>
+        <changelogtext>[b]New:[/b] Long-click search drop-down menu for entry's title/author/artist/source</changelogtext>
+        <changelogtext>[b]New:[/b] Support sources search in Migrate Source Screen</changelogtext>
+        <changelogtext>[b]New:[/b] Onboarding permissions request for external storage</changelogtext>
+        <changelogtext>[b]New:[/b] Request for storage permission when saving pictures (Android P &amp; below)</changelogtext>
+        <changelogtext>[b]New:[/b] Adds Reader Option to Copy Panel to Clipboard</changelogtext>
+        <changelogtext>[b]New:[/b] Added configuration options to e-ink page flashes</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update default popular user-agent, better support Cloudflare</changelogtext>
+        <changelogtext>[b]Improve:[/b] Google drive sync</changelogtext>
+        <changelogtext>[b]Improve:[/b] Make global search 'Has result' sticky</changelogtext>
+        <changelogtext>[b]Improve:[/b] Background color for favorite entries</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update E-Hentai to support libraryColored, bulk-selection overlay</changelogtext>
+        <changelogtext>[b]Fix:[/b] Copy icon (migration whole list) was always migrating instead of copy</changelogtext>
+        <changelogtext>[b]Fix:[/b] Migrate/copy manga with 'Delete downloaded' unticked had no effect but always delete</changelogtext>
+        <changelogtext>[b]Fix:[/b] Background color of selected entries</changelogtext>
+        <changelogtext>[b]Fix:[/b] (performance) rework cover's loading animation</changelogtext>
+        <changelogtext>[b]Fix:[/b] (performance) laggy after browsing library for a while</changelogtext>
+        <changelogtext>[b]Fix:[/b] Revert chapter's filter icon</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.11.1" changeDate="July 04, 2024">
         <changelogtext>[b]Komikku's Discord channel[/b]</changelogtext>
         <changelogtext>[b]New:[/b] App icon</changelogtext>
