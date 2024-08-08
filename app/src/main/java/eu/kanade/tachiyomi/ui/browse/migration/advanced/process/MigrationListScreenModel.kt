@@ -180,7 +180,9 @@ class MigrationListScreenModel(
                 val mangaSource = sourceManager.getOrStub(mangaObj.source)
 
                 val result = try {
-                    manga.migrationScope.async {
+                    // KMK -->
+                    manga.searchingJob = manga.migrationScope.async {
+                        // KMK <--
                         val validSources = if (sources.size == 1) {
                             sources
                         } else {
@@ -288,7 +290,10 @@ class MigrationListScreenModel(
 
                             null
                         }
-                    }.await()
+                    }
+                    // KMK -->
+                    manga.searchingJob.await()
+                    // KMK <--
                 } catch (e: CancellationException) {
                     // Ignore canceled migrations
                     continue
@@ -434,6 +439,7 @@ class MigrationListScreenModel(
         updateManga.awaitAll(listOfNotNull(mangaUpdate, prevMangaUpdate))
     }
 
+    /** Set a manga picked from manual search to be used as migration target */
     fun useMangaForMigration(context: Context, newMangaId: Long, selectedMangaId: Long) {
         val migratingManga = migratingItems.value.orEmpty().find { it.manga.id == selectedMangaId }
             ?: return
@@ -544,6 +550,19 @@ class MigrationListScreenModel(
             removeManga(mangaId)
         }
     }
+
+    // KMK -->
+    /** Cancel searching without remove it from list so user can perform manual search */
+    fun cancelManga(mangaId: Long) {
+        screenModelScope.launchIO {
+            val item = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
+                ?: return@launchIO
+            item.searchingJob.cancel()
+            item.searchResult.value = SearchResult.NotFound
+            sourceFinished()
+        }
+    }
+    // KMK <--
 
     fun removeManga(mangaId: Long) {
         screenModelScope.launchIO {

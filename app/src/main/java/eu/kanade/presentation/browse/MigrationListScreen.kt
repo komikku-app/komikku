@@ -51,6 +51,9 @@ fun MigrationListScreen(
     onMigrationItemClick: (Manga) -> Unit,
     openMigrationDialog: (Boolean) -> Unit,
     skipManga: (Long) -> Unit,
+    // KMK -->
+    cancelManga: (Long) -> Unit,
+    // KMK <--
     searchManually: (MigratingManga) -> Unit,
     migrateNow: (Long) -> Unit,
     copyNow: (Long) -> Unit,
@@ -138,6 +141,9 @@ fun MigrationListScreen(
                             .weight(0.2f),
                         result = result,
                         skipManga = { skipManga(migrationItem.manga.id) },
+                        // KMK -->
+                        cancelManga = { cancelManga(migrationItem.manga.id) },
+                        // KMK <--
                         searchManually = { searchManually(migrationItem) },
                         migrateNow = {
                             migrateNow(migrationItem.manga.id)

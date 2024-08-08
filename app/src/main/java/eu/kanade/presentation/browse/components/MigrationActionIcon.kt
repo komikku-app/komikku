@@ -27,6 +27,9 @@ fun MigrationActionIcon(
     modifier: Modifier,
     result: MigratingManga.SearchResult,
     skipManga: () -> Unit,
+    // KMK -->
+    cancelManga: () -> Unit,
+    // KMK <--
     searchManually: () -> Unit,
     migrateNow: () -> Unit,
     copyNow: () -> Unit,
@@ -36,7 +39,9 @@ fun MigrationActionIcon(
 
     Box(modifier) {
         if (result is MigratingManga.SearchResult.Searching) {
-            IconButton(onClick = skipManga) {
+            // KMK -->
+            IconButton(onClick = cancelManga) {
+                // KMK <--
                 Icon(
                     imageVector = Icons.Outlined.Close,
                     contentDescription = stringResource(SYMR.strings.action_stop),
