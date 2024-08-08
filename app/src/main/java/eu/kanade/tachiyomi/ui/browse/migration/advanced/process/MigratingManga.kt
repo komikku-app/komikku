@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,10 @@ class MigratingManga(
     parentContext: CoroutineContext,
 ) {
     val migrationScope = CoroutineScope(parentContext + SupervisorJob() + Dispatchers.Default)
+
+    // KMK -->
+    lateinit var searchingJob: Deferred<Manga?>
+    // KMK <--
 
     val searchResult = MutableStateFlow<SearchResult>(SearchResult.Searching)
 

@@ -106,6 +106,9 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             },
             openMigrationDialog = screenModel::openMigrateDialog,
             skipManga = { screenModel.removeManga(it) },
+            // KMK -->
+            cancelManga = { screenModel.cancelManga(it) },
+            // KMK <--
             searchManually = { migrationItem ->
                 val sources = screenModel.getMigrationSources()
                 val validSources = if (sources.size == 1) {
