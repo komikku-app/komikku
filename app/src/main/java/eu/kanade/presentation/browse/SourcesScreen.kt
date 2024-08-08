@@ -196,7 +196,7 @@ fun AnimatedFloatingSearchBox(
 fun SourcesSearch(
     searchQuery: String?,
     onChangeSearchQuery: (String?) -> Unit,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     placeholderText: String? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -224,7 +224,7 @@ fun SourcesSearch(
     BasicTextField(
         value = searchQuery ?: "",
         onValueChange = onChangeSearchQuery,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(66.dp)
             .padding(12.dp)

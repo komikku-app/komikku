@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.view.LayoutInflater
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
@@ -15,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +26,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Velocity
@@ -34,6 +38,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.browse.SourcesSearch
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
@@ -42,6 +47,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScr
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -63,9 +69,29 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
         var fabExpanded by remember { mutableStateOf(true) }
         val items by screenModel.state.collectAsState()
         val adapter by screenModel.adapter.collectAsState()
-        LaunchedEffect(items.isNotEmpty(), adapter != null) {
+        // KMK -->
+        var searchQuery by remember { mutableStateOf("") }
+        BackHandler(enabled = searchQuery.isNotBlank()) {
+            searchQuery = ""
+        }
+        // KMK <--
+        LaunchedEffect(items.isNotEmpty(), adapter != null/* KMK --> */, searchQuery/* KMK <-- */) {
             if (adapter != null && items.isNotEmpty()) {
-                adapter?.updateDataSet(items)
+                adapter?.updateDataSet(
+                    items
+                        // KMK -->
+                        .filter { migrationSource ->
+                            if (searchQuery.isBlank()) return@filter true
+                            val source = migrationSource.source
+                            searchQuery.split(",").any {
+                                val input = it.trim()
+                                if (input.isEmpty()) return@any false
+                                source.name.contains(input, ignoreCase = true) ||
+                                    source.id == input.toLongOrNull()
+                            }
+                        },
+                    // KMK <--
+                )
             }
         }
 
@@ -138,36 +164,53 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
                 )
             },
         ) { contentPadding ->
-            val density = LocalDensity.current
-            val layoutDirection = LocalLayoutDirection.current
-            val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
-            val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
-            val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
-            val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
-            Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
-                AndroidView(
-                    modifier = Modifier.fillMaxWidth(),
-                    factory = { context ->
-                        screenModel.controllerBinding = PreMigrationListBinding.inflate(LayoutInflater.from(context))
-                        screenModel.adapter.value = MigrationSourceAdapter(screenModel.clickListener)
-                        screenModel.controllerBinding.root.adapter = screenModel.adapter.value
-                        screenModel.adapter.value?.isHandleDragEnabled = true
-                        screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(context)
+            // KMK -->
+            Box(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
+                var searchBoxHeight by remember { mutableIntStateOf(0) }
+                // KMK <--
+                val density = LocalDensity.current
+                val layoutDirection = LocalLayoutDirection.current
+                val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
+                // KMK -->
+                val top = searchBoxHeight
+                // val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
+                // KMK <--
+                val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
+                val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
+                Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxWidth(),
+                        factory = { context ->
+                            screenModel.controllerBinding =
+                                PreMigrationListBinding.inflate(LayoutInflater.from(context))
+                            screenModel.adapter.value = MigrationSourceAdapter(screenModel.clickListener)
+                            screenModel.controllerBinding.root.adapter = screenModel.adapter.value
+                            screenModel.adapter.value?.isHandleDragEnabled = true
+                            screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(context)
 
-                        ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
+                            ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
 
-                        screenModel.controllerBinding.root
-                    },
-                    update = {
-                        screenModel.controllerBinding.root
-                            .updatePadding(
-                                left = left,
-                                top = top,
-                                right = right,
-                                bottom = bottom,
-                            )
-                    },
+                            screenModel.controllerBinding.root
+                        },
+                        update = {
+                            screenModel.controllerBinding.root
+                                .updatePadding(
+                                    left = left,
+                                    top = top,
+                                    right = right,
+                                    bottom = bottom,
+                                )
+                        },
+                    )
+                }
+                // KMK -->
+                SourcesSearch(
+                    modifier = Modifier.onSizeChanged { searchBoxHeight = it.height },
+                    searchQuery = searchQuery,
+                    onChangeSearchQuery = { searchQuery = it ?: "" },
+                    placeholderText = stringResource(KMR.strings.action_search_for_source),
                 )
+                // KMK <--
             }
         }
 
