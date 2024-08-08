@@ -17,4 +17,4 @@ sqlcipher = "net.zetetic:sqlcipher-android:4.6.0"
 
 exifinterface = "androidx.exifinterface:exifinterface:1.3.7"
 
-google-api-services-drive = "com.google.apis:google-api-services-drive:v3-rev20240722-2.0.0"
+google-api-services-drive = "com.google.apis:google-api-services-drive:v3-rev20240730-2.0.0"
