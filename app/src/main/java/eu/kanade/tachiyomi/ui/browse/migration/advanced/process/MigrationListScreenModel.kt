@@ -89,7 +89,7 @@ class MigrationListScreenModel(
 
     val migratingItems = MutableStateFlow<ImmutableList<MigratingManga>?>(null)
     val migrationDone = MutableStateFlow(false)
-    val unfinishedCount = MutableStateFlow(0)
+    val finishedCount = MutableStateFlow(0)
 
     val manualMigrations = MutableStateFlow(0)
 
@@ -158,7 +158,7 @@ class MigrationListScreenModel(
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         throttleManager.resetThrottle()
-        unfinishedCount.value = mangas.size
+        // KMK: finishedCount.value = mangas.size
         val useSourceWithMost = preferences.useSourceWithMost().get()
         val useSmartSearch = preferences.smartMigration().get()
 
@@ -319,7 +319,7 @@ class MigrationListScreenModel(
     }
 
     private suspend fun sourceFinished() {
-        unfinishedCount.value = migratingItems.value.orEmpty().count {
+        finishedCount.value = migratingItems.value.orEmpty().count {
             it.searchResult.value != SearchResult.Searching
         }
         if (allMangasDone()) {

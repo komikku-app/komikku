@@ -37,7 +37,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         val screenModel = rememberScreenModel { MigrationListScreenModel(config) }
         val items by screenModel.migratingItems.collectAsState()
         val migrationDone by screenModel.migrationDone.collectAsState()
-        val unfinishedCount by screenModel.unfinishedCount.collectAsState()
+        val finishedCount by screenModel.finishedCount.collectAsState()
         val dialog by screenModel.dialog.collectAsState()
         val migrateProgress by screenModel.migratingProgress.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
@@ -97,7 +97,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         MigrationListScreen(
             items = items ?: persistentListOf(),
             migrationDone = migrationDone,
-            unfinishedCount = unfinishedCount,
+            finishedCount = finishedCount,
             getManga = screenModel::getManga,
             getChapterInfo = screenModel::getChapterInfo,
             getSourceName = screenModel::getSourceName,

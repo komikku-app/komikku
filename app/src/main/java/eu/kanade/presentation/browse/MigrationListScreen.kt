@@ -44,7 +44,7 @@ import tachiyomi.presentation.core.util.plus
 fun MigrationListScreen(
     items: ImmutableList<MigratingManga>,
     migrationDone: Boolean,
-    unfinishedCount: Int,
+    finishedCount: Int,
     getManga: suspend (MigratingManga.SearchResult.Result) -> Manga?,
     getChapterInfo: suspend (MigratingManga.SearchResult.Result) -> MigratingManga.ChapterInfo,
     getSourceName: (Manga) -> String,
@@ -58,9 +58,9 @@ fun MigrationListScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             val titleString = stringResource(SYMR.strings.migration)
-            val title by produceState(initialValue = titleString, items, unfinishedCount, titleString) {
+            val title by produceState(initialValue = titleString, items, finishedCount, titleString) {
                 withIOContext {
-                    value = "$titleString ($unfinishedCount/${items.size})"
+                    value = "$titleString ($finishedCount/${items.size})"
                 }
             }
             AppBar(
