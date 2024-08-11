@@ -1,8 +1,8 @@
 package mihon.core.migration.migrations
 
+import android.app.Application
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import mihon.core.migration.Migration
 import mihon.core.migration.MigrationContext
@@ -12,7 +12,7 @@ class ResetReaderSettingsMigration : Migration {
     override val version: Float = 17f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         // Migrate Rotation and Viewer values to default values for viewer_flags
         val newOrientation = when (prefs.getInt("pref_rotation_type_key", 1)) {

@@ -1,6 +1,6 @@
 package mihon.core.migration.migrations
 
-import eu.kanade.tachiyomi.App
+import android.app.Application
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import logcat.LogPriority
 import mihon.core.migration.Migration
@@ -13,7 +13,7 @@ class ClearBrokenPagePreviewCacheMigration : Migration {
     override val version: Float = 58f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val pagePreviewCache = migrationContext.get<PagePreviewCache>() ?: return@withIOContext false
         pagePreviewCache.clear()
         File(context.cacheDir, PagePreviewCache.PARAMETER_CACHE_DIRECTORY).listFiles()?.forEach {

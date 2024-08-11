@@ -1,8 +1,8 @@
 package mihon.core.migration.migrations
 
+import android.app.Application
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import eu.kanade.tachiyomi.App
 import exh.util.nullIfBlank
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -22,7 +22,7 @@ class MoveLatestToFeedMigration : Migration {
     override val version: Float = 31f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val insertSavedSearch = migrationContext.get<InsertSavedSearch>() ?: return@withIOContext false
         val insertFeedSavedSearch = migrationContext.get<InsertFeedSavedSearch>() ?: return@withIOContext false

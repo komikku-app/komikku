@@ -1,8 +1,8 @@
 package mihon.core.migration.migrations
 
+import android.app.Application
 import android.widget.Toast
 import androidx.preference.PreferenceManager
-import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.util.system.toast
 import mihon.core.migration.MigrateUtils
 import mihon.core.migration.Migration
@@ -16,7 +16,7 @@ class MoveEncryptionSettingsToAppStateMigration : Migration {
     override val version: Float = 66f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val preferenceStore = migrationContext.get<PreferenceStore>() ?: return@withIOContext false
         if (prefs.getBoolean(Preference.privateKey("encrypt_database"), false)) {

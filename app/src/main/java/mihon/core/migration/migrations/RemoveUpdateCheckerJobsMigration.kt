@@ -1,8 +1,8 @@
 package mihon.core.migration.migrations
 
+import android.app.Application
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.util.system.workManager
 import mihon.core.migration.Migration
@@ -16,7 +16,7 @@ class RemoveUpdateCheckerJobsMigration : Migration {
     override val version: Float = 52f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val preferenceStore = migrationContext.get<PreferenceStore>() ?: return@withIOContext false
         val trackerManager = migrationContext.get<TrackerManager>() ?: return@withIOContext false

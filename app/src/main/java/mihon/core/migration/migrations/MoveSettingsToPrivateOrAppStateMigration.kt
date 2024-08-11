@@ -1,6 +1,6 @@
 package mihon.core.migration.migrations
 
-import eu.kanade.tachiyomi.App
+import android.app.Application
 import mihon.core.migration.MigrateUtils
 import mihon.core.migration.Migration
 import mihon.core.migration.MigrationContext
@@ -12,7 +12,7 @@ class MoveSettingsToPrivateOrAppStateMigration : Migration {
     override val version: Float = 59f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val preferenceStore = migrationContext.get<PreferenceStore>() ?: return@withIOContext false
         val prefsToReplace = listOf(
             "pref_download_only",

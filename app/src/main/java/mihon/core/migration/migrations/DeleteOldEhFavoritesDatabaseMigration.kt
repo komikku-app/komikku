@@ -1,6 +1,6 @@
 package mihon.core.migration.migrations
 
-import eu.kanade.tachiyomi.App
+import android.app.Application
 import exh.log.xLogE
 import mihon.core.migration.Migration
 import mihon.core.migration.MigrationContext
@@ -11,7 +11,7 @@ class DeleteOldEhFavoritesDatabaseMigration : Migration {
     override val version: Float = 24f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         try {
             sequenceOf(
                 "fav-sync",

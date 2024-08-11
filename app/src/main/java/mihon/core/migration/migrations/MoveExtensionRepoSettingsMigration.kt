@@ -1,9 +1,9 @@
 package mihon.core.migration.migrations
 
+import android.app.Application
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.App
 import mihon.core.migration.MigrateUtils
 import mihon.core.migration.Migration
 import mihon.core.migration.MigrationContext
@@ -16,7 +16,7 @@ class MoveExtensionRepoSettingsMigration : Migration {
     override val version: Float = 60f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val context = migrationContext.get<App>() ?: return@withIOContext false
+        val context = migrationContext.get<Application>() ?: return@withIOContext false
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val preferenceStore = migrationContext.get<PreferenceStore>() ?: return@withIOContext false
         val sourcePreferences = migrationContext.get<SourcePreferences>() ?: return@withIOContext false
