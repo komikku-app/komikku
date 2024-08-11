@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FormatListNumbered
+import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
@@ -46,6 +47,9 @@ fun BottomReaderBar(
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
+    // KMK -->
+    onClickBrowser: (() -> Unit)?,
+    // KMK <--
     onClickWebView: (() -> Unit)?,
     onClickShare: (() -> Unit)?,
     onClickPageLayout: () -> Unit,
@@ -75,6 +79,20 @@ fun BottomReaderBar(
                 )
             }
         }
+
+        // KMK -->
+        if (ReaderBottomButton.Browser.isIn(enabledButtons) && onClickBrowser != null) {
+            IconButton(onClick = onClickBrowser) {
+                Icon(
+                    imageVector = Icons.Outlined.OpenInBrowser,
+                    contentDescription = stringResource(MR.strings.action_open_in_browser),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
+                )
+            }
+        }
+        // KMK <--
 
         if (ReaderBottomButton.WebView.isIn(enabledButtons) && onClickWebView != null) {
             IconButton(onClick = onClickWebView) {

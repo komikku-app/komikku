@@ -73,6 +73,7 @@ fun ReaderAppBars(
     onClickTopAppBar: () -> Unit,
     // bookmarked: Boolean,
     // onToggleBookmarked: () -> Unit,
+    onOpenInBrowser: (() -> Unit)?,
     onOpenInWebView: (() -> Unit)?,
     onShare: (() -> Unit)?,
 
@@ -212,31 +213,57 @@ fun ReaderAppBars(
                         title = mangaTitle,
                         subtitle = chapterTitle,
                         navigateUp = navigateUp,
-                        /* SY --> actions = {
+                        /* SY -->
+                        actions = {
                             AppBarActions(
-                                listOfNotNull(
-                                    AppBar.Action(
-                                        title = stringResource(
-                                            if (bookmarked) MR.strings.action_remove_bookmark else MR.strings.action_bookmark
-                                        ),
-                                        icon = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                                        onClick = onToggleBookmarked,
-                                    ),
-                                    onOpenInWebView?.let {
-                                        AppBar.OverflowAction(
-                                            title = stringResource(MR.strings.action_open_in_web_view),
-                                            onClick = it,
+                                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                                    .apply {
+                                        add(
+                                            AppBar.Action(
+                                                title = stringResource(
+                                                    if (bookmarked) {
+                                                        MR.strings.action_remove_bookmark
+                                                    } else {
+                                                        MR.strings.action_bookmark
+                                                    },
+                                                ),
+                                                icon = if (bookmarked) {
+                                                    Icons.Outlined.Bookmark
+                                                } else {
+                                                    Icons.Outlined.BookmarkBorder
+                                                },
+                                                onClick = onToggleBookmarked,
+                                            ),
                                         )
-                                    },
-                                    onShare?.let {
-                                        AppBar.OverflowAction(
-                                            title = stringResource(MR.strings.action_share),
-                                            onClick = it,
-                                        )
-                                    },
-                                ),
+                                        onOpenInBrowser?.let {
+                                            add(
+                                                AppBar.OverflowAction(
+                                                    title = stringResource(MR.strings.action_open_in_browser),
+                                                    onClick = it,
+                                                ),
+                                            )
+                                        }
+                                        onOpenInWebView?.let {
+                                            add(
+                                                AppBar.OverflowAction(
+                                                    title = stringResource(MR.strings.action_open_in_web_view),
+                                                    onClick = it,
+                                                ),
+                                            )
+                                        }
+                                        onShare?.let {
+                                            add(
+                                                AppBar.OverflowAction(
+                                                    title = stringResource(MR.strings.action_share),
+                                                    onClick = it,
+                                                ),
+                                            )
+                                        }
+                                    }
+                                    .build(),
                             )
-                        }, SY <-- */
+                        },
+                        SY <-- */
                     )
                     // SY -->
                     ExhUtils(
@@ -307,10 +334,14 @@ fun ReaderAppBars(
                         dualPageSplitEnabled = dualPageSplitEnabled,
                         doublePages = doublePages,
                         onClickChapterList = onClickChapterList,
+                        // KMK -->
+                        onClickBrowser = onOpenInBrowser,
+                        // KMK <--
                         onClickWebView = onOpenInWebView,
                         onClickShare = onShare,
                         onClickPageLayout = onClickPageLayout,
                         onClickShiftPage = onClickShiftPage,
+                        // SY <--
                     )
                 }
             }
