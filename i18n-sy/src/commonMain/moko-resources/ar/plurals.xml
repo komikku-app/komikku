@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="zero">انتهى المسح . لم يتم حذف أى ملفات</item>
+        <item quantity="one">انتهى المسح . تم حذف ملف واحد</item>
+        <item quantity="two">انتهى المسح . تم حذف ملفين</item>
+        <item quantity="few">انتهى المسح . تم حذف %d ملفات</item>
+        <item quantity="many">انتهى المسح . تم حذف %d ملف</item>
+        <item quantity="other">انتهى المسح . تم حذف %d ملف</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="zero">إعادة تحميل ٠ صفحة…</item>
+        <item quantity="one">إعادة تحميل صفحة واحدة…</item>
+        <item quantity="two">إعادة تحميل صفحتان…</item>
+        <item quantity="few">إعادة تحميل %1$d صفحات…</item>
+        <item quantity="many">إعادة تحميل %1$d صفحة…</item>
+        <item quantity="other">إعادة تحميل %1$d صفحة…</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="zero">نسخ ٠ إدخال؟</item>
+        <item quantity="one">نسخ إدخال واحد؟</item>
+        <item quantity="two">نسخ إدخالان؟</item>
+        <item quantity="few">نسخ %1$d%2$s إدخالات؟</item>
+        <item quantity="many">نسخ %1$d%2$s إدخال؟</item>
+        <item quantity="other">نسخ %1$d%2$s إدخال؟</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="zero">تم نقل ٠ ادخال</item>
+        <item quantity="one">تم نقل %d ادخال</item>
+        <item quantity="two">تم نقل %d ادخال</item>
+        <item quantity="few">تم نقل %d ادخالات</item>
+        <item quantity="many">تم نقل %d ادخال</item>
+        <item quantity="other">تم نقل %d ادخال</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="zero">الآن</item>
+        <item quantity="one">منذُ ساعة</item>
+        <item quantity="two">منذُ ساعتين</item>
+        <item quantity="few">منذُ %1$d ساعات</item>
+        <item quantity="many">منذُ %1$d ساعة</item>
+        <item quantity="other">منذُ %1$d ساعة</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="zero">الآن</item>
+        <item quantity="one">منذُ ثانيه</item>
+        <item quantity="two">منذُ ثانيتين</item>
+        <item quantity="few">منذُ %1$d ثواني</item>
+        <item quantity="many">منذُ %1$d ثانيه</item>
+        <item quantity="other">منذُ %1$d ثانيه</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="zero">لا صفوف</item>
+        <item quantity="one">صف واحد</item>
+        <item quantity="two">صفان</item>
+        <item quantity="few">%d صفوف</item>
+        <item quantity="many">%d صف</item>
+        <item quantity="other">%d صف</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="zero">لا صفحات</item>
+        <item quantity="one">صفحة واحدة</item>
+        <item quantity="two">صفحتان</item>
+        <item quantity="few">%1$d صفحات</item>
+        <item quantity="many">%1$d صفحة</item>
+        <item quantity="other">%1$d صفحة</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="zero">اليوم</item>
+        <item quantity="one">أمس</item>
+        <item quantity="two">منذُ يومين</item>
+        <item quantity="few">منذُ %1$d ايام</item>
+        <item quantity="many">منذُ %1$d يوم</item>
+        <item quantity="other">منذُ %1$d يوم</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="zero">الآن</item>
+        <item quantity="one">منذُ دقيقة</item>
+        <item quantity="two">منذُ دقيقتين</item>
+        <item quantity="few">منذُ %1$d دقائق</item>
+        <item quantity="many">منذُ %1$d دقيقة</item>
+        <item quantity="other">منذُ %1$d دقيقة</item>
+    </plurals>
+</resources>
