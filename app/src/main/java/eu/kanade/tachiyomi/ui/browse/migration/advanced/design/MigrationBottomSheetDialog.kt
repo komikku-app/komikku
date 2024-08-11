@@ -76,6 +76,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
 
         binding.skipStep.isChecked = preferences.skipPreMigration().get()
         binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
+        binding.OnlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
         binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 binding.root.context.toast(
@@ -88,6 +89,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         binding.migrateBtn.setOnClickListener {
             preferences.skipPreMigration().set(binding.skipStep.isChecked)
             preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
+            preferences.showOnlyUpdatesMigration().set(binding.OnlyShowUpdates.isChecked)
             onStartMigration.value(
                 if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
                     binding.extraSearchParamText.toString()

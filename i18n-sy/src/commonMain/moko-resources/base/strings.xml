@@ -463,6 +463,7 @@
     <string name="use_first_source">Use first source with alternative</string>
     <string name="skip_this_step_next_time">Skip this step next time</string>
     <string name="hide_not_found_entries">Hide not found entries</string>
+    <string name="only_show_updated_entries">Only show entries with new chapters</string>
     <string name="search_parameter">Search parameter (e.g. language:english)</string>
     <string name="latest_">Latest: %1$s</string>
     <string name="migrating_to">migrating to</string>

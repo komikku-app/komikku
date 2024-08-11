@@ -94,6 +94,7 @@ class MigrationListScreenModel(
     val manualMigrations = MutableStateFlow(0)
 
     val hideNotFound = preferences.hideNotFoundMigration().get()
+    val showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
 
     val navigateOut = MutableSharedFlow<Unit>()
 
@@ -318,6 +319,12 @@ class MigrationListScreenModel(
                 if (result == null && hideNotFound) {
                     removeManga(manga)
                 }
+                if (result != null && showOnlyUpdates &&
+                    (getChapterInfo(result.id).latestChapter ?: 0.0) <= (manga.chapterInfo.latestChapter ?: 0.0)
+                ) {
+                    removeManga(manga)
+                }
+
                 sourceFinished()
             }
         }

@@ -23,6 +23,8 @@ class UnsortedPreferences(
 
     fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
 
+    fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
+
     fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", true)
 
     fun enableExhentai() = preferenceStore.getBoolean(Preference.privateKey("enable_exhentai"), false)
