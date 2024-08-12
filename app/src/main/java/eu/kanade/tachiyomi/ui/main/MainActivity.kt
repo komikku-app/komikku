@@ -50,6 +50,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
@@ -109,6 +110,7 @@ import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -129,6 +131,8 @@ class MainActivity : BaseActivity() {
     // SY <--
 
     // KMK -->
+    private val backupPreferences: BackupPreferences by injectLazy()
+    private val syncPreferences: SyncPreferences by injectLazy()
     private val backupRestoreStatus: BackupRestoreStatus by injectLazy()
     private val syncStatus: SyncStatus by injectLazy()
     private val libraryUpdateStatus: LibraryUpdateStatus by injectLazy()
@@ -202,9 +206,15 @@ class MainActivity : BaseActivity() {
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
             // KMK -->
-            val restoring by backupRestoreStatus.isRunning.collectAsState()
-            val syncing by syncStatus.isRunning.collectAsState()
-            val updating by libraryUpdateStatus.isRunning.collectAsState()
+            val restoringState by backupRestoreStatus.isRunning.collectAsState()
+            val syncingState by syncStatus.isRunning.collectAsState()
+            val updatingState by libraryUpdateStatus.isRunning.collectAsState()
+            val restoringProgressBanner by backupPreferences.showRestoringProgressBanner().collectAsState()
+            val syncingProgressBanner by syncPreferences.showSyncingProgressBanner().collectAsState()
+            val updatingProgressBanner by libraryPreferences.showUpdatingProgressBanner().collectAsState()
+            val restoring = restoringState && restoringProgressBanner
+            val syncing = syncingState && syncingProgressBanner
+            val updating = updatingState && updatingProgressBanner
             val restoringProgress by backupRestoreStatus.progress.collectAsState()
             val syncingProgress by syncStatus.progress.collectAsState()
             val updatingProgress by libraryUpdateStatus.progress.collectAsState()
