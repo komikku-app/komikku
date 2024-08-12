@@ -445,6 +445,9 @@ class MangaScreenModel(
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
+                    // KMK -->
+                    showRelatedTitlesInOverflow = uiPreferences.relatedTitlesInOverflow().get(),
+                    // KMK <--
                     // SY -->
                     showRecommendationsInOverflow = uiPreferences.recommendsInOverflow().get(),
                     showMergeInOverflow = uiPreferences.mergeInOverflow().get(),
@@ -1912,6 +1915,9 @@ class MangaScreenModel(
             // SY -->
             val meta: RaisedSearchMetadata?,
             val mergedData: MergedMangaData?,
+            // KMK -->
+            val showRelatedTitlesInOverflow: Boolean,
+            // KMK <--
             val showRecommendationsInOverflow: Boolean,
             val showMergeInOverflow: Boolean,
             val showMergeWithAnother: Boolean,

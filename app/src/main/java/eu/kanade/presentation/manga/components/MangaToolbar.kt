@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
@@ -57,6 +58,9 @@ fun MangaToolbar(
     onClickMigrate: (() -> Unit)?,
     // SY -->
     onClickEditInfo: (() -> Unit)?,
+    // KMK -->
+    onClickRelatedTitles: (() -> Unit)?,
+    // KMK <--
     onClickRecommend: (() -> Unit)?,
     onClickMerge: (() -> Unit)?,
     onClickMergedSettings: (() -> Unit)?,
@@ -206,6 +210,16 @@ fun MangaToolbar(
                                         ),
                                     )
                                 }
+                                // KMK -->
+                                if (onClickRelatedTitles != null) {
+                                    add(
+                                        AppBar.OverflowAction(
+                                            title = stringResource(KMR.strings.pref_source_related_mangas),
+                                            onClick = onClickRelatedTitles,
+                                        ),
+                                    )
+                                }
+                                // KMK <--
                                 if (onClickRecommend != null) {
                                     add(
                                         AppBar.OverflowAction(

@@ -220,6 +220,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         val previewsRowCount by uiPreferences.previewsRowCount().collectAsState()
         // KMK -->
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
+        val relatedTitlesInOverflow by uiPreferences.expandRelatedTitles().collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -235,6 +236,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_expand_related_titles),
                     subtitle = stringResource(KMR.strings.pref_expand_related_titles_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.relatedTitlesInOverflow(),
+                    enabled = !relatedTitlesInOverflow,
+                    title = stringResource(KMR.strings.put_related_titles_in_overflow),
+                    subtitle = stringResource(KMR.strings.put_related_titles_in_overflow_summary),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.showHomeOnRelatedTitles(),

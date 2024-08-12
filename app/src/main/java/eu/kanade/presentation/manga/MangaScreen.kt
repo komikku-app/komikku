@@ -456,6 +456,9 @@ private fun MangaScreenSmallImpl(
                 onClickMigrate = onMigrateClicked,
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
+                // KMK -->
+                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf { state.showRelatedTitlesInOverflow },
+                // KMK <--
                 onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
                 onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
                 onClickMerge = onMergeClicked.takeIf { state.showMergeInOverflow },
@@ -652,7 +655,7 @@ private fun MangaScreenSmallImpl(
                                 }
                                 item { HorizontalDivider() }
                             }
-                        } else {
+                        } else if (!state.showRelatedTitlesInOverflow) {
                             item(
                                 key = MangaScreenItem.RELATED_TITLES,
                                 contentType = MangaScreenItem.RELATED_TITLES,
@@ -854,6 +857,9 @@ private fun MangaScreenLargeImpl(
                 onClickMigrate = onMigrateClicked,
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
+                // KMK -->
+                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf { state.showRelatedTitlesInOverflow },
+                // KMK <--
                 onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
                 onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
                 onClickMerge = onMergeClicked.takeIf { state.showMergeInOverflow },
@@ -1062,7 +1068,7 @@ private fun MangaScreenLargeImpl(
                                         }
                                         item { HorizontalDivider() }
                                     }
-                                } else {
+                                } else if (!state.showRelatedTitlesInOverflow) {
                                     item(
                                         key = MangaScreenItem.RELATED_TITLES,
                                         contentType = MangaScreenItem.RELATED_TITLES,

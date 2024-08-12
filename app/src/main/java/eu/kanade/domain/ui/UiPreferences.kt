@@ -50,6 +50,8 @@ class UiPreferences(
     // KMK -->
     fun expandRelatedTitles() = preferenceStore.getBoolean("expand_related_titles", true)
 
+    fun relatedTitlesInOverflow() = preferenceStore.getBoolean("related_titles_in_overflow", false)
+
     fun showHomeOnRelatedTitles() = preferenceStore.getBoolean("show_home_on_related_titles", true)
     // KMK <--
 
