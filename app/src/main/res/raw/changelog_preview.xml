@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9234" changeDate="August 13, 2024">
+        <changelogtext>[b]New:[/b] Add option to only show entries with new chapters</changelogtext>
+        <changelogtext>[b]New:[/b] add source search to pre-migration screen</changelogtext>
+        <changelogtext>[b]New:[/b] Add Copy Tracker URL on icon long press</changelogtext>
+        <changelogtext>[b]New:[/b] Add a button to select all scanlators</changelogtext>
+        <changelogtext>[b]New:[/b] Add an "open in browser" button to reader menu</changelogtext>
+        <changelogtext>[b]New:[/b] Add Backup and Restore of Extension Repos</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow canceling search for a migrating manga without remove it</changelogtext>
+        <changelogtext>[b]Improve:[/b] put Related titles in overflow</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update Kitsu's domain to kitsu.app</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings to show/hide progress-banner were not working</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix MAL search results not showing start dates</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong initial number of migrating items</changelogtext>
+        <changelogtext>[b]Fix:[/b] Don't crash on ill-formed URLs</changelogtext>
+        <changelogtext>[b]Fix:[/b] Handle Android SDK 35 API collision</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9197" changeDate="August 06, 2024">
         <changelogtext>[b]New:[/b] Add sources search to Migrate Source Screen</changelogtext>
         <changelogtext>[b]New:[/b] change feed's order</changelogtext>
