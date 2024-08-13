@@ -103,7 +103,7 @@ fun MangaToolbar(
                         UpIcon(navigationIcon = Icons.Outlined.Close.takeIf { isActionMode })
                     }
                     // KMK -->
-                    navigator?.let {
+                    if (isHomeEnabled && navigator != null) {
                         if (navigator.size >= 2 && navigator.items[navigator.size - 2] is MangaScreen ||
                             navigator.size >= 5
                         ) {
@@ -111,7 +111,7 @@ fun MangaToolbar(
                                 UpIcon(navigationIcon = Icons.Filled.Home)
                             }
                         }
-                    }.takeIf { isHomeEnabled }
+                    }
                     // KMK <--
                 }
             },
