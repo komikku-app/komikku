@@ -22,6 +22,7 @@ class UiPreferences(
         "pref_app_theme",
         if (DeviceUtil.isDynamicColorAvailable) { AppTheme.MONET } else { AppTheme.DEFAULT },
     )
+    fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0)
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
