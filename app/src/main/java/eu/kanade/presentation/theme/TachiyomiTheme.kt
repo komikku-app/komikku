@@ -29,6 +29,7 @@ import eu.kanade.presentation.theme.colorscheme.TealTurqoiseColorScheme
 import eu.kanade.presentation.theme.colorscheme.TidalWaveColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
+import eu.kanade.presentation.theme.colorscheme.CustomColorScheme
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -102,8 +103,11 @@ private fun getThemeColorScheme(
     appTheme: AppTheme,
     isAmoled: Boolean,
 ): ColorScheme {
+    val uiPreferences = Injekt.get<UiPreferences>()
     val colorScheme = if (appTheme == AppTheme.MONET) {
         MonetColorScheme(LocalContext.current)
+    } else if (appTheme == AppTheme.CUSTOM) {
+        CustomColorScheme(uiPreferences)
     } else {
         colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
     }

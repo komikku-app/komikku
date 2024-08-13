@@ -26,6 +26,7 @@ class UiPreferences(
             AppTheme.DEFAULT
         },
     )
+    fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0)
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 

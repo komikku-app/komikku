@@ -195,6 +195,7 @@ dependencies {
     implementation(compose.accompanist.systemuicontroller)
 
     implementation(androidx.interpolator)
+    implementation(compose.colorpicker)
 
     implementation(androidx.paging.runtime)
     implementation(androidx.paging.compose)
