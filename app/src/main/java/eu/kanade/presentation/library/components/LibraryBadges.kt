@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Folder
@@ -8,7 +9,10 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.model.icon
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import tachiyomi.domain.source.model.Source
@@ -70,6 +74,7 @@ fun SourceIconBadge(
         icon != null -> {
             Badge(
                 imageBitmap = icon,
+                modifier = Modifier.scale(1.3f).height(18.dp),
             )
         }
         source.isLocal() -> {
