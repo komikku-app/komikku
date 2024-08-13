@@ -2,12 +2,17 @@ package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import eu.kanade.domain.source.model.icon
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import tachiyomi.domain.source.model.Source
 import tachiyomi.presentation.core.components.Badge
+import tachiyomi.source.local.isLocal
 
 @Composable
 internal fun DownloadsBadge(count: Long) {
@@ -46,6 +51,44 @@ internal fun LanguageBadge(
         )
     }
 }
+
+// KMK -->
+@Composable
+fun SourceIconBadge(
+    source: Source,
+) {
+    val icon = source.icon
+
+    when {
+        source.isStub && icon == null -> {
+            Badge(
+                imageVector = Icons.Filled.Warning,
+                iconColor = MaterialTheme.colorScheme.error,
+            )
+        }
+        icon != null -> {
+            Badge(
+                imageBitmap = icon,
+            )
+        }
+        source.isLocal() -> {
+            Badge(
+                imageVector = Icons.Outlined.Folder,
+                color = MaterialTheme.colorScheme.tertiary,
+                iconColor = MaterialTheme.colorScheme.onTertiary,
+            )
+        }
+        else -> {
+            // Default source icon (if source doesn't have an icon)
+            Badge(
+                imageVector = Icons.Outlined.LocalLibrary,
+                color = MaterialTheme.colorScheme.tertiary,
+                iconColor = MaterialTheme.colorScheme.onTertiary,
+            )
+        }
+    }
+}
+// KMK <--
 
 @PreviewLightDark
 @Composable

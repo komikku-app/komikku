@@ -1,5 +1,6 @@
 package tachiyomi.presentation.core.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -13,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -99,3 +102,51 @@ fun Badge(
         style = MaterialTheme.typography.bodySmall,
     )
 }
+
+// KMK -->
+@Composable
+fun Badge(
+    imageBitmap: ImageBitmap,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.secondary,
+    iconColor: Color = MaterialTheme.colorScheme.onSecondary,
+    tint: Color? = null,
+    shape: Shape = RectangleShape,
+) {
+    val iconContentPlaceholder = "[icon]"
+    val text = buildAnnotatedString {
+        appendInlineContent(iconContentPlaceholder)
+    }
+    val inlineContent = persistentMapOf(
+        Pair(
+            iconContentPlaceholder,
+            InlineTextContent(
+                Placeholder(
+                    width = MaterialTheme.typography.bodySmall.fontSize,
+                    height = MaterialTheme.typography.bodySmall.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center,
+                ),
+            ) {
+                Image(
+                    bitmap = imageBitmap,
+                    colorFilter = tint?.let { ColorFilter.tint(it) },
+                    contentDescription = null,
+                )
+            },
+        ),
+    )
+
+    Text(
+        text = text,
+        inlineContent = inlineContent,
+        modifier = modifier
+            .clip(shape)
+            .background(color)
+            .padding(horizontal = 3.dp, vertical = 1.dp),
+        color = iconColor,
+        fontWeight = FontWeight.Medium,
+        maxLines = 1,
+        style = MaterialTheme.typography.bodySmall,
+    )
+}
+// KMK <--
