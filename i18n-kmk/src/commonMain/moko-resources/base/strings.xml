@@ -108,4 +108,9 @@
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
+
+    <!-- Auto Backup Hours -->
+    <string name="update_1hour">Every 1 hour</string>
+    <string name="update_3hour">Every 3 hours</string>
+
 </resources>
