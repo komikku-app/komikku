@@ -62,6 +62,8 @@
     <string name="update_24hour">Күн аайы</string>
     <string name="update_12hour">Уон икки чаас аайы</string>
     <string name="update_6hour">Алта чаас аайы</string>
+    <string name="update_1hour">биир чаас аайы</string>
+    <string name="update_3hour">үс чаас аайы</string>
     <string name="update_never">Илиинэн</string>
     <string name="pref_library_update_interval">Саҥардыы түргэнэ</string>
     <string name="pref_category_library_update">Улахан саҥардыы</string>

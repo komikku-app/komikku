@@ -70,6 +70,8 @@
     <string name="landscape">عرضيٌّ</string>
     <string name="pref_library_update_interval">التحديثات التلقائية</string>
     <string name="update_never">إيقاف</string>
+    <string name="update_1hour">كل ١ ساعة</string>
+    <string name="update_3hour">كل ٣ ساعات</string>
     <string name="update_6hour">كل ٦ ساعات</string>
     <string name="update_12hour">كل ١٢ ساعة</string>
     <string name="update_24hour">يومياً</string>

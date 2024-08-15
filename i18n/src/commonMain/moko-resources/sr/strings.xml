@@ -76,6 +76,8 @@
     <string name="landscape">Хоризонтално</string>
     <string name="pref_library_update_interval">Аутоматска ажурирања</string>
     <string name="update_never">Искључено</string>
+    <string name="update_1hour">одинчасовно</string>
+    <string name="update_3hour">тричасовно</string>
     <string name="update_6hour">Шесточасовно</string>
     <string name="update_12hour">Дванаесточасовно</string>
     <string name="update_24hour">Дневно</string>

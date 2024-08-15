@@ -32,6 +32,8 @@
     <string name="landscape">Fekvő</string>
     <string name="pref_library_update_interval">Frissítések gyakorisága</string>
     <string name="update_never">Ki</string>
+    <string name="update_1hour">1 óránként</string>
+    <string name="update_3hour">3 óránként</string>
     <string name="update_6hour">6 óránként</string>
     <string name="update_12hour">12 óránként</string>
     <string name="update_24hour">Naponta</string>

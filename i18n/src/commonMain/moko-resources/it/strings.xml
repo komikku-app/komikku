@@ -57,6 +57,8 @@
     <string name="landscape">Orizzontale</string>
     <string name="pref_library_update_interval">Aggiornamenti automatici</string>
     <string name="update_never">Disabilitati</string>
+    <string name="update_1hour">Ogni 1 ore</string>
+    <string name="update_3hour">Ogni 3 ore</string>
     <string name="update_6hour">Ogni 6 ore</string>
     <string name="update_12hour">Ogni 12 ore</string>
     <string name="update_24hour">Ogni giorno</string>

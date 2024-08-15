@@ -77,6 +77,8 @@
     <string name="landscape">Na šírku</string>
     <string name="pref_library_update_interval">Automatické aktualizácie</string>
     <string name="update_never">Vyp.</string>
+    <string name="update_1hour">Každých 1 hodín</string>
+    <string name="update_3hour">Každých 3 hodín</string>
     <string name="update_6hour">Každých 6 hodín</string>
     <string name="update_12hour">Každých 12 hodín</string>
     <string name="update_24hour">Raz za deň</string>

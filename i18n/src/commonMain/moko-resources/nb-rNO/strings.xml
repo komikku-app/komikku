@@ -67,6 +67,8 @@
     <string name="pref_category_advanced">Avansert</string>
     <string name="pref_category_about">Om</string>
     <string name="update_never">Av</string>
+    <string name="update_1hour">Hver en time</string>
+    <string name="update_3hour">Hver tre time</string>
     <string name="update_6hour">Hver sjette time</string>
     <string name="update_12hour">Hver tolvte time</string>
     <string name="update_24hour">Daglig</string>

@@ -146,6 +146,8 @@
     <string name="landscape">ផ្ដេក</string>
     <string name="pref_library_update_interval">ការធ្វើប្ចុប្បន្នភាពដោយស្វ័យប្រវត្ត</string>
     <string name="update_never">បិទ</string>
+    <string name="update_1hour">រាល់១ម៉ោងម្ដង</string>
+    <string name="update_3hour">រាល់៣ម៉ោងម្ដង</string>
     <string name="update_6hour">រាល់៦ម៉ោងម្ដង</string>
     <string name="update_48hour">រាល់២ថ្ងៃម្ដង</string>
     <string name="update_72hour">រាល់៣ថ្ងៃម្ដង</string>

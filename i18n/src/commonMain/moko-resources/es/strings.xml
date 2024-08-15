@@ -48,6 +48,8 @@
     <string name="landscape">En horizontal</string>
     <string name="pref_library_update_interval">Actualizaciones automáticas</string>
     <string name="update_never">No</string>
+    <string name="update_1hour">Cada 1 hora</string>
+    <string name="update_3hour">Cada 3 horas</string>
     <string name="update_6hour">Cada 6 horas</string>
     <string name="update_12hour">Cada 12 horas</string>
     <string name="update_24hour">Diarias</string>

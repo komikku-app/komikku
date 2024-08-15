@@ -72,6 +72,8 @@
     <string name="landscape">橫向</string>
     <string name="pref_library_update_interval">自動更新</string>
     <string name="update_never">關閉</string>
+    <string name="update_1hour">每 1 小時</string>
+    <string name="update_3hour">每 3 小時</string>
     <string name="update_6hour">每 6 小時</string>
     <string name="update_12hour">每 12 小時</string>
     <string name="update_24hour">每天</string>

@@ -68,6 +68,8 @@
     <string name="theme_yinyang">Инь мен Йянь</string>
     <string name="relative_time_today">Бүгін</string>
     <string name="update_never">Өшірулі</string>
+    <string name="update_1hour">Әр 1 сағат сайын</string>
+    <string name="update_3hour">Әр 3 сағат сайын</string>
     <string name="update_6hour">Әр 6 сағат сайын</string>
     <string name="update_12hour">Әр 12 сағат сайын</string>
     <string name="update_24hour">Күн сайын</string>

@@ -75,6 +75,8 @@
     <string name="landscape">Orizontale</string>
     <string name="pref_library_update_interval">Agiornamentos automàticos</string>
     <string name="update_never">Istudadu</string>
+    <string name="update_1hour">Cada 1 oras</string>
+    <string name="update_3hour">Cada 3 oras</string>
     <string name="update_6hour">Cada 6 oras</string>
     <string name="update_12hour">Cada 12 oras</string>
     <string name="update_24hour">Cada die</string>

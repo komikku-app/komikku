@@ -119,6 +119,8 @@
     <string name="landscape">Vaakataso</string>
     <string name="pref_library_update_interval">Automaattinen päivitys</string>
     <string name="update_never">Pois</string>
+    <string name="update_1hour">1 tunnin välein</string>
+    <string name="update_3hour">3 tunnin välein</string>
     <string name="update_6hour">Kuuden tunnin välein</string>
     <string name="update_12hour">12 tunnin välein</string>
     <string name="update_24hour">Päivittäin</string>

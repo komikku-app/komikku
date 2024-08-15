@@ -213,6 +213,8 @@
     <string name="ext_update">Yangilash</string>
     <string name="ext_nsfw_short">18+</string>
     <string name="pref_show_page_number">Sahifa raqamini ko\'rsatish</string>
+    <string name="update_1hour">Har 1 soatda</string>
+    <string name="update_3hour">Har 3 soatda</string>
     <string name="update_6hour">Har 6 soatda</string>
     <string name="pref_reader_navigation">Navigatsiya</string>
     <string name="landscape">Landshaft</string>

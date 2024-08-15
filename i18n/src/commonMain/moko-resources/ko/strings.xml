@@ -74,6 +74,8 @@
     <string name="landscape">가로</string>
     <string name="pref_library_update_interval">자동 업데이트</string>
     <string name="update_never">끄기</string>
+    <string name="update_1hour">1시간</string>
+    <string name="update_3hour">3시간</string>
     <string name="update_6hour">6시간</string>
     <string name="update_12hour">12시간</string>
     <string name="update_24hour">1일</string>

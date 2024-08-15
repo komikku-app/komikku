@@ -269,6 +269,8 @@
     <string name="pref_double_tap_anim_speed">Dubultpieskāriena animācijas ātrums</string>
     <string name="pref_crop_borders">Apgriezt apmales</string>
     <string name="action_show_errors">Pieskarieties, lai skatītu detalizētu informāciju</string>
+    <string name="update_1hour">Ik pēc 1 stundām</string>
+    <string name="update_3hour">Ik pēc 3 stundām</string>
     <string name="update_6hour">Ik pēc 6 stundām</string>
     <string name="update_12hour">Ik pēc 12 stundām</string>
     <string name="update_24hour">Katru dienu</string>
