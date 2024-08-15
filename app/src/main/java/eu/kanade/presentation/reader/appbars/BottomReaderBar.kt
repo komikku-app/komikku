@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FormatListNumbered
-import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
@@ -84,7 +84,7 @@ fun BottomReaderBar(
         if (ReaderBottomButton.Browser.isIn(enabledButtons) && onClickBrowser != null) {
             IconButton(onClick = onClickBrowser) {
                 Icon(
-                    imageVector = Icons.Outlined.OpenInBrowser,
+                    imageVector = Icons.Outlined.Explore,
                     contentDescription = stringResource(MR.strings.action_open_in_browser),
                     // KMK -->
                     tint = iconColor,
