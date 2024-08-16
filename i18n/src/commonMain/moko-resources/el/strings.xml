@@ -75,6 +75,8 @@
     <string name="landscape">Οριζόντια</string>
     <string name="pref_library_update_interval">Αυτόματες ενημερώσεις</string>
     <string name="update_never">Απενεργοποιημένο</string>
+    <string name="update_1hour">Κάθε 1 ώρες</string>
+    <string name="update_3hour">Κάθε 3 ώρες</string>
     <string name="update_6hour">Κάθε 6 ώρες</string>
     <string name="update_12hour">Κάθε 12 ώρες</string>
     <string name="update_24hour">Καθημερινά</string>

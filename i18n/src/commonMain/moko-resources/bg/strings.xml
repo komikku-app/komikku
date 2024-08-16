@@ -61,6 +61,8 @@
     <string name="landscape">Пейзажно</string>
     <string name="pref_library_update_interval">Автоматини ъпдейти</string>
     <string name="update_never">Изключено</string>
+    <string name="update_1hour">На всеки 1 часа</string>
+    <string name="update_3hour">На всеки 3 часа</string>
     <string name="update_6hour">На всеки 6 часа</string>
     <string name="update_12hour">На всеки 12 часа</string>
     <string name="update_24hour">Ежедневно</string>

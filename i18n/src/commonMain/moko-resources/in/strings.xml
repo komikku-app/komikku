@@ -70,6 +70,8 @@
     <string name="landscape">Layar mendatar</string>
     <string name="pref_library_update_interval">Pembaruan otomatis</string>
     <string name="update_never">Matikan</string>
+    <string name="update_1hour">Tiap 1 jam</string>
+    <string name="update_3hour">Tiap 3 jam</string>
     <string name="update_6hour">Tiap 6 jam</string>
     <string name="update_12hour">Tiap 12 jam</string>
     <string name="update_24hour">Tiap hari</string>

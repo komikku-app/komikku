@@ -159,6 +159,8 @@
     <string name="action_restore">റിസ്റ്റോർ</string>
     <string name="update_12hour">ഓരോ 12 മണിക്കൂറിലും</string>
     <string name="update_6hour">ഓരോ 6 മണിക്കൂറിലും</string>
+    <string name="update_1hour">ഓരോ 1 മണിക്കൂറിലും</string>
+    <string name="update_3hour">ഓരോ 3 മണിക്കൂറിലും</string>
     <string name="landscape">ലാൻഡ്സ്കേപ്പ്</string>
     <string name="pref_library_columns">ഗ്രിഡ് വലിപ്പം</string>
     <string name="ext_update">അപ്ഡേറ്റ്</string>

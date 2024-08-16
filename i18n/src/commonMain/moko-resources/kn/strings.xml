@@ -218,6 +218,8 @@
     <string name="update_24hour">ಪ್ರತಿದಿನ</string>
     <string name="update_12hour">ಪ್ರತಿ 12 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ</string>
     <string name="update_6hour">ಪ್ರತಿ 6 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ</string>
+    <string name="update_1hour">ಪ್ರತಿ 1 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ</string>
+    <string name="update_3hour">ಪ್ರತಿ 3 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ</string>
     <string name="update_never">ಸ್ವಂತ ಮಾಡು</string>
     <string name="pref_library_update_interval">ನವೀಕರಣ ಆವರ್ತನ</string>
     <string name="pref_category_library_update">ನವೀಕರಣಗಳು</string>

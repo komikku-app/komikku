@@ -231,6 +231,8 @@
     <string name="pref_category_library_update">Global oppdatering</string>
     <string name="landscape">Liggjande</string>
     <string name="update_never">Av</string>
+    <string name="update_1hour">Kvar en time</string>
+    <string name="update_3hour">Kvar tre time</string>
     <string name="update_6hour">Kvar sjette time</string>
     <string name="ext_installer_shizuku_unavailable_dialog">Installer og start Shizuku for å bruka Shizuku som utvidingsinstallatør.</string>
     <string name="update_12hour">Kvar tolvte time</string>

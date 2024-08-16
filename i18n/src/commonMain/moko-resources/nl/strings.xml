@@ -63,6 +63,8 @@
     <string name="pref_library_columns">Elementen per rij</string>
     <string name="pref_library_update_interval">Automatisch bijwerken</string>
     <string name="update_never">Uit</string>
+    <string name="update_1hour">Iedere 1 uur</string>
+    <string name="update_3hour">Iedere 3 uur</string>
     <string name="update_6hour">Iedere 6 uur</string>
     <string name="update_12hour">Iedere 12 uur</string>
     <string name="update_24hour">Dagelijks</string>

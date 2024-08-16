@@ -30,6 +30,8 @@
     <string name="update_24hour">Dnevno</string>
     <string name="update_12hour">Svakih 12 sati</string>
     <string name="update_6hour">Svakih 6 sati</string>
+    <string name="update_1hour">Svakih 1 sati</string>
+    <string name="update_3hour">Svakih 3 sati</string>
     <string name="update_never">Isključeno</string>
     <string name="pref_library_update_interval">Automatska aktualiziranja</string>
     <string name="pref_category_library_update">Globalno aktualiziranje</string>

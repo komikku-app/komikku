@@ -72,6 +72,8 @@
     <string name="landscape">लैंडस्केप</string>
     <string name="pref_library_update_interval">स्वचालित अद्यतन</string>
     <string name="update_never">ऑफ़</string>
+    <string name="update_1hour">हर १ घंटे</string>
+    <string name="update_3hour">हर ३ घंटे</string>
     <string name="update_6hour">हर ६ घंटे</string>
     <string name="update_12hour">हर १२ घंटे</string>
     <string name="update_24hour">हर रोज़</string>

@@ -43,6 +43,8 @@
     <string name="update_24hour">Кашни кун</string>
     <string name="update_12hour">Кашни 12 сехет</string>
     <string name="update_6hour">Кашни 6 сехет</string>
+    <string name="update_1hour">Кашни 1 сехет</string>
+    <string name="update_3hour">Кашни 3 сехет</string>
     <string name="pref_library_update_interval">Ҫӗнетни тӑтӑшлӑхӗ</string>
     <string name="pref_category_library_update">Пӗтӗмӗшле ҫӗнетӳ</string>
     <string name="pref_category_display">Кӑтарт</string>

@@ -60,6 +60,8 @@
     <string name="landscape">Paysage</string>
     <string name="pref_library_update_interval">Mises à jour automatiques</string>
     <string name="update_never">Désactivé</string>
+    <string name="update_1hour">Toutes les 1 heure</string>
+    <string name="update_3hour">Toutes les 3 heures</string>
     <string name="update_6hour">Toutes les 6 heures</string>
     <string name="update_12hour">Toutes les 12 heures</string>
     <string name="update_24hour">Tous les jours</string>

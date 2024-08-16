@@ -111,6 +111,8 @@
     <string name="landscape">Poziomo</string>
     <string name="pref_library_update_interval">Automatyczne aktualizacje</string>
     <string name="update_never">Wyłączone</string>
+    <string name="update_1hour">Co 1 godzin</string>
+    <string name="update_3hour">Co 3 godzin</string>
     <string name="update_6hour">Co 6 godzin</string>
     <string name="update_12hour">Co 12 godzin</string>
     <string name="update_24hour">Co 1 dzień</string>

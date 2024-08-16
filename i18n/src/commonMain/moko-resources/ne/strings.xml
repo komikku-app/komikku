@@ -123,6 +123,8 @@
     <string name="update_24hour">दैनिक</string>
     <string name="update_12hour">प्रत्येक १२ घण्टा</string>
     <string name="update_6hour">प्रत्येक ६ घण्टा</string>
+    <string name="update_1hour">प्रत्येक १ घण्टा</string>
+    <string name="update_3hour">प्रत्येक ३ घण्टा</string>
     <string name="update_never">अफ</string>
     <string name="pref_library_update_interval">स्वचालित अपडेटहरू</string>
     <string name="pref_category_library_update">ग्लोबल अपडेट</string>

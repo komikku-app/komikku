@@ -205,6 +205,8 @@
     <string name="update_24hour">Araw-araw</string>
     <string name="update_12hour">Kada 12 oras</string>
     <string name="update_6hour">Kada 6 na oras</string>
+    <string name="update_1hour">Kada 1 na oras</string>
+    <string name="update_3hour">Kada 3 na oras</string>
     <string name="update_never">Nakapatay</string>
     <string name="pref_library_update_interval">Awtomatikong pag-update</string>
     <string name="pref_category_library_update">Panlahatang update</string>

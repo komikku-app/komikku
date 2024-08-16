@@ -68,6 +68,8 @@
     <string name="landscape">Querformat</string>
     <string name="pref_library_update_interval">Automatische Aktualisierungen</string>
     <string name="update_never">Aus</string>
+    <string name="update_1hour">Alle 1 Stunden</string>
+    <string name="update_3hour">Alle 3 Stunden</string>
     <string name="update_6hour">Alle 6 Stunden</string>
     <string name="update_12hour">Alle 12 Stunden</string>
     <string name="update_24hour">Täglich</string>

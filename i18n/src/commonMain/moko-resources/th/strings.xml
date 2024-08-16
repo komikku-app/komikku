@@ -48,6 +48,8 @@
     <string name="pref_category_reader">ตัวอ่าน</string>
     <string name="pref_category_advanced">ขั้นสูง</string>
     <string name="pref_category_about">เกี่ยวกับ</string>
+    <string name="update_1hour">ทุก 1 ชั่วโมง</string>
+    <string name="update_3hour">ทุก 3 ชั่วโมง</string>
     <string name="update_6hour">ทุก 6 ชั่วโมง</string>
     <string name="update_12hour">ทุก 12 ชั่วโมง</string>
     <string name="update_24hour">ทุกวัน</string>

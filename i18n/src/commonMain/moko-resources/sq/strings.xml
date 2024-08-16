@@ -49,6 +49,7 @@
     <string name="pref_library_columns">Përmasat e grafikut</string>
     <string name="pref_category_library_update">Përditësim global</string>
     <string name="update_never">Joaktiv</string>
+
     <string name="update_12hour">Çdo 12 orë</string>
     <string name="update_24hour">Ditore</string>
     <string name="update_weekly">Javore</string>
@@ -168,6 +169,8 @@
     <string name="portrait">Portret</string>
     <string name="restrictions">Kufizimet: %s</string>
     <string name="pref_library_update_interval">Përditësimet automatike</string>
+    <string name="update_1hour">Çdo 1 orë</string>
+    <string name="update_3hour">Çdo 3 orë</string>
     <string name="update_6hour">Çdo 6 orë</string>
     <string name="update_72hour">Çdo 3 ditë</string>
     <string name="pref_library_update_restriction">Përditësimet automatike të kufizimet e pajisjes</string>

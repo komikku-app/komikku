@@ -61,6 +61,8 @@
     <string name="landscape">Ngang</string>
     <string name="pref_library_update_interval">Tự động cập nhật</string>
     <string name="update_never">Tắt</string>
+    <string name="update_1hour">Mỗi 1 tiếng</string>
+    <string name="update_3hour">Mỗi 3 tiếng</string>
     <string name="update_6hour">Mỗi 6 tiếng</string>
     <string name="update_12hour">Mỗi 12 tiếng</string>
     <string name="update_24hour">Mỗi ngày</string>

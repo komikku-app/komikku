@@ -153,6 +153,8 @@
     <string name="portrait">चित्राकृतिः</string>
     <string name="pref_library_update_interval">स्वयङ्कृतनवीकरणानि</string>
     <string name="update_never">न कदापि</string>
+    <string name="update_1hour">प्रतिपहिलोघण्टा</string>
+    <string name="update_3hour">प्रतितेस्रोघण्टा</string>
     <string name="update_6hour">प्रतिषष्ठघण्टा</string>
     <string name="update_24hour">प्रतिदिनम्</string>
     <string name="update_48hour">प्रतिदिनद्वयम्</string>

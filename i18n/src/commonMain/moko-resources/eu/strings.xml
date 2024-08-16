@@ -495,6 +495,8 @@
     <string name="theme_yotsuba">Yotsuba</string>
     <string name="pref_dark_theme_pure_black">Beltz hutseko modu iluna</string>
     <string name="update_never">Itzali</string>
+    <string name="update_1hour">1 orduro</string>
+    <string name="update_3hour">3 orduro</string>
     <string name="update_6hour">6 orduro</string>
     <string name="update_12hour">12 orduro</string>
     <string name="update_24hour">Egunero</string>

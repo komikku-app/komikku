@@ -72,6 +72,8 @@
     <string name="landscape">ভূদৃশ্য</string>
     <string name="pref_library_update_interval">নিজেথেকে আপডেট</string>
     <string name="update_never">বন্ধ</string>
+    <string name="update_1hour">প্রতি ১ ঘন্টায়</string>
+    <string name="update_3hour">প্রতি ৩ ঘন্টায়</string>
     <string name="update_6hour">প্রতি ৬ ঘন্টায়</string>
     <string name="update_12hour">প্রতি ১২ ঘন্টায়</string>
     <string name="update_24hour">প্রতিদিন</string>

@@ -235,6 +235,8 @@
     <string name="update_48hour">هر ۴۸ ساعت یکبار</string>
     <string name="update_24hour">هر ۲۴ ساعت یکبار</string>
     <string name="update_6hour">هر ۶ ساعت یکبار</string>
+    <string name="update_1hour">هر ۱ ساعت یکبار</string>
+    <string name="update_3hour">هر ۳ ساعت یکبار</string>
     <string name="update_never">خاموش</string>
     <string name="pref_library_update_interval">به‌روزرسانی‌های خودکار</string>
     <string name="pref_category_library_update">به‌روزرسانی همگانی</string>
