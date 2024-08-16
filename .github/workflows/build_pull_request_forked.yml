@@ -22,7 +22,7 @@ jobs:
   build:
     name: Build app
     runs-on: ubuntu-latest
-    if: ${{ github.repository }} == ${{ github.event.pull_request.head.repo.full_name }}
+    if: github.repository != github.event.pull_request.head.repo.full_name
 
     steps:
       - name: Determine Context
@@ -30,10 +30,10 @@ jobs:
           echo "Repository: ${{ github.repository }}"
           echo "Base repository: ${{ github.event.pull_request.base.repo.full_name }}"
           echo "Head repository: ${{ github.event.pull_request.head.repo.full_name }}"
-          if [[ "${{ github.repository }}" == "${{ github.event.pull_request.base.repo.full_name }}" ]]; then
-              echo "Action is running on the same repository"
+          if [[ "${{ github.repository }}" == "${{ github.event.pull_request.head.repo.full_name }}" ]]; then
+            echo "Action is running on a forked repository"
           else
-              echo "Action is running on a forked repository"
+            echo "Action is running on the same repository"
           fi
 
       - name: Clone repo
@@ -74,7 +74,7 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/dev/preview/app-dev-universal-preview-unsigned.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/dev/debug/app-dev-universal-debug-unsigned.apk Komikku-$version_tag-d$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
