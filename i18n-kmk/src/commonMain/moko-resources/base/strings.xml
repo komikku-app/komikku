@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_search_for_source">Search for sources</string>
+    <string name="action_search_for_source">sources</string>
     <string name="action_source_search">Search on source</string>
     <string name="action_library_search">Library search</string>
     <string name="action_toggle_nsfw_only">Toggle NSFW only</string>
