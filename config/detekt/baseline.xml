@@ -566,6 +566,7 @@
     <ID>LongParameterList:UpdatesRepositoryImpl.kt$UpdatesRepositoryImpl$( mangaId: Long, mangaTitle: String, chapterId: Long, chapterName: String, scanlator: String?, read: Boolean, bookmark: Boolean, lastPageRead: Long, sourceId: Long, favorite: Boolean, thumbnailUrl: String?, coverLastModified: Long, dateUpload: Long, dateFetch: Long, )</ID>
     <ID>LongParameterList:UpdatesUiItem.kt$( uiModels: List&lt;UpdatesUiModel&gt;, selectionMode: Boolean, // SY --&gt; preserveReadingPosition: Boolean, // SY &lt;-- onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -&gt; Unit, onClickCover: (UpdatesItem) -&gt; Unit, onClickUpdate: (UpdatesItem) -&gt; Unit, onDownloadChapter: (List&lt;UpdatesItem&gt;, ChapterDownloadAction) -&gt; Unit, )</ID>
     <ID>LongParameterList:WebtoonRecyclerView.kt$WebtoonRecyclerView$( fromRate: Float, toRate: Float, fromX: Float, toX: Float, fromY: Float, toY: Float, )</ID>
+    <ID>LoopWithTooManyJumpStatements:ArchiveReader.kt$ArchiveReader$while</ID>
     <ID>LoopWithTooManyJumpStatements:DownloadStore.kt$DownloadStore$for</ID>
     <ID>LoopWithTooManyJumpStatements:EHentaiUpdateWorker.kt$EHentaiUpdateWorker$for</ID>
     <ID>LoopWithTooManyJumpStatements:GoogleDriveSyncService.kt$GoogleDriveSyncService$while</ID>
@@ -1575,6 +1576,7 @@
     <ID>NestedBlockDepth:Anilist.kt$Anilist$override suspend fun update(track: Track, didReadChapter: Boolean): Track</ID>
     <ID>NestedBlockDepth:ApiMangaParser.kt$ApiMangaParser$fun parseIntoMetadata( metadata: MangaDexSearchMetadata, mangaDto: MangaDto, simpleChapters: List&lt;String&gt;, statistics: StatisticsMangaDto?, )</ID>
     <ID>NestedBlockDepth:AppLanguageScreen.kt$AppLanguageScreen$private fun getLangs(context: Context): ImmutableList&lt;Language&gt;</ID>
+    <ID>NestedBlockDepth:ArchiveReader.kt$ArchiveReader$private fun isPasswordIncorrect(): Boolean?</ID>
     <ID>NestedBlockDepth:BackupRestorer.kt$BackupRestorer$private fun writeErrorLog(): File</ID>
     <ID>NestedBlockDepth:BrowseSourceScreenModel.kt$BrowseSourceScreenModel$fun searchGenre(genreName: String)</ID>
     <ID>NestedBlockDepth:ChapterLoader.kt$ChapterLoader$private fun getPageLoader(chapter: ReaderChapter): PageLoader</ID>

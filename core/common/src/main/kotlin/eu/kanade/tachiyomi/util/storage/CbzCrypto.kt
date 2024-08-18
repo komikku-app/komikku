@@ -9,14 +9,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import net.lingala.zip4j.model.ZipParameters
-import net.lingala.zip4j.model.enums.AesKeyStrength
-import net.lingala.zip4j.model.enums.EncryptionMethod
+import mihon.core.common.archive.ArchiveReader
+import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
+import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.security.KeyStore
 import java.security.SecureRandom
@@ -33,7 +32,7 @@ import javax.crypto.spec.IvParameterSpec
  */
 object CbzCrypto {
     const val DATABASE_NAME = "tachiyomiEncrypted.db"
-    const val DEFAULT_COVER_NAME = "cover.jpg"
+    private const val DEFAULT_COVER_NAME = "cover.jpg"
     private val securityPreferences: SecurityPreferences by injectLazy()
     private val keyStore = KeyStore.getInstance(Keystore).apply {
         load(null)
@@ -129,15 +128,11 @@ object CbzCrypto {
         return encrypt(password.toByteArray(), encryptionCipherCbz)
     }
 
-    fun getDecryptedPasswordCbz(): CharArray {
+    fun getDecryptedPasswordCbz(): ByteArray {
         val encryptedPassword = securityPreferences.cbzPassword().get()
         if (encryptedPassword.isBlank()) error("This archive is encrypted please set a password")
 
-        val cbzBytes = decrypt(encryptedPassword, AliasCbz)
-        return Charsets.UTF_8.decode(ByteBuffer.wrap(cbzBytes)).array()
-            .also {
-                cbzBytes.fill('#'.code.toByte())
-            }
+        return decrypt(encryptedPassword, AliasCbz)
     }
 
     private fun generateAndEncryptSqlPw() {
@@ -185,27 +180,12 @@ object CbzCrypto {
         }
     }
 
-    fun setZipParametersEncrypted(zipParameters: ZipParameters) {
-        zipParameters.isEncryptFiles = true
-
+    fun getPreferredEncryptionAlgo(): ByteArray =
         when (securityPreferences.encryptionType().get()) {
-            SecurityPreferences.EncryptionType.AES_256 -> {
-                zipParameters.encryptionMethod = EncryptionMethod.AES
-                zipParameters.aesKeyStrength = AesKeyStrength.KEY_STRENGTH_256
-            }
-            SecurityPreferences.EncryptionType.AES_192 -> {
-                zipParameters.encryptionMethod = EncryptionMethod.AES
-                zipParameters.aesKeyStrength = AesKeyStrength.KEY_STRENGTH_192
-            }
-            SecurityPreferences.EncryptionType.AES_128 -> {
-                zipParameters.encryptionMethod = EncryptionMethod.AES
-                zipParameters.aesKeyStrength = AesKeyStrength.KEY_STRENGTH_128
-            }
-            SecurityPreferences.EncryptionType.ZIP_STANDARD -> {
-                zipParameters.encryptionMethod = EncryptionMethod.ZIP_STANDARD
-            }
+            SecurityPreferences.EncryptionType.AES_256 -> "zip:encryption=aes256".toByteArray()
+            SecurityPreferences.EncryptionType.AES_128 -> "zip:encryption=aes128".toByteArray()
+            SecurityPreferences.EncryptionType.ZIP_STANDARD -> "zip:encryption=zipcrypt".toByteArray()
         }
-    }
 
     fun detectCoverImageArchive(stream: InputStream): Boolean {
         val bytes = ByteArray(128)
@@ -216,6 +196,15 @@ object CbzCrypto {
             stream.read(bytes, 0, bytes.size)
         }
         return String(bytes).contains(DEFAULT_COVER_NAME, ignoreCase = true)
+    }
+
+    fun ArchiveReader.getCoverStream(): BufferedInputStream? {
+        this.getInputStream(DEFAULT_COVER_NAME)?.let { stream ->
+            if (ImageUtil.isImage(DEFAULT_COVER_NAME) { stream }) {
+                return this.getInputStream(DEFAULT_COVER_NAME)?.buffered()
+            }
+        }
+        return null
     }
 }
 

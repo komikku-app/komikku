@@ -279,7 +279,6 @@
     <string name="wrong_cbz_archive_password">Wrong CBZ archive password</string>
     <string name="encryption_type">Encryption type</string>
     <string name="aes_256">AES 256</string>
-    <string name="aes_192">AES 192</string>
     <string name="aes_128">AES 128</string>
     <string name="standard_zip_encryption">Standard zip encryption (fast but insecure)</string>
 
