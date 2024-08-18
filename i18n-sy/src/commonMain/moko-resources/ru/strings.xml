@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Actions -->
     <string name="action_skip_entry">Не переносить</string>
     <string name="action_search_manually">Искать вручную</string>
@@ -9,24 +8,20 @@
     <string name="action_clean_titles">Очистить названия</string>
     <string name="action_start_reading">Начать чтение</string>
     <string name="action_edit_info">Редактировать сведенья</string>
-
     <!-- Entry Type -->
     <string name="entry_type_manga">Манга</string>
     <string name="entry_type_manhwa">Манхва</string>
     <string name="entry_type_manhua">Маньхуа</string>
     <string name="entry_type_comic">Комикс</string>
     <string name="entry_type_webtoon">Веб-комикс</string>
-
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Все источники</string>
     <string name="pref_category_fork">Настройки Fork\'а</string>
     <string name="pref_ehentai_summary">Вход в E/ExHentai, синхронизация галерей</string>
     <string name="pref_mangadex_summary">Вход в MangaDex, синхронизация отслеживаемого</string>
-
     <!-- About -->
     <string name="changelog_version">Версия %1$s</string>
-
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Настройки учетной записи (E-Hentai)</string>
     <string name="enable_exhentai">Включить ExHentai</string>
@@ -91,7 +86,6 @@
     <string name="gallery_updater_stats_text">Последний раз программа обновления была запущена %1$s и проверила %2$d из %3$d галерей, которые были готовы к проверке.</string>
     <string name="gallery_updater_not_ran_yet">Программа обновления ещё не запущена.</string>
     <string name="gallery_updater_stats_time">Такое количество галерей было проверено за:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделю: %6$d\n- месяц: %7$d\n- год: %8$d</string>
-
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Примечание профиля настроек</string>
     <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.\n\nНажать кнопку «ОК» если вы понятие не имеете, что такое профили настроек.</string>
@@ -101,14 +95,12 @@
     <string name="eh_settings_uploading_to_server">Загрузка настроек на сервер</string>
     <string name="eh_settings_uploading_to_server_message">Пожалуйста, подождите, это может занять некоторое время…</string>
     <string name="eh_settings_out_of_slots_error">Не осталось слотов для профилей на %1$s. Пожалуйста, удалите хотя-бы один профиль!</string>
-
     <!-- EH Settings Login Activity -->
     <string name="recheck_login_status">Перепроверить статус авторизации</string>
     <string name="alternative_login_page">Альтернативная страница для авторизации</string>
     <string name="skip_page_restyling">Прекратить перерисовывать страницу</string>
     <string name="custom_igneous_cookie">Пользовательское Igneous Cookie</string>
     <string name="custom_igneous_cookie_message">Некоторые пользователи не могут получить доступ к ExHentai обычным способом и должны передать определенное значение Igneous Cookie. Эта опция предназначена как раз для таких пользователей.</string>
-
     <!-- Advanced Settings -->
     <string name="developer_tools">Инструменты разработчика</string>
     <string name="toggle_hentai_features">Включить встроенные функции для хентая</string>
@@ -145,7 +137,6 @@
     <string name="bandwidth_data_saver_server">Прокси-сервер Bandwidth Hero</string>
     <string name="data_saver_server_summary">Поместите в эту область URL-адрес прокси-сервера Bandwidth Hero</string>
     <string name="clear_db_exclude_read">Оставлять серии с прочитанными главами</string>
-
     <!-- Log Level -->
     <string name="log_minimal">Минимально</string>
     <string name="log_extra">Дополнительно</string>
@@ -153,7 +144,6 @@
     <string name="log_minimal_desc">Только критические ошибки</string>
     <string name="log_extra_desc">Регистрировать всё</string>
     <string name="log_extreme_desc">Режим проверки сети</string>
-
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Развернуть все поисковые фильтры</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
@@ -161,13 +151,11 @@
     <string name="put_merge_in_overflow">Объединение в выпадающем меню</string>
     <string name="put_merge_in_overflow_summary">Поместить кнопку «Объединение» в выпадающее меню вместо размещения на сведеньях серии</string>
     <string name="pref_previews_row_count">Размер сетки для предосмотра</string>
-
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Панель навигации</string>
     <string name="pref_hide_updates_button">Вкладка «Обновления» на панели навигации</string>
     <string name="pref_hide_history_button">Вкладка «История» на панели навигации</string>
     <string name="pref_show_bottom_bar_labels">Названия вкладок на панели навигации</string>
-
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки сортировки</string>
     <string name="pref_skip_pre_migration_summary">Использовать последние сохранённые предпереносные настройки и источники для массового переноса</string>
@@ -182,7 +170,6 @@
     <string name="update_30min">Каждые 30 минут</string>
     <string name="update_1hour">Каждый час</string>
     <string name="update_3hour">Каждые 3 часа</string>
-
     <!-- Browse settings -->
     <string name="pref_hide_feed">Скрыть вкладку «Лента»</string>
     <string name="pref_feed_position">Позиция вкладки (Лента)</string>
@@ -193,13 +180,11 @@
     <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников. Взамен при нажатии на источник отображаются вкладки «Последняя» и «Поисковик»</string>
     <string name="pref_local_source_hidden_folders">Просмотр скрытых папок</string>
     <string name="pref_local_source_hidden_folders_summery">Дать разрешение локальному источнику просматривать скрытые папки</string>
-
     <!-- Backup settings -->
     <string name="custom_entry_info">Сведенья пользователя</string>
     <string name="all_read_entries">Прочитанные серии</string>
     <string name="label_sync">Синхронизировать</string>
     <string name="label_triggers">Триггеры</string>
-
     <!-- Sync settings -->
     <string name="sync_error">Не удалось синхронизировать библиотеку</string>
     <string name="sync_complete">Синхронизация библиотеки завершена</string>
@@ -238,7 +223,6 @@
     <string name="sync_on_app_start">Синхронизовать при запуске приложения</string>
     <string name="sync_on_app_resume">Синхронизовать при возвращении в приложение</string>
     <string name="sync_library">Синхронизировать библиотеку</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Биометрическое время блокировки</string>
     <string name="action_edit_biometric_lock_times">Изменить биометрическое время блокировки</string>
@@ -270,7 +254,6 @@
     <string name="wrong_cbz_archive_password">Неверный пароль архива CBZ</string>
     <string name="encryption_type">Тип шифрования</string>
     <string name="standard_zip_encryption">Обычное ZIP шифрование (быстрое, но небезопасное)</string>
-
     <!-- Reader Settings -->
     <string name="page_downloading">Загрузка страниц</string>
     <string name="download_threads">Потоки загрузки</string>
@@ -306,7 +289,6 @@
     <string name="pref_force_horz_seekbar">Принудительная горизонтальная полоса прокрутки</string>
     <string name="pref_force_horz_seekbar_summary">Полностью убирает вертикальную полосу прокрутки в пользу горизонтальной</string>
     <string name="pref_smooth_scroll">Плавная автопрокрутка</string>
-
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Автопрокрутка</string>
@@ -336,13 +318,10 @@
     <string name="action_share_second_page">Отправить вторую страницу</string>
     <string name="action_save_combined_page">Сохранить объединённые страницы</string>
     <string name="action_share_combined_page">Отправить объединённые страницы</string>
-
     <!-- Reader Sharing -->
     <string name="share_pages_info">%1$s: %2$s, страницы %3$s</string>
-
     <!-- Auto Webtoon Mode -->
     <string name="eh_auto_webtoon_snack">Режим чтения (Веб-комикс)</string>
-
     <!-- Double page spread -->
     <string name="page_layout">Схема страницы</string>
     <string name="shift_double_pages">Сдвинуть двойные страницы</string>
@@ -351,7 +330,6 @@
     <string name="automatic_orientation">Автоматически (На основе ориентации)</string>
     <string name="automatic_can_still_switch">При использовании автоматической схемы страниц вы всё ещё можете переключиться между схемами, когда читаете без переопределения этой настройки</string>
     <string name="invert_double_pages">Двойные страницы наоборот</string>
-
     <!-- Center margin -->
     <string name="center_margin">Отступ по центру</string>
     <string name="center_margin_none">Нет</string>
@@ -360,14 +338,12 @@
     <string name="center_margin_double_and_wide_page">Оба варианта</string>
     <string name="pref_center_margin">Отступ по центру</string>
     <string name="pref_center_margin_summary">Вставить проставку для устранения зазоров на складных устройствах.</string>
-
     <!-- Archive reader mode -->
     <string name="archive_mode_load_from_file">Загрузить из файла</string>
     <string name="archive_mode_load_into_memory">Загрузить в память</string>
     <string name="archive_mode_cache_to_disk">Копировать на диск</string>
     <string name="pref_archive_reader_mode">Режим чтения для архивов</string>
     <string name="pref_archive_reader_mode_summary">Способ, благодаря которому, изображения из архивов, таких как CBZ или CBR, будут загружены</string>
-
     <!-- Entry Page -->
     <!-- Entry Info -->
     <string name="az_recommends">Рекомендации</string>
@@ -378,7 +354,6 @@
     <string name="merge_unknown_entry">Неизвестный ID серии: %1$d</string>
     <string name="merged_already">Эта серия уже объеденена с текущей серией!</string>
     <string name="merge_duplicate">Эта объеденённая серия является дубликатом!</string>
-
     <!-- Entry Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
     <string name="add_tag">Добавить тэг</string>
@@ -388,18 +363,15 @@
     <string name="author_hint">Автор: %1$s</string>
     <string name="artist_hint">Художник: %1$s</string>
     <string name="thumbnail_url_hint">URL-адрес миниатюры: %1$s</string>
-
     <!-- Browse -->
     <!-- Sources Tab -->
     <string name="find_in_another_source">Найти в других источниках</string>
     <string name="data_saver_exclude">Исключение из экономии данных</string>
     <string name="data_saver_stop_exclude">Прекратить исключение из экономии данных</string>
-
     <!-- Smart Search -->
     <string name="searching_source">Поиск в источнике…</string>
     <string name="could_not_find_entry">Не удалось найти серию!</string>
     <string name="automatic_search_error">Ошибка при выполнении автоматического поиска!</string>
-
     <!-- Saved Searches -->
     <string name="saved_searches">Сохраненные запросы</string>
     <string name="save_search">Сохранить текущий поисковой запрос?</string>
@@ -410,17 +382,14 @@
     <string name="save_search_delete_message">Вы уверены, что хотите удалить сохраненный поисковый запрос: %1$s?</string>
     <string name="save_search_invalid">Сохраненный поисковый запрос недействителен. Фильтры были изменены</string>
     <string name="save_search_invalid_name">Недопустимое имя поискового запроса</string>
-
     <!-- Source Categories -->
     <string name="no_source_categories">Отсутствуют категории для источников</string>
     <string name="invalid_category_name">Недопустимое имя категории!</string>
-
     <!-- Feed Tab -->
     <string name="feed">Лента</string>
     <string name="feed_delete">Удалить элемент из ленты?</string>
     <string name="feed_tab_empty">Ваша лента не имеет отслеживаемых источников. Чтобы добавить источник нажмите «+»</string>
     <string name="feed_add">Добавить %1$s в ленту?</string>
-
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Сортировка тэгов</string>
     <string name="tag_sorting">Сортировка тэгов</string>
@@ -430,11 +399,9 @@
     <string name="error_tag_exists">Этот тэг уже существует!</string>
     <string name="delete_tag">Удалить тэг</string>
     <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
-
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
-
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
@@ -458,19 +425,15 @@
     <string name="stop_migrating">Остановить перенос?</string>
     <string name="action_stop">Остановить</string>
     <string name="skipping_">(Исключая %1$d)</string>
-
     <!-- Library -->
     <!-- Library Actions -->
     <string name="no_valid_entry">Выбрана недопустимая серия</string>
-
     <!-- Library Sheet -->
     <string name="lewd">Для взрослых</string>
-
     <!-- Library Grouping -->
     <string name="tracking_status">Статус отслеживания</string>
     <string name="ungrouped">Не группировать</string>
     <string name="not_tracked">Не отслеживается</string>
-
     <!-- Favorites Sync -->
     <string name="sync_favorites">Синхронизация избранного</string>
     <string name="favorites_sync_error">Ошибка синхронизации избранного</string>
@@ -514,7 +477,6 @@
     <string name="favorites_sync_reset">Вы уверены?</string>
     <string name="favorites_sync_reset_message">Сброс состояния синхронизации может привести к тому, что следующая синхронизация будет чрезвычайно медленной.</string>
     <string name="favorites_sync_conformation_message">Вы уверены, что хотите синхронизировать ваше избранное с E-Hentai?</string>
-
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Добавить галереи</string>
@@ -541,19 +503,16 @@
     <string name="gallery_adder_chapter_fetch_error">Не удалось обновить главы для галереи: %1$s!</string>
     <string name="gallery_adder_could_not_add_gallery">Не удалось добавить галерею (URL-адрес: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Не удалось идентифицировать главу (URL-адрес: %1$s)!</string>
-
     <!-- Intercept Activity -->
     <string name="launching_app">Запуск приложения…</string>
     <string name="error_with_reason">Ошибка: %1$s</string>
     <string name="could_not_open_entry">Не удалось открыть эту серию:\n\n%1$s</string>
     <string name="loading_entry">Загрузка серии…</string>
-
     <!-- Page previews -->
     <string name="page_previews">Предосмотр страниц</string>
     <string name="more_previews">Просмотреть ещё</string>
     <string name="pref_clear_page_preview_cache">Очистить кэш предосмотренных страниц</string>
     <string name="page_preview_page_go_to">Перейти к</string>
-
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Шедевр</string>
     <string name="rating9">Удивительно</string>
@@ -567,7 +526,6 @@
     <string name="rating1">Невыносимо</string>
     <string name="rating0">Катастрофа</string>
     <string name="no_rating">Без рейтинга</string>
-
     <!-- Gallery types -->
     <string name="doujinshi">Додзинси</string>
     <string name="artist_cg">Худож. графика</string>
@@ -580,7 +538,6 @@
     <string name="misc">Разное</string>
     <string name="artbook">Артбук</string>
     <string name="video">Видео</string>
-
     <!-- More Info Menu -->
     <string name="more_info">Информация</string>
     <string name="alt_title">Альт. название</string>
@@ -625,11 +582,9 @@
     <string name="manga_updates_id">MangaUpdates ID</string>
     <string name="anime_planet_id">Anime-Planet ID</string>
     <string name="translated">Переведено</string>
-
     <!-- Extra gallery info -->
     <string name="is_visible">Не скрыто: %1$s</string>
     <string name="language_translated">%1$s</string>
-
     <!-- Merged entry -->
     <string name="merge_settings">Настройки объединения</string>
     <string name="fetch_chapter_updates">Получить обновления глав</string>
@@ -649,7 +604,6 @@
     <string name="dedupe_priority">Дедупликация по приоритету</string>
     <string name="dedupe_most_chapters">Показать источник с наибольшим количеством глав</string>
     <string name="dedupe_highest_chapter">Показать источник с наивысшим номером главы</string>
-
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Без отслеживания</string>
     <string name="mangadex_sync_follows_to_library">Синхронизировать серии (MangaDex)</string>
@@ -663,13 +617,10 @@
     <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex</string>
     <string name="mangadex_similar">MangaDex похожее</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
-
     <!-- Scanlator filters -->
     <string name="select_scanlators">Группы переводчиков</string>
-
     <!-- Similar -->
     <string name="similar">Похожее на %1$s</string>
-
     <!-- MangaDex relations-->
     <string name="relation_similar">Похожее</string>
     <string name="relation_monochrome">Монохром</string>
@@ -688,11 +639,13 @@
     <string name="relation_colored">Цветное</string>
     <string name="relation_serialization">Сериализация</string>
     <string name="relation_alternate_version">Альт. версия</string>
-
     <!-- Stats page -->
     <string name="include_all_read_entries">Включать все прочитанные серии</string>
     <string name="ignore_non_library_entries">Игнорировать не-библиотечные серии</string>
-
     <!-- Humanize time -->
     <string name="humanize_fallback">мгновение назад</string>
+    <string name="action_copy_first_page">Копировать первую страницу</string>
+    <string name="action_copy_second_page">Копировать вторую страницу</string>
+    <string name="only_show_updated_entries">Показывать серии только с новыми главами</string>
+    <string name="action_copy_combined_page">Копировать объединенную страницу</string>
 </resources>
