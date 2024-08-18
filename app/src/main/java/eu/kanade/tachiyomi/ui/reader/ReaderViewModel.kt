@@ -707,7 +707,12 @@ class ReaderViewModel @JvmOverloads constructor(
                                 it.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
                         }
                         .ifEmpty { null }
-                        ?.also { setReadStatus.await(true, *it.toTypedArray()) }
+                        ?.also {
+                            setReadStatus.await(true, *it.toTypedArray())
+                            it.forEach { chapter -> 
+                                deleteChapterIfNeeded(ReaderChapter(chapter))
+                            }
+                        }
                 }
                 if (manga?.isEhBasedManga() == true) {
                     viewModelScope.launchNonCancellable {
