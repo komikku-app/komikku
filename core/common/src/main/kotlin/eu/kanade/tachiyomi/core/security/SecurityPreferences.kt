@@ -56,7 +56,6 @@ class SecurityPreferences(
     // SY -->
     enum class EncryptionType(val titleRes: StringResource) {
         AES_256(SYMR.strings.aes_256),
-        AES_192(SYMR.strings.aes_192),
         AES_128(SYMR.strings.aes_128),
         ZIP_STANDARD(SYMR.strings.standard_zip_encryption),
     }

@@ -243,10 +243,6 @@ dependencies {
     // Disk
     implementation(libs.disklrucache)
     implementation(libs.unifile)
-    implementation(libs.bundles.archive)
-    // SY -->
-    implementation(libs.zip4j)
-    // SY <--
 
     // Preferences
     implementation(libs.preferencektx)
