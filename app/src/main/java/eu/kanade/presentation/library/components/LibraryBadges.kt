@@ -60,8 +60,9 @@ internal fun LanguageBadge(
 // KMK -->
 @Composable
 fun SourceIconBadge(
-    source: Source,
+    source: Source?,
 ) {
+    if (source == null) return
     val icon = source.icon
 
     when {

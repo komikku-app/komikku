@@ -500,6 +500,9 @@ class LibraryScreenModel(
             // SY -->
             libraryPreferences.filterLewd().changes(),
             // SY <--
+            // KMK -->
+            libraryPreferences.sourceBadge().changes(),
+            // KMK <--
         ) {
             ItemPreferences(
                 downloadBadge = it[0] as Boolean,
@@ -516,6 +519,9 @@ class LibraryScreenModel(
                 // SY -->
                 filterLewd = it[11] as TriState,
                 // SY <--
+                // KMK -->
+                sourceBadge = it[12] as Boolean,
+                // KMK <--
             )
         }
     }
@@ -558,13 +564,17 @@ class LibraryScreenModel(
                             ""
                         },
                         // KMK -->
-                        source = DomainSource(
-                            source.id,
-                            source.lang,
-                            source.name,
-                            supportsLatest = false,
-                            isStub = source is StubSource
-                        ),
+                        source = if (prefs.sourceBadge) {
+                            DomainSource(
+                                source.id,
+                                source.lang,
+                                source.name,
+                                supportsLatest = false,
+                                isStub = source is StubSource
+                            )
+                        } else {
+                            null
+                        },
                         // KMK <--
                     )
                 }
@@ -1326,6 +1336,9 @@ class LibraryScreenModel(
         val downloadBadge: Boolean,
         val localBadge: Boolean,
         val languageBadge: Boolean,
+        // KMK -->
+        val sourceBadge: Boolean,
+        // KMK <--
         val skipOutsideReleasePeriod: Boolean,
 
         val globalFilterDownloaded: Boolean,
