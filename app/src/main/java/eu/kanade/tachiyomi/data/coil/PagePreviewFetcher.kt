@@ -26,7 +26,6 @@ import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.IOException
-import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
 
 /**
  * A [Fetcher] that fetches page preview image for [PagePreview] object.
@@ -34,7 +33,6 @@ import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
  * Disk caching is handled by [PagePreviewCache], otherwise
  * handled by Coil's [DiskCache].
  */
-@Suppress("LongParameterList")
 class PagePreviewFetcher(
     private val page: PagePreview,
     private val options: Options,

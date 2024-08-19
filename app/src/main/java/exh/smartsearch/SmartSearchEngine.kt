@@ -158,7 +158,6 @@ class SmartSearchEngine(
                 if (closingBracketDepthIndex != null) {
                     depthPairs[closingBracketDepthIndex]--
                 } else {
-                    @Suppress("ControlFlowWithEmptyBody")
                     if (depthPairs.all { it <= 0 }) {
                         result.append(c)
                     } else {
