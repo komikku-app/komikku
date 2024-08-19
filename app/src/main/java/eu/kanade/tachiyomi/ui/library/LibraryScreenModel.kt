@@ -107,6 +107,7 @@ import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.applyFilter
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerManga
@@ -118,6 +119,7 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Collections
+import tachiyomi.domain.source.model.Source as DomainSource
 
 /**
  * Typealias for the library manga, using the category as keys, and list of manga as values.
@@ -498,6 +500,9 @@ class LibraryScreenModel(
             // SY -->
             libraryPreferences.filterLewd().changes(),
             // SY <--
+            // KMK -->
+            libraryPreferences.sourceBadge().changes(),
+            // KMK <--
         ) {
             ItemPreferences(
                 downloadBadge = it[0] as Boolean,
@@ -514,6 +519,9 @@ class LibraryScreenModel(
                 // SY -->
                 filterLewd = it[11] as TriState,
                 // SY <--
+                // KMK -->
+                sourceBadge = it[12] as Boolean,
+                // KMK <--
             )
         }
     }
@@ -530,6 +538,9 @@ class LibraryScreenModel(
             libraryMangaList
                 .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
+                    // KMK -->
+                    val source = sourceManager.getOrStub(libraryManga.manga.source)
+                    // KMK <--
                     LibraryItem(
                         libraryManga,
                         downloadCount = if (prefs.downloadBadge) {
@@ -548,10 +559,23 @@ class LibraryScreenModel(
                         unreadCount = libraryManga.unreadCount,
                         isLocal = if (prefs.localBadge) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
-                            sourceManager.getOrStub(libraryManga.manga.source).lang
+                            source.lang
                         } else {
                             ""
                         },
+                        // KMK -->
+                        source = if (prefs.sourceBadge) {
+                            DomainSource(
+                                source.id,
+                                source.lang,
+                                source.name,
+                                supportsLatest = false,
+                                isStub = source is StubSource
+                            )
+                        } else {
+                            null
+                        },
+                        // KMK <--
                     )
                 }
                 .groupBy { it.libraryManga.category }
@@ -1312,6 +1336,9 @@ class LibraryScreenModel(
         val downloadBadge: Boolean,
         val localBadge: Boolean,
         val languageBadge: Boolean,
+        // KMK -->
+        val sourceBadge: Boolean,
+        // KMK <--
         val skipOutsideReleasePeriod: Boolean,
 
         val globalFilterDownloaded: Boolean,

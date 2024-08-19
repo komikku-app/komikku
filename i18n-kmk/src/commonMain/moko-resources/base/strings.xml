@@ -40,6 +40,7 @@
 
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
+    <string name="action_display_source_badge">Source icon</string>
 
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>

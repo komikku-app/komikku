@@ -127,7 +127,11 @@ class LibraryPreferences(
 
     fun localBadge() = preferenceStore.getBoolean("display_local_badge", true)
 
-    fun languageBadge() = preferenceStore.getBoolean("display_language_badge", false)
+    fun languageBadge() = preferenceStore.getBoolean("display_language_badge", true)
+
+    // KMK -->
+    fun sourceBadge() = preferenceStore.getBoolean("display_source_badge", true)
+    // KMK <--
 
     fun newShowUpdatesCount() = preferenceStore.getBoolean("library_show_updates_count", true)
     fun newUpdatesCount() = preferenceStore.getInt(Preference.appStateKey("library_unseen_updates_count"), 0)
