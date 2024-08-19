@@ -69,7 +69,7 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.LabeledCheckbox
-import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
+import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -399,7 +399,7 @@ private fun SourcePinButton(
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onBackground.copy(
-            alpha = SecondaryItemAlpha,
+            alpha = SECONDARY_ALPHA,
         )
     }
     val description = if (isPinned) MR.strings.action_unpin else MR.strings.action_pin
