@@ -43,7 +43,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object MoreTab : Tab {
-    @Suppress("unused")
     private fun readResolve(): Any = MoreTab
 
     override val options: TabOptions

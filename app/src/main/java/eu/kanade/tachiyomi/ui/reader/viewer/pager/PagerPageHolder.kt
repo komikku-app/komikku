@@ -87,7 +87,6 @@ class PagerPageHolder(
     /**
      * Called when this view is detached from the window. Unsubscribes any active subscription.
      */
-    @SuppressLint("ClickableViewAccessibility")
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         loadJob?.cancel()
