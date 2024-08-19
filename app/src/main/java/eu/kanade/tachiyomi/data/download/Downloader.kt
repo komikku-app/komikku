@@ -190,7 +190,7 @@ class Downloader(
     fun clearQueue() {
         cancelDownloaderJob()
 
-        _clearQueue()
+        internalClearQueue()
         notifier.dismissProgress()
     }
 
@@ -204,9 +204,12 @@ class Downloader(
             val activeDownloadsFlow = queueState.transformLatest { queue ->
                 while (true) {
                     val activeDownloads = queue.asSequence()
-                        .filter { it.status.value <= Download.State.DOWNLOADING.value } // Ignore completed downloads, leave them in the queue
+                        // Ignore completed downloads, leave them in the queue
+                        .filter { it.status.value <= Download.State.DOWNLOADING.value }
                         .groupBy { it.source }
-                        .toList().take(5) // Concurrently download from 5 different sources
+                        .toList()
+                        // Concurrently download from 5 different sources
+                        .take(5)
                         .map { (_, downloads) -> downloads.first() }
                     emit(activeDownloads)
 
@@ -650,7 +653,7 @@ class Downloader(
             chapter,
             urls,
             categories,
-            source.name
+            source.name,
         )
 
         // Remove the old file
@@ -710,7 +713,7 @@ class Downloader(
         removeFromQueueIf { it.manga.id == manga.id }
     }
 
-    private fun _clearQueue() {
+    private fun internalClearQueue() {
         _queueState.update {
             it.forEach { download ->
                 if (download.status == Download.State.DOWNLOADING || download.status == Download.State.QUEUE) {
@@ -732,7 +735,7 @@ class Downloader(
         }
 
         pause()
-        _clearQueue()
+        internalClearQueue()
         addAllToQueue(downloads)
 
         if (wasRunning) {

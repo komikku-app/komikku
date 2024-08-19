@@ -231,7 +231,9 @@ private fun ExtensionContent(
                         when (it) {
                             is Extension.Available -> onInstallExtension(it)
                             is Extension.Installed -> onOpenExtension(it)
-                            is Extension.Untrusted -> { trustState = it }
+                            is Extension.Untrusted -> {
+                                trustState = it
+                            }
                         }
                     },
                     onLongClickItem = onLongClickItem,
@@ -253,7 +255,9 @@ private fun ExtensionContent(
                                     onOpenExtension(it)
                                 }
                             }
-                            is Extension.Untrusted -> { trustState = it }
+                            is Extension.Untrusted -> {
+                                trustState = it
+                            }
                         }
                     },
                 )

@@ -76,7 +76,7 @@ private fun NewUpdateScreenPreview() {
             changelogInfo = """
                 ## Yay
                 Foobar
-                
+
                 ### More info
                 - Hello
                 - World
