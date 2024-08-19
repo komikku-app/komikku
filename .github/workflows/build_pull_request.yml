@@ -64,7 +64,7 @@ jobs:
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4
 
       - name: Build app and run unit tests
-        run: ./gradlew assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
+        run: ./gradlew spotlessCheck assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
