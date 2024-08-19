@@ -71,8 +71,8 @@ object HomeScreen : Screen() {
     private val openTabEvent = Channel<Tab>()
     private val showBottomNavEvent = Channel<Boolean>()
 
-    private const val TabFadeDuration = 200
-    private const val TabNavigatorKey = "HomeTabs"
+    private const val TAB_FADE_DURATION = 200
+    private const val TAB_NAVIGATOR_KEY = "HomeTabs"
 
     private val tabs = listOf(
         LibraryTab,
@@ -95,7 +95,7 @@ object HomeScreen : Screen() {
 
         TabNavigator(
             tab = LibraryTab,
-            key = TabNavigatorKey,
+            key = TAB_NAVIGATOR_KEY,
         ) { tabNavigator ->
             // Provide usable navigator to content screen
             CompositionLocalProvider(LocalNavigator provides navigator) {
@@ -145,8 +145,11 @@ object HomeScreen : Screen() {
                         AnimatedContent(
                             targetState = tabNavigator.current,
                             transitionSpec = {
-                                materialFadeThroughIn(initialScale = 1f, durationMillis = TabFadeDuration) togetherWith
-                                    materialFadeThroughOut(durationMillis = TabFadeDuration)
+                                materialFadeThroughIn(
+                                    initialScale = 1f,
+                                    durationMillis = TAB_FADE_DURATION,
+                                ) togetherWith
+                                    materialFadeThroughOut(durationMillis = TAB_FADE_DURATION)
                             },
                             label = "tabContent",
                             contentKey = { it.key }

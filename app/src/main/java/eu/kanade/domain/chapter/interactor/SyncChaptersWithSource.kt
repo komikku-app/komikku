@@ -117,7 +117,10 @@ class SyncChaptersWithSource(
                         downloadManager.isChapterDownloaded(
                             dbChapter.name,
                             dbChapter.scanlator,
-                            /* SY --> */ manga.ogTitle /* SY <-- */,
+                            // SY -->
+                            // manga.title,
+                            manga.ogTitle,
+                            // SY <--
                             manga.source,
                         )
 

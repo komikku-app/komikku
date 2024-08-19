@@ -293,7 +293,7 @@ object FlagKit {
             "yt",
             "za",
             "zm",
-            "zw"
+            "zw",
         )
     }
 }

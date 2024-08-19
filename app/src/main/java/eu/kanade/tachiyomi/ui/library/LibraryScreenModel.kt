@@ -384,8 +384,9 @@ class LibraryScreenModel(
         // Map<MangaId, List<Track>>
         trackMap: Map<Long, List<Track>>,
         loggedInTrackerIds: Set<Long>,
-        /* SY --> */
-        groupSort: LibrarySort? = null, /* SY <-- */
+        // SY -->
+        groupSort: LibrarySort? = null,
+        // SY <--
     ): LibraryMap {
         // SY -->
         val listOfTags by lazy {
