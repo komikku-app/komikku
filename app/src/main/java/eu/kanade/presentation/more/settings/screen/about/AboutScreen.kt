@@ -59,7 +59,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 object AboutScreen : Screen() {
-    @Suppress("unused")
     private fun readResolve(): Any = AboutScreen
 
     @Composable

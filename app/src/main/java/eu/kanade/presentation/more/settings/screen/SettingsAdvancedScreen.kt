@@ -101,7 +101,6 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
-    @Suppress("unused")
     private fun readResolve(): Any = SettingsAdvancedScreen
 
     @ReadOnlyComposable
