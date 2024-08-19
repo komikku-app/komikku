@@ -191,7 +191,7 @@ class ReaderPreferences(
     enum class FlashColor {
         BLACK,
         WHITE,
-        WHITE_BLACK
+        WHITE_BLACK,
     }
 
     enum class TappingInvertMode(
