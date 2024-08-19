@@ -131,7 +131,7 @@ jobs:
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4
 
       - name: Build app and run unit tests
-        run: ./gradlew assembleStandardRelease testStandardReleaseUnitTest testReleaseUnitTest --stacktrace
+        run: ./gradlew spotlessCheck assembleStandardRelease testStandardReleaseUnitTest testReleaseUnitTest --stacktrace
 
       - name: Upload artifacts
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
