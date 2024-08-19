@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.network.interceptor
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -57,7 +56,6 @@ class CloudflareInterceptor(
         }
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     private fun resolveWithWebView(originalRequest: Request, oldCookie: Cookie?) {
         // We need to lock this thread until the WebView finds the challenge solution url, because
         // OkHttp doesn't support asynchronous interceptors.

@@ -65,7 +65,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object HomeScreen : Screen() {
-    @Suppress("unused")
     private fun readResolve(): Any = HomeScreen
 
     private val librarySearchEvent = Channel<String>()

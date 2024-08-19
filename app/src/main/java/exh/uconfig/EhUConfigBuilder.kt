@@ -92,7 +92,7 @@ object Entry {
         override val key = "uh"
     }
 
-    @Suppress("ktlint:standard:enum-entry-name-case")
+    @Suppress("EnumEntryName")
     enum class ImageSize(override val value: String) : ConfigItem {
         AUTO("0"),
         `2400`("5"),
@@ -119,7 +119,7 @@ object Entry {
         override val value = "2"
     }
 
-    @Suppress("ktlint:standard:enum-entry-name-case")
+    @Suppress("EnumEntryName")
     enum class SearchResultsCount(override val value: String) : ConfigItem {
         `25`("0"),
         `50`("1"),
@@ -130,7 +130,7 @@ object Entry {
         override val key = "rc"
     }
 
-    @Suppress("ktlint:standard:enum-entry-name-case")
+    @Suppress("EnumEntryName")
     enum class ThumbnailRows(override val value: String) : ConfigItem {
         `4`("0"),
         `10`("1"),
