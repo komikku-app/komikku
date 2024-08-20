@@ -67,8 +67,6 @@ object SettingsAppearanceScreen : SearchableSettings {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
 
-
-
         val themeModePref = uiPreferences.themeMode()
         val themeMode by themeModePref.collectAsState()
 
@@ -89,8 +87,6 @@ object SettingsAppearanceScreen : SearchableSettings {
         } else {
             emptyList()
         }
-
-
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_theme),
