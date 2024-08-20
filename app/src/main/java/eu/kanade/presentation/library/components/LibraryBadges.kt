@@ -1,7 +1,7 @@
 package eu.kanade.presentation.library.components
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Folder
@@ -11,12 +11,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.extension.interactor.GetExtensionLanguages.Companion.getLanguageIconID
 import eu.kanade.domain.source.model.icon
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import eu.kanade.tachiyomi.R
 import tachiyomi.domain.source.model.Source
 import tachiyomi.presentation.core.components.Badge
+import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.source.local.isLocal
 
 @Composable
@@ -41,6 +46,9 @@ internal fun UnreadBadge(count: Long) {
 internal fun LanguageBadge(
     isLocal: Boolean,
     sourceLanguage: String,
+    // KMK -->
+    useLangIcon: Boolean = true,
+    // KMK <--
 ) {
     if (isLocal) {
         Badge(
@@ -48,12 +56,25 @@ internal fun LanguageBadge(
             color = MaterialTheme.colorScheme.tertiary,
             iconColor = MaterialTheme.colorScheme.onTertiary,
         )
-    } else if (sourceLanguage.isNotEmpty()) {
-        Badge(
-            text = sourceLanguage.uppercase(),
-            color = MaterialTheme.colorScheme.tertiary,
-            textColor = MaterialTheme.colorScheme.onTertiary,
-        )
+    } else if (sourceLanguage.isNotEmpty() /* KMK --> */ && sourceLanguage != "all" /* KMK <-- */) {
+        // KMK -->
+        if (useLangIcon) {
+            val iconResId = getLanguageIconID(sourceLanguage) ?: R.drawable.globe
+            Badge(
+                painter = painterResource(id = iconResId),
+                color = Color.Transparent,
+                modifier = Modifier
+                    .width(25.dp)
+                    .height(18.dp),
+            )
+        } else {
+            // KMK <--
+            Badge(
+                text = sourceLanguage.uppercase(),
+                color = MaterialTheme.colorScheme.tertiary,
+                textColor = MaterialTheme.colorScheme.onTertiary,
+            )
+        }
     }
 }
 
@@ -75,7 +96,9 @@ fun SourceIconBadge(
         icon != null -> {
             Badge(
                 imageBitmap = icon,
-                modifier = Modifier.scale(1.3f).height(18.dp),
+                modifier = Modifier
+                    .scale(1.3f)
+                    .height(18.dp),
             )
         }
         source.isLocal() -> {
@@ -101,11 +124,12 @@ fun SourceIconBadge(
 @Composable
 private fun BadgePreview() {
     TachiyomiPreviewTheme {
-        Column {
+        BadgeGroup {
             DownloadsBadge(count = 10)
             UnreadBadge(count = 10)
-            LanguageBadge(isLocal = true, sourceLanguage = "EN")
-            LanguageBadge(isLocal = false, sourceLanguage = "EN")
+            LanguageBadge(isLocal = true, sourceLanguage = "en")
+            LanguageBadge(isLocal = false, sourceLanguage = "en", useLangIcon = false)
+            LanguageBadge(isLocal = false, sourceLanguage = "vi")
         }
     }
 }

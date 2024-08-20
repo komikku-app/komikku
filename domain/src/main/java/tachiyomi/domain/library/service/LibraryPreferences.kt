@@ -131,6 +131,8 @@ class LibraryPreferences(
 
     // KMK -->
     fun sourceBadge() = preferenceStore.getBoolean("display_source_badge", true)
+
+    fun useLangIcon() = preferenceStore.getBoolean("display_language_text", true)
     // KMK <--
 
     fun newShowUpdatesCount() = preferenceStore.getBoolean("library_show_updates_count", true)

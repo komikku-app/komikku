@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -112,6 +113,29 @@ fun Badge(
 }
 
 // KMK -->
+@Composable
+fun Badge(
+    painter: Painter,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.secondary,
+    tint: Color = Color.Unspecified,
+    shape: Shape = RectangleShape,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .clip(shape)
+            .background(color),
+    ) {
+        Icon(
+            painter = painter,
+            tint = tint,
+            contentDescription = null,
+            modifier = modifier,
+        )
+    }
+}
+
 @Composable
 fun Badge(
     imageBitmap: ImageBitmap,

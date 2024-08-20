@@ -313,6 +313,13 @@ private fun ColumnScope.DisplayPage(
         pref = screenModel.libraryPreferences.languageBadge(),
     )
     // KMK -->
+    val showLang by screenModel.libraryPreferences.languageBadge().collectAsState()
+    if (showLang) {
+        CheckboxItem(
+            label = stringResource(KMR.strings.action_display_language_icon),
+            pref = screenModel.libraryPreferences.useLangIcon(),
+        )
+    }
     CheckboxItem(
         label = stringResource(KMR.strings.action_display_source_badge),
         pref = screenModel.libraryPreferences.sourceBadge(),
