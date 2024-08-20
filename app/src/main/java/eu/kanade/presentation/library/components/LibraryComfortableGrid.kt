@@ -52,6 +52,9 @@ internal fun LibraryComfortableGrid(
                     LanguageBadge(
                         isLocal = libraryItem.isLocal,
                         sourceLanguage = libraryItem.sourceLanguage,
+                        // KMK -->
+                        useLangIcon = libraryItem.useLangIcon,
+                        // KMK <--
                     )
                     // KMK -->
                     SourceIconBadge(source = libraryItem.source)

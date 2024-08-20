@@ -14,6 +14,7 @@ data class LibraryItem(
     val isLocal: Boolean = false,
     val sourceLanguage: String = "",
     // KMK -->
+    val useLangIcon: Boolean = true,
     val source: Source? = null,
     // KMK <--
     private val sourceManager: SourceManager = Injekt.get(),
