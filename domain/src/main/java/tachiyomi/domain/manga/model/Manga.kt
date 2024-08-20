@@ -67,8 +67,6 @@ data class Manga(
 
     val expectedNextUpdate: Instant?
         get() = nextUpdate
-            // I tried changing this line to make it interact with the smart updates option, but I wasn't able to figure out how.
-            // When I thought I was going to the right direction, it would give me a "Circular dependency" error.
             //.takeIf { status != SManga.COMPLETED.toLong() }
             ?.let { Instant.ofEpochMilli(it) }
 
