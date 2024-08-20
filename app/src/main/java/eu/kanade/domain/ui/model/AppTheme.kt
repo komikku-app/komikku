@@ -19,7 +19,7 @@ enum class AppTheme(val titleRes: StringResource?) {
     MIDNIGHT_DUSK(MR.strings.theme_midnightdusk),
 
     //Kuukiyomi themes
-    CUSTOM(MR.strings.theme_custom),
+    CUSTOM(KMR.strings.theme_custom),
 
     // TODO: re-enable for preview
     NORD(MR.strings.theme_nord.takeIf { isDevFlavor || isPreviewBuildType }),

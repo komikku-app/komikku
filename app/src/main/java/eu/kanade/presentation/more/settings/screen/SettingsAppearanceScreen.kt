@@ -79,8 +79,8 @@ object SettingsAppearanceScreen : SearchableSettings {
         val customPreferenceItem = if (appTheme == AppTheme.CUSTOM) {
             listOf(
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_custom_color),
-                    subtitle = stringResource(MR.strings.custom_color_description),
+                    title = stringResource(KMR.strings.pref_custom_color),
+                    subtitle = stringResource(KMR.strings.custom_color_description),
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
             )
@@ -111,9 +111,9 @@ object SettingsAppearanceScreen : SearchableSettings {
                     }
                 },
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_custom_color),
+                    title = stringResource(KMR.strings.pref_custom_color),
                     enabled = appTheme == AppTheme.CUSTOM,
-                    subtitle = stringResource(MR.strings.custom_color_description),
+                    subtitle = stringResource(KMR.strings.custom_color_description),
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
 
