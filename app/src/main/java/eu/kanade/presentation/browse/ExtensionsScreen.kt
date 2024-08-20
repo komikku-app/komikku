@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -37,12 +39,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.extension.interactor.GetExtensionLanguages.Companion.getLanguageIconID
 import eu.kanade.presentation.browse.components.BaseBrowseItem
 import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.WarningBanner
@@ -50,6 +55,7 @@ import eu.kanade.presentation.manga.components.DotSeparatorNoSpaceText
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionUiModel
@@ -346,6 +352,7 @@ private fun ExtensionItemContent(
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
         )
+
         // Won't look good but it's not like we can ellipsize overflowing content
         FlowRow(
             modifier = Modifier.secondaryItemAlpha(),
@@ -353,9 +360,25 @@ private fun ExtensionItemContent(
         ) {
             ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
                 if (extension.lang?.isNotEmpty() == true) {
-                    Text(
-                        text = LocaleHelper.getSourceDisplayName(extension.lang, LocalContext.current),
-                    )
+                    // KMK -->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val iconResId = getLanguageIconID(extension.lang ?: "") ?: R.drawable.globe
+                        Icon(
+                            painter = painterResource(id = iconResId),
+                            tint = Color.Unspecified,
+                            contentDescription = extension.lang ?: "",
+                            modifier = Modifier
+                                .width(18.dp)
+                                .height(12.dp)
+                        )
+                        // KMK <--
+                        Text(
+                            text = LocaleHelper.getSourceDisplayName(extension.lang, LocalContext.current),
+                        )
+                    }
                 }
 
                 if (extension.versionName.isNotEmpty()) {
