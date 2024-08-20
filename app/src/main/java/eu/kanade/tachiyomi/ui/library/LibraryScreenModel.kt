@@ -502,6 +502,7 @@ class LibraryScreenModel(
             // SY <--
             // KMK -->
             libraryPreferences.sourceBadge().changes(),
+            libraryPreferences.useLangIcon().changes(),
             // KMK <--
         ) {
             ItemPreferences(
@@ -521,6 +522,7 @@ class LibraryScreenModel(
                 // SY <--
                 // KMK -->
                 sourceBadge = it[12] as Boolean,
+                useLangIcon = it[13] as Boolean,
                 // KMK <--
             )
         }
@@ -564,6 +566,7 @@ class LibraryScreenModel(
                             ""
                         },
                         // KMK -->
+                        useLangIcon = prefs.useLangIcon,
                         source = if (prefs.sourceBadge) {
                             DomainSource(
                                 source.id,
@@ -1337,6 +1340,7 @@ class LibraryScreenModel(
         val localBadge: Boolean,
         val languageBadge: Boolean,
         // KMK -->
+        val useLangIcon: Boolean,
         val sourceBadge: Boolean,
         // KMK <--
         val skipOutsideReleasePeriod: Boolean,
