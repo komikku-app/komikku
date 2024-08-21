@@ -3,10 +3,17 @@ package tachiyomi.domain.manga.model
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import tachiyomi.core.common.preference.TriState
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.time.Instant
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
+
+private val libraryPreferences: LibraryPreferences = Injekt.get()
+
 
 data class Manga(
     val id: Long,
@@ -65,10 +72,14 @@ data class Manga(
         get() = customMangaInfo?.status ?: ogStatus
     // SY <--
 
+    val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
+
     val expectedNextUpdate: Instant?
-        get() = nextUpdate
-            //.takeIf { status != SManga.COMPLETED.toLong() }
-            ?.let { Instant.ofEpochMilli(it) }
+        get() = if (MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()) {
+            nextUpdate?.let { Instant.ofEpochMilli(it)}
+        } else {
+            null
+        }
 
     val sorting: Long
         get() = chapterFlags and CHAPTER_SORTING_MASK
