@@ -342,7 +342,7 @@
 
     <!-- Extension repos -->
     <string name="label_extension_repos">Extension repos</string>
-    <string name="information_empty_repos">You have no repos set.</string>
+    <string name="information_empty_repos">You have no repos set. Go out there and find some.</string>
     <string name="action_add_repo">Add repo</string>
     <string name="label_add_repo_input">Repo URL</string>
     <string name="action_add_repo_message">Add additional repos to Komikku. This should be a URL that ends with \"index.min.json\".</string>
