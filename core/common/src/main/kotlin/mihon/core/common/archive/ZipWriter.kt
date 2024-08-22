@@ -25,7 +25,7 @@ class ZipWriter(
     private val entry = ArchiveEntry.new2(archive)
     private val buffer = ByteBuffer.allocateDirect(
         // SY -->
-        BUFFER_SIZE
+        BUFFER_SIZE,
         // SY <--
     )
 

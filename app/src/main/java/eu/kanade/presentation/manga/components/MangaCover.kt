@@ -86,7 +86,7 @@ enum class MangaCover(val ratio: Float) {
             // KMK -->
             loading = {
                 Box(
-                    modifier = modifierColored
+                    modifier = modifierColored,
                 ) {
                     CircularProgressIndicator(
                         color = tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor,
@@ -96,7 +96,7 @@ enum class MangaCover(val ratio: Float) {
                                     Size.Big -> 16.dp
                                     Size.Medium -> 24.dp
                                     else -> 32.dp
-                                }
+                                },
                             )
                             .align(Alignment.Center),
                         strokeWidth = when (size) {
@@ -108,7 +108,7 @@ enum class MangaCover(val ratio: Float) {
             },
             error = {
                 Box(
-                    modifier = modifierColored
+                    modifier = modifierColored,
                 ) {
                     Image(
                         imageVector = ImageVector.vectorResource(R.drawable.cover_error_vector),
@@ -119,11 +119,11 @@ enum class MangaCover(val ratio: Float) {
                                     Size.Big -> 16.dp
                                     Size.Medium -> 24.dp
                                     else -> 32.dp
-                                }
+                                },
                             )
                             .align(Alignment.Center),
                         colorFilter = ColorFilter.tint(
-                            tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor
+                            tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor,
                         ),
                     )
                 }
@@ -178,7 +178,7 @@ enum class MangaCoverHide(private val ratio: Float) {
             )
 
         Box(
-            modifier = modifierColored
+            modifier = modifierColored,
         ) {
             Image(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_baseline_menu_book_24),
@@ -187,7 +187,7 @@ enum class MangaCoverHide(private val ratio: Float) {
                     .size(32.dp)
                     .align(Alignment.Center),
                 colorFilter = ColorFilter.tint(
-                    tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor
+                    tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor,
                 ),
             )
         }

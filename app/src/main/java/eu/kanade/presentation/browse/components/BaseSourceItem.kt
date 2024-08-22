@@ -95,7 +95,7 @@ private val defaultContent: @Composable RowScope.(
                 contentDescription = lang,
                 modifier = Modifier
                     .width(18.dp)
-                    .height(12.dp)
+                    .height(12.dp),
             )
 
             // Won't look good but it's not like we can ellipsize overflowing content

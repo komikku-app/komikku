@@ -23,14 +23,17 @@ data class RestoreOptions(
         extensionRepoSettings,
         sourceSettings,
         // SY -->
-        savedSearches
+        savedSearches,
         // SY <--
     )
 
-    fun canRestore() = libraryEntries || categories || appSettings || extensionRepoSettings || sourceSettings ||
-        // SY -->
-        savedSearches
-    // SY <--
+    fun canRestore() =
+        libraryEntries ||
+            categories ||
+            appSettings ||
+            extensionRepoSettings ||
+            sourceSettings /* SY --> */ ||
+            savedSearches /* SY <-- */
 
     companion object {
         val options = persistentListOf(
@@ -75,7 +78,7 @@ data class RestoreOptions(
             extensionRepoSettings = array[3],
             sourceSettings = array[4],
             // SY -->
-            savedSearches = array[5]
+            savedSearches = array[5],
             // SY <--
         )
     }

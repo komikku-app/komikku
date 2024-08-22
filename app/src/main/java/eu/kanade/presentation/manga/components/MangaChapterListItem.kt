@@ -152,7 +152,12 @@ fun MangaChapterListItem(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            if (readProgress != null || scanlator != null/* SY --> */ || sourceName != null/* SY <-- */) DotSeparatorText()
+                            if (readProgress != null ||
+                                scanlator != null/* SY --> */ ||
+                                sourceName != null/* SY <-- */
+                            ) {
+                                DotSeparatorText()
+                            }
                         }
                         if (readProgress != null) {
                             Text(

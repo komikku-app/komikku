@@ -13,7 +13,7 @@ class TrustExtension(
 ) {
 
     suspend fun isTrusted(pkgInfo: PackageInfo, fingerprints: List<String>): Boolean {
-        // KMK --> 
+        // KMK -->
         if (fingerprints.contains(CreateExtensionRepo.OFFICIAL_REPO_SIGNATURE)) return true
         // KMK <--
         val trustedFingerprints = extensionRepoRepository.getAll().map { it.signingKeyFingerprint }.toHashSet()

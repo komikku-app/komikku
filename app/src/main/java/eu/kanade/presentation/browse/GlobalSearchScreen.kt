@@ -127,7 +127,7 @@ internal fun GlobalSearchContent(
                     "",
                     "",
                     supportsLatest = false,
-                    isStub = false
+                    isStub = false,
                 )
                 // KMK <--
 

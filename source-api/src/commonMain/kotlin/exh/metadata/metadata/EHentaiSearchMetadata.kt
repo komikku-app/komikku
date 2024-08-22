@@ -20,7 +20,9 @@ import java.time.ZonedDateTime
 class EHentaiSearchMetadata : RaisedSearchMetadata() {
     var gId: String?
         get() = indexedExtra
-        set(value) { indexedExtra = value }
+        set(value) {
+            indexedExtra = value
+        }
 
     var gToken: String? = null
     var exh: Boolean? = null

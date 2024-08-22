@@ -202,7 +202,7 @@ fun feedTab(
                             onMoveBottom = {
                                 dialog.nextFeed?.let { screenModel.moveToBottom(dialog.feedItem.feed) }
                                 screenModel.dismissDialog()
-                            }
+                            },
                         )
                     }
                     // KMK <--

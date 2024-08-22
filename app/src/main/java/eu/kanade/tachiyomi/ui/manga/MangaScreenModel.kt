@@ -300,7 +300,10 @@ class MangaScreenModel(
                     }
                 }
                 .onEach { (manga, chapters) ->
-                    if (chapters.isNotEmpty() && manga.isEhBasedManga() && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
+                    if (chapters.isNotEmpty() &&
+                        manga.isEhBasedManga() &&
+                        DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled
+                    ) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
                         launchIO {
@@ -388,7 +391,7 @@ class MangaScreenModel(
                             } else {
                                 flowOf(emptySet())
                             }
-                        }
+                        },
                 ) { mangaScanlators, mergeScanlators ->
                     mangaScanlators + mergeScanlators
                 } // SY <--
@@ -405,7 +408,15 @@ class MangaScreenModel(
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
             // SY -->
-            val chapters = (if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true) else getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true))
+            val chapters = (
+                if (manga.source ==
+                    MERGED_SOURCE_ID
+                ) {
+                    getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true)
+                } else {
+                    getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true)
+                }
+                )
                 .toChapterListItems(manga, null)
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
@@ -460,7 +471,8 @@ class MangaScreenModel(
                     } else {
                         PagePreviewState.Unused
                     },
-                    alwaysShowReadingProgress = readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
+                    alwaysShowReadingProgress =
+                    readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                     previewsRowCount = uiPreferences.previewsRowCount().get(),
                     // SY <--
                 )
@@ -542,7 +554,7 @@ class MangaScreenModel(
                         // }
                     },
                 )
-                .build()
+                .build(),
         )
     }
 
@@ -1066,7 +1078,12 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             downloadManager.statusFlow()
                 .filter {
-                    /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id
+                    /* SY --> */ if (isMergedSource) {
+                        it.manga.id in mergedIds
+                    } else {
+                        /* SY <-- */ it.manga.id ==
+                            successState?.manga?.id
+                    }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
@@ -1079,7 +1096,12 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             downloadManager.progressFlow()
                 .filter {
-                    /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id
+                    /* SY --> */ if (isMergedSource) {
+                        it.manga.id in mergedIds
+                    } else {
+                        /* SY <-- */ it.manga.id ==
+                            successState?.manga?.id
+                    }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
                 .collect {
@@ -1755,7 +1777,8 @@ class MangaScreenModel(
             }
                 // SY -->
                 .map { (tracks, supportedTrackers) ->
-                    val supportedTrackerTracks = if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any {
+                    val supportedTrackerTracks = if (manga.source in mangaDexSourceIds ||
+                        state.mergedData?.manga?.values.orEmpty().any {
                             it.source in mangaDexSourceIds
                         }
                     ) {
@@ -1937,7 +1960,7 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
-            val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) }
+            val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) },
             // KMK <--
         ) : State {
             // KMK -->

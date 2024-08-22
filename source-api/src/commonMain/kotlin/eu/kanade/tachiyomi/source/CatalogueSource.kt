@@ -131,7 +131,7 @@ interface CatalogueSource : Source {
                 } else {
                     throw UnsupportedOperationException(
                         "Extension doesn't support site's related entries," +
-                            " please report an issue to Komikku."
+                            " please report an issue to Komikku.",
                     )
                 }
             }

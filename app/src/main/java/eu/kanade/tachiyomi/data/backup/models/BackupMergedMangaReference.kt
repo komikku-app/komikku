@@ -36,7 +36,8 @@ data class BackupMergedMangaReference(
 }
 
 val backupMergedMangaReferenceMapper =
-    { _: Long,
+    {
+            _: Long,
             isInfoManga: Boolean,
             getChapterUpdates: Boolean,
             chapterSortMode: Long,

@@ -28,12 +28,13 @@ class GetApplicationRelease(
         // KMK -->
         val releases = service.releaseNotes(arguments.repository)
             .filter {
-                !it.preRelease && isNewVersion(
-                    arguments.isPreview,
-                    arguments.commitCount,
-                    arguments.versionName,
-                    it.version
-                )
+                !it.preRelease &&
+                    isNewVersion(
+                        arguments.isPreview,
+                        arguments.commitCount,
+                        arguments.versionName,
+                        it.version,
+                    )
             }
 
         val latest = releases.getLatest() ?: return Result.NoNewUpdate
@@ -66,7 +67,7 @@ class GetApplicationRelease(
                 info = releases.joinToString("\r---\r") {
                     "## ${it.version}\r\r" +
                         it.info.replace(checksumRegex, "")
-                }
+                },
             )
         if (release == null) return Result.NoNewUpdate
         return Result.NewUpdate(release)
@@ -154,7 +155,7 @@ internal fun List<Release>.getLatest(): Release? {
             info = joinToString("\r---\r") {
                 "## ${it.version}\r\r" +
                     it.info.replace(checksumRegex, "")
-            }
+            },
         )
 }
 // KMK <--

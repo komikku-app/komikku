@@ -121,7 +121,8 @@ class DownloadProvider(
                 getValidChapterDirNames(chp.name, chp.scanlator).any { dir ->
                     mangaDir.findFile(dir) != null
                 }
-            } == null || it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
+            } == null ||
+                it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
         }
     }
     // SY <--

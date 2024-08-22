@@ -102,7 +102,7 @@ class SourcesScreenModel(
         // KMK <--
         categories: List<String>,
         showLatest: Boolean,
-        showPin: Boolean
+        showPin: Boolean,
     ) {
         // KMK -->
         val searchQuery = filters.first
@@ -156,7 +156,10 @@ class SourcesScreenModel(
                 items = byLang
                     .flatMap {
                         listOf(
-                            SourceUiModel.Header(it.key.removePrefix(CATEGORY_KEY_PREFIX), it.value.firstOrNull()?.category != null),
+                            SourceUiModel.Header(
+                                it.key.removePrefix(CATEGORY_KEY_PREFIX),
+                                it.value.firstOrNull()?.category != null,
+                            ),
                             *it.value.map { source ->
                                 SourceUiModel.Item(source)
                             }.toTypedArray(),

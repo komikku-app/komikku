@@ -72,7 +72,7 @@ object DownloadQueueScreen : Screen() {
         val screenModel = rememberScreenModel {
             DownloadQueueScreenModel(
                 // KMK -->
-                navigator = navigator
+                navigator = navigator,
                 // KMK <--
             )
         }

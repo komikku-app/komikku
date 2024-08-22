@@ -88,7 +88,14 @@ class LocalFavoritesStorage(
     private fun FavoriteEntry.urlEquals(other: FavoriteEntry) = (gid == other.gid && token == other.token) ||
         (otherGid != null && otherToken != null && (otherGid == other.gid && otherToken == other.token)) ||
         (other.otherGid != null && other.otherToken != null && (gid == other.otherGid && token == other.otherToken)) ||
-        (otherGid != null && otherToken != null && other.otherGid != null && other.otherToken != null && otherGid == other.otherGid && otherToken == other.otherToken)
+        (
+            otherGid != null &&
+                otherToken != null &&
+                other.otherGid != null &&
+                other.otherToken != null &&
+                otherGid == other.otherGid &&
+                otherToken == other.otherToken
+            )
 
     private fun queryListForEntry(list: List<FavoriteEntry>, entry: FavoriteEntry) =
         list.find { it.urlEquals(entry) && it.category == entry.category }
