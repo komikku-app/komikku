@@ -318,9 +318,9 @@ class PagerPageHolder(
     private fun handleWideImage(imageSource: BufferedSource): BufferedSource {
         return if (
             !ImageUtil.isAnimatedAndSupported(imageSource) &&
-                ImageUtil.isWideImage(imageSource) &&
-                viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
-                !viewer.config.imageCropBorders
+            ImageUtil.isWideImage(imageSource) &&
+            viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
+            !viewer.config.imageCropBorders
         ) {
             ImageUtil.addHorizontalCenterMargin(imageSource, height, context)
         } else {
@@ -338,7 +338,9 @@ class PagerPageHolder(
     }
 
     private fun calculateCenterMargin(height: Int, height2: Int): Int {
-        return if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 && !viewer.config.imageCropBorders) {
+        return if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 &&
+            !viewer.config.imageCropBorders
+        ) {
             96 / (this.height.coerceAtLeast(1) / max(height, height2).coerceAtLeast(1)).coerceAtLeast(1)
         } else {
             0
@@ -381,8 +383,10 @@ class PagerPageHolder(
             }
         }
 
-        val sideMargin = if ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) > 0 &&
-            viewer.config.doublePages && !viewer.config.imageCropBorders
+        val sideMargin = if ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) >
+            0 &&
+            viewer.config.doublePages &&
+            !viewer.config.imageCropBorders
         ) {
             48
         } else {

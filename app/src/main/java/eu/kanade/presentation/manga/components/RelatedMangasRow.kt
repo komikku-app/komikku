@@ -46,7 +46,9 @@ fun RelatedMangasRow(
             )
         }
 
-        else -> { EmptyResultItem() }
+        else -> {
+            EmptyResultItem()
+        }
     }
 }
 

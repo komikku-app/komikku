@@ -36,7 +36,8 @@ fun HBrowseDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             if (meta == null || meta !is HBrowseSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterHbBinding.bind(it)
 
-            binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            binding.pages.text =
+                context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
             // KMK -->
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
             binding.pages.setTextColor(textColor)

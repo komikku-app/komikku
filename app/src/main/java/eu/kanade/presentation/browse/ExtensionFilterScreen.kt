@@ -72,7 +72,7 @@ private fun ExtensionFilterContent(
         contentPadding = contentPadding,
         // KMK -->
         modifier = Modifier
-            .padding(start = MaterialTheme.padding.small)
+            .padding(start = MaterialTheme.padding.small),
         // KMK <--
     ) {
         items(state.languages) { language ->
@@ -87,7 +87,7 @@ private fun ExtensionFilterContent(
                     contentDescription = language,
                     modifier = Modifier
                         .width(48.dp)
-                        .height(32.dp)
+                        .height(32.dp),
                 )
                 // KMK <--
                 SwitchPreferenceWidget(

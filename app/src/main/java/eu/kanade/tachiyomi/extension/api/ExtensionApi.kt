@@ -36,8 +36,10 @@ internal class ExtensionApi {
     private val getExtensionRepo: GetExtensionRepo by injectLazy()
     private val updateExtensionRepo: UpdateExtensionRepo by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
+
     // SY -->
     private val sourcePreferences: SourcePreferences by injectLazy()
+
     // SY <--
     private val json: Json by injectLazy()
 

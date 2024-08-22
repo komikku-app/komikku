@@ -71,7 +71,7 @@ enum class ReadingMode(
             preference: Int?,
             activity: ReaderActivity,
             // KMK -->
-            @ColorInt seedColor: Int?
+            @ColorInt seedColor: Int?,
             // KMK <--
         ): Viewer {
             return when (fromPreference(preference)) {

@@ -304,12 +304,12 @@ fun SourceFeedToolbar(
             AppBarActions(
                 actions = persistentListOf(
                     bulkSelectionButton(toggleSelectionMode),
-                )
+                ),
             )
             persistentListOf(
                 if (sourceId != LocalSource.ID) {
                     IconButton(
-                        onClick = onWebViewClick
+                        onClick = onWebViewClick,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Public,

@@ -263,11 +263,15 @@ object SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.SliderPreference(
                     value = previewsRowCount,
                     title = stringResource(SYMR.strings.pref_previews_row_count),
-                    subtitle = if (previewsRowCount > 0) pluralStringResource(
-                        SYMR.plurals.row_count,
-                        previewsRowCount,
-                        previewsRowCount,
-                    ) else stringResource(MR.strings.disabled),
+                    subtitle = if (previewsRowCount > 0) {
+                        pluralStringResource(
+                            SYMR.plurals.row_count,
+                            previewsRowCount,
+                            previewsRowCount,
+                        )
+                    } else {
+                        stringResource(MR.strings.disabled)
+                    },
                     min = 0,
                     max = 10,
                     onValueChanged = {

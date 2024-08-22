@@ -48,7 +48,15 @@ class BiometricTimesScreen : Screen() {
         fun showTimePicker(startTime: Duration? = null) {
             val activity = context as? MainActivity ?: return
             val picker = MaterialTimePicker.Builder()
-                .setTitleText(if (startTime == null) SYMR.strings.biometric_lock_start_time.getString(context) else SYMR.strings.biometric_lock_end_time.getString(context))
+                .setTitleText(
+                    if (startTime ==
+                        null
+                    ) {
+                        SYMR.strings.biometric_lock_start_time.getString(context)
+                    } else {
+                        SYMR.strings.biometric_lock_end_time.getString(context)
+                    },
+                )
                 .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
                 .build()
             picker.addOnPositiveButtonClickListener {

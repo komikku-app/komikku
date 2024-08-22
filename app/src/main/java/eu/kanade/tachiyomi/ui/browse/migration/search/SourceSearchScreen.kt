@@ -101,7 +101,7 @@ data class SourceSearchScreen(
                             AppBarActions(
                                 actions = persistentListOf(
                                     bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
-                                )
+                                ),
                             )
                         },
                         // KMK <--

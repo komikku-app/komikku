@@ -77,7 +77,7 @@ class ArchiveInputStream(
             name,
             isFile,
             // SY -->
-            isEncrypted
+            isEncrypted,
             // SY <--
         )
     }

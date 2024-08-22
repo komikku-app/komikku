@@ -96,7 +96,8 @@ class FavoritesSyncHelper(val context: Context) {
         }
 
         // Validate library state
-        status.value = FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_verifying_library))
+        status.value =
+            FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_verifying_library))
         val libraryManga = getLibraryManga.await()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach { (manga) ->
@@ -116,10 +117,12 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Download remote favorites
         val favorites = try {
-            status.value = FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_downloading))
+            status.value =
+                FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_downloading))
             exh.fetchFavorites()
         } catch (e: Exception) {
-            status.value = FavoritesSyncStatus.Error(context.stringResource(SYMR.strings.favorites_sync_failed_to_featch))
+            status.value =
+                FavoritesSyncStatus.Error(context.stringResource(SYMR.strings.favorites_sync_failed_to_featch))
             logger.e(context.stringResource(SYMR.strings.favorites_sync_could_not_fetch), e)
             return
         }
@@ -179,7 +182,8 @@ class FavoritesSyncHelper(val context: Context) {
                 applyChangeSetToRemote(errorList, localChanges)
             }
 
-            status.value = FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_cleaning_up))
+            status.value =
+                FavoritesSyncStatus.Processing(context.stringResource(SYMR.strings.favorites_sync_cleaning_up))
             storage.snapshotEntries()
 
             withUIContext {

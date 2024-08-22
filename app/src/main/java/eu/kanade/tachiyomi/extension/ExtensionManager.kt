@@ -73,6 +73,7 @@ class ExtensionManager(
     val installedExtensionsFlow = installedExtensionMapFlow.mapExtensions(scope)
 
     private val availableExtensionMapFlow = MutableStateFlow(emptyMap<String, Extension.Available>())
+
     // SY -->
     val availableExtensionsFlow = availableExtensionMapFlow.map { it.filterNotBlacklisted().values.toList() }
         .stateIn(scope, SharingStarted.Lazily, availableExtensionMapFlow.value.values.toList())

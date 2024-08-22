@@ -45,7 +45,8 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             val ratingFloat = meta.rating
             binding.ratingBar.rating = ratingFloat?.div(2F) ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(context, ratingFloat)
+            binding.rating.text =
+                (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(context, ratingFloat)
             binding.rating.isVisible = ratingFloat != null
             binding.ratingBar.isVisible = ratingFloat != null
             // KMK -->

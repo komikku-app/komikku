@@ -520,7 +520,7 @@ private fun MangaScreenSmallImpl(
                 style = HazeStyle(
                     tint = HazeDefaults.tint(fullCoverBackground),
                     blurRadius = 10.dp,
-                )
+                ),
             ),
         // KMK <--
     ) { contentPadding ->
@@ -928,7 +928,7 @@ private fun MangaScreenLargeImpl(
                 style = HazeStyle(
                     tint = HazeDefaults.tint(fullCoverBackground),
                     blurRadius = 10.dp,
-                )
+                ),
             ),
         // KMK <--
     ) { contentPadding ->
@@ -1214,7 +1214,9 @@ private fun LazyListScope.sharedChapterItems(
                             // SY <--
                         },
                     readProgress = item.chapter.lastPageRead
-                        .takeIf { /* SY --> */(!item.chapter.read || alwaysShowReadingProgress)/* SY <-- */ && it > 0L }
+                        .takeIf {
+                            /* SY --> */(!item.chapter.read || alwaysShowReadingProgress)/* SY <-- */ && it > 0L
+                        }
                         ?.let {
                             stringResource(
                                 MR.strings.chapter_progress,

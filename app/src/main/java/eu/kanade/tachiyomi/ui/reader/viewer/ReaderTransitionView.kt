@@ -68,7 +68,7 @@ class ReaderTransitionView @JvmOverloads constructor(
             // KMK <--
             TachiyomiTheme(
                 // KMK -->
-                seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased }
+                seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased },
                 // KMK <--
             ) {
                 CompositionLocalProvider(
