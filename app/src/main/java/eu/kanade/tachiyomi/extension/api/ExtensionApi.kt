@@ -16,8 +16,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_BASE_URL
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_SIGNATURE
 import mihon.domain.extensionrepo.interactor.GetExtensionRepo
 import mihon.domain.extensionrepo.interactor.UpdateExtensionRepo
 import mihon.domain.extensionrepo.model.ExtensionRepo
@@ -48,22 +46,11 @@ internal class ExtensionApi {
     }
 
     suspend fun findExtensions(): List<Extension.Available> {
-        val officialRepo = ExtensionRepo(
-            baseUrl = OFFICIAL_REPO_BASE_URL,
-            name = "Komikku Official Extensions Repo",
-            shortName = "Komikku Official",
-            website = "https://komikku-app.github.io",
-            signingKeyFingerprint = OFFICIAL_REPO_SIGNATURE,
-        )
         return withIOContext {
-            buildList {
-                // Combine built-in OFFICIAL repo's extensions list with repo's list
-                addAll(getExtensions(officialRepo))
-                getExtensionRepo.getAll()
-                    .map { async { getExtensions(it) } }
-                    .awaitAll()
-                    .flatten()
-            }
+            getExtensionRepo.getAll()
+                .map { async { getExtensions(it) } }
+                .awaitAll()
+                .flatten()
         }
     }
 
