@@ -186,7 +186,7 @@ class MangaScreen(
 
         val seedColor = successState.seedColor
         TachiyomiTheme(
-            seedColor = seedColor.takeIf { screenModel.themeCoverBased }
+            seedColor = seedColor.takeIf { screenModel.themeCoverBased },
         ) {
             content()
         }
@@ -329,10 +329,14 @@ class MangaScreen(
                 )
             },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
-            onRecommendClicked = { openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga) },
+            onRecommendClicked = {
+                openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga)
+            },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
-            onMergeWithAnotherClicked = { mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge) },
+            onMergeWithAnotherClicked = {
+                mergeWithAnother(navigator, context, successState.manga, screenModel::smartSearchMerge)
+            },
             onOpenPagePreview = { page ->
                 openPagePreview(context, successState.chapters.minByOrNull { it.chapter.sourceOrder }?.chapter, page)
             },
@@ -620,7 +624,8 @@ class MangaScreen(
         // KMK -->
         navigator.popUntil { screen ->
             screen is HomeScreen ||
-                !library && (screen is BrowseSourceScreen || screen is SourceFeedScreen)
+                !library &&
+                (screen is BrowseSourceScreen || screen is SourceFeedScreen)
         }
         // KMK <--
 

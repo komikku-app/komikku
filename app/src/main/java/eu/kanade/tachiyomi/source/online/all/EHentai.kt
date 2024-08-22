@@ -383,7 +383,7 @@ class EHentai(
                 doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "posted:"
                 }!!.nextElementSibling()!!.text(),
-                MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+                MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC),
             )!!.toInstant().toEpochMilli(),
             scanlator = EHentaiSearchMetadata.galleryId(location),
         )
@@ -401,7 +401,7 @@ class EHentai(
                     chapter_number = index + 2f,
                     date_upload = ZonedDateTime.parse(
                         posted,
-                        MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+                        MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC),
                     ).toInstant().toEpochMilli(),
                     scanlator = EHentaiSearchMetadata.galleryId(link),
                 )
@@ -542,9 +542,10 @@ class EHentai(
             if (
                 MATCH_SEEK_REGEX.matches(jumpSeekValue) ||
                 (
-                    MATCH_YEAR_REGEX.matches(jumpSeekValue) && jumpSeekValue.toIntOrNull()?.let {
-                        it in 2007..2099
-                    } == true
+                    MATCH_YEAR_REGEX.matches(jumpSeekValue) &&
+                        jumpSeekValue.toIntOrNull()?.let {
+                            it in 2007..2099
+                        } == true
                     )
             ) {
                 uri.appendQueryParameter("seek", jumpSeekValue)
@@ -715,7 +716,7 @@ class EHentai(
                             when (left.removeSuffix(":").lowercase()) {
                                 "posted" -> datePosted = ZonedDateTime.parse(
                                     right,
-                                    MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC)
+                                    MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC),
                                 ).toInstant().toEpochMilli()
                                 // Example gallery with parent: https://e-hentai.org/g/1390451/7f181c2426/
                                 // Example JP gallery: https://exhentai.org/g/1375385/03519d541b/

@@ -316,7 +316,7 @@ data class BrowseSourceScreen(
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga)
+                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga),
                                 )
                                 duplicateManga != null -> screenModel.setDialog(
                                     BrowseSourceScreenModel.Dialog.AddDuplicateManga(

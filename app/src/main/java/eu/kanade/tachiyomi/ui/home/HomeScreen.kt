@@ -152,7 +152,7 @@ object HomeScreen : Screen() {
                                     materialFadeThroughOut(durationMillis = TAB_FADE_DURATION)
                             },
                             label = "tabContent",
-                            contentKey = { it.key }
+                            contentKey = { it.key },
                         ) {
                             tabNavigator.saveableState(key = "currentTab", it) {
                                 it.Content()

@@ -57,7 +57,8 @@ class PagerConfig(
 
     var shiftDoublePage = false
 
-    var doublePages = readerPreferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !readerPreferences.dualPageSplitPaged().get()
+    var doublePages =
+        readerPreferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !readerPreferences.dualPageSplitPaged().get()
         set(value) {
             field = value
             if (!value) {

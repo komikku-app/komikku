@@ -70,7 +70,7 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT
                 .format(
                     ZonedDateTime
-                        .ofInstant(Instant.ofEpochSecond(meta.uploadDate ?: 0), ZoneId.systemDefault())
+                        .ofInstant(Instant.ofEpochSecond(meta.uploadDate ?: 0), ZoneId.systemDefault()),
                 )
             // KMK -->
             binding.whenPosted.setTextColor(textColor)

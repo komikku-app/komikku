@@ -9,6 +9,7 @@ import kotlin.collections.List as ____KtList
 
 public object EhAssets
 
+@Suppress("ObjectPropertyName", "ktlint:standard:backing-property-naming")
 private var __AllAssets: ____KtList<ImageVector>? = null
 
 public val EhAssets.AllAssets: ____KtList<ImageVector>

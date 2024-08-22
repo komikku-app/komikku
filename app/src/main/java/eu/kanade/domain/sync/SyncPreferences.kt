@@ -58,7 +58,7 @@ class SyncPreferences(
 
             // SY -->
             customInfo = preferenceStore.getBoolean("customInfo", true).get(),
-            readEntries = preferenceStore.getBoolean("readEntries", true).get()
+            readEntries = preferenceStore.getBoolean("readEntries", true).get(),
             // SY <--
         )
     }

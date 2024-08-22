@@ -38,12 +38,12 @@ fun OutlinedButtonWithArrow(
                 vertical = MaterialTheme.padding.small,
             ),
         colors = ButtonDefaults.outlinedButtonColors(),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = text,
@@ -51,7 +51,7 @@ fun OutlinedButtonWithArrow(
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = icon,
-                contentDescription = "Arrow"
+                contentDescription = "Arrow",
             )
         }
     }
@@ -62,6 +62,6 @@ fun OutlinedButtonWithArrow(
 fun OutlinedButtonWithArrowPreview() {
     OutlinedButtonWithArrow(
         text = "Click Me",
-        onClick = { /* Do nothing */ }
+        onClick = { /* Do nothing */ },
     )
 }

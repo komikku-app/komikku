@@ -280,7 +280,7 @@ fun SourcesSearch(
                 ),
                 contentPadding = PaddingValues(12.dp),
             )
-        }
+        },
     )
 }
 
@@ -474,7 +474,8 @@ fun SourceOptionsDialog(
                 }
                 // SY <--
                 // KMK -->
-                if (onClickSettings != null && source.installedExtension !== null &&
+                if (onClickSettings != null &&
+                    source.installedExtension !== null &&
                     source.id !in listOf(LocalSource.ID, EH_SOURCE_ID, EXH_SOURCE_ID)
                 ) {
                     Text(

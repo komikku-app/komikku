@@ -42,16 +42,17 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             if (meta == null || meta !is PururinSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterPuBinding.bind(it)
 
-            binding.genre.text = meta.tags.find { it.namespace == PururinSearchMetadata.TAG_NAMESPACE_CATEGORY }.let { genre ->
-                genre?.let { tag -> MetadataUIUtil.getGenreAndColour(context, tag.name) }
-                    ?.let { (genre, name) ->
-                        binding.genre.setBackgroundColor(genre.color)
-                        // KMK -->
-                        binding.genre.setTextColor(genreTextColor(genre))
-                        // KMK <--
-                        name
-                    } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
-            }
+            binding.genre.text =
+                meta.tags.find { it.namespace == PururinSearchMetadata.TAG_NAMESPACE_CATEGORY }.let { genre ->
+                    genre?.let { tag -> MetadataUIUtil.getGenreAndColour(context, tag.name) }
+                        ?.let { (genre, name) ->
+                            binding.genre.setBackgroundColor(genre.color)
+                            // KMK -->
+                            binding.genre.setTextColor(genreTextColor(genre))
+                            // KMK <--
+                            name
+                        } ?: genre?.name ?: context.stringResource(MR.strings.unknown)
+                }
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
             // KMK -->
@@ -73,7 +74,9 @@ fun PururinDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
+            binding.rating.text =
+                (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " +
+                MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
             // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
