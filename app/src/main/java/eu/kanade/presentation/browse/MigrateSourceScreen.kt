@@ -266,7 +266,7 @@ private fun MigrateSourceItem(
                             contentDescription = lang,
                             modifier = Modifier
                                 .width(18.dp)
-                                .height(12.dp)
+                                .height(12.dp),
                         )
                         // KMK <--
                         Text(

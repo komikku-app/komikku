@@ -9,6 +9,7 @@ public object EhassetsGroup
 public val AssetsGroup.Ehassets: EhassetsGroup
     get() = EhassetsGroup
 
+@Suppress("ObjectPropertyName", "ktlint:standard:backing-property-naming")
 private var __AllAssets: ____KtList<ImageVector>? = null
 
 public val EhassetsGroup.AllAssets: ____KtList<ImageVector>

@@ -88,7 +88,12 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
 
             // Don't update galleries too frequently
-            if (raisedMeta.aged || (curTime - raisedMeta.lastUpdateCheck < MIN_BACKGROUND_UPDATE_FREQ && DebugToggles.RESTRICT_EXH_GALLERY_UPDATE_CHECK_FREQUENCY.enabled)) {
+            if (raisedMeta.aged ||
+                (
+                    curTime - raisedMeta.lastUpdateCheck < MIN_BACKGROUND_UPDATE_FREQ &&
+                        DebugToggles.RESTRICT_EXH_GALLERY_UPDATE_CHECK_FREQUENCY.enabled
+                    )
+            ) {
                 return@mapNotNull null
             }
 

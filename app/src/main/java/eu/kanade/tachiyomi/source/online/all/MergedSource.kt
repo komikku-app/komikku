@@ -119,12 +119,13 @@ class MergedSource : HttpSource() {
             "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
-        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(
-            getCategories.await(manga.id).map {
-                it.id
-            },
-            downloadPreferences,
-        )
+        val ifDownloadNewChapters = downloadChapters &&
+            manga.shouldDownloadNewChapters(
+                getCategories.await(manga.id).map {
+                    it.id
+                },
+                downloadPreferences,
+            )
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {

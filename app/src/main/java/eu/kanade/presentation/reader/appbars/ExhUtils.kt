@@ -63,7 +63,7 @@ fun ExhUtils(
         modifier
             .fillMaxWidth()
             .background(backgroundColor),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AnimatedVisibility(visible = isVisible) {
             Column {
@@ -84,7 +84,7 @@ fun ExhUtils(
                     ) {
                         Column(
                             Modifier.weight(3f),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
                                 text = stringResource(SYMR.strings.eh_autoscroll),
@@ -93,17 +93,17 @@ fun ExhUtils(
                                 fontFamily = FontFamily.SansSerif,
                                 style = MaterialTheme.typography.labelLarge,
                                 modifier = Modifier.fillMaxWidth(0.75f),
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                         }
                         Column(
                             Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Switch(
                                 checked = isAutoScroll,
                                 onCheckedChange = null,
-                                enabled = isAutoScrollEnabled
+                                enabled = isAutoScrollEnabled,
                             )
                         }
                     }
@@ -114,7 +114,7 @@ fun ExhUtils(
                     ) {
                         Column(
                             Modifier.weight(3f),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             var autoScrollFrequencyState by remember {
                                 mutableStateOf(autoScrollFrequency)

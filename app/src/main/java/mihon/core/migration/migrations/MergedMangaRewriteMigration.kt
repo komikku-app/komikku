@@ -134,7 +134,6 @@ class MergedMangaRewriteMigration : Migration {
         return@withIOContext true
     }
 
-
     @Serializable
     private data class UrlConfig(
         @SerialName("s")

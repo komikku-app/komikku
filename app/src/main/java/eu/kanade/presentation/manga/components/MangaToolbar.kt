@@ -104,7 +104,8 @@ fun MangaToolbar(
                     }
                     // KMK -->
                     if (isHomeEnabled && navigator != null) {
-                        if (navigator.size >= 2 && navigator.items[navigator.size - 2] is MangaScreen ||
+                        if (navigator.size >= 2 &&
+                            navigator.items[navigator.size - 2] is MangaScreen ||
                             navigator.size >= 5
                         ) {
                             IconButton(onClick = { onHomeClicked() }) {

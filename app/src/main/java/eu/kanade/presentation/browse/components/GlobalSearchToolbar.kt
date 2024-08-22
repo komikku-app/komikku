@@ -66,7 +66,7 @@ fun GlobalSearchToolbar(
                     AppBarActions(
                         actions = persistentListOf(
                             bulkSelectionButton(toggleSelectionMode),
-                        )
+                        ),
                     )
                 },
                 // KMK <--

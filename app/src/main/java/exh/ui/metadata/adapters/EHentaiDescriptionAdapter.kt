@@ -58,7 +58,11 @@ fun EHentaiDescription(
                     ?: meta.genre
                     ?: context.stringResource(MR.strings.unknown)
 
-            binding.visible.text = context.stringResource(SYMR.strings.is_visible, meta.visible ?: context.stringResource(MR.strings.unknown))
+            binding.visible.text =
+                context.stringResource(
+                    SYMR.strings.is_visible,
+                    meta.visible ?: context.stringResource(MR.strings.unknown),
+                )
             // KMK -->
             binding.visible.setTextColor(textColor)
             // KMK <--
@@ -100,7 +104,8 @@ fun EHentaiDescription(
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
+            binding.rating.text =
+                (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
             // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)

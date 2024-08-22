@@ -89,8 +89,11 @@ object MangaCoverMetadata {
 
         val options = BitmapFactory.Options()
 
-        val updateColors = mangaCover.isMangaFavorite && mangaCover.dominantCoverColors == null ||
-            !onlyDominantColor && mangaCover.vibrantCoverColor == null || force
+        val updateColors = mangaCover.isMangaFavorite &&
+            mangaCover.dominantCoverColors == null ||
+            !onlyDominantColor &&
+            mangaCover.vibrantCoverColor == null ||
+            force
 
         if (updateColors) {
             /**
@@ -123,7 +126,9 @@ object MangaCoverMetadata {
             bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)
             // if the file exists and the there was still an error then the file is corrupted
             file?.exists() == true -> BitmapFactory.decodeFile(file.path, options)
-            else -> { return }
+            else -> {
+                return
+            }
         }
 
         if (bitmap != null) {

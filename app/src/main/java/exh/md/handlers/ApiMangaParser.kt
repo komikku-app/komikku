@@ -131,10 +131,14 @@ class ApiMangaParser(
                 // things that will go with the genre tags but aren't actually genre
                 val nonGenres = listOfNotNull(
                     mangaAttributesDto.publicationDemographic
-                        ?.let { RaisedTag("Demographic", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
+                        ?.let {
+                            RaisedTag("Demographic", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT)
+                        },
                     mangaAttributesDto.contentRating
                         ?.takeUnless { it == "safe" }
-                        ?.let { RaisedTag("Content Rating", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
+                        ?.let {
+                            RaisedTag("Content Rating", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT)
+                        },
                 )
 
                 val genres = nonGenres + mangaAttributesDto.tags

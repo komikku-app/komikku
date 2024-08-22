@@ -20,7 +20,7 @@ import tachiyomi.source.local.LocalSource
 @Composable
 fun SourceSettingsButton(
     id: Long,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
 ) {
     // Create a fake source
     val source = Source(id, "", "", supportsLatest = false, isStub = false)
@@ -30,7 +30,7 @@ fun SourceSettingsButton(
 @Composable
 fun SourceSettingsButton(
     source: Source,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
 ) {
     // Avoid E-Hentai & ExHentai which is built-in & not actually installed extensions
     if (source.id == LocalSource.ID || source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) return

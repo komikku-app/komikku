@@ -57,7 +57,7 @@ actual class LocalCoverManager(
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
-                ZipWriter(context, targetFile, encrypt = true ).use { writer ->
+                ZipWriter(context, targetFile, encrypt = true).use { writer ->
                     writer.write(inputStream.readBytes(), DEFAULT_COVER_NAME)
                 }
                 DiskUtil.createNoMediaFile(directory, context)

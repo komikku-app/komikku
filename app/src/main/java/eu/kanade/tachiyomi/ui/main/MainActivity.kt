@@ -364,8 +364,10 @@ class MainActivity : BaseActivity() {
                 mutableStateOf(
                     // KMK -->
                     // BuildConfig.DEBUG ||
-                    isReleaseBuildType && didMigration ||
-                        isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()
+                    isReleaseBuildType &&
+                        didMigration ||
+                        isPreviewBuildType &&
+                        previewCurrentVersion > previewLastVersion.get(),
                     // KMK <--
                 )
             }

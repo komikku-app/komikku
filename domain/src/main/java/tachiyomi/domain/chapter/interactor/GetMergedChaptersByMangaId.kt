@@ -112,7 +112,8 @@ class GetMergedChaptersByMangaId(
                     if (chapter.isRecognizedNumber) {
                         existingChapterIndex = sortedChapterList.indexOfFirst {
                             // check if the chapter is not already there
-                            it.isRecognizedNumber && it.chapterNumber == chapter.chapterNumber &&
+                            it.isRecognizedNumber &&
+                                it.chapterNumber == chapter.chapterNumber &&
                                 // allow multiple chapters of the same number from the same source
                                 it.mangaId != chapter.mangaId
                         }

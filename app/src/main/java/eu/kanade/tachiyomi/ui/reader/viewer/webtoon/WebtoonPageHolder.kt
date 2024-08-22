@@ -203,7 +203,9 @@ class WebtoonPageHolder(
                     ReaderPageImageView.Config(
                         zoomDuration = viewer.config.doubleTapAnimDuration,
                         minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
-                        cropBorders = (viewer.config.imageCropBorders && viewer.isContinuous) || (viewer.config.continuousCropBorders && !viewer.isContinuous),
+                        cropBorders =
+                        (viewer.config.imageCropBorders && viewer.isContinuous) ||
+                            (viewer.config.continuousCropBorders && !viewer.isContinuous),
                     ),
                 )
                 removeErrorLayout()

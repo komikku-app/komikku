@@ -161,7 +161,8 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
         }
     }
 
-    fun canMove() = state.mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
+    fun canMove() =
+        state.mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
 
     interface SortingListener {
         fun onSetPrioritySort(isPriorityOrder: Boolean)

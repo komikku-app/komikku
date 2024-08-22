@@ -60,7 +60,14 @@ class EnhancedFilePrinter internal constructor(
         val lastFileName = writer.lastFileName
         if (fileNameGenerator.isFileNameChangeable) {
             val newFileName = fileNameGenerator.generateFileName(logLevel, System.currentTimeMillis())
-            require(!(newFileName == null || newFileName.trim { it <= ' ' }.isEmpty())) { "File name should not be empty." }
+            require(
+                !(
+                    newFileName == null ||
+                        newFileName.trim {
+                            it <= ' '
+                        }.isEmpty()
+                    ),
+            ) { "File name should not be empty." }
             if (newFileName != lastFileName) {
                 if (writer.isOpened) {
                     writer.close()

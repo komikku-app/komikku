@@ -344,7 +344,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             """
                 App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
                 Build version: ${BuildConfig.COMMIT_COUNT}
-                Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) 
+                Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
                 Android build ID: ${Build.DISPLAY}
                 Device brand: ${Build.BRAND}
                 Device manufacturer: ${Build.MANUFACTURER}

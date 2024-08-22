@@ -186,8 +186,8 @@ actual class LocalSource(
             copyComicInfoFile(
                 xml.encodeToString(ComicInfo.serializer(), newComicInfo).byteInputStream(),
                 it,
-                comicInfoArchiveReader?.encrypted ?: false
-             )
+                comicInfoArchiveReader?.encrypted ?: false,
+            )
         }
     }
     // SY <--

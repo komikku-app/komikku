@@ -39,7 +39,7 @@ class PaletteScreen(
         val seedColor = seedColor?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
 
         TachiyomiTheme(
-            seedColor = seedColor.takeIf { themeCoverBased }
+            seedColor = seedColor.takeIf { themeCoverBased },
         ) {
             MaterialThemeContent(seedColor)
         }
@@ -76,7 +76,7 @@ class PaletteScreen(
                         "primary",
                         MaterialTheme.colorScheme.primary,
                         "primaryContainer",
-                        MaterialTheme.colorScheme.primaryContainer
+                        MaterialTheme.colorScheme.primaryContainer,
                     )
                 }
                 item {
@@ -84,7 +84,7 @@ class PaletteScreen(
                         "secondary",
                         MaterialTheme.colorScheme.secondary,
                         "secondaryContainer",
-                        MaterialTheme.colorScheme.secondaryContainer
+                        MaterialTheme.colorScheme.secondaryContainer,
                     )
                 }
                 item {
@@ -92,7 +92,7 @@ class PaletteScreen(
                         "tertiary",
                         MaterialTheme.colorScheme.tertiary,
                         "tertiaryContainer",
-                        MaterialTheme.colorScheme.tertiaryContainer
+                        MaterialTheme.colorScheme.tertiaryContainer,
                     )
                 }
                 item {
@@ -100,7 +100,7 @@ class PaletteScreen(
                         "surface",
                         MaterialTheme.colorScheme.surface,
                         "surfaceVariant",
-                        MaterialTheme.colorScheme.surfaceVariant
+                        MaterialTheme.colorScheme.surfaceVariant,
                     )
                 }
                 item {
@@ -108,7 +108,7 @@ class PaletteScreen(
                         "inverseSurface",
                         MaterialTheme.colorScheme.inverseSurface,
                         "surfaceTint",
-                        MaterialTheme.colorScheme.surfaceTint
+                        MaterialTheme.colorScheme.surfaceTint,
                     )
                 }
                 item {
@@ -116,7 +116,7 @@ class PaletteScreen(
                         "inversePrimary",
                         MaterialTheme.colorScheme.inversePrimary,
                         "background",
-                        MaterialTheme.colorScheme.background
+                        MaterialTheme.colorScheme.background,
                     )
                 }
                 item {
@@ -124,7 +124,7 @@ class PaletteScreen(
                         "error",
                         MaterialTheme.colorScheme.error,
                         "errorContainer",
-                        MaterialTheme.colorScheme.errorContainer
+                        MaterialTheme.colorScheme.errorContainer,
                     )
                 }
                 item {
@@ -132,7 +132,7 @@ class PaletteScreen(
                         "outline",
                         MaterialTheme.colorScheme.outline,
                         "outlineVariant",
-                        MaterialTheme.colorScheme.outlineVariant
+                        MaterialTheme.colorScheme.outlineVariant,
                     )
                 }
                 item {
@@ -140,7 +140,7 @@ class PaletteScreen(
                         "scrim",
                         MaterialTheme.colorScheme.scrim,
                         "surfaceBright",
-                        MaterialTheme.colorScheme.surfaceBright
+                        MaterialTheme.colorScheme.surfaceBright,
                     )
                 }
                 item {
@@ -148,7 +148,7 @@ class PaletteScreen(
                         "surfaceDim",
                         MaterialTheme.colorScheme.surfaceDim,
                         "surfaceContainer",
-                        MaterialTheme.colorScheme.surfaceContainer
+                        MaterialTheme.colorScheme.surfaceContainer,
                     )
                 }
                 item {
@@ -156,7 +156,7 @@ class PaletteScreen(
                         "surfaceContainerHigh",
                         MaterialTheme.colorScheme.surfaceContainerHigh,
                         "surfaceContainerHighest",
-                        MaterialTheme.colorScheme.surfaceContainerHighest
+                        MaterialTheme.colorScheme.surfaceContainerHighest,
                     )
                 }
                 item {
@@ -164,7 +164,7 @@ class PaletteScreen(
                         "surfaceContainerLow",
                         MaterialTheme.colorScheme.surfaceContainerLow,
                         "surfaceContainerLowest",
-                        MaterialTheme.colorScheme.surfaceContainerLowest
+                        MaterialTheme.colorScheme.surfaceContainerLowest,
                     )
                 }
             }
@@ -184,7 +184,7 @@ fun ButtonsColor(
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         Button(
             onClick = { },
@@ -194,7 +194,7 @@ fun ButtonsColor(
             colors = ButtonDefaults.buttonColors(
                 containerColor = color1,
                 contentColor = contentColor1,
-            )
+            ),
         ) {
             Text(
                 text = name1,
@@ -211,7 +211,7 @@ fun ButtonsColor(
             ),
         ) {
             Text(
-                text = name2
+                text = name2,
             )
         }
     }

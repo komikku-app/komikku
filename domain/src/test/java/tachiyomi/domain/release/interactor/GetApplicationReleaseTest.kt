@@ -41,7 +41,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -70,7 +70,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -101,7 +101,7 @@ class GetApplicationReleaseTest {
                     "info",
                     "http://example.com/release_link",
                     listOf("http://example.com/assets"),
-                )
+                ),
             )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -131,7 +131,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -160,7 +160,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -193,7 +193,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -222,7 +222,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases
@@ -251,7 +251,7 @@ class GetApplicationReleaseTest {
                 "info",
                 "http://example.com/release_link",
                 listOf("http://example.com/assets"),
-            )
+            ),
         )
 
         coEvery { releaseService.releaseNotes(any()) } returns releases

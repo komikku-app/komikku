@@ -285,7 +285,7 @@ class ReaderPreferences(
         val archiveModeTypes = listOf(
             SYMR.strings.archive_mode_load_from_file,
             SYMR.strings.archive_mode_load_into_memory,
-            SYMR.strings.archive_mode_cache_to_disk
+            SYMR.strings.archive_mode_cache_to_disk,
         )
         // SY <--
     }
