@@ -72,11 +72,11 @@ data class Manga(
         get() = customMangaInfo?.status ?: ogStatus
     // SY <--
 
-    val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
+    private val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
     val expectedNextUpdate: Instant?
         get() = if (MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()) {
-            nextUpdate?.let { Instant.ofEpochMilli(it)}
+            nextUpdate.let { Instant.ofEpochMilli(it)}
         } else {
             null
         }
