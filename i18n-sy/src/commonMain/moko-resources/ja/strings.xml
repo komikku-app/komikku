@@ -215,7 +215,7 @@
     <string name="google_drive_sync_data_purged">Google ドライブから消去したデータを同期</string>
     <string name="google_drive_sync_data_not_found">Google ドライブに同期データが見つかりませんでした</string>
     <string name="google_drive_sync_data_purge_error">Google ドライブから同期データの消去中にエラーが発生しました。もう一度サインインしてみてください。</string>
-    <string name="google_drive_login_success">Google Driveにログイン</string>
+    <string name="google_drive_login_success">Google Driveにログインしました</string>
     <string name="google_drive_login_failed">Google ドライブにログインできませんでした: %s</string>
     <string name="google_drive_not_signed_in">Google ドライブにサインインしていません</string>
     <string name="error_uploading_sync_data">Google ドライブに同期データのアップロード中にエラーが発生しました</string>
@@ -259,13 +259,12 @@
     <string name="wrong_cbz_archive_password">CBZ アーカイブのパスワードが間違っています</string>
     <string name="encryption_type">暗号化の種類</string>
     <string name="aes_256">AES 256</string>
-    <string name="aes_192">AES 192</string>
     <string name="aes_128">AES 128</string>
     <string name="standard_zip_encryption">標準的な zip 暗号化 (高速ですが安全ではありません)</string>
     <!-- Reader Settings -->
     <string name="page_downloading">ページをダウンロード中</string>
     <string name="download_threads">ダウンロードスレッド</string>
-    <string name="download_threads_summary">値を高いほど画像のダウンロードが大幅に速くなりますが、banされることもあります。 推奨値は 2 または 3 です。 現在の値は %s です。</string>
+    <string name="download_threads_summary">値が高いほど画像のダウンロードが大幅に速くなりますが、banされることがあります。 推奨値は 2 または 3 です。 現在の値は %s です。</string>
     <string name="aggressively_load_pages">積極的にページを読み込む</string>
     <string name="aggressively_load_pages_summary">閲覧中のページだけを読み込むのではなく、読書中に章全体をゆっくりとダウンロードします。</string>
     <string name="skip_queue_on_retry">再試行時にキューをスキップ</string>
