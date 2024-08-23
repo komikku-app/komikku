@@ -50,7 +50,7 @@ jobs:
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4
 
       - name: Build app and run unit tests
-        run: ./gradlew assembleDevDebug testDevDebugUnitTest testDebugUnitTest --stacktrace
+        run: ./gradlew spotlessCheck assembleDevDebug testDevDebugUnitTest testDebugUnitTest --stacktrace
 
       - name: Rename apk
         id: current_commit

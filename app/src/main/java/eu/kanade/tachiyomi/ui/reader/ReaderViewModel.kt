@@ -134,7 +134,7 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
-    private val setReadStatus: SetReadStatus = Injekt.get()
+    private val setReadStatus: SetReadStatus = Injekt.get(),
     // SY <--
 ) : ViewModel() {
 
@@ -189,8 +189,9 @@ class ReaderViewModel @JvmOverloads constructor(
         // SY -->
         val (chapters, mangaMap) = runBlocking {
             if (manga.source == MERGED_SOURCE_ID) {
-                getMergedChaptersByMangaId.await(manga.id, applyScanlatorFilter = true) to getMergedMangaById.await(manga.id)
-                    .associateBy { it.id }
+                getMergedChaptersByMangaId.await(manga.id, applyScanlatorFilter = true) to
+                    getMergedMangaById.await(manga.id)
+                        .associateBy { it.id }
             } else {
                 getChaptersByMangaId.await(manga.id, applyScanlatorFilter = true) to null
             }
@@ -707,7 +708,12 @@ class ReaderViewModel @JvmOverloads constructor(
                                 it.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
                         }
                         .ifEmpty { null }
-                        ?.also { setReadStatus.await(true, *it.toTypedArray()) }
+                        ?.also {
+                            setReadStatus.await(true, *it.toTypedArray())
+                            it.forEach { chapter ->
+                                deleteChapterIfNeeded(ReaderChapter(chapter))
+                            }
+                        }
                 }
                 if (manga?.isEhBasedManga() == true) {
                     viewModelScope.launchNonCancellable {

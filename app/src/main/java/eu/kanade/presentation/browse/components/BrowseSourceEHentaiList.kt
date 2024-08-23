@@ -34,7 +34,7 @@ import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
-import eu.kanade.presentation.library.components.GridSelectedCoverAlpha
+import eu.kanade.presentation.library.components.GRID_SELECTED_COVER_ALPHA
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.MangaCoverHide
 import exh.debug.DebugToggles
@@ -205,7 +205,7 @@ fun BrowseSourceEHentaiListItem(
                     modifier = Modifier
                         .fillMaxHeight(),
                     // KMK -->
-                    alpha = if (isSelected) GridSelectedCoverAlpha else coverAlpha,
+                    alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
                     bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
                     tint = onBgColor,
                     // KMK <--

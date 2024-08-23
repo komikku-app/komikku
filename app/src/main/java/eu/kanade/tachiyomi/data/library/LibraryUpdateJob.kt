@@ -375,14 +375,17 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     async {
                         semaphore.withPermit {
                             if (
-                                mdlistLogged && mangaInSource.firstOrNull()
+                                mdlistLogged &&
+                                mangaInSource.firstOrNull()
                                     ?.let { it.manga.source in mangaDexSourceIds } == true
                             ) {
                                 launch {
                                     mangaInSource.forEach { (manga) ->
                                         try {
                                             val tracks = getTracks.await(manga.id)
-                                            if (tracks.isEmpty() || tracks.none { it.trackerId == TrackerManager.MDLIST }) {
+                                            if (tracks.isEmpty() ||
+                                                tracks.none { it.trackerId == TrackerManager.MDLIST }
+                                            ) {
                                                 val track = mdList.createInitialTracker(manga)
                                                 insertTrack.await(mdList.refresh(track).toDomainTrack(false)!!)
                                             }
@@ -412,10 +415,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             // SY -->
                                             .sortedByDescending { it.sourceOrder }.run {
                                                 if (libraryPreferences.libraryReadDuplicateChapters().get()) {
-                                                    val readChapters = getChaptersByMangaId.await(manga.id).filter { it.read }
+                                                    val readChapters = getChaptersByMangaId.await(manga.id).filter {
+                                                        it.read
+                                                    }
                                                     val newReadChapters = this.filter { chapter ->
                                                         chapter.chapterNumber > 0 &&
-                                                            readChapters.any { it.chapterNumber == chapter.chapterNumber }
+                                                            readChapters.any {
+                                                                it.chapterNumber == chapter.chapterNumber
+                                                            }
                                                     }
 
                                                     if (newReadChapters.isNotEmpty()) {
@@ -427,7 +434,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                                     this
                                                 }
                                             }
-                                        //SY <--
+                                        // SY <--
 
                                         if (newChapters.isNotEmpty()) {
                                             val categoryIds = getCategories.await(manga.id).map { it.id }
@@ -778,7 +785,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 val constraints = Constraints(
                     requiredNetworkType = if (DEVICE_NETWORK_NOT_METERED in restrictions) {
                         NetworkType.UNMETERED
-                    } else { NetworkType.CONNECTED },
+                    } else {
+                        NetworkType.CONNECTED
+                    },
                     requiresCharging = DEVICE_CHARGING in restrictions,
                     requiresBatteryNotLow = true,
                 )

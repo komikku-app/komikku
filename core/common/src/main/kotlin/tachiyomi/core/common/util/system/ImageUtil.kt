@@ -210,7 +210,11 @@ object ImageUtil {
      * new image with added center padding scaled relative to the height of the display view
      * to compensate for scaling.
      */
-    fun addHorizontalCenterMargin(imageSource: BufferedSource, viewHeight: Int, backgroundContext: Context): BufferedSource {
+    fun addHorizontalCenterMargin(
+        imageSource: BufferedSource,
+        viewHeight: Int,
+        backgroundContext: Context,
+    ): BufferedSource {
         val imageBitmap = ImageDecoder.newInstance(imageSource.inputStream())?.decode()!!
         val height = imageBitmap.height
         val width = imageBitmap.width
@@ -546,16 +550,20 @@ object ImageUtil {
             darkBG -> {
                 return ColorDrawable(blackColor)
             }
-            topIsBlackStreak || (
-                topCornersIsDark && topOffsetCornersIsDark &&
-                    (topMidIsDark || overallBlackPixels > 9)
-                ) -> {
+            topIsBlackStreak ||
+                (
+                    topCornersIsDark &&
+                        topOffsetCornersIsDark &&
+                        (topMidIsDark || overallBlackPixels > 9)
+                    ) -> {
                 intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
             }
-            bottomIsBlackStreak || (
-                botCornersIsDark && botOffsetCornersIsDark &&
-                    (bottomCenterPixel.isDark() || overallBlackPixels > 9)
-                ) -> {
+            bottomIsBlackStreak ||
+                (
+                    botCornersIsDark &&
+                        botOffsetCornersIsDark &&
+                        (bottomCenterPixel.isDark() || overallBlackPixels > 9)
+                    ) -> {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
             else -> {

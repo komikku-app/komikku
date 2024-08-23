@@ -43,15 +43,16 @@ class ReaderTransitionView @JvmOverloads constructor(
             Data(
                 transition = transition,
                 currChapterDownloaded = transition.from.pageLoader?.isLocal == true,
-                goingToChapterDownloaded = manga.isLocal() || transition.to?.chapter?.let { goingToChapter ->
-                    downloadManager.isChapterDownloaded(
-                        chapterName = goingToChapter.name,
-                        chapterScanlator = goingToChapter.scanlator,
-                        mangaTitle = /* SY --> */ manga.ogTitle, /* SY <-- */
-                        sourceId = manga.source,
-                        skipCache = true,
-                    )
-                } ?: false,
+                goingToChapterDownloaded = manga.isLocal() ||
+                    transition.to?.chapter?.let { goingToChapter ->
+                        downloadManager.isChapterDownloaded(
+                            chapterName = goingToChapter.name,
+                            chapterScanlator = goingToChapter.scanlator,
+                            mangaTitle = /* SY --> */ manga.ogTitle, /* SY <-- */
+                            sourceId = manga.source,
+                            skipCache = true,
+                        )
+                    } ?: false,
             )
         } else {
             null
@@ -67,7 +68,7 @@ class ReaderTransitionView @JvmOverloads constructor(
             // KMK <--
             TachiyomiTheme(
                 // KMK -->
-                seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased }
+                seedColor = seedColor?.let { Color(seedColor) }.takeIf { themeCoverBased },
                 // KMK <--
             ) {
                 CompositionLocalProvider(

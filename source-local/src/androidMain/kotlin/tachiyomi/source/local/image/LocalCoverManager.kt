@@ -3,9 +3,8 @@ package tachiyomi.source.local.image
 import android.content.Context
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.storage.CbzCrypto
-import tachiyomi.core.common.storage.addStreamToZip
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import mihon.core.common.archive.ZipWriter
 import tachiyomi.core.common.storage.nameWithoutExtension
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
@@ -58,7 +57,9 @@ actual class LocalCoverManager(
         inputStream.use { input ->
             // SY -->
             if (encrypted) {
-                targetFile.addStreamToZip(inputStream, DEFAULT_COVER_NAME, CbzCrypto.getDecryptedPasswordCbz())
+                ZipWriter(context, targetFile, encrypt = true).use { writer ->
+                    writer.write(inputStream.readBytes(), DEFAULT_COVER_NAME)
+                }
                 DiskUtil.createNoMediaFile(directory, context)
 
                 manga.thumbnail_url = targetFile.uri.toString()

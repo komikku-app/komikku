@@ -36,7 +36,7 @@ class NamicomiHandler(currentClient: OkHttpClient, userAgent: String) {
         val hash = data.jsonObject["hash"]!!.jsonPrimitive.content
 
         /* Available quality levels: source, high, medium, low */
-        val quality = if(dataSaver) "low" else "high"
+        val quality = if (dataSaver) "low" else "high"
 
         return data
             .jsonObject[quality]!!

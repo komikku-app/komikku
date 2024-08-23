@@ -91,11 +91,11 @@ class BackupCreator(
             }
 
             val databaseManga = getFavorites.await() /* SY --> */ +
-            if (options.readEntries) {
-                handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
-            } else {
-                emptyList()
-            } + getMergedManga.await() // SY <--
+                if (options.readEntries) {
+                    handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
+                } else {
+                    emptyList()
+                } + getMergedManga.await() // SY <--
             val backupManga = backupMangas(databaseManga, options)
             val backup = Backup(
                 backupManga = backupManga,

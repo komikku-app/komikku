@@ -36,8 +36,8 @@ class ChapterCache(
     private val context: Context,
     private val json: Json,
     // SY -->
-    readerPreferences: ReaderPreferences
-    //S Y <--
+    readerPreferences: ReaderPreferences,
+    // SY <--
 ) {
 
     // --> EH

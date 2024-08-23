@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.content.Context
-import com.github.junrar.exception.UnsupportedRarV5Exception
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.Source
@@ -9,6 +8,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import mihon.core.common.archive.archiveReader
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
@@ -62,9 +62,11 @@ class ChapterLoader(
 
                 // If the chapter is partially read, set the starting page to the last the user read
                 // otherwise use the requested page.
-                if (!chapter.chapter.read /* --> EH */ || readerPrefs
+                if (!chapter.chapter.read /* --> EH */ ||
+                    readerPrefs
                         .preserveReadingPosition()
-                        .get() || page != null // <-- EH
+                        .get() ||
+                    page != null // <-- EH
                 ) {
                     chapter.requestedPage = /* SY --> */ page ?: /* SY <-- */ chapter.chapter.last_page_read
                 }
@@ -124,34 +126,26 @@ class ChapterLoader(
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                         when (format) {
                             is Format.Directory -> DirectoryPageLoader(format.file)
-                            is Format.Zip -> ZipPageLoader(format.file, context)
-                            is Format.Rar -> try {
-                                RarPageLoader(format.file)
-                            } catch (e: UnsupportedRarV5Exception) {
-                                error(context.stringResource(MR.strings.loader_rar5_error))
-                            }
-                            is Format.Epub -> EpubPageLoader(format.file, context)
+                            is Format.Archive -> ArchivePageLoader(format.file.archiveReader(context))
+                            is Format.Epub -> EpubPageLoader(format.file.archiveReader(context))
                         }
                     }
                     else -> error(context.stringResource(MR.strings.loader_not_implemented_error))
                 }
             }
             // SY <--
-            isDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager, downloadProvider)
+            isDownloaded -> DownloadPageLoader(
+                chapter,
+                manga,
+                source,
+                downloadManager,
+                downloadProvider,
+            )
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {
                     is Format.Directory -> DirectoryPageLoader(format.file)
-                    // SY -->
-                    is Format.Zip -> ZipPageLoader(format.file, context)
-                    is Format.Rar -> try {
-                        RarPageLoader(format.file)
-                        // SY <--
-                    } catch (e: UnsupportedRarV5Exception) {
-                        error(context.stringResource(MR.strings.loader_rar5_error))
-                    }
-                    // SY -->
-                    is Format.Epub -> EpubPageLoader(format.file, context)
-                    // SY <--
+                    is Format.Archive -> ArchivePageLoader(format.file.archiveReader(context))
+                    is Format.Epub -> EpubPageLoader(format.file.archiveReader(context))
                 }
             }
             source is HttpSource -> HttpPageLoader(chapter, source)

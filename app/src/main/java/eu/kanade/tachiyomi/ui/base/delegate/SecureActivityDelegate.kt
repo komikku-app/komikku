@@ -73,16 +73,17 @@ interface SecureActivityDelegate {
             }
 
             val lockedDays = preferences.authenticatorDays().get()
-            val canLockToday = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
-                Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
-                Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
-                Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
-                Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
-                Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
-                Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
-                Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
-                else -> false
-            }
+            val canLockToday = lockedDays == LOCK_ALL_DAYS ||
+                when (today.get(Calendar.DAY_OF_WEEK)) {
+                    Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
+                    Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
+                    Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
+                    Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
+                    Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
+                    Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
+                    Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
+                    else -> false
+                }
 
             return canLockNow && canLockToday
         }
@@ -99,11 +100,13 @@ interface SecureActivityDelegate {
 
             // `requireUnlock` can be true on process start or if app was closed in locked state
             if (!AuthenticatorUtil.isAuthenticating && !requireUnlock) {
-                requireUnlock = /* SY --> */ canLockNow(preferences) && /* SY <-- */ when (val lockDelay = preferences.lockAppAfter().get()) {
-                    -1 -> false // Never
-                    0 -> true // Always
-                    else -> lastClosedPref.get() + lockDelay * 60_000 <= System.currentTimeMillis()
-                }
+                requireUnlock =
+                    /* SY --> */ canLockNow(preferences) &&
+                    /* SY <-- */ when (val lockDelay = preferences.lockAppAfter().get()) {
+                        -1 -> false // Never
+                        0 -> true // Always
+                        else -> lastClosedPref.get() + lockDelay * 60_000 <= System.currentTimeMillis()
+                    }
             }
 
             lastClosedPref.delete()
@@ -140,7 +143,7 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
         val incognitoModeFlow = preferences.incognitoMode().changes()
         combine(secureScreenFlow, incognitoModeFlow) { secureScreen, incognitoMode ->
             secureScreen == SecurityPreferences.SecureScreenMode.ALWAYS ||
-                secureScreen == SecurityPreferences.SecureScreenMode.INCOGNITO && incognitoMode
+                (secureScreen == SecurityPreferences.SecureScreenMode.INCOGNITO && incognitoMode)
         }
             .onEach(activity.window::setSecureScreen)
             .launchIn(activity.lifecycleScope)

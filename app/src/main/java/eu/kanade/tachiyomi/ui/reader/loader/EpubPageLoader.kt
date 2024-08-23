@@ -1,26 +1,23 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
-import android.content.Context
-import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.storage.EpubFile
+import mihon.core.common.archive.ArchiveReader
 
 /**
  * Loader used to load a chapter from a .epub file.
  */
-// SY -->
-internal class EpubPageLoader(file: UniFile, context: Context) : PageLoader() {
+internal class EpubPageLoader(reader: ArchiveReader) : PageLoader() {
 
-    private val epub = EpubFile(file, context)
-    // SY <--
+    private val epub = EpubFile(reader)
 
     override var isLocal: Boolean = true
 
     override suspend fun getPages(): List<ReaderPage> {
         return epub.getImagesFromPages()
             .mapIndexed { i, path ->
-                val streamFn = { epub.getInputStream(epub.getEntry(path)!!) }
+                val streamFn = { epub.getInputStream(path)!! }
                 ReaderPage(i).apply {
                     stream = streamFn
                     status = Page.State.READY

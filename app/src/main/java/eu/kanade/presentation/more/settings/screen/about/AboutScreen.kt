@@ -59,7 +59,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 object AboutScreen : Screen() {
-    @Suppress("unused")
     private fun readResolve(): Any = AboutScreen
 
     @Composable
@@ -231,7 +230,7 @@ object AboutScreen : Screen() {
                         onPreferenceClick = {
                             uriHandler.openUri(
                                 "https://crowdin.com/project/komikku/" +
-                                    "invite?h=f922abd4193e77309b084a08c74b89872112170"
+                                    "invite?h=f922abd4193e77309b084a08c74b89872112170",
                             )
                         },
                     )

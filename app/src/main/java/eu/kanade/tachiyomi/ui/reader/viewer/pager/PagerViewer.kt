@@ -302,7 +302,9 @@ abstract class PagerViewer(
      * Sets the active [chapters] on this pager.
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
-        val forceTransition = config.alwaysShowChapterTransition || adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
+        val forceTransition =
+            config.alwaysShowChapterTransition ||
+                adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
         adapter.setChapters(chapters, forceTransition)
 
         // Layout the pager once a chapter is being set

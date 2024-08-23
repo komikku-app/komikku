@@ -68,7 +68,8 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.uploader.setTextColor(textColor)
             // KMK <--
 
-            binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            binding.pages.text =
+                context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
             // KMK -->
             binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
             binding.pages.setTextColor(textColor)
@@ -76,7 +77,9 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
 
             binding.ratingBar.rating = meta.averageRating ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
+            binding.rating.text =
+                (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " +
+                MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
             // KMK -->
             binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)

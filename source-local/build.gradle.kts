@@ -15,10 +15,6 @@ kotlin {
                 // SY <--
 
                 implementation(libs.unifile)
-                implementation(libs.bundles.archive)
-                // SY -->
-                implementation(libs.zip4j)
-                // SY <--
             }
         }
         val androidMain by getting {

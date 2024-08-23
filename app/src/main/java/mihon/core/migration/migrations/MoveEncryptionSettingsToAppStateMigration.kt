@@ -23,7 +23,7 @@ class MoveEncryptionSettingsToAppStateMigration : Migration {
             withUIContext {
                 context.toast(
                     "Restart the app to load your encrypted library",
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
                 )
             }
         }

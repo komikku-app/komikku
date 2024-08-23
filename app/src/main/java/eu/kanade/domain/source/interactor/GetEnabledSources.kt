@@ -32,10 +32,11 @@ class GetEnabledSources(
             ) { a, b, c -> Triple(a, b, c) },
             // SY <--
             repository.getSources(),
-        ) { pinnedSourceIds,
-            (enabledLanguages, disabledSources, lastUsedSource),
-            (excludedFromDataSaver, sourcesInCategories, sourceCategoriesFilter),
-            sources,
+        ) {
+                pinnedSourceIds,
+                (enabledLanguages, disabledSources, lastUsedSource),
+                (excludedFromDataSaver, sourcesInCategories, sourceCategoriesFilter),
+                sources,
             ->
 
             val sourcesAndCategories = sourcesInCategories.map {

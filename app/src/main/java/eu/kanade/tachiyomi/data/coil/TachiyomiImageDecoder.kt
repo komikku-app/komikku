@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.coil
 
+import android.app.Application
 import android.graphics.Bitmap
 import coil3.ImageLoader
 import coil3.asImage
@@ -10,37 +11,37 @@ import coil3.decode.ImageSource
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
 import coil3.request.bitmapConfig
+import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.storage.CbzCrypto
+import eu.kanade.tachiyomi.util.storage.CbzCrypto.getCoverStream
 import eu.kanade.tachiyomi.util.system.GLUtil
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.FileHeader
+import mihon.core.common.archive.archiveReader
 import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.decoder.ImageDecoder
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import java.io.BufferedInputStream
 
 /**
  * A [Decoder] that uses built-in [ImageDecoder] to decode images that is not supported by the system.
  */
 class TachiyomiImageDecoder(private val resources: ImageSource, private val options: Options) : Decoder {
+    private val context = Injekt.get<Application>()
 
     override suspend fun decode(): DecodeResult {
         // SY -->
-        var zip4j: ZipFile? = null
-        var entry: FileHeader? = null
-
+        var coverStream: BufferedInputStream? = null
         if (resources.sourceOrNull()?.peek()?.use { CbzCrypto.detectCoverImageArchive(it.inputStream()) } == true) {
             if (resources.source().peek().use { ImageUtil.findImageType(it.inputStream()) == null }) {
-                zip4j = ZipFile(resources.file().toFile().absolutePath)
-                entry = zip4j.fileHeaders.firstOrNull {
-                    it.fileName.equals(CbzCrypto.DEFAULT_COVER_NAME, ignoreCase = true)
-                }
-
-                if (zip4j.isEncrypted) zip4j.setPassword(CbzCrypto.getDecryptedPasswordCbz())
+                coverStream = UniFile.fromFile(resources.file().toFile())
+                    ?.archiveReader(context = context)
+                    ?.getCoverStream()
             }
         }
         val decoder = resources.sourceOrNull()?.use {
-            zip4j.use { zipFile ->
-                ImageDecoder.newInstance(zipFile?.getInputStream(entry) ?: it.inputStream(), options.cropBorders, displayProfile)
+            coverStream.use { coverStream ->
+                ImageDecoder.newInstance(coverStream ?: it.inputStream(), options.cropBorders, displayProfile)
             }
         }
         // SY <--

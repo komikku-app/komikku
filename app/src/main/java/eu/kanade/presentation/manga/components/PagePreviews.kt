@@ -44,7 +44,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 private fun PagePreviewLoading(
-    setMaxWidth: (Dp) -> Unit
+    setMaxWidth: (Dp) -> Unit,
 ) {
     val density = LocalDensity.current
     Box(
@@ -63,7 +63,7 @@ private fun PagePreviewLoading(
 @Composable
 private fun PagePreviewRow(
     onOpenPage: (Int) -> Unit,
-    items: ImmutableList<PagePreview>
+    items: ImmutableList<PagePreview>,
 ) {
     Row(
         modifier = Modifier
@@ -88,7 +88,7 @@ private fun PagePreviewMore(
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         TextButton(onClick = onMorePreviewsClicked) {
             Text(stringResource(SYMR.strings.more_previews))
@@ -116,7 +116,7 @@ fun PagePreviews(
                 pagePreviewState.pagePreviews.take(rowCount * itemPerRowCount).chunked(itemPerRowCount).forEach {
                     PagePreviewRow(
                         onOpenPage = onOpenPage,
-                        items = remember(it) { it.toImmutableList() }
+                        items = remember(it) { it.toImmutableList() },
                     )
                 }
 
@@ -153,7 +153,7 @@ fun LazyListScope.PagePreviewItems(
             ) {
                 PagePreviewRow(
                     onOpenPage = onOpenPage,
-                    items = remember(it) { it.toImmutableList() }
+                    items = remember(it) { it.toImmutableList() },
                 )
             }
             item(

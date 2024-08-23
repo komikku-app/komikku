@@ -115,7 +115,9 @@ class PagerViewerAdapter(
         // Add next chapter transition and pages.
         nextTransition = ChapterTransition.Next(chapters.currChapter, chapters.nextChapter)
             .also {
-                if (nextHasMissingChapters || forceTransition ||
+                if (
+                    nextHasMissingChapters ||
+                    forceTransition ||
                     chapters.nextChapter?.state !is ReaderChapter.State.Loaded
                 ) {
                     newItems.add(it)
@@ -269,7 +271,9 @@ class PagerViewerAdapter(
             subItems.forEach { readerItem ->
                 when (readerItem) {
                     is ReaderPage -> {
-                        if (pagedItems.last().isNotEmpty() && pagedItems.last().last()?.chapter?.chapter?.id != readerItem.chapter.chapter.id) {
+                        if (pagedItems.last().isNotEmpty() &&
+                            pagedItems.last().last()?.chapter?.chapter?.id != readerItem.chapter.chapter.id
+                        ) {
                             pagedItems.add(mutableListOf())
                         }
                         pagedItems.last().add(readerItem)
@@ -319,9 +323,10 @@ class PagerViewerAdapter(
                         // Add a 'blank' page after each full page. It will be used when chunked to solo a page
                         items.add(itemIndex + 1, null)
                         if (
-                            currentItem.fullPage && itemIndex > 0 &&
-                                items[itemIndex - 1] != null &&
-                                (itemIndex - 1) % 2 == 0
+                            currentItem.fullPage &&
+                            itemIndex > 0 &&
+                            items[itemIndex - 1] != null &&
+                            (itemIndex - 1) % 2 == 0
                         ) {
                             // If a page is a full page, check if the previous page needs to be isolated
                             // we should check if it's an even or odd page, since even pages need shifting
@@ -361,7 +366,8 @@ class PagerViewerAdapter(
         // We will however shift to the first page of the new chapter if the last page we were are
         // on is not in the new chapter that has loaded
         val newPage = when {
-            oldCurrent?.first is ReaderPage && (oldCurrent.first as ReaderPage).chapter != currentChapter &&
+            oldCurrent?.first is ReaderPage &&
+                (oldCurrent.first as ReaderPage).chapter != currentChapter &&
                 (oldCurrent.second as? ChapterTransition)?.from != currentChapter ->
                 subItems.find { it is ReaderPage && it.chapter == currentChapter }
             useSecondPage -> oldCurrent?.second ?: oldCurrent?.first
@@ -370,7 +376,10 @@ class PagerViewerAdapter(
 
         val index = when (newPage) {
             is ChapterTransition -> {
-                val filteredPages = joinedItems.filter { it.first is ReaderPage && (it.first as ReaderPage).chapter == newPage.to }
+                val filteredPages = joinedItems.filter {
+                    it.first is ReaderPage &&
+                        (it.first as ReaderPage).chapter == newPage.to
+                }
                 val page = if (newPage is ChapterTransition.Next) {
                     filteredPages.minByOrNull { (it.first as ReaderPage).index }?.first
                 } else {

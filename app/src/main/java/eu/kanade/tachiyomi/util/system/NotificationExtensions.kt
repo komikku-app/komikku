@@ -23,7 +23,10 @@ fun Context.notify(id: Int, channelId: String, block: (NotificationCompat.Builde
 }
 
 fun Context.notify(id: Int, notification: Notification) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PermissionChecker.PERMISSION_GRANTED) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+        PermissionChecker.PERMISSION_GRANTED
+    ) {
         return
     }
 
@@ -31,7 +34,10 @@ fun Context.notify(id: Int, notification: Notification) {
 }
 
 fun Context.notify(notificationWithIdAndTags: List<NotificationWithIdAndTag>) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PermissionChecker.PERMISSION_GRANTED) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+        PermissionChecker.PERMISSION_GRANTED
+    ) {
         return
     }
 

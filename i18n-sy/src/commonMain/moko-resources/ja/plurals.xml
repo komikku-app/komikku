@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">クリーンアップが終了しました。%d フォルダーを消去しました</item>
+        <item quantity="other">クリーンアップが終了しました。%d フォルダーを消去しました</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d ロック時間</item>
+        <item quantity="other">%d ロック時間</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="zero">失敗したページを0ページ再試行中…</item>
+        <item quantity="one">失敗したページ %1$d を再試行しています…</item>
+        <item quantity="other">失敗したページ %1$d を再試行しています…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">並べ替えリストにタグを表示しません。これは、優先順位に基づいたタグリストで並べ替えするをオプションをライブラリに追加します</item>
+        <item quantity="one">1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
+        <item quantity="other">1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">1$d%2$s の作品を移行しますか？</item>
+        <item quantity="other">1$d%2$s の作品を移行しますか？</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">1$d%2$s の作品をコピーしますか？</item>
+        <item quantity="other">1$d%2$s 作品をコピーしますか？</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d の作品が移行されました</item>
+        <item quantity="other">%d の作品が移行されました</item>
+    </plurals>
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d ページ</item>
+        <item quantity="other">%1$d ページ</item>
+    </plurals>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d ページ</item>
+        <item quantity="other">%2$s, %1$d ページ</item>
+    </plurals>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d 年前</item>
+        <item quantity="other">%1$d 年前</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d ヶ月前</item>
+        <item quantity="other">%1$d ヶ月前</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d 週間前</item>
+        <item quantity="other">%1$d 週間前</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d 日前</item>
+        <item quantity="other">%1$d 日前</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d 時間前</item>
+        <item quantity="other">%1$d 時間前</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d 分前</item>
+        <item quantity="other">%1$d 分前</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d 秒前</item>
+        <item quantity="other">%1$d 秒前</item>
+    </plurals>
+
+    <!-- Manga preview row counter -->
+    <plurals name="row_count">
+        <item quantity="one">%d 行</item>
+        <item quantity="other">%d 行</item>
+    </plurals>
+</resources>

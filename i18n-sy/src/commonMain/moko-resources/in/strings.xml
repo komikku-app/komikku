@@ -8,20 +8,17 @@
     <string name="action_clean_titles">Hapus judul</string>
     <string name="action_start_reading">Mulai baca</string>
     <string name="action_edit_info">Edit info</string>
-
     <!-- Manga Type -->
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
     <string name="entry_type_comic">Komik</string>
     <string name="entry_type_webtoon">Webtoon</string>
-
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Semua Sumber</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_fork">Pengaturan Fork</string>
     <string name="pref_category_mangadex">MangaDex</string>
-
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
     <string name="enable_exhentai">Enable ExHentai</string>
@@ -91,7 +88,6 @@
     <string name="gallery_updater_stats_text">The updater last ran %1$s, and checked %2$d out of the %3$d galleries that were ready for checking.</string>
     <string name="gallery_updater_not_ran_yet">The updater has not ran yet.</string>
     <string name="gallery_updater_stats_time">\nGalleries that were checked in the last:\n- hour: %1$d\n- 6 hours: %2$d\n- 12 hours: %3$d\n- day: %4$d\n- 2 days: %5$d\n- week: %6$d\n- month: %7$d\n- year: %8$d</string>
-
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Settings profile note</string>
     <string name="settings_profile_note_message">The app will now add a new settings profile on E-Hentai and ExHentai to optimize app performance. Please ensure that you have less than three profiles on both sites.\n\nIf you have no idea what settings profiles are, then it probably doesn\'t matter, just hit \'OK\'.</string>
@@ -101,14 +97,12 @@
     <string name="eh_settings_uploading_to_server">Uploading settings to server</string>
     <string name="eh_settings_uploading_to_server_message">Please wait, this may take some time…</string>
     <string name="eh_settings_out_of_slots_error">You are out of profile slots on %1$s, please delete a profile!</string>
-
     <!-- EH Settings Login Activity -->
     <string name="recheck_login_status">Recheck login status</string>
     <string name="alternative_login_page">Alternative login page</string>
     <string name="skip_page_restyling">Skip page restyling</string>
     <string name="custom_igneous_cookie">Custom igneous cookie</string>
     <string name="custom_igneous_cookie_message">Some users cannot access ExHentai the normal way, and have to pass in a specific igneous cookie value, this option is for those users.</string>
-
     <!-- Advanced Settings -->
     <string name="developer_tools">Opsi Pengembang</string>
     <string name="toggle_hentai_features">Aktifkan fitur hentai terintegrasi</string>
@@ -141,7 +135,6 @@
     <string name="data_saver_color_bw">Konversi ke Hitam Putih</string>
     <string name="data_saver_server_summary">Masukkan url server Bandwidth Hero Proxy disini</string>
     <string name="clear_db_exclude_read">Abaikab manga yang sudah dibaca</string>
-
     <!-- Log Level -->
     <string name="log_minimal">Mode Minimum</string>
     <string name="log_extra">Mode Ekstra</string>
@@ -149,18 +142,15 @@
     <string name="log_minimal_desc">Hanya kesalahan fatal</string>
     <string name="log_extra_desc">log semuanya</string>
     <string name="log_extreme_desc">mode inspeksi jaringan</string>
-
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Perluas semua filter pencarian secara default</string>
     <string name="put_recommends_in_overflow">Rekomendasi di tombol overflow</string>
     <string name="put_recommends_in_overflow_summary">Letakkan tombol rekomendasi di tombol overflow alih-alih di halaman info manga</string>
-    
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Navbar</string>
     <string name="pref_hide_updates_button">Tampilkan menu Pembaruan di navbar</string>
     <string name="pref_hide_history_button">Tampilkan menu Riwayat di navbar</string>
     <string name="pref_show_bottom_bar_labels">Tampilkan label di navbar</string>
-
     <!-- Library settings -->
     <string name="pref_sorting_settings">Pengaturan Penyortiran</string>
     <string name="pref_skip_pre_migration_summary">Gunakan preferensi dan sumber pra-migrasi yang terakhir disimpan untuk migrasi masal</string>
@@ -168,7 +158,6 @@
     <string name="library_group_updates_global">Selalu jalankan pembaruan global</string>
     <string name="library_group_updates_all_but_ungrouped">Jalankan pembaruan global hanya untuk yang tidak dikelompokkan, pembaruan kategori untuk yang lainnya</string>
     <string name="library_group_updates_all">Hanya jalankan pembaruan kategori</string>
-
     <!-- Browse settings -->
     <string name="pref_source_source_filtering">Filter Sumber dalam kategori</string>
     <string name="pref_source_source_filtering_summery">Saring sumber-sumber yang ada dalam kategori, agar sumber-sumber tersebut tidak dimasukkan ke dalam kategori bahasa jika berada dalam suatu kategori</string>
@@ -176,11 +165,9 @@
     <string name="pref_source_navigation_summery">Ganti tombol Terbaru dengan tampilan penelusuran khusus yang mencakup bab terbaru dan daftar manga</string>
     <string name="pref_local_source_hidden_folders">Folder tersembunyi sumber lokal</string>
     <string name="pref_local_source_hidden_folders_summery">Izinkan sumber lokal untuk melihat folder tersembunyi</string>
-
     <!-- Backup settings -->
     <string name="custom_entry_info">Info manga yang diedit</string>
     <string name="all_read_entries">Semua manga yang dibaca</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Waktu kunci biometrik</string>
     <string name="action_edit_biometric_lock_times">Edit waktu kunci</string>
@@ -190,7 +177,6 @@
     <string name="biometric_lock_end_time">Berakhir pada</string>
     <string name="biometric_lock_days">Hari kunci biometrik diaktifkan</string>
     <string name="biometric_lock_days_summary">Hari tertentu untuk mengunci aplikasi</string>
-
     <string name="sunday">Minggu</string>
     <string name="monday">Senin</string>
     <string name="tuesday">Selasa</string>
@@ -198,11 +184,10 @@
     <string name="thursday">Kamis</string>
     <string name="friday">Jumat</string>
     <string name="saturday">Sabtu</string>
-
     <!-- Reader Settings -->
     <string name="page_downloading">Pengunduhan Halaman</string>
     <string name="download_threads">Thread unduhan</string>
-   <string name="download_threads_summary">Nilai yang lebih tinggi dapat mempercepat pengunduhan gambar secara signifikan, tapi dapat mengakibatkan diblokir. Nilai yang disarankan adalah 2 atau 3. Nilai saat ini adalah: %s</string>
+    <string name="download_threads_summary">Nilai yang lebih tinggi dapat mempercepat pengunduhan gambar secara signifikan, tapi dapat mengakibatkan diblokir. Nilai yang disarankan adalah 2 atau 3. Nilai saat ini adalah: %s</string>
     <string name="aggressively_load_pages">Muat halaman secara agresif</string>
     <string name="aggressively_load_pages_summary">Unduh perlahan seluruh bab sambil membaca, alih-alih hanya memuat halaman yang Anda lihat.</string>
     <string name="skip_queue_on_retry">Lewati antrean saat mencoba lagi</string>
@@ -227,14 +212,12 @@
     <string name="tap_scroll_page_summary">Mengetuk akan menggulir berdasarkan halaman alih-alih ukuran layar saat opsi ini diaktifkan</string>
     <string name="reader_bottom_buttons">Tombol Bawah Pembaca</string>
     <string name="reader_bottom_buttons_summary">Sesuaikan tombol apa yang muncul di bagian bawah pembaca</string>
-
     <string name="pref_show_vert_seekbar_landscape">Tampilkan seekbar vertikal dalam mode layar mendatar</string>
     <string name="pref_show_vert_seekbar_landscape_summary">Mengaktifkan seekbar dalam mode layar mendatar</string>
     <string name="pref_left_handed_vertical_seekbar">Seekbar Vertikal Kidal</string>
     <string name="pref_left_handed_vertical_seekbar_summary">Membalikkan sisi seekbar vertikal</string>
     <string name="pref_force_horz_seekbar">Paksa aktifkan seekbar horizontal</string>
     <string name="pref_force_horz_seekbar_summary">Menghapus seekbar vertikal sepenuhnya dan menggantikanya dengan seekbar horizontal</string>
-
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Gulir otomatis</string>
@@ -263,13 +246,10 @@
     <string name="action_share_second_page">Bagikan halaman kedua</string>
     <string name="action_save_combined_page">Simpan halaman yang disatukan</string>
     <string name="action_share_combined_page">Bagikan halaman yang disatukan</string>
-
     <!-- Reader Sharing -->
     <string name="share_pages_info">%1$s: %2$s, halaman %3$s</string>
-
     <!-- Auto Webtoon Mode -->
     <string name="eh_auto_webtoon_snack">Mode webtoon</string>
-
     <!-- Double page spread -->
     <string name="page_layout">Tata letak halaman</string>
     <string name="shift_double_pages">Geser satu halaman ke atas</string>
@@ -278,7 +258,6 @@
     <string name="automatic_orientation">Otomatis (berdasarkan orientasi)</string>
     <string name="automatic_can_still_switch">Saat menggunakan tata letak halaman otomatis, kamu masih dapat beralih di antara tata letak saat membaca tanpa mengesampingkan pengaturan ini</string>
     <string name="invert_double_pages">Balikkan halaman ganda</string>
-
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">Lihat Rekomendasi</string>
@@ -289,7 +268,6 @@
     <string name="merge_unknown_entry">ID manga tak diketahui: %1$d</string>
     <string name="merged_already">Manga ini sudah tergabung dengan manga saat ini!</string>
     <string name="merge_duplicate">Manga gabungan ini adalah duplikat!</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tagar</string>
     <string name="add_tag">Tambah Tagar</string>
@@ -298,18 +276,15 @@
     <string name="author_hint">Author: %1$s</string>
     <string name="artist_hint">Artist: %1$s</string>
     <string name="thumbnail_url_hint">Thumbnail Url: %1$s</string>
-
     <!-- Browse -->
     <!-- Sources Tab -->
     <string name="find_in_another_source">Cari di sumber yang lain</string>
     <string name="data_saver_exclude">Kecualikan dari penghemat data</string>
     <string name="data_saver_stop_exclude">Berhenti mengecualikan dari penghemat data</string>
-
     <!-- Smart Search -->
     <string name="searching_source">Menelusuri…</string>
     <string name="could_not_find_entry">Tak dapat menemukan manga di sumber ini!</string>
     <string name="automatic_search_error">Terjadi kesalahan saat melakukan pencarian!</string>
-
     <!-- Saved Searches -->
     <string name="saved_searches">Penelusuran Disimpan</string>
     <string name="save_search">Simpan kueri penelusuran saat ini?</string>
@@ -319,11 +294,9 @@
     <string name="save_search_delete">Hapus kueri penelusuran yang disimpan?</string>
     <string name="save_search_delete_message">Apa kamu benar-benar ingin menghapus penelusuran yang disimpan ini: \'%1$s\'?</string>
     <string name="save_search_invalid">Penelusuran yang disimpan tidak valid</string>
-
     <!-- Source Categories -->
     <string name="no_source_categories">Tak ada kategori sumber yang tersedia</string>
     <string name="invalid_category_name">Nama kategori tidak valid</string>
-
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Penyortir Tagar</string>
     <string name="tag_sorting">Menyortir tagar</string>
@@ -331,17 +304,15 @@
     <string name="action_edit_tags">Edit tagar</string>
     <string name="information_empty_tags">Kamu tidak memiliki tagar. Ketuk tombol tambah untuk membuatnya</string>
     <string name="error_tag_exists">Tagar ini sudah ada!</string>
-
     <!-- Extension section -->
     <string name="ext_redundant">Duplikat</string>
     <string name="redundant_extension_message">Ekstensi ini duplikat dan tak akan digunakan di dalam versi Tachiyomi ini.</string>
-
     <!-- Migration -->
     <string name="select_sources">Pilih sumber</string>
     <string name="select_none">Tak ada yang dipilih</string>
     <string name="migration">Migrasi</string>
     <string name="skip_pre_migration">Lewati pra-migrasi</string>
-    <string name="pre_migration_skip_toast">Untuk menampilkan layar ini lagi, buka Pengaturan -> Pustaka.</string>
+    <string name="pre_migration_skip_toast">Untuk menampilkan layar ini lagi, buka Pengaturan -&gt; Pustaka.</string>
     <string name="use_intelligent_search">Cari judul + kata kunci dari judul</string>
     <string name="data_to_include_in_migration">Data yang dipindahkan</string>
     <string name="include_extra_search_parameter">Gunakan parameter tambahan saat melakukan penelusuran</string>
@@ -358,19 +329,15 @@
     <string name="no_alternatives_found">Tidak Ditemukan</string>
     <string name="stop_migrating">Hentikan migrasi?</string>
     <string name="skipping_">(melewati %1$d)</string>
-
     <!-- Library -->
     <!-- Library Actions -->
     <string name="no_valid_entry">Tak ada yang dipilih</string>
-
     <!-- Library Sheet -->
     <string name="lewd">Lewd</string>
-
     <!-- Library Grouping -->
     <string name="tracking_status">Status pelacakan</string>
     <string name="ungrouped">Tidak dikelompokkan</string>
     <string name="not_tracked">Tidak dilacak</string>
-
     <!-- Favorites Sync -->
     <string name="sync_favorites">Sync EH favorites</string>
     <string name="favorites_sync_error">Favorites sync error</string>
@@ -411,7 +378,6 @@
     <string name="favorites_sync_notes_message"><![CDATA[1. Changes to category names in the app are <b>NOT</b> synced! Please <i>change the category names on ExHentai instead</i>. The category names will be copied from the ExHentai servers every sync.<br><br>2. The favorite categories on ExHentai correspond to the <b>first 10 categories in the app</b> (excluding the \'Default\' category). <i>Galleries in other categories will <b>NOT</b> be synced!</i><br><br>3. <font color=\'red\'><b>ENSURE YOU HAVE A STABLE INTERNET CONNECTION WHEN SYNC IS IN PROGRESS!</b></font> If the internet disconnects while the app is syncing, your favorites may be left in a <i>partially-synced state</i>.<br><br>4. Keep the app open while favorites are syncing. Android will close apps that are in the background sometimes and that could be bad if it happens while the app is syncing.<br><br>5. <b>Do NOT put favorites in multiple categories</b> (the app supports this). This can confuse the sync algorithm as ExHentai only allows each favorite to be in one category.<br><br>This dialog will only popup once. You can read these notes again by going to \'Settings > E-Hentai > Show favorites sync notes\'.]]></string>
     <string name="favorites_sync_reset">Are you sure?</string>
     <string name="favorites_sync_reset_message">Resetting the sync state can cause your next sync to be extremely slow.</string>
-
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Batch Add</string>
@@ -438,13 +404,11 @@
     <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for manga: %1$s!</string>
     <string name="gallery_adder_could_not_add_gallery">Could not add manga (url: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">Could not identify chapter (url: %1$s)!</string>
-
     <!-- Intercept Activity -->
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
     <string name="could_not_open_entry">Could not open this manga:\n\n%1$s</string>
     <string name="loading_entry">Loading manga…</string>
-
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Masterpiece</string>
     <string name="rating9">Amazing</string>
@@ -458,8 +422,6 @@
     <string name="rating1">Unbearable</string>
     <string name="rating0">Disaster</string>
     <string name="no_rating">No rating</string>
-
-
     <!-- Gallery types -->
     <string name="doujinshi">Doujinshi</string>
     <string name="artist_cg">Artist CG</string>
@@ -472,7 +434,6 @@
     <string name="misc">Misc</string>
     <string name="artbook">Artbook</string>
     <string name="video">Video</string>
-
     <!-- More Info Menu -->
     <string name="more_info">More info</string>
     <string name="alt_title">Alt Title</string>
@@ -517,11 +478,9 @@
     <string name="manga_updates_id">Manga updates id</string>
     <string name="anime_planet_id">Anime planet id</string>
     <string name="translated">Translated</string>
-
     <!-- Extra gallery info -->
     <string name="is_visible">Visible: %1$s</string>
     <string name="language_translated">%1$s TR</string>
-
     <!-- Merged manga -->
     <string name="merge_settings">Pengaturan gabung</string>
     <string name="fetch_chapter_updates">Perbarui bab</string>
@@ -541,7 +500,6 @@
     <string name="dedupe_priority">Deduplikasi menurut prioritas</string>
     <string name="dedupe_most_chapters">Tampilkan sumber dengan bab terbanyak</string>
     <string name="dedupe_highest_chapter">Tampilkan sumber dengan nomor bab tertinggi</string>
-
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Tak diikuti</string>
     <string name="mangadex_sync_follows_to_library">Sinkronkan MangaDex ke pustaka</string>
@@ -553,15 +511,20 @@
     <string name="random">Acak</string>
     <string name="mangadex_push_favorites_to_mangadex">Sinkronkan pustaka ke MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Sinkronkan manga yang bukan berasal dari MangaDex dan masukkan ke MDList.</string>
-
-
     <!-- Scanlator filters -->
     <string name="select_scanlators">Grup pemindai yang ditampilkan</string>
-
     <!-- Similar -->
     <string name="similar">Mirip dengan %1$s</string>
-
     <!-- Humanize time -->
     <string name="humanize_fallback">Beberapa saat yang lalu</string>
-
+    <string name="entry_type_manga">Manga</string>
+    <string name="pref_ehentai_summary">Login E/ExHentai, sinkronisasi galeri</string>
+    <string name="pref_mangadex_summary">Login MangaDex, mengikuti sinkronisasi</string>
+    <string name="changelog_version">Versi %1$s</string>
+    <string name="bandwidth_hero">Bandwidth Hero (membutuhkan server Proxy Bandwidth Hero)</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="bandwidth_data_saver_server">Server Proxy Bandwidth Hero</string>
+    <string name="put_merge_in_overflow">Gabungkan dalam luapan</string>
+    <string name="put_merge_in_overflow_summary">Letakkan tombol penggabungan di menu luapan, bukan di halaman entri</string>
+    <string name="pref_previews_row_count">Mempratinjau jumlah baris</string>
 </resources>

@@ -7,7 +7,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class FeedBackupCreator(
-    private val handler: DatabaseHandler = Injekt.get()
+    private val handler: DatabaseHandler = Injekt.get(),
 ) {
 
     /**

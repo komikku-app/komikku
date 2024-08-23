@@ -306,7 +306,6 @@
     <string name="aes_256">AES ٢٥٦</string>
     <string name="action_edit_biometric_lock_times">تعديل أوقات الاقفال</string>
     <string name="encrypt_database">تشفير قاعدة البيانات</string>
-    <string name="aes_192">AES ١٩٢</string>
     <string name="biometric_lock_days_summary">أيام لقفل التطبيق</string>
     <string name="encrypt_database_subtitle">يتطلب إعادة تشغيل التطبيق ليصبح ساري المفعول</string>
     <string name="reader_preload_amount_6_pages">٦ صفحات</string>
@@ -446,4 +445,9 @@
     <string name="favorites_sync_done_errors_message">حدث خطا اثناء المزامنه وتم تجاهلها</string>
     <string name="favorites_sync_verifying_library">تاكيد المكتبه المحليه</string>
     <string name="favorites_sync_network_error">خطأ في الشبكة!</string>
+    <string name="action_copy_second_page">نسخ الصفحة الثانية</string>
+    <string name="action_copy_first_page">نسخ الصفحة الأولى</string>
+    <string name="action_copy_combined_page">نسخ الصفحة المجمعة</string>
+    <string name="only_show_updated_entries">إظهار الإدخالات التي تحتوي على فصول جديدة فقط</string>
+    <string name="pref_crop_borders_pager">قص اطراف الصفحات</string>
 </resources>

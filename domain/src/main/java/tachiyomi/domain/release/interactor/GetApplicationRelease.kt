@@ -20,22 +20,21 @@ class GetApplicationRelease(
         val now = Instant.now()
 
         // Limit checks to once every 3 days at most
-        if (!arguments.forceCheck && now.isBefore(
-                Instant.ofEpochMilli(lastChecked.get()).plus(3, ChronoUnit.DAYS),
-            )
-        ) {
+        val nextCheckTime = Instant.ofEpochMilli(lastChecked.get()).plus(3, ChronoUnit.DAYS)
+        if (!arguments.forceCheck && now.isBefore(nextCheckTime)) {
             return Result.NoNewUpdate
         }
 
         // KMK -->
         val releases = service.releaseNotes(arguments.repository)
             .filter {
-                !it.preRelease && isNewVersion(
-                    arguments.isPreview,
-                    arguments.commitCount,
-                    arguments.versionName,
-                    it.version
-                )
+                !it.preRelease &&
+                    isNewVersion(
+                        arguments.isPreview,
+                        arguments.commitCount,
+                        arguments.versionName,
+                        it.version,
+                    )
             }
 
         val latest = releases.getLatest() ?: return Result.NoNewUpdate
@@ -68,7 +67,7 @@ class GetApplicationRelease(
                 info = releases.joinToString("\r---\r") {
                     "## ${it.version}\r\r" +
                         it.info.replace(checksumRegex, "")
-                }
+                },
             )
         if (release == null) return Result.NoNewUpdate
         return Result.NewUpdate(release)
@@ -156,7 +155,7 @@ internal fun List<Release>.getLatest(): Release? {
             info = joinToString("\r---\r") {
                 "## ${it.version}\r\r" +
                     it.info.replace(checksumRegex, "")
-            }
+            },
         )
 }
 // KMK <--
