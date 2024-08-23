@@ -153,7 +153,7 @@ class DomainModule : InjektModule {
         addFactory { ShouldUpdateDbChapter() }
         addFactory { SyncChaptersWithSource(get(), get(), get(), get(), get(), get(), get(), get()) }
         addFactory { GetAvailableScanlators(get()) }
-        addFactory { FilterChaptersForDownload(get(), get(), get()) }
+        addFactory { FilterChaptersForDownload(get(), get(), get(), get()) }
 
         addSingletonFactory<HistoryRepository> { HistoryRepositoryImpl(get()) }
         addFactory { GetHistory(get()) }

@@ -1567,12 +1567,9 @@ class MangaScreenModel(
     private fun downloadNewChapters(chapters: List<Chapter>) {
         screenModelScope.launchNonCancellable {
             val manga = successState?.manga ?: return@launchNonCancellable
-            // EXH -->
-            if (manga.isEhBasedManga()) return@launchNonCancellable
-            // EXH <--
             val chaptersToDownload = filterChaptersForDownload.await(manga, chapters)
 
-            if (chaptersToDownload.isNotEmpty()) {
+            if (chaptersToDownload.isNotEmpty() /* SY --> */ && !manga.isEhBasedManga() /* SY <-- */) {
                 downloadChapters(chaptersToDownload)
             }
         }
