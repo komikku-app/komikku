@@ -13,6 +13,7 @@ import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
 import eu.kanade.presentation.theme.colorscheme.CloudflareColorScheme
 import eu.kanade.presentation.theme.colorscheme.CottoncandyColorScheme
+import eu.kanade.presentation.theme.colorscheme.CustomColorScheme
 import eu.kanade.presentation.theme.colorscheme.DoomColorScheme
 import eu.kanade.presentation.theme.colorscheme.GreenAppleColorScheme
 import eu.kanade.presentation.theme.colorscheme.LavenderColorScheme
@@ -102,10 +103,19 @@ private fun getThemeColorScheme(
     appTheme: AppTheme,
     isAmoled: Boolean,
 ): ColorScheme {
-    val colorScheme = if (appTheme == AppTheme.MONET) {
-        MonetColorScheme(LocalContext.current)
-    } else {
-        colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+    val uiPreferences = Injekt.get<UiPreferences>()
+    val colorScheme = when (appTheme) {
+        AppTheme.MONET -> {
+            MonetColorScheme(LocalContext.current)
+        }
+        // KMK -->
+        AppTheme.CUSTOM -> {
+            CustomColorScheme(uiPreferences)
+        }
+        // KMK <--
+        else -> {
+            colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+        }
     }
     return colorScheme.getColorScheme(
         isSystemInDarkTheme(),

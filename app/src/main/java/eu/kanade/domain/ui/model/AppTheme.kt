@@ -10,6 +10,9 @@ enum class AppTheme(val titleRes: StringResource?) {
     DEFAULT(MR.strings.label_default),
     MONET(MR.strings.theme_monet),
 
+    // Kuukiyomi themes
+    CUSTOM(KMR.strings.theme_custom),
+
     // Aniyomi themes
     COTTONCANDY(KMR.strings.theme_cottoncandy),
     MOCHA(KMR.strings.theme_mocha),
