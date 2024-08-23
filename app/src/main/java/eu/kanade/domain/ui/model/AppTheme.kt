@@ -18,7 +18,7 @@ enum class AppTheme(val titleRes: StringResource?) {
     LAVENDER(MR.strings.theme_lavender),
     MIDNIGHT_DUSK(MR.strings.theme_midnightdusk),
 
-    //Kuukiyomi themes
+    // Kuukiyomi themes
     CUSTOM(KMR.strings.theme_custom),
 
     // TODO: re-enable for preview
