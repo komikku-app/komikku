@@ -10,6 +10,9 @@ enum class AppTheme(val titleRes: StringResource?) {
     DEFAULT(MR.strings.label_default),
     MONET(MR.strings.theme_monet),
 
+    // Kuukiyomi themes
+    CUSTOM(KMR.strings.theme_custom),
+
     // Aniyomi themes
     COTTONCANDY(KMR.strings.theme_cottoncandy),
     MOCHA(KMR.strings.theme_mocha),
@@ -17,9 +20,6 @@ enum class AppTheme(val titleRes: StringResource?) {
     GREEN_APPLE(MR.strings.theme_greenapple),
     LAVENDER(MR.strings.theme_lavender),
     MIDNIGHT_DUSK(MR.strings.theme_midnightdusk),
-
-    // Kuukiyomi themes
-    CUSTOM(KMR.strings.theme_custom),
 
     // TODO: re-enable for preview
     NORD(MR.strings.theme_nord.takeIf { isDevFlavor || isPreviewBuildType }),

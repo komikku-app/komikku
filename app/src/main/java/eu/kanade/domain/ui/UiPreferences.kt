@@ -26,11 +26,12 @@ class UiPreferences(
             AppTheme.DEFAULT
         },
     )
-    fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0)
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
     // KMK -->
+    fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0xFFDF0090.toInt())
+
     fun themeCoverBased() = preferenceStore.getBoolean("pref_theme_cover_based_key", true)
 
     fun themeCoverBasedStyle() = preferenceStore.getEnum("pref_theme_cover_based_style_key", PaletteStyle.Vibrant)

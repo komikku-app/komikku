@@ -104,12 +104,18 @@ private fun getThemeColorScheme(
     isAmoled: Boolean,
 ): ColorScheme {
     val uiPreferences = Injekt.get<UiPreferences>()
-    val colorScheme = if (appTheme == AppTheme.MONET) {
-        MonetColorScheme(LocalContext.current)
-    } else if (appTheme == AppTheme.CUSTOM) {
-        CustomColorScheme(uiPreferences)
-    } else {
-        colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+    val colorScheme = when (appTheme) {
+        AppTheme.MONET -> {
+            MonetColorScheme(LocalContext.current)
+        }
+        // KMK -->
+        AppTheme.CUSTOM -> {
+            CustomColorScheme(uiPreferences)
+        }
+        // KMK <--
+        else -> {
+            colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+        }
     }
     return colorScheme.getColorScheme(
         isSystemInDarkTheme(),

@@ -38,6 +38,7 @@ import uy.kohesive.injekt.api.get
 import java.time.LocalDate
 
 object SettingsAppearanceScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsAppearanceScreen
 
     @ReadOnlyComposable
     @Composable
@@ -76,18 +77,6 @@ object SettingsAppearanceScreen : SearchableSettings {
         val amoledPref = uiPreferences.themeDarkAmoled()
         val amoled by amoledPref.collectAsState()
 
-        val customPreferenceItem = if (appTheme == AppTheme.CUSTOM) {
-            listOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(KMR.strings.pref_custom_color),
-                    subtitle = stringResource(KMR.strings.custom_color_description),
-                    onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
-                ),
-            )
-        } else {
-            emptyList()
-        }
-
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_theme),
             preferenceItems = persistentListOf(
@@ -110,13 +99,14 @@ object SettingsAppearanceScreen : SearchableSettings {
                         )
                     }
                 },
+                // KMK -->
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.pref_custom_color),
                     enabled = appTheme == AppTheme.CUSTOM,
                     subtitle = stringResource(KMR.strings.custom_color_description),
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
-
+                // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = amoledPref,
                     title = stringResource(MR.strings.pref_dark_theme_pure_black),

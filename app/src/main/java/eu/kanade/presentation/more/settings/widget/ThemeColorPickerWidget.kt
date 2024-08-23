@@ -6,12 +6,14 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +30,7 @@ import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import eu.kanade.domain.ui.model.AppTheme
+import tachiyomi.presentation.core.components.material.padding
 import kotlin.math.roundToInt
 
 @Composable
@@ -66,13 +69,20 @@ internal fun ThemeColorPickerWidget(
     BasePreferenceWidget(
         subcomponent = {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.padding.large)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(modifier = Modifier) {
+                Box(
+                    modifier = Modifier
+                        .padding(
+                            vertical = MaterialTheme.padding.medium,
+                        ),
+                ) {
                     HsvColorPicker(
                         modifier = Modifier
-                            .size(with(LocalDensity.current) { 300.dp }),
+                            .size(300.dp),
                         controller = controller,
                         wheelImageBitmap = wheelBitmap,
                         initialColor = initialColor,
@@ -82,17 +92,17 @@ internal fun ThemeColorPickerWidget(
                         },
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
                 CustomBrightnessSlider(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp),
+                        .fillMaxWidth(),
                     controller = controller,
                     initialColor = initialColor,
                 )
                 AnimatedVisibility(
                     visible = showConfirmButton,
                     enter = fadeIn() + expandVertically(),
+                    modifier = Modifier
+                        .padding(top = MaterialTheme.padding.large),
                 ) {
                     Button(
                         onClick = {
@@ -100,7 +110,6 @@ internal fun ThemeColorPickerWidget(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
                             .height(48.dp),
                         content = {
                             Text("Confirm Color")

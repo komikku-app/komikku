@@ -195,7 +195,6 @@ dependencies {
     implementation(compose.accompanist.systemuicontroller)
 
     implementation(androidx.interpolator)
-    implementation(compose.colorpicker)
 
     implementation(androidx.paging.runtime)
     implementation(androidx.paging.compose)
@@ -274,9 +273,13 @@ dependencies {
     implementation(libs.swipe)
     implementation(libs.compose.webview)
     implementation(libs.compose.grid)
+
+    // KMK -->
     implementation(libs.palette.ktx)
     implementation(libs.material.kolor)
     implementation(libs.haze)
+    implementation(compose.colorpicker)
+    // KMK <--
 
     // Logging
     implementation(libs.timber)
