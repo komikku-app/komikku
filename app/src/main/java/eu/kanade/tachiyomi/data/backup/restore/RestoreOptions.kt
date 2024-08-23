@@ -12,7 +12,7 @@ data class RestoreOptions(
     val extensionRepoSettings: Boolean = true,
     val sourceSettings: Boolean = true,
     // SY -->
-    val savedSearches: Boolean = true,
+    val savedSearchesFeeds: Boolean = true,
     // SY <--
 ) {
 
@@ -23,7 +23,7 @@ data class RestoreOptions(
         extensionRepoSettings,
         sourceSettings,
         // SY -->
-        savedSearches,
+        savedSearchesFeeds,
         // SY <--
     )
 
@@ -33,7 +33,7 @@ data class RestoreOptions(
             appSettings ||
             extensionRepoSettings ||
             sourceSettings /* SY --> */ ||
-            savedSearches /* SY <-- */
+            savedSearchesFeeds /* SY <-- */
 
     companion object {
         val options = persistentListOf(
@@ -64,9 +64,11 @@ data class RestoreOptions(
             ),
             // SY -->
             Entry(
+                // KMK-->
                 label = KMR.strings.saved_searches_feeds,
-                getter = RestoreOptions::savedSearches,
-                setter = { options, enabled -> options.copy(savedSearches = enabled) },
+                // KMK <--
+                getter = RestoreOptions::savedSearchesFeeds,
+                setter = { options, enabled -> options.copy(savedSearchesFeeds = enabled) },
             ),
             // SY <--
         )
@@ -78,7 +80,7 @@ data class RestoreOptions(
             extensionRepoSettings = array[3],
             sourceSettings = array[4],
             // SY -->
-            savedSearches = array[5],
+            savedSearchesFeeds = array[5],
             // SY <--
         )
     }

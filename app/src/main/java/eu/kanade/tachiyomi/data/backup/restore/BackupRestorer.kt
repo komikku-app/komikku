@@ -89,7 +89,7 @@ class BackupRestorer(
             restoreAmount += 1
         }
         // SY -->
-        if (options.savedSearches) {
+        if (options.savedSearchesFeeds) {
             restoreAmount += 1
         }
         // SY <--
@@ -108,7 +108,7 @@ class BackupRestorer(
                 restoreCategories(backup.backupCategories)
             }
             // SY -->
-            if (options.savedSearches) {
+            if (options.savedSearchesFeeds) {
                 restoreSavedSearches(
                     backup.backupSavedSearches,
                     // KMK -->

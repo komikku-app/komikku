@@ -10,7 +10,7 @@ class SavedSearchBackupCreator(
     private val handler: DatabaseHandler = Injekt.get(),
 ) {
 
-    suspend fun backupSavedSearches(): List<BackupSavedSearch> {
+    suspend operator fun invoke(): List<BackupSavedSearch> {
         return handler.awaitList { saved_searchQueries.selectAll(backupSavedSearchMapper) }
     }
 }
