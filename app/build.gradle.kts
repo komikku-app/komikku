@@ -273,9 +273,13 @@ dependencies {
     implementation(libs.swipe)
     implementation(libs.compose.webview)
     implementation(libs.compose.grid)
+
+    // KMK -->
     implementation(libs.palette.ktx)
     implementation(libs.material.kolor)
     implementation(libs.haze)
+    implementation(compose.colorpicker)
+    // KMK <--
 
     // Logging
     implementation(libs.timber)
