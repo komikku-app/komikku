@@ -106,11 +106,11 @@ class BackupCreator(
                 backupSourcePreferences = backupSourcePreferences(options),
 
                 // SY -->
-                backupSavedSearches = backupSavedSearches(),
+                backupSavedSearches = backupSavedSearches(options),
                 // SY <--
 
                 // KMK -->
-                backupFeeds = backupFeeds(),
+                backupFeeds = backupFeeds(options),
                 // KMK <--
             )
 
@@ -179,8 +179,10 @@ class BackupCreator(
     }
 
     // SY -->
-    suspend fun backupSavedSearches(): List<BackupSavedSearch> {
-        return savedSearchBackupCreator.backupSavedSearches()
+    suspend fun backupSavedSearches(options: BackupOptions): List<BackupSavedSearch> {
+        if (!options.savedSearchesFeeds) return emptyList()
+
+        return savedSearchBackupCreator()
     }
     // SY <--
 
@@ -188,8 +190,10 @@ class BackupCreator(
     /**
      * Backup global Popular/Latest feeds
      */
-    suspend fun backupFeeds(): List<BackupFeed> {
-        return feedBackupCreator.backupFeeds()
+    suspend fun backupFeeds(options: BackupOptions): List<BackupFeed> {
+        if (!options.savedSearchesFeeds) return emptyList()
+
+        return feedBackupCreator()
     }
     // KMK <--
 
