@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -19,11 +18,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import okhttp3.Response
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
@@ -38,10 +36,12 @@ class MergedSource : HttpSource() {
     private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
     private val networkToLocalManga: NetworkToLocalManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
-    private val getCategories: GetCategories by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
-    private val downloadPreferences: DownloadPreferences by injectLazy()
+
+    // KMK -->
+    private val filterChaptersForDownload: FilterChaptersForDownload by injectLazy()
+    // KMK <--
 
     override val id: Long = MERGED_SOURCE_ID
 
@@ -119,13 +119,6 @@ class MergedSource : HttpSource() {
             "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
-        val ifDownloadNewChapters = downloadChapters &&
-            manga.shouldDownloadNewChapters(
-                getCategories.await(manga.id).map {
-                    it.id
-                },
-                downloadPreferences,
-            )
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {
@@ -140,9 +133,16 @@ class MergedSource : HttpSource() {
                                     val (source, loadedManga, reference) = it.load()
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toSManga())
-                                        val results =
+                                        val chapters =
                                             syncChaptersWithSource.await(chapterList, loadedManga, source)
-                                        if (ifDownloadNewChapters && reference.downloadChapters) {
+                                        // KMK -->
+                                        // KMK: this should check if user preferences & manga's categories allowed to download
+                                        // KMK: the checking for skip duplicated-read chapters might not work for merged mangas but won't affect the download
+                                        val results = filterChaptersForDownload.await(loadedManga, chapters)
+                                        if (downloadChapters &&
+                                            // KMK <--
+                                            reference.downloadChapters
+                                        ) {
                                             downloadManager.downloadChapters(
                                                 loadedManga,
                                                 results,
