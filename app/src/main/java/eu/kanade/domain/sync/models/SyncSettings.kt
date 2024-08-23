@@ -7,11 +7,13 @@ data class SyncSettings(
     val tracking: Boolean = true,
     val history: Boolean = true,
     val appSettings: Boolean = true,
+    val extensionRepoSettings: Boolean = true,
     val sourceSettings: Boolean = true,
     val privateSettings: Boolean = false,
 
     // SY -->
     val customInfo: Boolean = true,
     val readEntries: Boolean = true,
+    val savedSearchesFeeds: Boolean = true,
     // SY <--
 )

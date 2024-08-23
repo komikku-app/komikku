@@ -84,6 +84,7 @@ class SyncManager(
             chapters = syncOptions.chapters,
             tracking = syncOptions.tracking,
             history = syncOptions.history,
+            extensionRepoSettings = syncOptions.extensionRepoSettings,
             appSettings = syncOptions.appSettings,
             sourceSettings = syncOptions.sourceSettings,
             privateSettings = syncOptions.privateSettings,
@@ -91,6 +92,7 @@ class SyncManager(
             // SY -->
             customInfo = syncOptions.customInfo,
             readEntries = syncOptions.readEntries,
+            savedSearchesFeeds = syncOptions.savedSearchesFeeds,
             // SY <--
         )
 
@@ -105,11 +107,11 @@ class SyncManager(
             backupSourcePreferences = backupCreator.backupSourcePreferences(backupOptions),
 
             // SY -->
-            backupSavedSearches = backupCreator.backupSavedSearches(),
+            backupSavedSearches = backupCreator.backupSavedSearches(backupOptions),
             // SY <--
 
             // KMK -->
-            backupFeeds = backupCreator.backupFeeds(),
+            backupFeeds = backupCreator.backupFeeds(backupOptions),
             // KMK <--
         )
         logcat(LogPriority.DEBUG) { "End create backup" }
@@ -180,10 +182,15 @@ class SyncManager(
             backupSources = remoteBackup.backupSources,
             backupPreferences = remoteBackup.backupPreferences,
             backupSourcePreferences = remoteBackup.backupSourcePreferences,
+            backupExtensionRepo = remoteBackup.backupExtensionRepo,
 
             // SY -->
             backupSavedSearches = remoteBackup.backupSavedSearches,
             // SY <--
+
+            // KMK -->
+            backupFeeds = remoteBackup.backupFeeds,
+            // KMK <--
         )
 
         // It's local sync no need to restore data. (just update remote data)
@@ -201,7 +208,12 @@ class SyncManager(
                 context,
                 backupUri,
                 sync = true,
-                options = RestoreOptions(),
+                options = RestoreOptions(
+                    appSettings = true,
+                    sourceSettings = true,
+                    libraryEntries = true,
+                    extensionRepoSettings = true,
+                ),
             )
 
             // update the sync timestamp

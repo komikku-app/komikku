@@ -122,12 +122,14 @@ private class SyncSettingsSelectorModel(
                 tracking = syncSettings.tracking,
                 history = syncSettings.history,
                 appSettings = syncSettings.appSettings,
+                extensionRepoSettings = syncSettings.extensionRepoSettings,
                 sourceSettings = syncSettings.sourceSettings,
                 privateSettings = syncSettings.privateSettings,
 
                 // SY -->
                 customInfo = syncSettings.customInfo,
                 readEntries = syncSettings.readEntries,
+                savedSearchesFeeds = syncSettings.savedSearchesFeeds,
                 // SY <--
             )
         }
@@ -140,12 +142,14 @@ private class SyncSettingsSelectorModel(
                 tracking = backupOptions.tracking,
                 history = backupOptions.history,
                 appSettings = backupOptions.appSettings,
+                extensionRepoSettings = backupOptions.extensionRepoSettings,
                 sourceSettings = backupOptions.sourceSettings,
                 privateSettings = backupOptions.privateSettings,
 
                 // SY -->
                 customInfo = backupOptions.customInfo,
                 readEntries = backupOptions.readEntries,
+                savedSearchesFeeds = backupOptions.savedSearchesFeeds,
                 // SY <--
             )
         }
