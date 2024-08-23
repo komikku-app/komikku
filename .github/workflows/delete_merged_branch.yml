@@ -9,11 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Delete branch
         run: |
-          branch=${{ github.ref }}
+          branch_name=$(echo "${{ github.event.pull_request.head.ref }}")
           if [ "$branch" != "refs/heads/main" ] && [ "$branch" != "refs/heads/master" ]; then
-            git push origin --delete "${branch#refs/heads/}"
+            echo "Deleting branch ${branch_name}"
+            git push origin --delete $branch_name
           else
             echo "Skipping deletion of main or master branch"
           fi
