@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.backup.create
 import dev.icerock.moko.resources.StringResource
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 
 data class BackupOptions(
@@ -18,6 +19,7 @@ data class BackupOptions(
     // SY -->
     val customInfo: Boolean = true,
     val readEntries: Boolean = true,
+    val savedSearchesFeeds: Boolean = true,
     // SY <--
 ) {
 
@@ -34,10 +36,12 @@ data class BackupOptions(
         // SY -->
         customInfo,
         readEntries,
+        savedSearchesFeeds,
         // SY <--
     )
 
-    fun canCreate() = libraryEntries || categories || appSettings || extensionRepoSettings || sourceSettings
+    fun canCreate() =
+        libraryEntries || categories || appSettings || extensionRepoSettings || sourceSettings || savedSearchesFeeds
 
     companion object {
         val libraryOptions = persistentListOf(
@@ -82,6 +86,13 @@ data class BackupOptions(
                 setter = { options, enabled -> options.copy(readEntries = enabled) },
                 enabled = { it.libraryEntries },
             ),
+            Entry(
+                // KMK-->
+                label = KMR.strings.saved_searches_feeds,
+                // KMK <--
+                getter = BackupOptions::savedSearchesFeeds,
+                setter = { options, enabled -> options.copy(savedSearchesFeeds = enabled) },
+            ),
             // SY <--
         )
 
@@ -122,6 +133,7 @@ data class BackupOptions(
             // SY -->
             customInfo = array[9],
             readEntries = array[10],
+            savedSearchesFeeds = array[11],
             // SY <--
         )
     }
