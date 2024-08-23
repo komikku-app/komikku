@@ -1,7 +1,7 @@
 [versions]
 
 [libraries]
-firebase-analytics = "com.google.firebase:firebase-analytics:22.0.2"
+firebase-analytics = "com.google.firebase:firebase-analytics:22.1.0"
 firebase-crashlytics-ktx = "com.google.firebase:firebase-crashlytics:19.0.3"
 firebase-crashlytics-gradle = "com.google.firebase:firebase-crashlytics-gradle:3.0.2"
 
