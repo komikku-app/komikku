@@ -215,7 +215,7 @@ fun MangaActionRow(
 
     val libraryPreferences: LibraryPreferences = Injekt.get()
     val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
-    val isSkipCompleted = MANGA_NON_COMPLETED in restrictions
+    val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
