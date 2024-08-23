@@ -38,10 +38,7 @@ class MergedSource : HttpSource() {
     private val updateManga: UpdateManga by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
-
-    // KMK -->
     private val filterChaptersForDownload: FilterChaptersForDownload by injectLazy()
-    // KMK <--
 
     override val id: Long = MERGED_SOURCE_ID
 
@@ -133,20 +130,17 @@ class MergedSource : HttpSource() {
                                     val (source, loadedManga, reference) = it.load()
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toSManga())
-                                        val chapters =
+                                        val results =
                                             syncChaptersWithSource.await(chapterList, loadedManga, source)
-                                        // KMK -->
-                                        // KMK: this should check if user preferences & manga's categories allowed to download
-                                        // KMK: the checking for skip duplicated-read chapters might not work for merged mangas but won't affect the download
-                                        val results = filterChaptersForDownload.await(manga, chapters)
-                                        if (downloadChapters &&
-                                            // KMK <--
-                                            reference.downloadChapters
-                                        ) {
-                                            downloadManager.downloadChapters(
-                                                loadedManga,
-                                                results,
-                                            )
+
+                                        if (downloadChapters && reference.downloadChapters) {
+                                            val chaptersToDownload = filterChaptersForDownload.await(manga, results)
+                                            if (chaptersToDownload.isNotEmpty()) {
+                                                downloadManager.downloadChapters(
+                                                    loadedManga,
+                                                    chaptersToDownload,
+                                                )
+                                            }
                                         }
                                         results
                                     } else {
