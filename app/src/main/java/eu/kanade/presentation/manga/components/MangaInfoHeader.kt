@@ -207,6 +207,7 @@ fun MangaActionRow(
     onTrackingClicked: () -> Unit,
     onEditIntervalClicked: (() -> Unit)?,
     onEditCategory: (() -> Unit)?,
+    status: Long,
     // SY -->
     onMergeClicked: (() -> Unit)?,
     // SY <--
@@ -215,7 +216,7 @@ fun MangaActionRow(
 
     val libraryPreferences: LibraryPreferences = Injekt.get()
     val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
-    val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions
+    val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
