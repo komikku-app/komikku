@@ -306,7 +306,6 @@
     <string name="aes_256">AES ٢٥٦</string>
     <string name="action_edit_biometric_lock_times">تعديل أوقات الاقفال</string>
     <string name="encrypt_database">تشفير قاعدة البيانات</string>
-    <string name="aes_192">AES ١٩٢</string>
     <string name="biometric_lock_days_summary">أيام لقفل التطبيق</string>
     <string name="encrypt_database_subtitle">يتطلب إعادة تشغيل التطبيق ليصبح ساري المفعول</string>
     <string name="reader_preload_amount_6_pages">٦ صفحات</string>

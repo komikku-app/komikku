@@ -644,7 +644,6 @@
     <string name="eh_image_quality_780">780x</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="aes_256">AES 256</string>
-    <string name="aes_192">AES 192</string>
     <string name="aes_128">AES 128</string>
     <string name="aged">年齡限制</string>
     <string name="url">Url</string>

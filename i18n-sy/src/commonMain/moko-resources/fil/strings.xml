@@ -384,7 +384,7 @@
     <string name="delete_tag">Taggalin ang tag</string>
     <string name="error_tag_exists">Umiiral ang tag na ito!</string>
     <string name="select_none">Walang napili</string>
-    <string name="redundant_extension_message">Ang extension na ito ay redundant at hindi ito gagamitin sa bersyon na ito ng Tachiyomi.</string>
+    <string name="redundant_extension_message">Ang extension na ito ay di na kailangan at hindi ito gagamitin sa bersyon na ito ng Tachiyomi.</string>
     <string name="select_sources">Pumili ng mga source</string>
     <string name="skip_pre_migration">Laktawan bago maglipat</string>
     <string name="pre_migration_skip_toast">Para makita itong screen na ito, pumunta sa Mga Setting -&gt; Aklatan.</string>
@@ -402,7 +402,7 @@
     <string name="ungrouped">Di-nakagrupo</string>
     <string name="not_tracked">Hindi naka-track</string>
     <string name="favorites_sync_error">Error sa pag-sync ng mga paborito</string>
-    <string name="show_gallery">Ipakita ng Gallery</string>
+    <string name="show_gallery">Ipakita ang Gallery</string>
     <string name="favorites_sync_error_string">Nagkaroon ng error sa proseso ng pag-sync: %1$s</string>
     <string name="favorites_sync_done_errors">Natapos ang pag-sync na may mga error</string>
     <string name="favorites_sync_done_errors_message">Nagkaroon ng mga error sa proseso ng pag-sync na hindi pinansin:
@@ -533,4 +533,5 @@
     <string name="group">Grupo</string>
     <string name="uploader_capital">Naka-capitalize ang Uploader</string>
     <string name="deduplication_entry_info">Impo ng entry:</string>
+    <string name="ext_redundant">Di na kinakailangan</string>
 </resources>
