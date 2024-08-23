@@ -53,12 +53,14 @@ class SyncPreferences(
             tracking = preferenceStore.getBoolean("tracking", true).get(),
             history = preferenceStore.getBoolean("history", true).get(),
             appSettings = preferenceStore.getBoolean("appSettings", true).get(),
+            extensionRepoSettings = preferenceStore.getBoolean("extensionRepoSettings", true).get(),
             sourceSettings = preferenceStore.getBoolean("sourceSettings", true).get(),
             privateSettings = preferenceStore.getBoolean("privateSettings", true).get(),
 
             // SY -->
             customInfo = preferenceStore.getBoolean("customInfo", true).get(),
             readEntries = preferenceStore.getBoolean("readEntries", true).get(),
+            savedSearchesFeeds = preferenceStore.getBoolean("savedSearchesFeeds", true).get(),
             // SY <--
         )
     }
@@ -70,12 +72,14 @@ class SyncPreferences(
         preferenceStore.getBoolean("tracking", true).set(syncSettings.tracking)
         preferenceStore.getBoolean("history", true).set(syncSettings.history)
         preferenceStore.getBoolean("appSettings", true).set(syncSettings.appSettings)
+        preferenceStore.getBoolean("extensionRepoSettings", true).set(syncSettings.extensionRepoSettings)
         preferenceStore.getBoolean("sourceSettings", true).set(syncSettings.sourceSettings)
         preferenceStore.getBoolean("privateSettings", true).set(syncSettings.privateSettings)
 
         // SY -->
         preferenceStore.getBoolean("customInfo", true).set(syncSettings.customInfo)
         preferenceStore.getBoolean("readEntries", true).set(syncSettings.readEntries)
+        preferenceStore.getBoolean("savedSearchesFeeds", true).set(syncSettings.savedSearchesFeeds)
         // SY <--
     }
 
