@@ -48,7 +48,7 @@ fun ExtensionRepoCreateDialog(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween, // Distribute space between items
-                verticalAlignment = Alignment.CenterVertically // Align items vertically
+                verticalAlignment = Alignment.CenterVertically, // Align items vertically
             ) {
                 TextButton(
                     onClick = {
@@ -59,7 +59,7 @@ fun ExtensionRepoCreateDialog(
                 }
                 Row(
                     // Group the right-aligned elements
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = onDismissRequest) {
                         Text(text = stringResource(MR.strings.action_cancel))
