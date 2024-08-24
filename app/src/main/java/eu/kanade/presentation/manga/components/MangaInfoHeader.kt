@@ -79,6 +79,8 @@ import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -208,13 +210,21 @@ fun MangaActionRow(
     // SY -->
     onMergeClicked: (() -> Unit)?,
     // SY <--
+    // KMK -->
+    status: Long,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
+    // KMK -->
+    val libraryPreferences: LibraryPreferences = Injekt.get()
+    val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
+    val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
+    // KMK <--
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
     val nextUpdateDays = remember(nextUpdate) {
-        return@remember if (nextUpdate != null) {
+        return@remember if (nextUpdate != null && isSkipCompleted) {
             val now = Instant.now()
             now.until(nextUpdate, ChronoUnit.DAYS).toInt().coerceAtLeast(0)
         } else {

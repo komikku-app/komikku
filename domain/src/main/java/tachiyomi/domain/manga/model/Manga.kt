@@ -1,6 +1,5 @@
 package tachiyomi.domain.manga.model
 
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
@@ -67,8 +66,11 @@ data class Manga(
 
     val expectedNextUpdate: Instant?
         get() = nextUpdate
-            .takeIf { status != SManga.COMPLETED.toLong() }
-            ?.let { Instant.ofEpochMilli(it) }
+            /* KMK -->
+            Always predict release date even for Completed entries
+            .takeIf { status != SManga.COMPLETED.toLong() }?
+             KMK <-- */
+            .let { Instant.ofEpochMilli(it) }
 
     val sorting: Long
         get() = chapterFlags and CHAPTER_SORTING_MASK
