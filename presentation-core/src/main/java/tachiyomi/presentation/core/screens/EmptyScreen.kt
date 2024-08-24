@@ -40,13 +40,17 @@ fun EmptyScreen(
     stringRes: StringResource,
     modifier: Modifier = Modifier,
     actions: ImmutableList<EmptyScreenAction>? = null,
+    // KMK -->
     help: @Composable (() -> Unit)? = null,
+    // KMK <--
 ) {
     EmptyScreen(
         message = stringResource(stringRes),
         modifier = modifier,
         actions = actions,
+        // KMK -->
         help = help,
+        // KMK <--
     )
 }
 
@@ -55,7 +59,9 @@ fun EmptyScreen(
     message: String,
     modifier: Modifier = Modifier,
     actions: ImmutableList<EmptyScreenAction>? = null,
+    // KMK -->
     help: @Composable (() -> Unit)? = null,
+    // KMK <--
 ) {
     val face = remember { getRandomErrorFace() }
     Column(
@@ -83,7 +89,9 @@ fun EmptyScreen(
             textAlign = TextAlign.Center,
         )
 
+        // KMK -->
         help?.let { help() }
+        // KMK <--
 
         if (!actions.isNullOrEmpty()) {
             Row(

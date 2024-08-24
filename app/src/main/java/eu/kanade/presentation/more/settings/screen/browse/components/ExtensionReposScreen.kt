@@ -76,6 +76,7 @@ fun ExtensionReposScreen(
             EmptyScreen(
                 MR.strings.information_empty_repos,
                 modifier = Modifier.padding(paddingValues),
+                // KMK -->
                 help = {
                     TextButton(
                         onClick = { context.openInBrowser(OFFICIAL_REPO_WEBSITE) },
@@ -86,6 +87,7 @@ fun ExtensionReposScreen(
                         Text(text = stringResource(MR.strings.label_help))
                     }
                 },
+                // KMK <--
             )
             return@Scaffold
         }
@@ -112,10 +114,11 @@ fun ExtensionReposScreen(
 private fun ExtensionReposScreenPreview() {
     val state = RepoScreenState.Success(
         repos = persistentSetOf(
-            ExtensionRepo("url1", "Repo 1", "", "", "key1"),
-            ExtensionRepo("url2", "Repo 2", "", "", "key2"),
+            ExtensionRepo("https://raw.githubusercontent.com/komikku-app/extensions/repo", "Komikku", "", "", "key1"),
+            ExtensionRepo("https://raw.githubusercontent.com/keiyoushi/extensions/repo", "Keiyoushi", "", "", "key2"),
+            ExtensionRepo("https://repo", "Other", "", "", "key2"),
         ),
-        disabledRepos = setOf("url2"),
+        disabledRepos = setOf("https://repo"),
     )
     ExtensionReposScreen(
         state = state,
