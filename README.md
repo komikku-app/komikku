@@ -23,11 +23,11 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 - [x] `Feed` now supports all sources, with more items (20 for now).
 - [x] `Bulk-selection` to add to library & change categories of multiple entries all at once, everywhere.
 - [x] Long-click to add/remove single entry to/from library, everywhere.
-- [x] Search for sources & Quick NSFW sources filter in both Extensions/Browse screen.
-- [x] `Feed` backup/restore.
-- [x] Banner shows Lybrary syncing / Backup restoring / Library updating progress.
+- [x] Search for sources & Quick NSFW sources filter in Extensions, Browse & Migration screen.
+- [x] `Feed` backup/restore/sync/re-order.
+- [x] Banner shows Library syncing / Backup restoring / Library updating progress.
 - [x] Configurable interval to refresh entries from downloaded storage.
-- [x] More app themes & better UI, improvements...
+- [x] App custom theme, more app themes & better UI, improvements...
 
 
 <details>
