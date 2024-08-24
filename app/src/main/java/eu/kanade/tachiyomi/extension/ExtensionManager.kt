@@ -214,25 +214,32 @@ class ExtensionManager(
      * @param availableExtensions The list of extensions given by the [api].
      */
     private fun updatedInstalledExtensionsStatuses(availableExtensions: List<Extension.Available>) {
-        if (availableExtensions.isEmpty()) {
-            preferences.extensionUpdatesCount().set(0)
-            return
-        }
-
+        // KMK -->
+        val noExtAvailable = availableExtensions.isEmpty()
+        // KMK <--
         val installedExtensionsMap = installedExtensionMapFlow.value.toMutableMap()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
             val availableExt = availableExtensions.find { it.pkgName == pkgName }
 
-            if (availableExt == null && !extension.isObsolete) {
-                installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
-                changed = true
+            // KMK -->
+            if (availableExt == null/* KMK --> && !extension.isObsolete // KMK <-- */) {
+                // Clear hasUpdate & set isObsolete
+                val isObsolete = !noExtAvailable && !extension.isObsolete
+                // KMK: installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
+                installedExtensionsMap[pkgName] = extension.copy(
+                    isObsolete = isObsolete,
+                    hasUpdate = false,
+                )
+                // KMK: changed = true
+                changed = changed || isObsolete || noExtAvailable && (extension.isObsolete || extension.hasUpdate)
+                // KMK <--
                 // SY -->
             } else if (extension.isBlacklisted() && !extension.isRedundant) {
                 installedExtensionsMap[pkgName] = extension.copy(isRedundant = true)
                 changed = true
                 // SY <--
-            } else if (availableExt != null) {
+            } else /* KMK --> if (availableExt != null) // KMK <-- */ {
                 val hasUpdate = extension.updateExists(availableExt)
                 if (extension.hasUpdate != hasUpdate) {
                     installedExtensionsMap[pkgName] = extension.copy(

@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class ExtensionReposScreen(
@@ -47,6 +48,16 @@ class ExtensionReposScreen(
             onClickCreate = { screenModel.showDialog(RepoDialog.Create) },
             onOpenWebsite = { context.openInBrowser(it.website) },
             onClickDelete = { screenModel.showDialog(RepoDialog.Delete(it)) },
+            // KMK -->
+            onClickEnable = {
+                screenModel.enableRepo(it)
+                context.toast(KMR.strings.extensions_page_need_refresh)
+            },
+            onClickDisable = {
+                screenModel.disableRepo(it)
+                context.toast(KMR.strings.extensions_page_need_refresh)
+            },
+            // KMK <--
             onClickRefresh = { screenModel.refreshRepos() },
             navigateUp = navigator::pop,
         )
