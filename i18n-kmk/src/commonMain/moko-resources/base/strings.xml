@@ -53,6 +53,7 @@
       <!-- Extension section -->
     <string name="ext_unofficial">Unofficial</string>
     <string name="unofficial_extension_message">This extension is not from the official repo.</string>
+    <string name="extensions_page_more">More extensions...</string>
 
     <!-- Extension repos -->
       <!-- Downloads section -->
