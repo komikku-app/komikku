@@ -15,7 +15,7 @@ class CreateExtensionRepo(
 
     suspend fun await(repoUrl: String): Result {
         // Do not allow invalid formats & avoid adding duplicating official repo
-        if (!repoUrl.matches(repoRegex) || repoUrl.startsWith(OFFICIAL_REPO_BASE_URL)) {
+        if (!repoUrl.matches(repoRegex)) {
             return Result.InvalidUrl
         }
 
@@ -70,6 +70,7 @@ class CreateExtensionRepo(
     }
 
     companion object {
+        const val OFFICIAL_REPO_WEBSITE = "https://komikku-app.github.io"
         const val OFFICIAL_REPO_BASE_URL = "https://raw.githubusercontent.com/komikku-app/extensions/repo"
 
         // cuong-tran's key

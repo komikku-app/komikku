@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.seconds
@@ -130,6 +131,11 @@ class ExtensionsScreenModel(
                 if (languagesWithExtensions.isNotEmpty()) {
                     itemsGroups.putAll(languagesWithExtensions)
                 }
+                // KMK -->
+                if (_available.isEmpty()) {
+                    itemsGroups[ExtensionUiModel.Header.Resource(KMR.strings.extensions_page_more)] = emptyList()
+                }
+                // KMK <--
 
                 itemsGroups
             }
