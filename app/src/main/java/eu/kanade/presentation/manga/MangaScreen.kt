@@ -589,6 +589,9 @@ private fun MangaScreenSmallImpl(
                             // SY -->
                             onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                             // SY <--
+                            // KMK -->
+                            status = state.manga.status,
+                            // KMK <--
                         )
                     }
 
@@ -985,6 +988,9 @@ private fun MangaScreenLargeImpl(
                             // SY -->
                             onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                             // SY <--
+                            // KMK -->
+                            status = state.manga.status,
+                            // KMK <--
                         )
                         // SY -->
                         metadataDescription?.invoke(
