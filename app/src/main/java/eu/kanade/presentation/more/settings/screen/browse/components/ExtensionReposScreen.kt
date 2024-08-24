@@ -112,10 +112,11 @@ fun ExtensionReposScreen(
 private fun ExtensionReposScreenPreview() {
     val state = RepoScreenState.Success(
         repos = persistentSetOf(
-            ExtensionRepo("url1", "Repo 1", "", "", "key1"),
-            ExtensionRepo("url2", "Repo 2", "", "", "key2"),
+            ExtensionRepo("https://raw.githubusercontent.com/komikku-app/extensions/repo", "Komikku", "", "", "key1"),
+            ExtensionRepo("https://raw.githubusercontent.com/keiyoushi/extensions/repo", "Keiyoushi", "", "", "key2"),
+            ExtensionRepo("https://repo", "Other", "", "", "key2"),
         ),
-        disabledRepos = setOf("url2"),
+        disabledRepos = setOf("https://repo"),
     )
     ExtensionReposScreen(
         state = state,
