@@ -229,8 +229,11 @@ class ExtensionManager(
                 // KMK: installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
                 installedExtensionsMap[pkgName] = extension.copy(
                     isObsolete = isObsolete,
+                    // KMK -->
                     hasUpdate = false,
+                    // KMK <--
                 )
+                // KMK -->
                 // KMK: changed = true
                 changed = changed || isObsolete || noExtAvailable && (extension.isObsolete || extension.hasUpdate)
                 // KMK <--
@@ -240,15 +243,22 @@ class ExtensionManager(
                 changed = true
                 // SY <--
             } else /* KMK --> if (availableExt != null) // KMK <-- */ {
+                // Update installed extensions with new information from repo
                 val hasUpdate = extension.updateExists(availableExt)
                 if (extension.hasUpdate != hasUpdate) {
                     installedExtensionsMap[pkgName] = extension.copy(
                         hasUpdate = hasUpdate,
                         repoUrl = availableExt.repoUrl,
+                        // KMK -->
+                        repoName = extension.repoName ?: availableExt.repoName,
+                        // KMK <--
                     )
                 } else {
                     installedExtensionsMap[pkgName] = extension.copy(
                         repoUrl = availableExt.repoUrl,
+                        // KMK -->
+                        repoName = extension.repoName ?: availableExt.repoName,
+                        // KMK <--
                     )
                 }
                 changed = true

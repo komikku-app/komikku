@@ -411,6 +411,10 @@ private fun ExtensionItemContent(
                         )
                     }
 
+                    // KMK -->
+                    Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
+                    // KMK <--
+
                     val warning = when {
                         extension is Extension.Untrusted -> MR.strings.ext_untrusted
                         extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial

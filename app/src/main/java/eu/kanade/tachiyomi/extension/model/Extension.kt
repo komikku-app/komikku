@@ -16,6 +16,10 @@ sealed class Extension {
     abstract val hasReadme: Boolean
     abstract val hasChangelog: Boolean
 
+    // KMK -->
+    abstract val repoName: String?
+    // KMK <--
+
     data class Installed(
         override val name: String,
         override val pkgName: String,
@@ -26,6 +30,10 @@ sealed class Extension {
         override val isNsfw: Boolean,
         override val hasReadme: Boolean,
         override val hasChangelog: Boolean,
+        // KMK -->
+        /** Guessing repo name from built-in signatures preset */
+        override val repoName: String? = null,
+        // KMK <--
         val pkgFactory: String?,
         val sources: List<Source>,
         val icon: Drawable?,
@@ -49,6 +57,9 @@ sealed class Extension {
         override val isNsfw: Boolean,
         override val hasReadme: Boolean,
         override val hasChangelog: Boolean,
+        // KMK -->
+        override val repoName: String,
+        // KMK <--
         val sources: List<Source>,
         val apkName: String,
         val iconUrl: String,
@@ -78,6 +89,9 @@ sealed class Extension {
         override val versionCode: Long,
         override val libVersion: Double,
         val signatureHash: String,
+        // KMK -->
+        override val repoName: String? = null,
+        // KMK <--
         override val lang: String? = null,
         override val isNsfw: Boolean = false,
         override val hasReadme: Boolean = false,
