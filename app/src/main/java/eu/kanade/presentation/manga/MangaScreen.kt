@@ -586,10 +586,12 @@ private fun MangaScreenSmallImpl(
                             onTrackingClicked = onTrackingClicked,
                             onEditIntervalClicked = onEditIntervalClicked,
                             onEditCategory = onEditCategoryClicked,
-                            status = state.manga.status,
                             // SY -->
                             onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                             // SY <--
+                            // KMK -->
+                            status = state.manga.status,
+                            // KMK <--
                         )
                     }
 
@@ -983,10 +985,12 @@ private fun MangaScreenLargeImpl(
                             onTrackingClicked = onTrackingClicked,
                             onEditIntervalClicked = onEditIntervalClicked,
                             onEditCategory = onEditCategoryClicked,
-                            status = state.manga.status,
                             // SY -->
                             onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                             // SY <--
+                            // KMK -->
+                            status = state.manga.status,
+                            // KMK <--
                         )
                         // SY -->
                         metadataDescription?.invoke(
