@@ -369,6 +369,7 @@ internal object ExtensionLoader {
             icon = appInfo.loadIcon(pkgManager),
             isShared = extensionInfo.isShared,
             // KMK -->
+            signatureHash = signatures.last(),
             repoName = when {
                 isOfficiallySigned(signatures) -> "Komikku"
                 isKeiyoushiSigned(signatures) -> "Keiyoushi"

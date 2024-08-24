@@ -74,6 +74,7 @@ internal class ExtensionApi {
                     .toExtensions(
                         repoBaseUrl,
                         // KMK -->
+                        signature = extRepo.signingKeyFingerprint,
                         repoName = extRepo.name,
                         // KMK <--
                     )
@@ -137,6 +138,7 @@ internal class ExtensionApi {
     private fun List<ExtensionJsonObject>.toExtensions(
         repoUrl: String,
         // KMK -->
+        signature: String,
         repoName: String,
         // KMK <--
     ): List<Extension.Available> {
@@ -161,6 +163,7 @@ internal class ExtensionApi {
                     iconUrl = "$repoUrl/icon/${it.pkg}.png",
                     repoUrl = repoUrl,
                     // KMK -->
+                    signatureHash = signature,
                     repoName = repoName,
                     // KMK <--
                 )

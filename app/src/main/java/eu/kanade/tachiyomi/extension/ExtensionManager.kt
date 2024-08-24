@@ -220,13 +220,16 @@ class ExtensionManager(
         val installedExtensionsMap = installedExtensionMapFlow.value.toMutableMap()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
-            val availableExt = availableExtensions.find { it.pkgName == pkgName }
+            val availableExt = availableExtensions.find {
+                // KMK -->
+                it.signatureHash == extension.signatureHash &&
+                    // KMK <--
+                    it.pkgName == pkgName
+            }
 
-            // KMK -->
             if (availableExt == null/* KMK --> && !extension.isObsolete // KMK <-- */) {
                 // Clear hasUpdate & set isObsolete
                 val isObsolete = !noExtAvailable && !extension.isObsolete
-                // KMK: installedExtensionsMap[pkgName] = extension.copy(isObsolete = true)
                 installedExtensionsMap[pkgName] = extension.copy(
                     isObsolete = isObsolete,
                     // KMK -->

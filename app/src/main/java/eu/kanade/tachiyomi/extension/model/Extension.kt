@@ -17,6 +17,7 @@ sealed class Extension {
     abstract val hasChangelog: Boolean
 
     // KMK -->
+    abstract val signatureHash: String
     abstract val repoName: String?
     // KMK <--
 
@@ -31,6 +32,7 @@ sealed class Extension {
         override val hasReadme: Boolean,
         override val hasChangelog: Boolean,
         // KMK -->
+        override val signatureHash: String,
         /** Guessing repo name from built-in signatures preset */
         override val repoName: String? = null,
         // KMK <--
@@ -58,6 +60,7 @@ sealed class Extension {
         override val hasReadme: Boolean,
         override val hasChangelog: Boolean,
         // KMK -->
+        override val signatureHash: String,
         override val repoName: String,
         // KMK <--
         val sources: List<Source>,
@@ -88,7 +91,8 @@ sealed class Extension {
         override val versionName: String,
         override val versionCode: Long,
         override val libVersion: Double,
-        val signatureHash: String,
+        /* KMK --> */
+        override /* KMK <-- */ val signatureHash: String,
         // KMK -->
         override val repoName: String? = null,
         // KMK <--
