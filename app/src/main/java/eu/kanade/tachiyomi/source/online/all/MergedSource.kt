@@ -138,7 +138,7 @@ class MergedSource : HttpSource() {
                                         // KMK -->
                                         // KMK: this should check if user preferences & manga's categories allowed to download
                                         // KMK: the checking for skip duplicated-read chapters might not work for merged mangas but won't affect the download
-                                        val results = filterChaptersForDownload.await(loadedManga, chapters)
+                                        val results = filterChaptersForDownload.await(manga, chapters)
                                         if (downloadChapters &&
                                             // KMK <--
                                             reference.downloadChapters
