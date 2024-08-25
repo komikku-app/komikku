@@ -378,74 +378,73 @@ private fun ExtensionItemContent(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        // KMK -->
-        Row(
+        // Won't look good but it's not like we can ellipsize overflowing content
+        FlowRow(
+            modifier = Modifier.secondaryItemAlpha(),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            val iconResId = getLanguageIconID(extension.lang ?: "") ?: R.drawable.globe
-            Icon(
-                painter = painterResource(id = iconResId),
-                tint = Color.Unspecified,
-                contentDescription = extension.lang ?: "",
-                modifier = Modifier
-                    .width(18.dp)
-                    .height(12.dp),
-            )
-            // KMK <--
-
-            // Won't look good but it's not like we can ellipsize overflowing content
-            FlowRow(
-                modifier = Modifier.secondaryItemAlpha(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-            ) {
-                ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
-                    if (extension.lang?.isNotEmpty() == true) {
+            ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
+                if (extension.lang?.isNotEmpty() == true) {
+                    // KMK -->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val iconResId = getLanguageIconID(extension.lang ?: "") ?: R.drawable.globe
+                        Icon(
+                            painter = painterResource(id = iconResId),
+                            tint = Color.Unspecified,
+                            contentDescription = extension.lang ?: "",
+                            modifier = Modifier
+                                .width(18.dp)
+                                .height(12.dp),
+                        )
+                        // KMK <--
                         Text(
                             text = LocaleHelper.getSourceDisplayName(extension.lang, LocalContext.current),
                         )
                     }
+                }
 
-                    if (extension.versionName.isNotEmpty()) {
-                        Text(
-                            text = extension.versionName,
-                        )
-                    }
+                if (extension.versionName.isNotEmpty()) {
+                    Text(
+                        text = extension.versionName,
+                    )
+                }
 
-                    // KMK -->
-                    Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
-                    // KMK <--
+                // KMK -->
+                Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
+                // KMK <--
 
-                    val warning = when {
-                        extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                        extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial
-                        extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
-                        // SY -->
-                        extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant
-                        // SY <--
-                        extension.isNsfw -> MR.strings.ext_nsfw_short
-                        else -> null
-                    }
-                    if (warning != null) {
-                        Text(
-                            text = stringResource(warning).uppercase(),
-                            color = MaterialTheme.colorScheme.error,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+                val warning = when {
+                    extension is Extension.Untrusted -> MR.strings.ext_untrusted
+                    extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial
+                    extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
+                    // SY -->
+                    extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant
+                    // SY <--
+                    extension.isNsfw -> MR.strings.ext_nsfw_short
+                    else -> null
+                }
+                if (warning != null) {
+                    Text(
+                        text = stringResource(warning).uppercase(),
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
 
-                    if (!installStep.isCompleted()) {
-                        DotSeparatorNoSpaceText()
-                        Text(
-                            text = when (installStep) {
-                                InstallStep.Pending -> stringResource(MR.strings.ext_pending)
-                                InstallStep.Downloading -> stringResource(MR.strings.ext_downloading)
-                                InstallStep.Installing -> stringResource(MR.strings.ext_installing)
-                                else -> error("Must not show non-install process text")
-                            },
-                        )
-                    }
+                if (!installStep.isCompleted()) {
+                    DotSeparatorNoSpaceText()
+                    Text(
+                        text = when (installStep) {
+                            InstallStep.Pending -> stringResource(MR.strings.ext_pending)
+                            InstallStep.Downloading -> stringResource(MR.strings.ext_downloading)
+                            InstallStep.Installing -> stringResource(MR.strings.ext_installing)
+                            else -> error("Must not show non-install process text")
+                        },
+                    )
                 }
             }
         }

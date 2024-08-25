@@ -49,8 +49,8 @@ internal object ExtensionLoader {
 
     // KMK -->
     private val getExtensionRepo: GetExtensionRepo by injectLazy()
-
     // KMK <--
+
     private val loadNsfwSource by lazy {
         preferences.showNsfwSource().get()
     }

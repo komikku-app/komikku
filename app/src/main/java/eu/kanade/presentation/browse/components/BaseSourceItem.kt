@@ -84,28 +84,29 @@ private val defaultContent: @Composable RowScope.(
             style = MaterialTheme.typography.bodyMedium,
         )
         // KMK -->
-        Row(
+        // Won't look good but it's not like we can ellipsize overflowing content
+        FlowRow(
+            modifier = Modifier.secondaryItemAlpha(),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            val iconResId = getLanguageIconID(lang) ?: R.drawable.globe
-            Icon(
-                painter = painterResource(id = iconResId),
-                tint = Color.Unspecified,
-                contentDescription = lang,
-                modifier = Modifier
-                    .width(18.dp)
-                    .height(12.dp),
-            )
-
-            // Won't look good but it's not like we can ellipsize overflowing content
-            FlowRow(
-                modifier = Modifier.secondaryItemAlpha(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-            ) {
-                ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
-                    // KMK <--
-                    if (sourceLangString != null) {
+            ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
+                // KMK <--
+                if (sourceLangString != null) {
+                    // KMK -->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val iconResId = getLanguageIconID(lang) ?: R.drawable.globe
+                        Icon(
+                            painter = painterResource(id = iconResId),
+                            tint = Color.Unspecified,
+                            contentDescription = lang,
+                            modifier = Modifier
+                                .width(18.dp)
+                                .height(12.dp),
+                        )
+                        // KMK <--
                         Text(
                             modifier = Modifier.secondaryItemAlpha(),
                             text = sourceLangString,
@@ -114,16 +115,16 @@ private val defaultContent: @Composable RowScope.(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                }
 
-                    // KMK -->
-                    if (source.installedExtension?.isNsfw == true) {
-                        Text(
-                            text = stringResource(MR.strings.ext_nsfw_short).uppercase(),
-                            color = MaterialTheme.colorScheme.error,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+                // KMK -->
+                if (source.installedExtension?.isNsfw == true) {
+                    Text(
+                        text = stringResource(MR.strings.ext_nsfw_short).uppercase(),
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
         }
