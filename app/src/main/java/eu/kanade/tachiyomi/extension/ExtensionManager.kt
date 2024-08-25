@@ -173,7 +173,7 @@ class ExtensionManager(
 
         enableAdditionalSubLanguages(extensions)
 
-        availableExtensionMapFlow.value = extensions.associateBy { it.pkgName }
+        availableExtensionMapFlow.value = extensions.associateBy { "${it.pkgName}:${it.signatureHash}" }
         updatedInstalledExtensionsStatuses(extensions)
         setupAvailableExtensionsSourcesDataMap(extensions)
     }
