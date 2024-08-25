@@ -75,7 +75,7 @@ internal class ExtensionApi {
                         repoBaseUrl,
                         // KMK -->
                         signature = extRepo.signingKeyFingerprint,
-                        repoName = extRepo.name,
+                        repoName = extRepo.shortName ?: extRepo.name,
                         // KMK <--
                     )
             }
