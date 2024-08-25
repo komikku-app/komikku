@@ -1,6 +1,6 @@
 [versions]
 # 2024.04.00-alpha01 & above has several bugs with the new animateItem() modifier
-compose-bom = "2024.08.00-alpha01"
+compose-bom = "2024.08.00-alpha02"
 accompanist = "0.35.1-alpha"
 
 [libraries]
