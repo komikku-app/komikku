@@ -418,7 +418,6 @@ private fun ExtensionItemContent(
 
                 val warning = when {
                     extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                    extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
                     // SY -->
                     extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant
@@ -635,7 +634,6 @@ private fun ExtensionItemContentPreview() {
         icon = null,
         hasUpdate = false,
         isObsolete = false,
-        isUnofficial = false,
         isShared = false,
         isRedundant = false,
     )
@@ -661,12 +659,6 @@ private fun ExtensionItemContentPreview() {
         )
         ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
         ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
-        ExtensionItemContent(
-            extension = extInstalled.copy(
-                isUnofficial = true,
-            ),
-            installStep = InstallStep.Idle,
-        )
         ExtensionItemContent(
             extension = extInstalled.copy(
                 isObsolete = true,

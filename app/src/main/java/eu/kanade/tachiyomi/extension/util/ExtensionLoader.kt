@@ -365,7 +365,6 @@ internal object ExtensionLoader {
             hasChangelog = hasChangelog,
             sources = sources,
             pkgFactory = appInfo.metaData.getString(METADATA_SOURCE_FACTORY),
-            isUnofficial = !isOfficiallySigned(signatures),
             icon = appInfo.loadIcon(pkgManager),
             isShared = extensionInfo.isShared,
             // KMK -->
@@ -435,9 +434,6 @@ internal object ExtensionLoader {
             ?.toList()
     }
 
-    /**
-     * Showing UNOFFICIAL text on extension
-     */
     private fun isOfficiallySigned(signatures: List<String>): Boolean {
         return signatures.all { it == OFFICIAL_REPO_SIGNATURE }
     }

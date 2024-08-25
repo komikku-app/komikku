@@ -100,22 +100,22 @@ fun ExtensionDetailsScreen(
                     AppBarActions(
                         actions = persistentListOf<AppBar.AppBarAction>().builder()
                             .apply {
-                                if (state.extension?.isUnofficial == false) {
-                                    add(
-                                        AppBar.Action(
-                                            title = stringResource(MR.strings.whats_new),
-                                            icon = Icons.Outlined.History,
-                                            onClick = onClickWhatsNew,
-                                        ),
-                                    )
-                                    add(
-                                        AppBar.Action(
-                                            title = stringResource(KMR.strings.action_faq_and_guides),
-                                            icon = Icons.AutoMirrored.Outlined.HelpOutline,
-                                            onClick = onClickReadme,
-                                        ),
-                                    )
-                                }
+                                // KMK -->
+                                add(
+                                    AppBar.Action(
+                                        title = stringResource(MR.strings.whats_new),
+                                        icon = Icons.Outlined.History,
+                                        onClick = onClickWhatsNew,
+                                    ),
+                                )
+                                add(
+                                    AppBar.Action(
+                                        title = stringResource(KMR.strings.action_faq_and_guides),
+                                        icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                                        onClick = onClickReadme,
+                                    ),
+                                )
+                                // KMK <--
                                 if (url != null) {
                                     add(
                                         AppBar.OverflowAction(
@@ -191,11 +191,6 @@ private fun ExtensionDetails(
             }
         }
         // SY <--
-        if (extension.isUnofficial) {
-            item {
-                WarningBanner(KMR.strings.unofficial_extension_message)
-            }
-        }
         if (extension.isObsolete) {
             item {
                 WarningBanner(MR.strings.obsolete_extension_message)
