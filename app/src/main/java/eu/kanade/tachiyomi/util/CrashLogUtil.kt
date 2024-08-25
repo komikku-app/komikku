@@ -63,7 +63,7 @@ class CrashLogUtil(
                 """
                     - ${it.name}
                       Installed: ${it.versionName} / Available: ${availableExtension?.versionName ?: "?"}
-                      Obsolete: ${it.isObsolete} / Unofficial: ${it.isUnofficial}
+                      Obsolete: ${it.isObsolete}
                 """.trimIndent()
             }
 
