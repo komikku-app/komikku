@@ -146,7 +146,7 @@ class GetExtensionLanguages(
                 "vi" -> R.drawable.vn // Vietnamese -> Vietnam, VN
                 "yo" -> R.drawable.ng // Yoruba -> Nigeria, NG
                 "zh-Hans" -> R.drawable.cn // Chinese, simplified -> China, CN
-                "zh-Hant" -> R.drawable.cn // Chinese, traditional -> China, CN
+                "zh-Hant" -> R.drawable.tw // Chinese, traditional -> Taiwan, TW
                 "zh" -> R.drawable.cn // Chinese -> China, CN
                 "zu" -> R.drawable.za // Zulu -> South Africa, ZA
                 else -> null
