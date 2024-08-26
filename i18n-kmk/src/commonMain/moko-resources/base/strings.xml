@@ -51,8 +51,6 @@
     <string name="action_display_language_icon">Use language icon</string>
 
       <!-- Extension section -->
-    <string name="ext_unofficial">Unofficial</string>
-    <string name="unofficial_extension_message">This extension is not from the official repo.</string>
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
 

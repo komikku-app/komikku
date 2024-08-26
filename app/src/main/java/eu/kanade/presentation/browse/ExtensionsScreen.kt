@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -411,9 +412,12 @@ private fun ExtensionItemContent(
                     )
                 }
 
+                // KMK -->
+                Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
+                // KMK <--
+
                 val warning = when {
                     extension is Extension.Untrusted -> MR.strings.ext_untrusted
-                    extension is Extension.Installed && extension.isUnofficial -> KMR.strings.ext_unofficial
                     extension is Extension.Installed && extension.isObsolete -> MR.strings.ext_obsolete
                     // SY -->
                     extension is Extension.Installed && extension.isRedundant -> SYMR.strings.ext_redundant
@@ -590,3 +594,84 @@ private fun ExtensionTrustDialog(
         onDismissRequest = onDismissRequest,
     )
 }
+
+// KMK -->
+@Preview
+@Composable
+private fun ExtensionItemContentPreview() {
+    val extAvail = Extension.Available(
+        name = "Tachiyomi",
+        pkgName = "com.tachiyomi.test",
+        versionName = "1.2.3",
+        lang = "en",
+        versionCode = 1,
+        libVersion = 1.0,
+        isNsfw = true,
+        hasReadme = true,
+        hasChangelog = true,
+        signatureHash = "900000",
+        repoName = "Repository",
+        sources = emptyList(),
+        apkName = "Test",
+        iconUrl = "",
+        repoUrl = "",
+    )
+    val extInstalled = Extension.Installed(
+        name = "Tachiyomi",
+        pkgName = "com.tachiyomi.test",
+        versionName = "1.2.3",
+        lang = "en",
+        versionCode = 1,
+        libVersion = 1.0,
+        isNsfw = true,
+        hasReadme = true,
+        hasChangelog = true,
+        signatureHash = "900000",
+        repoName = "Repository",
+        sources = emptyList(),
+        repoUrl = "",
+        pkgFactory = null,
+        icon = null,
+        hasUpdate = false,
+        isObsolete = false,
+        isShared = false,
+        isRedundant = false,
+    )
+    val extUntrusted = Extension.Untrusted(
+        name = "Tachiyomi",
+        pkgName = "com.tachiyomi.test",
+        versionName = "1.2.3",
+        lang = "en",
+        versionCode = 1,
+        libVersion = 1.0,
+        isNsfw = true,
+        hasReadme = true,
+        hasChangelog = true,
+        signatureHash = "900000",
+        repoName = "Repository",
+    )
+    Column {
+        ExtensionItemContent(
+            extension = extAvail.copy(
+                repoName = "Repository extensions minion multiple languages various sources",
+            ),
+            installStep = InstallStep.Idle,
+        )
+        ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
+        ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
+        ExtensionItemContent(
+            extension = extInstalled.copy(
+                isObsolete = true,
+            ),
+            installStep = InstallStep.Idle,
+        )
+        ExtensionItemContent(
+            extension = extInstalled.copy(
+                isRedundant = true,
+            ),
+            installStep = InstallStep.Idle,
+        )
+        ExtensionItemContent(extension = extUntrusted, installStep = InstallStep.Idle)
+    }
+}
+// KMK <--

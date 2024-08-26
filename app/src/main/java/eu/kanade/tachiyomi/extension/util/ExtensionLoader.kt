@@ -20,7 +20,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_REPO_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_SIGNATURE
+import mihon.domain.extensionrepo.interactor.GetExtensionRepo
+import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -43,6 +46,11 @@ internal object ExtensionLoader {
 
     private val preferences: SourcePreferences by injectLazy()
     private val trustExtension: TrustExtension by injectLazy()
+
+    // KMK -->
+    private val getExtensionRepo: GetExtensionRepo by injectLazy()
+    // KMK <--
+
     private val loadNsfwSource by lazy {
         preferences.showNsfwSource().get()
     }
@@ -164,8 +172,19 @@ internal object ExtensionLoader {
 
         // Load each extension concurrently and wait for completion
         return runBlocking {
+            // KMK -->
+            val extRepos = getExtensionRepo.getAll()
+            // KMK <--
             val deferred = extPkgs.map {
-                async { loadExtension(context, it) }
+                async {
+                    loadExtension(
+                        context,
+                        it,
+                        // KMK -->
+                        extRepos,
+                        // KMK <--
+                    )
+                }
             }
             deferred.awaitAll()
         }
@@ -226,7 +245,16 @@ internal object ExtensionLoader {
      * @param context The application context.
      * @param extensionInfo The extension to load.
      */
-    private suspend fun loadExtension(context: Context, extensionInfo: ExtensionInfo): LoadResult {
+    private suspend fun loadExtension(
+        context: Context,
+        extensionInfo: ExtensionInfo,
+        // KMK -->
+        extRepos: List<ExtensionRepo>? = null,
+        // KMK <--
+    ): LoadResult {
+        // KMK -->
+        val repos = extRepos ?: getExtensionRepo.getAll()
+        // KMK <--
         val pkgManager = context.packageManager
         val pkgInfo = extensionInfo.packageInfo
         val appInfo = pkgInfo.applicationInfo
@@ -263,6 +291,15 @@ internal object ExtensionLoader {
                 versionCode,
                 libVersion,
                 signatures.last(),
+                // KMK -->
+                repoName = when {
+                    isOfficiallySigned(signatures) -> "Komikku"
+                    isKeiyoushiSigned(signatures) -> "Keiyoushi"
+                    else -> repos.firstOrNull { repo ->
+                        signatures.all { it == repo.signingKeyFingerprint }
+                    }?.name
+                },
+                // KMK <--
             )
             logcat(LogPriority.WARN) { "Extension $pkgName isn't trusted" }
             return LoadResult.Untrusted(extension)
@@ -328,9 +365,18 @@ internal object ExtensionLoader {
             hasChangelog = hasChangelog,
             sources = sources,
             pkgFactory = appInfo.metaData.getString(METADATA_SOURCE_FACTORY),
-            isUnofficial = !isOfficiallySigned(signatures),
             icon = appInfo.loadIcon(pkgManager),
             isShared = extensionInfo.isShared,
+            // KMK -->
+            signatureHash = signatures.last(),
+            repoName = when {
+                isOfficiallySigned(signatures) -> "Komikku"
+                isKeiyoushiSigned(signatures) -> "Keiyoushi"
+                else -> repos.firstOrNull { repo ->
+                    signatures.all { it == repo.signingKeyFingerprint }
+                }?.name
+            },
+            // KMK <--
         )
         return LoadResult.Success(extension)
     }
@@ -388,11 +434,12 @@ internal object ExtensionLoader {
             ?.toList()
     }
 
-    /**
-     * Showing UNOFFICIAL text on extension
-     */
     private fun isOfficiallySigned(signatures: List<String>): Boolean {
         return signatures.all { it == OFFICIAL_REPO_SIGNATURE }
+    }
+
+    private fun isKeiyoushiSigned(signatures: List<String>): Boolean {
+        return signatures.all { it == KEIYOUSHI_REPO_SIGNATURE }
     }
 
     /**
