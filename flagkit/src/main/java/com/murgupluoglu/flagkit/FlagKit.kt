@@ -37,7 +37,6 @@ object FlagKit {
         return resourceId
     }
 
-    @Suppress("unused")
     fun getAllAvailableCodes(): List<String> {
         return listOf(
             "ad",

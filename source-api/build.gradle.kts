@@ -46,6 +46,10 @@ android {
     }
 }
 
+dependencies {
+    implementation(project(":presentation-core"))
+}
+
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions.freeCompilerArgs.addAll(

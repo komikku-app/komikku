@@ -24,6 +24,7 @@ import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import tachiyomi.presentation.core.icons.FlagEmoji
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
@@ -139,7 +140,9 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Visible name of the source.
      */
-    override fun toString() = "$name (${lang.uppercase()})"
+    override fun toString() = "$name (${
+        FlagEmoji.getEmojiLangFlag(lang)
+    })"
 
     /**
      * Get a page with a list of manga.

@@ -91,6 +91,7 @@ fun SourceIconBadge(
             Badge(
                 imageVector = Icons.Filled.Warning,
                 iconColor = MaterialTheme.colorScheme.error,
+                color = MaterialTheme.colorScheme.errorContainer,
             )
         }
         icon != null -> {
