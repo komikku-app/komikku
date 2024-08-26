@@ -48,7 +48,15 @@ class ExtensionsScreenModel(
         val context = Injekt.get<Application>()
         val extensionMapper: (Map<String, InstallStep>) -> ((Extension) -> ExtensionUiModel.Item) = { map ->
             {
-                ExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
+                ExtensionUiModel.Item(
+                    it,
+                    map[
+                        it.pkgName +
+                            // KMK -->
+                            ":${it.signatureHash}",
+                        // KMK <--
+                    ] ?: InstallStep.Idle,
+                )
             }
         }
         val queryFilter: (String) -> ((Extension) -> Boolean) = { query ->
@@ -193,11 +201,26 @@ class ExtensionsScreenModel(
     }
 
     private fun addDownloadState(extension: Extension, installStep: InstallStep) {
-        currentDownloads.update { it + Pair(extension.pkgName, installStep) }
+        currentDownloads.update {
+            it + Pair(
+                extension.pkgName +
+                    // KMK -->
+                    ":${extension.signatureHash}",
+                // KMK <--
+                installStep,
+            )
+        }
     }
 
     private fun removeDownloadState(extension: Extension) {
-        currentDownloads.update { it - extension.pkgName }
+        currentDownloads.update {
+            it - (
+                extension.pkgName +
+                    // KMK -->
+                    ":${extension.signatureHash}"
+                // KMK <--
+                )
+        }
     }
 
     private suspend fun Flow<InstallStep>.collectToInstallUpdate(extension: Extension) =

@@ -69,7 +69,10 @@ internal class ExtensionInstaller(private val context: Context) {
      * @param extension The extension to install.
      */
     fun downloadAndInstall(url: String, extension: Extension): Flow<InstallStep> {
-        val pkgName = extension.pkgName
+        val pkgName = extension.pkgName +
+            // KMK -->
+            ":${extension.signatureHash}"
+        // KMK <--
 
         val oldDownload = activeDownloads[pkgName]
         if (oldDownload != null) {
@@ -236,7 +239,7 @@ internal class ExtensionInstaller(private val context: Context) {
     /**
      * Deletes the download for the given package name.
      *
-     * @param pkgName The package name of the download to delete.
+     * @param pkgName The package name of the download to delete together with its signature.
      */
     private fun deleteDownload(pkgName: String) {
         val downloadId = activeDownloads.remove(pkgName)

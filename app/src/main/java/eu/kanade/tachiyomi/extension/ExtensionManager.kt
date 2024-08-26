@@ -291,7 +291,12 @@ class ExtensionManager(
     }
 
     fun cancelInstallUpdateExtension(extension: Extension) {
-        installer.cancelInstall(extension.pkgName)
+        installer.cancelInstall(
+            extension.pkgName +
+                // KMK -->
+                ":${extension.signatureHash}",
+            // KMK <--
+        )
     }
 
     /**
