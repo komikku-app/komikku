@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +52,7 @@ import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.ui.storage.StorageTab
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
@@ -291,6 +293,7 @@ object SettingsDataScreen : SearchableSettings {
     @Composable
     private fun getDataGroup(): Preference.PreferenceGroup {
         val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
 
@@ -318,6 +321,14 @@ object SettingsDataScreen : SearchableSettings {
                         },
                     )
                 },
+
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.label_storage),
+                    icon = Icons.Outlined.Storage,
+                    onClick = {
+                        navigator.push(StorageTab())
+                    },
+                ),
 
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_chapter_cache),

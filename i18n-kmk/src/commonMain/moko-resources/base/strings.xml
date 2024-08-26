@@ -122,4 +122,11 @@
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
+
+    <string name="label_all">All</string>
+    <string name="label_category">Category</string>
+    <string name="delete_confirmation">Are you sure you wish to delete \"%s\"?</string>
+    <string name="label_storage">Storage</string>
+
+
 </resources>

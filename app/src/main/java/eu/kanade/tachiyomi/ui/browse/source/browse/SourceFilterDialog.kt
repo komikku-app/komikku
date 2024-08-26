@@ -180,10 +180,11 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 label = filter.name,
                 options = filter.values,
                 selectedIndex = filter.state,
-            ) {
-                filter.state = it
-                onUpdate()
-            }
+                onSelect = {
+                    filter.state = it
+                    onUpdate()
+                },
+            )
         }
         is Filter.Sort -> {
             CollapsibleBox(
