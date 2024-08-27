@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,6 +67,7 @@ import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -220,8 +222,21 @@ object LibraryTab : Tab {
                         } else if (state.selection.isNotEmpty()) {
                             // Invoke multiple merge
                             scope.launchIO {
+                                val mergingMangas = state.selection.filterNot { it.manga.source == MERGED_SOURCE_ID }
                                 screenModel.smartSearchMerge(state.selection)
                                 screenModel.clearSelection()
+                                val result = snackbarHostState.showSnackbar(
+                                    message = context.stringResource(KMR.strings.action_remove_merged),
+                                    actionLabel = context.stringResource(MR.strings.action_remove),
+                                    withDismissAction = true,
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    screenModel.removeMangas(
+                                        mangaList = mergingMangas.map { it.manga },
+                                        deleteFromLibrary = true,
+                                        deleteChapters = false,
+                                    )
+                                }
                                 snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.entry_merged))
                             }
                         } else {
