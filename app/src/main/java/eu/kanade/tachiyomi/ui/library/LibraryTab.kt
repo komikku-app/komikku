@@ -208,6 +208,23 @@ object LibraryTab : Tab {
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
                     onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
                     // SY <--
+                    // KMK -->
+                    onClickMerge = {
+                        if (state.selection.size == 1) {
+                            // Invoke merging for this manga
+                        } else if (state.selection.isNotEmpty()) {
+                            // Invoke multiple merge
+                            scope.launchIO {
+                                screenModel.smartSearchMerge(state.selection)
+                                screenModel.clearSelection()
+                                snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.entry_merged))
+                            }
+                        } else {
+                            screenModel.clearSelection()
+                            context.toast(SYMR.strings.no_valid_entry)
+                        }
+                    },
+                    // KMK <--
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

@@ -28,7 +28,7 @@ import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Label
+import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SwapCalls
@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.DropdownMenu
@@ -240,6 +241,9 @@ fun LibraryBottomActionMenu(
     onClickAddToMangaDex: (() -> Unit)?,
     onClickResetInfo: (() -> Unit)?,
     // SY <--
+    // KMK -->
+    onClickMerge: (() -> Unit)?,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -255,11 +259,13 @@ fun LibraryBottomActionMenu(
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm =
-                remember { mutableStateListOf(false, false, false, false, false /* SY --> */, false /* SY <-- */) }
+                remember {
+                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false /* SY <-- */)
+                }
             var resetJob: Job? = remember { null }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<5).forEach { i -> confirm[i] = i == toConfirmIndex }
+                (0..<8).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
@@ -267,9 +273,15 @@ fun LibraryBottomActionMenu(
                 }
             }
             // SY -->
-            val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null || onClickResetInfo != null
+            val showOverflow = onClickCleanTitles != null ||
+                onClickAddToMangaDex != null ||
+                onClickResetInfo != null ||
+                // KMK -->
+                onClickMigrate != null ||
+                onClickMerge != null
+            // KMK <--
             val configuration = LocalConfiguration.current
-            val moveMarkPrev = remember { !configuration.isTabletUi() }
+            val isTabletUi = remember { configuration.isTabletUi() }
             var overFlowOpen by remember { mutableStateOf(false) }
             // SY <--
             Row(
@@ -311,7 +323,6 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(4) },
                     onClick = onDeleteClicked,
                 )
-                // SY -->
                 Button(
                     title = stringResource(MR.strings.action_mark_as_read),
                     icon = Icons.Outlined.DoneAll,
@@ -319,15 +330,36 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(1) },
                     onClick = onMarkAsReadClicked,
                 )
+                Button(
+                    title = stringResource(MR.strings.action_mark_as_unread),
+                    icon = Icons.Outlined.RemoveDone,
+                    toConfirm = confirm[2],
+                    onLongClick = { onLongClickItem(2) },
+                    onClick = onMarkAsUnreadClicked,
+                )
+                // SY -->
                 if (showOverflow) {
-                    if (!moveMarkPrev) {
-                        Button(
-                            title = stringResource(MR.strings.action_mark_as_unread),
-                            icon = Icons.Outlined.RemoveDone,
-                            toConfirm = confirm[2],
-                            onLongClick = { onLongClickItem(2) },
-                            onClick = onMarkAsUnreadClicked,
-                        )
+                    if (isTabletUi) {
+                        if (onClickMigrate != null) {
+                            Button(
+                                title = stringResource(MR.strings.migrate),
+                                icon = Icons.Outlined.SwapCalls,
+                                toConfirm = confirm[6],
+                                onLongClick = { onLongClickItem(6) },
+                                onClick = onClickMigrate,
+                            )
+                        }
+                        // KMK -->
+                        if (onClickMerge != null) {
+                            Button(
+                                title = stringResource(SYMR.strings.merge),
+                                icon = Icons.Outlined.Merge,
+                                toConfirm = confirm[7],
+                                onLongClick = { onLongClickItem(7) },
+                                onClick = onClickMerge,
+                            )
+                        }
+                        // KMK <--
                     }
                     Button(
                         title = stringResource(MR.strings.label_more),
@@ -339,23 +371,30 @@ fun LibraryBottomActionMenu(
                     DropdownMenu(
                         expanded = overFlowOpen,
                         onDismissRequest = { overFlowOpen = false },
+                        // KMK -->
+                        offset = DpOffset((-10).dp, 0.dp),
+                        // KMK <--
                     ) {
-                        if (moveMarkPrev) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(MR.strings.action_mark_as_unread)) },
-                                onClick = onMarkAsUnreadClicked,
-                            )
+                        if (!isTabletUi) {
+                            if (onClickMigrate != null) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(MR.strings.migrate)) },
+                                    onClick = onClickMigrate,
+                                )
+                            }
+                            // KMK -->
+                            if (onClickMerge != null) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(SYMR.strings.merge)) },
+                                    onClick = onClickMerge,
+                                )
+                            }
+                            // KMK <--
                         }
                         if (onClickCleanTitles != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(SYMR.strings.action_clean_titles)) },
                                 onClick = onClickCleanTitles,
-                            )
-                        }
-                        if (onClickMigrate != null) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(MR.strings.migrate)) },
-                                onClick = onClickMigrate,
                             )
                         }
                         if (onClickAddToMangaDex != null) {
@@ -371,23 +410,27 @@ fun LibraryBottomActionMenu(
                             )
                         }
                     }
+                    /* KMK -->
                 } else {
-                    Button(
-                        title = stringResource(MR.strings.action_mark_as_unread),
-                        icon = Icons.Outlined.RemoveDone,
-                        toConfirm = confirm[2],
-                        onLongClick = { onLongClickItem(2) },
-                        onClick = onMarkAsUnreadClicked,
-                    )
                     if (onClickMigrate != null) {
                         Button(
                             title = stringResource(MR.strings.migrate),
                             icon = Icons.Outlined.SwapCalls,
-                            toConfirm = confirm[5],
-                            onLongClick = { onLongClickItem(5) },
+                            toConfirm = confirm[6],
+                            onLongClick = { onLongClickItem(6) },
                             onClick = onClickMigrate,
                         )
                     }
+                    if (onClickMerge != null) {
+                        Button(
+                            title = stringResource(SYMR.strings.merge),
+                            icon = Icons.Outlined.Merge,
+                            toConfirm = confirm[7],
+                            onLongClick = { onLongClickItem(7) },
+                            onClick = onClickMerge,
+                        )
+                    }
+                    // KMK <-- */
                 }
                 // SY <--
             }
