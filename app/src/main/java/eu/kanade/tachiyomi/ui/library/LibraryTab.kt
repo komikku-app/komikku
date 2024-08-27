@@ -43,6 +43,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -211,7 +212,11 @@ object LibraryTab : Tab {
                     // KMK -->
                     onClickMerge = {
                         if (state.selection.size == 1) {
+                            val manga = state.selection.first().manga
                             // Invoke merging for this manga
+                            screenModel.clearSelection()
+                            val smartSearchConfig = SourcesScreen.SmartSearchConfig(manga.title, manga.id)
+                            navigator.push(SourcesScreen(smartSearchConfig))
                         } else if (state.selection.isNotEmpty()) {
                             // Invoke multiple merge
                             scope.launchIO {

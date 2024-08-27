@@ -776,7 +776,13 @@ class MangaScreen(
 
                 navigator.popUntil { it is SourcesScreen }
                 navigator.pop()
-                navigator replace MangaScreen(mergedManga.id, true)
+                // KMK -->
+                if (navigator.lastItem !is MangaScreen) {
+                    navigator push MangaScreen(mergedManga.id, true)
+                } else {
+                    // KMK <--
+                    navigator replace MangaScreen(mergedManga.id, true)
+                }
                 context.toast(SYMR.strings.entry_merged)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
