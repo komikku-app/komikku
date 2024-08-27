@@ -119,6 +119,7 @@ import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.shouldExpandFAB
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -409,8 +410,10 @@ private fun MangaScreenSmallImpl(
     }
     // SY <--
     // KMK -->
-    val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
-    val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
+    val uiPreferences = Injekt.get<UiPreferences>()
+    val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
+    val expandRelatedMangas by uiPreferences.expandRelatedTitles().collectAsState()
+    val showRelatedTitlesInOverflow by uiPreferences.relatedTitlesInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
@@ -457,7 +460,11 @@ private fun MangaScreenSmallImpl(
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
-                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf { state.showRelatedTitlesInOverflow },
+                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf {
+                    !expandRelatedMangas &&
+                        showRelatedTitlesInOverflow &&
+                        state.manga.source != MERGED_SOURCE_ID
+                },
                 // KMK <--
                 onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
                 onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
@@ -631,7 +638,10 @@ private fun MangaScreenSmallImpl(
                     }
 
                     // KMK -->
-                    if (state.source !is StubSource && relatedMangasEnabled) {
+                    if (state.source !is StubSource &&
+                        relatedMangasEnabled &&
+                        state.manga.source != MERGED_SOURCE_ID
+                    ) {
                         if (expandRelatedMangas) {
                             if (state.relatedMangasSorted?.isNotEmpty() != false) {
                                 item { HorizontalDivider() }
@@ -658,7 +668,7 @@ private fun MangaScreenSmallImpl(
                                 }
                                 item { HorizontalDivider() }
                             }
-                        } else if (!state.showRelatedTitlesInOverflow) {
+                        } else if (!showRelatedTitlesInOverflow) {
                             item(
                                 key = MangaScreenItem.RELATED_TITLES,
                                 contentType = MangaScreenItem.RELATED_TITLES,
@@ -821,8 +831,10 @@ private fun MangaScreenLargeImpl(
     val metadataDescription = metadataDescription(state.source)
     // SY <--
     // KMK -->
-    val relatedMangasEnabled = Injekt.get<SourcePreferences>().relatedMangas().get()
-    val expandRelatedMangas = Injekt.get<UiPreferences>().expandRelatedTitles().get()
+    val uiPreferences = Injekt.get<UiPreferences>()
+    val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
+    val expandRelatedMangas by uiPreferences.expandRelatedTitles().collectAsState()
+    val showRelatedTitlesInOverflow by uiPreferences.relatedTitlesInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
@@ -861,7 +873,11 @@ private fun MangaScreenLargeImpl(
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
-                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf { state.showRelatedTitlesInOverflow },
+                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf {
+                    !expandRelatedMangas &&
+                        showRelatedTitlesInOverflow &&
+                        state.manga.source != MERGED_SOURCE_ID
+                },
                 // KMK <--
                 onClickRecommend = onRecommendClicked.takeIf { state.showRecommendationsInOverflow },
                 onClickMergedSettings = onMergedSettingsClicked.takeIf { state.manga.source == MERGED_SOURCE_ID },
@@ -1047,7 +1063,10 @@ private fun MangaScreenLargeImpl(
                             ),
                         ) {
                             // KMK -->
-                            if (state.source !is StubSource && relatedMangasEnabled) {
+                            if (state.source !is StubSource &&
+                                relatedMangasEnabled &&
+                                state.manga.source != MERGED_SOURCE_ID
+                            ) {
                                 if (expandRelatedMangas) {
                                     if (state.relatedMangasSorted?.isNotEmpty() != false) {
                                         item(
@@ -1074,7 +1093,7 @@ private fun MangaScreenLargeImpl(
                                         }
                                         item { HorizontalDivider() }
                                     }
-                                } else if (!state.showRelatedTitlesInOverflow) {
+                                } else if (!showRelatedTitlesInOverflow) {
                                     item(
                                         key = MangaScreenItem.RELATED_TITLES,
                                         contentType = MangaScreenItem.RELATED_TITLES,
