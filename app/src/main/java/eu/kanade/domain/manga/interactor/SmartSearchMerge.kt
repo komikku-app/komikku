@@ -39,7 +39,8 @@ class SmartSearchMerge(
         if (originalManga.source == MERGED_SOURCE_ID) {
             val children = getMergedReferencesById.await(originalMangaId)
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
-                throw IllegalArgumentException(context.stringResource(SYMR.strings.merged_already))
+                // Merged already
+                return originalManga
             }
 
             val mangaReferences = mutableListOf(
@@ -80,7 +81,8 @@ class SmartSearchMerge(
             return originalManga
         } else {
             if (manga.id == originalMangaId) {
-                throw IllegalArgumentException(context.stringResource(SYMR.strings.merged_already))
+                // Merged already
+                return originalManga
             }
             var mergedManga = Manga.create()
                 .copy(
@@ -100,7 +102,9 @@ class SmartSearchMerge(
             var existingManga = getManga.await(mergedManga.url, mergedManga.source)
             while (existingManga != null) {
                 if (existingManga.favorite) {
-                    throw IllegalArgumentException(context.stringResource(SYMR.strings.merge_duplicate))
+                    // Duplicate entry found -> use it instead
+                    mergedManga = existingManga
+                    break
                 } else {
                     withNonCancellableContext {
                         existingManga?.id?.let {
@@ -109,6 +113,7 @@ class SmartSearchMerge(
                         }
                     }
                 }
+                // Remove previously merged entry from database (user already removed from favorites)
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
