@@ -117,12 +117,12 @@ fun SetIntervalDialog(
                         contentAlignment = Alignment.Center,
                     ) {
                         val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                        val items = (0..FetchInterval.MAX_INTERVAL)
+                        val items = (-1..FetchInterval.MAX_INTERVAL)
                             .map {
-                                if (it == 0) {
-                                    stringResource(MR.strings.label_default)
-                                } else {
-                                    it.toString()
+                                when (it) {
+                                    -1 -> stringResource(MR.strings.not_applicable)
+                                    0 -> stringResource(MR.strings.label_default)
+                                    else -> it.toString()
                                 }
                             }
                             .toImmutableList()
