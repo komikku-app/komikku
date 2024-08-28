@@ -1832,6 +1832,10 @@ class MangaScreenModel(
 
             val processedChapters by lazy {
                 chapters.applyFilters(manga).toList()
+                    // KMK -->
+                    // safe-guard some edge-cases where chapters are duplicated some how on a merged entry
+                    .distinctBy { it.id }
+                // KMK <--
             }
 
             val isAnySelected by lazy {
