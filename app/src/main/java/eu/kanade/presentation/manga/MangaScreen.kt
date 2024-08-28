@@ -1204,7 +1204,9 @@ private fun LazyListScope.sharedChapterItems(
         items = chapters,
         key = { item ->
             when (item) {
-                is ChapterList.MissingCount -> "missing-count-${item.id}"
+                // KMK: using hashcode to prevent edge-cases where the missing count might duplicate,
+                // especially on merged manga
+                is ChapterList.MissingCount -> "missing-count-${item.hashCode()}"
                 is ChapterList.Item -> "chapter-${item.id}"
             }
         },
