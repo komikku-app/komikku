@@ -166,8 +166,9 @@ class MangaScreenModel(
     val context: Context,
     val mangaId: Long,
     // SY -->
+    /** If it is opened from Source then it will auto expand the manga description */
     private val isFromSource: Boolean,
-    val smartSearched: Boolean,
+    private val smartSearched: Boolean,
     // SY <--
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
