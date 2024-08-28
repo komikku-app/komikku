@@ -5,8 +5,8 @@ import android.view.View
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.MigrationSourceItemBinding
 import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.HttpSource
-import exh.util.capitalize
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -18,9 +18,11 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     }
 
     fun bind(source: HttpSource, sourceEnabled: Boolean) {
-        val isMultiLanguage = adapter.sourcePreferences.enabledLanguages().get().size > 1
         // Set capitalized title.
-        val sourceName = if (isMultiLanguage) source.toString() else source.name.capitalize()
+        val sourceName =
+            // KMK -->
+            source.getNameForMangaInfo(null)
+        // KMK <--
         binding.title.text = sourceName
         // Update circle letter image.
         itemView.post {
