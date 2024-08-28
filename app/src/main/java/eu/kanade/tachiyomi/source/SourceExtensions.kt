@@ -26,7 +26,7 @@ fun Source.getNameForMangaInfo(
         )
         // SY <--
         // KMK -->
-        this is StubSource -> toString()
+        isLocalOrStub() -> toString()
         // KMK <--
         // For edge cases where user disables a source they got manga of in their library.
         hasOneActiveLanguages && !isInEnabledLanguages ->
@@ -52,7 +52,7 @@ private fun getMergedSourcesString(
         mergeSources.joinToString { source ->
             when {
                 // KMK -->
-                source is StubSource -> source.toString()
+                source.isLocalOrStub() -> source.toString()
                 // KMK <--
                 source.lang !in enabledLangs ->
                     // KMK -->
@@ -65,7 +65,7 @@ private fun getMergedSourcesString(
     } else {
         mergeSources.joinToString { source ->
             // KMK -->
-            if (source is StubSource) {
+            if (source.isLocalOrStub()) {
                 source.toString()
             } else {
                 "${source.name} (${FlagEmoji.getEmojiLangFlag(source.lang)})"

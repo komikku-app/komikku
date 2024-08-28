@@ -50,14 +50,8 @@ internal fun LanguageBadge(
     useLangIcon: Boolean = true,
     // KMK <--
 ) {
-    if (isLocal) {
-        Badge(
-            imageVector = Icons.Outlined.Language,
-            color = MaterialTheme.colorScheme.tertiary,
-            iconColor = MaterialTheme.colorScheme.onTertiary,
-        )
-    } else if (sourceLanguage.isNotEmpty()) {
-        // KMK -->
+    // KMK -->
+    if (!isLocal && sourceLanguage.isNotEmpty()) {
         if (useLangIcon) {
             val iconResId = getLanguageIconID(sourceLanguage) ?: R.drawable.globe
             Badge(
