@@ -56,7 +56,7 @@ internal fun LanguageBadge(
             color = MaterialTheme.colorScheme.tertiary,
             iconColor = MaterialTheme.colorScheme.onTertiary,
         )
-    } else if (sourceLanguage.isNotEmpty() /* KMK --> */ && sourceLanguage != "all" /* KMK <-- */) {
+    } else if (sourceLanguage.isNotEmpty()) {
         // KMK -->
         if (useLangIcon) {
             val iconResId = getLanguageIconID(sourceLanguage) ?: R.drawable.globe
