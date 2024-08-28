@@ -94,7 +94,10 @@ private fun ExtensionFilterContent(
                     modifier = Modifier.animateItem(),
                     title = LocaleHelper.getSourceDisplayName(language, context) +
                         // KMK -->
-                        " (${LocaleHelper.getDisplayName(language)})",
+                        (
+                            " (${LocaleHelper.getDisplayName(language)})"
+                                .takeIf { language !in listOf("all", "other") } ?: ""
+                            ),
                     // KMK <--
                     checked = language in state.enabledLanguages,
                     onCheckedChanged = { onClickLang(language) },

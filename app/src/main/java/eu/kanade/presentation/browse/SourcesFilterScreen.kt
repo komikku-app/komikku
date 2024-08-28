@@ -24,6 +24,7 @@ import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
@@ -118,6 +119,9 @@ private fun SourcesFilterContent(
                             // KMK <--
                             .animateItemFastScroll(),
                         isEnabled = toggleEnabled,
+                        // KMK -->
+                        language = language,
+                        // KMK <--
                         onClickItem = {
                             onClickSources(!toggleEnabled, sources)
                         },
@@ -154,7 +158,13 @@ private fun SourcesFilterHeader(
 ) {
     SwitchPreferenceWidget(
         modifier = modifier,
-        title = LocaleHelper.getSourceDisplayName(language, LocalContext.current),
+        title = LocaleHelper.getSourceDisplayName(language, LocalContext.current) +
+            // KMK -->
+            (
+                " (${LocaleHelper.getDisplayName(language)} ${FlagEmoji.getEmojiLangFlag(language)})"
+                    .takeIf { language !in listOf("all", "other") } ?: " (${FlagEmoji.getEmojiLangFlag(language)})"
+                ),
+        // KMK <--
         checked = enabled,
         onCheckedChanged = { onClickItem(language) },
     )
@@ -165,11 +175,17 @@ private fun SourcesFilterHeader(
 fun SourcesFilterToggle(
     modifier: Modifier,
     isEnabled: Boolean,
+    // KMK -->
+    language: String,
+    // KMK <--
     onClickItem: () -> Unit,
 ) {
     SwitchPreferenceWidget(
         modifier = modifier,
-        title = stringResource(SYMR.strings.pref_category_all_sources),
+        title = stringResource(SYMR.strings.pref_category_all_sources) +
+            // KMK -->
+            " (${FlagEmoji.getEmojiLangFlag(language)})",
+        // KMK <--
         checked = isEnabled,
         onCheckedChanged = { onClickItem() },
     )
