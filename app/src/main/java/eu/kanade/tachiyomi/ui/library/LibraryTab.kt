@@ -240,7 +240,7 @@ object LibraryTab : Tab {
                                             deleteChapters = false,
                                         )
                                     }
-                                    navigator.push(MangaScreen(mergedMangaId, true))
+                                    navigator.push(MangaScreen(mergedMangaId))
                                 } else {
                                     snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.merged_references_invalid))
                                 }
