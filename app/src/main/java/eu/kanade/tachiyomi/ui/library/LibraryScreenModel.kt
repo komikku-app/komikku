@@ -1368,17 +1368,18 @@ class LibraryScreenModel(
      * Will get first merged manga in the list as target merging.
      * If there is no merged manga, then it will use the first one in list to create a new target.
      */
-    suspend fun smartSearchMerge(selectedMangas: PersistentList<LibraryManga>) {
+    suspend fun smartSearchMerge(selectedMangas: PersistentList<LibraryManga>): Long? {
         val mergedManga = selectedMangas.firstOrNull { it.manga.source == MERGED_SOURCE_ID }?.let { listOf(it) }
             ?: emptyList()
         val mergingMangas = selectedMangas.filterNot { it.manga.source == MERGED_SOURCE_ID }
         val toMergeMangas = mergedManga + mergingMangas
-        if (toMergeMangas.size <= 1) return
+        if (toMergeMangas.size <= 1) return null
 
         var mergingMangaId = toMergeMangas.first().manga.id
         for (manga in toMergeMangas.drop(1)) {
             mergingMangaId = smartSearchMerge.smartSearchMerge(manga.manga, mergingMangaId).id
         }
+        return mergingMangaId
     }
     // KMK <--
 

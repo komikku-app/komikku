@@ -221,23 +221,29 @@ object LibraryTab : Tab {
                             navigator.push(SourcesScreen(smartSearchConfig))
                         } else if (state.selection.isNotEmpty()) {
                             // Invoke multiple merge
+                            val selection = state.selection
+                            screenModel.clearSelection()
                             scope.launchIO {
-                                val mergingMangas = state.selection.filterNot { it.manga.source == MERGED_SOURCE_ID }
-                                screenModel.smartSearchMerge(state.selection)
-                                screenModel.clearSelection()
-                                val result = snackbarHostState.showSnackbar(
-                                    message = context.stringResource(KMR.strings.action_remove_merged),
-                                    actionLabel = context.stringResource(MR.strings.action_remove),
-                                    withDismissAction = true,
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    screenModel.removeMangas(
-                                        mangaList = mergingMangas.map { it.manga },
-                                        deleteFromLibrary = true,
-                                        deleteChapters = false,
-                                    )
-                                }
+                                val mergingMangas = selection.filterNot { it.manga.source == MERGED_SOURCE_ID }
+                                val mergedMangaId = screenModel.smartSearchMerge(selection)
                                 snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.entry_merged))
+                                if (mergedMangaId != null) {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = context.stringResource(KMR.strings.action_remove_merged),
+                                        actionLabel = context.stringResource(MR.strings.action_remove),
+                                        withDismissAction = true,
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        screenModel.removeMangas(
+                                            mangaList = mergingMangas.map { it.manga },
+                                            deleteFromLibrary = true,
+                                            deleteChapters = false,
+                                        )
+                                    }
+                                    navigator.push(MangaScreen(mergedMangaId, true))
+                                } else {
+                                    snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.merged_references_invalid))
+                                }
                             }
                         } else {
                             screenModel.clearSelection()
