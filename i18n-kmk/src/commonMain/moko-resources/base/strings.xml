@@ -11,6 +11,7 @@
     <string name="action_move_down">Move down</string>
     <string name="action_move_bottom">Move bottom</string>
     <string name="action_confirm_color">Confirm Color</string>
+    <string name="action_remove_merged">Remove merged entries?</string>
 
 
     <!-- Preferences -->

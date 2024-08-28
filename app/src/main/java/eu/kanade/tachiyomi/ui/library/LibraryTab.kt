@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +44,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -65,6 +67,7 @@ import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -208,6 +211,46 @@ object LibraryTab : Tab {
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
                     onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
                     // SY <--
+                    // KMK -->
+                    onClickMerge = {
+                        if (state.selection.size == 1) {
+                            val manga = state.selection.first().manga
+                            // Invoke merging for this manga
+                            screenModel.clearSelection()
+                            val smartSearchConfig = SourcesScreen.SmartSearchConfig(manga.title, manga.id)
+                            navigator.push(SourcesScreen(smartSearchConfig))
+                        } else if (state.selection.isNotEmpty()) {
+                            // Invoke multiple merge
+                            val selection = state.selection
+                            screenModel.clearSelection()
+                            scope.launchIO {
+                                val mergingMangas = selection.filterNot { it.manga.source == MERGED_SOURCE_ID }
+                                val mergedMangaId = screenModel.smartSearchMerge(selection)
+                                snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.entry_merged))
+                                if (mergedMangaId != null) {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = context.stringResource(KMR.strings.action_remove_merged),
+                                        actionLabel = context.stringResource(MR.strings.action_remove),
+                                        withDismissAction = true,
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        screenModel.removeMangas(
+                                            mangaList = mergingMangas.map { it.manga },
+                                            deleteFromLibrary = true,
+                                            deleteChapters = false,
+                                        )
+                                    }
+                                    navigator.push(MangaScreen(mergedMangaId))
+                                } else {
+                                    snackbarHostState.showSnackbar(context.stringResource(SYMR.strings.merged_references_invalid))
+                                }
+                            }
+                        } else {
+                            screenModel.clearSelection()
+                            context.toast(SYMR.strings.no_valid_entry)
+                        }
+                    },
+                    // KMK <--
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
