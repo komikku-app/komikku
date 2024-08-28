@@ -48,7 +48,17 @@ class SmartSearchScreen(
             val results = state
             if (results != null) {
                 if (results is SmartSearchScreenModel.SearchResults.Found) {
-                    navigator.replace(MangaScreen(results.manga.id, true, smartSearchConfig))
+                    navigator.replace(
+                        MangaScreen(
+                            results.manga.id,
+                            // KMK -->
+                            // Finding the entry to be merged to, so we don't want to expand description
+                            // so that user can see the `Merge to another` button
+                            false,
+                            // KMK <--
+                            smartSearchConfig,
+                        ),
+                    )
                 } else {
                     if (results is SmartSearchScreenModel.SearchResults.NotFound) {
                         context.toast(SYMR.strings.could_not_find_entry)

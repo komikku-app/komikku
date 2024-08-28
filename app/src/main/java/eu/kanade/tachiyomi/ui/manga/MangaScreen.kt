@@ -114,6 +114,7 @@ import uy.kohesive.injekt.api.get
 
 class MangaScreen(
     private val mangaId: Long,
+    /** If it is opened from Source then it will auto expand the manga description */
     val fromSource: Boolean = false,
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
 ) : Screen(), AssistContentScreen {
@@ -560,6 +561,7 @@ class MangaScreen(
         context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
     }
 
+    @Suppress("LocalVariableName")
     private fun getMangaUrl(manga_: Manga?, source_: Source?): String? {
         val manga = manga_ ?: return null
         val source = source_ as? HttpSource ?: return null
@@ -571,6 +573,7 @@ class MangaScreen(
         }
     }
 
+    @Suppress("LocalVariableName")
     private fun openMangaInWebView(navigator: Navigator, manga_: Manga?, source_: Source?) {
         getMangaUrl(manga_, source_)?.let { url ->
             navigator.push(
@@ -583,6 +586,7 @@ class MangaScreen(
         }
     }
 
+    @Suppress("LocalVariableName")
     private fun shareManga(context: Context, manga_: Manga?, source_: Source?) {
         try {
             getMangaUrl(manga_, source_)?.let { url ->
@@ -692,6 +696,7 @@ class MangaScreen(
     /**
      * Copy Manga URL to Clipboard
      */
+    @Suppress("LocalVariableName")
     private fun copyMangaUrl(context: Context, manga_: Manga?, source_: Source?) {
         val manga = manga_ ?: return
         val source = source_ as? HttpSource ?: return

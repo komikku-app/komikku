@@ -303,7 +303,17 @@ data class BrowseSourceScreen(
                         bulkFavoriteScreenModel.toggleSelection(it)
                     } else {
                         // KMK <--
-                        navigator.push(MangaScreen(it.id, true, smartSearchConfig))
+                        navigator.push(
+                            MangaScreen(
+                                it.id,
+                                // KMK -->
+                                // Finding the entry to be merged to, so we don't want to expand description
+                                // so that user can see the `Merge to another` button
+                                smartSearchConfig != null,
+                                // KMK <--
+                                smartSearchConfig,
+                            ),
+                        )
                     }
                 },
                 onMangaLongClick = { manga ->
