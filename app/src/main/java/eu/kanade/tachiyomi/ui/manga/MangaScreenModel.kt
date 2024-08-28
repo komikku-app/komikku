@@ -995,8 +995,6 @@ class MangaScreenModel(
         val isLocal = manga.isLocal()
         // SY -->
         val isExhManga = manga.isEhBasedManga()
-        val enabledLanguages = sourcePreferences.enabledLanguages().get()
-            .filterNot { it in listOf("all", "other") }
         // SY <--
         return map { chapter ->
             val activeDownload = if (isLocal) {
@@ -1034,7 +1032,7 @@ class MangaScreenModel(
                 downloadProgress = activeDownload?.progress ?: 0,
                 selected = chapter.id in selectedChapterIds,
                 // SY -->
-                sourceName = source?.getNameForMangaInfo(null, enabledLanguages = enabledLanguages),
+                sourceName = source?.getNameForMangaInfo(null),
                 showScanlator = !isExhManga,
                 // SY <--
             )

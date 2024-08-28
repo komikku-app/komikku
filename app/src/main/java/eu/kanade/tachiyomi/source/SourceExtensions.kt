@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source
 
 import eu.kanade.domain.source.service.SourcePreferences
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -9,10 +10,11 @@ import uy.kohesive.injekt.api.get
 fun Source.getNameForMangaInfo(
     // SY -->
     mergeSources: List<Source>?,
-    enabledLanguages: List<String> = Injekt.get<SourcePreferences>().enabledLanguages().get()
-        .filterNot { it in listOf("all", "other") },
     // SY <--
 ): String {
+    val preferences = Injekt.get<SourcePreferences>()
+    val enabledLanguages = preferences.enabledLanguages().get()
+        .filterNot { it in listOf("all", "other") }
     val hasOneActiveLanguages = enabledLanguages.size == 1
     val isInEnabledLanguages = lang in enabledLanguages
     return when {
@@ -23,11 +25,20 @@ fun Source.getNameForMangaInfo(
             hasOneActiveLanguages,
         )
         // SY <--
+        // KMK -->
+        this is StubSource -> toString()
+        // KMK <--
         // For edge cases where user disables a source they got manga of in their library.
-        hasOneActiveLanguages && !isInEnabledLanguages -> toString()
+        hasOneActiveLanguages && !isInEnabledLanguages ->
+            // KMK -->
+            "$name (${FlagEmoji.getEmojiLangFlag(lang)})"
+        // KMK <--
         // Hide the language tag when only one language is used.
         hasOneActiveLanguages && isInEnabledLanguages -> name
-        else -> toString()
+        else ->
+            // KMK -->
+            "$name (${FlagEmoji.getEmojiLangFlag(lang)})"
+        // KMK <--
     }
 }
 
@@ -39,14 +50,28 @@ private fun getMergedSourcesString(
 ): String {
     return if (onlyName) {
         mergeSources.joinToString { source ->
-            if (source.lang !in enabledLangs) {
-                source.toString()
-            } else {
-                source.name
+            when {
+                // KMK -->
+                source is StubSource -> source.toString()
+                // KMK <--
+                source.lang !in enabledLangs ->
+                    // KMK -->
+                    "${source.name} (${FlagEmoji.getEmojiLangFlag(source.lang)})"
+                // KMK <--
+                else ->
+                    source.name
             }
         }
     } else {
-        mergeSources.joinToString()
+        mergeSources.joinToString { source ->
+            // KMK -->
+            if (source is StubSource) {
+                source.toString()
+            } else {
+                "${source.name} (${FlagEmoji.getEmojiLangFlag(source.lang)})"
+            }
+            // KMK <--
+        }
     }
 }
 // SY <--
