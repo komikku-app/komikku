@@ -159,6 +159,19 @@ class GetExtensionLanguages(
                 "zh-Hant" -> R.drawable.tw // Chinese, traditional -> Taiwan, TW
                 "zh" -> R.drawable.cn // Chinese -> China, CN
                 "zu" -> R.drawable.za // Zulu -> South Africa, ZA
+                // Additional from App language
+                "gl" -> R.drawable.es // Galician -> Spain, ES
+                "in" -> R.drawable.id // Indonesian -> Indonesia, ID
+                "nb-NO" -> R.drawable.no // Norwegian Bokmål -> Norway, NO
+                "nn" -> R.drawable.no // Norwegian Nynorsk -> Norway, NO
+                "sc" -> R.drawable.it // Sardinian -> Italy, IT
+                "sdh" -> R.drawable.ir // Southern Kurdish -> Iran, IR
+                "sah" -> R.drawable.ru // Sakha -> Russia, RU
+                "cv" -> R.drawable.ru // Chuvash -> Russia, RU
+                "sa" -> R.drawable.in_ // Sanskrit -> India, IN
+                "ka-GE" -> R.drawable.ge // Georgian -> Georgia, GE
+                "zh-CN" -> R.drawable.cn // Chinese, simplified -> China, CN
+                "zh-TW" -> R.drawable.tw // Chinese, traditional -> Taiwan, TW"
                 else -> null
             }
         }
@@ -284,6 +297,18 @@ private fun LanguageIconsPreview() {
         "zh-Hant",
         "zh",
         "zu",
+        "gl",
+        "in",
+        "nb-NO",
+        "nn",
+        "sc",
+        "sdh",
+        "sah",
+        "cv",
+        "sa",
+        "ka-GE",
+        "zh-CN",
+        "zh-TW",
     )
     FlowRow {
         languages.forEach { language ->

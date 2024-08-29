@@ -151,6 +151,19 @@ class FlagEmoji {
                 "zh-Hant" -> "tw" // Chinese, traditional -> Taiwan, TW
                 "zh" -> "cn" // Chinese -> China, CN
                 "zu" -> "za" // Zulu -> South Africa, ZA
+                // Additional from App language
+                "gl" -> "es" // Galician -> Spain, ES
+                "in" -> "id" // Indonesian -> Indonesia, ID
+                "nb-NO" -> "no" // Norwegian Bokmål -> Norway, NO
+                "nn" -> "no" // Norwegian Nynorsk -> Norway, NO
+                "sc" -> "it" // Sardinian -> Italy, IT
+                "sdh" -> "ir" // Southern Kurdish -> Iran, IR
+                "sah" -> "ru" // Sakha -> Russia, RU
+                "cv" -> "ru" // Chuvash -> Russia, RU
+                "sa" -> "in_" // Sanskrit -> India, IN
+                "ka-GE" -> "ge" // Georgian -> Georgia, GE
+                "zh-CN" -> "cn" // Chinese, simplified -> China, CN
+                "zh-TW" -> "tw" // Chinese, traditional -> Taiwan, TW"
                 else -> null
             }
         }
@@ -273,6 +286,18 @@ private fun Preview() {
         "zh-Hant",
         "zh",
         "zu",
+        "gl",
+        "in",
+        "nb-NO",
+        "nn",
+        "sc",
+        "sdh",
+        "sah",
+        "cv",
+        "sa",
+        "ka-GE",
+        "zh-CN",
+        "zh-TW",
     )
 
     val countryList = listOf(
