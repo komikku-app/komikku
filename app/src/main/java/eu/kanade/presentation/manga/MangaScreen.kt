@@ -595,6 +595,8 @@ private fun MangaScreenSmallImpl(
                             // SY <--
                             // KMK -->
                             status = state.manga.status,
+                            fetchInterval = 0,
+
                             // KMK <--
                         )
                     }
@@ -1000,6 +1002,7 @@ private fun MangaScreenLargeImpl(
                             // SY <--
                             // KMK -->
                             status = state.manga.status,
+                            fetchInterval = 0,
                             // KMK <--
                         )
                         // SY -->

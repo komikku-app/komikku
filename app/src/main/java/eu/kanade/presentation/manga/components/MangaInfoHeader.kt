@@ -207,17 +207,21 @@ fun MangaActionRow(
     status: Long,
     // KMK <--
     modifier: Modifier = Modifier,
-) {
+    fetchInterval: Int,
+
+    ) {
     // KMK -->
     val libraryPreferences: LibraryPreferences = Injekt.get()
     val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
     val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
+    val isNAInterval = fetchInterval < 0
+
     // KMK <--
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
     val nextUpdateDays = remember(nextUpdate) {
-        return@remember if (nextUpdate != null && isSkipCompleted) {
+        return@remember if (nextUpdate != null && isSkipCompleted && isNAInterval) {
             val now = Instant.now()
             now.until(nextUpdate, ChronoUnit.DAYS).toInt().coerceAtLeast(0)
         } else {
@@ -240,7 +244,6 @@ fun MangaActionRow(
         MangaActionButton(
             title = when (nextUpdateDays) {
                 null -> stringResource(MR.strings.not_applicable)
-                -1 -> stringResource(MR.strings.not_applicable)
                 0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
                 else -> pluralStringResource(
                     MR.plurals.day,
