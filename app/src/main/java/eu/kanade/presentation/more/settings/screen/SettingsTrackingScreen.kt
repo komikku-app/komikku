@@ -64,6 +64,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsTrackingScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsTrackingScreen
 
     @ReadOnlyComposable
     @Composable

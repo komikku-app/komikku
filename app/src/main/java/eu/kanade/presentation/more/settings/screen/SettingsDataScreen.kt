@@ -79,6 +79,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsDataScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsDataScreen
 
     val restorePreferenceKeyString = MR.strings.label_backup
     const val HELP_URL = "https://mihon.app/docs/faq/storage"

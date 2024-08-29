@@ -55,6 +55,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsMangadexScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsMangadexScreen
 
     @ReadOnlyComposable
     @Composable

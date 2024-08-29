@@ -31,6 +31,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsBrowseScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsBrowseScreen
 
     @ReadOnlyComposable
     @Composable
