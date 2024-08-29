@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9312" changeDate="August 29, 2024">
+        <changelogtext>[b]New:[/b] Showing source icon in library</changelogtext>
+        <changelogtext>[b]New:[/b] Use language flags</changelogtext>
+        <changelogtext>[b]New:[/b] Bulk-merging multiple library entries</changelogtext>
+        <changelogtext>[b]New:[/b] Ability to enable/disable repo</changelogtext>
+        <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
+        <changelogtext>[b]New:[/b] Custom themes</changelogtext>
+        <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
+        <changelogtext>[b]New:[/b] Add "show entry" action to download notifications </changelogtext>
+        <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
+        <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
+        <changelogtext>[b]New:[/b] Remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show same extension from multiple repos &amp; show their repo's name</changelogtext>
+        <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add option to update library each 6 hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Back-button on pre-migration source</changelogtext>
+        <changelogtext>[b]Improve:[/b] Don't expand description on the manga while merging</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide keyboard when a Tracker SearchResultItem is clicked</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move dropdown menu to correct position</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add extensions list refresh menu</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add confirmation when adding repo via URI</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect privacy settings in extension update notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] Option to not backup Saved searches &amp; Feeds</changelogtext>
+        <changelogtext>[b]Improve:[/b] Change Reader's open-in-browser icon to Explore</changelogtext>
+        <changelogtext>[b]Fix:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
+        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Related title</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9234" changeDate="August 13, 2024">
         <changelogtext>[b]New:[/b] Add option to only show entries with new chapters</changelogtext>
         <changelogtext>[b]New:[/b] add source search to pre-migration screen</changelogtext>
