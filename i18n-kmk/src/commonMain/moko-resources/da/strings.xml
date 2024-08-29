@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelitet</string>
   <string name="pref_theme_cover_based_style_content">Indhold</string>
-  <string name="pref_expand_related_titles">Udvid Relaterede titler</string>
-  <string name="pref_expand_related_titles_summary">Hvis slået fra, vil relaterede titler ikke automatisk indlæse &amp; Vis udvidet</string>
+  <string name="pref_expand_related_mangas">Udvid Relaterede titler</string>
+  <string name="pref_expand_related_mangas_summary">Hvis slået fra, vil relaterede titler ikke automatisk indlæse &amp; Vis udvidet</string>
   <string name="action_search_for_source">Søg efter kilde</string>
   <string name="action_library_search">Søg i bibliotek</string>
-  <string name="pref_show_home_on_related_titles">Hjem fra relaterede titler</string>
-  <string name="pref_show_home_on_related_titles_summary">Vis et ikon mens du browser Relaterede titler for at navigere direkte tilbage til Hjem</string>
+  <string name="pref_show_home_on_related_mangas">Hjem fra relaterede titler</string>
+  <string name="pref_show_home_on_related_mangas_summary">Vis et ikon mens du browser Relaterede titler for at navigere direkte tilbage til Hjem</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Bomuld Slik</string>
   <string name="theme_doom">Dom</string>

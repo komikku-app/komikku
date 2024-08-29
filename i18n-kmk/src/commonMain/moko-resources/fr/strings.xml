@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelité</string>
   <string name="pref_theme_cover_based_style_content">Contenus</string>
-  <string name="pref_expand_related_titles">Développer les titres connexes</string>
-  <string name="pref_expand_related_titles_summary">Si désactivé, les titres connexes ne chargeront pas automatiquement &amp; afficher étendu</string>
+  <string name="pref_expand_related_mangas">Développer les titres connexes</string>
+  <string name="pref_expand_related_mangas_summary">Si désactivé, les titres connexes ne chargeront pas automatiquement &amp; afficher étendu</string>
   <string name="action_search_for_source">Rechercher une source</string>
   <string name="action_library_search">Recherche de la bibliothèque</string>
-  <string name="pref_show_home_on_related_titles">Accueil des titres connexes</string>
-  <string name="pref_show_home_on_related_titles_summary">Afficher une icône en naviguant sur les titres connexes pour revenir directement à la page d\'accueil</string>
+  <string name="pref_show_home_on_related_mangas">Accueil des titres connexes</string>
+  <string name="pref_show_home_on_related_mangas_summary">Afficher une icône en naviguant sur les titres connexes pour revenir directement à la page d\'accueil</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Barbe à papa</string>
   <string name="theme_doom">Doom</string>

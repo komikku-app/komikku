@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelität</string>
   <string name="pref_theme_cover_based_style_content">Inhalt</string>
-  <string name="pref_expand_related_titles">Verwandte Titel erweitern</string>
-  <string name="pref_expand_related_titles_summary">Wenn ausgeschaltet, laden verwandte Titel nicht automatisch &amp; zeigen erweiterte</string>
+  <string name="pref_expand_related_mangas">Verwandte Titel erweitern</string>
+  <string name="pref_expand_related_mangas_summary">Wenn ausgeschaltet, laden verwandte Titel nicht automatisch &amp; zeigen erweiterte</string>
   <string name="action_search_for_source">Nach Quelle suchen</string>
   <string name="action_library_search">Bibliothekssuche</string>
-  <string name="pref_show_home_on_related_titles">Home von verwandten Titeln</string>
-  <string name="pref_show_home_on_related_titles_summary">Symbol beim Durchsuchen verwandter Titel anzeigen, um direkt zurück zum Home zu navigieren</string>
+  <string name="pref_show_home_on_related_mangas">Home von verwandten Titeln</string>
+  <string name="pref_show_home_on_related_mangas_summary">Symbol beim Durchsuchen verwandter Titel anzeigen, um direkt zurück zum Home zu navigieren</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Zuckerwatte</string>
   <string name="theme_doom">Doom</string>

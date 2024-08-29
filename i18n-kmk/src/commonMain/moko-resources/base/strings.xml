@@ -28,12 +28,12 @@
     <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
     <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
     <string name="pref_theme_cover_based_style_content">Content</string>
-    <string name="pref_expand_related_titles">Expand Related titles</string>
-    <string name="pref_expand_related_titles_summary">If turned off, related titles won\'t automatically load &amp; show expanded</string>
-    <string name="put_related_titles_in_overflow">Related titles in overflow</string>
-    <string name="put_related_titles_in_overflow_summary">Put the Related titles button in the overflow menu instead of on the entry page</string>
-    <string name="pref_show_home_on_related_titles">Home from Related titles</string>
-    <string name="pref_show_home_on_related_titles_summary">Show an icon while browsing Related titles to navigate directly back to Home</string>
+    <string name="pref_expand_related_mangas">Expand Suggestions</string>
+    <string name="pref_expand_related_mangas_summary">If turned off, Suggestions won\'t automatically load &amp; show expanded</string>
+    <string name="put_related_mangas_in_overflow">Suggestions in overflow</string>
+    <string name="put_related_mangas_in_overflow_summary">Put the Suggestions button in the overflow menu instead of on the entry page</string>
+    <string name="pref_show_home_on_related_mangas">Home from Suggestions</string>
+    <string name="pref_show_home_on_related_mangas_summary">Show an icon while browsing Suggestions to navigate directly back to Home</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Cotton Candy</string>
     <string name="theme_doom">Doom</string>
@@ -107,8 +107,8 @@
     <string name="changelogs">Change Logs</string>
 
     <!-- Browse settings -->
-    <string name="pref_source_related_mangas">Related Titles</string>
-    <string name="pref_source_related_mangas_summary">Show related titles while viewing entry</string>
+    <string name="pref_source_related_mangas">Suggestions</string>
+    <string name="pref_source_related_mangas_summary">Show 'Suggestions' while viewing entry</string>
     <string name="related_mangas_more">More like these...</string>
     <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
     <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>

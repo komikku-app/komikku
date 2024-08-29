@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Yksivärinen</string>
   <string name="pref_theme_cover_based_style_fidelity">Uskottomuus</string>
   <string name="pref_theme_cover_based_style_content">Sisältö</string>
-  <string name="pref_expand_related_titles">Laajenna liittyvät otsikot</string>
-  <string name="pref_expand_related_titles_summary">Jos pois päältä, aiheeseen liittyvät otsikot eivät lataudu automaattisesti &amp; näytä laajennettu</string>
+  <string name="pref_expand_related_mangas">Laajenna liittyvät otsikot</string>
+  <string name="pref_expand_related_mangas_summary">Jos pois päältä, aiheeseen liittyvät otsikot eivät lataudu automaattisesti &amp; näytä laajennettu</string>
   <string name="action_search_for_source">Hae lähdekoodia</string>
   <string name="action_library_search">Kirjaston haku</string>
-  <string name="pref_show_home_on_related_titles">Etusivu Liittyvät otsikot</string>
-  <string name="pref_show_home_on_related_titles_summary">Näytä kuvake selattaessa Liittyviä otsikoita, jotta voit navigoida suoraan takaisin etusivulle</string>
+  <string name="pref_show_home_on_related_mangas">Etusivu Liittyvät otsikot</string>
+  <string name="pref_show_home_on_related_mangas_summary">Näytä kuvake selattaessa Liittyviä otsikoita, jotta voit navigoida suoraan takaisin etusivulle</string>
   <string name="theme_cloudflare">Pilvikampela</string>
   <string name="theme_cottoncandy">Puuvilla Candy</string>
   <string name="theme_doom">Doom</string>

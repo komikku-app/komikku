@@ -8,7 +8,7 @@
         <changelogtext>[b]New:[/b] Add an "open in browser" button to reader menu</changelogtext>
         <changelogtext>[b]New:[/b] Add Backup and Restore of Extension Repos</changelogtext>
         <changelogtext>[b]Improve:[/b] allow canceling search for a migrating manga without remove it</changelogtext>
-        <changelogtext>[b]Improve:[/b] put Related titles in overflow</changelogtext>
+        <changelogtext>[b]Improve:[/b] put Suggestions in overflow</changelogtext>
         <changelogtext>[b]Fix:[/b] Update Kitsu's domain to kitsu.app</changelogtext>
         <changelogtext>[b]Fix:[/b] settings to show/hide progress-banner were not working</changelogtext>
         <changelogtext>[b]Fix:[/b] Fix MAL search results not showing start dates</changelogtext>
@@ -70,7 +70,7 @@
         <changelogtext>[b]Fix:[/b] Update image-decoder revision</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9075-r9078" changeDate="July 02, 2024">
-        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Suggestions row</changelogtext>
         <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
         <changelogtext>[b]New:[/b] More themes</changelogtext>
         <changelogtext>[b]Improve:[/b] Reader color</changelogtext>
@@ -87,7 +87,7 @@
         <changelogtext>[b]Improve:[/b] Metadata view</changelogtext>
         <changelogtext>[b]Improve:[/b] Scrollbar for related mangas screen</changelogtext>
         <changelogtext>[b]Improve:[/b] other UI improvements</changelogtext>
-        <changelogtext>[b]Fix:[/b] crashing issues with Related titles screens</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Suggestions screens</changelogtext>
         <changelogtext>[b]Fix:[/b] unexpected skips in strong skipping mode</changelogtext>
         <changelogtext>Translations update from Hosted Weblate</changelogtext>
         <changelogtext>Add log &amp; improve key generation to better debug crashing issues</changelogtext>
@@ -111,13 +111,13 @@
         <changelogtext>[b]New[/b] Support only Android 8+</changelogtext>
         <changelogtext>[b]New[/b] Add NSFW filter &amp; source search into Merge screen</changelogtext>
         <changelogtext>[b]Improve[/b] Theme cover based performance</changelogtext>
-        <changelogtext>[b]Improve[/b] Option to not show Related titles by default but using a button to open that screen</changelogtext>
+        <changelogtext>[b]Improve[/b] Option to not show Suggestions by default but using a button to open that screen</changelogtext>
         <changelogtext>[b]Fix[/b] laggy with scroll</changelogtext>
         <changelogtext>[b]Fix[/b] chapter's date wrong color randomly</changelogtext>
         <changelogtext>[b]Fix[/b] Bangumi tracker for Komikku, thanks @jimlee0824</changelogtext>
         <changelogtext>[b]Fix[/b] chapter number parsing when number is after unwanted tag</changelogtext>
         <changelogtext>[b]Fix[/b] sources' NSFW filter was being reverted</changelogtext>
-        <changelogtext>[b]Improve[/b] Hide Related titles completely if not found any</changelogtext>
+        <changelogtext>[b]Improve[/b] Hide Suggestions completely if not found any</changelogtext>
         <changelogtext>[b]Improve[/b] Translation for Komikku's string</changelogtext>
         <changelogtext>[b]Improve[/b] Default to put ShowRecommendation in overflow menu</changelogtext>
         <changelogtext>[b]Improve[/b] Check category order before restoring from backup</changelogtext>
@@ -128,7 +128,7 @@
         <changelogtext>[b]New[/b] Library &amp; Browse cover's styling: color tint &amp; loading animation</changelogtext>
         <changelogtext>[b]New[/b] Add Namicomi support for external chapters on MD</changelogtext>
         <changelogtext>[b]Improved[/b] Warning to private installer</changelogtext>
-        <changelogtext>[b]Fix[/b] Genre tag search while browsing related-titles or from Feed Screen</changelogtext>
+        <changelogtext>[b]Fix[/b] Genre tag search while browsing Suggestions or from Feed Screen</changelogtext>
         <changelogtext>[b]Fix[/b] storage permission request for non-conforming devices</changelogtext>
     </changelogversion>
     <changelogversion versionName="r8931" changeDate="May 30, 2024">

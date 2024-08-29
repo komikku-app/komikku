@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">モノクローム</string>
   <string name="pref_theme_cover_based_style_fidelity">忠実度</string>
   <string name="pref_theme_cover_based_style_content">コンテンツ</string>
-  <string name="pref_expand_related_titles">関連するタイトルを展開</string>
-  <string name="pref_expand_related_titles_summary">オフにすると、関連タイトルは自動的に読み込まれず、展開表示されません。</string>
+  <string name="pref_expand_related_mangas">関連するタイトルを展開</string>
+  <string name="pref_expand_related_mangas_summary">オフにすると、関連タイトルは自動的に読み込まれず、展開表示されません。</string>
   <string name="action_search_for_source">ソースを検索</string>
   <string name="action_library_search">ライブラリ検索</string>
-  <string name="pref_show_home_on_related_titles">関連タイトルのホーム</string>
-  <string name="pref_show_home_on_related_titles_summary">閲覧中にアイコンを表示する 関連するタイトルを直接ホームに移動する</string>
+  <string name="pref_show_home_on_related_mangas">関連タイトルのホーム</string>
+  <string name="pref_show_home_on_related_mangas_summary">閲覧中にアイコンを表示する 関連するタイトルを直接ホームに移動する</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">わたあめ</string>
   <string name="theme_doom">ドゥーム</string>

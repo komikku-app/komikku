@@ -28,7 +28,7 @@
         <changelogtext>[b]New:[/b] App icon</changelogtext>
         <changelogtext>[b]New:[/b] More App themes</changelogtext>
         <changelogtext>[b]New:[/b] Theme based on entry's cover color</changelogtext>
-        <changelogtext>[b]New:[/b] More related titles with a dedicated screen</changelogtext>
+        <changelogtext>[b]New:[/b] More suggestions with a dedicated screen</changelogtext>
         <changelogtext>[b]Improved:[/b] Faster loading of related entries</changelogtext>
         <changelogtext>[b]Improve:[/b] Better background for full cover view</changelogtext>
         <changelogtext>[b]Improve:[/b] Better cover-error &amp; cover-loading</changelogtext>
@@ -36,7 +36,7 @@
         <changelogtext>[b]New:[/b] Add NSFW filter &amp; source search into Merge screen</changelogtext>
         <changelogtext>[b]Improve:[/b] Sticky header &amp; language for sources filter</changelogtext>
         <changelogtext>[b]Fix:[/b] Allow manual edit on Tracker's chapter (must hit Done on keyboard)</changelogtext>
-        <changelogtext>[b]Fix:[/b] Genre tag search while browsing related titles or from Feed Screen</changelogtext>
+        <changelogtext>[b]Fix:[/b] Genre tag search while browsing Suggestions or from Feed Screen</changelogtext>
         <changelogtext>[b]Fix:[/b] Bangumi tracker</changelogtext>
         <changelogtext>[b]Fix:[/b] sometimes it's loading forever if app sleeps for too long (in Source's feed &amp; browse screens)</changelogtext>
         <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>

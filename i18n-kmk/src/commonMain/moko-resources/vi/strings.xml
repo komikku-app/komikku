@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Đơn sắc</string>
   <string name="pref_theme_cover_based_style_fidelity">Chính xác</string>
   <string name="pref_theme_cover_based_style_content">Mãn nguyện</string>
-  <string name="pref_expand_related_titles">Mở rộng Truyện liên quan</string>
-  <string name="pref_expand_related_titles_summary">Nếu tắt đi, các truyện liên quan sẽ không tự động tải &amp; hiển thị</string>
+  <string name="pref_expand_related_mangas">Mở rộng Truyện liên quan</string>
+  <string name="pref_expand_related_mangas_summary">Nếu tắt đi, các truyện liên quan sẽ không tự động tải &amp; hiển thị</string>
   <string name="action_search_for_source">Tìm kiếm nguồn</string>
   <string name="action_library_search">Tìm trong thư viện</string>
-  <string name="pref_show_home_on_related_titles">Về trang chính</string>
-  <string name="pref_show_home_on_related_titles_summary">Hiện biểu tưởng để về trang chính khi đang xem các truyện liên quan</string>
+  <string name="pref_show_home_on_related_mangas">Về trang chính</string>
+  <string name="pref_show_home_on_related_mangas_summary">Hiện biểu tưởng để về trang chính khi đang xem các truyện liên quan</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Kẹo bông</string>
   <string name="theme_doom">Doom</string>

@@ -232,7 +232,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         val previewsRowCount by uiPreferences.previewsRowCount().collectAsState()
         // KMK -->
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
-        val relatedTitlesInOverflow by uiPreferences.expandRelatedTitles().collectAsState()
+        val relatedMangasInOverflow by uiPreferences.expandRelatedMangas().collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -244,21 +244,21 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.expandRelatedTitles(),
-                    title = stringResource(KMR.strings.pref_expand_related_titles),
-                    subtitle = stringResource(KMR.strings.pref_expand_related_titles_summary),
+                    pref = uiPreferences.expandRelatedMangas(),
+                    title = stringResource(KMR.strings.pref_expand_related_mangas),
+                    subtitle = stringResource(KMR.strings.pref_expand_related_mangas_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.relatedTitlesInOverflow(),
-                    enabled = !relatedTitlesInOverflow,
-                    title = stringResource(KMR.strings.put_related_titles_in_overflow),
-                    subtitle = stringResource(KMR.strings.put_related_titles_in_overflow_summary),
+                    pref = uiPreferences.relatedMangasInOverflow(),
+                    enabled = !relatedMangasInOverflow,
+                    title = stringResource(KMR.strings.put_related_mangas_in_overflow),
+                    subtitle = stringResource(KMR.strings.put_related_mangas_in_overflow_summary),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.showHomeOnRelatedTitles(),
-                    title = stringResource(KMR.strings.pref_show_home_on_related_titles),
-                    subtitle = stringResource(KMR.strings.pref_show_home_on_related_titles_summary),
+                    pref = uiPreferences.showHomeOnRelatedMangas(),
+                    title = stringResource(KMR.strings.pref_show_home_on_related_mangas),
+                    subtitle = stringResource(KMR.strings.pref_show_home_on_related_mangas_summary),
                     enabled = sourcePreferences.relatedMangas().get(),
                 ),
                 // KMK <--
