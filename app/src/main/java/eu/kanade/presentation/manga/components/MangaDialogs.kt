@@ -127,7 +127,9 @@ fun SetIntervalDialog(
                             }
                             .toImmutableList()
                         WheelTextPicker(
-                            items = items,
+                            items = listOf(items[1], items[0])
+                                .plus(items.subList(2, items.size))
+                                .toImmutableList(),
                             size = size,
                             startIndex = selectedInterval,
                             onSelectionChanged = { selectedInterval = it },
