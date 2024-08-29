@@ -65,7 +65,7 @@ fun RelatedMangasCompactGrid(
                         title = if (relatedManga.keyword.isNotBlank()) {
                             stringResource(KMR.strings.related_mangas_more)
                         } else {
-                            stringResource(KMR.strings.pref_source_related_mangas)
+                            stringResource(KMR.strings.related_mangas_website_suggestions)
                         },
                         showArrow = relatedManga.keyword.isNotBlank(),
                         subtitle = null,

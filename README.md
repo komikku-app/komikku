@@ -17,7 +17,7 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 
 ### Komikku's key features:
 - [x] Built-in extensions repository, always up-to-date with Keiyoushi with a few more sources & improvements.
-- [x] Automatically show `Related Titles` to current entry for all sources.
+- [x] `Suggestions` automatically showing source-website's recommendations/suggestions/related to current entry for all sources.
 - [x] Auto theme color based on each entry's cover for entry View & Reader.
 - [x] 2-way sync progress with trackers, automatically.
 - [x] `Feed` now supports all sources, with more items (20 for now).

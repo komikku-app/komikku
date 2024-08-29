@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monocromatico</string>
   <string name="pref_theme_cover_based_style_fidelity">Fedeltà</string>
   <string name="pref_theme_cover_based_style_content">Contenuto</string>
-  <string name="pref_expand_related_titles">Espandi titoli correlati</string>
-  <string name="pref_expand_related_titles_summary">Se disattivato, i titoli correlati non caricheranno automaticamente &amp; mostra espansa</string>
+  <string name="pref_expand_related_mangas">Espandi titoli correlati</string>
+  <string name="pref_expand_related_mangas_summary">Se disattivato, i titoli correlati non caricheranno automaticamente &amp; mostra espansa</string>
   <string name="action_search_for_source">Cerca la sorgente</string>
   <string name="action_library_search">Ricerca libreria</string>
-  <string name="pref_show_home_on_related_titles">Home da Titoli correlati</string>
-  <string name="pref_show_home_on_related_titles_summary">Mostra un\'icona durante la navigazione Titoli correlati per navigare direttamente su Home</string>
+  <string name="pref_show_home_on_related_mangas">Home da Titoli correlati</string>
+  <string name="pref_show_home_on_related_mangas_summary">Mostra un\'icona durante la navigazione Titoli correlati per navigare direttamente su Home</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Zucchero filato</string>
   <string name="theme_doom">Doom</string>

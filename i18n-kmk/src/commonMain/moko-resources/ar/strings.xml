@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">أحادية</string>
   <string name="pref_theme_cover_based_style_fidelity">التلاعب</string>
   <string name="pref_theme_cover_based_style_content">محتوى</string>
-  <string name="pref_expand_related_titles">توسيع العناوين ذات الصلة</string>
-  <string name="pref_expand_related_titles_summary">إذا تم إيقاف التشغيل، لن يتم تحميل العناوين ذات الصلة تلقائيًا &amp; إظهار الموسعة</string>
+  <string name="pref_expand_related_mangas">توسيع العناوين ذات الصلة</string>
+  <string name="pref_expand_related_mangas_summary">إذا تم إيقاف التشغيل، لن يتم تحميل العناوين ذات الصلة تلقائيًا &amp; إظهار الموسعة</string>
   <string name="action_search_for_source">البحث عن مصدر</string>
   <string name="action_library_search">البحث في المكتبة</string>
-  <string name="pref_show_home_on_related_titles">المنزل من العناوين ذات الصلة</string>
-  <string name="pref_show_home_on_related_titles_summary">إظهار أيقونة أثناء تصفح العناوين ذات الصلة للتنقل مباشرة إلى الصفحة الرئيسية</string>
+  <string name="pref_show_home_on_related_mangas">المنزل من العناوين ذات الصلة</string>
+  <string name="pref_show_home_on_related_mangas_summary">إظهار أيقونة أثناء تصفح العناوين ذات الصلة للتنقل مباشرة إلى الصفحة الرئيسية</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">حلوى القطن</string>
   <string name="theme_doom">Doom</string>

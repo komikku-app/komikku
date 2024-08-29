@@ -412,8 +412,8 @@ private fun MangaScreenSmallImpl(
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
     val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
-    val expandRelatedMangas by uiPreferences.expandRelatedTitles().collectAsState()
-    val showRelatedTitlesInOverflow by uiPreferences.relatedTitlesInOverflow().collectAsState()
+    val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
+    val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
@@ -460,9 +460,9 @@ private fun MangaScreenSmallImpl(
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
-                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf {
+                onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
-                        showRelatedTitlesInOverflow &&
+                        showRelatedMangasInOverflow &&
                         state.manga.source != MERGED_SOURCE_ID
                 },
                 // KMK <--
@@ -646,8 +646,8 @@ private fun MangaScreenSmallImpl(
                             if (state.relatedMangasSorted?.isNotEmpty() != false) {
                                 item { HorizontalDivider() }
                                 item(
-                                    key = MangaScreenItem.RELATED_TITLES,
-                                    contentType = MangaScreenItem.RELATED_TITLES,
+                                    key = MangaScreenItem.RELATED_MANGAS,
+                                    contentType = MangaScreenItem.RELATED_MANGAS,
                                 ) {
                                     Column {
                                         RelatedMangaTitle(
@@ -668,10 +668,10 @@ private fun MangaScreenSmallImpl(
                                 }
                                 item { HorizontalDivider() }
                             }
-                        } else if (!showRelatedTitlesInOverflow) {
+                        } else if (!showRelatedMangasInOverflow) {
                             item(
-                                key = MangaScreenItem.RELATED_TITLES,
-                                contentType = MangaScreenItem.RELATED_TITLES,
+                                key = MangaScreenItem.RELATED_MANGAS,
+                                contentType = MangaScreenItem.RELATED_MANGAS,
                             ) {
                                 OutlinedButtonWithArrow(
                                     text = stringResource(KMR.strings.pref_source_related_mangas)
@@ -833,8 +833,8 @@ private fun MangaScreenLargeImpl(
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
     val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
-    val expandRelatedMangas by uiPreferences.expandRelatedTitles().collectAsState()
-    val showRelatedTitlesInOverflow by uiPreferences.relatedTitlesInOverflow().collectAsState()
+    val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
+    val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
     // KMK <--
 
@@ -873,9 +873,9 @@ private fun MangaScreenLargeImpl(
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
-                onClickRelatedTitles = onRelatedMangasScreenClick.takeIf {
+                onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
-                        showRelatedTitlesInOverflow &&
+                        showRelatedMangasInOverflow &&
                         state.manga.source != MERGED_SOURCE_ID
                 },
                 // KMK <--
@@ -1070,8 +1070,8 @@ private fun MangaScreenLargeImpl(
                                 if (expandRelatedMangas) {
                                     if (state.relatedMangasSorted?.isNotEmpty() != false) {
                                         item(
-                                            key = MangaScreenItem.RELATED_TITLES,
-                                            contentType = MangaScreenItem.RELATED_TITLES,
+                                            key = MangaScreenItem.RELATED_MANGAS,
+                                            contentType = MangaScreenItem.RELATED_MANGAS,
                                         ) {
                                             Column {
                                                 RelatedMangaTitle(
@@ -1093,10 +1093,10 @@ private fun MangaScreenLargeImpl(
                                         }
                                         item { HorizontalDivider() }
                                     }
-                                } else if (!showRelatedTitlesInOverflow) {
+                                } else if (!showRelatedMangasInOverflow) {
                                     item(
-                                        key = MangaScreenItem.RELATED_TITLES,
-                                        contentType = MangaScreenItem.RELATED_TITLES,
+                                        key = MangaScreenItem.RELATED_MANGAS,
+                                        contentType = MangaScreenItem.RELATED_MANGAS,
                                     ) {
                                         OutlinedButtonWithArrow(
                                             text = stringResource(KMR.strings.pref_source_related_mangas),

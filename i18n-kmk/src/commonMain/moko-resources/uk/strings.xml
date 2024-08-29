@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Монотонні</string>
   <string name="pref_theme_cover_based_style_fidelity">Чесність</string>
   <string name="pref_theme_cover_based_style_content">Зміст</string>
-  <string name="pref_expand_related_titles">Розгорнути Пов\'язані заголовки</string>
-  <string name="pref_expand_related_titles_summary">Якщо вимкнено, пов’язані заголовки не будуть автоматично завантажувати &amp; показати розширене</string>
+  <string name="pref_expand_related_mangas">Розгорнути Пов\'язані заголовки</string>
+  <string name="pref_expand_related_mangas_summary">Якщо вимкнено, пов’язані заголовки не будуть автоматично завантажувати &amp; показати розширене</string>
   <string name="action_search_for_source">Пошук джерела</string>
   <string name="action_library_search">Пошук у бібліотеці</string>
-  <string name="pref_show_home_on_related_titles">Домашній екран із пов\'язаних заголовків</string>
-  <string name="pref_show_home_on_related_titles_summary">Показувати значок у той час як Пов\'язані заголовки будуть переміщатися безпосередньо до головного екрану</string>
+  <string name="pref_show_home_on_related_mangas">Домашній екран із пов\'язаних заголовків</string>
+  <string name="pref_show_home_on_related_mangas_summary">Показувати значок у той час як Пов\'язані заголовки будуть переміщатися безпосередньо до головного екрану</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Цукрова Вата</string>
   <string name="theme_doom">Doom</string>

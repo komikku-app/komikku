@@ -83,7 +83,7 @@ interface CatalogueSource : Source {
     val disableRelatedMangasBySearch: Boolean get() = false
 
     /**
-     * Disable showing any related titles.
+     * Disable showing any related mangas.
      * @default false
      * @since komikku/extensions-lib 1.6
      */

@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
   <string name="pref_theme_cover_based_style_content">Innehåll</string>
-  <string name="pref_expand_related_titles">Expandera relaterade titlar</string>
-  <string name="pref_expand_related_titles_summary">Om inaktiverad, kommer relaterade titlar inte automatiskt ladda &amp; visa utökad</string>
+  <string name="pref_expand_related_mangas">Expandera relaterade titlar</string>
+  <string name="pref_expand_related_mangas_summary">Om inaktiverad, kommer relaterade titlar inte automatiskt ladda &amp; visa utökad</string>
   <string name="action_search_for_source">Sök efter källa</string>
   <string name="action_library_search">Sök i bibliotek</string>
-  <string name="pref_show_home_on_related_titles">Hem från relaterade titlar</string>
-  <string name="pref_show_home_on_related_titles_summary">Visa en ikon medan du surfar Relaterade titlar för att navigera direkt tillbaka till hemmet</string>
+  <string name="pref_show_home_on_related_mangas">Hem från relaterade titlar</string>
+  <string name="pref_show_home_on_related_mangas_summary">Visa en ikon medan du surfar Relaterade titlar för att navigera direkt tillbaka till hemmet</string>
   <string name="theme_cloudflare">Molnflare</string>
   <string name="theme_cottoncandy">Bomulls Godis</string>
   <string name="theme_doom">Undergång</string>

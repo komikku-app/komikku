@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">單色</string>
   <string name="pref_theme_cover_based_style_fidelity">精確</string>
   <string name="pref_theme_cover_based_style_content">心滿意足</string>
-  <string name="pref_expand_related_titles">展開相關標題</string>
-  <string name="pref_expand_related_titles_summary">如果關閉，相關標題將不會自動加載 &amp; 展開顯示內容。</string>
+  <string name="pref_expand_related_mangas">展開相關標題</string>
+  <string name="pref_expand_related_mangas_summary">如果關閉，相關標題將不會自動加載 &amp; 展開顯示內容。</string>
   <string name="action_search_for_source">搜尋來源</string>
   <string name="action_library_search">搜尋書櫃</string>
-  <string name="pref_show_home_on_related_titles">相關標題首頁</string>
-  <string name="pref_show_home_on_related_titles_summary">在瀏覽相關標題時顯示一個圖標以方便直接導航回首頁</string>
+  <string name="pref_show_home_on_related_mangas">相關標題首頁</string>
+  <string name="pref_show_home_on_related_mangas_summary">在瀏覽相關標題時顯示一個圖標以方便直接導航回首頁</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">棉花糖</string>
   <string name="theme_doom">末日</string>

@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Μονόχρωμο</string>
   <string name="pref_theme_cover_based_style_fidelity">Πιστότητα</string>
   <string name="pref_theme_cover_based_style_content">Περιεχόμενο</string>
-  <string name="pref_expand_related_titles">Επέκταση σχετικών τίτλων</string>
-  <string name="pref_expand_related_titles_summary">Αν απενεργοποιηθεί, οι σχετικοί τίτλοι δεν θα φορτώνουν αυτόματα το &amp; show extended</string>
+  <string name="pref_expand_related_mangas">Επέκταση σχετικών τίτλων</string>
+  <string name="pref_expand_related_mangas_summary">Αν απενεργοποιηθεί, οι σχετικοί τίτλοι δεν θα φορτώνουν αυτόματα το &amp; show extended</string>
   <string name="action_search_for_source">Αναζήτηση πηγής</string>
   <string name="action_library_search">Αναζήτηση βιβλιοθήκης</string>
-  <string name="pref_show_home_on_related_titles">Αρχική σελίδα από Σχετικούς τίτλους</string>
-  <string name="pref_show_home_on_related_titles_summary">Εμφάνιση εικονιδίου κατά την περιήγηση σε Σχετικούς τίτλους για πλοήγηση απευθείας πίσω στην Αρχική</string>
+  <string name="pref_show_home_on_related_mangas">Αρχική σελίδα από Σχετικούς τίτλους</string>
+  <string name="pref_show_home_on_related_mangas_summary">Εμφάνιση εικονιδίου κατά την περιήγηση σε Σχετικούς τίτλους για πλοήγηση απευθείας πίσω στην Αρχική</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Βαμβακερό Καραμέλα</string>
   <string name="theme_doom">Έκρηξη</string>

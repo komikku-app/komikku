@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochromní</string>
   <string name="pref_theme_cover_based_style_fidelity">Věrnost</string>
   <string name="pref_theme_cover_based_style_content">Obsah</string>
-  <string name="pref_expand_related_titles">Rozbalit související názvy</string>
-  <string name="pref_expand_related_titles_summary">Pokud je vypnuto, související názvy nebudou automaticky načteny &amp; Zobrazit rozšířené</string>
+  <string name="pref_expand_related_mangas">Rozbalit související názvy</string>
+  <string name="pref_expand_related_mangas_summary">Pokud je vypnuto, související názvy nebudou automaticky načteny &amp; Zobrazit rozšířené</string>
   <string name="action_search_for_source">Hledat zdroj</string>
   <string name="action_library_search">Vyhledávání knihovny</string>
-  <string name="pref_show_home_on_related_titles">Domů ze souvisejících názvů</string>
-  <string name="pref_show_home_on_related_titles_summary">Zobrazit ikonu při prohlížení souvisejících názvů pro přímý přechod zpět na Domů</string>
+  <string name="pref_show_home_on_related_mangas">Domů ze souvisejících názvů</string>
+  <string name="pref_show_home_on_related_mangas_summary">Zobrazit ikonu při prohlížení souvisejících názvů pro přímý přechod zpět na Domů</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Bavlníkový Candy</string>
   <string name="theme_doom">Doom</string>

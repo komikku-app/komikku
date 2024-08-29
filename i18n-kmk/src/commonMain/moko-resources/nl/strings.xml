@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochroom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fideliteit</string>
   <string name="pref_theme_cover_based_style_content">Inhoud</string>
-  <string name="pref_expand_related_titles">Verwante titels uitvouwen</string>
-  <string name="pref_expand_related_titles_summary">Als uitgeschakeld, zullen gerelateerde titels niet automatisch laden &amp; tonen uitgebreid</string>
+  <string name="pref_expand_related_mangas">Verwante titels uitvouwen</string>
+  <string name="pref_expand_related_mangas_summary">Als uitgeschakeld, zullen gerelateerde titels niet automatisch laden &amp; tonen uitgebreid</string>
   <string name="action_search_for_source">Bron zoeken</string>
   <string name="action_library_search">Bibliotheek zoeken</string>
-  <string name="pref_show_home_on_related_titles">Thuis van verwante titels</string>
-  <string name="pref_show_home_on_related_titles_summary">Toon een pictogram tijdens het browsen van verwante titels om direct terug te gaan naar Home</string>
+  <string name="pref_show_home_on_related_mangas">Thuis van verwante titels</string>
+  <string name="pref_show_home_on_related_mangas_summary">Toon een pictogram tijdens het browsen van verwante titels om direct terug te gaan naar Home</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Katoen Snoep</string>
   <string name="theme_doom">Domme</string>

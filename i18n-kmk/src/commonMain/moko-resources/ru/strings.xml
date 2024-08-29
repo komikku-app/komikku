@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">Монохромный</string>
   <string name="pref_theme_cover_based_style_fidelity">Верность</string>
   <string name="pref_theme_cover_based_style_content">Содержание</string>
-  <string name="pref_expand_related_titles">Развернуть связанные заголовки</string>
-  <string name="pref_expand_related_titles_summary">Если выключено, соответствующие заголовки не будут автоматически загружать &amp; будут развернуты</string>
+  <string name="pref_expand_related_mangas">Развернуть связанные заголовки</string>
+  <string name="pref_expand_related_mangas_summary">Если выключено, соответствующие заголовки не будут автоматически загружать &amp; будут развернуты</string>
   <string name="action_search_for_source">Поиск источника</string>
   <string name="action_library_search">Поиск по библиотеке</string>
-  <string name="pref_show_home_on_related_titles">Главная из связанных заголовков</string>
-  <string name="pref_show_home_on_related_titles_summary">Показывать значок во время просмотра связанных заголовков для перехода непосредственно на главную</string>
+  <string name="pref_show_home_on_related_mangas">Главная из связанных заголовков</string>
+  <string name="pref_show_home_on_related_mangas_summary">Показывать значок во время просмотра связанных заголовков для перехода непосредственно на главную</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Сахарная вата</string>
   <string name="theme_doom">Doom</string>

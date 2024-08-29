@@ -45,12 +45,12 @@
   <string name="pref_theme_cover_based_style_monochrome">单色</string>
   <string name="pref_theme_cover_based_style_fidelity">幻影性</string>
   <string name="pref_theme_cover_based_style_content">内容</string>
-  <string name="pref_expand_related_titles">展开相关标题</string>
-  <string name="pref_expand_related_titles_summary">如果关闭，相关标题不会自动加载 &amp; 显示扩展</string>
+  <string name="pref_expand_related_mangas">展开相关标题</string>
+  <string name="pref_expand_related_mangas_summary">如果关闭，相关标题不会自动加载 &amp; 显示扩展</string>
   <string name="action_search_for_source">搜索源</string>
   <string name="action_library_search">书库搜索</string>
-  <string name="pref_show_home_on_related_titles">来自相关标题的首页</string>
-  <string name="pref_show_home_on_related_titles_summary">浏览相关标题时显示图标以直接回到主页</string>
+  <string name="pref_show_home_on_related_mangas">来自相关标题的首页</string>
+  <string name="pref_show_home_on_related_mangas_summary">浏览相关标题时显示图标以直接回到主页</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">棉花糖</string>
   <string name="theme_doom">腥红</string>
