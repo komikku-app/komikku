@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">FAQ und Anleitungen</string>
   <string name="pref_details_page_theme">Detailseite</string>
   <string name="pref_theme_cover_based_style">Design-Stil</string>
-  <string name="ext_unofficial">Ungültig</string>
-  <string name="unofficial_extension_message">Diese Erweiterung ist nicht vom offiziellen Repo.</string>
   <string name="download_cache_renew_interval">Download-Cache Erneuerungsintervall</string>
   <string name="download_cache_renew_interval_manual">Manuell</string>
   <string name="download_cache_renew_interval_1hour">1 Stunde</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Jetzt versuchen</string>
   <string name="update_check_notification_preview_available">Kommt (bald) Updates!</string>
   <string name="changelogs">Log ändern</string>
-  <string name="pref_source_related_mangas">Ähnliche Titel</string>
-  <string name="pref_source_related_mangas_summary">Ähnliche Titel während des Eintrags anzeigen</string>
   <string name="related_mangas_more">Mehr davon...</string>
   <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed, kann nicht mehr als begrenzt hinzufügen (20)</string>
   <string name="current_">Aktuell: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelität</string>
   <string name="pref_theme_cover_based_style_content">Inhalt</string>
-  <string name="pref_expand_related_mangas">Verwandte Titel erweitern</string>
-  <string name="pref_expand_related_mangas_summary">Wenn ausgeschaltet, laden verwandte Titel nicht automatisch &amp; zeigen erweiterte</string>
   <string name="action_search_for_source">Nach Quelle suchen</string>
   <string name="action_library_search">Bibliothekssuche</string>
-  <string name="pref_show_home_on_related_mangas">Home von verwandten Titeln</string>
-  <string name="pref_show_home_on_related_mangas_summary">Symbol beim Durchsuchen verwandter Titel anzeigen, um direkt zurück zum Home zu navigieren</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Zuckerwatte</string>
   <string name="theme_doom">Doom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Titelfarbe der Bibliothek vorladen</string>
   <string name="saved_searches_add_feed">Gespeicherte Suche (zum Feed hinzufügen)</string>
   <string name="saved_searches_delete">Gespeicherte Suchanfragen (zum Löschen warten)</string>
+  <string name="action_display_source_badge">Quell-Symbol</string>
+  <string name="action_display_language_icon">Sprachsymbol verwenden</string>
+  <string name="action_confirm_color">Farbe bestätigen</string>
+  <string name="pref_custom_color">Palette Personalizer</string>
+  <string name="custom_color_description">Wählen Sie eine Farbe für das benutzerdefinierte Theme</string>
+  <string name="theme_custom">Eigene Themes</string>
+  <string name="extensions_page_need_refresh">Erweiterungs-Seite aktualisieren, um Liste zu aktualisieren.</string>
+  <string name="extensions_page_more">Weitere Erweiterungen...</string>
+  <string name="action_remove_merged">Merged Einträge entfernen?</string>
+  <string name="pref_expand_related_mangas">Vorschläge erweitern</string>
+  <string name="pref_expand_related_mangas_summary">Wenn ausgeschaltet, werden Vorschläge nicht automatisch &amp; Show Expansion laden</string>
+  <string name="put_related_mangas_in_overflow">Vorschläge im Überlauf</string>
+  <string name="put_related_mangas_in_overflow_summary">Setzen Sie die Schaltfläche Vorschläge in das Überlaufmenü anstatt auf der Einstiegsseite</string>
+  <string name="pref_show_home_on_related_mangas">Home von Vorschlägen</string>
+  <string name="pref_show_home_on_related_mangas_summary">Symbol während des Durchsuchens von Vorschlägen anzeigen, um direkt zurück nach Hause zu navigieren</string>
+  <string name="pref_source_related_mangas">Vorschläge</string>
+  <string name="pref_source_related_mangas_summary">Vorschläge der Quell-Website während des Eintrags anzeigen</string>
+  <string name="related_mangas_website_suggestions">Website-Vorschläge</string>
 </resources>

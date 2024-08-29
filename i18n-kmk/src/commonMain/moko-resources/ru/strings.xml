@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">FAQ и руководства</string>
   <string name="pref_details_page_theme">Детали</string>
   <string name="pref_theme_cover_based_style">Стиль темы</string>
-  <string name="ext_unofficial">Неофициальный</string>
-  <string name="unofficial_extension_message">Это расширение не из официального репозитория.</string>
   <string name="download_cache_renew_interval">Загрузить интервал обновления кэша</string>
   <string name="download_cache_renew_interval_manual">Ручной</string>
   <string name="download_cache_renew_interval_1hour">1 час</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Попробовать</string>
   <string name="update_check_notification_preview_available">Скоро (скоро) обновления!</string>
   <string name="changelogs">Сменить логи</string>
-  <string name="pref_source_related_mangas">Связанные заголовки</string>
-  <string name="pref_source_related_mangas_summary">Показывать связанные заголовки при просмотре записи</string>
   <string name="related_mangas_more">Больше похожих...</string>
   <string name="too_many_in_feed">Слишком много источников в вашем канале, нельзя добавить больше лимита (20)</string>
   <string name="current_">Текущий: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Монохромный</string>
   <string name="pref_theme_cover_based_style_fidelity">Верность</string>
   <string name="pref_theme_cover_based_style_content">Содержание</string>
-  <string name="pref_expand_related_mangas">Развернуть связанные заголовки</string>
-  <string name="pref_expand_related_mangas_summary">Если выключено, соответствующие заголовки не будут автоматически загружать &amp; будут развернуты</string>
   <string name="action_search_for_source">Поиск источника</string>
   <string name="action_library_search">Поиск по библиотеке</string>
-  <string name="pref_show_home_on_related_mangas">Главная из связанных заголовков</string>
-  <string name="pref_show_home_on_related_mangas_summary">Показывать значок во время просмотра связанных заголовков для перехода непосредственно на главную</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Сахарная вата</string>
   <string name="theme_doom">Doom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Выгрузить цвет обложки библиотеки</string>
   <string name="saved_searches_add_feed">Сохраненные поиски (Удерживайте, чтобы добавить в Лента)</string>
   <string name="saved_searches_delete">Сохраненные поиски (удерживаются для удаления)</string>
+  <string name="action_display_source_badge">Иконка источника</string>
+  <string name="action_display_language_icon">Использовать значок языка</string>
+  <string name="action_confirm_color">Подтвердить цвет</string>
+  <string name="pref_custom_color">Персонализирующий палитры</string>
+  <string name="custom_color_description">Выберите цвет для пользовательской темы</string>
+  <string name="theme_custom">Пользовательская тема</string>
+  <string name="extensions_page_need_refresh">Обновите страницу расширения для обновления списка.</string>
+  <string name="extensions_page_more">Больше расширений...</string>
+  <string name="action_remove_merged">Удалить объединенные записи?</string>
+  <string name="pref_expand_related_mangas">Расширить предложения</string>
+  <string name="pref_expand_related_mangas_summary">Если выключено, предложения не будут автоматически загружаться &amp; показывать в развернутом виде</string>
+  <string name="put_related_mangas_in_overflow">Предложения в переполнении</string>
+  <string name="put_related_mangas_in_overflow_summary">Вставить кнопку предложений в меню переполнения вместо страницы ввода</string>
+  <string name="pref_show_home_on_related_mangas">Домой от предложений</string>
+  <string name="pref_show_home_on_related_mangas_summary">Показывать значок во время просмотра предложений для перехода непосредственно на Домашний экран</string>
+  <string name="pref_source_related_mangas">Предложения</string>
+  <string name="pref_source_related_mangas_summary">Показывать подсказки сайта при просмотре записи</string>
+  <string name="related_mangas_website_suggestions">Предложения сайта</string>
 </resources>

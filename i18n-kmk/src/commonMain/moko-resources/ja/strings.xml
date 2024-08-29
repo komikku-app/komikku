@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">FAQ とガイド</string>
   <string name="pref_details_page_theme">詳細ページ</string>
   <string name="pref_theme_cover_based_style">テーマのスタイル</string>
-  <string name="ext_unofficial">非公式</string>
-  <string name="unofficial_extension_message">この拡張機能は公式リポジトリからのものではありません。</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>
   <string name="download_cache_renew_interval_1hour">1 時間</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">今すぐ試す</string>
   <string name="update_check_notification_preview_available">近日公開！</string>
   <string name="changelogs">変更ログ</string>
-  <string name="pref_source_related_mangas">関連するタイトル</string>
-  <string name="pref_source_related_mangas_summary">エントリを表示中に関連するタイトルを表示</string>
   <string name="related_mangas_more">これらのような...</string>
   <string name="too_many_in_feed">フィードのソースが多すぎます。制限を超えることはできません（20）</string>
   <string name="current_">現在: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">モノクローム</string>
   <string name="pref_theme_cover_based_style_fidelity">忠実度</string>
   <string name="pref_theme_cover_based_style_content">コンテンツ</string>
-  <string name="pref_expand_related_mangas">関連するタイトルを展開</string>
-  <string name="pref_expand_related_mangas_summary">オフにすると、関連タイトルは自動的に読み込まれず、展開表示されません。</string>
   <string name="action_search_for_source">ソースを検索</string>
   <string name="action_library_search">ライブラリ検索</string>
-  <string name="pref_show_home_on_related_mangas">関連タイトルのホーム</string>
-  <string name="pref_show_home_on_related_mangas_summary">閲覧中にアイコンを表示する 関連するタイトルを直接ホームに移動する</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">わたあめ</string>
   <string name="theme_doom">ドゥーム</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">ライブラリのカバーカラーをプリロード</string>
   <string name="saved_searches_add_feed">保存された検索（フィードに追加するには長押し）</string>
   <string name="saved_searches_delete">保存された検索（削除する場合は長押し）</string>
+  <string name="action_display_source_badge">ソースアイコン</string>
+  <string name="action_display_language_icon">言語アイコンを使用する</string>
+  <string name="action_confirm_color">色を確認</string>
+  <string name="pref_custom_color">パレットのカスタマイズ</string>
+  <string name="custom_color_description">カスタムテーマの色を選択</string>
+  <string name="theme_custom">カスタムテーマ</string>
+  <string name="extensions_page_need_refresh">リストを更新するにはエクステンションページを更新してください。</string>
+  <string name="extensions_page_more">その他のエクステンション...</string>
+  <string name="action_remove_merged">マージされたエントリを削除しますか？</string>
+  <string name="pref_expand_related_mangas">提案を展開</string>
+  <string name="pref_expand_related_mangas_summary">オフにすると、提案は自動的に読み込まれず、展開されて表示されません</string>
+  <string name="put_related_mangas_in_overflow">オーバーフローの提案</string>
+  <string name="put_related_mangas_in_overflow_summary">入力ページの代わりにオーバーフローメニューに提案ボタンを置く</string>
+  <string name="pref_show_home_on_related_mangas">おすすめのホーム</string>
+  <string name="pref_show_home_on_related_mangas_summary">おすすめを参照中にアイコンを表示してホームに直接移動する</string>
+  <string name="pref_source_related_mangas">候補</string>
+  <string name="pref_source_related_mangas_summary">エントリを表示中にソースウェブサイトの提案を表示する</string>
+  <string name="related_mangas_website_suggestions">ウェブサイトの提案</string>
 </resources>

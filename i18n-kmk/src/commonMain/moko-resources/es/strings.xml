@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">Preguntas frecuentes y guías</string>
   <string name="pref_details_page_theme">Página de detalles</string>
   <string name="pref_theme_cover_based_style">Estilo del tema</string>
-  <string name="ext_unofficial">No oficial</string>
-  <string name="unofficial_extension_message">Esta extensión no es del repositorio oficial.</string>
   <string name="download_cache_renew_interval">Descargar el intervalo de renovación de caché</string>
   <string name="download_cache_renew_interval_manual">Manual</string>
   <string name="download_cache_renew_interval_1hour">1 hora</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Prueba ahora</string>
   <string name="update_check_notification_preview_available">¡Próximas actualizaciones!</string>
   <string name="changelogs">Cambiar registros</string>
-  <string name="pref_source_related_mangas">Títulos relacionados</string>
-  <string name="pref_source_related_mangas_summary">Mostrar títulos relacionados mientras se visualiza la entrada</string>
   <string name="related_mangas_more">Más así...</string>
   <string name="too_many_in_feed">Demasiadas fuentes en su fuente, no se puede añadir más de limitado (20)</string>
   <string name="current_">Actual: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Monocromo</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelidad</string>
   <string name="pref_theme_cover_based_style_content">Contenido</string>
-  <string name="pref_expand_related_mangas">Expandir títulos relacionados</string>
-  <string name="pref_expand_related_mangas_summary">Si se desactiva, los títulos relacionados no cargarán automáticamente &amp; mostrar expandido</string>
   <string name="action_search_for_source">Buscar fuente</string>
   <string name="action_library_search">Búsqueda de biblioteca</string>
-  <string name="pref_show_home_on_related_mangas">Inicio de los títulos relacionados</string>
-  <string name="pref_show_home_on_related_mangas_summary">Mostrar un icono mientras navegas por los títulos relacionados para volver directamente a la casa</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Algodón de Azúcar</string>
   <string name="theme_doom">Doom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">precargar el color de portada de la biblioteca</string>
   <string name="saved_searches_add_feed">Búsqueda guardada (Mantén para añadir al alimento)</string>
   <string name="saved_searches_delete">Búsquedas guardadas (Mantén para eliminar)</string>
+  <string name="action_display_source_badge">Icono de origen</string>
+  <string name="action_display_language_icon">Usar icono de idioma</string>
+  <string name="action_confirm_color">Confirmar color</string>
+  <string name="pref_custom_color">Personalizador de paleta</string>
+  <string name="custom_color_description">Elige un color para el tema personalizado</string>
+  <string name="theme_custom">Tema personalizado</string>
+  <string name="extensions_page_need_refresh">Actualizar página de extensión para actualizar la lista.</string>
+  <string name="extensions_page_more">Más extensiones...</string>
+  <string name="action_remove_merged">¿Eliminar entradas fusionadas?</string>
+  <string name="pref_expand_related_mangas">Expandir sugerencias</string>
+  <string name="pref_expand_related_mangas_summary">Si está desactivado, las sugerencias no cargarán automáticamente &amp; mostrar expandido</string>
+  <string name="put_related_mangas_in_overflow">Sugerencias en el desbordamiento</string>
+  <string name="put_related_mangas_in_overflow_summary">Ponga el botón Sugerencias en el menú de desbordamiento en lugar de en la página de entrada</string>
+  <string name="pref_show_home_on_related_mangas">Inicio de sugerencias</string>
+  <string name="pref_show_home_on_related_mangas_summary">Mostrar un icono mientras se navega por las Sugerencias para volver directamente a Inicio</string>
+  <string name="pref_source_related_mangas">Sugerencias</string>
+  <string name="pref_source_related_mangas_summary">Mostrar sugerencias del sitio web fuente mientras se visualiza la entrada</string>
+  <string name="related_mangas_website_suggestions">Sugerencias de sitio web</string>
 </resources>

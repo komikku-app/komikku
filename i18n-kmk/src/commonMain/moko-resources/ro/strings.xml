@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
   <string name="pref_details_page_theme">Pagina de detalii</string>
   <string name="pref_theme_cover_based_style">Stil temă</string>
-  <string name="ext_unofficial">Neoficial.</string>
-  <string name="unofficial_extension_message">Această extensie nu este din repo-ul oficial.</string>
   <string name="download_cache_renew_interval">Interval reînnoire descărcare geocutie</string>
   <string name="download_cache_renew_interval_manual">Manual</string>
   <string name="download_cache_renew_interval_1hour">1 oră</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Încearcă acum</string>
   <string name="update_check_notification_preview_available">În curând actualizări!</string>
   <string name="changelogs">Jurnale de modificări</string>
-  <string name="pref_source_related_mangas">Titluri asociate</string>
-  <string name="pref_source_related_mangas_summary">Arată titlurile conexe în timpul vizualizării intrării</string>
   <string name="related_mangas_more">Mai asemănător cu acestea...</string>
   <string name="too_many_in_feed">Prea multe surse în fluxul tău, nu pot adăuga mai mult decât limitat (20)</string>
   <string name="current_">Curent: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Monocrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelitate</string>
   <string name="pref_theme_cover_based_style_content">Conținut</string>
-  <string name="pref_expand_related_mangas">Extindeți titlurile legate de</string>
-  <string name="pref_expand_related_mangas_summary">Dacă este dezactivat, titlurile asociate nu vor încărca automat &amp; Arată extins</string>
   <string name="action_search_for_source">Caută sursa</string>
   <string name="action_library_search">Căutare bibliotecă</string>
-  <string name="pref_show_home_on_related_mangas">Acasă din titluri asociate</string>
-  <string name="pref_show_home_on_related_mangas_summary">Arată o pictogramă în timp ce navigați pe titlurile asociate pentru a naviga direct înapoi la Acasă</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Bumbac de bomboane</string>
   <string name="theme_doom">Ușă</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Preîncarcă culoarea coperții bibliotecii</string>
   <string name="saved_searches_add_feed">Căutări salvate (veche pentru a adăuga la flux)</string>
   <string name="saved_searches_delete">Căutări salvate (Ține să ștergeți)</string>
+  <string name="action_display_source_badge">Pictogramă sursă</string>
+  <string name="action_display_language_icon">Folosește pictograma de limbă</string>
+  <string name="action_confirm_color">Confirmă culoarea</string>
+  <string name="pref_custom_color">Personalizator paletă</string>
+  <string name="custom_color_description">Alege o culoare pentru tema personalizată</string>
+  <string name="theme_custom">Temă personalizată</string>
+  <string name="extensions_page_need_refresh">Reîmprospătează pagina extensiei pentru a actualiza lista.</string>
+  <string name="extensions_page_more">Mai multe extensii...</string>
+  <string name="action_remove_merged">Eliminați intrările fuzionate?</string>
+  <string name="pref_expand_related_mangas">Extinde sugestii</string>
+  <string name="pref_expand_related_mangas_summary">Dacă este dezactivat, sugestiile nu vor încărca automat &amp; Arată extins</string>
+  <string name="put_related_mangas_in_overflow">Sugestii privind excesul de flux</string>
+  <string name="put_related_mangas_in_overflow_summary">Pune butonul Sugestii în meniul overflow în loc de pe pagina de intrare</string>
+  <string name="pref_show_home_on_related_mangas">Acasă din sugestii</string>
+  <string name="pref_show_home_on_related_mangas_summary">Arată o pictogramă în timp ce navigați sugestiile pentru a naviga direct înapoi la Acasă</string>
+  <string name="pref_source_related_mangas">Sugestii</string>
+  <string name="pref_source_related_mangas_summary">Arată sugestiile site-ului sursă în timpul vizualizării intrării</string>
+  <string name="related_mangas_website_suggestions">Sugestii website</string>
 </resources>

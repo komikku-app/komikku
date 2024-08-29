@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">FAQ a návody</string>
   <string name="pref_details_page_theme">Stránka s podrobnostmi</string>
   <string name="pref_theme_cover_based_style">Styl motivu</string>
-  <string name="ext_unofficial">Neoficiální</string>
-  <string name="unofficial_extension_message">Toto rozšíření není z oficiálního repozitáře.</string>
   <string name="download_cache_renew_interval">Interval obnovení mezipaměti</string>
   <string name="download_cache_renew_interval_manual">Ruční</string>
   <string name="download_cache_renew_interval_1hour">1 hodina</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Vyzkoušejte nyní</string>
   <string name="update_check_notification_preview_available">Probíhá (brzy) aktualizace!</string>
   <string name="changelogs">Záznamy změn</string>
-  <string name="pref_source_related_mangas">Související názvy</string>
-  <string name="pref_source_related_mangas_summary">Zobrazit související názvy při prohlížení položky</string>
   <string name="related_mangas_more">Líbí se mi to...</string>
   <string name="too_many_in_feed">Příliš mnoho zdrojů ve vašem feedu, nemůže přidat více než omezené (20)</string>
   <string name="current_">Aktuální: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Monochromní</string>
   <string name="pref_theme_cover_based_style_fidelity">Věrnost</string>
   <string name="pref_theme_cover_based_style_content">Obsah</string>
-  <string name="pref_expand_related_mangas">Rozbalit související názvy</string>
-  <string name="pref_expand_related_mangas_summary">Pokud je vypnuto, související názvy nebudou automaticky načteny &amp; Zobrazit rozšířené</string>
   <string name="action_search_for_source">Hledat zdroj</string>
   <string name="action_library_search">Vyhledávání knihovny</string>
-  <string name="pref_show_home_on_related_mangas">Domů ze souvisejících názvů</string>
-  <string name="pref_show_home_on_related_mangas_summary">Zobrazit ikonu při prohlížení souvisejících názvů pro přímý přechod zpět na Domů</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Bavlníkový Candy</string>
   <string name="theme_doom">Doom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Přednačte barvu obalu knihovny</string>
   <string name="saved_searches_add_feed">Uložená hledání (přidržením přidejte do kanálu)</string>
   <string name="saved_searches_delete">Uložená hledání (podržte pro smazání)</string>
+  <string name="action_display_source_badge">Zdrojová ikona</string>
+  <string name="action_display_language_icon">Použít ikonu jazyka</string>
+  <string name="action_confirm_color">Potvrdit barvu</string>
+  <string name="pref_custom_color">Přizpůsobit paletu</string>
+  <string name="custom_color_description">Vyberte barvu pro vlastní šablonu</string>
+  <string name="theme_custom">Vlastní šablona</string>
+  <string name="extensions_page_need_refresh">Aktualizovat rozšířenou stránku pro aktualizaci seznamu.</string>
+  <string name="extensions_page_more">Další rozšíření...</string>
+  <string name="action_remove_merged">Odstranit sloučené položky?</string>
+  <string name="pref_expand_related_mangas">Rozšířit návrhy</string>
+  <string name="pref_expand_related_mangas_summary">Pokud je vypnuto, návrhy se automaticky nenačtou &amp; zobrazit rozšířené</string>
+  <string name="put_related_mangas_in_overflow">Návrhy v přetečení</string>
+  <string name="put_related_mangas_in_overflow_summary">Vložte tlačítko Návrhy do menu přetečení místo na vstupní stránku</string>
+  <string name="pref_show_home_on_related_mangas">Domovská stránka z návrhů</string>
+  <string name="pref_show_home_on_related_mangas_summary">Zobrazit ikonu při prohlížení návrhů pro přímý přechod zpět na Domů</string>
+  <string name="pref_source_related_mangas">Návrhy</string>
+  <string name="pref_source_related_mangas_summary">Zobrazit návrhy zdrojových stránek při prohlížení záznamu</string>
+  <string name="related_mangas_website_suggestions">Návrhy webových stránek</string>
 </resources>

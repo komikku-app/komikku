@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">常见问题和指南</string>
   <string name="pref_details_page_theme">详细信息页面</string>
   <string name="pref_theme_cover_based_style">主题样式</string>
-  <string name="ext_unofficial">非官方的</string>
-  <string name="unofficial_extension_message">这个扩展不是官方仓库的扩展。</string>
   <string name="download_cache_renew_interval">下载缓存续间隔</string>
   <string name="download_cache_renew_interval_manual">手动模式</string>
   <string name="download_cache_renew_interval_1hour">1 小时</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">现在试试</string>
   <string name="update_check_notification_preview_available">即将更新(即将更新) ！</string>
   <string name="changelogs">更改日志</string>
-  <string name="pref_source_related_mangas">相关标题</string>
-  <string name="pref_source_related_mangas_summary">查看条目时显示相关标题</string>
   <string name="related_mangas_more">更像这样...</string>
   <string name="too_many_in_feed">你的新闻源太多，不能添加超过限制 (20)</string>
   <string name="current_">当前: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">单色</string>
   <string name="pref_theme_cover_based_style_fidelity">幻影性</string>
   <string name="pref_theme_cover_based_style_content">内容</string>
-  <string name="pref_expand_related_mangas">展开相关标题</string>
-  <string name="pref_expand_related_mangas_summary">如果关闭，相关标题不会自动加载 &amp; 显示扩展</string>
   <string name="action_search_for_source">搜索源</string>
   <string name="action_library_search">书库搜索</string>
-  <string name="pref_show_home_on_related_mangas">来自相关标题的首页</string>
-  <string name="pref_show_home_on_related_mangas_summary">浏览相关标题时显示图标以直接回到主页</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">棉花糖</string>
   <string name="theme_doom">腥红</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">预加载库封面颜色</string>
   <string name="saved_searches_add_feed">保存搜索 (按住即可添加到订阅)</string>
   <string name="saved_searches_delete">保存搜索 (按住即可删除)</string>
+  <string name="action_display_source_badge">源图标</string>
+  <string name="action_display_language_icon">使用语言图标</string>
+  <string name="action_confirm_color">确认颜色</string>
+  <string name="pref_custom_color">调色板个性化器</string>
+  <string name="custom_color_description">为自定义主题选择颜色</string>
+  <string name="theme_custom">自定义主题</string>
+  <string name="extensions_page_need_refresh">刷新扩展页面来更新列表。</string>
+  <string name="extensions_page_more">更多扩展...</string>
+  <string name="action_remove_merged">删除合并条目？</string>
+  <string name="pref_expand_related_mangas">展开建议</string>
+  <string name="pref_expand_related_mangas_summary">如果关闭，建议不会自动加载 &amp; 显示扩展</string>
+  <string name="put_related_mangas_in_overflow">建议溢出</string>
+  <string name="put_related_mangas_in_overflow_summary">将建议按钮放入溢出菜单，而不是放在条目页面</string>
+  <string name="pref_show_home_on_related_mangas">来自建议的首页</string>
+  <string name="pref_show_home_on_related_mangas_summary">浏览建议时显示图标以直接导航到主页</string>
+  <string name="pref_source_related_mangas">建议</string>
+  <string name="pref_source_related_mangas_summary">查看条目时显示源网站的建议</string>
+  <string name="related_mangas_website_suggestions">网站建议</string>
 </resources>

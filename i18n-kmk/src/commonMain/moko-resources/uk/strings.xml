@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">ЧаПи та керівництва</string>
   <string name="pref_details_page_theme">Сторінка подробиць</string>
   <string name="pref_theme_cover_based_style">Стиль теми</string>
-  <string name="ext_unofficial">Неофіційна</string>
-  <string name="unofficial_extension_message">Це розширення не з офіційного репозиторію.</string>
   <string name="download_cache_renew_interval">Завантажити інтервал оновлення кешу</string>
   <string name="download_cache_renew_interval_manual">Вручну</string>
   <string name="download_cache_renew_interval_1hour">1 година</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Спробуйте зараз</string>
   <string name="update_check_notification_preview_available">Будучи (скоро) оновлення!</string>
   <string name="changelogs">Список змін</string>
-  <string name="pref_source_related_mangas">Пов\'язані заголовки</string>
-  <string name="pref_source_related_mangas_summary">Показати зв\'язані заголовки під час перегляду матеріалу</string>
   <string name="related_mangas_more">Подобається це...</string>
   <string name="too_many_in_feed">Занадто багато джерел у вашій стрічці, не можуть додати більше ніж обмежений (20)</string>
   <string name="current_">Поточна: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Монотонні</string>
   <string name="pref_theme_cover_based_style_fidelity">Чесність</string>
   <string name="pref_theme_cover_based_style_content">Зміст</string>
-  <string name="pref_expand_related_mangas">Розгорнути Пов\'язані заголовки</string>
-  <string name="pref_expand_related_mangas_summary">Якщо вимкнено, пов’язані заголовки не будуть автоматично завантажувати &amp; показати розширене</string>
   <string name="action_search_for_source">Пошук джерела</string>
   <string name="action_library_search">Пошук у бібліотеці</string>
-  <string name="pref_show_home_on_related_mangas">Домашній екран із пов\'язаних заголовків</string>
-  <string name="pref_show_home_on_related_mangas_summary">Показувати значок у той час як Пов\'язані заголовки будуть переміщатися безпосередньо до головного екрану</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Цукрова Вата</string>
   <string name="theme_doom">Doom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Попередньо завантажити колір обкладинки бібліотеки</string>
   <string name="saved_searches_add_feed">Збережені пошуки (Утримуйте, щоб додати на канал)</string>
   <string name="saved_searches_delete">Збережені пошуки (утримуйте для видалення)</string>
+  <string name="action_display_source_badge">Іконка джерела</string>
+  <string name="action_display_language_icon">Використовувати значок мови</string>
+  <string name="action_confirm_color">Підтвердження кольору</string>
+  <string name="pref_custom_color">Персоналізатор палітри</string>
+  <string name="custom_color_description">Вибрати колір для власної теми</string>
+  <string name="theme_custom">Задана тема</string>
+  <string name="extensions_page_need_refresh">Оновити сторінку розширення для оновлення списку.</string>
+  <string name="extensions_page_more">Більше розширень...</string>
+  <string name="action_remove_merged">Видалити об\'єднані записи?</string>
+  <string name="pref_expand_related_mangas">Розгорнути пропозиції</string>
+  <string name="pref_expand_related_mangas_summary">Якщо вимкнено, пропозиції не будуть автоматично завантажувати &amp; показати розширене</string>
+  <string name="put_related_mangas_in_overflow">Пропозиції в перевищенні</string>
+  <string name="put_related_mangas_in_overflow_summary">Покласти кнопку Пропозиції у меню над потоком, а не на сторінці матеріалу</string>
+  <string name="pref_show_home_on_related_mangas">Будинок із пропозицій</string>
+  <string name="pref_show_home_on_related_mangas_summary">Показувати значок під час перегляду пропозицій прямо назад до головної сторінки</string>
+  <string name="pref_source_related_mangas">Пропозиції</string>
+  <string name="pref_source_related_mangas_summary">Показати пропозиції сайта при перегляді матеріалу</string>
+  <string name="related_mangas_website_suggestions">Пропозиції сайту</string>
 </resources>

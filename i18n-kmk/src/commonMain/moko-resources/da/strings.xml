@@ -6,8 +6,6 @@
   <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
   <string name="pref_details_page_theme">Detaljer side</string>
   <string name="pref_theme_cover_based_style">Tema stil</string>
-  <string name="ext_unofficial">Uofficiel</string>
-  <string name="unofficial_extension_message">Denne udvidelse er ikke fra den officielle repo.</string>
   <string name="download_cache_renew_interval">Download cache forny interval</string>
   <string name="download_cache_renew_interval_manual">Manuelt</string>
   <string name="download_cache_renew_interval_1hour">1 time</string>
@@ -30,8 +28,6 @@
   <string name="update_check_try_now">Prøv nu</string>
   <string name="update_check_notification_preview_available">Kommer (snart) opdateringer!</string>
   <string name="changelogs">Skift Logs</string>
-  <string name="pref_source_related_mangas">Relaterede titler</string>
-  <string name="pref_source_related_mangas_summary">Vis relaterede titler under indgangen</string>
   <string name="related_mangas_more">Mere som disse...</string>
   <string name="too_many_in_feed">For mange kilder i dit feed, kan ikke tilføje mere end begrænset (20)</string>
   <string name="current_">Nuværende: %1$s</string>
@@ -45,12 +41,8 @@
   <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
   <string name="pref_theme_cover_based_style_fidelity">Fidelitet</string>
   <string name="pref_theme_cover_based_style_content">Indhold</string>
-  <string name="pref_expand_related_mangas">Udvid Relaterede titler</string>
-  <string name="pref_expand_related_mangas_summary">Hvis slået fra, vil relaterede titler ikke automatisk indlæse &amp; Vis udvidet</string>
   <string name="action_search_for_source">Søg efter kilde</string>
   <string name="action_library_search">Søg i bibliotek</string>
-  <string name="pref_show_home_on_related_mangas">Hjem fra relaterede titler</string>
-  <string name="pref_show_home_on_related_mangas_summary">Vis et ikon mens du browser Relaterede titler for at navigere direkte tilbage til Hjem</string>
   <string name="theme_cloudflare">Cloudflare</string>
   <string name="theme_cottoncandy">Bomuld Slik</string>
   <string name="theme_doom">Dom</string>
@@ -71,4 +63,22 @@
   <string name="preload_library_cover_color">Forudindlæs bibliotekets dækningsfarve</string>
   <string name="saved_searches_add_feed">Gemte Søgninger (Hold for at tilføje til Feed)</string>
   <string name="saved_searches_delete">Gemte Søgninger (Hold til at slette)</string>
+  <string name="action_display_source_badge">Kilde ikon</string>
+  <string name="action_display_language_icon">Brug sprogikon</string>
+  <string name="action_confirm_color">Bekræft Farve</string>
+  <string name="pref_custom_color">Palet Personliggør</string>
+  <string name="custom_color_description">Vælg en farve til det brugerdefinerede tema</string>
+  <string name="theme_custom">Brugerdefineret Tema</string>
+  <string name="extensions_page_need_refresh">Opdater udvidelsessiden for at opdatere listen.</string>
+  <string name="extensions_page_more">Flere udvidelser...</string>
+  <string name="action_remove_merged">Fjern sammenlagte indgange?</string>
+  <string name="pref_expand_related_mangas">Udvid Forslag</string>
+  <string name="pref_expand_related_mangas_summary">Hvis slået fra, vil forslag ikke automatisk indlæse &amp; Vis udvidet</string>
+  <string name="put_related_mangas_in_overflow">Forslag i overløb</string>
+  <string name="put_related_mangas_in_overflow_summary">Sæt knappen Forslag i overløb menuen i stedet for på indgangen siden</string>
+  <string name="pref_show_home_on_related_mangas">Hjem fra forslag</string>
+  <string name="pref_show_home_on_related_mangas_summary">Vis et ikon mens du browser forslag til at navigere direkte tilbage til hjemmet</string>
+  <string name="pref_source_related_mangas">Forslag</string>
+  <string name="pref_source_related_mangas_summary">Vis forslag til source-website under visning af posten</string>
+  <string name="related_mangas_website_suggestions">Websted Forslag</string>
 </resources>
