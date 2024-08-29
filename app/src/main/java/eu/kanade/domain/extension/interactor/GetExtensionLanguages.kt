@@ -1,5 +1,15 @@
 package eu.kanade.domain.extension.interactor
 
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionManager
@@ -35,7 +45,7 @@ class GetExtensionLanguages(
     companion object {
         fun getLanguageIconID(lang: String): Int? {
             return when (lang) {
-                // "all" -> R.drawable.ic_flag_all
+                "all" -> R.drawable.ic_flag_un
                 // "other" -> R.drawable.globe
                 "af" -> R.drawable.za // Afrikaans -> South Africa, ZA
                 "am" -> R.drawable.et // Amharic -> Ethiopia, ET
@@ -154,4 +164,138 @@ class GetExtensionLanguages(
         }
     }
     // KMK <--
+}
+
+@Preview
+@Composable
+private fun LanguageIconsPreview() {
+    val languages = listOf(
+        "all",
+        "other",
+        "af",
+        "am",
+        "ar",
+        "az",
+        "be",
+        "bg",
+        "bn",
+        "br",
+        "bs",
+        "ca",
+        "ceb",
+        "cn",
+        "co",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en",
+        "eo",
+        "es-419",
+        "es",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fil",
+        "fo",
+        "fr",
+        "ga",
+        "gn",
+        "gu",
+        "ha",
+        "he",
+        "hi",
+        "hr",
+        "ht",
+        "hu",
+        "hy",
+        "id",
+        "ig",
+        "is",
+        "it",
+        "ja",
+        "jv",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "kr",
+        "ku",
+        "ky",
+        "la",
+        "lb",
+        "lmo",
+        "lo",
+        "lt",
+        "lv",
+        "mg",
+        "mi",
+        "mk",
+        "ml",
+        "mn",
+        "mo",
+        "mr",
+        "ms",
+        "mt",
+        "my",
+        "ne",
+        "nl",
+        "no",
+        "ny",
+        "pl",
+        "ps",
+        "pt-BR",
+        "pt-PT",
+        "pt",
+        "rm",
+        "ro",
+        "ru",
+        "sd",
+        "sh",
+        "si",
+        "sk",
+        "sl",
+        "sm",
+        "sn",
+        "so",
+        "sq",
+        "sr",
+        "st",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "tg",
+        "th",
+        "ti",
+        "tk",
+        "tl",
+        "to",
+        "tr",
+        "uk",
+        "ur",
+        "uz",
+        "vec",
+        "vi",
+        "yo",
+        "zh-Hans",
+        "zh-Hant",
+        "zh",
+        "zu",
+    )
+    FlowRow {
+        languages.forEach { language ->
+            val iconResId = GetExtensionLanguages.getLanguageIconID(language) ?: R.drawable.globe
+            Icon(
+                painter = painterResource(id = iconResId),
+                tint = Color.Unspecified,
+                contentDescription = language,
+                modifier = Modifier
+                    .width(21.dp)
+                    .height(15.dp),
+            )
+        }
+    }
 }

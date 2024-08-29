@@ -37,7 +37,7 @@ class FlagEmoji {
 
         private fun lang2Country(lang: String): String? {
             return when (lang) {
-                // "all" -> R.drawable.ic_flag_all
+                "all" -> "un"
                 // "other" -> R.drawable.globe
                 "af" -> "za" // Afrikaans -> South Africa, ZA
                 "am" -> "et" // Amharic -> Ethiopia, ET
