@@ -8,7 +8,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import kotlin.math.absoluteValue
 
 class FetchInterval(
     private val getChaptersByMangaId: GetChaptersByMangaId,
@@ -92,6 +91,10 @@ class FetchInterval(
         dateTime: ZonedDateTime,
         window: Pair<Long, Long>,
     ): Long {
+        if (interval < 0) {
+            return 0L
+        }
+
         if (manga.nextUpdate in window.first.rangeTo(window.second + 1)) {
             return manga.nextUpdate
         }
@@ -104,8 +107,7 @@ class FetchInterval(
             .atStartOfDay()
         val timeSinceLatest = ChronoUnit.DAYS.between(latestDate, dateTime).toInt()
         val cycle = timeSinceLatest.floorDiv(
-            interval.absoluteValue.takeIf { interval < 0 }
-                ?: increaseInterval(interval, timeSinceLatest, increaseWhenOver = 10),
+            increaseInterval(interval, timeSinceLatest, increaseWhenOver = 10),
         )
         return latestDate.plusDays((cycle + 1) * interval.toLong()).toEpochSecond(dateTime.offset) * 1000
     }
