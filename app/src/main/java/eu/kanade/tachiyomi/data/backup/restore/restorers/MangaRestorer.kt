@@ -92,7 +92,7 @@ class MangaRestorer(
                 chapters = backupManga.chapters,
                 categories = backupManga.categories,
                 backupCategories = backupCategories,
-                history = backupManga.history + backupManga.brokenHistory.map { it.toBackupHistory() },
+                history = backupManga.history,
                 tracks = backupManga.tracking,
                 excludedScanlators = backupManga.excludedScanlators,
                 // SY -->
