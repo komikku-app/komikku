@@ -337,7 +337,8 @@ fun RadioSelectorSearchable(
         SourcesSearch(
             searchQuery = queryString,
             onChangeSearchQuery = onChangeSearchQuery ?: {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .padding(bottom = MaterialTheme.padding.small),
         ).takeIf { onChangeSearchQuery != null }
         options.forEachIndexed { index, option ->
             Row(
