@@ -196,20 +196,31 @@ fun FeedAddDialog(
     onClickAdd: (CatalogueSource?) -> Unit,
 ) {
     // KMK -->
-    val sourceComposes: List<@Composable () -> Unit> = sources.map {
-        {
-            val source = Source(
-                id = it.id,
-                lang = it.lang,
-                name = it.name,
-                supportsLatest = it.supportsLatest,
-                isStub = false,
-            )
-            SourceIcon(source = source)
-            Spacer(modifier = Modifier.width(MaterialTheme.padding.extraSmall))
-            Text(text = it.getNameForMangaInfo())
+    var query by remember { mutableStateOf("") }
+    val sourceComposes: List<@Composable () -> Unit> = sources
+        .filter { source ->
+            if (query.isBlank()) return@filter true
+            query.split(",").any {
+                val input = it.trim()
+                if (input.isEmpty()) return@any false
+                source.name.contains(input, ignoreCase = true) ||
+                    source.id == input.toLongOrNull()
+            }
         }
-    }
+        .map {
+            {
+                val source = Source(
+                    id = it.id,
+                    lang = it.lang,
+                    name = it.name,
+                    supportsLatest = it.supportsLatest,
+                    isStub = false,
+                )
+                SourceIcon(source = source)
+                Spacer(modifier = Modifier.width(MaterialTheme.padding.extraSmall))
+                Text(text = it.getNameForMangaInfo())
+            }
+        }
     // KMK <--
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(
@@ -217,9 +228,13 @@ fun FeedAddDialog(
             Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            RadioSelector(
-                // KMK -->
+            // KMK -->
+            RadioSelectorSearchable(
                 options = sourceComposes,
+                queryString = query,
+                onChangeSearchQuery = {
+                    query = it ?: ""
+                },
                 // KMK <--
                 selected = selected,
             ) {
@@ -263,7 +278,7 @@ fun FeedAddSearchDialog(
                     // KMK <--
                 }.toImmutableList()
             }
-            RadioSelector(
+            RadioSelectorSearchable(
                 options = savedSearches,
                 optionStrings = savedSearchStrings,
                 selected = selected,
@@ -286,7 +301,7 @@ fun FeedAddSearchDialog(
 }
 
 @Composable
-fun <T> RadioSelector(
+fun <T> RadioSelectorSearchable(
     options: ImmutableList<T>,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
     selected: Int?,
@@ -311,12 +326,19 @@ fun <T> RadioSelector(
 
 // KMK -->
 @Composable
-fun RadioSelector(
+fun RadioSelectorSearchable(
     options: List<@Composable () -> Unit>,
+    queryString: String? = null,
+    onChangeSearchQuery: ((String?) -> Unit)? = null,
     selected: Int?,
     onSelectOption: (Int) -> Unit = {},
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
+        SourcesSearch(
+            searchQuery = queryString,
+            onChangeSearchQuery = onChangeSearchQuery ?: {},
+            modifier = Modifier.fillMaxWidth(),
+        ).takeIf { onChangeSearchQuery != null }
         options.forEachIndexed { index, option ->
             Row(
                 Modifier
