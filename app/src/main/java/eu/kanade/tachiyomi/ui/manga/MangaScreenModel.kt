@@ -1032,7 +1032,7 @@ class MangaScreenModel(
                 downloadProgress = activeDownload?.progress ?: 0,
                 selected = chapter.id in selectedChapterIds,
                 // SY -->
-                sourceName = source?.getNameForMangaInfo(null),
+                sourceName = source?.getNameForMangaInfo(),
                 showScanlator = !isExhManga,
                 // SY <--
             )

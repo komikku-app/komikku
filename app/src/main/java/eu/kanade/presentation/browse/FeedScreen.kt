@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,7 +35,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -43,11 +46,13 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -190,13 +195,49 @@ fun FeedAddDialog(
     onDismiss: () -> Unit,
     onClickAdd: (CatalogueSource?) -> Unit,
 ) {
+    // KMK -->
+    var query by remember { mutableStateOf("") }
+    val sourceComposes: List<@Composable () -> Unit> = sources
+        .filter { source ->
+            if (query.isBlank()) return@filter true
+            query.split(",").any {
+                val input = it.trim()
+                if (input.isEmpty()) return@any false
+                source.name.contains(input, ignoreCase = true) ||
+                    source.id == input.toLongOrNull()
+            }
+        }
+        .map {
+            {
+                val source = Source(
+                    id = it.id,
+                    lang = it.lang,
+                    name = it.name,
+                    supportsLatest = it.supportsLatest,
+                    isStub = false,
+                )
+                SourceIcon(source = source)
+                Spacer(modifier = Modifier.width(MaterialTheme.padding.extraSmall))
+                Text(text = it.getNameForMangaInfo())
+            }
+        }
+    // KMK <--
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(
         title = {
             Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            RadioSelector(options = sources, selected = selected) {
+            // KMK -->
+            RadioSelectorSearchable(
+                options = sourceComposes,
+                queryString = query,
+                onChangeSearchQuery = {
+                    query = it ?: ""
+                },
+                // KMK <--
+                selected = selected,
+            ) {
                 selected = it
             }
         },
@@ -237,7 +278,7 @@ fun FeedAddSearchDialog(
                     // KMK <--
                 }.toImmutableList()
             }
-            RadioSelector(
+            RadioSelectorSearchable(
                 options = savedSearches,
                 optionStrings = savedSearchStrings,
                 selected = selected,
@@ -260,7 +301,7 @@ fun FeedAddSearchDialog(
 }
 
 @Composable
-fun <T> RadioSelector(
+fun <T> RadioSelectorSearchable(
     options: ImmutableList<T>,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
     selected: Int?,
@@ -276,12 +317,44 @@ fun <T> RadioSelector(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(selected == index, onClick = null)
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
                 Text(option, maxLines = 1)
             }
         }
     }
 }
+
+// KMK -->
+@Composable
+fun RadioSelectorSearchable(
+    options: List<@Composable () -> Unit>,
+    queryString: String? = null,
+    onChangeSearchQuery: ((String?) -> Unit)? = null,
+    selected: Int?,
+    onSelectOption: (Int) -> Unit = {},
+) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
+        SourcesSearch(
+            searchQuery = queryString,
+            onChangeSearchQuery = onChangeSearchQuery ?: {},
+            modifier = Modifier.fillMaxWidth(),
+        ).takeIf { onChangeSearchQuery != null }
+        options.forEachIndexed { index, option ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clickable { onSelectOption(index) },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected == index, onClick = null)
+                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
+                option()
+            }
+        }
+    }
+}
+// KMK <--
 
 @Composable
 fun FeedDeleteConfirmDialog(

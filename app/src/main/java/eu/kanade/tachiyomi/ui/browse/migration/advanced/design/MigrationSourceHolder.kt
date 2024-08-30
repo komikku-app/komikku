@@ -21,7 +21,7 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
         // Set capitalized title.
         val sourceName =
             // KMK -->
-            source.getNameForMangaInfo(null)
+            source.getNameForMangaInfo()
         // KMK <--
         binding.title.text = sourceName
         // Update circle letter image.
