@@ -35,6 +35,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -190,13 +191,26 @@ fun FeedAddDialog(
     onDismiss: () -> Unit,
     onClickAdd: (CatalogueSource?) -> Unit,
 ) {
+    // KMK -->
+    val sourceStrings = remember {
+        sources.map {
+            it.getNameForMangaInfo()
+        }.toImmutableList()
+    }
+    // KMK <--
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(
         title = {
             Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            RadioSelector(options = sources, selected = selected) {
+            RadioSelector(
+                options = sources,
+                // KMK -->
+                optionStrings = sourceStrings,
+                // KMK <--
+                selected = selected,
+            ) {
                 selected = it
             }
         },

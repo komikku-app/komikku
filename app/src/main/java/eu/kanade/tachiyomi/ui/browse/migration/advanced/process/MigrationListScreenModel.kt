@@ -150,7 +150,7 @@ class MigrationListScreenModel(
             chapterCount = chapters.size,
         )
     }
-    fun getSourceName(manga: Manga) = sourceManager.getOrStub(manga.source).getNameForMangaInfo(null)
+    fun getSourceName(manga: Manga) = sourceManager.getOrStub(manga.source).getNameForMangaInfo()
 
     fun getMigrationSources() = preferences.migrationSources().get().split("/").mapNotNull {
         val value = it.toLongOrNull() ?: return@mapNotNull null

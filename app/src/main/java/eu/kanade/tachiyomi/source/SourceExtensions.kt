@@ -9,7 +9,7 @@ import uy.kohesive.injekt.api.get
 
 fun Source.getNameForMangaInfo(
     // SY -->
-    mergeSources: List<Source>?,
+    mergeSources: List<Source>? = null,
     // SY <--
 ): String {
     val preferences = Injekt.get<SourcePreferences>()
