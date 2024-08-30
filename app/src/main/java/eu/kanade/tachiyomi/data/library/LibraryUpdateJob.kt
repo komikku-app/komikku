@@ -323,7 +323,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                             it.manga to
                                 context.stringResource(MR.strings.skipped_reason_not_in_release_period),
                         )
-                        true
+                        false
                     }
                     MANGA_NON_COMPLETED in restrictions &&
                         it.manga.status.toInt() == SManga.COMPLETED -> {
@@ -333,7 +333,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                         )
                         false
                     }
-
                     else -> true
                 }
             }
