@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.view.LayoutInflater
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -51,6 +53,7 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import java.io.Serializable
 import kotlin.math.roundToInt
@@ -166,7 +169,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
         ) { contentPadding ->
             // KMK -->
             Box(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
-                var searchBoxHeight by remember { mutableIntStateOf(0) }
+                var searchBoxHeight by remember { mutableIntStateOf(40) }
                 // KMK <--
                 val density = LocalDensity.current
                 val layoutDirection = LocalLayoutDirection.current
@@ -205,7 +208,10 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
                 }
                 // KMK -->
                 SourcesSearch(
-                    modifier = Modifier.onSizeChanged { searchBoxHeight = it.height },
+                    modifier = Modifier
+                        .onSizeChanged { searchBoxHeight = it.height }
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = MaterialTheme.padding.small),
                     searchQuery = searchQuery,
                     onChangeSearchQuery = { searchQuery = it ?: "" },
                     placeholderText = stringResource(KMR.strings.action_search_for_source),

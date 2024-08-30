@@ -131,6 +131,11 @@ private fun MigrateSourceList(
             searchQuery = state.searchQuery,
             onChangeSearchQuery = onChangeSearchQuery,
             placeholderText = stringResource(KMR.strings.action_search_for_source),
+            modifier = Modifier
+                .padding(
+                    horizontal = MaterialTheme.padding.medium,
+                    vertical = MaterialTheme.padding.extraSmall,
+                ),
         )
 
         FastScrollLazyColumn(

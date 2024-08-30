@@ -121,6 +121,11 @@ fun SourcesScreen(
                 searchQuery = state.searchQuery,
                 onChangeSearchQuery = onChangeSearchQuery,
                 placeholderText = stringResource(KMR.strings.action_search_for_source),
+                modifier = Modifier
+                    .padding(
+                        horizontal = MaterialTheme.padding.medium,
+                        vertical = MaterialTheme.padding.small,
+                    ),
             )
 
             FastScrollLazyColumn(
@@ -176,13 +181,14 @@ fun AnimatedFloatingSearchBox(
     listState: LazyListState,
     searchQuery: String?,
     onChangeSearchQuery: (String?) -> Unit,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     placeholderText: String? = null,
 ) {
     AnimatedVisibility(
         visible = listState.isScrollingUp(),
         enter = expandVertically(),
         exit = shrinkVertically(),
+        modifier = modifier,
     ) {
         SourcesSearch(
             searchQuery = searchQuery,
@@ -226,8 +232,7 @@ fun SourcesSearch(
         onValueChange = onChangeSearchQuery,
         modifier = modifier
             .fillMaxWidth()
-            .height(66.dp)
-            .padding(12.dp)
+            .height(40.dp)
             .focusRequester(focusRequester)
             .onFocusChanged { isFocused = it.isFocused }
             .runOnEnterKeyPressed(action = searchAndClearFocus)
