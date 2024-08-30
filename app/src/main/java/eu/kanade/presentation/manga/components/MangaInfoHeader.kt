@@ -221,7 +221,7 @@ fun MangaActionRow(
 
     // TODO: show something better when using custom interval
     val nextUpdateDays = remember(nextUpdate) {
-        return@remember if (nextUpdate != null && isSkipCompleted && isNAInterval) {
+        return@remember if (nextUpdate != null && isSkipCompleted) {
             val now = Instant.now()
             now.until(nextUpdate, ChronoUnit.DAYS).toInt().coerceAtLeast(0)
         } else {
@@ -242,14 +242,17 @@ fun MangaActionRow(
             onLongClick = onEditCategory,
         )
         MangaActionButton(
-            title = when (nextUpdateDays) {
-                null -> stringResource(MR.strings.not_applicable)
-                0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
-                else -> pluralStringResource(
-                    MR.plurals.day,
-                    count = nextUpdateDays,
-                    nextUpdateDays,
-                )
+            title = when (fetchInterval) {
+                -1 -> stringResource(MR.strings.not_applicable)
+                else -> when (nextUpdateDays) {
+                    null -> stringResource(MR.strings.not_applicable)
+                    0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
+                    else -> pluralStringResource(
+                        MR.plurals.day,
+                        count = nextUpdateDays,
+                        nextUpdateDays,
+                    )
+                }
             },
             icon = Icons.Default.HourglassEmpty,
             color = if (isUserIntervalMode ||
