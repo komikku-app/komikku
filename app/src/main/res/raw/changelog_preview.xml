@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9318" changeDate="August 31, 2024">
+        <changelogtext>[b]Hot Fix:[/b] fix extension won't update</changelogtext>
+        <changelogtext>[b]Hot Fix:[/b] ext obsolete status</changelogtext>
+        <changelogtext>[b]New:[/b] Add source search, icon &amp; flag on Feed adding dialog</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9312" changeDate="August 29, 2024">
         <changelogtext>[b]New:[/b] Showing source icon in library</changelogtext>
         <changelogtext>[b]New:[/b] Use language flags</changelogtext>
@@ -11,7 +16,7 @@
         <changelogtext>[b]New:[/b] Add "show entry" action to download notifications </changelogtext>
         <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
         <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
-        <changelogtext>[b]New:[/b] Remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]New:[/b] Remove the UNOFFICIAL status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
         <changelogtext>[b]Improve:[/b] Show same extension from multiple repos &amp; show their repo's name</changelogtext>
         <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
         <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
