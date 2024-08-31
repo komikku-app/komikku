@@ -173,7 +173,12 @@ class ExtensionManager(
 
         enableAdditionalSubLanguages(extensions)
 
-        availableExtensionMapFlow.value = extensions.associateBy { "${it.pkgName}:${it.signatureHash}" }
+        availableExtensionMapFlow.value = extensions.associateBy {
+            it.pkgName +
+                // KMK -->
+                ":${it.signatureHash}"
+            // KMK <--
+        }
         updatedInstalledExtensionsStatuses(extensions)
         setupAvailableExtensionsSourcesDataMap(extensions)
     }
@@ -280,7 +285,12 @@ class ExtensionManager(
      * @param extension The extension to be updated.
      */
     fun updateExtension(extension: Extension.Installed): Flow<InstallStep> {
-        val availableExt = availableExtensionMapFlow.value[extension.pkgName] ?: return emptyFlow()
+        val availableExt = availableExtensionMapFlow.value[
+            extension.pkgName +
+                // KMK -->
+                ":${extension.signatureHash}",
+            // KMK <--
+        ] ?: return emptyFlow()
         return installExtension(availableExt)
     }
 
