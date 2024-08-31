@@ -224,10 +224,8 @@ class ExtensionManager(
                     it.pkgName == pkgName
             }
 
-            if (availableExt == null && (
-                    !extension.isObsolete ||
-                        extension.hasUpdate
-                    )
+            if (availableExt == null &&
+                (!extension.isObsolete || /* KMK --> */ extension.hasUpdate /* KMK <-- */)
             ) {
                 // Ext not found: Set isObsolete & clear hasUpdate
                 installedExtensionsMap[pkgName] = extension.copy(
