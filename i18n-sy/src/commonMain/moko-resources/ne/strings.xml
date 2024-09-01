@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search_manually">हातैले खोज्नुहोस्</string>
+    <string name="action_copy_now">अहिले प्रतिलिपि गर्नुहोस्</string>
+    <string name="action_start_reading">पढ्न सुरु गर्नुहोस्</string>
+    <string name="entry_type_manga">माङ्गा</string>
+    <string name="entry_type_manhwa">मान्ह्वा</string>
+    <string name="entry_type_manhua">मान्हुवा</string>
+    <string name="entry_type_comic">कमिक</string>
+    <string name="pref_category_fork">फोर्क सेटिङहरू</string>
+    <string name="changelog_version">%1$s संस्करण</string>
+    <string name="requires_login">लगइन आवश्यक छ</string>
+    <string name="use_original_images">मूल चित्रहरू प्रयोग गर्नुहोस्</string>
+    <string name="use_original_images_on">हाल मूल चित्रहरू प्रयोग गर्दै</string>
+    <string name="action_skip_entry">स्थानान्तरण नगर्नुहोस्</string>
+    <string name="action_migrate_now">अहिले नै स्थानान्तरण गर्नुहोस्</string>
+    <string name="action_edit_info">जानकारी सम्पादन गर्नुहोस्</string>
+    <string name="pref_category_all_sources">सबै स्रोतहरू</string>
+    <string name="show_japanese_titles_option_1">हाल खोज परिणामहरूमा जापानी शीर्षकहरू देखाउँदै। यसलाई परिवर्तन गरेपछि अध्याय क्यास खाली गर्नुहोस् (उन्नत सेक्सनमा)</string>
+    <string name="show_japanese_titles">खोज परिणामहरूमा जापानी शीर्षकहरू देखाउनुहोस्</string>
+    <string name="show_japanese_titles_option_2">हाल खोज परिणामहरूमा अंग्रेजी/रोमनाइज्ड शीर्षकहरू देखाउँदै। यसलाई परिवर्तन गरेपछि अध्याय क्यास खाली गर्नुहोस् (उन्नत सेक्सनमा)</string>
+</resources>

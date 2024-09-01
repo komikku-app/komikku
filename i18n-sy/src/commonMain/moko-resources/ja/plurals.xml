@@ -19,12 +19,10 @@
         <item quantity="other">1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
     </plurals>
     <plurals name="migrate_entry">
-        <item quantity="one">1$d%2$s の作品を移行しますか？</item>
-        <item quantity="other">1$d%2$s の作品を移行しますか？</item>
+        <item quantity="other">%1$d%2$s の作品を移行しますか？</item>
     </plurals>
     <plurals name="copy_entry">
-        <item quantity="one">1$d%2$s の作品をコピーしますか？</item>
-        <item quantity="other">1$d%2$s 作品をコピーしますか？</item>
+        <item quantity="other">%1$d%2$s 作品をコピーしますか？</item>
     </plurals>
     <plurals name="entry_migrated">
         <item quantity="one">%d の作品が移行されました</item>
@@ -35,13 +33,11 @@
         <item quantity="one">%1$d ページ</item>
         <item quantity="other">%1$d ページ</item>
     </plurals>
-
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
         <item quantity="one">%2$s, %1$d ページ</item>
         <item quantity="other">%2$s, %1$d ページ</item>
     </plurals>
-
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="one">%1$d 年前</item>
@@ -71,7 +67,6 @@
         <item quantity="one">%1$d 秒前</item>
         <item quantity="other">%1$d 秒前</item>
     </plurals>
-
     <!-- Manga preview row counter -->
     <plurals name="row_count">
         <item quantity="one">%d 行</item>

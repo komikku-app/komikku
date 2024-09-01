@@ -195,7 +195,7 @@
     <string name="download_threads">Mga thread sa pag-download</string>
     <string name="download_threads_summary">Ang mas mataas na halaga ay maaaring mapabilis nang malaki ang pag-download ng imahe, ngunit maaari ring mag-trigger ng mga ban. Ang inirerekomendang halaga ay 2 o 3. Kasalukuyang halaga: %s</string>
     <string name="aggressively_load_pages_summary">Dahan-dahang i-download ang buong kabanata habang nagbabasa sa halip na i-load lang ang mga pahinang iyong binabasa.</string>
-    <string name="skip_queue_on_retry_summary">Karaniwan, kapag pindutin mo ang retry button sa isang nabigong pag-download, maghihintay ito hanggang matapos ang pag-download ng huling pahina bago magsimulang muli ang pag-download ng nabigong pahina. Kapag pinagana ito, agad itong magsisimula ulit ang pag-download ng nabigong pahina pagkatapos mong pindutin ang subukan muli button.</string>
+    <string name="skip_queue_on_retry_summary">Karaniwan, kapag pindutin mo ang subukan muli na button sa isang nabigong pag-download, maghihintay ito hanggang matapos ang pag-download ng huling pahina bago magsimulang muli ang pag-download ng nabigong pahina. Kapag pinagana ito, agad itong magsisimula ulit ang pag-download ng nabigong pahina pagkatapos mong pindutin ang subukan muli na button.</string>
     <string name="reader_preload_amount_6_pages">6 na Pahina</string>
     <string name="reader_preload_amount_10_pages">10 Pahina</string>
     <string name="reader_preload_amount_12_pages">12 Pahina</string>

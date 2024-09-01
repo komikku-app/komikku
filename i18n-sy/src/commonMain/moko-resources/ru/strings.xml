@@ -88,7 +88,9 @@
     <string name="gallery_updater_stats_time">Такое количество галерей было проверено за:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделю: %6$d\n- месяц: %7$d\n- год: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Примечание профиля настроек</string>
-    <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.\n\nНажать кнопку «ОК» если вы понятие не имеете, что такое профили настроек.</string>
+    <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.
+\n
+\nНажмите на кнопку «ОК» если вы понятие не имеете, что такое профили настроек.</string>
     <string name="eh_settings_successfully_uploaded">Настройки успешно загружены!</string>
     <string name="eh_settings_configuration_failed">Настройка не удалась!</string>
     <string name="eh_settings_configuration_failed_message">В процессе настройки произошла ошибка: %1$s</string>
@@ -393,7 +395,12 @@
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Сортировка тэгов</string>
     <string name="tag_sorting">Сортировка тэгов</string>
-    <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет. Вы не можете добавить тэг netorare, чтобы отфильтровать, например, женский тэг netorare и так далее! \nСтиль тегов должен быть таким: \nfemale: sole female\nПоддерживается добавление нескольких вариантов одного и того же тега. Например: \ntag: netorare для NHentai, \nfemale: netorare для E-Hentai и т.д!</string>
+    <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет. Вы не можете добавить тэг \"netorare\", чтобы отфильтровать, например, тэг \"female: netorare\" и так далее!
+\nСтиль тегов должен быть таким:
+\n\"female: sole female\"
+\nПоддерживается добавление нескольких вариантов одного и того же тега. Например:
+\n\"tag: netorare\" для NHentai,
+\n\"female: netorare\" для E-Hentai и т.д!</string>
     <string name="action_edit_tags">Редактировать тэги</string>
     <string name="information_empty_tags">Нет тэгов. Нажмите кнопку «Добавить» чтобы создать тэг для сортировки библиотеки</string>
     <string name="error_tag_exists">Этот тэг уже существует!</string>
