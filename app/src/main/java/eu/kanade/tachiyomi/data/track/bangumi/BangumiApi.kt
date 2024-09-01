@@ -110,9 +110,10 @@ class BangumiApi(
             0
         }
         val rating = obj["rating"]?.jsonObject?.get("score")?.jsonPrimitive?.doubleOrNull ?: -1.0
+        val nameCn = obj["name_cn"]?.jsonPrimitive?.contentOrNull ?: obj["name"]!!.jsonPrimitive.content
         return TrackSearch.create(trackId).apply {
             remote_id = obj["id"]!!.jsonPrimitive.long
-            title = obj["name_cn"]!!.jsonPrimitive.content
+            title = nameCn
             cover_url = coverUrl
             summary = obj["name"]!!.jsonPrimitive.content
             score = rating
