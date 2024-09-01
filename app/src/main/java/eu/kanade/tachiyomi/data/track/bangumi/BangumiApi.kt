@@ -73,9 +73,9 @@ class BangumiApi(
         }
     }
 
-    suspend fun deleteLibManga(track: DomainTrack) {
+    suspend fun deleteLibManga(track: Track) {
         return withIOContext {
-            authClient.newCall(POST("$API_URL/v0/indices/${track.libraryId}/collect"))
+            authClient.newCall(POST("$API_URL/v0/indices/${track.remote_id}/collect"))
                 .awaitSuccess()
         }
     }
