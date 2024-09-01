@@ -46,6 +46,10 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
         return api.updateLibManga(track)
     }
 
+    override suspend fun delete(track: DomainTrack) {
+        api.deleteLibManga(track)
+    }
+
     override suspend fun bind(track: Track, hasReadChapters: Boolean): Track {
         val statusTrack = api.statusLibManga(track)
         val remoteTrack = api.findLibManga(track)

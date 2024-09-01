@@ -73,6 +73,13 @@ class BangumiApi(
         }
     }
 
+    suspend fun deleteLibManga(track: DomainTrack) {
+        return withIOContext {
+            authClient.newCall(POST("$API_URL/v0/indices/${track.libraryId}/collect"))
+                .awaitSuccess()
+        }
+    }
+
     suspend fun search(search: String): List<TrackSearch> {
         return withIOContext {
             val url = "$API_URL/search/subject/${URLEncoder.encode(search, StandardCharsets.UTF_8.name())}"
