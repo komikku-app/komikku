@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
+import eu.kanade.tachiyomi.data.track.DeletableTracker
 
 class Bangumi(id: Long) : BaseTracker(id, "Bangumi"), DeletableTracker {
 
@@ -46,7 +47,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi"), DeletableTracker {
         return api.updateLibManga(track)
     }
 
-    override suspend fun delete(track: DomainTrack) {
+    override suspend fun delete(track: Track) {
         api.deleteLibManga(track)
     }
 
