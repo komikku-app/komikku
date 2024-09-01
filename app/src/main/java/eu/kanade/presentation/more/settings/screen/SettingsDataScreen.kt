@@ -404,10 +404,22 @@ object SettingsDataScreen : SearchableSettings {
         syncServiceType: SyncManager.SyncService,
         syncPreferences: SyncPreferences,
     ): List<Preference> {
-        return when (syncServiceType) {
+        val navigator = LocalNavigator.currentOrThrow
+        val preferences = when (syncServiceType) {
             SyncManager.SyncService.NONE -> emptyList()
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
+        }
+
+        return if (syncServiceType != SyncManager.SyncService.NONE) {
+            preferences + Preference.PreferenceItem.TextPreference(
+                title = stringResource(SYMR.strings.pref_choose_what_to_sync),
+                onClick = {
+                    navigator.push(SyncSettingsSelector())
+                },
+            )
+        } else {
+            preferences
         }
     }
 
@@ -534,7 +546,7 @@ object SettingsDataScreen : SearchableSettings {
 
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {
-        val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
         return Preference.PreferenceGroup(
             title = stringResource(SYMR.strings.pref_sync_now_group_title),
             preferenceItems = persistentListOf(
@@ -543,7 +555,11 @@ object SettingsDataScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.pref_sync_now),
                     subtitle = stringResource(SYMR.strings.pref_sync_now_subtitle),
                     onClick = {
-                        navigator.push(SyncSettingsSelector())
+                        if (!SyncDataJob.isRunning(context)) {
+                            SyncDataJob.startNow(context)
+                        } else {
+                            context.toast(SYMR.strings.sync_in_progress)
+                        }
                     },
                 ),
             ),
