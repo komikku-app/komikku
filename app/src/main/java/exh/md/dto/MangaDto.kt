@@ -104,16 +104,12 @@ data class ReadChapterDto(
 
 @Serializable
 data class CoverListDto(
-    val results: List<CoverDto>,
+    val data: List<CoverDto>,
 )
 
 @Serializable
 data class CoverDto(
-    val data: CoverDataDto,
-)
-
-@Serializable
-data class CoverDataDto(
+    val id: String,
     val attributes: CoverAttributesDto,
     val relationships: List<RelationshipDto>,
 )
