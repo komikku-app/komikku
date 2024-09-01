@@ -1017,7 +1017,7 @@ class MangaScreenModel(
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
             val source = mergedData?.sources?.find { manga.source == it.id }?.takeIf { mergedData.sources.size > 2 }
             // SY <--
-            val downloaded = if (isLocal) {
+            val downloaded = if (manga.isLocal()) {
                 true
             } else {
                 downloadManager.isChapterDownloaded(
