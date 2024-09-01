@@ -1,2 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d segundo ang nakalipas</item>
+        <item quantity="other">%1$d na segundo ang nakalipas</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d na row</item>
+        <item quantity="other">%d na mga row</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Tapos na ang paglilinis. Inalis ang %d folder</item>
+        <item quantity="other">Tapos na ang paglilinis. Inalis ang %d na folder</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d oras ng pag-lock</item>
+        <item quantity="other">%d na oras ng pag-lock</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Sinusubukang muli ang %1$d na nabigong pahina…</item>
+        <item quantity="other">Sinusubukang muli ang %1$d na mga nabigong pahina…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d na tag sa listahan ng pagso-sort. Ito ay nagdaragdag ng opsyon sa aklatan upang mag-sort batay sa isang listahan ng mga tag na may priyoridad, ibig sabihin, ang mga entry ay iaayos upang unahin ang mga may tag na gusto mo</item>
+        <item quantity="other">%1$d na mga tag sa listahan ng pagso-sort. Ito ay nagdaragdag ng opsyon sa aklatan upang mag-sort batay sa isang listahan ng mga tag na may priyoridad, ibig sabihin, ang mga entry ay iaayos upang unahin ang mga may tag na gusto mo</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Maglipat ng %1$d%2$s na entry?</item>
+        <item quantity="other">Maglipat ng %1$d%2$s na mga entry?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Kopyahin ang %1$d%2$s na entry?</item>
+        <item quantity="other">Kopyahin ang %1$d%2$s na mga entry?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d na entry ang nailipat</item>
+        <item quantity="other">%d na mga entry ang nailipat</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d na pahina</item>
+        <item quantity="other">%1$d na mga pahina</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d na pahina</item>
+        <item quantity="other">%2$s, %1$d na mga pahina</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d taon ang nakalipas</item>
+        <item quantity="other">%1$d taon na ang nakalipas</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d buwan ang nakalipas</item>
+        <item quantity="other">%1$d na buwan ang nakalipas</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d linggo ang nakalipas</item>
+        <item quantity="other">%1$d na linggo ang nakalipas</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d araw ang nakalipas</item>
+        <item quantity="other">%1$d na araw ang nakalipas</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d oras ang nakalipas</item>
+        <item quantity="other">%1$d na oras ang nakalipas</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d minuto ang nakalipas</item>
+        <item quantity="other">%1$d na minuto ang nakalipas</item>
+    </plurals>
+</resources>
