@@ -114,9 +114,9 @@ class BangumiApi(
         val name = obj["name"]!!.jsonPrimitive.content
         return TrackSearch.create(trackId).apply {
             remote_id = obj["id"]!!.jsonPrimitive.long
-            title = nameCn ?: name
+            title = if (!nameCn.isNullOrEmpty()) nameCn else name
             cover_url = coverUrl
-            summary = obj["name"]!!.jsonPrimitive.content
+            summary = obj["summary"]?.jsonPrimitive?.contentOrNull ?: ""
             score = rating
             tracking_url = obj["url"]!!.jsonPrimitive.content
             total_chapters = totalChapters
