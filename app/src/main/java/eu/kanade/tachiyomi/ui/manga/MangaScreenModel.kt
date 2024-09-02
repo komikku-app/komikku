@@ -11,6 +11,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastAny
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -158,8 +160,9 @@ import kotlin.math.floor
 import androidx.compose.runtime.State as RuntimeState
 
 class MangaScreenModel(
-    val context: Context,
-    val mangaId: Long,
+    private val context: Context,
+    private val lifecycle: Lifecycle,
+    private val mangaId: Long,
     // SY -->
     /** If it is opened from Source then it will auto expand the manga description */
     private val isFromSource: Boolean,
@@ -348,6 +351,7 @@ class MangaScreenModel(
                 .combine(downloadCache.changes) { state, _ -> state }
                 .combine(downloadManager.queueState) { state, _ -> state }
                 // SY <--
+                .flowWithLifecycle(lifecycle)
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
                     updateSuccessState {
@@ -365,6 +369,7 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             getExcludedScanlators.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 .collectLatest { excludedScanlators ->
                     updateSuccessState {
@@ -375,6 +380,7 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             getAvailableScanlators.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 // SY -->
                 .combine(
@@ -695,6 +701,7 @@ class MangaScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .filterNotNull()
+                .flowWithLifecycle(lifecycle)
                 .collectLatest { manga ->
                     value = manga
                 }
@@ -946,6 +953,7 @@ class MangaScreenModel(
                     }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
+                .flowWithLifecycle(lifecycle)
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -964,6 +972,7 @@ class MangaScreenModel(
                     }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
+                .flowWithLifecycle(lifecycle)
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -1659,6 +1668,7 @@ class MangaScreenModel(
                         .size to supportedTrackers.isNotEmpty()
                 }
                 // SY <--
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 .collectLatest { (trackingCount, hasLoggedInTrackers) ->
                     updateSuccessState {
