@@ -116,7 +116,7 @@ class BangumiApi(
             remote_id = obj["id"]!!.jsonPrimitive.long
             title = if (!nameCn.isNullOrEmpty()) nameCn else name
             cover_url = coverUrl
-            summary = obj["summary"]?.jsonPrimitive?.contentOrNull ?: ""
+            summary = obj["name"]!!.jsonPrimitive.content
             score = rating
             tracking_url = obj["url"]!!.jsonPrimitive.content
             total_chapters = totalChapters
