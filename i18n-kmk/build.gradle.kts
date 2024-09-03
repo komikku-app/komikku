@@ -1,7 +1,7 @@
 plugins {
     id("mihon.library")
-    id("dev.icerock.mobile.multiplatform-resources")
     kotlin("multiplatform")
+    alias(libs.plugins.moko)
     id("com.github.ben-manes.versions")
 }
 
