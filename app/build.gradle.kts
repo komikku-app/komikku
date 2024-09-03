@@ -16,9 +16,10 @@ plugins {
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
-    pluginManager.apply(libs.plugins.google.services.get().pluginId)
-    // Firebase Crashlytics
-    apply(plugin = "com.google.firebase.crashlytics")
+    pluginManager.apply {
+        apply(libs.plugins.google.services.get().pluginId)
+        apply(libs.plugins.firebase.crashlytics.get().pluginId)
+    }
 }
 
 // shortcutHelper.setFilePath("./shortcuts.xml")
@@ -286,7 +287,9 @@ dependencies {
     implementation(libs.logcat)
 
     // Crash reports/analytics
-    // "standardImplementation"(libs.firebase.analytics)
+    "standardImplementation"(platform(libs.firebase.bom))
+    "standardImplementation"(libs.firebase.analytics)
+    "standardImplementation"(libs.firebase.crashlytics)
 
     // Shizuku
     implementation(libs.bundles.shizuku)
@@ -303,10 +306,6 @@ dependencies {
     // SY -->
     // Text distance (EH)
     implementation(sylibs.simularity)
-
-    // Firebase (EH)
-    implementation(sylibs.firebase.analytics)
-    implementation(sylibs.firebase.crashlytics.ktx)
 
     // Better logging (EH)
     implementation(sylibs.xlog)
