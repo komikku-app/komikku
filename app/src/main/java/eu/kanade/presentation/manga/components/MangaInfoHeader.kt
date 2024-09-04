@@ -214,21 +214,20 @@ fun MangaActionRow(
     val libraryPreferences: LibraryPreferences = Injekt.get()
     val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
     val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
-    val isNAInterval = fetchInterval < 0
-
     // KMK <--
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
-    val nextUpdateDays = remember(nextUpdate) {
-        return@remember if (nextUpdate != null && isSkipCompleted) {
+    val nextUpdateDays = remember(nextUpdate, fetchInterval, isSkipCompleted) {
+        if (fetchInterval < 0) {
+            null
+        } else if (nextUpdate != null && isSkipCompleted) {
             val now = Instant.now()
             now.until(nextUpdate, ChronoUnit.DAYS).toInt().coerceAtLeast(0)
         } else {
             null
         }
     }
-
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
         MangaActionButton(
             title = if (favorite) {
@@ -242,17 +241,14 @@ fun MangaActionRow(
             onLongClick = onEditCategory,
         )
         MangaActionButton(
-            title = when (fetchInterval) {
-                -1 -> stringResource(MR.strings.not_applicable)
-                else -> when (nextUpdateDays) {
-                    null -> stringResource(MR.strings.not_applicable)
-                    0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
-                    else -> pluralStringResource(
-                        MR.plurals.day,
-                        count = nextUpdateDays,
-                        nextUpdateDays,
-                    )
-                }
+            title = when (nextUpdateDays) {
+                null -> stringResource(MR.strings.not_applicable)
+                0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
+                else -> pluralStringResource(
+                    MR.plurals.day,
+                    count = nextUpdateDays,
+                    nextUpdateDays,
+                )
             },
             icon = Icons.Default.HourglassEmpty,
             color = if (isUserIntervalMode ||
