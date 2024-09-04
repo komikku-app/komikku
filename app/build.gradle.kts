@@ -13,8 +13,8 @@ plugins {
     kotlin("plugin.serialization")
     id("com.github.ben-manes.versions")
     alias(libs.plugins.aboutLibraries)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
+//    alias(libs.plugins.google.services)
+//    alias(libs.plugins.firebase.crashlytics)
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
@@ -192,9 +192,6 @@ dependencies {
     implementation(compose.material.icons)
     implementation(compose.animation)
     implementation(compose.animation.graphics)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
     debugImplementation(compose.ui.tooling)
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
@@ -292,6 +289,12 @@ dependencies {
     implementation(libs.logcat)
 
     // Crash reports/analytics
+//    "standardImplementation"(platform(libs.firebase.bom))
+//    "standardImplementation"(libs.firebase.analytics)
+//    "standardImplementation"(libs.firebase.crashlytics)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
 
     // Shizuku
     implementation(libs.bundles.shizuku)

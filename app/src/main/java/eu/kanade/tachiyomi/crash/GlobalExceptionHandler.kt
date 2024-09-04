@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.crash
 
 import android.content.Context
 import android.content.Intent
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -34,6 +36,10 @@ class GlobalExceptionHandler private constructor(
         try {
             logcat(priority = LogPriority.ERROR, throwable = exception)
             launchActivity(applicationContext, activityToBeLaunched, exception)
+            // KMK -->
+            // Pass the exception to Crashlytics
+            defaultHandler.uncaughtException(thread, exception)
+            // KMK <--
             exitProcess(0)
         } catch (_: Exception) {
             defaultHandler.uncaughtException(thread, exception)
