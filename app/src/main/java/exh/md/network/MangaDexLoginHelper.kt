@@ -2,7 +2,7 @@ package exh.md.network
 
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
@@ -38,7 +38,7 @@ class MangaDexLoginHelper(
             val data = with(MdUtil.jsonParser) {
                 client.newCall(
                     POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody),
-                ).awaitSuccess().parseAs<OAuth>()
+                ).awaitSuccess().parseAs<MALOAuth>()
             }
             mangaDexAuthInterceptor.setAuth(data)
         }.exceptionOrNull()
@@ -55,8 +55,8 @@ class MangaDexLoginHelper(
 
     suspend fun logout(): Boolean {
         val oauth = MdUtil.loadOAuth(preferences, mdList)
-        val sessionToken = oauth?.access_token
-        val refreshToken = oauth?.refresh_token
+        val sessionToken = oauth?.accessToken
+        val refreshToken = oauth?.refreshToken
         if (refreshToken.isNullOrEmpty() || sessionToken.isNullOrEmpty()) {
             mdList.logout()
             return true
