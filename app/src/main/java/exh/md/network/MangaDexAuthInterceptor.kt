@@ -2,7 +2,7 @@ package exh.md.network
 
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.data.track.myanimelist.OAuth
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.parseAs
 import exh.md.utils.MdUtil
 import exh.util.nullIfBlank
@@ -18,7 +18,7 @@ class MangaDexAuthInterceptor(
 
     var token = trackPreferences.trackToken(mdList).get().nullIfBlank()
 
-    private var oauth: OAuth? = null
+    private var oauth: MALOAuth? = null
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
@@ -40,7 +40,7 @@ class MangaDexAuthInterceptor(
 
         // Add the authorization header to the original request
         val authRequest = originalRequest.newBuilder()
-            .addHeader("Authorization", "Bearer ${oauth!!.access_token}")
+            .addHeader("Authorization", "Bearer ${oauth!!.accessToken}")
             .build()
 
         val response = chain.proceed(authRequest)
@@ -57,7 +57,7 @@ class MangaDexAuthInterceptor(
             response.close()
 
             val newRequest = originalRequest.newBuilder()
-                .addHeader("Authorization", "Bearer ${newToken.access_token}")
+                .addHeader("Authorization", "Bearer ${newToken.accessToken}")
                 .build()
 
             return chain.proceed(newRequest)
@@ -70,18 +70,18 @@ class MangaDexAuthInterceptor(
      * Called when the user authenticates with MangaDex for the first time. Sets the refresh token
      * and the oauth object.
      */
-    fun setAuth(oauth: OAuth?) {
-        token = oauth?.access_token
+    fun setAuth(oauth: MALOAuth?) {
+        token = oauth?.accessToken
         this.oauth = oauth
         MdUtil.saveOAuth(trackPreferences, mdList, oauth)
     }
 
-    private fun refreshToken(chain: Interceptor.Chain): OAuth? {
+    private fun refreshToken(chain: Interceptor.Chain): MALOAuth? {
         val newOauth = runCatching {
             val oauthResponse = chain.proceed(MdUtil.refreshTokenRequest(oauth!!))
 
             if (oauthResponse.isSuccessful) {
-                with(MdUtil.jsonParser) { oauthResponse.parseAs<OAuth>() }
+                with(MdUtil.jsonParser) { oauthResponse.parseAs<MALOAuth>() }
             } else {
                 oauthResponse.close()
                 null
