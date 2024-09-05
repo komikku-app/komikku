@@ -246,7 +246,7 @@ object AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.privacy_policy),
-                        onPreferenceClick = { throw RuntimeException("Test Crash") },
+                        onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
                     )
                 }
 
