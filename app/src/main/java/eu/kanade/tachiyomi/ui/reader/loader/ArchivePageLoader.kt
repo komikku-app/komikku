@@ -13,7 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import mihon.core.common.archive.ArchiveReader
+import mihon.core.archive.ArchiveReader
 import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.injectLazy
 import java.io.File

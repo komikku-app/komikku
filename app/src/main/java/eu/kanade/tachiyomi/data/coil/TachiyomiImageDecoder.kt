@@ -12,10 +12,10 @@ import coil3.fetch.SourceFetchResult
 import coil3.request.Options
 import coil3.request.bitmapConfig
 import com.hippo.unifile.UniFile
-import eu.kanade.tachiyomi.util.storage.CbzCrypto
-import eu.kanade.tachiyomi.util.storage.CbzCrypto.getCoverStream
 import eu.kanade.tachiyomi.util.system.GLUtil
-import mihon.core.common.archive.archiveReader
+import mihon.core.archive.CbzCrypto
+import mihon.core.archive.CbzCrypto.getCoverStream
+import mihon.core.archive.archiveReader
 import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.decoder.ImageDecoder

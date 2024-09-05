@@ -1,15 +1,13 @@
-package mihon.core.common.archive
+package mihon.core.archive
 
 import android.content.Context
 import android.system.Os
 import android.system.StructStat
 import com.hippo.unifile.UniFile
-import eu.kanade.tachiyomi.util.storage.CbzCrypto
 import me.zhanghai.android.libarchive.Archive
 import me.zhanghai.android.libarchive.ArchiveEntry
 import me.zhanghai.android.libarchive.ArchiveEntry.AE_IFREG
 import me.zhanghai.android.libarchive.ArchiveException
-import tachiyomi.core.common.storage.openFileDescriptor
 import java.io.Closeable
 import java.nio.ByteBuffer
 
@@ -110,10 +108,10 @@ private fun StructStat.toArchiveStat() = ArchiveEntry.StructStat().apply {
     stSize = st_size
     stBlksize = st_blksize
     stBlocks = st_blocks
-    stAtim = timespec(st_atime)
-    stMtim = timespec(st_mtime)
-    stCtim = timespec(st_ctime)
+    stAtim = st_atime.toTimespec()
+    stMtim = st_mtime.toTimespec()
+    stCtim = st_ctime.toTimespec()
     stIno = st_ino
 }
 
-private fun timespec(tvSec: Long) = ArchiveEntry.StructTimespec().also { it.tvSec = tvSec }
+private fun Long.toTimespec() = ArchiveEntry.StructTimespec().also { it.tvSec = this }

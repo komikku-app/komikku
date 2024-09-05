@@ -11,14 +11,14 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
-import eu.kanade.tachiyomi.util.storage.EpubFile
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import logcat.LogPriority
-import mihon.core.common.archive.ZipWriter
-import mihon.core.common.archive.archiveReader
+import mihon.core.archive.ZipWriter
+import mihon.core.archive.archiveReader
+import mihon.core.archive.epubReader
 import nl.adaptivity.xmlutil.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
 import tachiyomi.core.common.i18n.stringResource
@@ -344,7 +344,7 @@ actual class LocalSource(
 
                     val format = Format.valueOf(chapterFile)
                     if (format is Format.Epub) {
-                        EpubFile(format.file.archiveReader(context)).use { epub ->
+                        format.file.epubReader(context).use { epub ->
                             epub.fillMetadata(manga, this)
                         }
                     }
@@ -414,7 +414,7 @@ actual class LocalSource(
                     }
                 }
                 is Format.Epub -> {
-                    EpubFile(format.file.archiveReader(context)).use { epub ->
+                    format.file.epubReader(context).use { epub ->
                         val entry = epub.getImagesFromPages().firstOrNull()
 
                         entry?.let { coverManager.update(manga, epub.getInputStream(it)!!) }

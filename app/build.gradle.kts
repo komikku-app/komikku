@@ -169,11 +169,11 @@ dependencies {
     implementation(projects.i18n)
     // KMK -->
     implementation(projects.i18nKmk)
-    implementation(projects.flagkit)
     // KMK <--
     // SY -->
     implementation(projects.i18nSy)
     // SY <--
+    implementation(projects.core.archive)
     implementation(projects.core.common)
     implementation(projects.coreMetadata)
     implementation(projects.sourceApi)
@@ -280,6 +280,7 @@ dependencies {
     implementation(libs.material.kolor)
     implementation(libs.haze)
     implementation(compose.colorpicker)
+    implementation(projects.flagkit)
     // KMK <--
 
     // Logging
