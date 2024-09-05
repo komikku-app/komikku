@@ -167,6 +167,8 @@
 -keepattributes SourceFile,LineNumberTable
 -keep class com.crashlytics.** { *; }
 -dontwarn com.crashlytics.**
+-keep class com.google.firebase.crashlytics.** { *; }
+-keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
 
 # === Humanize + Guava: https://github.com/google/guava/wiki/UsingProGuardWithGuava
 -dontwarn javax.lang.model.element.Modifier
