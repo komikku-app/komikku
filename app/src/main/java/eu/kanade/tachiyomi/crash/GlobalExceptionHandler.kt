@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.crash
 
 import android.content.Context
 import android.content.Intent
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
