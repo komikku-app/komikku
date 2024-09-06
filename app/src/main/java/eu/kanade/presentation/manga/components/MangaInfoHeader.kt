@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.CallMerge
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HourglassDisabled
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Warning
@@ -51,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -83,6 +85,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
+import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -205,29 +208,36 @@ fun MangaActionRow(
     // SY <--
     // KMK -->
     status: Long,
+    interval: Int,
     // KMK <--
     modifier: Modifier = Modifier,
-    fetchInterval: Int,
-
-    ) {
+) {
     // KMK -->
     val libraryPreferences: LibraryPreferences = Injekt.get()
     val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
-    val isSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
+    val notSkipCompleted = MANGA_NON_COMPLETED !in restrictions || status != SManga.COMPLETED.toLong()
+    val selectedInterval by remember(interval) { mutableIntStateOf(if (interval < 0) -interval else 0) }
     // KMK <--
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
     // TODO: show something better when using custom interval
-    val nextUpdateDays = remember(nextUpdate, fetchInterval, isSkipCompleted) {
-        if (fetchInterval < 0) {
-            null
-        } else if (nextUpdate != null && isSkipCompleted) {
+    val nextUpdateDays = remember(nextUpdate, selectedInterval, notSkipCompleted) {
+        return@remember if (nextUpdate != null &&
+            // KMK -->
+            notSkipCompleted
+            // KMK <--
+        ) {
             val now = Instant.now()
             now.until(nextUpdate, ChronoUnit.DAYS).toInt().coerceAtLeast(0)
+                // KMK -->
+                .takeIf { selectedInterval != FetchInterval.MANUAL_DISABLE }
+                ?: FetchInterval.MANUAL_DISABLE
+            // KMK <--
         } else {
             null
         }
     }
+
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
         MangaActionButton(
             title = if (favorite) {
@@ -244,13 +254,20 @@ fun MangaActionRow(
             title = when (nextUpdateDays) {
                 null -> stringResource(MR.strings.not_applicable)
                 0 -> stringResource(MR.strings.manga_interval_expected_update_soon)
+                // KMK -->
+                FetchInterval.MANUAL_DISABLE -> stringResource(MR.strings.disabled)
+                // KMK <--
                 else -> pluralStringResource(
                     MR.plurals.day,
                     count = nextUpdateDays,
                     nextUpdateDays,
                 )
             },
-            icon = Icons.Default.HourglassEmpty,
+            icon = Icons.Default.HourglassEmpty
+                // KMK -->
+                .takeIf { nextUpdateDays != FetchInterval.MANUAL_DISABLE }
+                ?: Icons.Default.HourglassDisabled,
+            // KMK <--
             color = if (isUserIntervalMode ||
                 // KMK -->
                 nextUpdateDays?.let { it <= 1 } == true

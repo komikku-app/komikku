@@ -317,19 +317,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     MANGA_OUTSIDE_RELEASE_PERIOD in restrictions &&
                         (
                             it.manga.nextUpdate > fetchWindowUpperBound ||
-                                it.manga.fetchInterval < 0
+                                // KMK -->
+                                MANGA_NON_COMPLETED in restrictions &&
+                                it.manga.status.toInt() == SManga.COMPLETED
+                            // KMK <--
                             ) -> {
                         skippedUpdates.add(
                             it.manga to
                                 context.stringResource(MR.strings.skipped_reason_not_in_release_period),
-                        )
-                        false
-                    }
-                    MANGA_NON_COMPLETED in restrictions &&
-                        it.manga.status.toInt() == SManga.COMPLETED -> {
-                        skippedUpdates.add(
-                            it.manga to
-                                context.stringResource(MR.strings.skipped_reason_completed),
                         )
                         false
                     }
