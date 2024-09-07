@@ -2,6 +2,11 @@ package exh.util
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -9,6 +14,7 @@ import exh.source.PURURIN_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
+import tachiyomi.presentation.core.icons.FlagEmoji.Companion.getEmojiLangFlag
 import java.util.Locale
 
 object SourceTagsUtil {
@@ -122,6 +128,7 @@ object SourceTagsUtil {
 
     fun getLocaleSourceUtil(language: String?) = when (language) {
         "english", "eng" -> Locale("en")
+        "japanese" -> Locale("ja")
         "chinese" -> Locale("zh")
         "spanish" -> Locale("es")
         "korean" -> Locale("ko")
@@ -141,4 +148,33 @@ object SourceTagsUtil {
     private const val TAG_TYPE_DEFAULT = 1
 
     private val spaceRegex = "\\s".toRegex()
+}
+
+@Preview
+@Composable
+private fun LanguageFlagPreview() {
+    val locales = listOf(
+        Locale("en"),
+        Locale("ja"),
+        Locale("zh"),
+        Locale("es"),
+        Locale("ko"),
+        Locale("ru"),
+        Locale("fr"),
+        Locale("pt"),
+        Locale("th"),
+        Locale("de"),
+        Locale("it"),
+        Locale("vi"),
+        Locale("pl"),
+        Locale("hu"),
+        Locale("nl"),
+    )
+    Column {
+        FlowRow {
+            locales.forEach {
+                Text(text = getEmojiLangFlag(it.toLanguageTag()))
+            }
+        }
+    }
 }

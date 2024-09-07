@@ -53,6 +53,7 @@ import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.icons.FlagEmoji.Companion.getEmojiLangFlag
 import tachiyomi.presentation.core.util.selectedBackground
 import java.time.Instant
 import java.time.ZoneId
@@ -137,12 +138,21 @@ fun BrowseSourceEHentaiListItem(
                     SYMR.plurals.browse_language_and_pages,
                     pageCount,
                     pageCount,
-                    locale.toLanguageTag().uppercase(),
+                    // KMK -->
+                    getEmojiLangFlag(
+                        // KMK <--
+                        locale.toLanguageTag(), // KMK: .uppercase()
+                    ),
                 )
             } else if (pageCount != null) {
                 context.pluralStringResource(SYMR.plurals.num_pages, pageCount, pageCount)
             } else {
-                locale?.toLanguageTag()?.uppercase().orEmpty()
+                locale?.toLanguageTag()
+                    // KMK -->
+                    ?.let { getEmojiLangFlag(it) }
+                    // .uppercase()
+                    // KMK <--
+                    .orEmpty()
             }
         }
     }
