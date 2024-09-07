@@ -18,11 +18,13 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.genreTextColor
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.icons.FlagEmoji.Companion.getEmojiLangFlag
 
 @Composable
 fun EHentaiDescription(
@@ -91,7 +93,14 @@ fun EHentaiDescription(
             binding.pages.setTextColor(textColor)
             // KMK <--
 
-            val language = meta.language ?: context.stringResource(MR.strings.unknown)
+            val language = (meta.language ?: context.stringResource(MR.strings.unknown))
+                // KMK -->
+                .let { lang ->
+                    getEmojiLangFlag(
+                        SourceTagsUtil.getLocaleSourceUtil(lang.lowercase())?.toLanguageTag().orEmpty(),
+                    ) + " " + lang
+                }
+            // KMK <--
             binding.language.text = if (meta.translated == true) {
                 context.stringResource(SYMR.strings.language_translated, language)
             } else {
