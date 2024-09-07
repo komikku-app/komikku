@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.isEhBasedSource
 import exh.ui.ifSourcesLoaded
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.channels.Channel
@@ -193,7 +194,12 @@ data class BrowseSourceScreen(
                             searchQuery = state.toolbarQuery,
                             onSearchQueryChange = screenModel::setToolbarQuery,
                             source = screenModel.source,
-                            displayMode = screenModel.displayMode,
+                            displayMode = screenModel.displayMode
+                                // KMK -->
+                                .takeIf {
+                                    !screenModel.source.isEhBasedSource() || !screenModel.ehentaiBrowseDisplayMode
+                                },
+                            // KMK <--
                             onDisplayModeChange = { screenModel.displayMode = it },
                             navigateUp = navigateUp,
                             onWebViewClick = onWebViewClick,
