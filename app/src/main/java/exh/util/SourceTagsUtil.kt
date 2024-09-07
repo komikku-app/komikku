@@ -128,6 +128,7 @@ object SourceTagsUtil {
 
     fun getLocaleSourceUtil(language: String?) = when (language) {
         "english", "eng" -> Locale("en")
+        "japanese" -> Locale("ja")
         "chinese" -> Locale("zh")
         "spanish" -> Locale("es")
         "korean" -> Locale("ko")
@@ -154,6 +155,7 @@ object SourceTagsUtil {
 private fun LanguageFlagPreview() {
     val locales = listOf(
         Locale("en"),
+        Locale("ja"),
         Locale("zh"),
         Locale("es"),
         Locale("ko"),
