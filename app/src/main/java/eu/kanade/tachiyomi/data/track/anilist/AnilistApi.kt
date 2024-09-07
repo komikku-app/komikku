@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserListMangaQueryResult
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
@@ -18,6 +19,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 import okhttp3.OkHttpClient
@@ -286,6 +292,79 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     }
             }
         }
+    }
+
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
+        return withIOContext {
+            val query = """
+            |query (${'$'}mangaId: Int!) {
+                |Media (id: ${'$'}mangaId) {
+                    |id
+                    |title {
+                        |userPreferred
+                    |}
+                    |coverImage {
+                        |extraLarge
+                    |}
+                    |description
+                    |staff {
+                        |edges {
+                            |role
+                            |node {
+                                |name {
+                                    |userPreferred
+                                |}
+                            |}
+                        |}
+                    |}
+                |}
+            |}
+            |
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") {
+                    put("mangaId", track.remoteId)
+                }
+            }
+            with(json) {
+                authClient.newCall(
+                    POST(
+                        API_URL,
+                        body = payload.toString().toRequestBody(jsonMime),
+                    ),
+                )
+                    .awaitSuccess()
+                    .parseAs<JsonObject>()
+                    .let {
+                        val data = it["data"]!!.jsonObject
+                        val media = data["Media"]!!.jsonObject
+                        jsonToTrackMangaMetadata(media)
+                    }
+            }
+        }
+    }
+
+    private fun jsonToTrackMangaMetadata(struct: JsonObject): TrackMangaMetadata {
+        val edges = struct["staff"]!!.jsonObject["edges"]!!.jsonArray
+        val authors = edges.filter {
+            it.jsonObject["role"]!!.jsonPrimitive.content == "Story"
+        }.map {
+            it.jsonObject["node"]!!.jsonObject["name"]!!.jsonObject["userPreferred"]!!.jsonPrimitive.content
+        }.joinToString(", ")
+        val artists = edges.filter {
+            it.jsonObject["role"]!!.jsonPrimitive.content == "Art"
+        }.map {
+            it.jsonObject["node"]!!.jsonObject["name"]!!.jsonObject["userPreferred"]!!.jsonPrimitive.content
+        }.joinToString(", ")
+        return TrackMangaMetadata(
+            struct["id"]!!.jsonPrimitive.long,
+            struct["title"]!!.jsonObject["userPreferred"]!!.jsonPrimitive.content,
+            struct["coverImage"]!!.jsonObject["extraLarge"]!!.jsonPrimitive.contentOrNull,
+            struct["description"]!!.jsonPrimitive.contentOrNull,
+            authors,
+            artists,
+        )
     }
 
     private fun createDate(dateValue: Long): JsonObject {

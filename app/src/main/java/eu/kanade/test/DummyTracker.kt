@@ -120,6 +120,12 @@ data class DummyTracker(
         epochMillis: Long,
     ) = Unit
 
+    override suspend fun getMangaMetadata(
+        track: tachiyomi.domain.track.model.Track,
+    ): eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata = eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata(
+        0, "test", "test", "test", "test", "test",
+    )
+
     // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == 2L
     // KMK <--
