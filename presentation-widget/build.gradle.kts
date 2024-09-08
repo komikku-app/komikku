@@ -26,9 +26,9 @@ dependencies {
     implementation(platform(libs.coil.bom))
     implementation(libs.coil.core)
 
+    api(libs.injekt)
+
     // SY -->
     implementation(libs.material)
     // SY <--
-
-    api(libs.injekt.core)
 }

@@ -14,6 +14,6 @@ dependencies {
     implementation(libs.unifile)
     // KMK -->
     implementation(projects.core.common)
-    implementation(libs.injekt.core)
+    implementation(libs.injekt)
     // KMK <--
 }

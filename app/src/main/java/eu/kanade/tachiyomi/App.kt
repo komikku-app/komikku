@@ -30,6 +30,7 @@ import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
 import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.crashlytics
+import dev.mihon.injekt.patchInjekt
 import eu.kanade.domain.DomainModule
 import eu.kanade.domain.SYDomainModule
 import eu.kanade.domain.base.BasePreferences
@@ -100,6 +101,8 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     @SuppressLint("LaunchActivityFromNotification")
     override fun onCreate() {
         super<Application>.onCreate()
+        patchInjekt()
+
         // KMK -->
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         // KMK <--
