@@ -30,5 +30,5 @@ dependencies {
     implementation(libs.material)
     // SY <--
 
-    api(libs.injekt.core)
+    api(libs.injekt)
 }
