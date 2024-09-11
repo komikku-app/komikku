@@ -160,7 +160,7 @@ private fun ExtensionRepoListItem(
                     // KMK -->
                     IconButton(onClick = if (isDisabled) onEnable else onDisable) {
                         Icon(
-                            imageVector = if (isDisabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                            imageVector = if (isDisabled) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                             contentDescription = stringResource(MR.strings.action_disable),
                         )
                     }
