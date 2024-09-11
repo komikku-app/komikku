@@ -81,6 +81,9 @@ class Tester {
                 name = "a",
                 order = 1,
                 flags = 0,
+                // KMK -->
+                hidden = false,
+                // KMK <--
             ),
         )
         val favoriteEntries = listOf(

@@ -11,6 +11,8 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -33,6 +36,9 @@ fun CategoryListItem(
     onMoveDown: (Category) -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
+    // KMK -->
+    onHide: () -> Unit,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
@@ -76,6 +82,21 @@ fun CategoryListItem(
                     contentDescription = stringResource(MR.strings.action_rename_category),
                 )
             }
+            // KMK -->
+            IconButton(
+                onClick = onHide,
+                content = {
+                    Icon(
+                        imageVector = if (category.hidden) {
+                            Icons.Outlined.Visibility
+                        } else {
+                            Icons.Outlined.VisibilityOff
+                        },
+                        contentDescription = stringResource(KMR.strings.action_hide),
+                    )
+                },
+            )
+            // KMK <--
             IconButton(onClick = onDelete) {
                 Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(MR.strings.action_delete))
             }

@@ -85,7 +85,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
-import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetVisibleCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -129,7 +129,7 @@ typealias LibraryMap = Map<Category, List<LibraryItem>>
 
 class LibraryScreenModel(
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
-    private val getCategories: GetCategories = Injekt.get(),
+    private val getCategories: GetVisibleCategories = Injekt.get(),
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
@@ -619,6 +619,9 @@ class LibraryScreenModel(
                         preferences.context.stringResource(SYMR.strings.ungrouped),
                         0,
                         0,
+                        // KMK -->
+                        false,
+                        // KMK <--
                     ) to
                         values.flatten().distinctBy { it.libraryManga.manga.id },
                 )
@@ -1283,6 +1286,9 @@ class LibraryScreenModel(
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1308,6 +1314,9 @@ class LibraryScreenModel(
                         },
                         order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1336,6 +1345,9 @@ class LibraryScreenModel(
                             else -> 7
                         },
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }

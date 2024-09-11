@@ -14,19 +14,29 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetVisibleCategories
+import tachiyomi.domain.category.interactor.HideCategory
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class CategoryScreenModel(
-    private val getCategories: GetCategories = Injekt.get(),
+    // KMK -->
+    private val getAllCategories: GetCategories = Injekt.get(),
+    private val getVisibleCategories: GetVisibleCategories = Injekt.get(),
+    // KMK <--
     private val createCategoryWithName: CreateCategoryWithName = Injekt.get(),
     private val deleteCategory: DeleteCategory = Injekt.get(),
     private val reorderCategory: ReorderCategory = Injekt.get(),
     private val renameCategory: RenameCategory = Injekt.get(),
+    // KMK -->
+    private val hideCategory: HideCategory = Injekt.get(),
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<CategoryScreenState>(CategoryScreenState.Loading) {
 
     private val _events: Channel<CategoryEvent> = Channel()
@@ -34,8 +44,15 @@ class CategoryScreenModel(
 
     init {
         screenModelScope.launch {
-            getCategories.subscribe()
-                .collectLatest { categories ->
+            // KMK -->
+            val allCategories = if (libraryPreferences.hideHiddenCategoriesSettings().get()) {
+                getVisibleCategories.subscribe()
+            } else {
+                getAllCategories.subscribe()
+            }
+
+            allCategories.collectLatest { categories ->
+                // KMK <--
                     mutableState.update {
                         CategoryScreenState.Success(
                             categories = categories
@@ -55,6 +72,17 @@ class CategoryScreenModel(
             }
         }
     }
+
+    // KMK -->
+    fun hideCategory(category: Category) {
+        screenModelScope.launch {
+            when (hideCategory.await(category)) {
+                is HideCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
+                else -> {}
+            }
+        }
+    }
+    // KMK <--
 
     fun deleteCategory(categoryId: Long) {
         screenModelScope.launch {

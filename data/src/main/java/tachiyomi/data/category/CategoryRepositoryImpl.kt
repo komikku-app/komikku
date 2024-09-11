@@ -42,6 +42,9 @@ class CategoryRepositoryImpl(
                 name = category.name,
                 order = category.order,
                 flags = category.flags,
+                // KMK -->
+                hidden = if (category.hidden) 1L else 0L,
+                // KMK <--
             )
             categoriesQueries.selectLastInsertedRowId()
         }
@@ -67,6 +70,9 @@ class CategoryRepositoryImpl(
             name = update.name,
             order = update.order,
             flags = update.flags,
+            // KMK -->
+            hidden = if (update.hidden == true) 1L else 0L,
+            // KMK <--
             categoryId = update.id,
         )
     }
@@ -84,4 +90,26 @@ class CategoryRepositoryImpl(
             )
         }
     }
+
+    // KMK -->
+    override suspend fun getAllVisibleCategories(): List<Category> {
+        return handler.awaitList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
+    }
+
+    override fun getAllVisibleCategoriesAsFlow(): Flow<List<Category>> {
+        return handler.subscribeToList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
+    }
+
+    override suspend fun getVisibleCategoriesByMangaId(mangaId: Long): List<Category> {
+        return handler.awaitList {
+            categoriesQueries.getVisibleCategoriesByMangaId(mangaId, CategoryMapper::mapCategory)
+        }
+    }
+
+    override fun getVisibleCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>> {
+        return handler.subscribeToList {
+            categoriesQueries.getVisibleCategoriesByMangaId(mangaId, CategoryMapper::mapCategory)
+        }
+    }
+    // KMK <--
 }
