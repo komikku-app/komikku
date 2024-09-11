@@ -90,26 +90,4 @@ class CategoryRepositoryImpl(
             )
         }
     }
-
-    // KMK -->
-    override suspend fun getAllVisibleCategories(): List<Category> {
-        return handler.awaitList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
-    }
-
-    override fun getAllVisibleCategoriesAsFlow(): Flow<List<Category>> {
-        return handler.subscribeToList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
-    }
-
-    override suspend fun getVisibleCategoriesByMangaId(mangaId: Long): List<Category> {
-        return handler.awaitList {
-            categoriesQueries.getVisibleCategoriesByMangaId(mangaId, CategoryMapper::mapCategory)
-        }
-    }
-
-    override fun getVisibleCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>> {
-        return handler.subscribeToList {
-            categoriesQueries.getVisibleCategoriesByMangaId(mangaId, CategoryMapper::mapCategory)
-        }
-    }
-    // KMK <--
 }
