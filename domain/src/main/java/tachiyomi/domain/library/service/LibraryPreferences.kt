@@ -153,7 +153,7 @@ class LibraryPreferences(
     fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)
 
     // KMK -->
-    fun hideHiddenCategoriesSettings() = preferenceStore.getBoolean("hidden_categories", false)
+    fun hideHiddenCategories() = preferenceStore.getBoolean("hide_hidden_categories", false)
     // KMK <--
 
     fun updateCategories() = preferenceStore.getStringSet("library_update_categories", emptySet())

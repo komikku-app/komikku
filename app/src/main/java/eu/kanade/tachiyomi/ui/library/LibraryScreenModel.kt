@@ -85,7 +85,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
-import tachiyomi.domain.category.interactor.GetVisibleCategories
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -129,7 +129,7 @@ typealias LibraryMap = Map<Category, List<LibraryItem>>
 
 class LibraryScreenModel(
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
-    private val getCategories: GetVisibleCategories = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
@@ -592,7 +592,13 @@ class LibraryScreenModel(
                 .groupBy { it.libraryManga.category }
         }
 
-        return combine(getCategories.subscribe(), libraryMangasFlow) { categories, libraryManga ->
+        return combine(
+            // KMK -->
+            libraryPreferences.hideHiddenCategories().changes(),
+            // KMK <--
+            getCategories.subscribe(),
+            libraryMangasFlow,
+        ) { hideHiddenCategories, categories, libraryManga ->
             val displayCategories = if (libraryManga.isNotEmpty() && !libraryManga.containsKey(0)) {
                 categories.fastFilterNot { it.isSystemCategory }
             } else {
@@ -604,7 +610,11 @@ class LibraryScreenModel(
                 state.copy(ogCategories = displayCategories)
             }
             // SY <--
-            displayCategories.associateWith { libraryManga[it.id].orEmpty() }
+            displayCategories
+                // KMK -->
+                .filterNot { hideHiddenCategories && it.hidden }
+                // KMK <--
+                .associateWith { libraryManga[it.id].orEmpty() }
         }
     }
 

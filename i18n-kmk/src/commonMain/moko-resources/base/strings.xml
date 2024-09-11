@@ -13,6 +13,7 @@
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove merged entries?</string>
     <string name="action_hide">Hide</string>
+    <string name="action_hide_hidden_categories">Hide hidden categories</string>
 
 
     <!-- Preferences -->
@@ -41,7 +42,6 @@
     <string name="theme_matrix">Matrix</string>
     <string name="theme_mocha">Mocha</string>
     <string name="theme_sapphire">Sapphire</string>
-    <string name="pref_category_hide_hidden">Hide hidden categories from categories screen</string>
 
     <!-- Custom Color Picker -->
     <string name="pref_custom_color">Palette Personalizer</string>

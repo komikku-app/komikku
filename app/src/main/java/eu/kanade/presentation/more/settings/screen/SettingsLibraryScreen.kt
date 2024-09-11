@@ -121,12 +121,6 @@ object SettingsLibraryScreen : SearchableSettings {
                         true
                     },
                 ),
-                // KMK -->
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.hideHiddenCategoriesSettings(),
-                    title = stringResource(KMR.strings.pref_category_hide_hidden),
-                ),
-                // KMK <--
             ),
         )
     }
