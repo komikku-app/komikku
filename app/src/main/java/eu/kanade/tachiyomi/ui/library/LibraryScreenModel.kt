@@ -592,7 +592,13 @@ class LibraryScreenModel(
                 .groupBy { it.libraryManga.category }
         }
 
-        return combine(getCategories.subscribe(), libraryMangasFlow) { categories, libraryManga ->
+        return combine(
+            // KMK -->
+            libraryPreferences.hideHiddenCategories().changes(),
+            // KMK <--
+            getCategories.subscribe(),
+            libraryMangasFlow,
+        ) { hideHiddenCategories, categories, libraryManga ->
             val displayCategories = if (libraryManga.isNotEmpty() && !libraryManga.containsKey(0)) {
                 categories.fastFilterNot { it.isSystemCategory }
             } else {
@@ -604,7 +610,11 @@ class LibraryScreenModel(
                 state.copy(ogCategories = displayCategories)
             }
             // SY <--
-            displayCategories.associateWith { libraryManga[it.id].orEmpty() }
+            displayCategories
+                // KMK -->
+                .filterNot { hideHiddenCategories && it.hidden }
+                // KMK <--
+                .associateWith { libraryManga[it.id].orEmpty() }
         }
     }
 
@@ -619,6 +629,9 @@ class LibraryScreenModel(
                         preferences.context.stringResource(SYMR.strings.ungrouped),
                         0,
                         0,
+                        // KMK -->
+                        false,
+                        // KMK <--
                     ) to
                         values.flatten().distinctBy { it.libraryManga.manga.id },
                 )
@@ -1283,6 +1296,9 @@ class LibraryScreenModel(
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1308,6 +1324,9 @@ class LibraryScreenModel(
                         },
                         order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1336,6 +1355,9 @@ class LibraryScreenModel(
                             else -> 7
                         },
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }

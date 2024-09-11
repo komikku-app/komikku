@@ -45,6 +45,9 @@ class CategoryScreen : Screen() {
             onClickDelete = { screenModel.showDialog(CategoryDialog.Delete(it)) },
             onClickMoveUp = screenModel::moveUp,
             onClickMoveDown = screenModel::moveDown,
+            // KMK -->
+            onClickHide = screenModel::hideCategory,
+            // KMK <--
             navigateUp = navigator::pop,
         )
 

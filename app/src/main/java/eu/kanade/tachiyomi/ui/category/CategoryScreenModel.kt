@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.HideCategory
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.model.Category
@@ -27,6 +28,9 @@ class CategoryScreenModel(
     private val deleteCategory: DeleteCategory = Injekt.get(),
     private val reorderCategory: ReorderCategory = Injekt.get(),
     private val renameCategory: RenameCategory = Injekt.get(),
+    // KMK -->
+    private val hideCategory: HideCategory = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<CategoryScreenState>(CategoryScreenState.Loading) {
 
     private val _events: Channel<CategoryEvent> = Channel()
@@ -55,6 +59,17 @@ class CategoryScreenModel(
             }
         }
     }
+
+    // KMK -->
+    fun hideCategory(category: Category) {
+        screenModelScope.launch {
+            when (hideCategory.await(category)) {
+                is HideCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
+                else -> {}
+            }
+        }
+    }
+    // KMK <--
 
     fun deleteCategory(categoryId: Long) {
         screenModelScope.launch {

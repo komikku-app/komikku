@@ -335,6 +335,12 @@ private fun ColumnScope.DisplayPage(
         label = stringResource(MR.strings.action_display_show_tabs),
         pref = screenModel.libraryPreferences.categoryTabs(),
     )
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.action_hide_hidden_categories),
+        pref = screenModel.libraryPreferences.hideHiddenCategories(),
+    )
+    // KMK <--
     CheckboxItem(
         label = stringResource(MR.strings.action_display_show_number_of_items),
         pref = screenModel.libraryPreferences.categoryNumberOfItems(),

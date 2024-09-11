@@ -37,6 +37,9 @@ fun CategoryScreen(
     onClickDelete: (Category) -> Unit,
     onClickMoveUp: (Category) -> Unit,
     onClickMoveDown: (Category) -> Unit,
+    // KMK -->
+    onClickHide: (Category) -> Unit,
+    // KMK <--
     navigateUp: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -83,6 +86,9 @@ fun CategoryScreen(
             onClickDelete = onClickDelete,
             onMoveUp = onClickMoveUp,
             onMoveDown = onClickMoveDown,
+            // KMK -->
+            onClickHide = onClickHide,
+            // KMK <--
         )
     }
 }
@@ -96,6 +102,9 @@ private fun CategoryContent(
     onClickDelete: (Category) -> Unit,
     onMoveUp: (Category) -> Unit,
     onMoveDown: (Category) -> Unit,
+    // KMK -->
+    onClickHide: (Category) -> Unit,
+    // KMK <--
 ) {
     LazyColumn(
         state = lazyListState,
@@ -115,6 +124,9 @@ private fun CategoryContent(
                 onMoveDown = onMoveDown,
                 onRename = { onClickRename(category) },
                 onDelete = { onClickDelete(category) },
+                // KMK -->
+                onHide = { onClickHide(category) },
+                // KMK <--
             )
         }
     }
