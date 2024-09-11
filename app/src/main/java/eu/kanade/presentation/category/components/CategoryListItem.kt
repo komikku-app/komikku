@@ -16,11 +16,13 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -55,9 +57,19 @@ fun CategoryListItem(
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = null)
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Label,
+                contentDescription = null,
+                // KMK -->
+                tint = LocalContentColor.current.let { if (category.hidden) it.copy(alpha = 0.6f) else it },
+                // KMK <--
+            )
             Text(
                 text = category.name,
+                // KMK -->
+                color = LocalContentColor.current.let { if (category.hidden) it.copy(alpha = 0.6f) else it },
+                textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
+                // KMK <--
                 modifier = Modifier
                     .padding(start = MaterialTheme.padding.medium),
             )
