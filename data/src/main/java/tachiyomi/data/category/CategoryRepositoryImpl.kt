@@ -71,7 +71,7 @@ class CategoryRepositoryImpl(
             order = update.order,
             flags = update.flags,
             // KMK -->
-            hidden = if (update.hidden == true) 1L else 0L,
+            hidden = update.hidden?.let { if (it) 1L else 0L },
             // KMK <--
             categoryId = update.id,
         )
