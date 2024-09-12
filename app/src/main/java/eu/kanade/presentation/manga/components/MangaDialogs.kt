@@ -117,20 +117,38 @@ fun SetIntervalDialog(
                         contentAlignment = Alignment.Center,
                     ) {
                         val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                        val items = (0..FetchInterval.MAX_INTERVAL)
-                            .map {
-                                if (it == 0) {
-                                    stringResource(MR.strings.label_default)
-                                } else {
-                                    it.toString()
-                                }
-                            }
-                            .toImmutableList()
+                        val items =
+                            // KMK -->
+                            (
+                                listOf(stringResource(MR.strings.action_disable)) +
+                                    // KMK <--
+                                    (0..FetchInterval.MAX_INTERVAL)
+                                        .map {
+                                            if (it == 0) {
+                                                stringResource(MR.strings.label_default)
+                                            } else {
+                                                it.toString()
+                                            }
+                                        }
+                                )
+                                .toImmutableList()
                         WheelTextPicker(
                             items = items,
                             size = size,
-                            startIndex = selectedInterval,
-                            onSelectionChanged = { selectedInterval = it },
+                            startIndex = (
+                                selectedInterval +
+                                    // KMK -->
+                                    1
+                                ).takeIf { selectedInterval != FetchInterval.MANUAL_DISABLE } ?: 0,
+                            // KMK <--
+                            onSelectionChanged = { idx ->
+                                selectedInterval = (
+                                    idx -
+                                        // KMK -->
+                                        1
+                                    ).takeIf { idx != 0 } ?: FetchInterval.MANUAL_DISABLE
+                                // KMK <--
+                            },
                         )
                     }
                 }

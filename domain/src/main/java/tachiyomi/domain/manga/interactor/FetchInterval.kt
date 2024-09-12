@@ -107,7 +107,7 @@ class FetchInterval(
             interval.absoluteValue.takeIf { interval < 0 }
                 ?: increaseInterval(interval, timeSinceLatest, increaseWhenOver = 10),
         )
-        return latestDate.plusDays((cycle + 1) * interval.toLong()).toEpochSecond(dateTime.offset) * 1000
+        return latestDate.plusDays((cycle + 1) * interval.absoluteValue.toLong()).toEpochSecond(dateTime.offset) * 1000
     }
 
     private fun increaseInterval(delta: Int, timeSinceLatest: Int, increaseWhenOver: Int): Int {
@@ -126,5 +126,9 @@ class FetchInterval(
         const val MAX_INTERVAL = 28
 
         private const val GRACE_PERIOD = 1L
+
+        // KMK -->
+        const val MANUAL_DISABLE = 99999 // 274 years in future
+        // KMK <--
     }
 }
