@@ -69,7 +69,7 @@ import tachiyomi.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
-import tachiyomi.domain.source.interactor.SwapFeedOrder
+import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 import tachiyomi.domain.source.repository.SavedSearchRepository
 import tachiyomi.domain.track.interactor.IsTrackUnfollowed
@@ -157,7 +157,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetSavedSearchGlobalFeed(get()) }
         addFactory { GetSavedSearchBySourceIdFeed(get()) }
         // KMK -->
-        addFactory { SwapFeedOrder(get()) }
+        addFactory { ReorderFeed(get()) }
         // KMK <--
 
         addSingletonFactory<CustomMangaRepository> { CustomMangaRepositoryImpl(get<Application>()) }

@@ -1,13 +1,18 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -16,7 +21,9 @@ import eu.kanade.presentation.browse.FeedActionsDialog
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
+import eu.kanade.presentation.browse.FeedOrderScreen
 import eu.kanade.presentation.browse.FeedScreen
+import eu.kanade.presentation.browse.FeedSortAlphabeticallyDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
@@ -49,12 +56,16 @@ fun feedTab(
     val state by screenModel.state.collectAsState()
 
     // KMK -->
+    val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
     val haptic = LocalHapticFeedback.current
 
-    BackHandler(enabled = bulkFavoriteState.selectionMode) {
-        bulkFavoriteScreenModel.backHandler()
+    BackHandler(enabled = bulkFavoriteState.selectionMode || showingFeedOrderScreen.value) {
+        when {
+            bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.backHandler()
+            showingFeedOrderScreen.value -> showingFeedOrderScreen.value = false
+        }
     }
 
     LaunchedEffect(bulkFavoriteState.selectionMode) {
@@ -87,63 +98,88 @@ fun feedTab(
                 },
             ),
             // KMK -->
+            AppBar.Action(
+                title = stringResource(KMR.strings.action_bulk_select),
+                icon = Icons.Outlined.Category,
+                onClick = { showingFeedOrderScreen.value = true },
+            ),
             bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
             // KMK <--
         ),
         content = { contentPadding, snackbarHostState ->
-            FeedScreen(
-                state = state,
-                contentPadding = contentPadding,
-                onClickSavedSearch = { savedSearch, source ->
-                    screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
-                    navigator.push(
-                        BrowseSourceScreen(
-                            source.id,
-                            listingQuery = null,
-                            savedSearch = savedSearch.id,
-                        ),
-                    )
-                },
-                onClickSource = { source ->
-                    screenModel.sourcePreferences.lastUsedSource().set(source.id)
-                    navigator.push(
-                        BrowseSourceScreen(
-                            source.id,
-                            // KMK -->
-                            listingQuery = if (!source.supportsLatest) {
-                                GetRemoteManga.QUERY_POPULAR
-                            } else {
-                                // KMK <--
-                                GetRemoteManga.QUERY_LATEST
+            Crossfade(
+                targetState = showingFeedOrderScreen.value,
+                label = "feed_order_crossfade",
+            ) { showingFeedOrderScreen ->
+                when (showingFeedOrderScreen) {
+                    true ->
+                        FeedOrderScreen(
+                            state = state,
+                            onClickSortAlphabetically = {
+                                screenModel.showDialog(FeedScreenModel.Dialog.SortAlphabetically)
                             },
-                        ),
-                    )
-                },
-                // KMK -->
-                onLongClickFeed = screenModel::openActionsDialog,
-                // KMK <--
-                onClickManga = { manga ->
-                    // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
-                        // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
-                    }
-                },
-                // KMK -->
-                onLongClickManga = { manga ->
-                    if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        navigator.push(MangaScreen(manga.id, true))
-                    }
-                },
-                selection = bulkFavoriteState.selection,
-                // KMK <--
-                onRefresh = screenModel::init,
-                getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
-            )
+                            onClickDelete = screenModel::openDeleteDialog,
+                            onClickMoveUp = screenModel::moveUp,
+                            onClickMoveDown = screenModel::moveDown,
+                            navigateUp = navigator::pop,
+                        )
+
+                    false ->
+                        FeedScreen(
+                            state = state,
+                            contentPadding = contentPadding,
+                            onClickSavedSearch = { savedSearch, source ->
+                                screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
+                                navigator.push(
+                                    BrowseSourceScreen(
+                                        source.id,
+                                        listingQuery = null,
+                                        savedSearch = savedSearch.id,
+                                    ),
+                                )
+                            },
+                            onClickSource = { source ->
+                                screenModel.sourcePreferences.lastUsedSource().set(source.id)
+                                navigator.push(
+                                    BrowseSourceScreen(
+                                        source.id,
+                                        // KMK -->
+                                        listingQuery = if (!source.supportsLatest) {
+                                            GetRemoteManga.QUERY_POPULAR
+                                        } else {
+                                            // KMK <--
+                                            GetRemoteManga.QUERY_LATEST
+                                        },
+                                    ),
+                                )
+                            },
+                            // KMK -->
+                            onLongClickFeed = screenModel::openActionsDialog,
+                            // KMK <--
+                            onClickManga = { manga ->
+                                // KMK -->
+                                if (bulkFavoriteState.selectionMode) {
+                                    bulkFavoriteScreenModel.toggleSelection(manga)
+                                } else {
+                                    // KMK <--
+                                    navigator.push(MangaScreen(manga.id, true))
+                                }
+                            },
+                            // KMK -->
+                            onLongClickManga = { manga ->
+                                if (!bulkFavoriteState.selectionMode) {
+                                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                                } else {
+                                    navigator.push(MangaScreen(manga.id, true))
+                                }
+                            },
+                            selection = bulkFavoriteState.selection,
+                            // KMK <--
+                            onRefresh = screenModel::init,
+                            getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
+                        )
+                }
+            }
 
             state.dialog?.let { dialog ->
                 when (dialog) {
@@ -159,6 +195,7 @@ fun feedTab(
                             },
                         )
                     }
+
                     is FeedScreenModel.Dialog.AddFeedSearch -> {
                         FeedAddSearchDialog(
                             source = dialog.source,
@@ -170,6 +207,7 @@ fun feedTab(
                             },
                         )
                     }
+
                     is FeedScreenModel.Dialog.DeleteFeed -> {
                         FeedDeleteConfirmDialog(
                             feed = dialog.feed,
@@ -205,6 +243,13 @@ fun feedTab(
                             },
                         )
                     }
+
+                    is FeedScreenModel.Dialog.SortAlphabetically -> {
+                        FeedSortAlphabeticallyDialog(
+                            onDismissRequest = screenModel::dismissDialog,
+                            onSort = { screenModel.sortAlphabetically() },
+                        )
+                    }
                     // KMK <--
                 }
             }
@@ -213,14 +258,19 @@ fun feedTab(
             when (bulkFavoriteState.dialog) {
                 is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
                     AddDuplicateMangaDialog(bulkFavoriteScreenModel)
+
                 is BulkFavoriteScreenModel.Dialog.RemoveManga ->
                     RemoveMangaDialog(bulkFavoriteScreenModel)
+
                 is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
                     ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+
                 is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                     ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+
                 is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
                     AllowDuplicateDialog(bulkFavoriteScreenModel)
+
                 else -> {}
             }
             // KMK <--
@@ -233,6 +283,7 @@ fun feedTab(
                         FeedScreenModel.Event.FailedFetchingSources -> {
                             launch { snackbarHostState.showSnackbar(internalErrString) }
                         }
+
                         FeedScreenModel.Event.TooManyFeeds -> {
                             launch { snackbarHostState.showSnackbar(tooManyFeedsString) }
                         }

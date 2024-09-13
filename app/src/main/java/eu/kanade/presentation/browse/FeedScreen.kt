@@ -417,4 +417,33 @@ fun FeedActionsDialog(
         },
     )
 }
+
+@Composable
+fun FeedSortAlphabeticallyDialog(
+    onDismissRequest: () -> Unit,
+    onSort: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(onClick = {
+                onSort()
+                onDismissRequest()
+            }) {
+                Text(text = stringResource(MR.strings.action_ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+        title = {
+            Text(text = stringResource(MR.strings.action_sort_category))
+        },
+        text = {
+            Text(text = stringResource(MR.strings.sort_category_confirmation))
+        },
+    )
+}
 // KMK <--

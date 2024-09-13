@@ -1,8 +1,10 @@
 package tachiyomi.data.source
 
 import kotlinx.coroutines.flow.Flow
+import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 
@@ -105,6 +107,30 @@ class FeedSavedSearchRepositoryImpl(
                 id = feed.id,
             )
         }
+    }
+
+    override suspend fun updatePartial(update: FeedSavedSearchUpdate) {
+        handler.await {
+            updatePartialBlocking(update)
+        }
+    }
+
+    override suspend fun updatePartial(updates: List<FeedSavedSearchUpdate>) {
+        handler.await(inTransaction = true) {
+            for (update in updates) {
+                updatePartialBlocking(update)
+            }
+        }
+    }
+
+    private fun Database.updatePartialBlocking(update: FeedSavedSearchUpdate) {
+        feed_saved_searchQueries.update(
+            source = update.source,
+            saved_search = update.savedSearch,
+            global = update.global,
+            feed_order = update.feedOrder,
+            id = update.id,
+        )
     }
     // KMK <--
 }

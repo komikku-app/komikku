@@ -6,7 +6,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
@@ -41,8 +40,9 @@ import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
 import tachiyomi.domain.source.interactor.GetSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
-import tachiyomi.domain.source.interactor.SwapFeedOrder
+import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -59,15 +59,15 @@ open class FeedScreenModel(
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    private val updateManga: UpdateManga = Injekt.get(),
-    private val getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
+    getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
     private val countFeedSavedSearchGlobal: CountFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     // KMK -->
-    private val swapFeedOrder: SwapFeedOrder = Injekt.get(),
+    private val swapFeedOrder: ReorderFeed = Injekt.get(),
+    private val reorderFeed: ReorderFeed = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
 
@@ -176,7 +176,7 @@ open class FeedScreenModel(
         return countFeedSavedSearchGlobal.await() > MaxFeedItems
     }
 
-    fun getEnabledSources(): ImmutableList<CatalogueSource> {
+    private fun getEnabledSources(): ImmutableList<CatalogueSource> {
         val languages = sourcePreferences.enabledLanguages().get()
         val pinnedSources = sourcePreferences.pinnedSources().get()
         val disabledSources = sourcePreferences.disabledSources().get()
@@ -190,7 +190,7 @@ open class FeedScreenModel(
         return list.sortedBy { it.id.toString() !in pinnedSources }.toImmutableList()
     }
 
-    suspend fun getSourceSavedSearches(sourceId: Long): ImmutableList<SavedSearch> {
+    private suspend fun getSourceSavedSearches(sourceId: Long): ImmutableList<SavedSearch> {
         return getSavedSearchBySourceId.await(sourceId).toImmutableList()
     }
 
@@ -226,6 +226,33 @@ open class FeedScreenModel(
             swapFeedOrder.moveToBottom(feed)
         }
     }
+
+    fun moveUp(feed: FeedSavedSearch) {
+        screenModelScope.launch {
+            reorderFeed.moveUp(feed)
+        }
+    }
+
+    fun moveDown(feed: FeedSavedSearch) {
+        screenModelScope.launch {
+            reorderFeed.moveDown(feed)
+        }
+    }
+
+    fun sortAlphabetically() {
+        screenModelScope.launch {
+            reorderFeed.sortAlphabetically(
+                state.value.items
+                    ?.sortedBy { feed -> feed.title }
+                    ?.mapIndexed { index, feed ->
+                        FeedSavedSearchUpdate(
+                            id = feed.feed.id,
+                            feedOrder = index.toLong(),
+                        )
+                    },
+            )
+        }
+    }
     // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<Pair<FeedSavedSearch, SavedSearch?>> {
@@ -242,7 +269,7 @@ open class FeedScreenModel(
         feed: FeedSavedSearch,
         savedSearch: SavedSearch?,
         source: CatalogueSource?,
-        results: List<DomainManga>?,
+        @Suppress("SameParameterValue") results: List<DomainManga>?,
     ): FeedItemUI {
         return FeedItemUI(
             feed,
@@ -340,6 +367,14 @@ open class FeedScreenModel(
         coroutineDispatcher.close()
     }
 
+    fun showDialog(dialog: Dialog) {
+        if (!state.value.isLoading) {
+            mutableState.update {
+                it.copy(dialog = dialog)
+            }
+        }
+    }
+
     fun dismissDialog() {
         mutableState.update { it.copy(dialog = null) }
     }
@@ -355,6 +390,8 @@ open class FeedScreenModel(
             val prevFeed: FeedSavedSearch?,
             val nextFeed: FeedSavedSearch?,
         ) : Dialog()
+
+        data object SortAlphabetically : Dialog()
         // KMK <--
     }
 
