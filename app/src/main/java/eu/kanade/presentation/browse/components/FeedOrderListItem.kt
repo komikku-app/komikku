@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import eu.kanade.presentation.browse.FeedItemUI
+import eu.kanade.presentation.browse.SourceFeedUI
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
@@ -26,11 +27,12 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun FeedOrderListItem(
-    feed: FeedItemUI,
+    feed: FeedItemUI?,
+    sourceFeed: SourceFeedUI.SourceSavedSearch?,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
-    onMoveUp: (FeedSavedSearch) -> Unit,
-    onMoveDown: (FeedSavedSearch) -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -52,20 +54,20 @@ fun FeedOrderListItem(
                 contentDescription = null,
             )
             Text(
-                text = feed.title,
+                text = feed?.title ?: sourceFeed?.title ?: "",
                 modifier = Modifier
                     .padding(start = MaterialTheme.padding.medium),
             )
         }
         Row {
             IconButton(
-                onClick = { onMoveUp(feed.feed) },
+                onClick = onMoveUp,
                 enabled = canMoveUp,
             ) {
                 Icon(imageVector = Icons.Outlined.ArrowDropUp, contentDescription = null)
             }
             IconButton(
-                onClick = { onMoveDown(feed.feed) },
+                onClick = onMoveDown,
                 enabled = canMoveDown,
             ) {
                 Icon(imageVector = Icons.Outlined.ArrowDropDown, contentDescription = null)
@@ -96,6 +98,7 @@ private fun FeedOrderListItemPreview() {
             savedSearch = null,
             source = null,
         ),
+        sourceFeed = null,
         canMoveUp = true,
         canMoveDown = true,
         onMoveUp = {},

@@ -20,6 +20,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceSettingsButton
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
@@ -32,6 +33,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -97,6 +99,7 @@ fun SourceFeedScreen(
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
     onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    onSortFeedClick: () -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
@@ -146,6 +149,7 @@ fun SourceFeedScreen(
                     onWebViewClick = onWebViewClick,
                     sourceId = sourceId,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onSortFeedClick = onSortFeedClick,
                     // KMK <--
                 )
             }
@@ -299,6 +303,7 @@ fun SourceFeedToolbar(
     onWebViewClick: () -> Unit,
     sourceId: Long,
     toggleSelectionMode: () -> Unit,
+    onSortFeedClick: () -> Unit,
     // KMK <--
 ) {
     SearchToolbar(
@@ -317,6 +322,10 @@ fun SourceFeedToolbar(
             AppBarActions(
                 actions = persistentListOf(
                     bulkSelectionButton(toggleSelectionMode),
+                    AppBar.OverflowAction(
+                        title = stringResource(KMR.strings.action_sort_feed),
+                        onClick = onSortFeedClick,
+                    ),
                 ),
             )
             persistentListOf(

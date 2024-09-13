@@ -47,10 +47,11 @@ fun FeedOrderScreen(
                     FeedOrderListItem(
                         modifier = Modifier.animateItem(),
                         feed = feed,
+                        sourceFeed = null,
                         canMoveUp = index != 0,
                         canMoveDown = index != feeds.lastIndex,
-                        onMoveUp = onClickMoveUp,
-                        onMoveDown = onClickMoveDown,
+                        onMoveUp = { onClickMoveUp(feed.feed) },
+                        onMoveDown = { onClickMoveDown(feed.feed) },
                         onDelete = { onClickDelete(feed.feed) },
                     )
                 }

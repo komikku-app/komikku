@@ -375,6 +375,14 @@ open class SourceFeedScreenModel(
             }
         }
     }
+
+    fun showDialog(dialog: Dialog) {
+        if (!state.value.isLoading) {
+            mutableState.update {
+                it.copy(dialog = dialog)
+            }
+        }
+    }
     // KMK <--
 
     private fun openAddFeed(feedId: Long, name: String) {
