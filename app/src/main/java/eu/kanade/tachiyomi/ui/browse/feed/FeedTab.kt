@@ -3,9 +3,10 @@ package eu.kanade.tachiyomi.ui.browse.feed
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Category
-import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -89,95 +90,108 @@ fun feedTab(
 
     return TabContent(
         titleRes = SYMR.strings.feed,
-        actions = persistentListOf(
-            AppBar.Action(
-                title = stringResource(MR.strings.action_add),
-                icon = Icons.Outlined.Add,
-                onClick = {
-                    screenModel.openAddDialog()
-                },
-            ),
-            // KMK -->
-            AppBar.Action(
-                title = stringResource(KMR.strings.action_bulk_select),
-                icon = Icons.Outlined.Category,
-                onClick = { showingFeedOrderScreen.value = true },
-            ),
-            bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+        actions =
+        // KMK -->
+        if (showingFeedOrderScreen.value) {
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(KMR.strings.action_sort_feed),
+                    icon = Icons.AutoMirrored.Outlined.Sort,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    onClick = { showingFeedOrderScreen.value = false },
+                ),
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_sort),
+                    icon = Icons.Outlined.SortByAlpha,
+                    onClick = { screenModel.showDialog(FeedScreenModel.Dialog.SortAlphabetically) },
+                ),
+            )
+        } else {
             // KMK <--
-        ),
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_add),
+                    icon = Icons.Outlined.Add,
+                    onClick = {
+                        screenModel.openAddDialog()
+                    },
+                ),
+                // KMK -->
+                AppBar.Action(
+                    title = stringResource(KMR.strings.action_sort_feed),
+                    icon = Icons.AutoMirrored.Outlined.Sort,
+                    onClick = { showingFeedOrderScreen.value = true },
+                ),
+                bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                // KMK <--
+            )
+        },
         content = { contentPadding, snackbarHostState ->
             Crossfade(
                 targetState = showingFeedOrderScreen.value,
                 label = "feed_order_crossfade",
             ) { showingFeedOrderScreen ->
-                when (showingFeedOrderScreen) {
-                    true ->
-                        FeedOrderScreen(
-                            state = state,
-                            onClickSortAlphabetically = {
-                                screenModel.showDialog(FeedScreenModel.Dialog.SortAlphabetically)
-                            },
-                            onClickDelete = screenModel::openDeleteDialog,
-                            onClickMoveUp = screenModel::moveUp,
-                            onClickMoveDown = screenModel::moveDown,
-                            navigateUp = navigator::pop,
-                        )
-
-                    false ->
-                        FeedScreen(
-                            state = state,
-                            contentPadding = contentPadding,
-                            onClickSavedSearch = { savedSearch, source ->
-                                screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
-                                navigator.push(
-                                    BrowseSourceScreen(
-                                        source.id,
-                                        listingQuery = null,
-                                        savedSearch = savedSearch.id,
-                                    ),
-                                )
-                            },
-                            onClickSource = { source ->
-                                screenModel.sourcePreferences.lastUsedSource().set(source.id)
-                                navigator.push(
-                                    BrowseSourceScreen(
-                                        source.id,
-                                        // KMK -->
-                                        listingQuery = if (!source.supportsLatest) {
-                                            GetRemoteManga.QUERY_POPULAR
-                                        } else {
-                                            // KMK <--
-                                            GetRemoteManga.QUERY_LATEST
-                                        },
-                                    ),
-                                )
-                            },
+                if (showingFeedOrderScreen) {
+                    FeedOrderScreen(
+                        state = state,
+                        onClickDelete = screenModel::openDeleteDialog,
+                        onClickMoveUp = screenModel::moveUp,
+                        onClickMoveDown = screenModel::moveDown,
+                    )
+                } else {
+                    FeedScreen(
+                        state = state,
+                        contentPadding = contentPadding,
+                        onClickSavedSearch = { savedSearch, source ->
+                            screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
+                            navigator.push(
+                                BrowseSourceScreen(
+                                    source.id,
+                                    listingQuery = null,
+                                    savedSearch = savedSearch.id,
+                                ),
+                            )
+                        },
+                        onClickSource = { source ->
+                            screenModel.sourcePreferences.lastUsedSource().set(source.id)
+                            navigator.push(
+                                BrowseSourceScreen(
+                                    source.id,
+                                    // KMK -->
+                                    listingQuery = if (!source.supportsLatest) {
+                                        GetRemoteManga.QUERY_POPULAR
+                                    } else {
+                                        // KMK <--
+                                        GetRemoteManga.QUERY_LATEST
+                                    },
+                                ),
+                            )
+                        },
+                        // KMK -->
+                        onLongClickFeed = screenModel::openActionsDialog,
+                        // KMK <--
+                        onClickManga = { manga ->
                             // KMK -->
-                            onLongClickFeed = screenModel::openActionsDialog,
-                            // KMK <--
-                            onClickManga = { manga ->
-                                // KMK -->
-                                if (bulkFavoriteState.selectionMode) {
-                                    bulkFavoriteScreenModel.toggleSelection(manga)
-                                } else {
-                                    // KMK <--
-                                    navigator.push(MangaScreen(manga.id, true))
-                                }
-                            },
-                            // KMK -->
-                            onLongClickManga = { manga ->
-                                if (!bulkFavoriteState.selectionMode) {
-                                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                                } else {
-                                    navigator.push(MangaScreen(manga.id, true))
-                                }
-                            },
-                            selection = bulkFavoriteState.selection,
-                            // KMK <--
-                            onRefresh = screenModel::init,
-                            getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
-                        )
+                            if (bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.toggleSelection(manga)
+                            } else {
+                                // KMK <--
+                                navigator.push(MangaScreen(manga.id, true))
+                            }
+                        },
+                        // KMK -->
+                        onLongClickManga = { manga ->
+                            if (!bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                            } else {
+                                navigator.push(MangaScreen(manga.id, true))
+                            }
+                        },
+                        selection = bulkFavoriteState.selection,
+                        // KMK <--
+                        onRefresh = screenModel::init,
+                        getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
+                    )
                 }
             }
 

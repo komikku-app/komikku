@@ -118,6 +118,8 @@
 
     <!-- Feed Tab -->
     <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited (20)</string>
+    <string name="action_sort_feed">Sort feeds</string>
+    <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>

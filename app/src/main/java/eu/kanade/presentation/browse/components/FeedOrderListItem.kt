@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Splitscreen
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,18 +17,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import eu.kanade.presentation.browse.FeedItemUI
+import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.domain.source.model.FeedSavedSearch as Feed
+
 @Composable
 fun FeedOrderListItem(
     feed: FeedItemUI,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
-    onMoveUp: (Feed) -> Unit,
-    onMoveDown: (Feed) -> Unit,
+    onMoveUp: (FeedSavedSearch) -> Unit,
+    onMoveDown: (FeedSavedSearch) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,7 +48,7 @@ fun FeedOrderListItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Outlined.Label,
+                imageVector = Icons.Outlined.Splitscreen,
                 contentDescription = null,
             )
             Text(
@@ -74,4 +76,30 @@ fun FeedOrderListItem(
             }
         }
     }
+}
+
+@Preview
+@Composable
+private fun FeedOrderListItemPreview() {
+    FeedOrderListItem(
+        feed = FeedItemUI(
+            feed = FeedSavedSearch(
+                id = 1,
+                source = 1,
+                savedSearch = null,
+                global = false,
+                feedOrder = 0,
+            ),
+            title = "Feed 1",
+            subtitle = "Source 1",
+            results = null,
+            savedSearch = null,
+            source = null,
+        ),
+        canMoveUp = true,
+        canMoveDown = true,
+        onMoveUp = {},
+        onMoveDown = {},
+        onDelete = {},
+    )
 }
