@@ -9,7 +9,6 @@
     <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_move_up">Move up</string>
     <string name="action_move_down">Move down</string>
-    <string name="action_move_bottom">Move bottom</string>
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove merged entries?</string>
     <string name="action_hide">Hide</string>

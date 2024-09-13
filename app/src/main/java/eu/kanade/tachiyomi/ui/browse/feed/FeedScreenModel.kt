@@ -66,7 +66,6 @@ open class FeedScreenModel(
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     // KMK -->
-    private val swapFeedOrder: ReorderFeed = Injekt.get(),
     private val reorderFeed: ReorderFeed = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<FeedScreenState>(FeedScreenState()) {
@@ -159,13 +158,17 @@ open class FeedScreenModel(
     // KMK -->
     fun openActionsDialog(
         feed: FeedItemUI,
-        prevFeed: FeedSavedSearch? = null,
-        nextFeed: FeedSavedSearch? = null,
+        canMoveUp: Boolean,
+        canMoveDown: Boolean,
     ) {
         screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
-                    dialog = Dialog.FeedActions(feed, prevFeed, nextFeed),
+                    dialog = Dialog.FeedActions(
+                        feedItem = feed,
+                        canMoveUp = canMoveUp,
+                        canMoveDown = canMoveDown,
+                    ),
                 )
             }
         }
@@ -215,18 +218,6 @@ open class FeedScreenModel(
     }
 
     // KMK -->
-    fun swapFeedOrder(feed1: FeedSavedSearch, feed2: FeedSavedSearch) {
-        screenModelScope.launchNonCancellable {
-            swapFeedOrder.swapOrder(feed1, feed2)
-        }
-    }
-
-    fun moveToBottom(feed: FeedSavedSearch) {
-        screenModelScope.launchNonCancellable {
-            swapFeedOrder.moveToBottom(feed)
-        }
-    }
-
     fun moveUp(feed: FeedSavedSearch) {
         screenModelScope.launch {
             reorderFeed.moveUp(feed)
@@ -367,6 +358,7 @@ open class FeedScreenModel(
         coroutineDispatcher.close()
     }
 
+    // KMK -->
     fun showDialog(dialog: Dialog) {
         if (!state.value.isLoading) {
             mutableState.update {
@@ -374,6 +366,7 @@ open class FeedScreenModel(
             }
         }
     }
+    // KMK <--
 
     fun dismissDialog() {
         mutableState.update { it.copy(dialog = null) }
@@ -387,8 +380,8 @@ open class FeedScreenModel(
         // KMK -->
         data class FeedActions(
             val feedItem: FeedItemUI,
-            val prevFeed: FeedSavedSearch?,
-            val nextFeed: FeedSavedSearch?,
+            val canMoveUp: Boolean,
+            val canMoveDown: Boolean,
         ) : Dialog()
 
         data object SortAlphabetically : Dialog()

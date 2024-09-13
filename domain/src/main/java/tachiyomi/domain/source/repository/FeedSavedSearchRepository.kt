@@ -30,10 +30,6 @@ interface FeedSavedSearchRepository {
     suspend fun insertAll(feedSavedSearch: List<FeedSavedSearch>)
 
     // KMK -->
-    suspend fun swapOrder(feed1: FeedSavedSearch, feed2: FeedSavedSearch)
-
-    suspend fun moveToBottom(feed: FeedSavedSearch)
-
     suspend fun updatePartial(update: FeedSavedSearchUpdate)
 
     suspend fun updatePartial(updates: List<FeedSavedSearchUpdate>)

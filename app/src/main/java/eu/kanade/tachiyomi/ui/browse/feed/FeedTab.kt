@@ -57,8 +57,8 @@ fun feedTab(
     val state by screenModel.state.collectAsState()
 
     // KMK -->
-    val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
 
     val haptic = LocalHapticFeedback.current
 
@@ -127,6 +127,7 @@ fun feedTab(
             )
         },
         content = { contentPadding, snackbarHostState ->
+            // KMK -->
             Crossfade(
                 targetState = showingFeedOrderScreen.value,
                 label = "feed_order_crossfade",
@@ -139,6 +140,7 @@ fun feedTab(
                         onClickMoveDown = screenModel::moveDown,
                     )
                 } else {
+                    // KMK <--
                     FeedScreen(
                         state = state,
                         contentPadding = contentPadding,
@@ -209,7 +211,6 @@ fun feedTab(
                             },
                         )
                     }
-
                     is FeedScreenModel.Dialog.AddFeedSearch -> {
                         FeedAddSearchDialog(
                             source = dialog.source,
@@ -221,7 +222,6 @@ fun feedTab(
                             },
                         )
                     }
-
                     is FeedScreenModel.Dialog.DeleteFeed -> {
                         FeedDeleteConfirmDialog(
                             feed = dialog.feed,
@@ -236,28 +236,23 @@ fun feedTab(
                     is FeedScreenModel.Dialog.FeedActions -> {
                         FeedActionsDialog(
                             feedItem = dialog.feedItem,
-                            hasPrevFeed = dialog.prevFeed != null,
-                            hasNextFeed = dialog.nextFeed != null,
+                            canMoveUp = dialog.canMoveUp,
+                            canMoveDown = dialog.canMoveDown,
                             onDismiss = screenModel::dismissDialog,
                             onClickDelete = {
-                                screenModel.openDeleteDialog(dialog.feedItem.feed)
                                 screenModel.dismissDialog()
+                                screenModel.openDeleteDialog(it)
                             },
                             onMoveUp = {
-                                dialog.prevFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
                                 screenModel.dismissDialog()
+                                screenModel.moveUp(it)
                             },
                             onMoveDown = {
-                                dialog.nextFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
                                 screenModel.dismissDialog()
-                            },
-                            onMoveBottom = {
-                                dialog.nextFeed?.let { screenModel.moveToBottom(dialog.feedItem.feed) }
-                                screenModel.dismissDialog()
+                                screenModel.moveDown(it)
                             },
                         )
                     }
-
                     is FeedScreenModel.Dialog.SortAlphabetically -> {
                         FeedSortAlphabeticallyDialog(
                             onDismissRequest = screenModel::dismissDialog,
@@ -272,19 +267,14 @@ fun feedTab(
             when (bulkFavoriteState.dialog) {
                 is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
                     AddDuplicateMangaDialog(bulkFavoriteScreenModel)
-
                 is BulkFavoriteScreenModel.Dialog.RemoveManga ->
                     RemoveMangaDialog(bulkFavoriteScreenModel)
-
                 is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
                     ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
-
                 is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                     ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-
                 is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
                     AllowDuplicateDialog(bulkFavoriteScreenModel)
-
                 else -> {}
             }
             // KMK <--
@@ -297,7 +287,6 @@ fun feedTab(
                         FeedScreenModel.Event.FailedFetchingSources -> {
                             launch { snackbarHostState.showSnackbar(internalErrString) }
                         }
-
                         FeedScreenModel.Event.TooManyFeeds -> {
                             launch { snackbarHostState.showSnackbar(tooManyFeedsString) }
                         }

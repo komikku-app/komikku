@@ -3,7 +3,6 @@ package eu.kanade.presentation.browse
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -30,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -76,7 +76,7 @@ fun FeedScreen(
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     // KMK -->
-    onLongClickFeed: (FeedItemUI, FeedSavedSearch?, FeedSavedSearch?) -> Unit,
+    onLongClickFeed: (FeedItemUI, Boolean, Boolean) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
@@ -114,23 +114,22 @@ fun FeedScreen(
                 ) {
                     // KMK -->
                     val feeds = state.items.orEmpty()
-                    // KMK <--
-                    items(
-                        feeds,
-                        key = { "feed-${it.feed.id}" },
-                    ) { item ->
-                        // KMK -->
-                        val index = feeds.indexOf(item)
-                        val prevFeed = feeds.getOrNull(index - 1)
-                        val nextFeed = feeds.getOrNull(index + 1)
+                    itemsIndexed(
                         // KMK <--
+                        items = feeds,
+                        key = { _, it -> "feed-${it.feed.id}" },
+                    ) { index, item ->
                         GlobalSearchResultItem(
                             modifier = Modifier.animateItem(),
                             title = item.title,
                             subtitle = item.subtitle,
                             onLongClick = {
                                 // KMK -->
-                                onLongClickFeed(item, prevFeed?.feed, nextFeed?.feed)
+                                onLongClickFeed(
+                                    item,
+                                    index != 0,
+                                    index != feeds.lastIndex,
+                                )
                                 // KMK <--
                             },
                             onClick = {
@@ -337,7 +336,8 @@ fun RadioSelectorSearchable(
         SourcesSearch(
             searchQuery = queryString,
             onChangeSearchQuery = onChangeSearchQuery ?: {},
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(bottom = MaterialTheme.padding.small),
         ).takeIf { onChangeSearchQuery != null }
         options.forEachIndexed { index, option ->
@@ -383,34 +383,30 @@ fun FeedDeleteConfirmDialog(
 @Composable
 fun FeedActionsDialog(
     feedItem: FeedItemUI,
-    hasPrevFeed: Boolean,
-    hasNextFeed: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
     onDismiss: () -> Unit,
-    onClickDelete: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveBottom: () -> Unit,
+    onClickDelete: (FeedSavedSearch) -> Unit,
+    onMoveUp: (FeedSavedSearch) -> Unit,
+    onMoveDown: (FeedSavedSearch) -> Unit,
 ) {
     AlertDialog(
         title = {
             Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            Text(text = if (feedItem.savedSearch != null) feedItem.savedSearch.name else feedItem.source?.name ?: "")
+            Text(text = feedItem.title)
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            FlowRow(horizontalArrangement = Arrangement.SpaceEvenly) {
-                TextButton(onClick = onMoveUp, enabled = hasPrevFeed) {
+            Row(horizontalArrangement = Arrangement.SpaceEvenly) {
+                TextButton(onClick = { onMoveUp(feedItem.feed) }, enabled = canMoveUp) {
                     Text(text = stringResource(KMR.strings.action_move_up))
                 }
-                TextButton(onClick = onMoveDown, enabled = hasNextFeed) {
+                TextButton(onClick = { onMoveDown(feedItem.feed) }, enabled = canMoveDown) {
                     Text(text = stringResource(KMR.strings.action_move_down))
                 }
-                TextButton(onClick = onMoveBottom, enabled = hasNextFeed) {
-                    Text(text = stringResource(KMR.strings.action_move_bottom))
-                }
-                TextButton(onClick = onClickDelete) {
+                TextButton(onClick = { onClickDelete(feedItem.feed) }) {
                     Text(text = stringResource(MR.strings.action_delete))
                 }
             }
@@ -439,11 +435,38 @@ fun FeedSortAlphabeticallyDialog(
             }
         },
         title = {
-            Text(text = stringResource(MR.strings.action_sort_category))
+            Text(text = stringResource(KMR.strings.action_sort_feed))
         },
         text = {
-            Text(text = stringResource(MR.strings.sort_category_confirmation))
+            Text(text = stringResource(KMR.strings.sort_feed_confirmation))
         },
+    )
+}
+
+@Preview
+@Composable
+private fun FeedItemPreview() {
+    FeedActionsDialog(
+        feedItem = FeedItemUI(
+            feed = FeedSavedSearch(
+                id = 1,
+                source = 1,
+                savedSearch = null,
+                global = false,
+                feedOrder = 0,
+            ),
+            title = "Feed 1",
+            subtitle = "Source 1",
+            results = null,
+            savedSearch = null,
+            source = null,
+        ),
+        canMoveUp = true,
+        canMoveDown = true,
+        onDismiss = { },
+        onClickDelete = { },
+        onMoveUp = { },
+        onMoveDown = { },
     )
 }
 // KMK <--
