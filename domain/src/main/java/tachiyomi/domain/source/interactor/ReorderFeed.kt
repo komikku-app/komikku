@@ -16,14 +16,19 @@ class ReorderFeed(
 
     private val mutex = Mutex()
 
-    suspend fun moveUp(feed: FeedSavedSearch): Result = await(feed, MoveTo.UP)
+    suspend fun moveUp(feed: FeedSavedSearch, global: Boolean = true): Result = awaitGlobal(feed, MoveTo.UP, global)
 
-    suspend fun moveDown(feed: FeedSavedSearch): Result = await(feed, MoveTo.DOWN)
+    suspend fun moveDown(feed: FeedSavedSearch, global: Boolean = true): Result = awaitGlobal(feed, MoveTo.DOWN, global)
 
-    private suspend fun await(feed: FeedSavedSearch, moveTo: MoveTo) = withNonCancellableContext {
+    private suspend fun awaitGlobal(feed: FeedSavedSearch, moveTo: MoveTo, global: Boolean = true) = withNonCancellableContext {
         mutex.withLock {
-            val feeds = feedSavedSearchRepository.getGlobal()
-                .toMutableList()
+            val feeds = if (global) {
+                feedSavedSearchRepository.getGlobal()
+                    .toMutableList()
+            } else {
+                feedSavedSearchRepository.getBySourceId(feed.source)
+                    .toMutableList()
+            }
 
             val currentIndex = feeds.indexOfFirst { it.id == feed.id }
             if (currentIndex == -1) {

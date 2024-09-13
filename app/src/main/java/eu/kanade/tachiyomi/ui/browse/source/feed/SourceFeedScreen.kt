@@ -12,6 +12,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.SourceFeedScreen
+import eu.kanade.presentation.browse.components.FeedActionsDialog
+import eu.kanade.presentation.browse.components.FeedSortAlphabeticallyDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
@@ -79,7 +81,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
             onClickBrowse = { onBrowseClick(navigator, screenModel.source) },
             onClickLatest = { onLatestClick(navigator, screenModel.source) },
             onClickSavedSearch = { onSavedSearchClick(navigator, screenModel.source, it) },
-            onClickDelete = screenModel::openDeleteFeed,
+            // KMK -->
+            // onClickDelete = screenModel::openDeleteFeed,
+            onLongClickFeed = screenModel::openActionsDialog,
+            // KMK <--
             onClickManga = {
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
@@ -210,6 +215,34 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                 )
             }
+            // KMK -->
+            is SourceFeedScreenModel.Dialog.FeedActions -> {
+                FeedActionsDialog(
+                    feedItem = dialog.feedItem,
+                    canMoveUp = dialog.canMoveUp,
+                    canMoveDown = dialog.canMoveDown,
+                    onDismiss = screenModel::dismissDialog,
+                    onClickDelete = {
+                        screenModel.dismissDialog()
+                        screenModel.openDeleteFeed(it)
+                    },
+                    onMoveUp = {
+                        screenModel.dismissDialog()
+                        screenModel.moveUp(it)
+                    },
+                    onMoveDown = {
+                        screenModel.dismissDialog()
+                        screenModel.moveDown(it)
+                    },
+                )
+            }
+            is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
+                FeedSortAlphabeticallyDialog(
+                    onDismissRequest = screenModel::dismissDialog,
+                    onSort = { screenModel.sortAlphabetically() },
+                )
+            }
+            // KMK <--
             null -> Unit
         }
 
@@ -240,7 +273,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         navigator.push(MangaScreen(manga.id, true))
     }
 
-    fun onBrowseClick(navigator: Navigator, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
+    private fun onBrowseClick(navigator: Navigator, sourceId: Long, search: String? = null, savedSearch: Long? = null, filters: String? = null) {
         // KMK -->
         // navigator.replace(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
         navigator.push(BrowseSourceScreen(sourceId, search, savedSearch = savedSearch, filtersJson = filters))
@@ -254,7 +287,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         // KMK <--
     }
 
-    fun onBrowseClick(navigator: Navigator, source: Source) {
+    private fun onBrowseClick(navigator: Navigator, source: Source) {
         // KMK -->
         // navigator.replace(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))
         navigator.push(BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR))

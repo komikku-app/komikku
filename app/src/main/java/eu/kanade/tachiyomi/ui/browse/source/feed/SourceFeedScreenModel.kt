@@ -9,7 +9,6 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
-import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.ui.UiPreferences
@@ -47,8 +46,10 @@ import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
+import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.kmk.KMR
@@ -65,13 +66,15 @@ open class SourceFeedScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    private val updateManga: UpdateManga = Injekt.get(),
     private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
     private val getSavedSearchBySourceIdFeed: GetSavedSearchBySourceIdFeed = Injekt.get(),
     private val countFeedSavedSearchBySourceId: CountFeedSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
+    // KMK -->
+    private val reorderFeed: ReorderFeed = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
     var source = sourceManager.getOrStub(sourceId)
@@ -141,6 +144,36 @@ open class SourceFeedScreenModel(
             deleteFeedSavedSearchById.await(feed.id)
         }
     }
+
+    // KMK -->
+    fun moveUp(feed: FeedSavedSearch) {
+        screenModelScope.launch {
+            reorderFeed.moveUp(feed, false)
+        }
+    }
+
+    fun moveDown(feed: FeedSavedSearch) {
+        screenModelScope.launch {
+            reorderFeed.moveDown(feed, false)
+        }
+    }
+
+    fun sortAlphabetically() {
+        screenModelScope.launchNonCancellable {
+            reorderFeed.sortAlphabetically(
+                state.value.items
+                    .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
+                    .sortedBy { feed -> feed.title }
+                    .mapIndexed { index, feed ->
+                        FeedSavedSearchUpdate(
+                            id = feed.feed.id,
+                            feedOrder = index.toLong(),
+                        )
+                    },
+            )
+        }
+    }
+    // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): ImmutableList<SourceFeedUI> {
         // KMK -->
@@ -324,7 +357,27 @@ open class SourceFeedScreenModel(
         mutableState.update { it.copy(dialog = Dialog.DeleteFeed(feed)) }
     }
 
-    fun openAddFeed(feedId: Long, name: String) {
+    // KMK -->
+    fun openActionsDialog(
+        feed: SourceFeedUI.SourceSavedSearch,
+        canMoveUp: Boolean,
+        canMoveDown: Boolean,
+    ) {
+        screenModelScope.launchIO {
+            mutableState.update { state ->
+                state.copy(
+                    dialog = Dialog.FeedActions(
+                        feedItem = feed,
+                        canMoveUp = canMoveUp,
+                        canMoveDown = canMoveDown,
+                    ),
+                )
+            }
+        }
+    }
+    // KMK <--
+
+    private fun openAddFeed(feedId: Long, name: String) {
         mutableState.update { it.copy(dialog = Dialog.AddFeed(feedId, name)) }
     }
 
@@ -336,6 +389,16 @@ open class SourceFeedScreenModel(
         data object Filter : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
         data class AddFeed(val feedId: Long, val name: String) : Dialog()
+
+        // KMK -->
+        data class FeedActions(
+            val feedItem: SourceFeedUI.SourceSavedSearch,
+            val canMoveUp: Boolean,
+            val canMoveDown: Boolean,
+        ) : Dialog()
+
+        data object SortAlphabetically : Dialog()
+        // KMK <--
     }
 
     override fun onDispose() {
