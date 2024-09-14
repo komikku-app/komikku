@@ -12,8 +12,11 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -21,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -37,7 +42,9 @@ import coil3.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.model.SManga
@@ -58,6 +65,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.GetTracks
+import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -83,8 +91,10 @@ fun EditMangaDialog(
     var binding by remember {
         mutableStateOf<EditMangaDialogBinding?>(null)
     }
+    val showTrackerSelectionDialogue = remember { mutableStateOf(false) }
     val getTracks = Injekt.get<GetTracks>()
     val trackerManager = Injekt.get<TrackerManager>()
+    val tracks = remember { mutableStateOf(emptyList<Pair<Track, Tracker>>()) }
     // KMK -->
     val colors = EditMangaDialogColors(
         textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
@@ -153,6 +163,8 @@ fun EditMangaDialog(
                                     scope,
                                     getTracks,
                                     trackerManager,
+                                    tracks,
+                                    showTrackerSelectionDialogue,
                                     // KMK -->
                                     colors,
                                     // KMK <--
@@ -162,6 +174,58 @@ fun EditMangaDialog(
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
+        },
+    )
+
+    if (showTrackerSelectionDialogue.value) {
+        TrackerSelectDialog(
+            tracks = tracks.value,
+            onDismissRequest = { showTrackerSelectionDialogue.value = false },
+            onTrackerSelect = { tracker, track ->
+                scope.launch {
+                    autofillFromTracker(binding!!, track, tracker)
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun TrackerSelectDialog(
+    tracks: List<Pair<Track, Tracker>>,
+    onDismissRequest: () -> Unit,
+    onTrackerSelect: (
+        tracker: Tracker,
+        track: Track,
+    ) -> Unit,
+) {
+    AlertDialog(
+        modifier = Modifier.fillMaxWidth(),
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(MR.strings.action_cancel))
+            }
+        },
+        title = {
+            Text("Select a tracker")
+        },
+        text = {
+            FlowRow(
+                modifier = Modifier
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                tracks.forEach { (track, tracker) ->
+                    TrackLogoIcon(
+                        tracker,
+                        onClick = {
+                            onTrackerSelect(tracker, track)
+                            onDismissRequest()
+                        },
+                    )
+                }
             }
         },
     )
@@ -188,6 +252,8 @@ private fun onViewCreated(
     scope: CoroutineScope,
     getTracks: GetTracks,
     trackerManager: TrackerManager,
+    tracks: MutableState<List<Pair<Track, Tracker>>>,
+    showTrackerSelectionDialogue: MutableState<Boolean>,
     // KMK -->
     colors: EditMangaDialogColors,
     // KMK <--
@@ -339,22 +405,32 @@ private fun onViewCreated(
 
     binding.autofillFromTracker.setOnClickListener {
         scope.launch {
-            autofillFromTracker(manga, binding, getTracks, trackerManager, context)
+            getTrackers(manga, binding, context, getTracks, trackerManager, tracks, showTrackerSelectionDialogue)
         }
     }
     binding.resetTags.setOnClickListener { resetTags(manga, binding, scope, colors) }
     binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope, colors) }
 }
 
-private suspend fun autofillFromTracker(manga: Manga, binding: EditMangaDialogBinding, getTracks: GetTracks, trackerManager: TrackerManager, context: Context) {
-    val tracks = getTracks.await(manga.id)
+private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>) {
+    tracks.value = getTracks.await(manga.id).map { track ->
+        track to trackerManager.get(track.trackerId)!!
+    }
 
-    if (tracks.isEmpty()) {
+    if (tracks.value.isEmpty()) {
         context.toast("Entry not tracked.")
         return
     }
-    val track = tracks[0]
-    val tracker = trackerManager.get(track.trackerId)!!
+
+    if (tracks.value.size > 1) {
+        showTrackerSelectionDialogue.value = true
+        return
+    }
+
+    autofillFromTracker(binding, tracks.value.first().first, tracks.value.first().second)
+}
+
+private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: Track, tracker: Tracker) {
     val trackerMangaMetadata = tracker.getMangaMetadata(track)
 
     binding.title.setText(trackerMangaMetadata.title)
