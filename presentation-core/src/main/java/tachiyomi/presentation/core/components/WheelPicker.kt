@@ -149,7 +149,7 @@ private fun <T> WheelPicker(
             }
 
             val scope = rememberCoroutineScope()
-            fun onDone() {
+            val processManualInput: () -> Unit = {
                 scope.launch {
                     items
                         .indexOfFirst { it.toString() == value.text }
@@ -167,10 +167,10 @@ private fun <T> WheelPicker(
                     .align(Alignment.Center)
                     .showSoftKeyboard(true)
                     // KMK -->
-                    .clearFocusOnSoftKeyboardHide { onDone() },
+                    .clearFocusOnSoftKeyboardHide(processManualInput),
                 /* clearFocusOnSoftKeyboardHide doesn't work because onSoftKeyboardHide won't trigger
                     a recomposition => use keyboardActions instead */
-                onKeyboardAction = { onDone() },
+                onKeyboardAction = { processManualInput() },
                 // KMK <--
                 state = value,
                 lineLimits = TextFieldLineLimits.SingleLine,
