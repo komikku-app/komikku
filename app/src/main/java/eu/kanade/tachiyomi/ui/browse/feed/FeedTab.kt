@@ -1,22 +1,30 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.FeedActionsDialog
 import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
-import eu.kanade.presentation.browse.FeedDeleteConfirmDialog
+import eu.kanade.presentation.browse.FeedOrderScreen
 import eu.kanade.presentation.browse.FeedScreen
+import eu.kanade.presentation.browse.components.FeedActionsDialog
+import eu.kanade.presentation.browse.components.FeedSortAlphabeticallyDialog
+import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
@@ -50,11 +58,15 @@ fun feedTab(
 
     // KMK -->
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
 
     val haptic = LocalHapticFeedback.current
 
-    BackHandler(enabled = bulkFavoriteState.selectionMode) {
-        bulkFavoriteScreenModel.backHandler()
+    BackHandler(enabled = bulkFavoriteState.selectionMode || showingFeedOrderScreen.value) {
+        when {
+            bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.backHandler()
+            showingFeedOrderScreen.value -> showingFeedOrderScreen.value = false
+        }
     }
 
     LaunchedEffect(bulkFavoriteState.selectionMode) {
@@ -78,84 +90,125 @@ fun feedTab(
 
     return TabContent(
         titleRes = SYMR.strings.feed,
-        actions = persistentListOf(
-            AppBar.Action(
-                title = stringResource(MR.strings.action_add),
-                icon = Icons.Outlined.Add,
-                onClick = {
-                    screenModel.openAddDialog()
-                },
-            ),
-            // KMK -->
-            bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+        actions =
+        // KMK -->
+        if (showingFeedOrderScreen.value) {
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(KMR.strings.action_sort_feed),
+                    icon = Icons.Outlined.SwapVert,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    onClick = { showingFeedOrderScreen.value = false },
+                ),
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_sort),
+                    icon = Icons.Outlined.SortByAlpha,
+                    onClick = { screenModel.showDialog(FeedScreenModel.Dialog.SortAlphabetically) },
+                ),
+            )
+        } else {
             // KMK <--
-        ),
+            persistentListOf(
+                AppBar.Action(
+                    title = stringResource(MR.strings.action_add),
+                    icon = Icons.Outlined.Add,
+                    onClick = {
+                        screenModel.openAddDialog()
+                    },
+                ),
+                // KMK -->
+                AppBar.Action(
+                    title = stringResource(KMR.strings.action_sort_feed),
+                    icon = Icons.Outlined.SwapVert,
+                    onClick = { showingFeedOrderScreen.value = true },
+                ),
+                bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                // KMK <--
+            )
+        },
         content = { contentPadding, snackbarHostState ->
-            FeedScreen(
-                state = state,
-                contentPadding = contentPadding,
-                onClickSavedSearch = { savedSearch, source ->
-                    screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
-                    navigator.push(
-                        BrowseSourceScreen(
-                            source.id,
-                            listingQuery = null,
-                            savedSearch = savedSearch.id,
-                        ),
+            // KMK -->
+            Crossfade(
+                targetState = showingFeedOrderScreen.value,
+                label = "feed_order_crossfade",
+            ) { showingFeedOrderScreen ->
+                if (showingFeedOrderScreen) {
+                    FeedOrderScreen(
+                        state = state,
+                        onClickDelete = screenModel::openDeleteDialog,
+                        onClickMoveUp = screenModel::moveUp,
+                        onClickMoveDown = screenModel::moveDown,
                     )
-                },
-                onClickSource = { source ->
-                    screenModel.sourcePreferences.lastUsedSource().set(source.id)
-                    navigator.push(
-                        BrowseSourceScreen(
-                            source.id,
+                } else {
+                    // KMK <--
+                    FeedScreen(
+                        state = state,
+                        contentPadding = contentPadding,
+                        onClickSavedSearch = { savedSearch, source ->
+                            screenModel.sourcePreferences.lastUsedSource().set(savedSearch.source)
+                            navigator.push(
+                                BrowseSourceScreen(
+                                    source.id,
+                                    listingQuery = null,
+                                    savedSearch = savedSearch.id,
+                                ),
+                            )
+                        },
+                        onClickSource = { source ->
+                            screenModel.sourcePreferences.lastUsedSource().set(source.id)
+                            navigator.push(
+                                BrowseSourceScreen(
+                                    source.id,
+                                    // KMK -->
+                                    listingQuery = if (!source.supportsLatest) {
+                                        GetRemoteManga.QUERY_POPULAR
+                                    } else {
+                                        // KMK <--
+                                        GetRemoteManga.QUERY_LATEST
+                                    },
+                                ),
+                            )
+                        },
+                        // KMK -->
+                        onLongClickFeed = screenModel::openActionsDialog,
+                        // KMK <--
+                        onClickManga = { manga ->
                             // KMK -->
-                            listingQuery = if (!source.supportsLatest) {
-                                GetRemoteManga.QUERY_POPULAR
+                            if (bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.toggleSelection(manga)
                             } else {
                                 // KMK <--
-                                GetRemoteManga.QUERY_LATEST
-                            },
-                        ),
-                    )
-                },
-                // KMK -->
-                onLongClickFeed = screenModel::openActionsDialog,
-                // KMK <--
-                onClickManga = { manga ->
-                    // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
+                                navigator.push(MangaScreen(manga.id, true))
+                            }
+                        },
+                        // KMK -->
+                        onLongClickManga = { manga ->
+                            if (!bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                            } else {
+                                navigator.push(MangaScreen(manga.id, true))
+                            }
+                        },
+                        selection = bulkFavoriteState.selection,
                         // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
-                    }
-                },
-                // KMK -->
-                onLongClickManga = { manga ->
-                    if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        navigator.push(MangaScreen(manga.id, true))
-                    }
-                },
-                selection = bulkFavoriteState.selection,
-                // KMK <--
-                onRefresh = screenModel::init,
-                getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
-            )
+                        onRefresh = screenModel::init,
+                        getMangaState = { manga -> screenModel.getManga(initialManga = manga) },
+                    )
+                }
+            }
 
             state.dialog?.let { dialog ->
+                val onDismissRequest = screenModel::dismissDialog
                 when (dialog) {
                     is FeedScreenModel.Dialog.AddFeed -> {
                         FeedAddDialog(
                             sources = dialog.options,
-                            onDismiss = screenModel::dismissDialog,
+                            onDismiss = onDismissRequest,
                             onClickAdd = {
                                 if (it != null) {
                                     screenModel.openAddSearchDialog(it)
                                 }
-                                screenModel.dismissDialog()
+                                onDismissRequest()
                             },
                         )
                     }
@@ -163,46 +216,39 @@ fun feedTab(
                         FeedAddSearchDialog(
                             source = dialog.source,
                             savedSearches = dialog.options,
-                            onDismiss = screenModel::dismissDialog,
+                            onDismiss = onDismissRequest,
                             onClickAdd = { source, savedSearch ->
                                 screenModel.createFeed(source, savedSearch)
-                                screenModel.dismissDialog()
+                                onDismissRequest()
                             },
                         )
                     }
                     is FeedScreenModel.Dialog.DeleteFeed -> {
-                        FeedDeleteConfirmDialog(
-                            feed = dialog.feed,
-                            onDismiss = screenModel::dismissDialog,
-                            onClickDeleteConfirm = {
-                                screenModel.deleteFeed(it)
-                                screenModel.dismissDialog()
+                        SourceFeedDeleteDialog(
+                            onDismissRequest = onDismissRequest,
+                            deleteFeed = {
+                                screenModel.deleteFeed(dialog.feed)
+                                onDismissRequest()
                             },
                         )
                     }
                     // KMK -->
                     is FeedScreenModel.Dialog.FeedActions -> {
                         FeedActionsDialog(
-                            feedItem = dialog.feedItem,
-                            hasPrevFeed = dialog.prevFeed != null,
-                            hasNextFeed = dialog.nextFeed != null,
-                            onDismiss = screenModel::dismissDialog,
-                            onClickDelete = {
-                                screenModel.openDeleteDialog(dialog.feedItem.feed)
-                                screenModel.dismissDialog()
-                            },
-                            onMoveUp = {
-                                dialog.prevFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
-                                screenModel.dismissDialog()
-                            },
-                            onMoveDown = {
-                                dialog.nextFeed?.let { screenModel.swapFeedOrder(dialog.feedItem.feed, it) }
-                                screenModel.dismissDialog()
-                            },
-                            onMoveBottom = {
-                                dialog.nextFeed?.let { screenModel.moveToBottom(dialog.feedItem.feed) }
-                                screenModel.dismissDialog()
-                            },
+                            feed = dialog.feedItem.feed,
+                            title = dialog.feedItem.title,
+                            canMoveUp = dialog.canMoveUp,
+                            canMoveDown = dialog.canMoveDown,
+                            onDismissRequest = onDismissRequest,
+                            onClickDelete = { screenModel.openDeleteDialog(it) },
+                            onMoveUp = { screenModel.moveUp(it) },
+                            onMoveDown = { screenModel.moveDown(it) },
+                        )
+                    }
+                    is FeedScreenModel.Dialog.SortAlphabetically -> {
+                        FeedSortAlphabeticallyDialog(
+                            onDismissRequest = onDismissRequest,
+                            onSort = { screenModel.sortAlphabetically() },
                         )
                     }
                     // KMK <--

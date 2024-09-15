@@ -2,6 +2,7 @@ package tachiyomi.domain.source.repository
 
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.source.model.FeedSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 
 interface FeedSavedSearchRepository {
@@ -29,8 +30,8 @@ interface FeedSavedSearchRepository {
     suspend fun insertAll(feedSavedSearch: List<FeedSavedSearch>)
 
     // KMK -->
-    suspend fun swapOrder(feed1: FeedSavedSearch, feed2: FeedSavedSearch)
+    suspend fun updatePartial(update: FeedSavedSearchUpdate)
 
-    suspend fun moveToBottom(feed: FeedSavedSearch)
+    suspend fun updatePartial(updates: List<FeedSavedSearchUpdate>)
     // KMK <--
 }

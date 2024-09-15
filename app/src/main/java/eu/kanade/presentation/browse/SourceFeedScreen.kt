@@ -2,24 +2,22 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
-import eu.kanade.presentation.browse.components.SourceSettingsButton
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
@@ -32,21 +30,18 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
-import tachiyomi.source.local.LocalSource
 
 sealed class SourceFeedUI {
     abstract val id: Long
 
-    abstract val title: String
-        @Composable
-        @ReadOnlyComposable
-        get
+    abstract val title: Any
 
     abstract val results: List<Manga>?
 
@@ -54,10 +49,8 @@ sealed class SourceFeedUI {
 
     data class Latest(override val results: List<Manga>?) : SourceFeedUI() {
         override val id: Long = -1
-        override val title: String
-            @Composable
-            @ReadOnlyComposable
-            get() = stringResource(MR.strings.latest)
+        override val title: StringResource
+            get() = MR.strings.latest
 
         override fun withResults(results: List<Manga>?): SourceFeedUI {
             return copy(results = results)
@@ -65,10 +58,8 @@ sealed class SourceFeedUI {
     }
     data class Browse(override val results: List<Manga>?) : SourceFeedUI() {
         override val id: Long = -2
-        override val title: String
-            @Composable
-            @ReadOnlyComposable
-            get() = stringResource(MR.strings.browse)
+        override val title: StringResource
+            get() = MR.strings.browse
 
         override fun withResults(results: List<Manga>?): SourceFeedUI {
             return copy(results = results)
@@ -83,8 +74,6 @@ sealed class SourceFeedUI {
             get() = feed.id
 
         override val title: String
-            @Composable
-            @ReadOnlyComposable
             get() = savedSearch.name
 
         override fun withResults(results: List<Manga>?): SourceFeedUI {
@@ -103,7 +92,10 @@ fun SourceFeedScreen(
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
-    onClickDelete: (FeedSavedSearch) -> Unit,
+    // KMK -->
+    // onClickDelete: (FeedSavedSearch) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    // KMK <--
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
     searchQuery: String?,
@@ -111,8 +103,9 @@ fun SourceFeedScreen(
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
     navigateUp: () -> Unit,
-    onWebViewClick: () -> Unit,
-    sourceId: Long,
+    onWebViewClick: (() -> Unit)?,
+    onSourceSettingClick: (() -> Unit?)?,
+    onSortFeedClick: (() -> Unit)?,
     onLongClickManga: (Manga) -> Unit,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
@@ -150,7 +143,8 @@ fun SourceFeedScreen(
                     // KMK -->
                     navigateUp = navigateUp,
                     onWebViewClick = onWebViewClick,
-                    sourceId = sourceId,
+                    onSourceSettingClick = onSourceSettingClick,
+                    onSortFeedClick = onSortFeedClick,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
@@ -174,7 +168,10 @@ fun SourceFeedScreen(
                         onClickBrowse = onClickBrowse,
                         onClickLatest = onClickLatest,
                         onClickSavedSearch = onClickSavedSearch,
-                        onClickDelete = onClickDelete,
+                        // KMK -->
+                        // onClickDelete = onClickDelete,
+                        onLongClickFeed = onLongClickFeed,
+                        // KMK <--
                         onClickManga = onClickManga,
                         // KMK -->
                         onLongClickManga = onLongClickManga,
@@ -195,7 +192,10 @@ fun SourceFeedList(
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
-    onClickDelete: (FeedSavedSearch) -> Unit,
+    // KMK -->
+    // onClickDelete: (FeedSavedSearch) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
@@ -205,17 +205,32 @@ fun SourceFeedList(
     ScrollbarLazyColumn(
         contentPadding = paddingValues + topSmallPaddingValues,
     ) {
-        items(
+        // KMK -->
+        itemsIndexed(
             items,
-            key = { "source-feed-${it.id}" },
-        ) { item ->
+            key = { _, it -> "source-feed-${it.id}" },
+        ) { index, item ->
+            // KMK <--
             GlobalSearchResultItem(
                 modifier = Modifier.animateItem(),
-                title = item.title,
+                title =
+                // KMK -->
+                if (item !is SourceFeedUI.SourceSavedSearch) {
+                    stringResource(item.title as StringResource)
+                } else {
+                    // KMK <--
+                    item.title
+                },
                 subtitle = null,
                 onLongClick = if (item is SourceFeedUI.SourceSavedSearch) {
                     {
-                        onClickDelete(item.feed)
+                        // KMK -->
+                        onLongClickFeed(
+                            item,
+                            index != items.size - items.filterIsInstance<SourceFeedUI.SourceSavedSearch>().size,
+                            index != items.lastIndex,
+                        )
+                        // KMK <--
                     }
                 } else {
                     null
@@ -283,8 +298,9 @@ fun SourceFeedToolbar(
     onClickSearch: (String) -> Unit,
     // KMK -->
     navigateUp: () -> Unit,
-    onWebViewClick: () -> Unit,
-    sourceId: Long,
+    onWebViewClick: (() -> Unit)?,
+    onSourceSettingClick: (() -> Unit?)?,
+    onSortFeedClick: (() -> Unit)?,
     toggleSelectionMode: () -> Unit,
     // KMK <--
 ) {
@@ -302,24 +318,39 @@ fun SourceFeedToolbar(
         // KMK -->
         actions = {
             AppBarActions(
-                actions = persistentListOf(
-                    bulkSelectionButton(toggleSelectionMode),
-                ),
-            )
-            persistentListOf(
-                if (sourceId != LocalSource.ID) {
-                    IconButton(
-                        onClick = onWebViewClick,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Public,
-                            contentDescription = stringResource(MR.strings.action_web_view),
-                        )
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        add(bulkSelectionButton(toggleSelectionMode))
+
+                        onWebViewClick?.let {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(MR.strings.action_web_view),
+                                    onClick = { onWebViewClick() },
+                                    icon = Icons.Outlined.Public,
+                                ),
+                            )
+                        }
+
+                        onSortFeedClick?.let {
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(KMR.strings.action_sort_feed),
+                                    onClick = { onSortFeedClick() },
+                                ),
+                            )
+                        }
+
+                        onSourceSettingClick?.let {
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(MR.strings.label_settings),
+                                    onClick = { onSourceSettingClick() },
+                                ),
+                            )
+                        }
                     }
-                } else {
-                    null
-                },
-                SourceSettingsButton(sourceId),
+                    .build(),
             )
         },
         // KMK <--

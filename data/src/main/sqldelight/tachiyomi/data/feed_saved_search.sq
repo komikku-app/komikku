@@ -75,10 +75,11 @@ SELECT coalesce(f.source, s.source) source, f.global, f.saved_search, s.name, s.
  FROM feed_saved_search AS f LEFT JOIN saved_search AS s
  ON f.saved_search = s._id ORDER BY f.feed_order;
 
-setOrder:
-UPDATE feed_saved_search SET feed_order = :order WHERE _id = :id;
-
-moveToBottom:
-UPDATE feed_saved_search SET feed_order = (SELECT MAX(feed_order) + 1 FROM feed_saved_search)
- WHERE _id = :id;
+update:
+UPDATE feed_saved_search
+SET source = coalesce(:source, source),
+    saved_search = coalesce(:saved_search, saved_search),
+    global = coalesce(:global, global),
+    feed_order = coalesce(:feed_order, feed_order)
+WHERE _id = :id;
 -- KMK <--
