@@ -457,6 +457,9 @@ open class BrowseSourceScreenModel(
         data class Search(
             override val query: String?,
             override val filters: FilterList,
+            // KMK -->
+            val savedSearchId: Long? = null,
+            // KMK <--
         ) : Listing(query = query, filters = filters)
 
         companion object {
@@ -540,6 +543,9 @@ open class BrowseSourceScreenModel(
                     listing = Listing.Search(
                         query = search.query,
                         filters = filters,
+                        // KMK -->
+                        savedSearchId = search.id,
+                        // KMK <--
                     ),
                     filters = filters,
                     toolbarQuery = search.query,
