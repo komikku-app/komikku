@@ -1,12 +1,35 @@
 package eu.kanade.presentation.browse.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import eu.kanade.presentation.browse.SourceFeedUI.SourceSavedSearch
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import eu.kanade.presentation.components.AdaptiveSheet
+import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -67,37 +90,122 @@ fun SourceFeedDeleteDialog(
 }
 
 // KMK -->
+private val PaddingSize = 16.dp
+
+private val ButtonPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
+private val TitlePadding = PaddingValues(bottom = 16.dp, top = 8.dp)
+
 @Composable
 fun FeedActionsDialog(
-    feedItem: SourceSavedSearch,
+    feed: FeedSavedSearch,
+    title: String,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onMoveUp: (FeedSavedSearch) -> Unit,
     onMoveDown: (FeedSavedSearch) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    AlertDialog(
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = feedItem.title)
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                TextButton(onClick = { onMoveUp(feedItem.feed) }, enabled = canMoveUp) {
-                    Text(text = stringResource(KMR.strings.action_move_up))
-                }
-                TextButton(onClick = { onMoveDown(feedItem.feed) }, enabled = canMoveDown) {
-                    Text(text = stringResource(KMR.strings.action_move_down))
-                }
-                TextButton(onClick = { onClickDelete(feedItem.feed) }) {
-                    Text(text = stringResource(MR.strings.action_delete))
+    val minHeight = LocalPreferenceMinHeight.current
+
+    AdaptiveSheet(
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(
+                    vertical = TabbedDialogPaddings.Vertical,
+                    horizontal = TabbedDialogPaddings.Horizontal,
+                )
+                .fillMaxWidth(),
+        ) {
+            Text(
+                modifier = Modifier.padding(TitlePadding),
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+            )
+
+            Spacer(Modifier.height(PaddingSize))
+
+            if (canMoveUp) {
+                TextPreferenceWidget(
+                    title = stringResource(KMR.strings.action_move_up),
+                    icon = Icons.Outlined.ArrowUpward,
+                    onPreferenceClick = {
+                        onDismissRequest()
+                        onMoveUp(feed)
+                    },
+                )
+
+                HorizontalDivider()
+            }
+
+            if (canMoveDown) {
+                TextPreferenceWidget(
+                    title = stringResource(KMR.strings.action_move_down),
+                    icon = Icons.Outlined.ArrowDownward,
+                    onPreferenceClick = {
+                        onDismissRequest()
+                        onMoveDown(feed)
+                    },
+                )
+
+                HorizontalDivider()
+            }
+
+            TextPreferenceWidget(
+                title = stringResource(MR.strings.action_delete),
+                icon = Icons.Outlined.Delete,
+                onPreferenceClick = {
+                    onDismissRequest()
+                    onClickDelete(feed)
+                },
+            )
+
+            Row(
+                modifier = Modifier
+                    .sizeIn(minHeight = minHeight)
+                    .clickable { onDismissRequest.invoke() }
+                    .padding(ButtonPadding)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                OutlinedButton(onClick = onDismissRequest, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp),
+                        text = stringResource(MR.strings.action_cancel),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 16.sp,
+                    )
                 }
             }
-        },
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun FeedItemPreview() {
+    FeedActionsDialog(
+        feed = FeedSavedSearch(
+            id = 1,
+            source = 1,
+            savedSearch = null,
+            global = false,
+            feedOrder = 0,
+        ),
+        title = "Feed 1",
+        canMoveUp = true,
+        canMoveDown = true,
+        onDismissRequest = { },
+        onClickDelete = { },
+        onMoveUp = { },
+        onMoveDown = { },
     )
 }
 

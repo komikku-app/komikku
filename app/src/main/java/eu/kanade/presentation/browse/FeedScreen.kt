@@ -1,7 +1,6 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -48,7 +46,6 @@ import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -115,10 +112,10 @@ fun FeedScreen(
                     // KMK -->
                     val feeds = state.items.orEmpty()
                     itemsIndexed(
-                        // KMK <--
                         items = feeds,
                         key = { _, it -> "feed-${it.feed.id}" },
                     ) { index, item ->
+                        // KMK <--
                         GlobalSearchResultItem(
                             modifier = Modifier.animateItem(),
                             title = item.title,
@@ -354,119 +351,5 @@ fun RadioSelectorSearchable(
             }
         }
     }
-}
-// KMK <--
-
-@Composable
-fun FeedDeleteConfirmDialog(
-    feed: FeedSavedSearch,
-    onDismiss: () -> Unit,
-    onClickDeleteConfirm: (FeedSavedSearch) -> Unit,
-) {
-    AlertDialog(
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = stringResource(SYMR.strings.feed_delete))
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onClickDeleteConfirm(feed) }) {
-                Text(text = stringResource(MR.strings.action_delete))
-            }
-        },
-    )
-}
-
-// KMK -->
-@Composable
-fun FeedActionsDialog(
-    feedItem: FeedItemUI,
-    canMoveUp: Boolean,
-    canMoveDown: Boolean,
-    onDismiss: () -> Unit,
-    onClickDelete: (FeedSavedSearch) -> Unit,
-    onMoveUp: (FeedSavedSearch) -> Unit,
-    onMoveDown: (FeedSavedSearch) -> Unit,
-) {
-    AlertDialog(
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = feedItem.title)
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                TextButton(onClick = { onMoveUp(feedItem.feed) }, enabled = canMoveUp) {
-                    Text(text = stringResource(KMR.strings.action_move_up))
-                }
-                TextButton(onClick = { onMoveDown(feedItem.feed) }, enabled = canMoveDown) {
-                    Text(text = stringResource(KMR.strings.action_move_down))
-                }
-                TextButton(onClick = { onClickDelete(feedItem.feed) }) {
-                    Text(text = stringResource(MR.strings.action_delete))
-                }
-            }
-        },
-    )
-}
-
-@Composable
-fun FeedSortAlphabeticallyDialog(
-    onDismissRequest: () -> Unit,
-    onSort: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = {
-                onSort()
-                onDismissRequest()
-            }) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(KMR.strings.action_sort_feed))
-        },
-        text = {
-            Text(text = stringResource(KMR.strings.sort_feed_confirmation))
-        },
-    )
-}
-
-@Preview
-@Composable
-private fun FeedItemPreview() {
-    FeedActionsDialog(
-        feedItem = FeedItemUI(
-            feed = FeedSavedSearch(
-                id = 1,
-                source = 1,
-                savedSearch = null,
-                global = false,
-                feedOrder = 0,
-            ),
-            title = "Feed 1",
-            subtitle = "Source 1",
-            results = null,
-            savedSearch = null,
-            source = null,
-        ),
-        canMoveUp = true,
-        canMoveDown = true,
-        onDismiss = { },
-        onClickDelete = { },
-        onMoveUp = { },
-        onMoveDown = { },
-    )
 }
 // KMK <--

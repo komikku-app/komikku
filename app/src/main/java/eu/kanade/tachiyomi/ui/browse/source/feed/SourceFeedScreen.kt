@@ -201,7 +201,27 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                 )
             }
-            SourceFeedScreenModel.Dialog.Filter -> {
+            // KMK -->
+            is SourceFeedScreenModel.Dialog.FeedActions -> {
+                FeedActionsDialog(
+                    feed = dialog.feedItem.feed,
+                    title = dialog.feedItem.title,
+                    canMoveUp = dialog.canMoveUp,
+                    canMoveDown = dialog.canMoveDown,
+                    onDismissRequest = screenModel::dismissDialog,
+                    onClickDelete = { screenModel.openDeleteFeed(it) },
+                    onMoveUp = { screenModel.moveUp(it) },
+                    onMoveDown = { screenModel.moveDown(it) },
+                )
+            }
+            is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
+                FeedSortAlphabeticallyDialog(
+                    onDismissRequest = screenModel::dismissDialog,
+                    onSort = { screenModel.sortAlphabetically() },
+                )
+            }
+            // KMK <--
+            is SourceFeedScreenModel.Dialog.Filter -> {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
                     filters = state.filters,
@@ -273,34 +293,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                 )
             }
-            // KMK -->
-            is SourceFeedScreenModel.Dialog.FeedActions -> {
-                FeedActionsDialog(
-                    feedItem = dialog.feedItem,
-                    canMoveUp = dialog.canMoveUp,
-                    canMoveDown = dialog.canMoveDown,
-                    onDismiss = screenModel::dismissDialog,
-                    onClickDelete = {
-                        screenModel.dismissDialog()
-                        screenModel.openDeleteFeed(it)
-                    },
-                    onMoveUp = {
-                        screenModel.dismissDialog()
-                        screenModel.moveUp(it)
-                    },
-                    onMoveDown = {
-                        screenModel.dismissDialog()
-                        screenModel.moveDown(it)
-                    },
-                )
-            }
-            is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
-                FeedSortAlphabeticallyDialog(
-                    onDismissRequest = screenModel::dismissDialog,
-                    onSort = { screenModel.sortAlphabetically() },
-                )
-            }
-            // KMK <--
             null -> Unit
         }
 

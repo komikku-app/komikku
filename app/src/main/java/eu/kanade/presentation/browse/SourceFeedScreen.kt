@@ -205,10 +205,12 @@ fun SourceFeedList(
     ScrollbarLazyColumn(
         contentPadding = paddingValues + topSmallPaddingValues,
     ) {
+        // KMK -->
         itemsIndexed(
             items,
             key = { _, it -> "source-feed-${it.id}" },
         ) { index, item ->
+            // KMK <--
             GlobalSearchResultItem(
                 modifier = Modifier.animateItem(),
                 title =
