@@ -258,7 +258,10 @@ data class BrowseSourceScreen(
                         }
                         if (/* SY --> */ state.filterable /* SY <-- */) {
                             FilterChip(
-                                selected = state.listing is Listing.Search,
+                                selected = state.listing is Listing.Search &&
+                                    // KMK -->
+                                    (state.listing as Listing.Search).savedSearchId == null,
+                                // KMK <--
                                 onClick = screenModel::openFilterSheet,
                                 leadingIcon = {
                                     Icon(
@@ -281,6 +284,24 @@ data class BrowseSourceScreen(
                                 },
                             )
                         }
+                        // KMK -->
+                        state.savedSearches.forEach { savedSearch ->
+                            FilterChip(
+                                selected = state.listing is Listing.Search &&
+                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id,
+                                onClick = {
+                                    screenModel.onSavedSearch(savedSearch) {
+                                        context.toast(it)
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = savedSearch.name,
+                                    )
+                                },
+                            )
+                        }
+                        // KMK <--
                     }
 
                     HorizontalDivider()
