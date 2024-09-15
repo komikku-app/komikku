@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -19,7 +17,6 @@ import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
-import eu.kanade.presentation.browse.components.SourceSettingsButton
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
@@ -40,7 +37,6 @@ import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
-import tachiyomi.source.local.LocalSource
 
 sealed class SourceFeedUI {
     abstract val id: Long
@@ -99,7 +95,6 @@ fun SourceFeedScreen(
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
     onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
-    onSortFeedClick: () -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
@@ -108,8 +103,9 @@ fun SourceFeedScreen(
     getMangaState: @Composable (Manga) -> State<Manga>,
     // KMK -->
     navigateUp: () -> Unit,
-    onWebViewClick: () -> Unit,
-    sourceId: Long,
+    onWebViewClick: (() -> Unit)?,
+    onSourceSettingClick: (() -> Unit?)?,
+    onSortFeedClick: (() -> Unit)?,
     onLongClickManga: (Manga) -> Unit,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
@@ -147,9 +143,9 @@ fun SourceFeedScreen(
                     // KMK -->
                     navigateUp = navigateUp,
                     onWebViewClick = onWebViewClick,
-                    sourceId = sourceId,
-                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onSourceSettingClick = onSourceSettingClick,
                     onSortFeedClick = onSortFeedClick,
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     // KMK <--
                 )
             }
@@ -300,10 +296,10 @@ fun SourceFeedToolbar(
     onClickSearch: (String) -> Unit,
     // KMK -->
     navigateUp: () -> Unit,
-    onWebViewClick: () -> Unit,
-    sourceId: Long,
+    onWebViewClick: (() -> Unit)?,
+    onSourceSettingClick: (() -> Unit?)?,
+    onSortFeedClick: (() -> Unit)?,
     toggleSelectionMode: () -> Unit,
-    onSortFeedClick: () -> Unit,
     // KMK <--
 ) {
     SearchToolbar(
@@ -320,28 +316,39 @@ fun SourceFeedToolbar(
         // KMK -->
         actions = {
             AppBarActions(
-                actions = persistentListOf(
-                    bulkSelectionButton(toggleSelectionMode),
-                    AppBar.OverflowAction(
-                        title = stringResource(KMR.strings.action_sort_feed),
-                        onClick = onSortFeedClick,
-                    ),
-                ),
-            )
-            persistentListOf(
-                if (sourceId != LocalSource.ID) {
-                    IconButton(
-                        onClick = onWebViewClick,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Public,
-                            contentDescription = stringResource(MR.strings.action_web_view),
-                        )
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        add(bulkSelectionButton(toggleSelectionMode))
+
+                        onWebViewClick?.let {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(MR.strings.action_web_view),
+                                    onClick = { onWebViewClick() },
+                                    icon = Icons.Outlined.Public,
+                                ),
+                            )
+                        }
+
+                        onSortFeedClick?.let {
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(KMR.strings.action_sort_feed),
+                                    onClick = { onSortFeedClick() },
+                                ),
+                            )
+                        }
+
+                        onSourceSettingClick?.let {
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(MR.strings.label_settings),
+                                    onClick = { onSourceSettingClick() },
+                                ),
+                            )
+                        }
                     }
-                } else {
-                    null
-                },
-                SourceSettingsButton(sourceId),
+                    .build(),
             )
         },
         // KMK <--
