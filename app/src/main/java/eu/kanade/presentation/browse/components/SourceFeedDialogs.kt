@@ -190,7 +190,7 @@ fun FeedActionsDialog(
 
 @Preview
 @Composable
-private fun FeedItemPreview() {
+private fun FeedActionsDialogPreview() {
     FeedActionsDialog(
         feed = FeedSavedSearch(
             id = 1,

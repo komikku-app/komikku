@@ -18,17 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import eu.kanade.presentation.browse.FeedItemUI
-import eu.kanade.presentation.browse.SourceFeedUI
-import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun FeedOrderListItem(
-    feed: FeedItemUI?,
-    sourceFeed: SourceFeedUI.SourceSavedSearch?,
+    title: String,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onMoveUp: () -> Unit,
@@ -54,7 +50,7 @@ fun FeedOrderListItem(
                 contentDescription = null,
             )
             Text(
-                text = feed?.title ?: sourceFeed?.title ?: "",
+                text = title,
                 modifier = Modifier
                     .padding(start = MaterialTheme.padding.medium),
             )
@@ -84,21 +80,7 @@ fun FeedOrderListItem(
 @Composable
 private fun FeedOrderListItemPreview() {
     FeedOrderListItem(
-        feed = FeedItemUI(
-            feed = FeedSavedSearch(
-                id = 1,
-                source = 1,
-                savedSearch = null,
-                global = false,
-                feedOrder = 0,
-            ),
-            title = "Feed 1",
-            subtitle = "Source 1",
-            results = null,
-            savedSearch = null,
-            source = null,
-        ),
-        sourceFeed = null,
+        title = "Feed 1",
         canMoveUp = true,
         canMoveDown = true,
         onMoveUp = {},

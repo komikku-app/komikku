@@ -56,7 +56,6 @@ fun SourceFeedOrderScreen(
             )
         },
     ) { paddingValues ->
-        val lazyListState = rememberLazyListState()
         when {
             state.isLoading -> LoadingScreen()
             state.items
@@ -66,6 +65,7 @@ fun SourceFeedOrderScreen(
             )
 
             else -> {
+                val lazyListState = rememberLazyListState()
                 val feeds = state.items
                     .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
                 LazyColumn(
@@ -80,8 +80,7 @@ fun SourceFeedOrderScreen(
                     ) { index, feed ->
                         FeedOrderListItem(
                             modifier = Modifier.animateItem(),
-                            feed = null,
-                            sourceFeed = feed,
+                            title = feed.title,
                             canMoveUp = index != 0,
                             canMoveDown = index != feeds.lastIndex,
                             onMoveUp = { onClickMoveUp(feed.feed) },

@@ -25,7 +25,6 @@ fun FeedOrderScreen(
     onClickMoveUp: (FeedSavedSearch) -> Unit,
     onClickMoveDown: (FeedSavedSearch) -> Unit,
 ) {
-    val lazyListState = rememberLazyListState()
     when {
         state.isLoading -> LoadingScreen()
         state.isEmpty -> EmptyScreen(
@@ -33,6 +32,7 @@ fun FeedOrderScreen(
         )
 
         else -> {
+            val lazyListState = rememberLazyListState()
             val feeds = state.items ?: emptyList()
             LazyColumn(
                 state = lazyListState,
@@ -46,8 +46,7 @@ fun FeedOrderScreen(
                 ) { index, feed ->
                     FeedOrderListItem(
                         modifier = Modifier.animateItem(),
-                        feed = feed,
-                        sourceFeed = null,
+                        title = feed.title,
                         canMoveUp = index != 0,
                         canMoveDown = index != feeds.lastIndex,
                         onMoveUp = { onClickMoveUp(feed.feed) },
