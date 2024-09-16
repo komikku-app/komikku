@@ -64,6 +64,19 @@ fun CalendarDay(
             },
             fontWeight = FontWeight.SemiBold,
         )
+        // KMK -->
+        if (events > 0) {
+            Text(
+                text = events.toString(),
+                textAlign = TextAlign.Right,
+                fontSize = 8.sp,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier
+                    .offset(x = 12.dp, y = (-10).dp),
+            )
+        }
+        // KMK <--
         Row(Modifier.offset(y = 12.dp)) {
             val size = events.coerceAtMost(MAX_EVENTS)
             for (index in 0 until size) {
