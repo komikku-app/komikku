@@ -22,9 +22,11 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
+import logcat.LogPriority
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
+import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -194,5 +196,18 @@ class MangaUpdatesApi(
         private const val BASE_URL = "https://api.mangaupdates.com"
 
         private val CONTENT_TYPE = "application/vnd.api+json".toMediaType()
+    }
+
+    suspend fun getSeries(track: DomainTrack): MURecord? {
+        return try {
+            with(json) {
+                client.newCall(GET("$BASE_URL/v1/series/${track.remoteId}"))
+                    .awaitSuccess()
+                    .parseAs<MURecord>()
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            null
+        }
     }
 }
