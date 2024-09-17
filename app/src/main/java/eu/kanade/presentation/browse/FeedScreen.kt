@@ -193,7 +193,7 @@ fun FeedAddDialog(
 ) {
     // KMK -->
     var query by remember { mutableStateOf("") }
-    val sourceComposes: List<@Composable () -> Unit> = sources
+    val sourceList = sources
         .filter { source ->
             if (query.isBlank()) return@filter true
             query.split(",").any {
@@ -203,6 +203,7 @@ fun FeedAddDialog(
                     source.id == input.toLongOrNull()
             }
         }
+    val composeOptions: List<@Composable () -> Unit> = sourceList
         .map {
             {
                 val source = Source(
@@ -226,7 +227,7 @@ fun FeedAddDialog(
         text = {
             // KMK -->
             RadioSelectorSearchable(
-                options = sourceComposes,
+                options = composeOptions,
                 queryString = query,
                 onChangeSearchQuery = {
                     query = it ?: ""
@@ -239,7 +240,7 @@ fun FeedAddDialog(
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onClickAdd(selected?.let { sources[it] }) }) {
+            TextButton(onClick = { onClickAdd(selected?.let { sourceList[it] }) }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },
