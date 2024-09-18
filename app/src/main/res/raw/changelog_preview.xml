@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9378" changeDate="September 18, 2024">
+        <changelogtext>[b]New:[/b] ui: show number of entries on upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] feat(ui): saved search tabs for browse source</changelogtext>
+        <changelogtext>[b]New:[/b] feat: feed reorder screen &amp; support sources' saved-searches</changelogtext>
+        <changelogtext>[b]New:[/b] feat: Hidden categories</changelogtext>
+        <changelogtext>[b]New:[/b] disable smart-update for individual &amp; fix custom interval</changelogtext>
+        <changelogtext>[b]New:[/b] Option to update trackers when chapter marked as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] e-hentai language flag</changelogtext>
+        <changelogtext>[b]Improve:[/b] Support skip-downloading-duplicate-read-chapters for merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show local chapters as downloaded on merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move "Choose what to sync" out of "Sync now"</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `ratingTwenty` being typed as String</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `synopsis` nullability</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong feed adding when filter search</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9318" changeDate="August 31, 2024">
         <changelogtext>[b]Hot Fix:[/b] fix extension won't update</changelogtext>
         <changelogtext>[b]Hot Fix:[/b] ext obsolete status</changelogtext>
@@ -13,10 +34,10 @@
         <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
         <changelogtext>[b]New:[/b] Custom themes</changelogtext>
         <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
-        <changelogtext>[b]New:[/b] Add "show entry" action to download notifications </changelogtext>
+        <changelogtext>[b]New:[/b] Add 'show entry' action to download notifications</changelogtext>
         <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
         <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
-        <changelogtext>[b]New:[/b] Remove the UNOFFICIAL status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]New:[/b] Remove the 'UNOFFICIAL' status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
         <changelogtext>[b]Improve:[/b] Show same extension from multiple repos &amp; show their repo's name</changelogtext>
         <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
         <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
@@ -31,7 +52,7 @@
         <changelogtext>[b]Improve:[/b] Option to not backup Saved searches &amp; Feeds</changelogtext>
         <changelogtext>[b]Improve:[/b] Change Reader's open-in-browser icon to Explore</changelogtext>
         <changelogtext>[b]Fix:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
-        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Related title</changelogtext>
+        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Suggestions</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9234" changeDate="August 13, 2024">
         <changelogtext>[b]New:[/b] Add option to only show entries with new chapters</changelogtext>
