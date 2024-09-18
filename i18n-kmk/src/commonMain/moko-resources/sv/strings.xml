@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>
   <string name="pref_details_page_theme">Detaljer sida</string>
-  <string name="pref_theme_cover_based_style">Tema stil</string>
   <string name="download_cache_renew_interval">Hämta cache förnyelseintervall</string>
   <string name="download_cache_renew_interval_manual">Manuell</string>
   <string name="download_cache_renew_interval_1hour">1 timme</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Tillstånd beviljad. Försök igen.</string>
   <string name="action_move_up">Flytta upp</string>
   <string name="action_move_down">Flytta ner</string>
-  <string name="action_move_bottom">Flytta botten</string>
   <string name="preload_library_cover_color">Förladda bibliotekets omslagsfärg</string>
   <string name="saved_searches_add_feed">Sparade sökningar (gamla att lägga till i Feed)</string>
   <string name="saved_searches_delete">Sparade sökningar (gamla att radera)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Använd språkikon</string>
   <string name="action_confirm_color">Bekräfta färg</string>
   <string name="pref_custom_color">Palett Personalizer</string>
-  <string name="custom_color_description">Välj en färg för det anpassade temat</string>
   <string name="theme_custom">Anpassat tema</string>
   <string name="extensions_page_need_refresh">Uppdatera tilläggssidan för att uppdatera listan.</string>
   <string name="extensions_page_more">Fler tillägg...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Förslag</string>
   <string name="pref_source_related_mangas_summary">Visa käll-webbplatsens förslag vid visning av post</string>
   <string name="related_mangas_website_suggestions">Webbplatsens förslag</string>
+  <string name="action_hide">Dölj</string>
+  <string name="action_hide_hidden_categories">Dölj dolda kategorier</string>
+  <string name="action_sort_feed">Sortera flöden</string>
+  <string name="sort_feed_confirmation">Vill du sortera flödena alfabetiskt?</string>
+  <string name="pref_custom_theme_style">Anpassad temastil</string>
+  <string name="pref_theme_cover_based_style">Omslagsbaserad temastil</string>
+  <string name="custom_color_description">Välj en fröfärg för det anpassade temat</string>
+  <string name="custom_theme_palette_casual">Fritid</string>
+  <string name="custom_theme_palette_sunset">Solnedgång</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Hallon</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Katod</string>
+  <string name="custom_theme_palette_bubblegum">Bubblegummi</string>
+  <string name="custom_theme_palette_night_at_the_beach">Natt på stranden</string>
+  <string name="custom_theme_palette_spectral">Spektral</string>
+  <string name="custom_theme_palette_patagonia">Patagonien</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

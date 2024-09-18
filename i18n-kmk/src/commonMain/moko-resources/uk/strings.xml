@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Масовий режим вибору</string>
   <string name="action_faq_and_guides">ЧаПи та керівництва</string>
   <string name="pref_details_page_theme">Сторінка подробиць</string>
-  <string name="pref_theme_cover_based_style">Стиль теми</string>
   <string name="download_cache_renew_interval">Завантажити інтервал оновлення кешу</string>
   <string name="download_cache_renew_interval_manual">Вручну</string>
   <string name="download_cache_renew_interval_1hour">1 година</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Доступ надано. Спробуйте дію ще раз.</string>
   <string name="action_move_up">Посунути вгору</string>
   <string name="action_move_down">Посунути вниз</string>
-  <string name="action_move_bottom">Рухатися вниз</string>
   <string name="preload_library_cover_color">Попередньо завантажити колір обкладинки бібліотеки</string>
   <string name="saved_searches_add_feed">Збережені пошуки (Утримуйте, щоб додати на канал)</string>
   <string name="saved_searches_delete">Збережені пошуки (утримуйте для видалення)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Використовувати значок мови</string>
   <string name="action_confirm_color">Підтвердження кольору</string>
   <string name="pref_custom_color">Персоналізатор палітри</string>
-  <string name="custom_color_description">Вибрати колір для власної теми</string>
   <string name="theme_custom">Задана тема</string>
   <string name="extensions_page_need_refresh">Оновити сторінку розширення для оновлення списку.</string>
   <string name="extensions_page_more">Більше розширень...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Пропозиції</string>
   <string name="pref_source_related_mangas_summary">Показати пропозиції сайта при перегляді матеріалу</string>
   <string name="related_mangas_website_suggestions">Пропозиції сайту</string>
+  <string name="action_hide">Приховати</string>
+  <string name="action_hide_hidden_categories">Сховати приховані категорії</string>
+  <string name="action_sort_feed">Сортування каналів</string>
+  <string name="sort_feed_confirmation">Бажаєте сортувати подачі по алфавіту?</string>
+  <string name="pref_custom_theme_style">Користувацький стиль теми</string>
+  <string name="pref_theme_cover_based_style">Стиль теми на основі обкладинки</string>
+  <string name="custom_color_description">Вибрати колір зерна для власної теми</string>
+  <string name="custom_theme_palette_casual">Довільний</string>
+  <string name="custom_theme_palette_sunset">Захід Сонця</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Малина</string>
+  <string name="custom_theme_palette_pop">Поп</string>
+  <string name="custom_theme_palette_cathode">Катод</string>
+  <string name="custom_theme_palette_bubblegum">Жувальна гумка</string>
+  <string name="custom_theme_palette_night_at_the_beach">Ніч на пляжі</string>
+  <string name="custom_theme_palette_spectral">Спектрально</string>
+  <string name="custom_theme_palette_patagonia">Патагонія</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">Піко-8</string>
 </resources>

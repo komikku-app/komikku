@@ -5,7 +5,6 @@
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>
   <string name="pref_details_page_theme">詳細ページ</string>
-  <string name="pref_theme_cover_based_style">テーマのスタイル</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>
   <string name="download_cache_renew_interval_1hour">1 時間</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">権限が付与されました。もう一度アクションを試してください。</string>
   <string name="action_move_up">上へ移動</string>
   <string name="action_move_down">下に移動</string>
-  <string name="action_move_bottom">下に移動</string>
   <string name="preload_library_cover_color">ライブラリのカバーカラーをプリロード</string>
   <string name="saved_searches_add_feed">保存された検索（フィードに追加するには長押し）</string>
   <string name="saved_searches_delete">保存された検索（削除する場合は長押し）</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">言語アイコンを使用する</string>
   <string name="action_confirm_color">色を確認</string>
   <string name="pref_custom_color">パレットのカスタマイズ</string>
-  <string name="custom_color_description">カスタムテーマの色を選択</string>
   <string name="theme_custom">カスタムテーマ</string>
   <string name="extensions_page_need_refresh">リストを更新するにはエクステンションページを更新してください。</string>
   <string name="extensions_page_more">その他のエクステンション...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">候補</string>
   <string name="pref_source_related_mangas_summary">エントリを表示中にソースウェブサイトの提案を表示する</string>
   <string name="related_mangas_website_suggestions">ウェブサイトの提案</string>
+  <string name="action_hide">非表示</string>
+  <string name="action_hide_hidden_categories">非表示のカテゴリを非表示</string>
+  <string name="action_sort_feed">フィードを並べ替える</string>
+  <string name="sort_feed_confirmation">フィードをアルファベット順に並べ替えますか？</string>
+  <string name="pref_custom_theme_style">カスタムテーマスタイル</string>
+  <string name="pref_theme_cover_based_style">カバーベースのテーマスタイル</string>
+  <string name="custom_color_description">カスタムテーマのシードカラーを選択</string>
+  <string name="custom_theme_palette_casual">カジュアルな</string>
+  <string name="custom_theme_palette_sunset">日没</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">ラズベリー</string>
+  <string name="custom_theme_palette_pop">ポップス</string>
+  <string name="custom_theme_palette_cathode">カソード</string>
+  <string name="custom_theme_palette_bubblegum">バブルガム</string>
+  <string name="custom_theme_palette_night_at_the_beach">ビーチでの夜</string>
+  <string name="custom_theme_palette_spectral">Spectral</string>
+  <string name="custom_theme_palette_patagonia">パタゴニア</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

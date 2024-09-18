@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Режим массового выбора</string>
   <string name="action_faq_and_guides">FAQ и руководства</string>
   <string name="pref_details_page_theme">Детали</string>
-  <string name="pref_theme_cover_based_style">Стиль темы</string>
   <string name="download_cache_renew_interval">Загрузить интервал обновления кэша</string>
   <string name="download_cache_renew_interval_manual">Ручной</string>
   <string name="download_cache_renew_interval_1hour">1 час</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Разрешение предоставлено. Попробуйте снова.</string>
   <string name="action_move_up">Вверх</string>
   <string name="action_move_down">Сдвинуть вниз</string>
-  <string name="action_move_bottom">Двигаться вниз</string>
   <string name="preload_library_cover_color">Выгрузить цвет обложки библиотеки</string>
   <string name="saved_searches_add_feed">Сохраненные поиски (Удерживайте, чтобы добавить в Лента)</string>
   <string name="saved_searches_delete">Сохраненные поиски (удерживаются для удаления)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Использовать значок языка</string>
   <string name="action_confirm_color">Подтвердить цвет</string>
   <string name="pref_custom_color">Персонализирующий палитры</string>
-  <string name="custom_color_description">Выберите цвет для пользовательской темы</string>
   <string name="theme_custom">Пользовательская тема</string>
   <string name="extensions_page_need_refresh">Обновите страницу расширения для обновления списка.</string>
   <string name="extensions_page_more">Больше расширений...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Предложения</string>
   <string name="pref_source_related_mangas_summary">Показывать подсказки сайта при просмотре записи</string>
   <string name="related_mangas_website_suggestions">Предложения сайта</string>
+  <string name="action_hide">Скрыть</string>
+  <string name="action_hide_hidden_categories">Скрыть скрытые категории</string>
+  <string name="action_sort_feed">Сортировка каналов</string>
+  <string name="sort_feed_confirmation">Вы хотите сортировать каналы в алфавитном порядке?</string>
+  <string name="pref_custom_theme_style">Пользовательский стиль темы</string>
+  <string name="pref_theme_cover_based_style">Стиль темы на основе обложки</string>
+  <string name="custom_color_description">Выберите цвет ключа для пользовательской темы</string>
+  <string name="custom_theme_palette_casual">Обычный</string>
+  <string name="custom_theme_palette_sunset">Закат</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Малина</string>
+  <string name="custom_theme_palette_pop">Поп</string>
+  <string name="custom_theme_palette_cathode">Катоде</string>
+  <string name="custom_theme_palette_bubblegum">Бубблегум</string>
+  <string name="custom_theme_palette_night_at_the_beach">Ночь на пляже</string>
+  <string name="custom_theme_palette_spectral">Спектр</string>
+  <string name="custom_theme_palette_patagonia">Патагония</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

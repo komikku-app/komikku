@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Modo de selección masiva</string>
   <string name="action_faq_and_guides">Preguntas frecuentes y guías</string>
   <string name="pref_details_page_theme">Página de detalles</string>
-  <string name="pref_theme_cover_based_style">Estilo del tema</string>
   <string name="download_cache_renew_interval">Descargar el intervalo de renovación de caché</string>
   <string name="download_cache_renew_interval_manual">Manual</string>
   <string name="download_cache_renew_interval_1hour">1 hora</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Permiso concedido. Inténtelo de nuevo.</string>
   <string name="action_move_up">Subir</string>
   <string name="action_move_down">Bajar</string>
-  <string name="action_move_bottom">Mover abajo</string>
   <string name="preload_library_cover_color">precargar el color de portada de la biblioteca</string>
   <string name="saved_searches_add_feed">Búsqueda guardada (Mantén para añadir al alimento)</string>
   <string name="saved_searches_delete">Búsquedas guardadas (Mantén para eliminar)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Usar icono de idioma</string>
   <string name="action_confirm_color">Confirmar color</string>
   <string name="pref_custom_color">Personalizador de paleta</string>
-  <string name="custom_color_description">Elige un color para el tema personalizado</string>
   <string name="theme_custom">Tema personalizado</string>
   <string name="extensions_page_need_refresh">Actualizar página de extensión para actualizar la lista.</string>
   <string name="extensions_page_more">Más extensiones...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Sugerencias</string>
   <string name="pref_source_related_mangas_summary">Mostrar sugerencias del sitio web fuente mientras se visualiza la entrada</string>
   <string name="related_mangas_website_suggestions">Sugerencias de sitio web</string>
+  <string name="action_hide">Ocultar</string>
+  <string name="action_hide_hidden_categories">Ocultar categorías ocultas</string>
+  <string name="action_sort_feed">Ordenar fuentes</string>
+  <string name="sort_feed_confirmation">¿Le gustaría ordenar los alimentos alfabéticamente?</string>
+  <string name="pref_custom_theme_style">Estilo de tema personalizado</string>
+  <string name="pref_theme_cover_based_style">Estilo de tema basado en portada</string>
+  <string name="custom_color_description">Elige un color de semilla para el tema personalizado</string>
+  <string name="custom_theme_palette_casual">Casual</string>
+  <string name="custom_theme_palette_sunset">Aislamiento</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Baya</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Catódica</string>
+  <string name="custom_theme_palette_bubblegum">Búbligo</string>
+  <string name="custom_theme_palette_night_at_the_beach">Noche en la playa</string>
+  <string name="custom_theme_palette_spectral">Espectral</string>
+  <string name="custom_theme_palette_patagonia">Patagonia</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

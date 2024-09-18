@@ -5,7 +5,6 @@
   <string name="action_bulk_select">وضع التحديد بالجملة</string>
   <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
   <string name="pref_details_page_theme">صفحة التفاصيل</string>
-  <string name="pref_theme_cover_based_style">نمط السمة</string>
   <string name="download_cache_renew_interval">الفاصل الزمني لتجديد التحميل</string>
   <string name="download_cache_renew_interval_manual">دليل</string>
   <string name="download_cache_renew_interval_1hour">ساعة واحدة</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">تم منح الإذن. حاول الإجراء مرة أخرى.</string>
   <string name="action_move_up">تحريك للأعلى</string>
   <string name="action_move_down">تحريك للأسفل</string>
-  <string name="action_move_bottom">تحريك أسفل</string>
   <string name="preload_library_cover_color">تحميل مسبق لون غلاف المكتبة</string>
   <string name="saved_searches_add_feed">عمليات البحث المحفوظة (اضغط للإضافة إلى التغذية)</string>
   <string name="saved_searches_delete">عمليات البحث المحفوظة (اضغط للحذف)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">استخدام أيقونة اللغة</string>
   <string name="action_confirm_color">تأكيد اللون</string>
   <string name="pref_custom_color">تخصيص اللوحة</string>
-  <string name="custom_color_description">اختيار لون للسمة المخصصة</string>
   <string name="theme_custom">سمة مخصصة</string>
   <string name="extensions_page_need_refresh">تحديث صفحة الملحق لتحديث القائمة.</string>
   <string name="extensions_page_more">المزيد من الإضافات...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">اقتراحات</string>
   <string name="pref_source_related_mangas_summary">إظهار اقتراحات المصدر - الموقع أثناء عرض الإدخال</string>
   <string name="related_mangas_website_suggestions">اقتراحات الموقع</string>
+  <string name="action_hide">إخفاء</string>
+  <string name="action_hide_hidden_categories">إخفاء الفئات المخفية</string>
+  <string name="action_sort_feed">فرز الخلاصات</string>
+  <string name="sort_feed_confirmation">هل ترغب في فرز التغذية أبجدياً؟</string>
+  <string name="pref_custom_theme_style">نمط موضوع مخصص</string>
+  <string name="pref_theme_cover_based_style">نمط الموضوع القائم على الغطاء</string>
+  <string name="custom_color_description">اختر لون البذرة للسمة المخصصة</string>
+  <string name="custom_theme_palette_casual">عادي</string>
+  <string name="custom_theme_palette_sunset">غروب</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Raspberry</string>
+  <string name="custom_theme_palette_pop">البوب</string>
+  <string name="custom_theme_palette_cathode">الكاثود</string>
+  <string name="custom_theme_palette_bubblegum">بوبليغوم</string>
+  <string name="custom_theme_palette_night_at_the_beach">الليل عند الشاطئ</string>
+  <string name="custom_theme_palette_spectral">الطيف</string>
+  <string name="custom_theme_palette_patagonia">باتاغونيا</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

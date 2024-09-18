@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk selectiemodus</string>
   <string name="action_faq_and_guides">FAQ en handleidingen</string>
   <string name="pref_details_page_theme">Details pagina</string>
-  <string name="pref_theme_cover_based_style">Thema stijl</string>
   <string name="download_cache_renew_interval">Download de cache vernieuwingsinterval</string>
   <string name="download_cache_renew_interval_manual">Handleiding</string>
   <string name="download_cache_renew_interval_1hour">1 uur</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Toestemming verleend. Probeer opnieuw.</string>
   <string name="action_move_up">Verplaats omhoog</string>
   <string name="action_move_down">Verplaats naar beneden</string>
-  <string name="action_move_bottom">Verplaats onderaan</string>
   <string name="preload_library_cover_color">Voorladen albumhoes cover kleur</string>
   <string name="saved_searches_add_feed">Opgeslagen zoekopdrachten (houd vast om toe te voegen aan Feed)</string>
   <string name="saved_searches_delete">Opgeslagen zoekopdrachten (Houd om te verwijderen)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Gebruik taalpictogram</string>
   <string name="action_confirm_color">Kleur bevestigen</string>
   <string name="pref_custom_color">Personalisator palet</string>
-  <string name="custom_color_description">Kies een kleur voor het aangepaste thema</string>
   <string name="theme_custom">Aangepast Thema</string>
   <string name="extensions_page_need_refresh">Vernieuw de extensie pagina om de lijst bij te werken.</string>
   <string name="extensions_page_more">Meer extensies...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Suggesties</string>
   <string name="pref_source_related_mangas_summary">Suggesties van bron-website weergeven tijdens het bekijken van invoer</string>
   <string name="related_mangas_website_suggestions">Website Suggesties</string>
+  <string name="action_hide">Verbergen</string>
+  <string name="action_hide_hidden_categories">Verborgen categorieën verbergen</string>
+  <string name="action_sort_feed">Sorteer feeds</string>
+  <string name="sort_feed_confirmation">Wilt u het voeder alfabetisch sorteren?</string>
+  <string name="pref_custom_theme_style">Aangepast thema</string>
+  <string name="pref_theme_cover_based_style">Cover gebaseerde thema stijl</string>
+  <string name="custom_color_description">Kies een seed kleur voor het aangepaste thema</string>
+  <string name="custom_theme_palette_casual">Vrijblijvend</string>
+  <string name="custom_theme_palette_sunset">Zonsondergang</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Framboos</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Katholiek</string>
+  <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+  <string name="custom_theme_palette_night_at_the_beach">Nacht op het strand</string>
+  <string name="custom_theme_palette_spectral">Spectraal</string>
+  <string name="custom_theme_palette_patagonia">Patagonië</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

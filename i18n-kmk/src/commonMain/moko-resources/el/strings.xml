@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
   <string name="pref_details_page_theme">Σελίδα λεπτομερειών</string>
-  <string name="pref_theme_cover_based_style">Στυλ θέματος</string>
   <string name="download_cache_renew_interval">Χρονικό διάστημα ανανέωσης προσωρινής μνήμης</string>
   <string name="download_cache_renew_interval_manual">Χειροκίνητα</string>
   <string name="download_cache_renew_interval_1hour">1 ώρα</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Χορηγήθηκε άδεια. Δοκιμάστε ξανά δράση.</string>
   <string name="action_move_up">Μετακίνηση πάνω</string>
   <string name="action_move_down">Μετακίνηση κάτω</string>
-  <string name="action_move_bottom">Μετακίνηση κάτω</string>
   <string name="preload_library_cover_color">Προφόρτωση χρώματος καλύμματος της βιβλιοθήκης</string>
   <string name="saved_searches_add_feed">Αποθηκευμένες αναζητήσεις (Κρατήστε για προσθήκη στη Ροή)</string>
   <string name="saved_searches_delete">Αποθηκευμένες αναζητήσεις (Κρατήστε για διαγραφή)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Χρήση εικονιδίου γλώσσας</string>
   <string name="action_confirm_color">Επιβεβαίωση Χρώματος</string>
   <string name="pref_custom_color">Προσαρμογέας Παλέτας</string>
-  <string name="custom_color_description">Επιλέξτε ένα χρώμα για το προσαρμοσμένο θέμα</string>
   <string name="theme_custom">Προσαρμοσμένο Θέμα</string>
   <string name="extensions_page_need_refresh">Ανανέωση επέκτασης σελίδας για ενημέρωση λίστας.</string>
   <string name="extensions_page_more">Περισσότερες επεκτάσεις...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Προτάσεις</string>
   <string name="pref_source_related_mangas_summary">Εμφάνιση προτάσεων πηγαίου ιστοτόπου κατά την προβολή της καταχώρησης</string>
   <string name="related_mangas_website_suggestions">Προτάσεις Ιστοσελίδας</string>
+  <string name="action_hide">Απόκρυψη</string>
+  <string name="action_hide_hidden_categories">Απόκρυψη κρυφών κατηγοριών</string>
+  <string name="action_sort_feed">Ταξινόμηση ροών</string>
+  <string name="sort_feed_confirmation">Θα θέλατε να ταξινομήσετε τις ζωοτροφές αλφαβητικά?</string>
+  <string name="pref_custom_theme_style">Προσαρμοσμένο στυλ θέματος</string>
+  <string name="pref_theme_cover_based_style">Στυλ θέματος βασισμένο στο εξώφυλλο</string>
+  <string name="custom_color_description">Διαλέξτε ένα χρώμα σπόρων για το προσαρμοσμένο θέμα</string>
+  <string name="custom_theme_palette_casual">Περιστασιακό</string>
+  <string name="custom_theme_palette_sunset">Ήλιος</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Βατόμουρο</string>
+  <string name="custom_theme_palette_pop">Ποπ</string>
+  <string name="custom_theme_palette_cathode">Cathode</string>
+  <string name="custom_theme_palette_bubblegum">Τσιχλόφουσκα</string>
+  <string name="custom_theme_palette_night_at_the_beach">Νύχτα στην παραλία</string>
+  <string name="custom_theme_palette_spectral">Φασματικό</string>
+  <string name="custom_theme_palette_patagonia">Παταγονία</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

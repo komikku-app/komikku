@@ -5,7 +5,6 @@
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
   <string name="pref_details_page_theme">详细信息页面</string>
-  <string name="pref_theme_cover_based_style">主题样式</string>
   <string name="download_cache_renew_interval">下载缓存续间隔</string>
   <string name="download_cache_renew_interval_manual">手动模式</string>
   <string name="download_cache_renew_interval_1hour">1 小时</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">权限已授予。请再试一次。</string>
   <string name="action_move_up">上移</string>
   <string name="action_move_down">向下移动</string>
-  <string name="action_move_bottom">底部移动</string>
   <string name="preload_library_cover_color">预加载库封面颜色</string>
   <string name="saved_searches_add_feed">保存搜索 (按住即可添加到订阅)</string>
   <string name="saved_searches_delete">保存搜索 (按住即可删除)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">使用语言图标</string>
   <string name="action_confirm_color">确认颜色</string>
   <string name="pref_custom_color">调色板个性化器</string>
-  <string name="custom_color_description">为自定义主题选择颜色</string>
   <string name="theme_custom">自定义主题</string>
   <string name="extensions_page_need_refresh">刷新扩展页面来更新列表。</string>
   <string name="extensions_page_more">更多扩展...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">建议</string>
   <string name="pref_source_related_mangas_summary">查看条目时显示源网站的建议</string>
   <string name="related_mangas_website_suggestions">网站建议</string>
+  <string name="action_hide">隐藏</string>
+  <string name="action_hide_hidden_categories">隐藏隐藏分类</string>
+  <string name="action_sort_feed">排序源</string>
+  <string name="sort_feed_confirmation">你想要按字母顺序排列新闻源吗？</string>
+  <string name="pref_custom_theme_style">自定义主题样式</string>
+  <string name="pref_theme_cover_based_style">基于封面的主题样式</string>
+  <string name="custom_color_description">为自定义主题选择种子颜色</string>
+  <string name="custom_theme_palette_casual">休眠</string>
+  <string name="custom_theme_palette_sunset">日落模式</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">树莓子</string>
+  <string name="custom_theme_palette_pop">弹出</string>
+  <string name="custom_theme_palette_cathode">凯西德</string>
+  <string name="custom_theme_palette_bubblegum">布巴科姆</string>
+  <string name="custom_theme_palette_night_at_the_beach">夜晚在海滩上</string>
+  <string name="custom_theme_palette_spectral">谱图</string>
+  <string name="custom_theme_palette_patagonia">巴塔戈尼亚州</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

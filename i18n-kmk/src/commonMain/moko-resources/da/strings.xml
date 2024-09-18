@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Masse valg tilstand</string>
   <string name="action_faq_and_guides">Ofte stillede spørgsmål og vejledninger</string>
   <string name="pref_details_page_theme">Detaljer side</string>
-  <string name="pref_theme_cover_based_style">Tema stil</string>
   <string name="download_cache_renew_interval">Download cache forny interval</string>
   <string name="download_cache_renew_interval_manual">Manuelt</string>
   <string name="download_cache_renew_interval_1hour">1 time</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Tilladelse givet. Prøv handling igen.</string>
   <string name="action_move_up">Flyt op</string>
   <string name="action_move_down">Flyt ned</string>
-  <string name="action_move_bottom">Flyt bunden</string>
   <string name="preload_library_cover_color">Forudindlæs bibliotekets dækningsfarve</string>
   <string name="saved_searches_add_feed">Gemte Søgninger (Hold for at tilføje til Feed)</string>
   <string name="saved_searches_delete">Gemte Søgninger (Hold til at slette)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Brug sprogikon</string>
   <string name="action_confirm_color">Bekræft Farve</string>
   <string name="pref_custom_color">Palet Personliggør</string>
-  <string name="custom_color_description">Vælg en farve til det brugerdefinerede tema</string>
   <string name="theme_custom">Brugerdefineret Tema</string>
   <string name="extensions_page_need_refresh">Opdater udvidelsessiden for at opdatere listen.</string>
   <string name="extensions_page_more">Flere udvidelser...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Forslag</string>
   <string name="pref_source_related_mangas_summary">Vis forslag til source-website under visning af posten</string>
   <string name="related_mangas_website_suggestions">Websted Forslag</string>
+  <string name="action_hide">Skjul</string>
+  <string name="action_hide_hidden_categories">Skjul skjulte kategorier</string>
+  <string name="action_sort_feed">Sortér feeds</string>
+  <string name="sort_feed_confirmation">Ønsker du at sortere feeds alfabetisk?</string>
+  <string name="pref_custom_theme_style">Tilpasset temastil</string>
+  <string name="pref_theme_cover_based_style">Omslagsbaseret temastil</string>
+  <string name="custom_color_description">Vælg en hovedfarve for det brugerdefinerede tema</string>
+  <string name="custom_theme_palette_casual">Uforpligtende</string>
+  <string name="custom_theme_palette_sunset">Solnedgang</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Hindbær</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Katode</string>
+  <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+  <string name="custom_theme_palette_night_at_the_beach">Nat på stranden</string>
+  <string name="custom_theme_palette_spectral">Spektral</string>
+  <string name="custom_theme_palette_patagonia">Patagonien</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>

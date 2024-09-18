@@ -5,7 +5,6 @@
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>
   <string name="pref_details_page_theme">Yksityiskohdat sivu</string>
-  <string name="pref_theme_cover_based_style">Teeman tyyli</string>
   <string name="download_cache_renew_interval">Lataa välimuistin uusimisväli</string>
   <string name="download_cache_renew_interval_manual">Manuaalinen</string>
   <string name="download_cache_renew_interval_1hour">1 tunti</string>
@@ -59,7 +58,6 @@
   <string name="permission_writing_external_storage_succeed">Lupa myönnetty. Yritä toimia uudelleen.</string>
   <string name="action_move_up">Siirrä ylös</string>
   <string name="action_move_down">Siirrä alas</string>
-  <string name="action_move_bottom">Siirrä alimmaksi</string>
   <string name="preload_library_cover_color">Esilataa kirjaston kansiväri</string>
   <string name="saved_searches_add_feed">Tallennetut haut (pidä lisätäksesi syötteeseen)</string>
   <string name="saved_searches_delete">Tallennetut haut (poistettavaksi)</string>
@@ -67,7 +65,6 @@
   <string name="action_display_language_icon">Käytä kielikuvaketta</string>
   <string name="action_confirm_color">Vahvista Väri</string>
   <string name="pref_custom_color">Paletin Mukauttaja</string>
-  <string name="custom_color_description">Valitse väri mukautetulle teemalle</string>
   <string name="theme_custom">Muokattu Teema</string>
   <string name="extensions_page_need_refresh">Päivitä lisäosa sivu päivitettäväksi.</string>
   <string name="extensions_page_more">Lisää laajennuksia...</string>
@@ -81,4 +78,24 @@
   <string name="pref_source_related_mangas">Ehdotukset</string>
   <string name="pref_source_related_mangas_summary">Näytä lähdesivuston ehdotukset katseltaessa merkintää</string>
   <string name="related_mangas_website_suggestions">Verkkosivujen Ehdotukset</string>
+  <string name="action_hide">Piilota</string>
+  <string name="action_hide_hidden_categories">Piilota piilotetut kategoriat</string>
+  <string name="action_sort_feed">Lajittele syötteet</string>
+  <string name="sort_feed_confirmation">Haluatko lajitella syötteet aakkosellisesti?</string>
+  <string name="pref_custom_theme_style">Mukautettu teeman tyyli</string>
+  <string name="pref_theme_cover_based_style">Kansipohjainen teeman tyyli</string>
+  <string name="custom_color_description">Valitse mukautetun teeman seed color</string>
+  <string name="custom_theme_palette_casual">Rento</string>
+  <string name="custom_theme_palette_sunset">Auringonlasku</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Vadelma</string>
+  <string name="custom_theme_palette_pop">Poppi</string>
+  <string name="custom_theme_palette_cathode">Kaappi</string>
+  <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+  <string name="custom_theme_palette_night_at_the_beach">Yö rannalla</string>
+  <string name="custom_theme_palette_spectral">Spectral</string>
+  <string name="custom_theme_palette_patagonia">Patagonia</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
 </resources>
