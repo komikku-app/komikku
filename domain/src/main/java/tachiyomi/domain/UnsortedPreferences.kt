@@ -25,7 +25,7 @@ class UnsortedPreferences(
 
     fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
 
-    fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", true)
+    fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", false)
 
     fun enableExhentai() = preferenceStore.getBoolean(Preference.privateKey("enable_exhentai"), false)
 
