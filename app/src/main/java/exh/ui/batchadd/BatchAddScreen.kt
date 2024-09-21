@@ -73,7 +73,15 @@ class BatchAddScreen : Screen() {
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = stringResource(SYMR.strings.eh_batch_add_description),
+                                    text =
+                                    // KMK -->
+                                    stringResource(SYMR.strings.md_batch_add_description) +
+                                        if (screenModel.isHentaiEnabled) {
+                                            // KMK <--
+                                            stringResource(SYMR.strings.eh_batch_add_description)
+                                        } else {
+                                            ""
+                                        },
                                 )
                             },
                             keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),

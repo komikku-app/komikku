@@ -1,8 +1,10 @@
 package exh.ui.batchadd
 
 import android.content.Context
+import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.core.preference.asState
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.log.xLogE
@@ -23,6 +25,10 @@ class BatchAddScreenModel(
     private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
 ) : StateScreenModel<BatchAddState>(BatchAddState()) {
     private val galleryAdder by lazy { GalleryAdder() }
+
+    // KMK -->
+    val isHentaiEnabled by Injekt.get<UnsortedPreferences>().isHentaiEnabled().asState(screenModelScope)
+    // KMK <--
 
     fun addGalleries(context: Context) {
         val galleries = state.value.galleries

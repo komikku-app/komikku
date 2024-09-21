@@ -323,6 +323,7 @@
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Ajouter par lots</string>
+    <string name="md_batch_add_description">Exemple:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Exemple:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nIl prend également en charge les données exportées des visites E-H\n</string>
     <string name="eh_batch_add_title">Entrez les galeries à ajouter (séparées par une nouvelle ligne):</string>
     <string name="eh_batch_add_button">Ajouter des galeries</string>
