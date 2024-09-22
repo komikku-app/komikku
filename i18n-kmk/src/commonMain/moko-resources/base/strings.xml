@@ -12,7 +12,7 @@
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove merged entries?</string>
     <string name="action_hide">Hide</string>
-    <string name="action_hide_hidden_categories">Hide hidden categories</string>
+    <string name="action_show_hidden_categories">Show hidden categories</string>
 
 
     <!-- Preferences -->

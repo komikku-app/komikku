@@ -594,11 +594,11 @@ class LibraryScreenModel(
 
         return combine(
             // KMK -->
-            libraryPreferences.hideHiddenCategories().changes(),
+            libraryPreferences.showHiddenCategories().changes(),
             // KMK <--
             getCategories.subscribe(),
             libraryMangasFlow,
-        ) { hideHiddenCategories, categories, libraryManga ->
+        ) { showHiddenCategories, categories, libraryManga ->
             val displayCategories = if (libraryManga.isNotEmpty() && !libraryManga.containsKey(0)) {
                 categories.fastFilterNot { it.isSystemCategory }
             } else {
@@ -612,7 +612,7 @@ class LibraryScreenModel(
             // SY <--
             displayCategories
                 // KMK -->
-                .filterNot { hideHiddenCategories && it.hidden }
+                .filterNot { !showHiddenCategories && it.hidden }
                 // KMK <--
                 .associateWith { libraryManga[it.id].orEmpty() }
         }

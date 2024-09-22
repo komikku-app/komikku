@@ -337,8 +337,8 @@ private fun ColumnScope.DisplayPage(
     )
     // KMK -->
     CheckboxItem(
-        label = stringResource(KMR.strings.action_hide_hidden_categories),
-        pref = screenModel.libraryPreferences.hideHiddenCategories(),
+        label = stringResource(KMR.strings.action_show_hidden_categories),
+        pref = screenModel.libraryPreferences.showHiddenCategories(),
     )
     // KMK <--
     CheckboxItem(
