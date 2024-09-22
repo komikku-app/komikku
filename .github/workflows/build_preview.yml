@@ -120,7 +120,7 @@ jobs:
   build-app:
     runs-on: ubuntu-latest
     needs: prepare-build
-    if: github.ref == 'refs/heads/master' && github.repository == 'komikku-app/komikku'
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Clone Repository (${{ needs.prepare-build.outputs.VERSION_TAG }} - ${{ needs.prepare-build.outputs.TAG_NAME }})
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
