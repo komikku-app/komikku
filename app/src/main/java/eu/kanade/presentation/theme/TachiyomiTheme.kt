@@ -1,5 +1,7 @@
 package eu.kanade.presentation.theme
 
+import android.app.UiModeManager
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -7,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.getSystemService
+import com.materialkolor.Contrast
 import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
@@ -58,6 +62,7 @@ fun TachiyomiTheme(
 ) {
     val uiPreferences = Injekt.get<UiPreferences>()
     // KMK -->
+    val context = LocalContext.current
     val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
     if (seedColor != null) {
         DynamicMaterialTheme(
@@ -67,6 +72,11 @@ fun TachiyomiTheme(
             style = uiPreferences.themeCoverBasedStyle().get(),
             animate = true,
             content = content,
+            contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                context.getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
+            } else {
+                Contrast.Default.value
+            },
         )
     } else {
         // KMK <--
@@ -110,7 +120,11 @@ private fun getThemeColorScheme(
         }
         // KMK -->
         AppTheme.CUSTOM -> {
-            CustomColorScheme(uiPreferences)
+            CustomColorScheme(
+                context = LocalContext.current,
+                seed = uiPreferences.colorTheme().get(),
+                style = uiPreferences.customThemeStyle().get(),
+            )
         }
         // KMK <--
         else -> {

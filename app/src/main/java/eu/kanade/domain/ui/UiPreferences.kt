@@ -32,6 +32,8 @@ class UiPreferences(
     // KMK -->
     fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0xFFDF0090.toInt())
 
+    fun customThemeStyle() = preferenceStore.getEnum("pref_custom_theme_style_key", PaletteStyle.Fidelity)
+
     fun themeCoverBased() = preferenceStore.getBoolean("pref_theme_cover_based_key", true)
 
     fun themeCoverBasedStyle() = preferenceStore.getEnum("pref_theme_cover_based_style_key", PaletteStyle.Vibrant)

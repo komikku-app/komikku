@@ -106,6 +106,40 @@ object SettingsAppearanceScreen : SearchableSettings {
                     subtitle = stringResource(KMR.strings.custom_color_description),
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = uiPreferences.customThemeStyle(),
+                    title = stringResource(KMR.strings.pref_custom_theme_style),
+                    enabled = appTheme == AppTheme.CUSTOM,
+                    entries = PaletteStyle.entries
+                        .associateWith {
+                            when (it) {
+                                PaletteStyle.TonalSpot ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_tonalspot)
+                                PaletteStyle.Neutral ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_neutral)
+                                PaletteStyle.Vibrant ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_vibrant)
+                                PaletteStyle.Expressive ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_expressive)
+                                PaletteStyle.Rainbow ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_rainbow)
+                                PaletteStyle.FruitSalad ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fruitsalad)
+                                PaletteStyle.Monochrome ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_monochrome)
+                                PaletteStyle.Fidelity ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fidelity)
+                                PaletteStyle.Content ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_content)
+                                else -> it.name
+                            }
+                        }
+                        .toImmutableMap(),
+                    onValueChanged = {
+                        (context as? Activity)?.let { ActivityCompat.recreate(it) }
+                        true
+                    },
+                ),
                 // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = amoledPref,
