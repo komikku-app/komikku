@@ -27,7 +27,11 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -44,8 +48,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.offset
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapNotNull
 import androidx.compose.ui.util.fastMaxBy
 import kotlin.math.max
 
@@ -152,7 +158,6 @@ fun Scaffold(
  * @param bottomBar the content to place at the bottom of the [Scaffold], on top of the
  * [content], typically a [NavigationBar].
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScaffoldLayout(
     fabPosition: FabPosition,
@@ -210,8 +215,12 @@ private fun ScaffoldLayout(
             }
 
             val fabPlaceables =
-                subcompose(ScaffoldLayoutContent.Fab, fab).fastMap { measurable ->
-                    measurable.measure(looseConstraints)
+                subcompose(ScaffoldLayoutContent.Fab, fab).fastMapNotNull { measurable ->
+                    measurable
+                        // KMK -->
+                        .measure(looseConstraints.offset(-leftInset - rightInset, -bottomInset))
+                        .takeIf { it.height != 0 && it.width != 0 }
+                    // KMK <--
                 }
 
             val fabWidth = fabPlaceables.fastMaxBy { it.width }?.width ?: 0
@@ -220,14 +229,28 @@ private fun ScaffoldLayout(
             val fabPlacement = if (fabPlaceables.isNotEmpty() && fabWidth != 0 && fabHeight != 0) {
                 // FAB distance from the left of the layout, taking into account LTR / RTL
                 // Tachiyomi: Calculate insets for fab placement offset
-                val fabLeftOffset = if (fabPosition == FabPosition.End) {
-                    if (layoutDirection == LayoutDirection.Ltr) {
-                        layoutWidth - FabSpacing.roundToPx() - fabWidth - rightInset
-                    } else {
-                        FabSpacing.roundToPx() + leftInset
+                val fabLeftOffset = when (fabPosition) {
+                    // KMK -->
+                    FabPosition.Start -> {
+                        if (layoutDirection == LayoutDirection.Ltr) {
+                            FabSpacing.roundToPx() + leftInset
+                        } else {
+                            layoutWidth - FabSpacing.roundToPx() - fabWidth - rightInset
+                        }
                     }
-                } else {
-                    leftInset + ((insetLayoutWidth - fabWidth) / 2)
+                    FabPosition.EndOverlay,
+                    // KMK <--
+                    FabPosition.End,
+                    -> {
+                        if (layoutDirection == LayoutDirection.Ltr) {
+                            layoutWidth - FabSpacing.roundToPx() - fabWidth - rightInset
+                        } else {
+                            FabSpacing.roundToPx() + leftInset
+                        }
+                    }
+                    else -> {
+                        leftInset + ((insetLayoutWidth - fabWidth) / 2)
+                    }
                 }
 
                 FabPlacement(
@@ -307,34 +330,6 @@ private fun ScaffoldLayout(
             fabPlaceables.fastForEach {
                 it.place(fabPlacement?.left ?: 0, layoutHeight - (fabOffsetFromBottom ?: 0))
             }
-        }
-    }
-}
-
-/**
- * The possible positions for a [FloatingActionButton] attached to a [Scaffold].
- */
-@ExperimentalMaterial3Api
-@JvmInline
-value class FabPosition internal constructor(@Suppress("unused") private val value: Int) {
-    companion object {
-        /**
-         * Position FAB at the bottom of the screen in the center, above the [NavigationBar] (if it
-         * exists)
-         */
-        val Center = FabPosition(0)
-
-        /**
-         * Position FAB at the bottom of the screen at the end, above the [NavigationBar] (if it
-         * exists)
-         */
-        val End = FabPosition(1)
-    }
-
-    override fun toString(): String {
-        return when (this) {
-            Center -> "FabPosition.Center"
-            else -> "FabPosition.End"
         }
     }
 }
