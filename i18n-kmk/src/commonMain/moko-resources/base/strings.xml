@@ -47,6 +47,19 @@
     <string name="pref_custom_color">Palette Personalizer</string>
     <string name="custom_color_description">Pick a seed color for the custom Theme</string>
     <string name="theme_custom">Custom Theme</string>
+    <string name="custom_theme_palette_casual">Casual</string>
+    <string name="custom_theme_palette_sunset">Sunset</string>
+    <string name="custom_theme_palette_outrun">Outrun</string>
+    <string name="custom_theme_palette_raspberry">Raspberry</string>
+    <string name="custom_theme_palette_pop">Pop</string>
+    <string name="custom_theme_palette_cathode">Cathode</string>
+    <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+    <string name="custom_theme_palette_night_at_the_beach">Night at the beach</string>
+    <string name="custom_theme_palette_spectral">Spectral</string>
+    <string name="custom_theme_palette_patagonia">Patagonia</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="custom_theme_palette_lcd">LCD</string>
+    <string name="custom_theme_palette_pico">PICO-8</string>
 
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
