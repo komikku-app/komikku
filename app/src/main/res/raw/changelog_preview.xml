@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9404" changeDate="September 27, 2024">
+        <changelogtext>[b]New:[/b] feat(ui): Panorama cover</changelogtext>
+        <changelogtext>[b]New:[/b] feat(ui): read/resume button movable</changelogtext>
+        <changelogtext>[b]Improve:[/b] Colors palette for Custom theme</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve custom theme</changelogtext>
+        <changelogtext>[b]Improve:[/b] Default disable Integrated hentai features</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide batch add if integrated H &amp; Delegated src is off</changelogtext>
+        <changelogtext>[b]Improve:[/b] add MangaDex to Batch-Add example</changelogtext>
+        <changelogtext>[b]Improve:[/b] enable hidden categories by default</changelogtext>
+        <changelogtext>[b]Improve:[/b] translation for Turkish &amp; update others</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9378" changeDate="September 18, 2024">
         <changelogtext>[b]New:[/b] ui: show number of entries on upcoming screen</changelogtext>
         <changelogtext>[b]New:[/b] feat(ui): saved search tabs for browse source</changelogtext>
