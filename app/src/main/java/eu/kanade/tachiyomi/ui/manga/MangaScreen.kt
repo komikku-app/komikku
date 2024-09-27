@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -262,6 +263,7 @@ class MangaScreen(
         // SY <--
 
         // KMK -->
+        val coverRatio = remember { mutableFloatStateOf(1f) }
         val hazeState = remember { HazeState() }
         // KMK <--
 
@@ -402,6 +404,7 @@ class MangaScreen(
             onCoverLoaded = {
                 if (screenModel.themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it)
             },
+            coverRatio = coverRatio,
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             hazeState = hazeState,
             // KMK <--
@@ -537,6 +540,9 @@ class MangaScreen(
             is MangaScreenModel.Dialog.EditMangaInfo -> {
                 EditMangaDialog(
                     manga = dialog.manga,
+                    // KMK -->
+                    coverRatio = coverRatio,
+                    // KMK <--
                     onDismissRequest = screenModel::dismissDialog,
                     onPositiveClick = screenModel::updateMangaInfo,
                 )

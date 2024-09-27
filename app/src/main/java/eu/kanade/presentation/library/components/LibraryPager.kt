@@ -112,6 +112,22 @@ fun LibraryPager(
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
             }
+            // KMK -->
+            LibraryDisplayMode.ComfortableGridPanorama -> {
+                LibraryComfortableGrid(
+                    items = library,
+                    columns = columns,
+                    contentPadding = contentPadding,
+                    selection = selectedManga,
+                    onClick = onClickManga,
+                    onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
+                    searchQuery = searchQuery,
+                    onGlobalSearchClicked = onGlobalSearchClicked,
+                    usePanoramaCover = true,
+                )
+            }
+            // KMK <--
         }
     }
 }

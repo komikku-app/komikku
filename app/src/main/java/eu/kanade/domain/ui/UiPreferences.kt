@@ -64,6 +64,8 @@ class UiPreferences(
     fun showHomeOnRelatedMangas() = preferenceStore.getBoolean("show_home_on_related_mangas", true)
 
     fun readButtonPosition() = preferenceStore.getString("reading_button_position", FabPosition.End.toString())
+
+    fun usePanoramaCover() = preferenceStore.getBoolean("use_panorama_cover", false)
     // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)

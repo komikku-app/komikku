@@ -101,6 +101,7 @@ internal fun BrowseSourceCompactGridItem(
         ),
         // KMK -->
         isSelected = isSelected,
+        fitToPanoramaCover = true,
         // KMK <--
         coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         coverBadgeStart = {

@@ -160,5 +160,5 @@ object MangaCoverMetadata {
         preferences.coverColors().set(mapColorCopy.map { "${it.key}|${it.value.first}|${it.value.second}" }.toSet())
     }
 
-    const val SUB_SAMPLE = 4
+    private const val SUB_SAMPLE = 4
 }

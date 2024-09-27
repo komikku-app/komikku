@@ -51,6 +51,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -96,6 +97,7 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clickableNoIndication
+import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -120,8 +122,12 @@ fun MangaInfoBox(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
+    coverRatio: MutableFloatState,
     // KMK <--
 ) {
+    // KMK -->
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    // KMK <--
     Box(modifier = modifier) {
         // Backdrop
         val backdropGradientColors = listOf(
@@ -135,6 +141,12 @@ fun MangaInfoBox(
                 .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            // KMK -->
+            onSuccess = { result ->
+                val image = result.result.image
+                coverRatio.floatValue = image.height.toFloat() / image.width
+            },
+            // KMK <--
             modifier = Modifier
                 .matchParentSize()
                 .drawWithContent {
@@ -170,6 +182,8 @@ fun MangaInfoBox(
                     librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
+                    coverRatio = coverRatio,
+                    usePanoramaCover = usePanoramaCover,
                     // KMK <--
                 )
             } else {
@@ -184,6 +198,8 @@ fun MangaInfoBox(
                     librarySearch = librarySearch,
                     onSourceClick = onSourceClick,
                     onCoverLoaded = onCoverLoaded,
+                    coverRatio = coverRatio,
+                    usePanoramaCover = usePanoramaCover,
                     // KMK <--
                 )
             }
@@ -458,6 +474,8 @@ private fun MangaAndSourceTitlesLarge(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
+    coverRatio: MutableFloatState,
+    usePanoramaCover: Boolean = false,
     // KMK <--
 ) {
     Column(
@@ -466,18 +484,43 @@ private fun MangaAndSourceTitlesLarge(
             .padding(start = 16.dp, top = appBarPadding + 16.dp, end = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        MangaCover.Book(
-            modifier = Modifier.fillMaxWidth(0.65f),
-            data = ImageRequest.Builder(LocalContext.current)
-                .data(manga)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(MR.strings.manga_cover),
-            onClick = onCoverClick,
-            // KMK -->
-            onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
+        // KMK -->
+        if (usePanoramaCover && coverRatio.floatValue <= RatioSwitchToPanorama) {
+            MangaCover.Panorama(
+                modifier = Modifier.fillMaxWidth(0.65f),
+                data = ImageRequest.Builder(LocalContext.current)
+                    .data(manga)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(MR.strings.manga_cover),
+                onClick = onCoverClick,
+                // KMK -->
+                onCoverLoaded = { mangaCover, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                    onCoverLoaded(mangaCover)
+                },
+                // KMK <--
+            )
+        } else {
             // KMK <--
-        )
+            MangaCover.Book(
+                modifier = Modifier.fillMaxWidth(0.65f),
+                data = ImageRequest.Builder(LocalContext.current)
+                    .data(manga)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(MR.strings.manga_cover),
+                onClick = onCoverClick,
+                // KMK -->
+                onCoverLoaded = { mangaCover, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                    onCoverLoaded(mangaCover)
+                },
+                // KMK <--
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         MangaContentInfo(
             title = manga.title,
@@ -508,6 +551,8 @@ private fun MangaAndSourceTitlesSmall(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (DomainMangaCover) -> Unit,
+    coverRatio: MutableFloatState,
+    usePanoramaCover: Boolean = false,
     // KMK <--
 ) {
     Row(
@@ -517,20 +562,51 @@ private fun MangaAndSourceTitlesSmall(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MangaCover.Book(
-            modifier = Modifier
-                .sizeIn(maxWidth = 100.dp)
-                .align(Alignment.Top),
-            data = ImageRequest.Builder(LocalContext.current)
-                .data(manga)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(MR.strings.manga_cover),
-            onClick = onCoverClick,
-            // KMK -->
-            onCoverLoaded = { mangaCover -> onCoverLoaded(mangaCover) },
+        // KMK -->
+        if (usePanoramaCover && coverRatio.floatValue <= RatioSwitchToPanorama) {
+            MangaCover.Panorama(
+                modifier = Modifier
+                    .sizeIn(maxHeight = 100.dp)
+                    // KMK -->
+                    .align(Alignment.CenterVertically),
+                // KMK <--
+                data = ImageRequest.Builder(LocalContext.current)
+                    .data(manga)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(MR.strings.manga_cover),
+                onClick = onCoverClick,
+                // KMK -->
+                onCoverLoaded = { mangaCover, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                    onCoverLoaded(mangaCover)
+                },
+                // KMK <--
+            )
+        } else {
             // KMK <--
-        )
+            MangaCover.Book(
+                modifier = Modifier
+                    .sizeIn(maxWidth = 100.dp)
+                    // KMK -->
+                    .align(Alignment.CenterVertically),
+                // KMK <--
+                data = ImageRequest.Builder(LocalContext.current)
+                    .data(manga)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(MR.strings.manga_cover),
+                onClick = onCoverClick,
+                // KMK -->
+                onCoverLoaded = { mangaCover, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                    onCoverLoaded(mangaCover)
+                },
+                // KMK <--
+            )
+        }
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {

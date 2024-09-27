@@ -80,6 +80,20 @@ fun RelatedMangasContent(
                 selection = selection,
             )
         }
+        LibraryDisplayMode.ComfortableGridPanorama -> {
+            RelatedMangasComfortableGrid(
+                relatedMangas = relatedMangas,
+                getManga = getMangaState,
+                columns = columns,
+                contentPadding = contentPadding,
+                onMangaClick = onMangaClick,
+                onMangaLongClick = onMangaLongClick,
+                onKeywordClick = onKeywordClick,
+                onKeywordLongClick = onKeywordLongClick,
+                selection = selection,
+                usePanoramaCover = true,
+            )
+        }
         LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
             RelatedMangasCompactGrid(
                 relatedMangas = relatedMangas,

@@ -13,8 +13,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,14 +28,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.manga.components.CoverPlaceholderColor
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun MigrationItem(
@@ -41,7 +51,15 @@ fun MigrationItem(
     sourcesString: String,
     chapterInfo: MigratingManga.ChapterInfo,
     onClick: () -> Unit,
+    // KMK -->
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    // KMK <--
 ) {
+    // KMK -->
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
+    val bgColor = manga.asMangaCover().dominantCoverColors?.first?.let { Color(it) }
+    // KMK <--
     Column(
         modifier
             .widthIn(max = 150.dp)
@@ -53,13 +71,41 @@ fun MigrationItem(
         val context = LocalContext.current
         Box(
             Modifier.fillMaxWidth()
+                // KMK -->
+                .background(bgColor ?: CoverPlaceholderColor)
+                // KMK <--
                 .aspectRatio(MangaCover.Book.ratio),
         ) {
-            MangaCover.Book(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                data = manga,
-            )
+            // KMK -->
+            if (usePanoramaCover && coverIsWide) {
+                MangaCover.Panorama(
+                    modifier = Modifier
+                        // KMK -->
+                        .align(Alignment.Center)
+                        // KMK <--
+                        .fillMaxWidth(),
+                    data = manga,
+                    // KMK -->
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                    // KMK <--
+                )
+            } else {
+                // KMK <--
+                MangaCover.Book(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    data = manga,
+                    // KMK -->
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                    // KMK <--
+                )
+            }
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))

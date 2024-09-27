@@ -182,6 +182,21 @@ fun BrowseSourceContent(
                 // KMK <--
             )
         }
+        // KMK -->
+        LibraryDisplayMode.ComfortableGridPanorama -> {
+            BrowseSourceComfortableGrid(
+                mangaList = mangaList,
+                columns = columns,
+                contentPadding = contentPadding,
+                onMangaClick = onMangaClick,
+                onMangaLongClick = onMangaLongClick,
+                // KMK -->
+                selection = selection,
+                usePanoramaCover = true,
+                // KMK <--
+            )
+        }
+        // KMK <--
         LibraryDisplayMode.List -> {
             BrowseSourceList(
                 mangaList = mangaList,

@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ import coil3.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.model.SManga
@@ -62,6 +64,9 @@ import tachiyomi.source.local.isLocal
 @Composable
 fun EditMangaDialog(
     manga: Manga,
+    // KMK -->
+    coverRatio: MutableFloatState,
+    // KMK <--
     onDismissRequest: () -> Unit,
     onPositiveClick: (
         title: String?,
@@ -145,6 +150,7 @@ fun EditMangaDialog(
                                     scope,
                                     // KMK -->
                                     colors,
+                                    coverRatio = coverRatio,
                                     // KMK <--
                                 )
                             }
@@ -178,9 +184,16 @@ private fun onViewCreated(
     scope: CoroutineScope,
     // KMK -->
     colors: EditMangaDialogColors,
+    coverRatio: MutableFloatState,
     // KMK <--
 ) {
-    loadCover(manga, binding)
+    loadCover(
+        manga,
+        binding,
+        // KMK -->
+        coverRatio,
+        // KMK <--
+    )
 
     // KMK -->
     // val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
@@ -344,9 +357,25 @@ private fun resetTags(
     }
 }
 
-private fun loadCover(manga: Manga, binding: EditMangaDialogBinding) {
-    binding.mangaCover.load(manga) {
-        transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+private fun loadCover(
+    manga: Manga,
+    binding: EditMangaDialogBinding,
+    // KMK -->
+    coverRatio: MutableFloatState,
+    // KMK <--
+) {
+    // KMK -->
+    if (coverRatio.floatValue <= RatioSwitchToPanorama) {
+        binding.mangaCover.visibility = View.GONE
+        binding.mangaCoverPanorama.visibility = View.VISIBLE
+        binding.mangaCoverPanorama.load(manga) {
+            transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+        }
+    } else {
+        // KMK <--
+        binding.mangaCover.load(manga) {
+            transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+        }
     }
 }
 

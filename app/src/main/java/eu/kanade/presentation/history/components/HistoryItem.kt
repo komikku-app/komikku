@@ -14,6 +14,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +26,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.util.lang.toTimestampString
@@ -31,6 +36,9 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 private val HistoryItemHeight = 96.dp
 
@@ -41,6 +49,9 @@ fun HistoryItem(
     onClickResume: () -> Unit,
     onClickDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    // KMK <--
 ) {
     Row(
         modifier = modifier
@@ -51,19 +62,42 @@ fun HistoryItem(
     ) {
         // KMK -->
         val mangaCover = history.coverData
+        val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+        val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
-        // KMK <--
-        MangaCover.Book(
-            modifier = Modifier.fillMaxHeight(),
-            data = mangaCover,
-            onClick = onClickCover,
-            // KMK -->
-            bgColor = bgColor,
-            tint = onBgColor,
-            size = MangaCover.Size.Medium,
+        if (usePanoramaCover && coverIsWide) {
+            MangaCover.Panorama(
+                modifier = Modifier.fillMaxHeight(),
+                data = mangaCover,
+                onClick = onClickCover,
+                // KMK -->
+                bgColor = bgColor,
+                tint = onBgColor,
+                size = MangaCover.Size.Medium,
+                onCoverLoaded = { _, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                },
+                // KMK <--
+            )
+        } else {
             // KMK <--
-        )
+            MangaCover.Book(
+                modifier = Modifier.fillMaxHeight(),
+                data = mangaCover,
+                onClick = onClickCover,
+                // KMK -->
+                bgColor = bgColor,
+                tint = onBgColor,
+                size = MangaCover.Size.Medium,
+                onCoverLoaded = { _, result ->
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                },
+                // KMK <--
+            )
+        }
         Column(
             modifier = Modifier
                 .weight(1f)

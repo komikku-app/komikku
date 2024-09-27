@@ -272,6 +272,13 @@ object SettingsAppearanceScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_category_fork),
             preferenceItems = persistentListOf(
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.usePanoramaCover(),
+                    title = stringResource(KMR.strings.pref_use_panorama_cover),
+                    subtitle = stringResource(KMR.strings.pref_use_panorama_cover_summary),
+                ),
+                // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.expandFilters(),
                     title = stringResource(SYMR.strings.toggle_expand_search_filters),

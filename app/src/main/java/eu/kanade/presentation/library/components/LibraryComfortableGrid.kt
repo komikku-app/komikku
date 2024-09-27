@@ -21,6 +21,9 @@ internal fun LibraryComfortableGrid(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
+    // KMK -->
+    usePanoramaCover: Boolean? = null,
+    // KMK <--
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -67,6 +70,9 @@ internal fun LibraryComfortableGrid(
                 } else {
                     null
                 },
+                // KMK -->
+                panoramaCover = usePanoramaCover,
+                // KMK <--
             )
         }
     }

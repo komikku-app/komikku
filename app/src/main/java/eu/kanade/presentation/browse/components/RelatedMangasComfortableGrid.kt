@@ -35,6 +35,7 @@ fun RelatedMangasComfortableGrid(
     onKeywordClick: (String) -> Unit,
     onKeywordLongClick: (String) -> Unit,
     selection: List<Manga>,
+    usePanoramaCover: Boolean? = null,
 ) {
     FastScrollLazyVerticalGrid(
         columns = columns,
@@ -89,6 +90,7 @@ fun RelatedMangasComfortableGrid(
                         onLongClick = { onMangaLongClick(manga) },
                         isSelected = selection.fastAny { selected -> selected.id == manga.id },
                         metadata = null,
+                        usePanoramaCover = usePanoramaCover,
                     )
                 }
             }

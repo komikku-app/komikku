@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import eu.kanade.tachiyomi.R
 import tachiyomi.domain.manga.model.Manga
@@ -35,6 +36,10 @@ import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 enum class MangaCover(val ratio: Float) {
     Square(1f / 1f),
     Book(2f / 3f),
+
+    // KMK -->
+    Panorama(3f / 2f),
+    // KMK <--
     ;
 
     enum class Size {
@@ -54,9 +59,10 @@ enum class MangaCover(val ratio: Float) {
         alpha: Float = 1f,
         bgColor: Color? = null,
         @ColorInt tint: Int? = null,
-        /** Perform action when cover loaded, specifically generating color map */
-        onCoverLoaded: ((DomainMangaCover) -> Unit)? = null,
+        /** Perform action when cover loaded, specifically generating color map. If the cover doesn't update, it won't be called */
+        onCoverLoaded: ((DomainMangaCover, result: AsyncImagePainter.State.Success) -> Unit)? = null,
         size: Size = Size.Normal,
+        scale: ContentScale = ContentScale.Crop,
         // KMK <--
     ) {
         // KMK -->
@@ -128,19 +134,19 @@ enum class MangaCover(val ratio: Float) {
                     )
                 }
             },
-            onSuccess = {
+            onSuccess = { result ->
                 succeed = true
                 if (onCoverLoaded != null) {
                     when (data) {
-                        is Manga -> onCoverLoaded(data.asMangaCover())
-                        is DomainMangaCover -> onCoverLoaded(data)
+                        is Manga -> onCoverLoaded(data.asMangaCover(), result)
+                        is DomainMangaCover -> onCoverLoaded(data, result)
                     }
                 }
             },
             // KMK <--
             contentDescription = contentDescription,
             modifier = modifierColored,
-            contentScale = ContentScale.Crop,
+            contentScale = scale,
         )
     }
 }
@@ -193,6 +199,8 @@ enum class MangaCoverHide(private val ratio: Float) {
         }
     }
 }
+
+internal val RatioSwitchToPanorama = 0.75f
 
 internal val CoverPlaceholderColor = Color(0x1F888888)
 internal val CoverPlaceholderOnBgColor = Color(0x8F888888)

@@ -20,6 +20,17 @@
             android:background="@drawable/rounded_rectangle"
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher" />
+        <!-- KMK -> -->
+        <ImageView
+            android:id="@+id/manga_cover_panorama"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:visibility="gone"
+            android:adjustViewBounds="true"
+            android:background="@drawable/rounded_rectangle"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+        <!-- KMK <- -->
     </FrameLayout>
 
     <LinearLayout
@@ -134,25 +145,32 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp" />
 
-    <Button
-        android:id="@+id/reset_tags"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/reset_tags"
-        android:textAllCaps="false" />
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/reset_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/reset_info"
-        android:textAllCaps="false" />
+        <Button
+            android:id="@+id/reset_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/reset_tags"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/reset_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/reset_info"
+            android:textAllCaps="false" />
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

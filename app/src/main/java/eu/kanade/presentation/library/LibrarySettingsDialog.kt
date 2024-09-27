@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.util.fastForEach
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.R
@@ -45,6 +46,8 @@ import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TriStateItem
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun LibrarySettingsDialog(
@@ -255,8 +258,11 @@ private fun ColumnScope.SortPage(
 private val displayModes = listOf(
     MR.strings.action_display_grid to LibraryDisplayMode.CompactGrid,
     MR.strings.action_display_comfortable_grid to LibraryDisplayMode.ComfortableGrid,
-    MR.strings.action_display_cover_only_grid to LibraryDisplayMode.CoverOnlyGrid,
     MR.strings.action_display_list to LibraryDisplayMode.List,
+    MR.strings.action_display_cover_only_grid to LibraryDisplayMode.CoverOnlyGrid,
+    // KMK -->
+    KMR.strings.action_display_comfortable_grid_panorama to LibraryDisplayMode.ComfortableGridPanorama,
+    // KMK <--
 )
 
 @Suppress("UnusedReceiverParameter")
@@ -265,14 +271,22 @@ private fun ColumnScope.DisplayPage(
     screenModel: LibrarySettingsScreenModel,
 ) {
     val displayMode by screenModel.libraryPreferences.displayMode().collectAsState()
+    // KMK -->
+    val usePanoramaCover by lazy { Injekt.get<UiPreferences>().usePanoramaCover() }
+    // KMK <--
     SettingsChipRow(MR.strings.action_display_mode) {
-        displayModes.map { (titleRes, mode) ->
-            FilterChip(
-                selected = displayMode == mode,
-                onClick = { screenModel.setDisplayMode(mode) },
-                label = { Text(stringResource(titleRes)) },
-            )
-        }
+        displayModes
+            .filterNot {
+                it.second == LibraryDisplayMode.ComfortableGridPanorama &&
+                    usePanoramaCover.collectAsState().value
+            }
+            .map { (titleRes, mode) ->
+                FilterChip(
+                    selected = displayMode == mode,
+                    onClick = { screenModel.setDisplayMode(mode) },
+                    label = { Text(stringResource(titleRes)) },
+                )
+            }
     }
 
     if (displayMode != LibraryDisplayMode.List) {

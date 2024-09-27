@@ -25,6 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,18 +36,24 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.MangaCoverHide
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import exh.debug.DebugToggles
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.selectedBackground
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import tachiyomi.domain.manga.model.MangaCover as MangaCoverModel
 
 object CommonMangaItemDefaults {
@@ -82,9 +92,13 @@ fun MangaCompactGridItem(
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    fitToPanoramaCover: Boolean = false,
     // KMK <--
 ) {
     // KMK -->
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
     val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
     val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
@@ -104,22 +118,58 @@ fun MangaCompactGridItem(
                         tint = onBgColor,
                     )
                 } else {
-                    // KMK <--
-                    MangaCover.Book(
-                        modifier = Modifier
+                    if (fitToPanoramaCover && usePanoramaCover && coverIsWide) {
+                        MangaCover.Panorama(
+                            modifier = Modifier
+                                // KMK -->
+                                // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                // KMK <--
+                                .fillMaxWidth(),
+                            data = coverData,
                             // KMK -->
-                            // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                            alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
+                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                            tint = onBgColor,
+                            onCoverLoaded = { _, result ->
+                                val image = result.result.image
+                                coverRatio.floatValue = image.height.toFloat() / image.width
+                            },
                             // KMK <--
-                            .fillMaxWidth(),
-                        data = coverData,
-                        // KMK -->
-                        alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
-                        tint = onBgColor,
+                        )
+                    } else {
                         // KMK <--
-                    )
+                        MangaCover.Book(
+                            modifier = Modifier
+                                // KMK -->
+                                // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                // KMK <--
+                                .fillMaxWidth(),
+                            data = coverData,
+                            // KMK -->
+                            alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
+                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                            tint = onBgColor,
+                            onCoverLoaded = { _, result ->
+                                val image = result.result.image
+                                coverRatio.floatValue = image.height.toFloat() / image.width
+                            },
+                            scale = if (usePanoramaCover && coverIsWide) {
+                                ContentScale.Fit
+                            } else {
+                                ContentScale.Crop
+                            },
+                            // KMK <--
+                        )
+                    }
                 }
             },
+            // KMK -->
+            ratio = if (fitToPanoramaCover && usePanoramaCover && coverIsWide) {
+                MangaCover.Panorama.ratio
+            } else {
+                MangaCover.Book.ratio
+            },
+            // KMK <--
             badgesStart = coverBadgeStart,
             badgesEnd = coverBadgeEnd,
             content = {
@@ -208,14 +258,19 @@ fun MangaComfortableGridItem(
     isSelected: Boolean = false,
     titleMaxLines: Int = 2,
     coverAlpha: Float = 1f,
-    coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
-    coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
+    coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
+    coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    panoramaCover: Boolean?,
+    fitToPanoramaCover: Boolean = false,
     // KMK <--
 ) {
     // KMK -->
+    val usePanoramaCover = panoramaCover ?: Injekt.get<UiPreferences>().usePanoramaCover().collectAsState().value
+    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
     val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
     val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
@@ -236,22 +291,58 @@ fun MangaComfortableGridItem(
                             tint = onBgColor,
                         )
                     } else {
-                        // KMK <--
-                        MangaCover.Book(
-                            modifier = Modifier
+                        if (fitToPanoramaCover && usePanoramaCover && coverIsWide) {
+                            MangaCover.Panorama(
+                                modifier = Modifier
+                                    // KMK -->
+                                    // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                    // KMK <--
+                                    .fillMaxWidth(),
+                                data = coverData,
                                 // KMK -->
-                                // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
+                                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                                tint = onBgColor,
+                                onCoverLoaded = { _, result ->
+                                    val image = result.result.image
+                                    coverRatio.floatValue = image.height.toFloat() / image.width
+                                },
                                 // KMK <--
-                                .fillMaxWidth(),
-                            data = coverData,
-                            // KMK -->
-                            alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
-                            tint = onBgColor,
+                            )
+                        } else {
                             // KMK <--
-                        )
+                            MangaCover.Book(
+                                modifier = Modifier
+                                    // KMK -->
+                                    // .alpha(if (isSelected) GridSelectedCoverAlpha else coverAlpha)
+                                    // KMK <--
+                                    .fillMaxWidth(),
+                                data = coverData,
+                                // KMK -->
+                                alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
+                                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                                tint = onBgColor,
+                                onCoverLoaded = { _, result ->
+                                    val image = result.result.image
+                                    coverRatio.floatValue = image.height.toFloat() / image.width
+                                },
+                                scale = if (usePanoramaCover && coverIsWide) {
+                                    ContentScale.Fit
+                                } else {
+                                    ContentScale.Crop
+                                },
+                                // KMK <--
+                            )
+                        }
                     }
                 },
+                // KMK -->
+                ratio = if (fitToPanoramaCover && usePanoramaCover && coverIsWide) {
+                    MangaCover.Panorama.ratio
+                } else {
+                    MangaCover.Book.ratio
+                },
+                // KMK <--
                 badgesStart = coverBadgeStart,
                 badgesEnd = coverBadgeEnd,
                 content = {
@@ -285,6 +376,9 @@ fun MangaComfortableGridItem(
 private fun MangaGridCover(
     modifier: Modifier = Modifier,
     cover: @Composable BoxScope.() -> Unit = {},
+    // KMK -->
+    ratio: Float = MangaCover.Book.ratio,
+    // KMK <--
     badgesStart: (@Composable RowScope.() -> Unit)? = null,
     badgesEnd: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable (BoxScope.() -> Unit)? = null,
@@ -292,7 +386,7 @@ private fun MangaGridCover(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(MangaCover.Book.ratio),
+            .aspectRatio(ratio),
     ) {
         cover()
         content?.invoke(this)
