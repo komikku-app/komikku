@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Εμφάνιση προτάσεων πηγαίου ιστοτόπου κατά την προβολή της καταχώρησης</string>
   <string name="related_mangas_website_suggestions">Προτάσεις Ιστοσελίδας</string>
   <string name="action_hide">Απόκρυψη</string>
-  <string name="action_hide_hidden_categories">Απόκρυψη κρυφών κατηγοριών</string>
   <string name="action_sort_feed">Ταξινόμηση ροών</string>
   <string name="sort_feed_confirmation">Θα θέλατε να ταξινομήσετε τις ζωοτροφές αλφαβητικά?</string>
   <string name="pref_custom_theme_style">Προσαρμοσμένο στυλ θέματος</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Εμφάνιση κρυφών κατηγοριών</string>
+  <string name="pref_use_panorama_cover">Κάλυψη Πανοράματος</string>
+  <string name="pref_use_panorama_cover_summary">Εμφάνιση εξωφύλλου σε λειτουργία τοπίου αν είναι μια ευρεία εικόνα</string>
+  <string name="action_display_comfortable_grid_panorama">Πανόραμα άνετο πλέγμα</string>
 </resources>

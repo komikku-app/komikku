@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Mostrar sugerencias del sitio web fuente mientras se visualiza la entrada</string>
   <string name="related_mangas_website_suggestions">Sugerencias de sitio web</string>
   <string name="action_hide">Ocultar</string>
-  <string name="action_hide_hidden_categories">Ocultar categorías ocultas</string>
   <string name="action_sort_feed">Ordenar fuentes</string>
   <string name="sort_feed_confirmation">¿Le gustaría ordenar los alimentos alfabéticamente?</string>
   <string name="pref_custom_theme_style">Estilo de tema personalizado</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Mostrar categorías ocultas</string>
+  <string name="pref_use_panorama_cover">Portada Panorama</string>
+  <string name="pref_use_panorama_cover_summary">Mostrar la portada en modo apaisado si es una imagen ancha</string>
+  <string name="action_display_comfortable_grid_panorama">Cuadrícula panorámica cómoda</string>
 </resources>

@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">إظهار اقتراحات المصدر - الموقع أثناء عرض الإدخال</string>
   <string name="related_mangas_website_suggestions">اقتراحات الموقع</string>
   <string name="action_hide">إخفاء</string>
-  <string name="action_hide_hidden_categories">إخفاء الفئات المخفية</string>
   <string name="action_sort_feed">فرز الخلاصات</string>
   <string name="sort_feed_confirmation">هل ترغب في فرز التغذية أبجدياً؟</string>
   <string name="pref_custom_theme_style">نمط موضوع مخصص</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">إظهار الفئات المخفية</string>
+  <string name="pref_use_panorama_cover">غلاف بانوراما</string>
+  <string name="pref_use_panorama_cover_summary">إظهار الغلاف في الوضع الأفقي إذا كان صورة واسعة</string>
+  <string name="action_display_comfortable_grid_panorama">شبكة بانوراما المريحة</string>
 </resources>

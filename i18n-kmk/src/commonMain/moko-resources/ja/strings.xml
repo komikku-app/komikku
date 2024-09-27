@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">エントリを表示中にソースウェブサイトの提案を表示する</string>
   <string name="related_mangas_website_suggestions">ウェブサイトの提案</string>
   <string name="action_hide">非表示</string>
-  <string name="action_hide_hidden_categories">非表示のカテゴリを非表示</string>
   <string name="action_sort_feed">フィードを並べ替える</string>
   <string name="sort_feed_confirmation">フィードをアルファベット順に並べ替えますか？</string>
   <string name="pref_custom_theme_style">カスタムテーマスタイル</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">非表示のカテゴリを表示</string>
+  <string name="pref_use_panorama_cover">パノラマカバー</string>
+  <string name="pref_use_panorama_cover_summary">横向き時にカバーを表示する</string>
+  <string name="action_display_comfortable_grid_panorama">パノラマ快適なグリッド</string>
 </resources>

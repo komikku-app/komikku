@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Suggesties van bron-website weergeven tijdens het bekijken van invoer</string>
   <string name="related_mangas_website_suggestions">Website Suggesties</string>
   <string name="action_hide">Verbergen</string>
-  <string name="action_hide_hidden_categories">Verborgen categorieën verbergen</string>
   <string name="action_sort_feed">Sorteer feeds</string>
   <string name="sort_feed_confirmation">Wilt u het voeder alfabetisch sorteren?</string>
   <string name="pref_custom_theme_style">Aangepast thema</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Toon verborgen categorieën</string>
+  <string name="pref_use_panorama_cover">Panorama Omslag</string>
+  <string name="pref_use_panorama_cover_summary">Toon omslag in liggende modus als het breed beeld is</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama comfortabel raster</string>
 </resources>

@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Pokaż sugestie źródłowe podczas przeglądania wpisu</string>
   <string name="related_mangas_website_suggestions">Sugestie strony</string>
   <string name="action_hide">Ukryj</string>
-  <string name="action_hide_hidden_categories">Ukryj ukryte kategorie</string>
   <string name="action_sort_feed">Sortuj kanały</string>
   <string name="sort_feed_confirmation">Czy chcesz posortować kanały alfabetycznie?</string>
   <string name="pref_custom_theme_style">Niestandardowy styl motywu</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Pokaż ukryte kategorie</string>
+  <string name="pref_use_panorama_cover">Pokładka panorama</string>
+  <string name="pref_use_panorama_cover_summary">Pokaż okładkę w trybie poziomym, jeśli jest szerokim obrazem</string>
+  <string name="action_display_comfortable_grid_panorama">Siatka wygodna panorama</string>
 </resources>

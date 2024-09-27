@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Arată sugestiile site-ului sursă în timpul vizualizării intrării</string>
   <string name="related_mangas_website_suggestions">Sugestii website</string>
   <string name="action_hide">Ascunde</string>
-  <string name="action_hide_hidden_categories">Ascunde categoriile ascunse</string>
   <string name="action_sort_feed">Sortare fluxuri</string>
   <string name="sort_feed_confirmation">Doriți să sortați feed-urile în mod alfabetic?</string>
   <string name="pref_custom_theme_style">Stil temă personalizată</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Arată categoriile ascunse</string>
+  <string name="pref_use_panorama_cover">Copertă panoramă</string>
+  <string name="pref_use_panorama_cover_summary">Arată coperta în modul peisaj dacă este o imagine largă</string>
+  <string name="action_display_comfortable_grid_panorama">Rețea confortabilă a panoramei</string>
 </resources>

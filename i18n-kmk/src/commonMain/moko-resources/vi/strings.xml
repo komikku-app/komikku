@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Hiển thị các truyện được gợi ý từ website trong khi đang duyệt truyện</string>
   <string name="related_mangas_website_suggestions">Gợi ý của website</string>
   <string name="action_hide">Ẩn</string>
-  <string name="action_hide_hidden_categories">Ẩn các danh mục</string>
   <string name="action_sort_feed">Sắp xếp nguồn cấp dữ liệu</string>
   <string name="sort_feed_confirmation">Bạn có muốn sắp xếp các nguồn cấp dữ liệu theo thứ tự bảng chữ cái không?</string>
   <string name="pref_custom_theme_style">Phong cách của chủ đề tùy chỉnh</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Cánh đồng xuân</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Hiện các danh mục ẩn</string>
+  <string name="pref_use_panorama_cover">Ảnh bìa toàn cảnh</string>
+  <string name="pref_use_panorama_cover_summary">Hiển thị ảnh bìa dạng ngang nếu là hình ảnh rộng</string>
+  <string name="action_display_comfortable_grid_panorama">Lưới toàn cảnh</string>
 </resources>

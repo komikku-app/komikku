@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">查看條目時顯示來源網站的建議</string>
   <string name="related_mangas_website_suggestions">網站建議</string>
   <string name="action_hide">隱藏</string>
-  <string name="action_hide_hidden_categories">隱藏隱藏的分類</string>
   <string name="action_sort_feed">排序訂閱</string>
   <string name="sort_feed_confirmation">您想要將訂閱來源按字母順序排列嗎？</string>
   <string name="pref_custom_theme_style">自訂主題風格</string>
@@ -96,6 +95,10 @@
   <string name="custom_theme_palette_spectral">光譜</string>
   <string name="custom_theme_palette_patagonia">巴塔哥尼亞</string>
   <string name="custom_theme_palette_springfield">春田</string>
-  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_lcd">液晶顯示器</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">顯示隱藏的分類</string>
+  <string name="pref_use_panorama_cover">全景封面</string>
+  <string name="pref_use_panorama_cover_summary">如果是寬影像，則以橫向模式顯示封面</string>
+  <string name="action_display_comfortable_grid_panorama">全景舒適格</string>
 </resources>

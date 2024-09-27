@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Afficher les suggestions du site web source lors de la visualisation de l\'entrée</string>
   <string name="related_mangas_website_suggestions">Suggestions de site web</string>
   <string name="action_hide">Cacher</string>
-  <string name="action_hide_hidden_categories">Cacher les catégories cachées</string>
   <string name="action_sort_feed">Trier les flux</string>
   <string name="sort_feed_confirmation">Souhaitez-vous trier les flux par ordre alphabétique?</string>
   <string name="pref_custom_theme_style">Style de thème personnalisé</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">Ecran LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Afficher les catégories masquées</string>
+  <string name="pref_use_panorama_cover">Couverture Panorama</string>
+  <string name="pref_use_panorama_cover_summary">Afficher la couverture en mode paysage s\'il s\'agit d\'une image large</string>
+  <string name="action_display_comfortable_grid_panorama">Grille confortable Panorama</string>
 </resources>

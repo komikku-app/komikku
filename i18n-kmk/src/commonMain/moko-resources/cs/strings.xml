@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Zobrazit návrhy zdrojových stránek při prohlížení záznamu</string>
   <string name="related_mangas_website_suggestions">Návrhy webových stránek</string>
   <string name="action_hide">Skrýt</string>
-  <string name="action_hide_hidden_categories">Skrýt skryté kategorie</string>
   <string name="action_sort_feed">Řadit kanály</string>
   <string name="sort_feed_confirmation">Chcete seřadit kanály abecedně?</string>
   <string name="pref_custom_theme_style">Vlastní styl motivu</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Zobrazit skryté kategorie</string>
+  <string name="pref_use_panorama_cover">Kryt Panoramy</string>
+  <string name="pref_use_panorama_cover_summary">Zobrazit obal v režimu na šířku, pokud je to široký obrázek</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama pohodlná mřížka</string>
 </resources>

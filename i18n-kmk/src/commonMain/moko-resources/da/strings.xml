@@ -79,7 +79,6 @@
   <string name="pref_source_related_mangas_summary">Vis forslag til source-website under visning af posten</string>
   <string name="related_mangas_website_suggestions">Websted Forslag</string>
   <string name="action_hide">Skjul</string>
-  <string name="action_hide_hidden_categories">Skjul skjulte kategorier</string>
   <string name="action_sort_feed">Sortér feeds</string>
   <string name="sort_feed_confirmation">Ønsker du at sortere feeds alfabetisk?</string>
   <string name="pref_custom_theme_style">Tilpasset temastil</string>
@@ -98,4 +97,8 @@
   <string name="custom_theme_palette_springfield">Springfield</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Vis skjulte kategorier</string>
+  <string name="pref_use_panorama_cover">Panoramaomslag</string>
+  <string name="pref_use_panorama_cover_summary">Vis omslag i liggende tilstand, hvis det er et bredt billede</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama komfortabelt gitter</string>
 </resources>
