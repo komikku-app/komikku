@@ -67,12 +67,15 @@ fun WebViewScreenContent(
     var currentUrl by remember { mutableStateOf(url) }
     var showCloudflareHelp by remember { mutableStateOf(false) }
 
+    // KMK -->
     val filter = AdFilter.get()
     val filterViewModel = filter.viewModel
     val lifecycleOwner = LocalLifecycleOwner.current
+    // KMK <--
 
     val webClient = remember {
         object : AccompanistWebViewClient() {
+            // KMK -->
             override fun shouldInterceptRequest(
                 view: WebView?,
                 request: WebResourceRequest?
@@ -80,9 +83,12 @@ fun WebViewScreenContent(
                 val result = filter.shouldIntercept(view!!, request!!)
                 return result.resourceResponse
             }
+            // KMK <--
 
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                // KMK -->
                 filter.performScript(view, url)
+                // KMK <--
                 super.onPageStarted(view, url, favicon)
                 url?.let {
                     currentUrl = it
@@ -229,6 +235,7 @@ fun WebViewScreenContent(
             onCreated = { webView ->
                 webView.setDefaultSettings()
 
+                // KMK -->
                 // Setup AdblockAndroid for your WebView.
                 filter.setupWebView(webView)
 
@@ -244,6 +251,7 @@ fun WebViewScreenContent(
                     )
                     for ((key, value) in map) {
                         val subscription = filterViewModel.addFilter(key, value)
+                        // filterViewModel.download(key)
                         filterViewModel.download(subscription.id)
                     }
                 }
@@ -253,6 +261,7 @@ fun WebViewScreenContent(
                     // You need to refresh the page manually to make the changes take effect.
                     webView.clearCache(false)
                 }
+                // KMK <--
 
                 // Debug mode (chrome://inspect/#devices)
                 if (BuildConfig.DEBUG &&
