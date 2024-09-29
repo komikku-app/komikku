@@ -170,6 +170,16 @@
             android:exported="false" />
 
         <activity
+            android:name="sample.main.AdblockWebviewActivity"
+            android:configChanges="uiMode|orientation|screenSize"
+            android:exported="false" />
+
+        <activity
+            android:name="sample.settings.SettingsActivity"
+            android:configChanges="uiMode|orientation|screenSize"
+            android:exported="false" />
+
+        <activity
             android:name=".extension.util.ExtensionInstallActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />

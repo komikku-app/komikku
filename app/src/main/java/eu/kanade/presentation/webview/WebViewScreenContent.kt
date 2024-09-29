@@ -3,6 +3,7 @@ package eu.kanade.presentation.webview
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kevinnzou.web.AccompanistWebViewClient
 import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
@@ -39,6 +41,7 @@ import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import io.github.edsuns.adfilter.AdFilter
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
@@ -64,9 +67,22 @@ fun WebViewScreenContent(
     var currentUrl by remember { mutableStateOf(url) }
     var showCloudflareHelp by remember { mutableStateOf(false) }
 
+    val filter = AdFilter.get()
+    val filterViewModel = filter.viewModel
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val webClient = remember {
         object : AccompanistWebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val result = filter.shouldIntercept(view!!, request!!)
+                return result.resourceResponse
+            }
+
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                filter.performScript(view, url)
                 super.onPageStarted(view, url, favicon)
                 url?.let {
                     currentUrl = it
@@ -212,6 +228,31 @@ fun WebViewScreenContent(
             navigator = navigator,
             onCreated = { webView ->
                 webView.setDefaultSettings()
+
+                // Setup AdblockAndroid for your WebView.
+                filter.setupWebView(webView)
+
+                // Add filter list subscriptions on first installation.
+                if (!filter.hasInstallation) {
+                    val map = mapOf(
+                        "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
+                        "EasyPrivacy Lite" to "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
+                        "AdGuard Tracking Protection" to "https://filters.adtidy.org/extension/chromium/filters/3.txt",
+                        "AdGuard Annoyances" to "https://filters.adtidy.org/extension/chromium/filters/14.txt",
+                        "AdGuard Chinese" to "https://filters.adtidy.org/extension/chromium/filters/224.txt",
+                        "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt"
+                    )
+                    for ((key, value) in map) {
+                        val subscription = filterViewModel.addFilter(key, value)
+                        filterViewModel.download(subscription.id)
+                    }
+                }
+
+                filterViewModel.onDirty.observe(lifecycleOwner) {
+                    // Clear cache when there are changes to the filter.
+                    // You need to refresh the page manually to make the changes take effect.
+                    webView.clearCache(false)
+                }
 
                 // Debug mode (chrome://inspect/#devices)
                 if (BuildConfig.DEBUG &&

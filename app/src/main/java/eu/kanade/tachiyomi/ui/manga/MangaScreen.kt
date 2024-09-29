@@ -97,6 +97,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import sample.main.AdblockWebviewActivity
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
@@ -571,7 +572,8 @@ class MangaScreen(
     }
 
     private fun openChapter(context: Context, chapter: Chapter) {
-        context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
+        context.startActivity(Intent(context, AdblockWebviewActivity::class.java))
+//        context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
     }
 
     @Suppress("LocalVariableName")

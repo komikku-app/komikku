@@ -283,6 +283,12 @@ dependencies {
     implementation(libs.haze)
     implementation(compose.colorpicker)
     implementation(projects.flagkit)
+//    implementation(projects.adFilter)
+//    implementation(projects.adblockClient)
+    implementation(files("../../AdblockAndroid/ad-filter/build/outputs/aar/ad-filter-debug.aar"))
+    implementation(files("../../AdblockAndroid/adblock-client/build/outputs/aar/adblock-client-debug.aar"))
+//    implementation("com.github.cuong-tran:AdblockAndroid:3718bf3dcd")
+    implementation ("com.github.Edsuns:SmoothProgressAnimator:1.0")
     // KMK <--
 
     // Logging

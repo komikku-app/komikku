@@ -65,6 +65,7 @@ import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
 import exh.log.XLogLogcatLogger
 import exh.log.xLogD
+import io.github.edsuns.adfilter.AdFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -199,6 +200,38 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         }
 
         initializeMigrator()
+
+        // Start ad-filter.
+        val filter = AdFilter.create(applicationContext)
+        val filterViewModel = filter.viewModel
+
+        if (!filter.hasInstallation) {
+            val map = mapOf(
+                "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
+                "EasyPrivacy Lite" to "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
+                "AdGuard Tracking Protection" to "https://filters.adtidy.org/extension/chromium/filters/3.txt",
+                "AdGuard Annoyances" to "https://filters.adtidy.org/extension/chromium/filters/14.txt",
+                "AdGuard Chinese" to "https://filters.adtidy.org/extension/chromium/filters/224.txt",
+                "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt"
+            )
+            for ((key, value) in map) {
+                filterViewModel.addFilter(key, value)
+                filterViewModel.download(key)
+            }
+//            AlertDialog.Builder(this)
+//                .setTitle("Download filters")
+//                .setMessage("Downloading filters list")
+//                .setCancelable(true)
+//                .setPositiveButton(
+//                    android.R.string.ok
+//                ) { _, _ ->
+//                    val filters = filterViewModel.filters.value ?: return@setPositiveButton
+//                    for ((key, _) in filters) {
+//                        filterViewModel.download(key)
+//                    }
+//                }
+//                .show()
+        }
     }
 
     private fun initializeMigrator() {
