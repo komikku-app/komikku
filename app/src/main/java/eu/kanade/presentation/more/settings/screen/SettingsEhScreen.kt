@@ -43,10 +43,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat.startActivity
+import cafe.adriel.voyager.navigator.LocalNavigator
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
@@ -270,19 +270,21 @@ object SettingsEhScreen : SearchableSettings {
     @Composable
     fun watchedTags(exhentaiEnabled: Boolean): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
+        // KMK -->
+        val navigator = LocalNavigator.current
+        // KMK <--
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(SYMR.strings.watched_tags),
             subtitle = stringResource(SYMR.strings.watched_tags_summary),
             onClick = {
-                startActivity(
-                    context,
-                    WebViewActivity.newIntent(
-                        context,
+                // KMK -->
+                navigator?.push(
+                    WebViewScreen(
                         url = "https://exhentai.org/mytags",
-                        title = context.stringResource(SYMR.strings.watched_tags_exh),
+                        initialTitle = context.stringResource(SYMR.strings.watched_tags_exh),
                     ),
-                    null,
                 )
+                // KMK <--
             },
             enabled = exhentaiEnabled,
         )
