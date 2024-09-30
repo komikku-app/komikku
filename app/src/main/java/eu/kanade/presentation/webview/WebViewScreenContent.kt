@@ -19,6 +19,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,9 +40,11 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.ui.webview.AdFilterModel
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import io.github.edsuns.adfilter.AdFilter
+import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
@@ -58,6 +61,11 @@ fun WebViewScreenContent(
     onClearCookies: (String) -> Unit,
     headers: Map<String, String> = emptyMap(),
     onUrlChange: (String) -> Unit = {},
+    // KMK -->
+    adFilter: AdFilter,
+    adFilterViewModel: FilterViewModel,
+    adFilterModel: AdFilterModel,
+    // KMK <--
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
     val navigator = rememberWebViewNavigator()
@@ -68,9 +76,8 @@ fun WebViewScreenContent(
     var showCloudflareHelp by remember { mutableStateOf(false) }
 
     // KMK -->
-    val filter = AdFilter.get()
-    val filterViewModel = filter.viewModel
     val lifecycleOwner = LocalLifecycleOwner.current
+    val blockedCount by adFilterModel.blockedCount.collectAsState()
     // KMK <--
 
     val webClient = remember {
@@ -80,16 +87,18 @@ fun WebViewScreenContent(
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                val result = filter.shouldIntercept(view!!, request!!)
+                val result = adFilter.shouldIntercept(view!!, request!!)
+                adFilterModel.onShouldInterceptRequest(result)
                 return result.resourceResponse
             }
             // KMK <--
 
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-                // KMK -->
-                filter.performScript(view, url)
-                // KMK <--
                 super.onPageStarted(view, url, favicon)
+                // KMK -->
+                adFilterModel.onPageStarted(url)
+                adFilter.performScript(view, url)
+                // KMK <--
                 url?.let {
                     currentUrl = it
                     onUrlChange(it)
@@ -187,6 +196,12 @@ fun WebViewScreenContent(
                                         title = stringResource(MR.strings.pref_clear_cookies),
                                         onClick = { onClearCookies(currentUrl) },
                                     ),
+                                    // KMK -->
+                                    AppBar.OverflowAction(
+                                        title = "AdBlock" + " (${blockedCount})",
+                                        onClick = { onClearCookies(currentUrl) },
+                                    ),
+                                    // KMK <--
                                 ),
                             )
                         },
@@ -237,10 +252,10 @@ fun WebViewScreenContent(
 
                 // KMK -->
                 // Setup AdblockAndroid for your WebView.
-                filter.setupWebView(webView)
+                adFilter.setupWebView(webView)
 
                 // Add filter list subscriptions on first installation.
-                if (!filter.hasInstallation) {
+                if (!adFilter.hasInstallation) {
                     val map = mapOf(
                         "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
                         "EasyPrivacy Lite" to "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
@@ -250,13 +265,13 @@ fun WebViewScreenContent(
                         "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt"
                     )
                     for ((key, value) in map) {
-                        val subscription = filterViewModel.addFilter(key, value)
+                        val subscription = adFilterViewModel.addFilter(key, value)
                         // filterViewModel.download(key)
-                        filterViewModel.download(subscription.id)
+                        adFilterViewModel.download(subscription.id)
                     }
                 }
 
-                filterViewModel.onDirty.observe(lifecycleOwner) {
+                adFilterViewModel.onDirty.observe(lifecycleOwner) {
                     // Clear cache when there are changes to the filter.
                     // You need to refresh the page manually to make the changes take effect.
                     webView.clearCache(false)

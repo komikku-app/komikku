@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import eu.kanade.presentation.webview.WebViewScreenContent
 import eu.kanade.tachiyomi.R
@@ -18,6 +19,7 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
+import io.github.edsuns.adfilter.AdFilter
 import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import tachiyomi.core.common.util.system.logcat
@@ -68,6 +70,12 @@ class WebViewActivity : BaseActivity() {
         }
 
         setComposeContent {
+            // KMK -->
+            val adFilter = AdFilter.get()
+            val adFilterViewModel = adFilter.viewModel
+            val adFilterModel = remember { AdFilterModel(filterViewModel = adFilterViewModel) }
+            // KMK <--
+
             WebViewScreenContent(
                 onNavigateUp = { finish() },
                 initialTitle = intent.extras?.getString(TITLE_KEY),
@@ -77,6 +85,11 @@ class WebViewActivity : BaseActivity() {
                 onShare = this::shareWebpage,
                 onOpenInBrowser = this::openInBrowser,
                 onClearCookies = this::clearCookies,
+                // KMK -->
+                adFilter = adFilter,
+                adFilterViewModel = adFilterViewModel,
+                adFilterModel = adFilterModel,
+                // KMK <--
             )
         }
     }

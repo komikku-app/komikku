@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.webview
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -8,6 +9,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.webview.WebViewScreenContent
+import io.github.edsuns.adfilter.AdFilter
 
 class WebViewScreen(
     private val url: String,
@@ -24,6 +26,11 @@ class WebViewScreen(
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val screenModel = rememberScreenModel { WebViewScreenModel(sourceId) }
+        // KMK -->
+        val adFilter = AdFilter.get()
+        val adFilterViewModel = adFilter.viewModel
+        val adFilterModel = remember { AdFilterModel(filterViewModel = adFilterViewModel) }
+        // KMK <--
 
         WebViewScreenContent(
             onNavigateUp = { navigator.pop() },
@@ -34,6 +41,11 @@ class WebViewScreen(
             onShare = { screenModel.shareWebpage(context, it) },
             onOpenInBrowser = { screenModel.openInBrowser(context, it) },
             onClearCookies = screenModel::clearCookies,
+            // KMK -->
+            adFilter = adFilter,
+            adFilterViewModel = adFilterViewModel,
+            adFilterModel = adFilterModel,
+            // KMK <--
         )
     }
 }
