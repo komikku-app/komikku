@@ -17,11 +17,14 @@ class AdFilterModel(
 ) {
     private val mutableState = MutableStateFlow(State())
     val state: StateFlow<State> = mutableState.asStateFlow()
+    val dialog = MutableStateFlow<Dialog?>(null)
 
-    val blockedCount = MutableStateFlow("")
-    private val blockingInfoMap = MutableStateFlow(HashMap<String, BlockingInfo>())
+    private val _blockedCount = MutableStateFlow("")
+    val blockedCount = _blockedCount.asStateFlow()
+    private val _blockingInfoMap = MutableStateFlow(HashMap<String, BlockingInfo>())
+    val blockingInfoMapState = _blockingInfoMap.asStateFlow()
 
-    private var currentPageUrl : String? = null
+    var currentPageUrl : String? = null
 
     private var dirtyBlockingInfo = false
 
@@ -33,7 +36,7 @@ class AdFilterModel(
 
     private fun logRequest(filterResult: FilterResult) {
         val pageUrl = currentPageUrl ?: return
-        blockingInfoMap.update { data ->
+        _blockingInfoMap.update { data ->
             val blockingInfo = data[pageUrl] ?: BlockingInfo()
             data[pageUrl] = blockingInfo
             if (filterResult.shouldBlock) {
@@ -62,12 +65,12 @@ class AdFilterModel(
 
     private fun clearDirty() {
         if (dirtyBlockingInfo) {
-            blockingInfoMap.value.clear()
+            _blockingInfoMap.value.clear()
             dirtyBlockingInfo = false
         }
     }
 
-    private fun isFilterOn(): Boolean {
+    fun isFilterOn(): Boolean {
         val enabledFilterCount = filterViewModel.enabledFilterCount.value ?: 0
         return filterViewModel.isEnabled.value == true && enabledFilterCount > 0
     }
@@ -75,20 +78,34 @@ class AdFilterModel(
     private fun updateBlockedCount() {
         when {
             !isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
-                blockedCount.update { "OFF" }
+                _blockedCount.update { "OFF" }
             }
             dirtyBlockingInfo -> {
-                blockedCount.update { "-" }
+                _blockedCount.update { "-" }
             }
             else -> {
                 val blockedUrlMap =
-                    blockingInfoMap.value[currentPageUrl]?.blockedUrlMap
-                blockedCount.update { (blockedUrlMap?.size ?: 0).toString() }
+                    _blockingInfoMap.value[currentPageUrl]?.blockedUrlMap
+                _blockedCount.update { (blockedUrlMap?.size ?: 0).toString() }
             }
         }
     }
 
-    interface Dialog {
+    fun dismissDialog() {
+        dialog.update { null }
+    }
+
+    fun showFilterLogDialog() {
+        dialog.update { Dialog.FilterLogDialog }
+    }
+
+    fun showFilterSettingsDialog(onDismissDialog: (() -> Unit)? = null) {
+        dialog.update { Dialog.FilterSettingsDialog(onDismissDialog) }
+    }
+
+    sealed interface Dialog {
+        data object FilterLogDialog : Dialog
+        data class FilterSettingsDialog(val onDismissDialog: (() -> Unit)?) : Dialog
     }
 
     @Immutable
