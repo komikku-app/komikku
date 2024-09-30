@@ -1,11 +1,9 @@
 package eu.kanade.tachiyomi.ui.webview
 
 import android.webkit.WebViewClient
-import androidx.compose.runtime.Immutable
 import io.github.edsuns.adfilter.FilterResult
 import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import sample.main.blocking.BlockingInfo
@@ -15,8 +13,6 @@ import timber.log.Timber
 class AdFilterModel(
     val filterViewModel: FilterViewModel,
 ) {
-    private val mutableState = MutableStateFlow(State())
-    val state: StateFlow<State> = mutableState.asStateFlow()
     val dialog = MutableStateFlow<Dialog?>(null)
 
     private val _blockedCount = MutableStateFlow("")
@@ -108,9 +104,4 @@ class AdFilterModel(
         data object FilterLogDialog : Dialog
         data class FilterSettingsDialog(val onDismissDialog: (() -> Unit)?) : Dialog
     }
-
-    @Immutable
-    data class State(
-        val dialog: Dialog? = null,
-    )
 }
