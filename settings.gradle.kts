@@ -61,4 +61,6 @@ include(":presentation-widget")
 include(":source-api")
 include(":source-local")
 
+include(":ad-filter")
+include(":adblock-client")
 //includeBuild("../AdblockAndroid")
