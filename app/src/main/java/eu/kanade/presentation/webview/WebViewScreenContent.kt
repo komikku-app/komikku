@@ -96,7 +96,7 @@ fun WebViewScreenContent(
     // KMK -->
     val lifecycleOwner = LocalLifecycleOwner.current
     val blockedCount by adFilterModel.blockedCount.collectAsState()
-    val isAdblockEnabled by adFilterModel.isEnabled.collectAsState()
+    val isAdblockEnabled by adFilterViewModel.isEnabledStateFlow.collectAsState()
     // KMK <--
 
     val webClient = remember {
@@ -301,10 +301,6 @@ fun WebViewScreenContent(
                     // You need to refresh the page manually to make the changes take effect.
                     webView.clearCache(false)
                 }
-
-                adFilterViewModel.isEnabled.observe(lifecycleOwner) {
-                    adFilterModel.isEnabledObserver(it)
-                }
                 // KMK <--
 
                 // Debug mode (chrome://inspect/#devices)
@@ -455,7 +451,7 @@ fun FilterSettingsDialog(
     onDismissRequest: () -> Unit,
 ) {
     val filters = adFilterViewModel.filters.value
-    val isAdblockEnabled by adFilterModel.isEnabled.collectAsState()
+    val isAdblockEnabled by adFilterViewModel.isEnabledStateFlow.collectAsState()
 
     Scaffold (
         modifier = modifier,
@@ -496,13 +492,13 @@ fun FilterSettingsDialog(
                 subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
                 checked = isAdblockEnabled,
                 onCheckedChanged = {
-                    adFilterViewModel.isEnabled.value = it
+                    adFilterViewModel.isEnabled.postValue(it)
                 },
             )
             HorizontalDivider()
 
             filters?.let {
-                if (adFilterViewModel.isEnabled.value == true) {
+                if (isAdblockEnabled) {
                     ScrollbarLazyColumn(
                         modifier = Modifier
                             .padding(horizontal = MaterialTheme.padding.medium)

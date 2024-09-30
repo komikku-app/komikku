@@ -24,9 +24,6 @@ class AdFilterModel(
     private val _blockingInfoMap = MutableStateFlow(HashMap<String, BlockingInfo>())
     val blockingInfoMapState = _blockingInfoMap.asStateFlow()
 
-    private val _isEnabled = MutableStateFlow(filterViewModel.isEnabled.value ?: false)
-    val isEnabled = _isEnabled.asStateFlow()
-
     var currentPageUrl : String? = null
 
     private var dirtyBlockingInfo = false
@@ -73,6 +70,7 @@ class AdFilterModel(
         }
     }
 
+    /** Global Filter is enabled & at least 1 filter is on */
     private fun isFilterOn(): Boolean {
         val enabledFilterCount = filterViewModel.enabledFilterCount.value ?: 0
         return filterViewModel.isEnabled.value == true && enabledFilterCount > 0
@@ -115,8 +113,4 @@ class AdFilterModel(
     data class State(
         val dialog: Dialog? = null,
     )
-
-    fun isEnabledObserver(value: Boolean) {
-        _isEnabled.update { value }
-    }
 }
