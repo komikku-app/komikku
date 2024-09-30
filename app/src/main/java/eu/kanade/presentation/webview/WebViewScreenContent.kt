@@ -154,7 +154,7 @@ fun WebViewScreenContent(
                 Column {
                     AppBar(
                         title = state.pageTitle ?: initialTitle,
-                        subtitle = currentUrl,
+                        subtitle = "(${blockedCount}) " + currentUrl,
                         navigateUp = onNavigateUp,
                         navigationIcon = Icons.Outlined.Close,
                         actions = {
