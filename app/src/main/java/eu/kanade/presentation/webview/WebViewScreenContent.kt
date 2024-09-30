@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,9 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -59,7 +56,6 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.webview.AdFilterModel
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
@@ -72,7 +68,6 @@ import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.plus
 
 @Composable
 fun WebViewScreenContent(
@@ -101,6 +96,7 @@ fun WebViewScreenContent(
     // KMK -->
     val lifecycleOwner = LocalLifecycleOwner.current
     val blockedCount by adFilterModel.blockedCount.collectAsState()
+    val isAdblockEnabled by adFilterModel.isEnabled.collectAsState()
     // KMK <--
 
     val webClient = remember {
@@ -223,7 +219,7 @@ fun WebViewScreenContent(
                                     AppBar.OverflowAction(
                                         title = "AdBlock" + " (${blockedCount})",
                                         onClick = {
-                                            if (adFilterModel.isFilterOn()) {
+                                            if (isAdblockEnabled) {
                                                 adFilterModel.showFilterLogDialog()
                                             } else {
                                                 adFilterModel.showFilterSettingsDialog()
@@ -304,6 +300,10 @@ fun WebViewScreenContent(
                     // Clear cache when there are changes to the filter.
                     // You need to refresh the page manually to make the changes take effect.
                     webView.clearCache(false)
+                }
+
+                adFilterViewModel.isEnabled.observe(lifecycleOwner) {
+                    adFilterModel.isEnabledObserver(it)
                 }
                 // KMK <--
 
@@ -455,6 +455,8 @@ fun FilterSettingsDialog(
     onDismissRequest: () -> Unit,
 ) {
     val filters = adFilterViewModel.filters.value
+    val isAdblockEnabled by adFilterModel.isEnabled.collectAsState()
+
     Scaffold (
         modifier = modifier,
         topBar = {
@@ -487,39 +489,36 @@ fun FilterSettingsDialog(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding( paddingValues + PaddingValues(horizontal = MaterialTheme.padding.small)),
+                .padding(paddingValues),
         ) {
             SwitchPreferenceWidget(
                 title = stringResource(MR.strings.pref_incognito_mode),
                 subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
-                icon = ImageVector.vectorResource(R.drawable.ic_glasses_24dp),
-                checked = adFilterModel.isFilterOn(),
+                checked = isAdblockEnabled,
                 onCheckedChanged = {
                     adFilterViewModel.isEnabled.value = it
                 },
             )
-            HorizontalDivider(
-                modifier = Modifier
-                    .padding(vertical = MaterialTheme.padding.medium)
-            )
+            HorizontalDivider()
 
             filters?.let {
                 if (adFilterViewModel.isEnabled.value == true) {
                     ScrollbarLazyColumn(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.5f),
+                            .padding(horizontal = MaterialTheme.padding.medium)
+                            .padding(top = MaterialTheme.padding.small)
+                            .fillMaxSize(),
                     ) {
                         items(
                             items = filters.toList(),
-                            key = { "adblock-filters-${it.first.hashCode()}" },
+                            key = { "adblock-filters-${it.first}" },
                         ) { filter ->
                             Column(
                                 modifier = Modifier
                                     .padding(vertical = MaterialTheme.padding.small),
                             ) {
                                 Text(
-                                    text = "${filter.first} (${filter.second.filtersCount})",
+                                    text = "${filter.second.name} (${filter.second.filtersCount})",
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                                 Text(
