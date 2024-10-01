@@ -178,7 +178,7 @@ fun MoreScreen(
             }
             item {
                 TextPreferenceWidget(
-                    title = stringResource(KMR.string.option_label_library_update_errors),
+                    title = stringResource(KMR.strings.option_label_library_update_errors),
                     icon = Icons.Outlined.Info,
                     onPreferenceClick = onClickLibraryUpdateErrors,
                 )

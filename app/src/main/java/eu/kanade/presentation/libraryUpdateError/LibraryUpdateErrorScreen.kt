@@ -25,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +55,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -80,7 +79,7 @@ fun LibraryUpdateErrorScreen(
         topBar = { scrollBehavior ->
             LibraryUpdateErrorsAppBar(
                 title = stringResource(
-                    KMR.string.label_library_update_errors,
+                    KMR.strings.label_library_update_errors,
                     state.items.size,
                 ),
                 actionModeCounter = state.selected.size,
@@ -128,7 +127,7 @@ fun LibraryUpdateErrorScreen(
                             .padding(horizontal = 8.dp, vertical = 12.dp),
                     ) {
                         Button(
-                            title = stringResource(MR.string.migrate),
+                            title = stringResource(MR.strings.migrate),
                             icon = Icons.Outlined.FindReplace,
                             toConfirm = confirm[0],
                             onLongClick = { onLongClickItem(0) },
@@ -142,7 +141,7 @@ fun LibraryUpdateErrorScreen(
         when {
             state.isLoading -> LoadingScreen(modifier = Modifier.padding(paddingValues))
             state.items.isEmpty() -> EmptyScreen(
-                textResource = KMR.string.info_empty_library_update_errors,
+                textResource = KMR.strings.info_empty_library_update_errors,
                 modifier = Modifier.padding(paddingValues),
             )
 
@@ -179,7 +178,7 @@ private fun RowScope.Button(
             .weight(animatedWeight)
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(bounded = false),
+                indication = ripple(bounded = false),
                 onLongClick = onLongClick,
                 onClick = onClick,
             ),
@@ -227,13 +226,13 @@ private fun LibraryUpdateErrorsAppBar(
             IconButton(onClick = onSelectAll) {
                 Icon(
                     imageVector = Icons.Outlined.SelectAll,
-                    contentDescription = stringResource(R.string.action_select_all),
+                    contentDescription = stringResource(MR.strings.action_select_all),
                 )
             }
             IconButton(onClick = onInvertSelection) {
                 Icon(
                     imageVector = Icons.Outlined.FlipToBack,
-                    contentDescription = stringResource(R.string.action_select_inverse),
+                    contentDescription = stringResource(MR.strings.action_select_inverse),
                 )
             }
         },
