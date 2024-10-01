@@ -79,6 +79,12 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
+import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
+import tachiyomi.domain.libraryUpdateError.interactor.InsertLibraryUpdateErrors
+import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateError
+import tachiyomi.domain.libraryUpdateErrorMessage.interactor.DeleteLibraryUpdateErrorMessages
+import tachiyomi.domain.libraryUpdateErrorMessage.interactor.InsertLibraryUpdateErrorMessages
+import tachiyomi.domain.libraryUpdateErrorMessage.model.LibraryUpdateErrorMessage
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetLibraryManga
@@ -114,6 +120,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getManga: GetManga = Injekt.get()
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
+    private val deleteLibraryUpdateErrorMessages: DeleteLibraryUpdateErrorMessages = Injekt.get()
+    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
 
@@ -484,6 +494,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         }
 
         if (failedUpdates.isNotEmpty()) {
+            writeErrorsToDB(failedUpdates)
             val errorFile = writeErrorFile(failedUpdates)
             notifier.showUpdateErrorNotification(
                 failedUpdates.size,
@@ -733,6 +744,25 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         } catch (_: Exception) {}
         return File("")
     }
+
+    private suspend fun writeErrorsToDB(errors: List<Pair<Manga, String?>>) {
+        deleteLibraryUpdateErrorMessages.await()
+        deleteLibraryUpdateErrors.await()
+        val libraryErrors = errors.groupBy({ it.second }, { it.first })
+        val errorMessages = insertLibraryUpdateErrorMessages.insertAll(
+            libraryUpdateErrorMessages = libraryErrors.keys.map { errorMessage ->
+                LibraryUpdateErrorMessage(-1L, errorMessage.orEmpty())
+            },
+        )
+        val errorList = mutableListOf<LibraryUpdateError>()
+        errorMessages.forEach {
+            libraryErrors[it.second]?.forEach { manga ->
+                errorList.add(LibraryUpdateError(id = -1L, mangaId = manga.id, messageId = it.first))
+            }
+        }
+        insertLibraryUpdateErrors.insertAll(errorList)
+    }
+
 
     /**
      * Defines what should be updated within a service execution.
