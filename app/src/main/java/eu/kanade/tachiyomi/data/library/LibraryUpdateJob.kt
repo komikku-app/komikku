@@ -763,7 +763,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         insertLibraryUpdateErrors.insertAll(errorList)
     }
 
-
     /**
      * Defines what should be updated within a service execution.
      */

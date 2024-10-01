@@ -3,7 +3,8 @@ package tachiyomi.data.libraryUpdateError
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.manga.model.MangaCover
 
-val libraryUpdateErrorWithRelationsMapper: (Long, String, Long, Boolean, String?, Long, Long, Long) -> LibraryUpdateErrorWithRelations =
+val libraryUpdateErrorWithRelationsMapper:
+    (Long, String, Long, Boolean, String?, Long, Long, Long) -> LibraryUpdateErrorWithRelations =
     { mangaId, mangaTitle, mangaSource, favorite, mangaThumbnail, coverLastModified, errorId, messageId ->
         LibraryUpdateErrorWithRelations(
             mangaId = mangaId,
