@@ -30,7 +30,7 @@ class LibraryUpdateErrorMessageRepositoryImpl(
     }
 
     override suspend fun insert(libraryUpdateErrorMessage: LibraryUpdateErrorMessage): Long? {
-        return handler.awaitOneOrNull(inTransaction = true) {
+        return handler.awaitOneOrNullExecutable(inTransaction = true) {
             libraryUpdateErrorMessageQueries.insert(libraryUpdateErrorMessage.message)
             libraryUpdateErrorMessageQueries.selectLastInsertedRowId()
         }

@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
@@ -57,6 +56,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import kotlin.time.Duration.Companion.seconds
@@ -141,7 +141,7 @@ fun LibraryUpdateErrorScreen(
         when {
             state.isLoading -> LoadingScreen(modifier = Modifier.padding(paddingValues))
             state.items.isEmpty() -> EmptyScreen(
-                textResource = KMR.strings.info_empty_library_update_errors,
+                message = stringResource(KMR.strings.info_empty_library_update_errors),
                 modifier = Modifier.padding(paddingValues),
             )
 

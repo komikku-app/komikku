@@ -1,8 +1,8 @@
 package tachiyomi.domain.libraryUpdateError.interactor
 
 import logcat.LogPriority
-import tachiyomi.core.util.lang.withNonCancellableContext
-import tachiyomi.core.util.system.logcat
+import tachiyomi.core.common.util.lang.withNonCancellableContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.libraryUpdateError.repository.LibraryUpdateErrorRepository
 
 class DeleteLibraryUpdateErrors(

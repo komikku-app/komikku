@@ -2,12 +2,12 @@ package eu.kanade.tachiyomi.ui.libraryUpdateError
 
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
-import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.presentation.libraryUpdateError.components.LibraryUpdateErrorUiModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.libraryUpdateError.interactor.GetLibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateErrorMessage.interactor.GetLibraryUpdateErrorMessages
@@ -25,7 +25,7 @@ class LibraryUpdateErrorScreenModel(
     private val selectedErrorIds: HashSet<Long> = HashSet()
 
     init {
-        coroutineScope.launch {
+        screenModelScope.launchIO {
             getLibraryUpdateErrorWithRelations.subscribeAll()
                 .collectLatest { errors ->
                     val errorMessages = getLibraryUpdateErrorMessages.await()
