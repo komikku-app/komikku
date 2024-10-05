@@ -6,59 +6,48 @@ import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import sample.main.WebClient
 import sample.main.blocking.BlockingInfo
 import sample.stripParamsAndAnchor
+import tachiyomi.core.common.util.lang.launchUI
 import timber.log.Timber
+import java.util.Locale
 
 class AdFilterModel(
     val filterViewModel: FilterViewModel,
 ) {
     val dialog = MutableStateFlow<Dialog?>(null)
 
-    private val _blockedCount = MutableStateFlow("")
-    val blockedCount = _blockedCount.asStateFlow()
-    private val _blockingInfoMap = MutableStateFlow(HashMap<String, BlockingInfo>())
-    val blockingInfoMapState = _blockingInfoMap.asStateFlow()
+    /** number of (unique) blocked requests on current page */
+    val blockedCount by lazy { _blockedCount.asStateFlow() }
+    private val _blockedCount by lazy { MutableStateFlow("") }
 
-    var currentPageUrl : String? = null
+    val currentPageUrl by lazy { MutableStateFlow("") }
 
-    private var dirtyBlockingInfo = false
+    /**
+     * Contains the blocking info for each visited [currentPageUrl]:
+     * - Total requests made
+     * - Total requests blocked
+     * - Detail of blocked requests (URL & filter rule)
+     *
+     * This map should be cleaned when there is changes with [FilterViewModel.filters].
+     */
+    val blockingInfoMap by lazy { _blockingInfoMap.asStateFlow() }
+    private val _blockingInfoMap by lazy { MutableStateFlow(HashMap<String, BlockingInfo>()) }
 
-    /** Should be called in [WebViewClient.shouldInterceptRequest] */
-    fun onShouldInterceptRequest(result: FilterResult) {
-        logRequest(result)
-        updateBlockedCount()
-    }
+    /**
+     * Indicates that [_blockingInfoMap] should be cleared.
+     * When this is set, `blockingInfoMap` will be cleared when new page loaded.
+     * This often will be set when filters settings changed (enable, disable, add, remove, update)
+     * via [FilterViewModel.onDirty] flag.
+     */
+    var dirtyBlockingInfo = false
 
-    private fun logRequest(filterResult: FilterResult) {
-        val pageUrl = currentPageUrl ?: return
-        _blockingInfoMap.update { data ->
-            val blockingInfo = data[pageUrl] ?: BlockingInfo()
-            data[pageUrl] = blockingInfo
-            if (filterResult.shouldBlock) {
-                val requestUrl = filterResult.resourceUrl.stripParamsAndAnchor()
-                blockingInfo.blockedUrlMap[requestUrl] = filterResult.rule ?: ""
-                blockingInfo.blockedRequests++
-                Timber.v("Web request $requestUrl blocked by rule \"${filterResult.rule}\"")
-            }
-            blockingInfo.allRequests++
-            data
-        }
-    }
-
-    fun onPageStarted(url: String?) {
-        url?.let { currentPageUrl = it }
-        updateBlockedCount()
-    }
-
-    fun progressChanged(newProgress: Int) {
-//        webView.url?.let { currentPageUrl.value = it }
-        if (newProgress == 10) {
-            clearDirty()
-            updateBlockedCount()
-        }
-    }
-
+    /**
+     * This function should be called on every page load to check if filters settings had been
+     * changed (by mean of set [dirtyBlockingInfo]), it will then clear **all** blocked requests
+     * information within [_blockingInfoMap].
+     */
     private fun clearDirty() {
         if (dirtyBlockingInfo) {
             _blockingInfoMap.value.clear()
@@ -66,26 +55,70 @@ class AdFilterModel(
         }
     }
 
-    /** Global Filter is enabled & at least 1 filter is on */
-    private fun isFilterOn(): Boolean {
-        val enabledFilterCount = filterViewModel.enabledFilterCount.value ?: 0
-        return filterViewModel.isEnabled.value == true && enabledFilterCount > 0
+    /**
+     * Log filter result of each request for every visited [currentPageUrl].
+     */
+    private fun logRequest(filterResult: FilterResult) {
+        val pageUrl = currentPageUrl.value
+        val data = _blockingInfoMap.value.toMutableMap()
+        val blockingInfo = data[pageUrl]?.copy() ?: BlockingInfo()
+        if (filterResult.shouldBlock) {
+            val requestUrl = filterResult.resourceUrl.stripParamsAndAnchor()
+            blockingInfo.blockedUrlMap[requestUrl] = filterResult.rule ?: ""
+            blockingInfo.blockedRequests++
+            Timber.v("Web request $requestUrl blocked by rule \"${filterResult.rule}\"")
+        }
+        blockingInfo.allRequests++
+        data[pageUrl] = blockingInfo
+        _blockingInfoMap.update { HashMap(data) }
     }
 
-    private fun updateBlockedCount() {
+    /**
+     * Should be called in [WebClient.onPageStarted],
+     * an override of [WebViewClient.onPageStarted],
+     * to perform necessary actions when page starts loading, such as
+     * reset blocked requests info when filters settings changed.
+     */
+    fun onPageStarted(url: String?) {
+        launchUI {
+            url?.let { url -> currentPageUrl.update { url } }
+            // Clear the counter if filters settings had been changed
+            clearDirty()
+            updateBlockedCount()
+        }
+    }
+
+    /** At least 1 filter is effective */
+    private fun isFilterOn(): Boolean = filterViewModel.isEnabled.value && filterViewModel.enabledFilterCount.value > 0
+
+    /**
+     * Update blocked count text
+     */
+    internal fun updateBlockedCount() {
+        val blockedUrlMap =
+            blockingInfoMap.value[currentPageUrl.value]?.blockedUrlMap
+        val blockedCount = blockedUrlMap?.size
         when {
             !isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
                 _blockedCount.update { "OFF" }
             }
-            dirtyBlockingInfo -> {
+            blockedCount == null -> {
                 _blockedCount.update { "-" }
             }
             else -> {
-                val blockedUrlMap =
-                    _blockingInfoMap.value[currentPageUrl]?.blockedUrlMap
-                _blockedCount.update { (blockedUrlMap?.size ?: 0).toString() }
+                _blockedCount.update { String.format(Locale.getDefault(), "%d", blockedUrlMap.size) }
             }
         }
+    }
+
+    /**
+     * Should be called in [WebClient.shouldInterceptRequest],
+     * an override of [WebViewClient.shouldInterceptRequest],
+     * to perform necessary actions each time a request is made, such as
+     * log filtering results of requests.
+     */
+    fun onShouldInterceptRequest(result: FilterResult) {
+        logRequest(result)
     }
 
     fun dismissDialog() {
@@ -102,6 +135,9 @@ class AdFilterModel(
 
     sealed interface Dialog {
         data object FilterLogDialog : Dialog
-        data class FilterSettingsDialog(val onDismissDialog: (() -> Unit)?) : Dialog
+
+        data class FilterSettingsDialog(
+            val onDismissDialog: (() -> Unit)?,
+        ) : Dialog
     }
 }

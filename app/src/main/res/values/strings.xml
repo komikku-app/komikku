@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">AdblockSample</string>
     <string name="url_edit_text_hit">Search or type URL</string>
     <string name="add_filter">Add Filter</string>
     <string name="enable_filter">Enable Filter</string>

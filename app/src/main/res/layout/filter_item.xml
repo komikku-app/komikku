@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:paddingStart="20dp"
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:paddingEnd="20dp">
+    android:paddingStart="20dp"
+    android:paddingTop="5dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="5dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
@@ -17,34 +17,36 @@
         android:layout_weight="1">
 
         <TextView
-            style="@style/SingleLineTitle"
             android:id="@+id/filterName"
-            android:textColor="@android:color/black"
+            style="@style/SingleLineTitle"
             android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            style="@style/SingleLineTitle"
             android:id="@+id/filterUrl"
+            style="@style/SingleLineTitle"
+            android:textColor="#888"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/filterName" />
 
         <TextView
-            style="@style/SingleLineTitle"
             android:id="@+id/filterUpdateTime"
+            style="@style/SingleLineTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="#888"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/filterUrl" />
 
         <TextView
-            style="@style/SingleLineTitle"
             android:id="@+id/filtersCount"
+            style="@style/SingleLineTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="#888"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/filterUrl" />
 
@@ -55,5 +57,5 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:paddingStart="5dp"
-        android:paddingEnd="0dp" />
+        android:paddingEnd="5dp" />
 </LinearLayout>

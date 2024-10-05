@@ -1,5 +1,6 @@
 package sample.settings
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -28,16 +29,17 @@ import java.util.Locale
  */
 class FilterListAdapter(
     private val context: Context,
-    private val layoutInflater: LayoutInflater
+    private val layoutInflater: LayoutInflater,
 ) : RecyclerView.Adapter<FilterViewHolder>(),
     DialogInterface.OnClickListener {
-
     val viewModel: FilterViewModel = AdFilter.get(context).viewModel
 
     private lateinit var filterList: List<Filter>
 
     var data
         get() = filterList
+
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             filterList = value
             notifyDataSetChanged()
@@ -49,14 +51,20 @@ class FilterListAdapter(
 
     private fun getString(resId: Int): String = context.getString(resId)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): FilterViewHolder {
         val itemView = layoutInflater.inflate(R.layout.filter_item, parent, false)
         return FilterViewHolder(this, itemView)
     }
 
-    override fun onBindViewHolder(holder: FilterViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FilterViewHolder,
+        position: Int,
+    ) {
         filterList[position].let { filter ->
-            holder.filterName.text = if (filter.name.isBlank()) filter.url else filter.name
+            holder.filterName.text = filter.name.ifBlank { filter.url }
             holder.filterUrl.text = filter.url
             holder.switch.isChecked = filter.isEnabled
             holder.switch.isEnabled = filter.filtersCount > 0
@@ -67,9 +75,11 @@ class FilterListAdapter(
                 DownloadState.FAILED -> getString(R.string.failed_to_download)
                 DownloadState.CANCELLED -> getString(R.string.cancelled)
                 else -> {
-                    if (filter.hasDownloaded())
+                    if (filter.hasDownloaded()) {
                         dateFormatter.format(Date(filter.updateTime))
-                    else getString(R.string.not_downloaded)
+                    } else {
+                        getString(R.string.not_downloaded)
+                    }
                 }
             }
             holder.filtersCount.text =
@@ -80,7 +90,8 @@ class FilterListAdapter(
                 if (filter.downloadState.isRunning) {
                     items[2] = getString(R.string.cancel)
                 }
-                AlertDialog.Builder(context)
+                AlertDialog
+                    .Builder(context)
                     .setItems(items, this)
                     .show()
             }
@@ -89,25 +100,28 @@ class FilterListAdapter(
 
     override fun getItemCount(): Int = filterList.size
 
-    override fun onClick(dialog: DialogInterface?, which: Int) {
+    override fun onClick(
+        dialog: DialogInterface?,
+        which: Int,
+    ) {
         selectedFilter?.let {
             when (which) {
                 0 -> {
                     val renameDialogView: View = layoutInflater.inflate(
                         R.layout.dialog_rename_filter,
-                        LinearLayout(context)
+                        LinearLayout(context),
                     )
                     val renameEdit: EditText = renameDialogView.findViewById(R.id.renameEdit)
                     renameEdit.setText(it.name)
-                    AlertDialog.Builder(context)
+                    AlertDialog
+                        .Builder(context)
                         .setTitle(R.string.rename_filter)
                         .setMessage(it.url)
                         .setView(renameDialogView)
                         .setNegativeButton(android.R.string.cancel, null)
                         .setPositiveButton(android.R.string.ok) { _, _ ->
                             viewModel.renameFilter(it.id, renameEdit.text.toString())
-                        }
-                        .show()
+                        }.show()
                 }
                 1 -> {
                     val clipboardManager =
@@ -117,10 +131,11 @@ class FilterListAdapter(
                     Toast.makeText(context, R.string.url_copied, Toast.LENGTH_SHORT).show()
                 }
                 2 -> {
-                    if (it.downloadState.isRunning)
+                    if (it.downloadState.isRunning) {
                         viewModel.cancelDownload(it.id)
-                    else
+                    } else {
                         viewModel.download(it.id)
+                    }
                 }
                 3 -> viewModel.removeFilter(it.id)
                 else -> return
@@ -129,8 +144,10 @@ class FilterListAdapter(
     }
 }
 
-class FilterViewHolder(private val adapter: FilterListAdapter, itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+class FilterViewHolder(
+    private val adapter: FilterListAdapter,
+    itemView: View,
+) : RecyclerView.ViewHolder(itemView) {
     val filterName: TextView = itemView.findViewById(R.id.filterName)
     val filterUrl: TextView = itemView.findViewById(R.id.filterUrl)
     val filterUpdateTime: TextView = itemView.findViewById(R.id.filterUpdateTime)
@@ -139,7 +156,7 @@ class FilterViewHolder(private val adapter: FilterListAdapter, itemView: View) :
 
     init {
         switch.setOnCheckedChangeListener { _, isChecked ->
-            adapter.viewModel.setFilterEnabled(adapter.data[adapterPosition].id, isChecked, false)
+            adapter.viewModel.setFilterEnabled(adapter.data[bindingAdapterPosition].id, isChecked)
         }
     }
 }

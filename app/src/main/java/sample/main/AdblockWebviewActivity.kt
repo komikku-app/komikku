@@ -14,19 +14,26 @@ import android.webkit.WebView
 import android.widget.PopupMenu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ActivityMainBinding
 import io.github.edsuns.adfilter.AdFilter
 import io.github.edsuns.adfilter.FilterResult
 import io.github.edsuns.adfilter.FilterViewModel
 import io.github.edsuns.smoothprogress.SmoothProgressAnimator
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import sample.hideKeyboard
 import sample.main.blocking.BlockingInfoDialogFragment
 import sample.settings.SettingsActivity
 import sample.smartUrlFilter
+import java.util.Locale
 
-class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
-
+class AdblockWebviewActivity :
+    AppCompatActivity(),
+    WebViewClientListener {
     private lateinit var filterViewModel: FilterViewModel
 
     private val viewModel: MainViewModel by viewModels()
@@ -51,7 +58,7 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
             binding.menuButton,
             Gravity.NO_GRAVITY,
             androidx.appcompat.R.attr.actionOverflowMenuStyle,
-            0
+            0,
         )
         popupMenu.inflate(R.menu.menu_main)
         popupMenu.setOnMenuItemClickListener {
@@ -75,7 +82,8 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
 
         binding.countText.setOnClickListener {
             if (isFilterOn()) {
-                if (!blockingInfoDialogFragment.isAdded) {// fix `IllegalStateException: Fragment already added` when double click
+                // fix `IllegalStateException: Fragment already added` when double click
+                if (!blockingInfoDialogFragment.isAdded) {
                     blockingInfoDialogFragment.show(supportFragmentManager, null)
                 }
             } else {
@@ -113,17 +121,17 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
             false
         }
         urlText.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_GO
-                || event.keyCode == KeyEvent.KEYCODE_ENTER
-                && event.action == KeyEvent.ACTION_DOWN
+            if (actionId == EditorInfo.IME_ACTION_GO ||
+                event.keyCode == KeyEvent.KEYCODE_ENTER &&
+                event.action == KeyEvent.ACTION_DOWN
             ) {
                 val urlIn = urlText.text.toString()
                 webView.loadUrl(
                     urlIn.smartUrlFilter() ?: URLUtil.composeSearchUrl(
                         urlIn,
                         "https://www.bing.com/search?q={}",
-                        "{}"
-                    )
+                        "{}",
+                    ),
                 )
                 webView.requestFocus()
                 urlText.hideKeyboard()
@@ -137,24 +145,69 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
             }
         }
 
-        viewModel.currentPageUrl.observe(this) {
-            if (it != null && !urlText.isFocused) {
-                urlText.setText(it)
+        // Update url textbox when page might redirect itself to new url
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentPageUrl.collect {
+                    if (!urlText.isFocused) {
+                        urlText.setText(it)
+                    }
+                }
             }
         }
 
-        viewModel.blockingInfoMap.observe(this) { updateBlockedCount() }
-
-        filterViewModel.isEnabled.observe(this) { updateBlockedCount() }
-
-        filterViewModel.enabledFilterCount.observe(this) { updateBlockedCount() }
-
-        filterViewModel.onDirty.observe(this) {
-            webView.clearCache(false)
-            viewModel.dirtyBlockingInfo = true
-            updateBlockedCount()
+        // Observe `blockingInfoMap` to update the blocking count
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.blockingInfoMap.collect {
+                    updateBlockedCount()
+                }
+            }
         }
 
+        // Observe whenever AdFilter is enabled/disabled
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                filterViewModel.isEnabled.collect {
+                    updateBlockedCount()
+                }
+            }
+        }
+
+        // Observe whenever number filters changed
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                filterViewModel.enabledFilterCount.collect {
+                    // TODO("Show number of active filters somewhere on UI")
+                }
+            }
+        }
+
+        // Observe whenever filters' settings are changed via `onDirty` flag
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                filterViewModel.onDirty.collect {
+                    // Clear cache when there are changes to the filter.
+                    // You need to refresh the page manually to make the changes take effect.
+                    webView.clearCache(false)
+                    viewModel.dirtyBlockingInfo = true
+                    updateBlockedCount()
+                }
+            }
+        }
+
+        /*
+         Monitor filter's work (update/download/install) to perform the follow-up actions.
+         TODO: This work will run in background forever. Remember to cancel it to avoid memory leak.
+         */
+        @Suppress("UNUSED_VARIABLE")
+        val jobWatcher = filter.jobWatcher(
+            inBackground = true,
+            lifecycleScope = null,
+            lifecycle = null,
+        )
+
+        /** Setup filter on first run if has not yet done */
         if (!filter.hasInstallation) {
             val map = mapOf(
                 "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
@@ -162,24 +215,24 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
                 "AdGuard Tracking Protection" to "https://filters.adtidy.org/extension/chromium/filters/3.txt",
                 "AdGuard Annoyances" to "https://filters.adtidy.org/extension/chromium/filters/14.txt",
                 "AdGuard Chinese" to "https://filters.adtidy.org/extension/chromium/filters/224.txt",
-                "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt"
+                "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt",
             )
             for ((key, value) in map) {
                 filterViewModel.addFilter(key, value)
             }
-            AlertDialog.Builder(this)
+            AlertDialog
+                .Builder(this)
                 .setTitle(R.string.filter_download_title)
                 .setMessage(R.string.filter_download_msg)
                 .setCancelable(true)
                 .setPositiveButton(
-                    android.R.string.ok
+                    android.R.string.ok,
                 ) { _, _ ->
-                    val filters = filterViewModel.filters.value ?: return@setPositiveButton
+                    val filters = filterViewModel.filters.value
                     for ((key, _) in filters) {
                         filterViewModel.download(key)
                     }
-                }
-                .show()
+                }.show()
         }
     }
 
@@ -198,41 +251,52 @@ class AdblockWebviewActivity : AppCompatActivity(), WebViewClientListener {
         super.onRestoreInstanceState(savedInstanceState)
     }
 
-    override fun onPageStarted(url: String?, favicon: Bitmap?) {
+    override fun onPageStarted(
+        url: String?,
+        favicon: Bitmap?,
+    ) {
         runOnUiThread {
-            url?.let { viewModel.currentPageUrl.value = it }
+            url?.let { url -> viewModel.currentPageUrl.update { url } }
+            // Clear the counter if filters settings had been changed
+            viewModel.clearDirty()
             updateBlockedCount()
         }
     }
 
     override fun progressChanged(newProgress: Int) {
         runOnUiThread {
-            webView.url?.let { viewModel.currentPageUrl.value = it }
+            webView.url?.let { url -> viewModel.currentPageUrl.update { url } }
             progressAnimator.progress = newProgress
+            /* This doesn't seem right, some WebClient don't use WebChromeClient
+            // newProgress increase to 100, but not going through all values, typical values are: 10, 70, 100
             if (newProgress == 10) {
+                // Clear the counter if filters settings had been changed
                 viewModel.clearDirty()
                 updateBlockedCount()
             }
+             */
         }
     }
 
-    private fun isFilterOn(): Boolean {
-        val enabledFilterCount = filterViewModel.enabledFilterCount.value ?: 0
-        return filterViewModel.isEnabled.value == true && enabledFilterCount > 0
-    }
+    /** At least 1 filter is effective */
+    private fun isFilterOn(): Boolean = filterViewModel.isEnabled.value && filterViewModel.enabledFilterCount.value > 0
 
+    /**
+     * Update blocked count text
+     */
     private fun updateBlockedCount() {
+        val blockedUrlMap =
+            viewModel.blockingInfoMap.value[viewModel.currentPageUrl.value]?.blockedUrlMap
+        val blockedCount = blockedUrlMap?.size
         when {
             !isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
                 binding.countText.text = getString(R.string.off)
             }
-            viewModel.dirtyBlockingInfo -> {
+            blockedCount == null -> {
                 binding.countText.text = getString(R.string.count_none)
             }
             else -> {
-                val blockedUrlMap =
-                    viewModel.blockingInfoMap.value?.get(viewModel.currentPageUrl.value)?.blockedUrlMap
-                binding.countText.text = (blockedUrlMap?.size ?: 0).toString()
+                binding.countText.text = String.format(Locale.getDefault(), "%d", blockedUrlMap.size)
             }
         }
     }

@@ -2,18 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="300dp">
+    android:minHeight="300dp"
+    android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:elevation="3dp"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:elevation="3dp">
 
         <TextView
             android:id="@+id/title"
@@ -21,7 +20,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="@string/empty"
-            android:textColor="@android:color/black"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/titleDescription"
             app:layout_constraintEnd_toStartOf="@+id/dismissBtn"
@@ -35,6 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginBottom="10dp"
+            android:textColor="#888"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/dismissBtn"
             app:layout_constraintStart_toStartOf="parent"
@@ -44,10 +43,11 @@
             android:id="@+id/dismissBtn"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:adjustViewBounds="true"
             android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_close"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"
             android:src="@drawable/ic_baseline_close_24"

@@ -30,6 +30,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,7 +45,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.kevinnzou.web.AccompanistWebViewClient
 import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
@@ -55,6 +58,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.ui.webview.AdFilterModel
 import eu.kanade.tachiyomi.util.system.getHtml
@@ -63,6 +67,7 @@ import io.github.edsuns.adfilter.AdFilter
 import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import sample.main.blocking.BlockingInfo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -96,7 +101,7 @@ fun WebViewScreenContent(
     // KMK -->
     val lifecycleOwner = LocalLifecycleOwner.current
     val blockedCount by adFilterModel.blockedCount.collectAsState()
-    val isAdblockEnabled by adFilterViewModel.isEnabledStateFlow.collectAsState()
+    val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
     // KMK <--
 
     val webClient = remember {
@@ -173,7 +178,7 @@ fun WebViewScreenContent(
                 Column {
                     AppBar(
                         title = state.pageTitle ?: initialTitle,
-                        subtitle = "(${blockedCount}) " + currentUrl,
+                        subtitle = "($blockedCount) $currentUrl",
                         navigateUp = onNavigateUp,
                         navigationIcon = Icons.Outlined.Close,
                         actions = {
@@ -217,7 +222,7 @@ fun WebViewScreenContent(
                                     ),
                                     // KMK -->
                                     AppBar.OverflowAction(
-                                        title = "AdBlock" + " (${blockedCount})",
+                                        title = "AdBlock ($blockedCount)",
                                         onClick = {
                                             if (isAdblockEnabled) {
                                                 adFilterModel.showFilterLogDialog()
@@ -296,10 +301,35 @@ fun WebViewScreenContent(
                     }
                 }
 
-                adFilterViewModel.onDirty.observe(lifecycleOwner) {
-                    // Clear cache when there are changes to the filter.
-                    // You need to refresh the page manually to make the changes take effect.
-                    webView.clearCache(false)
+                // Observe `blockingInfoMap` to update the blocking count
+                scope.launch {
+                    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        adFilterModel.blockingInfoMap.collect {
+                            adFilterModel.updateBlockedCount()
+                        }
+                    }
+                }
+
+                // Observe whenever AdFilter is enabled/disabled
+                scope.launch {
+                    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        adFilterViewModel.isEnabled.collect {
+                            adFilterModel.updateBlockedCount()
+                        }
+                    }
+                }
+
+                // Observe whenever filters' settings are changed via `onDirty` flag
+                scope.launch {
+                    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        adFilterViewModel.onDirty.collect {
+                            // Clear cache when there are changes to the filter.
+                            // You need to refresh the page manually to make the changes take effect.
+                            webView.clearCache(false)
+                            adFilterModel.dirtyBlockingInfo = true
+                            adFilterModel.updateBlockedCount()
+                        }
+                    }
                 }
                 // KMK <--
 
@@ -353,8 +383,9 @@ fun FilterLogDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
 ) {
-    val blockingInfoMap by adFilterModel.blockingInfoMapState.collectAsState()
-    val blockingInfo = blockingInfoMap[adFilterModel.currentPageUrl]
+    val blockingInfoMap by adFilterModel.blockingInfoMap.collectAsState()
+    val currentUrl by adFilterModel.currentPageUrl.collectAsState()
+    val blockingInfo: BlockingInfo? = blockingInfoMap[currentUrl]
     val blockedUrlCount = blockingInfo?.blockedUrlMap?.size ?: 0
 
     AdaptiveSheet(
@@ -396,9 +427,9 @@ fun FilterLogDialog(
                         adFilterModel.showFilterSettingsDialog(
                             onDismissDialog = {
                                 adFilterModel.showFilterLogDialog()
-                            }
+                            },
                         )
-                    }
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
@@ -408,7 +439,7 @@ fun FilterLogDialog(
             }
             HorizontalDivider(
                 modifier = Modifier
-                    .padding(vertical = MaterialTheme.padding.medium)
+                    .padding(vertical = MaterialTheme.padding.medium),
             )
 
             blockingInfo?.let {
@@ -450,10 +481,10 @@ fun FilterSettingsDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
 ) {
-    val filters = adFilterViewModel.filters.value
-    val isAdblockEnabled by adFilterViewModel.isEnabledStateFlow.collectAsState()
+    val filters by adFilterViewModel.filters.collectAsState()
+    val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
 
-    Scaffold (
+    Scaffold(
         modifier = modifier,
         topBar = {
             AppBar(
@@ -477,11 +508,11 @@ fun FilterSettingsDialog(
                                     TODO()
                                 },
                             ),
-                        )
+                        ),
                     )
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -492,37 +523,73 @@ fun FilterSettingsDialog(
                 subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
                 checked = isAdblockEnabled,
                 onCheckedChanged = {
-                    adFilterViewModel.isEnabled.postValue(it)
+                    adFilterViewModel.masterEnableDisable(it)
                 },
             )
             HorizontalDivider()
 
-            filters?.let {
-                if (isAdblockEnabled) {
-                    ScrollbarLazyColumn(
-                        modifier = Modifier
-                            .padding(horizontal = MaterialTheme.padding.medium)
-                            .padding(top = MaterialTheme.padding.small)
-                            .fillMaxSize(),
-                    ) {
-                        items(
-                            items = filters.toList(),
-                            key = { "adblock-filters-${it.first}" },
-                        ) { filter ->
+            if (isAdblockEnabled) {
+                ScrollbarLazyColumn(
+                    modifier = Modifier
+                        .padding(horizontal = MaterialTheme.padding.medium)
+                        .padding(top = MaterialTheme.padding.small)
+                        .fillMaxSize(),
+                ) {
+                    items(
+                        items = filters.values.toList(),
+                        key = { "adblock-filters-${it.id}" },
+                    ) { filter ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Column(
                                 modifier = Modifier
                                     .padding(vertical = MaterialTheme.padding.small),
                             ) {
                                 Text(
-                                    text = "${filter.second.name} (${filter.second.filtersCount})",
+                                    text = filter.name,
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
-                                Text(
-                                    text = filter.second.url,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = LocalContentColor.current.copy(alpha = 0.75f),
-                                )
+//                                    Text(
+//                                        text = filter.url,
+//                                        style = MaterialTheme.typography.bodySmall,
+//                                        color = LocalContentColor.current.copy(alpha = 0.75f),
+//                                        maxLines = 1,
+//                                        overflow = TextOverflow.Ellipsis,
+//                                        modifier = Modifier.basicMarquee(
+//                                            repeatDelayMillis = 2_000,
+//                                        ),
+//                                    )
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = if (filter.downloadState.isRunning) {
+                                            filter.downloadState.toString()
+                                        } else {
+                                            filter.updateTime.toString()
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = LocalContentColor.current.copy(alpha = 0.75f),
+                                    )
+                                    Text(
+                                        text = filter.filtersCount.toString(),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = LocalContentColor.current.copy(alpha = 0.75f),
+                                    )
+                                }
                             }
+
+                            Switch(
+                                checked = filter.isEnabled,
+                                onCheckedChange = {
+                                    adFilterViewModel.setFilterEnabled(filter.id, it)
+                                },
+                                modifier = Modifier.padding(start = TrailingWidgetBuffer),
+                            )
                         }
                     }
                 }
