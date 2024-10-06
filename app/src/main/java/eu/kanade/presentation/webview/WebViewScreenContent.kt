@@ -334,10 +334,18 @@ fun WebViewScreenContent(
     dialog?.let {
         val onDismissRequest = adFilterModel::dismissDialog
         val filters by adFilterViewModel.filters.collectAsState()
+        val blockingInfoMap by adFilterModel.blockingInfoMap.collectAsState()
         when (it) {
             is AdFilterModel.Dialog.FilterLogDialog -> {
                 AdFilterLogDialog(
-                    adFilterModel = adFilterModel,
+                    blockingInfo = blockingInfoMap[currentUrl],
+                    onAdBlockSettingClick = {
+                        adFilterModel.showFilterSettingsDialog(
+                            onDismissDialog = {
+                                adFilterModel.showFilterLogDialog()
+                            },
+                        )
+                    },
                     onDismissRequest = onDismissRequest,
                 )
             }
