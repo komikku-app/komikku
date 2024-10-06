@@ -1,6 +1,7 @@
 package eu.kanade.presentation.webview
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +12,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -19,20 +22,26 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import io.github.edsuns.adfilter.DownloadState
 import io.github.edsuns.adfilter.Filter
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -41,11 +50,17 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun AdFilterSettings(
-    filters: ImmutableList<Filter>,
+    filters: PersistentMap<String, Filter>,
     isAdblockEnabled: Boolean,
+    isUpdatingAll: Boolean,
     masterFiltersSwitch: (Boolean) -> Unit,
     filterSwitch: (String, Boolean) -> Unit,
     onDismissRequest: () -> Unit,
+    updateFilter: (String) -> Unit,
+    cancelUpdateFilter: (String) -> Unit,
+    renameFilter: (String, String) -> Unit,
+    removeFilter: (String) -> Unit,
+    copyUrl: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -59,10 +74,24 @@ fun AdFilterSettings(
                     AppBarActions(
                         persistentListOf(
                             AppBar.Action(
-                                title = stringResource(MR.strings.action_webview_refresh),
-                                icon = Icons.Outlined.Refresh,
+                                title = if (isUpdatingAll) {
+                                    stringResource(MR.strings.action_cancel)
+                                } else {
+                                    stringResource(MR.strings.action_webview_refresh)
+                                },
+                                icon = if (isUpdatingAll) {
+                                    Icons.Outlined.Close
+                                } else {
+                                    Icons.Outlined.Refresh
+                                },
                                 onClick = {
-                                    TODO()
+                                    filters.keys.forEach {
+                                        if (isUpdatingAll) {
+                                            cancelUpdateFilter(it)
+                                        } else {
+                                            updateFilter(it)
+                                        }
+                                    }
                                 },
                             ),
                             AppBar.Action(
@@ -92,6 +121,53 @@ fun AdFilterSettings(
             )
             HorizontalDivider()
 
+            var showMenu by remember { mutableStateOf(false) }
+            var selectedID by remember { mutableStateOf("") }
+
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+            ) {
+                if (filters[selectedID]?.downloadState?.isRunning == true) {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(MR.strings.action_cancel)) },
+                        onClick = {
+                            cancelUpdateFilter(selectedID)
+                            showMenu = false
+                        },
+                    )
+                } else {
+                    DropdownMenuItem(
+                        text = { Text(text = "Update") },
+                        onClick = {
+                            updateFilter(selectedID)
+                            showMenu = false
+                        },
+                    )
+                }
+                DropdownMenuItem(
+                    text = { Text(text = "Rename") },
+                    onClick = {
+                        renameFilter(selectedID, "")
+                        showMenu = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
+                    onClick = {
+                        copyUrl(selectedID)
+                        showMenu = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(MR.strings.action_delete)) },
+                    onClick = {
+                        removeFilter(selectedID)
+                        showMenu = false
+                    },
+                )
+            }
+
             if (isAdblockEnabled) {
                 ScrollbarLazyColumn(
                     modifier = Modifier
@@ -100,7 +176,7 @@ fun AdFilterSettings(
                         .fillMaxSize(),
                 ) {
                     items(
-                        items = filters,
+                        items = filters.values.toImmutableList(),
                         key = { "adblock-filters-${it.id}" },
                     ) { filter ->
                         FilterSwitchItem(
@@ -112,6 +188,10 @@ fun AdFilterSettings(
                             filtersCount = filter.filtersCount,
                             filterSwitch = { enabled ->
                                 filterSwitch(filter.id, enabled)
+                            },
+                            onClick = {
+                                selectedID = filter.id
+                                showMenu = true
                             },
                         )
                     }
@@ -130,6 +210,7 @@ private fun FilterSwitchItem(
     updateTime: String,
     filtersCount: Int,
     filterSwitch: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -143,7 +224,8 @@ private fun FilterSwitchItem(
     ) {
         Column(
             modifier = Modifier
-                .weight(1f),
+                .weight(1f)
+                .clickable(onClick = onClick),
         ) {
             Text(
                 text = name,
@@ -199,13 +281,14 @@ private fun FilterSwitchPreview() {
     TachiyomiPreviewTheme {
         Surface {
             FilterSwitchItem(
-                url = "https://filters.adtidy.org/extension/chromium/filters/2.txt",
-                name = "Adguard",
+                url = "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
+                name = "AdGuard",
                 isEnabled = true,
                 downloadState = DownloadState.SUCCESS,
                 updateTime = "Today",
                 filtersCount = 1000,
                 filterSwitch = { },
+                onClick = { },
             )
         }
     }

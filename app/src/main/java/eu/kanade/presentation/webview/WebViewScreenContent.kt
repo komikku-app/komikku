@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -44,12 +45,13 @@ import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.webview.components.AdFilterLogDialog
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.ui.webview.AdFilterModel
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import io.github.edsuns.adfilter.AdFilter
 import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -81,9 +83,12 @@ fun WebViewScreenContent(
     var showCloudflareHelp by remember { mutableStateOf(false) }
 
     // KMK -->
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val blockedCount by adFilterModel.blockedCount.collectAsState()
     val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
+    val workToFilterMap by adFilterViewModel.workToFilterMap.collectAsState()
+
     // KMK <--
 
     val webClient = remember {
@@ -353,8 +358,9 @@ fun WebViewScreenContent(
 
             is AdFilterModel.Dialog.FilterSettingsDialog -> {
                 AdFilterSettings(
-                    filters = filters.values.toImmutableList(),
+                    filters = filters.toPersistentHashMap(),
                     isAdblockEnabled = isAdblockEnabled,
+                    isUpdatingAll = workToFilterMap.isNotEmpty(),
                     masterFiltersSwitch = adFilterViewModel::masterEnableDisable,
                     filterSwitch = adFilterViewModel::setFilterEnabled,
                     onDismissRequest = {
@@ -362,6 +368,15 @@ fun WebViewScreenContent(
                             it.onDismissDialog.invoke()
                         } else {
                             onDismissRequest()
+                        }
+                    },
+                    updateFilter = adFilterViewModel::download,
+                    cancelUpdateFilter = adFilterViewModel::cancelDownload,
+                    renameFilter = adFilterViewModel::renameFilter,
+                    removeFilter = adFilterViewModel::removeFilter,
+                    copyUrl = { id ->
+                        if (id.isNotEmpty()) {
+                            context.copyToClipboard(filters[id]?.name ?: "", filters[id]?.url ?: "")
                         }
                     },
                 )
