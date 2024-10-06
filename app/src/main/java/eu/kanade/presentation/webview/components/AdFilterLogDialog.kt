@@ -4,10 +4,9 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
@@ -38,7 +37,8 @@ fun AdFilterLogDialog(
     modifier: Modifier = Modifier,
 ) {
     AdaptiveSheet(
-        modifier = modifier,
+        modifier = modifier
+            .sizeIn(maxHeight = 500.dp),
         onDismissRequest = onDismissRequest,
     ) {
         AdFilterLogDialogContent(
@@ -97,14 +97,13 @@ fun AdFilterLogDialogContent(
         }
         HorizontalDivider(
             modifier = Modifier
-                .padding(vertical = MaterialTheme.padding.medium),
+                .padding(vertical = MaterialTheme.padding.small),
         )
 
         blockingInfo?.let {
             ScrollbarLazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.5f),
+                    .fillMaxWidth(),
             ) {
                 items(
                     items = blockingInfo.blockedUrlMap.toList(),
@@ -112,7 +111,7 @@ fun AdFilterLogDialogContent(
                 ) { blockedUrlMap ->
                     Column(
                         modifier = Modifier
-                            .padding(vertical = MaterialTheme.padding.small),
+                            .padding(vertical = MaterialTheme.padding.extraSmall),
                     ) {
                         Text(
                             text = blockedUrlMap.first,
@@ -147,8 +146,6 @@ private fun AdFilterLogDialogPreview() {
                     ),
                 ),
                 onAdBlockSettingClick = {},
-                modifier = Modifier
-                    .height(400.dp),
             )
         }
     }

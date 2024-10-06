@@ -1,5 +1,6 @@
 package eu.kanade.presentation.webview
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,16 +15,23 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import io.github.edsuns.adfilter.DownloadState
 import io.github.edsuns.adfilter.Filter
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
@@ -33,7 +41,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun AdFilterSettings(
-    filters: LinkedHashMap<String, Filter>,
+    filters: ImmutableList<Filter>,
     isAdblockEnabled: Boolean,
     masterFiltersSwitch: (Boolean) -> Unit,
     filterSwitch: (String, Boolean) -> Unit,
@@ -92,64 +100,113 @@ fun AdFilterSettings(
                         .fillMaxSize(),
                 ) {
                     items(
-                        items = filters.values.toList(),
+                        items = filters,
                         key = { "adblock-filters-${it.id}" },
                     ) { filter ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(vertical = MaterialTheme.padding.small),
-                            ) {
-                                Text(
-                                    text = filter.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-//                                    Text(
-//                                        text = filter.url,
-//                                        style = MaterialTheme.typography.bodySmall,
-//                                        color = LocalContentColor.current.copy(alpha = 0.75f),
-//                                        maxLines = 1,
-//                                        overflow = TextOverflow.Ellipsis,
-//                                        modifier = Modifier.basicMarquee(
-//                                            repeatDelayMillis = 2_000,
-//                                        ),
-//                                    )
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = if (filter.downloadState.isRunning) {
-                                            filter.downloadState.toString()
-                                        } else {
-                                            filter.updateTime.toString()
-                                        },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = LocalContentColor.current.copy(alpha = 0.75f),
-                                    )
-                                    Text(
-                                        text = filter.filtersCount.toString(),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = LocalContentColor.current.copy(alpha = 0.75f),
-                                    )
-                                }
-                            }
-
-                            Switch(
-                                checked = filter.isEnabled,
-                                onCheckedChange = {
-                                    filterSwitch(filter.id, it)
-                                },
-                                modifier = Modifier.padding(start = TrailingWidgetBuffer),
-                            )
-                        }
+                        FilterSwitchItem(
+                            url = filter.url,
+                            name = filter.name,
+                            isEnabled = filter.isEnabled,
+                            downloadState = filter.downloadState,
+                            updateTime = relativeDateText(filter.updateTime),
+                            filtersCount = filter.filtersCount,
+                            filterSwitch = { enabled ->
+                                filterSwitch(filter.id, enabled)
+                            },
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FilterSwitchItem(
+    url: String,
+    name: String,
+    isEnabled: Boolean,
+    downloadState: DownloadState,
+    updateTime: String,
+    filtersCount: Int,
+    filterSwitch: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = MaterialTheme.padding.extraSmall,
+                vertical = MaterialTheme.padding.small,
+            ),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f),
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            Text(
+                text = url,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.75f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.basicMarquee(
+                    repeatDelayMillis = 2_000,
+                ),
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = if (downloadState.isRunning) {
+                        downloadState.toString()
+                    } else {
+                        updateTime
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LocalContentColor.current.copy(alpha = 0.75f),
+                )
+                Text(
+                    text = filtersCount.toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LocalContentColor.current.copy(alpha = 0.75f),
+                )
+            }
+        }
+
+        Switch(
+            checked = isEnabled,
+            onCheckedChange = {
+                filterSwitch(it)
+            },
+            modifier = Modifier.padding(start = TrailingWidgetBuffer),
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun FilterSwitchPreview() {
+    TachiyomiPreviewTheme {
+        Surface {
+            FilterSwitchItem(
+                url = "https://filters.adtidy.org/extension/chromium/filters/2.txt",
+                name = "Adguard",
+                isEnabled = true,
+                downloadState = DownloadState.SUCCESS,
+                updateTime = "Today",
+                filtersCount = 1000,
+                filterSwitch = { },
+            )
         }
     }
 }

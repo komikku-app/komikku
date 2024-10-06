@@ -49,6 +49,7 @@ import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import io.github.edsuns.adfilter.AdFilter
 import io.github.edsuns.adfilter.FilterViewModel
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -352,7 +353,7 @@ fun WebViewScreenContent(
 
             is AdFilterModel.Dialog.FilterSettingsDialog -> {
                 AdFilterSettings(
-                    filters = filters,
+                    filters = filters.values.toImmutableList(),
                     isAdblockEnabled = isAdblockEnabled,
                     masterFiltersSwitch = adFilterViewModel::masterEnableDisable,
                     filterSwitch = adFilterViewModel::setFilterEnabled,
