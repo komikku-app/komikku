@@ -53,11 +53,11 @@ fun TachiyomiTheme(
 
 @Composable
 fun TachiyomiTheme(
-    appTheme: AppTheme? = null,
-    amoled: Boolean? = null,
     // KMK -->
     seedColor: Color?,
     // KMK <--
+    appTheme: AppTheme? = null,
+    amoled: Boolean? = null,
     content: @Composable () -> Unit,
 ) {
     val uiPreferences = Injekt.get<UiPreferences>()
@@ -113,13 +113,13 @@ private fun getThemeColorScheme(
     appTheme: AppTheme,
     isAmoled: Boolean,
 ): ColorScheme {
-    val uiPreferences = Injekt.get<UiPreferences>()
     val colorScheme = when (appTheme) {
         AppTheme.MONET -> {
             MonetColorScheme(LocalContext.current)
         }
         // KMK -->
         AppTheme.CUSTOM -> {
+            val uiPreferences = Injekt.get<UiPreferences>()
             CustomColorScheme(
                 context = LocalContext.current,
                 seed = uiPreferences.colorTheme().get(),

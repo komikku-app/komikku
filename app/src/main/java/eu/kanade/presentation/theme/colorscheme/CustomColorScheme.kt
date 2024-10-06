@@ -14,7 +14,6 @@ internal class CustomColorScheme(
     seed: Int,
     style: PaletteStyle,
 ) : BaseColorScheme() {
-
     private val custom = CustomCompatColorScheme(context, seed, style)
 
     override val darkScheme
@@ -29,7 +28,6 @@ private class CustomCompatColorScheme(
     seed: Int,
     style: PaletteStyle,
 ) : BaseColorScheme() {
-
     override val lightScheme = dynamicColorScheme(
         seedColor = Color(seed),
         isDark = false,
