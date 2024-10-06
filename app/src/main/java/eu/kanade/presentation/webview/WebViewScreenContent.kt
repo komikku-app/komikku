@@ -168,6 +168,12 @@ fun WebViewScreenContent(
                         subtitle = "($blockedCount) $currentUrl",
                         navigateUp = onNavigateUp,
                         navigationIcon = Icons.Outlined.Close,
+                        modifier = Modifier
+                            .clickable {
+                                if (isAdblockEnabled) {
+                                    adFilterModel.showFilterLogDialog()
+                                }
+                            },
                         actions = {
                             AppBarActions(
                                 persistentListOf(
@@ -211,11 +217,7 @@ fun WebViewScreenContent(
                                     AppBar.OverflowAction(
                                         title = "AdBlock ($blockedCount)",
                                         onClick = {
-                                            if (isAdblockEnabled) {
-                                                adFilterModel.showFilterLogDialog()
-                                            } else {
-                                                adFilterModel.showFilterSettingsDialog()
-                                            }
+                                            adFilterModel.showFilterSettingsDialog()
                                         },
                                     ),
                                     // KMK <--
