@@ -380,8 +380,8 @@ fun WebViewScreenContent(
 @Composable
 fun FilterLogDialog(
     adFilterModel: AdFilterModel,
-    modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val blockingInfoMap by adFilterModel.blockingInfoMap.collectAsState()
     val currentUrl by adFilterModel.currentPageUrl.collectAsState()
@@ -478,8 +478,8 @@ fun FilterSettingsDialog(
     adFilter: AdFilter,
     adFilterViewModel: FilterViewModel,
     adFilterModel: AdFilterModel,
-    modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val filters by adFilterViewModel.filters.collectAsState()
     val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
