@@ -100,7 +100,7 @@ fun WebViewScreenContent(
             ): WebResourceResponse? {
                 val result = adFilter.shouldIntercept(view!!, request!!)
                 adFilterModel.onShouldInterceptRequest(result)
-                return result.resourceResponse
+                return super.shouldInterceptRequest(view, request) ?: result.resourceResponse
             }
             // KMK <--
 
