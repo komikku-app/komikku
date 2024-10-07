@@ -303,7 +303,7 @@ class AdblockWebviewActivity :
     }
 
     override fun onShouldInterceptRequest(result: FilterResult) {
-        viewModel.logRequest(result)
+        if (isFilterOn()) viewModel.logRequest(result)
     }
 
     @Deprecated("Deprecated in Java")

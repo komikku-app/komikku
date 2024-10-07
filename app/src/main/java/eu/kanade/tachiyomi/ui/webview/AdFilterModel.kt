@@ -22,7 +22,7 @@ class AdFilterModel(
     val blockedCount by lazy { _blockedCount.asStateFlow() }
     private val _blockedCount by lazy { MutableStateFlow("") }
 
-    val currentPageUrl by lazy { MutableStateFlow("") }
+    private val currentPageUrl by lazy { MutableStateFlow("") }
 
     /**
      * Contains the blocking info for each visited [currentPageUrl]:
@@ -118,7 +118,7 @@ class AdFilterModel(
      * log filtering results of requests.
      */
     fun onShouldInterceptRequest(result: FilterResult) {
-        logRequest(result)
+        if (isFilterOn()) logRequest(result)
     }
 
     fun dismissDialog() {
