@@ -41,7 +41,7 @@ class GetUpcomingManga(
                     mangaList
                 }
             }
-        }
+    }
 
 
     suspend fun subscribeLibrary(): Flow<List<LibraryManga>> {
@@ -50,8 +50,19 @@ class GetUpcomingManga(
 
         return mangaRepository.getUpcomingManga(includedStatuses)
             .map { mangaList ->
-                mangaList.filter { manga ->
-                    (MANGA_HAS_UNREAD !in restrictions || libraryManga.totalChapters == 0L) &&
+                mangaList.map { manga ->
+                    LibraryManga(
+                        manga = manga,
+                        category = 0L,
+                        totalChapters = 0L,
+                        readCount = 0L,
+                        bookmarkCount = 0L,
+                        latestUpload = 0L,
+                        chapterFetchedAt = 0L,
+                        lastRead = 0L,
+                    )
+                }.filter { libraryManga ->
+                    (MANGA_HAS_UNREAD !in restrictions || libraryManga.unreadCount == 0L) &&
                     (MANGA_NON_READ !in restrictions || libraryManga.totalChapters == 0L || libraryManga.hasStarted)
                 }
             }
