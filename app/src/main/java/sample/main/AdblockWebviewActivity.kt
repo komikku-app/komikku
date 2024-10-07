@@ -81,7 +81,7 @@ class AdblockWebviewActivity :
         blockingInfoDialogFragment = BlockingInfoDialogFragment.newInstance()
 
         binding.countText.setOnClickListener {
-            if (isFilterOn()) {
+            if (filterViewModel.isFilterOn()) {
                 // fix `IllegalStateException: Fragment already added` when double click
                 if (!blockingInfoDialogFragment.isAdded) {
                     blockingInfoDialogFragment.show(supportFragmentManager, null)
@@ -279,9 +279,6 @@ class AdblockWebviewActivity :
         }
     }
 
-    /** At least 1 filter is effective */
-    private fun isFilterOn(): Boolean = filterViewModel.isEnabled.value && filterViewModel.enabledFilterCount.value > 0
-
     /**
      * Update blocked count text
      */
@@ -290,7 +287,7 @@ class AdblockWebviewActivity :
             viewModel.blockingInfoMap.value[viewModel.currentPageUrl.value]?.blockedUrlMap
         val blockedCount = blockedUrlMap?.size
         when {
-            !isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
+            !filterViewModel.isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
                 binding.countText.text = getString(R.string.off)
             }
             blockedCount == null -> {
@@ -303,7 +300,7 @@ class AdblockWebviewActivity :
     }
 
     override fun onShouldInterceptRequest(result: FilterResult) {
-        if (isFilterOn()) viewModel.logRequest(result)
+        if (filterViewModel.isFilterOn()) viewModel.logRequest(result)
     }
 
     @Deprecated("Deprecated in Java")

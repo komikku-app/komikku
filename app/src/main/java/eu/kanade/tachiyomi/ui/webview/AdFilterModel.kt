@@ -88,9 +88,6 @@ class AdFilterModel(
         }
     }
 
-    /** At least 1 filter is effective */
-    private fun isFilterOn(): Boolean = filterViewModel.isEnabled.value && filterViewModel.enabledFilterCount.value > 0
-
     /**
      * Update blocked count text
      */
@@ -99,7 +96,7 @@ class AdFilterModel(
             blockingInfoMap.value[currentPageUrl.value]?.blockedUrlMap
         val blockedCount = blockedUrlMap?.size
         when {
-            !isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
+            !filterViewModel.isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
                 _blockedCount.update { "OFF" }
             }
             blockedCount == null -> {
@@ -118,7 +115,7 @@ class AdFilterModel(
      * log filtering results of requests.
      */
     fun onShouldInterceptRequest(result: FilterResult) {
-        if (isFilterOn()) logRequest(result)
+        if (filterViewModel.isFilterOn()) logRequest(result)
     }
 
     fun dismissDialog() {
