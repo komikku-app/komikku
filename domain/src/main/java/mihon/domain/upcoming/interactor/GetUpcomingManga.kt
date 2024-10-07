@@ -28,8 +28,21 @@ class GetUpcomingManga(
     )
 
     suspend fun subscribe(): Flow<List<Manga>> {
+        val libraryPreferences: LibraryPreferences = Injekt.get()
+        val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
+
         return mangaRepository.getUpcomingManga(includedStatuses)
-    }
+            .map { mangaList ->
+                if (MANGA_NON_COMPLETED in restrictions) {
+                    mangaList.filter { manga ->
+                        manga.status.toInt() != SManga.COMPLETED
+                    }
+                } else {
+                    mangaList
+                }
+            }
+        }
+
 
     suspend fun subscribeLibrary(): Flow<List<LibraryManga>> {
         val libraryPreferences: LibraryPreferences = Injekt.get()
@@ -38,9 +51,8 @@ class GetUpcomingManga(
         return mangaRepository.getUpcomingManga(includedStatuses)
             .map { mangaList ->
                 mangaList.filter { manga ->
-                    !(MANGA_NON_COMPLETED in restrictions && manga.status.toInt() == SManga.COMPLETED)
-                        (MANGA_HAS_UNREAD !in restrictions || libraryManga.unreadCount == 0L) &&
-                        (MANGA_NON_READ !in restrictions || libraryManga.totalChapters == 0L || libraryManga.hasStarted)
+                    (MANGA_HAS_UNREAD !in restrictions || libraryManga.totalChapters == 0L) &&
+                    (MANGA_NON_READ !in restrictions || libraryManga.totalChapters == 0L || libraryManga.hasStarted)
                 }
             }
     }
