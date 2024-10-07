@@ -16,7 +16,6 @@ class WebViewScreen(
     private val initialTitle: String? = null,
     private val sourceId: Long? = null,
 ) : Screen(), AssistContentScreen {
-
     private var assistUrl: String? = null
 
     override fun onProvideAssistUrl() = assistUrl
@@ -26,8 +25,9 @@ class WebViewScreen(
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val screenModel = rememberScreenModel { WebViewScreenModel(sourceId) }
+
         // KMK -->
-        val adFilter = AdFilter.get()
+        val adFilter = AdFilter.get(context)
         val adFilterViewModel = adFilter.viewModel
         val adFilterModel = remember { AdFilterModel(filterViewModel = adFilterViewModel) }
         // KMK <--

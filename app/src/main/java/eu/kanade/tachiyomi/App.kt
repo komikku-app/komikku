@@ -65,7 +65,6 @@ import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
 import exh.log.XLogLogcatLogger
 import exh.log.xLogD
-import io.github.edsuns.adfilter.AdFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -198,11 +197,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppStart) {
             SyncDataJob.startNow(this@App)
         }
-
-        // KMK -->
-        // Start ad-filter.
-        AdFilter.create(applicationContext)
-        // KMK <--
 
         initializeMigrator()
     }

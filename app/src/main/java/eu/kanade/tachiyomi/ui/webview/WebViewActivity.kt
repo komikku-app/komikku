@@ -28,7 +28,6 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 class WebViewActivity : BaseActivity() {
-
     private val sourceManager: SourceManager by injectLazy()
     private val network: NetworkHelper by injectLazy()
 
@@ -71,7 +70,7 @@ class WebViewActivity : BaseActivity() {
 
         setComposeContent {
             // KMK -->
-            val adFilter = AdFilter.get()
+            val adFilter = AdFilter.get(applicationContext)
             val adFilterViewModel = adFilter.viewModel
             val adFilterModel = remember { AdFilterModel(filterViewModel = adFilterViewModel) }
             // KMK <--
