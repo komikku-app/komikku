@@ -19,6 +19,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.kevinnzou.web.AccompanistWebViewClient
 import com.kevinnzou.web.LoadingState
@@ -89,6 +91,12 @@ fun WebViewScreenContent(
     val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
     val workToFilterMap by adFilterViewModel.workToFilterMap.collectAsState()
 
+    LaunchedEffect(key1 = Unit) {
+        adFilter.jobWatcher(
+            lifecycleScope = lifecycleOwner.lifecycleScope,
+            lifecycle = lifecycleOwner.lifecycle,
+        )
+    }
     // KMK <--
 
     val webClient = remember {
@@ -274,23 +282,6 @@ fun WebViewScreenContent(
                 // Setup AdblockAndroid for your WebView.
                 adFilter.setupWebView(webView)
 
-                // Add filter list subscriptions on first installation.
-                if (!adFilter.hasInstallation) {
-                    val map = mapOf(
-                        "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
-                        "EasyPrivacy Lite" to "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
-                        "AdGuard Tracking Protection" to "https://filters.adtidy.org/extension/chromium/filters/3.txt",
-                        "AdGuard Annoyances" to "https://filters.adtidy.org/extension/chromium/filters/14.txt",
-                        "AdGuard Chinese" to "https://filters.adtidy.org/extension/chromium/filters/224.txt",
-                        "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt",
-                    )
-                    for ((key, value) in map) {
-                        val subscription = adFilterViewModel.addFilter(key, value)
-                        // filterViewModel.download(key)
-                        adFilterViewModel.download(subscription.id)
-                    }
-                }
-
                 // Observe `blockingInfoMap` to update the blocking count
                 scope.launch {
                     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -319,6 +310,22 @@ fun WebViewScreenContent(
                             adFilterModel.dirtyBlockingInfo = true
                             adFilterModel.updateBlockedCount()
                         }
+                    }
+                }
+
+                // Add filter list subscriptions on first installation.
+                if (!adFilter.hasInstallation) {
+                    val map = mapOf(
+                        "AdGuard Base" to "https://filters.adtidy.org/extension/chromium/filters/2.txt",
+                        "EasyPrivacy Lite" to "https://filters.adtidy.org/extension/chromium/filters/118_optimized.txt",
+                        "AdGuard Tracking Protection" to "https://filters.adtidy.org/extension/chromium/filters/3.txt",
+                        "AdGuard Annoyances" to "https://filters.adtidy.org/extension/chromium/filters/14.txt",
+                        "AdGuard Chinese" to "https://filters.adtidy.org/extension/chromium/filters/224.txt",
+                        "NoCoin Filter List" to "https://filters.adtidy.org/extension/chromium/filters/242.txt",
+                    )
+                    for ((key, value) in map) {
+                        val subscription = adFilterViewModel.addFilter(name = key, url = value)
+                        adFilterViewModel.download(subscription.id)
                     }
                 }
                 // KMK <--
