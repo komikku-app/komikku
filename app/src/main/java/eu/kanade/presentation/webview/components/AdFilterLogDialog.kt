@@ -72,12 +72,12 @@ fun AdFilterLogDialogContent(
                     text = "Blocked $blockedUrlCount connection(s)",
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     text = "${blockingInfo?.blockedRequests ?: 0} time(s) blocked" +
                         blockingInfo?.let { " / ${it.allRequests} request(s)" },
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.basicMarquee(
