@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 /**
  * Created by Edsuns@qq.com on 2021/1/1.
  */
-class SettingsActivity : AppCompatActivity() {
+class AdblockSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
     private lateinit var viewModel: FilterViewModel

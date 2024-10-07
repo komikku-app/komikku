@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import sample.hideKeyboard
 import sample.main.blocking.BlockingInfoDialogFragment
-import sample.settings.SettingsActivity
+import sample.settings.AdblockSettingsActivity
 import sample.smartUrlFilter
 import java.util.Locale
 
@@ -66,7 +66,7 @@ class AdblockWebviewActivity :
                 R.id.menuRefresh -> webView.reload()
                 R.id.menuForward -> webView.goForward()
                 R.id.menuSettings ->
-                    startActivity(Intent(this, SettingsActivity::class.java))
+                    startActivity(Intent(this, AdblockSettingsActivity::class.java))
                 else -> finish()
             }
             true
@@ -87,7 +87,7 @@ class AdblockWebviewActivity :
                     blockingInfoDialogFragment.show(supportFragmentManager, null)
                 }
             } else {
-                startActivity(Intent(this, SettingsActivity::class.java))
+                startActivity(Intent(this, AdblockSettingsActivity::class.java))
             }
         }
 
@@ -126,6 +126,7 @@ class AdblockWebviewActivity :
                 event.action == KeyEvent.ACTION_DOWN
             ) {
                 val urlIn = urlText.text.toString()
+                // If input text is not an URL then perform web-search
                 webView.loadUrl(
                     urlIn.smartUrlFilter() ?: URLUtil.composeSearchUrl(
                         urlIn,
@@ -197,7 +198,7 @@ class AdblockWebviewActivity :
         }
 
         /*
-         Monitor filter's work (update/download/install) to perform the follow-up actions.
+         Monitor worker's work finished (download/install) to perform the corresponding actions.
          TODO: This work will run in background forever. Remember to cancel it to avoid memory leak.
          */
         @Suppress("UNUSED_VARIABLE")

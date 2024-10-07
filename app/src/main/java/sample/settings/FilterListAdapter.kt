@@ -123,6 +123,7 @@ class FilterListAdapter(
                             viewModel.renameFilter(it.id, renameEdit.text.toString())
                         }.show()
                 }
+
                 1 -> {
                     val clipboardManager =
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -130,6 +131,7 @@ class FilterListAdapter(
                     clipboardManager.setPrimaryClip(clipData)
                     Toast.makeText(context, R.string.url_copied, Toast.LENGTH_SHORT).show()
                 }
+
                 2 -> {
                     if (it.downloadState.isRunning) {
                         viewModel.cancelDownload(it.id)
@@ -137,6 +139,7 @@ class FilterListAdapter(
                         viewModel.download(it.id)
                     }
                 }
+
                 3 -> viewModel.removeFilter(it.id)
                 else -> return
             }

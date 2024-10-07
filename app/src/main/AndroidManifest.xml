@@ -175,7 +175,7 @@
             android:exported="false" />
 
         <activity
-            android:name="sample.settings.SettingsActivity"
+            android:name="sample.settings.AdblockSettingsActivity"
             android:configChanges="uiMode|orientation|screenSize"
             android:exported="false" />
 
