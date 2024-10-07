@@ -21,16 +21,21 @@ class GetUpcomingManga(
         SManga.PUBLISHING_FINISHED.toLong(),
         SManga.CANCELLED.toLong(),
         SManga.ON_HIATUS.toLong(),
+        SManga.COMPLETED.toLong(),
     )
 
     suspend fun subscribe(): Flow<List<Manga>> {
         val libraryPreferences: LibraryPreferences = Injekt.get()
+        val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
         return mangaRepository.getUpcomingManga(includedStatuses)
             .map { mangaList ->
-                mangaList.filter { manga ->
-                    val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
-                    !(MANGA_NON_COMPLETED in restrictions && manga.status.toInt() == SManga.COMPLETED)
+                if (MANGA_NON_COMPLETED in restrictions) {
+                    mangaList.filter { manga ->
+                        manga.status.toInt() != SManga.COMPLETED
+                    }
+                } else {
+                    mangaList
                 }
             }
     }
