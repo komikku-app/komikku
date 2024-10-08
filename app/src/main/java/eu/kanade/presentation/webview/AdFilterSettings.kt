@@ -3,10 +3,12 @@ package eu.kanade.presentation.webview
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -28,9 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
@@ -143,11 +148,11 @@ fun AdFilterSettings(
                             filterSwitch = { enabled ->
                                 filterSwitch(filter.id, enabled)
                             },
-                            updateFilter = { cancelUpdateFilter(filter.id) },
-                            cancelUpdateFilter = { updateFilter(filter.id) },
+                            updateFilter = { updateFilter(filter.id) },
+                            cancelUpdateFilter = { cancelUpdateFilter(filter.id) },
                             renameFilter = { renameFilter(filter.id, "") },
-                            removeFilter = { copyUrl(filter.id) },
-                            copyUrl = { removeFilter(filter.id) },
+                            removeFilter = { removeFilter(filter.id) },
+                            copyUrl = { copyUrl(filter.id) },
                         )
                     }
                 }
@@ -171,8 +176,6 @@ private fun FilterSwitchItem(
     removeFilter: () -> Unit,
     copyUrl: () -> Unit,
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,23 +186,43 @@ private fun FilterSwitchItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (showMenu) {
-            FilterDropdownMenu(
-                isRunning = downloadState.isRunning,
-                updateFilter = updateFilter,
-                cancelUpdateFilter = cancelUpdateFilter,
-                renameFilter = renameFilter,
-                removeFilter = removeFilter,
-                copyUrl = copyUrl,
-                onDismissRequest = { showMenu = false },
-            )
-        }
+        var showMenu by remember { mutableStateOf(false) }
+        var offsetPosition by remember { mutableStateOf(Offset.Zero) }
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = { showMenu = true }),
+                .clickable(onClick = { showMenu = true })
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            offsetPosition = event.changes.first().position
+                        }
+                    }
+                },
         ) {
+            if (showMenu) {
+                Box(
+                    modifier = Modifier.offset {
+                        IntOffset(
+                            offsetPosition.x.toInt(),
+                            offsetPosition.y.toInt(),
+                        )
+                    },
+                ) {
+                    FilterDropdownMenu(
+                        isRunning = downloadState.isRunning,
+                        updateFilter = updateFilter,
+                        cancelUpdateFilter = cancelUpdateFilter,
+                        renameFilter = renameFilter,
+                        removeFilter = removeFilter,
+                        copyUrl = copyUrl,
+                        onDismissRequest = { showMenu = false },
+                    )
+                }
+            }
+
             Text(
                 text = name,
                 style = MaterialTheme.typography.bodyLarge,
@@ -266,25 +289,40 @@ private fun FilterDropdownMenu(
         if (isRunning) {
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_cancel)) },
-                onClick = cancelUpdateFilter,
+                onClick = {
+                    onDismissRequest()
+                    cancelUpdateFilter()
+                },
             )
         } else {
             DropdownMenuItem(
                 text = { Text(text = "Update") },
-                onClick = updateFilter,
+                onClick = {
+                    onDismissRequest()
+                    updateFilter()
+                },
             )
         }
         DropdownMenuItem(
             text = { Text(text = "Rename") },
-            onClick = renameFilter,
+            onClick = {
+                onDismissRequest()
+                renameFilter()
+            },
         )
         DropdownMenuItem(
             text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
-            onClick = copyUrl,
+            onClick = {
+                onDismissRequest()
+                copyUrl()
+            },
         )
         DropdownMenuItem(
             text = { Text(text = stringResource(MR.strings.action_delete)) },
-            onClick = removeFilter,
+            onClick = {
+                onDismissRequest()
+                removeFilter()
+            },
         )
     }
 }
