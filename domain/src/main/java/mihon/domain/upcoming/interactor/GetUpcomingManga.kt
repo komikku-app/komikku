@@ -2,16 +2,16 @@ package mihon.domain.upcoming.interactor
 
 import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.coroutines.flow.Flow
-import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.manga.repository.MangaRepository
 import kotlinx.coroutines.flow.map
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
-import uy.kohesive.injekt.api.get
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.repository.MangaRepository
 import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class GetUpcomingManga(
     private val mangaRepository: MangaRepository,
@@ -31,8 +31,7 @@ class GetUpcomingManga(
         val libraryPreferences: LibraryPreferences = Injekt.get()
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
-        return mangaRepository.getUpcomingManga(includedStatuses)
-            .map { mangaList ->
+        return mangaRepository.getUpcomingManga(includedStatuses).map { mangaList ->
                 if (MANGA_NON_COMPLETED in restrictions) {
                     mangaList.filter { manga ->
                         manga.status.toInt() != SManga.COMPLETED
@@ -48,8 +47,7 @@ class GetUpcomingManga(
         val libraryPreferences: LibraryPreferences = Injekt.get()
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
-        return mangaRepository.getUpcomingManga(includedStatuses)
-            .map { mangaList ->
+        return mangaRepository.getUpcomingManga(includedStatuses).map { mangaList ->
                 mangaList.map { manga ->
                     LibraryManga(
                         manga = manga,
@@ -62,8 +60,8 @@ class GetUpcomingManga(
                         lastRead = 0L,
                     )
                 }.filter { libraryManga ->
-                    (MANGA_HAS_UNREAD !in restrictions || libraryManga.unreadCount == 0L) &&
-                    (MANGA_NON_READ !in restrictions || libraryManga.totalChapters == 0L || libraryManga.hasStarted)
+                    (MANGA_HAS_UNREAD in restrictions && libraryManga.unreadCount != 0L) ||
+                    (MANGA_NON_READ in restrictions && libraryManga.totalChapters > 0L && !libraryManga.hasStarted)
                 }
             }
     }
