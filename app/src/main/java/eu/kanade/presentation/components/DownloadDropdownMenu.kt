@@ -5,7 +5,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.DownloadAction
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
@@ -19,7 +18,7 @@ fun DownloadDropdownMenu(
     onDownloadClicked: (DownloadAction) -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
-    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    offset: DpOffset = DpOffset.Zero,
     // KMK <--
 ) {
     val options = persistentListOf(

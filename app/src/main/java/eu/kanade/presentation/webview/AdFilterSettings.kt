@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.DpOffset
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
@@ -121,53 +122,6 @@ fun AdFilterSettings(
             )
             HorizontalDivider()
 
-            var showMenu by remember { mutableStateOf(false) }
-            var selectedID by remember { mutableStateOf("") }
-
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-            ) {
-                if (filters[selectedID]?.downloadState?.isRunning == true) {
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(MR.strings.action_cancel)) },
-                        onClick = {
-                            cancelUpdateFilter(selectedID)
-                            showMenu = false
-                        },
-                    )
-                } else {
-                    DropdownMenuItem(
-                        text = { Text(text = "Update") },
-                        onClick = {
-                            updateFilter(selectedID)
-                            showMenu = false
-                        },
-                    )
-                }
-                DropdownMenuItem(
-                    text = { Text(text = "Rename") },
-                    onClick = {
-                        renameFilter(selectedID, "")
-                        showMenu = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
-                    onClick = {
-                        copyUrl(selectedID)
-                        showMenu = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(MR.strings.action_delete)) },
-                    onClick = {
-                        removeFilter(selectedID)
-                        showMenu = false
-                    },
-                )
-            }
-
             if (isAdblockEnabled) {
                 ScrollbarLazyColumn(
                     modifier = Modifier
@@ -189,10 +143,11 @@ fun AdFilterSettings(
                             filterSwitch = { enabled ->
                                 filterSwitch(filter.id, enabled)
                             },
-                            onClick = {
-                                selectedID = filter.id
-                                showMenu = true
-                            },
+                            updateFilter = { cancelUpdateFilter(filter.id) },
+                            cancelUpdateFilter = { updateFilter(filter.id) },
+                            renameFilter = { renameFilter(filter.id, "") },
+                            removeFilter = { copyUrl(filter.id) },
+                            copyUrl = { removeFilter(filter.id) },
                         )
                     }
                 }
@@ -210,8 +165,14 @@ private fun FilterSwitchItem(
     updateTime: String,
     filtersCount: Int,
     filterSwitch: (Boolean) -> Unit,
-    onClick: () -> Unit,
+    updateFilter: () -> Unit,
+    cancelUpdateFilter: () -> Unit,
+    renameFilter: () -> Unit,
+    removeFilter: () -> Unit,
+    copyUrl: () -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -222,10 +183,22 @@ private fun FilterSwitchItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (showMenu) {
+            FilterDropdownMenu(
+                isRunning = downloadState.isRunning,
+                updateFilter = updateFilter,
+                cancelUpdateFilter = cancelUpdateFilter,
+                renameFilter = renameFilter,
+                removeFilter = removeFilter,
+                copyUrl = copyUrl,
+                onDismissRequest = { showMenu = false },
+            )
+        }
+
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = onClick),
+                .clickable(onClick = { showMenu = true }),
         ) {
             Text(
                 text = name,
@@ -275,6 +248,47 @@ private fun FilterSwitchItem(
     }
 }
 
+@Composable
+private fun FilterDropdownMenu(
+    isRunning: Boolean,
+    updateFilter: () -> Unit,
+    cancelUpdateFilter: () -> Unit,
+    renameFilter: () -> Unit,
+    removeFilter: () -> Unit,
+    copyUrl: () -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismissRequest,
+        offset = DpOffset.Zero,
+    ) {
+        if (isRunning) {
+            DropdownMenuItem(
+                text = { Text(text = stringResource(MR.strings.action_cancel)) },
+                onClick = cancelUpdateFilter,
+            )
+        } else {
+            DropdownMenuItem(
+                text = { Text(text = "Update") },
+                onClick = updateFilter,
+            )
+        }
+        DropdownMenuItem(
+            text = { Text(text = "Rename") },
+            onClick = renameFilter,
+        )
+        DropdownMenuItem(
+            text = { Text(text = stringResource(MR.strings.action_copy_to_clipboard)) },
+            onClick = copyUrl,
+        )
+        DropdownMenuItem(
+            text = { Text(text = stringResource(MR.strings.action_delete)) },
+            onClick = removeFilter,
+        )
+    }
+}
+
 @PreviewLightDark
 @Composable
 private fun FilterSwitchPreview() {
@@ -288,7 +302,11 @@ private fun FilterSwitchPreview() {
                 updateTime = "Today",
                 filtersCount = 1000,
                 filterSwitch = { },
-                onClick = { },
+                updateFilter = { },
+                cancelUpdateFilter = { },
+                renameFilter = { },
+                removeFilter = { },
+                copyUrl = { },
             )
         }
     }
