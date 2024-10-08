@@ -46,7 +46,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.webview.components.AdFilterLogDialog
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.ui.webview.AdFilterModel
+import eu.kanade.tachiyomi.ui.webview.AdblockWebviewModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
@@ -70,7 +70,7 @@ fun WebViewScreenContent(
     // KMK -->
     adFilter: AdFilter,
     adFilterViewModel: FilterViewModel,
-    adFilterModel: AdFilterModel,
+    adblockWebviewModel: AdblockWebviewModel,
     modifier: Modifier = Modifier,
     // KMK <--
     headers: Map<String, String> = emptyMap(),
@@ -87,7 +87,7 @@ fun WebViewScreenContent(
     // KMK -->
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val blockedCount by adFilterModel.blockedCount.collectAsState()
+    val blockedCount by adblockWebviewModel.blockedCount.collectAsState()
     val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
     val workToFilterMap by adFilterViewModel.workToFilterMap.collectAsState()
 
@@ -107,7 +107,7 @@ fun WebViewScreenContent(
                 request: WebResourceRequest?,
             ): WebResourceResponse? {
                 val result = adFilter.shouldIntercept(view!!, request!!)
-                adFilterModel.onShouldInterceptRequest(result)
+                adblockWebviewModel.onShouldInterceptRequest(result)
                 return super.shouldInterceptRequest(view, request) ?: result.resourceResponse
             }
             // KMK <--
@@ -115,7 +115,7 @@ fun WebViewScreenContent(
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 // KMK -->
-                adFilterModel.onPageStarted(url)
+                adblockWebviewModel.onPageStarted(url)
                 adFilter.performScript(view, url)
                 // KMK <--
                 url?.let {
@@ -179,7 +179,7 @@ fun WebViewScreenContent(
                         modifier = Modifier
                             .clickable {
                                 if (isAdblockEnabled) {
-                                    adFilterModel.showFilterLogDialog()
+                                    adblockWebviewModel.showFilterLogDialog()
                                 }
                             },
                         actions = {
@@ -225,7 +225,7 @@ fun WebViewScreenContent(
                                     AppBar.OverflowAction(
                                         title = "AdBlock ($blockedCount)",
                                         onClick = {
-                                            adFilterModel.showFilterSettingsDialog()
+                                            adblockWebviewModel.showFilterSettingsDialog()
                                         },
                                     ),
                                     // KMK <--
@@ -285,8 +285,8 @@ fun WebViewScreenContent(
                 // Observe `blockingInfoMap` to update the blocking count
                 scope.launch {
                     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        adFilterModel.blockingInfoMap.collect {
-                            adFilterModel.updateBlockedCount()
+                        adblockWebviewModel.blockingInfoMap.collect {
+                            adblockWebviewModel.updateBlockedCount()
                         }
                     }
                 }
@@ -295,7 +295,7 @@ fun WebViewScreenContent(
                 scope.launch {
                     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                         adFilterViewModel.isEnabled.collect {
-                            adFilterModel.updateBlockedCount()
+                            adblockWebviewModel.updateBlockedCount()
                         }
                     }
                 }
@@ -307,8 +307,8 @@ fun WebViewScreenContent(
                             // Clear cache when there are changes to the filter.
                             // You need to refresh the page manually to make the changes take effect.
                             webView.clearCache(false)
-                            adFilterModel.dirtyBlockingInfo = true
-                            adFilterModel.updateBlockedCount()
+                            adblockWebviewModel.dirtyBlockingInfo = true
+                            adblockWebviewModel.updateBlockedCount()
                         }
                     }
                 }
@@ -345,19 +345,19 @@ fun WebViewScreenContent(
         )
     }
 
-    val dialog by adFilterModel.dialog.collectAsState()
+    val dialog by adblockWebviewModel.dialog.collectAsState()
     dialog?.let {
-        val onDismissRequest = adFilterModel::dismissDialog
+        val onDismissRequest = adblockWebviewModel::dismissDialog
         val filters by adFilterViewModel.filters.collectAsState()
-        val blockingInfoMap by adFilterModel.blockingInfoMap.collectAsState()
+        val blockingInfoMap by adblockWebviewModel.blockingInfoMap.collectAsState()
         when (it) {
-            is AdFilterModel.Dialog.FilterLogDialog -> {
+            is AdblockWebviewModel.Dialog.FilterLogDialog -> {
                 AdFilterLogDialog(
                     blockingInfo = blockingInfoMap[currentUrl],
                     onAdBlockSettingClick = {
-                        adFilterModel.showFilterSettingsDialog(
+                        adblockWebviewModel.showFilterSettingsDialog(
                             onDismissDialog = {
-                                adFilterModel.showFilterLogDialog()
+                                adblockWebviewModel.showFilterLogDialog()
                             },
                         )
                     },
@@ -365,7 +365,7 @@ fun WebViewScreenContent(
                 )
             }
 
-            is AdFilterModel.Dialog.FilterSettingsDialog -> {
+            is AdblockWebviewModel.Dialog.FilterSettingsDialog -> {
                 AdFilterSettings(
                     filters = filters.toPersistentHashMap(),
                     isAdblockEnabled = isAdblockEnabled,

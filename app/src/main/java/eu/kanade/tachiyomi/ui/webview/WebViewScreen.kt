@@ -29,7 +29,7 @@ class WebViewScreen(
         // KMK -->
         val adFilter = AdFilter.get(context)
         val adFilterViewModel = adFilter.viewModel
-        val adFilterModel = remember { AdFilterModel(filterViewModel = adFilterViewModel) }
+        val adblockWebviewModel = remember { AdblockWebviewModel(filterViewModel = adFilterViewModel) }
         // KMK <--
 
         WebViewScreenContent(
@@ -44,7 +44,7 @@ class WebViewScreen(
             // KMK -->
             adFilter = adFilter,
             adFilterViewModel = adFilterViewModel,
-            adFilterModel = adFilterModel,
+            adblockWebviewModel = adblockWebviewModel,
             // KMK <--
         )
     }

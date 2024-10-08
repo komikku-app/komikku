@@ -13,7 +13,7 @@ import tachiyomi.core.common.util.lang.launchUI
 import timber.log.Timber
 import java.util.Locale
 
-class AdFilterModel(
+class AdblockWebviewModel(
     val filterViewModel: FilterViewModel,
 ) {
     val dialog = MutableStateFlow<Dialog?>(null)
