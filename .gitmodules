@@ -1,0 +1,3 @@
+[submodule "AdblockAndroid"]
+	path = AdblockAndroid
+	url = git@github.com:komikku-app/AdblockAndroid.git

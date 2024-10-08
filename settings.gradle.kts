@@ -61,6 +61,23 @@ include(":presentation-widget")
 include(":source-api")
 include(":source-local")
 
+// Can either create symlink or set project path like below
 include(":ad-filter")
+project(":ad-filter").projectDir = file("AdblockAndroid/ad-filter")
 include(":adblock-client")
-//includeBuild("../AdblockAndroid")
+project(":adblock-client").projectDir = file("AdblockAndroid/adblock-client")
+
+/*
+// Composite build. Would need to manually create local.properties inside AdblockAndroid for it to sync.
+includeBuild("AdblockAndroid") {
+    dependencySubstitution {
+        substitute(module("io.github.edsuns:adblock-client"))
+            .using(project(":adblock-client"))
+    }
+
+    dependencySubstitution {
+        substitute(module("io.github.edsuns:ad-filter"))
+            .using(project(":ad-filter"))
+    }
+}
+*/
