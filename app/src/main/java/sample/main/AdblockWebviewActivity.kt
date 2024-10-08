@@ -203,7 +203,7 @@ class AdblockWebviewActivity :
          */
         @Suppress("UNUSED_VARIABLE")
         val jobWatcher = filter.jobWatcher(
-            inBackground = true,
+            persistent = true,
             lifecycleScope = null,
             lifecycle = null,
         )

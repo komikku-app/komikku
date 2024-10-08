@@ -91,7 +91,7 @@ fun WebViewScreenContent(
     val isAdblockEnabled by adFilterViewModel.isEnabled.collectAsState()
     val workToFilterMap by adFilterViewModel.workToFilterMap.collectAsState()
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(Unit) {
         adFilter.jobWatcher(
             lifecycleScope = lifecycleOwner.lifecycleScope,
             lifecycle = lifecycleOwner.lifecycle,
