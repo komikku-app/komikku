@@ -32,37 +32,36 @@ class GetUpcomingManga(
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
         return mangaRepository.getUpcomingManga(includedStatuses).map { mangaList ->
-                if (MANGA_NON_COMPLETED in restrictions) {
-                    mangaList.filter { manga ->
-                        manga.status.toInt() != SManga.COMPLETED
-                    }
-                } else {
-                    mangaList
+            if (MANGA_NON_COMPLETED in restrictions) {
+                mangaList.filter { manga ->
+                    manga.status.toInt() != SManga.COMPLETED
                 }
+            } else {
+                mangaList
             }
+        }
     }
-
 
     suspend fun subscribeLibrary(): Flow<List<LibraryManga>> {
         val libraryPreferences: LibraryPreferences = Injekt.get()
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
 
         return mangaRepository.getUpcomingManga(includedStatuses).map { mangaList ->
-                mangaList.map { manga ->
-                    LibraryManga(
-                        manga = manga,
-                        category = 0L,
-                        totalChapters = 0L,
-                        readCount = 0L,
-                        bookmarkCount = 0L,
-                        latestUpload = 0L,
-                        chapterFetchedAt = 0L,
-                        lastRead = 0L,
-                    )
-                }.filter { libraryManga ->
-                    (MANGA_HAS_UNREAD in restrictions && libraryManga.unreadCount != 0L) ||
+            mangaList.map { manga ->
+                LibraryManga(
+                    manga = manga,
+                    category = 0L,
+                    totalChapters = 0L,
+                    readCount = 0L,
+                    bookmarkCount = 0L,
+                    latestUpload = 0L,
+                    chapterFetchedAt = 0L,
+                    lastRead = 0L,
+                )
+            }.filter { libraryManga ->
+                (MANGA_HAS_UNREAD in restrictions && libraryManga.unreadCount != 0L) ||
                     (MANGA_NON_READ in restrictions && libraryManga.totalChapters > 0L && !libraryManga.hasStarted)
-                }
             }
+        }
     }
 }
