@@ -278,10 +278,10 @@ dependencies {
     implementation(libs.compose.grid)
 
     // KMK -->
-    implementation(libs.palette.ktx)
-    implementation(libs.material.kolor)
-    implementation(libs.haze)
-    implementation(compose.colorpicker)
+    implementation(kmk.palette.ktx)
+    implementation(kmk.material.kolor)
+    implementation(kmk.haze)
+    implementation(kmk.colorpicker)
     implementation(projects.flagkit)
 
     implementation(projects.adFilter)
@@ -289,7 +289,7 @@ dependencies {
     // Composite build
     // implementation("io.github.edsuns:adblock-client")
     // implementation("io.github.edsuns:ad-filter")
-    implementation("com.github.Edsuns:SmoothProgressAnimator:1.0")
+    implementation(adblock.smoothprogressanimator)
     // KMK <--
 
     // Logging

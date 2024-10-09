@@ -1,0 +1,11 @@
+[versions]
+
+[libraries]
+palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
+material-kolor = { module = "com.materialkolor:material-kolor", version = "1.7.1" }
+haze = { module = "dev.chrisbanes.haze:haze", version = "0.7.3" }
+colorpicker = { module = "com.github.skydoves:colorpicker-compose", version = "1.1.2" }
+
+[plugins]
+
+[bundles]

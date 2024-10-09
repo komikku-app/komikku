@@ -29,6 +29,12 @@ dependencyResolutionManagement {
         create("sylibs") {
             from(files("gradle/sy.versions.toml"))
         }
+        create("kmk") {
+            from(files("gradle/kmk.versions.toml"))
+        }
+        create("adblock") {
+            from(files("AdblockAndroid/gradle/adblock.versions.toml"))
+        }
     }
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -48,10 +54,6 @@ include(":core:common")
 include(":data")
 include(":domain")
 include(":i18n")
-// KMK -->
-include(":i18n-kmk")
-include(":flagkit")
-// KMK <--
 // SY -->
 include(":i18n-sy")
 // SY <--
@@ -61,11 +63,15 @@ include(":presentation-widget")
 include(":source-api")
 include(":source-local")
 
+// KMK -->
+include(":i18n-kmk")
+include(":flagkit")
 // Can either create symlink or set project path like below
 include(":ad-filter")
 project(":ad-filter").projectDir = file("AdblockAndroid/ad-filter")
 include(":adblock-client")
 project(":adblock-client").projectDir = file("AdblockAndroid/adblock-client")
+// KMK <--
 
 /*
 // Composite build. Would need to manually create local.properties inside AdblockAndroid for it to sync.
