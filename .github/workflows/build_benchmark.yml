@@ -31,7 +31,6 @@ jobs:
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          submodules: recursive
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
@@ -68,8 +67,21 @@ jobs:
       - name: Clone Repository (${{ needs.prepare-build.outputs.TAG_NAME }})
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          submodules: recursive
           fetch-depth: 0
+
+      - name: Clone Submodule
+        run: |
+          mkdir -p $HOME/.ssh
+          echo '${{ secrets.ADBLOCKANDROID_DEPLOY }}' > $HOME/.ssh/ssh.key
+          chmod 600 $HOME/.ssh/ssh.key
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/ssh.key"
+          git submodule set-url ${{ env.SUBMODULE_PATH }} git@github.com:${{ env.REPO }}.git
+          git submodule update --init --recursive
+          git submodule set-url ${{ env.SUBMODULE_PATH }} https://github.com/${{ env.REPO }}.git
+          unset GIT_SSH_COMMAND
+        env:
+          SUBMODULE_PATH: AdblockAndroid
+          REPO: komikku-app/AdblockAndroid
 
       - name: Setup Android SDK
         run: |
