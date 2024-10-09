@@ -382,7 +382,10 @@ fun WebViewScreenContent(
                     },
                     updateFilter = adFilterViewModel::download,
                     cancelUpdateFilter = adFilterViewModel::cancelDownload,
-                    addFilter = adFilterViewModel::addFilter,
+                    addFilter = { name, url ->
+                        val filter = adFilterViewModel.addFilter(name, url)
+                        adFilterViewModel.download(filter.id)
+                    },
                     renameFilter = adFilterViewModel::renameFilter,
                     removeFilter = adFilterViewModel::removeFilter,
                     copyUrl = { id ->
