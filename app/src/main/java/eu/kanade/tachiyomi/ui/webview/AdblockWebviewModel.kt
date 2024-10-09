@@ -17,6 +17,7 @@ class AdblockWebviewModel(
     val filterViewModel: FilterViewModel,
 ) {
     val dialog = MutableStateFlow<Dialog?>(null)
+    val filterDialog = MutableStateFlow<FilterDialog?>(null)
 
     /** number of (unique) blocked requests on current page */
     val blockedCount by lazy { _blockedCount.asStateFlow() }
@@ -99,9 +100,11 @@ class AdblockWebviewModel(
             !filterViewModel.isFilterOn() && !filterViewModel.isCustomFilterEnabled() -> {
                 _blockedCount.update { "OFF" }
             }
+
             blockedCount == null -> {
                 _blockedCount.update { "-" }
             }
+
             else -> {
                 _blockedCount.update { String.format(Locale.getDefault(), "%d", blockedUrlMap.size) }
             }
@@ -130,11 +133,28 @@ class AdblockWebviewModel(
         dialog.update { Dialog.FilterSettingsDialog(onDismissDialog) }
     }
 
+    fun openFilterDialog(dialog: FilterDialog) {
+        filterDialog.update { dialog }
+    }
+
+    fun closeFilterDialog() {
+        filterDialog.update { null }
+    }
+
     sealed interface Dialog {
         data object FilterLogDialog : Dialog
 
         data class FilterSettingsDialog(
             val onDismissDialog: (() -> Unit)?,
         ) : Dialog
+    }
+
+    sealed interface FilterDialog {
+        data object AddFilter : FilterDialog
+
+        data class RenameFilter(
+            val id: String,
+            val oldName: String,
+        ) : FilterDialog
     }
 }

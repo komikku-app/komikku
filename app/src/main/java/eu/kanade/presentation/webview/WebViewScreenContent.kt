@@ -346,6 +346,7 @@ fun WebViewScreenContent(
     }
 
     val dialog by adblockWebviewModel.dialog.collectAsState()
+    val filterDialog by adblockWebviewModel.filterDialog.collectAsState()
     dialog?.let {
         val onDismissRequest = adblockWebviewModel::dismissDialog
         val filters by adFilterViewModel.filters.collectAsState()
@@ -381,6 +382,7 @@ fun WebViewScreenContent(
                     },
                     updateFilter = adFilterViewModel::download,
                     cancelUpdateFilter = adFilterViewModel::cancelDownload,
+                    addFilter = adFilterViewModel::addFilter,
                     renameFilter = adFilterViewModel::renameFilter,
                     removeFilter = adFilterViewModel::removeFilter,
                     copyUrl = { id ->
@@ -388,6 +390,9 @@ fun WebViewScreenContent(
                             context.copyToClipboard(filters[id]?.name ?: "", filters[id]?.url ?: "")
                         }
                     },
+                    filterDialog = filterDialog,
+                    openFilterDialog = adblockWebviewModel::openFilterDialog,
+                    closeFilterDialog = adblockWebviewModel::closeFilterDialog,
                 )
             }
         }

@@ -16,20 +16,26 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,16 +49,19 @@ import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import eu.kanade.tachiyomi.ui.webview.AdblockWebviewModel.FilterDialog
 import io.github.edsuns.adfilter.DownloadState
 import io.github.edsuns.adfilter.Filter
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.delay
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun AdFilterSettings(
@@ -64,9 +73,13 @@ fun AdFilterSettings(
     onDismissRequest: () -> Unit,
     updateFilter: (String) -> Unit,
     cancelUpdateFilter: (String) -> Unit,
+    addFilter: (String, String) -> Unit,
     renameFilter: (String, String) -> Unit,
     removeFilter: (String) -> Unit,
     copyUrl: (String) -> Unit,
+    filterDialog: FilterDialog?,
+    openFilterDialog: (FilterDialog) -> Unit,
+    closeFilterDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -104,7 +117,7 @@ fun AdFilterSettings(
                                 title = stringResource(MR.strings.action_add),
                                 icon = Icons.Outlined.Add,
                                 onClick = {
-                                    TODO()
+                                    openFilterDialog(FilterDialog.AddFilter)
                                 },
                             ),
                         ),
@@ -150,13 +163,40 @@ fun AdFilterSettings(
                             },
                             updateFilter = { updateFilter(filter.id) },
                             cancelUpdateFilter = { cancelUpdateFilter(filter.id) },
-                            renameFilter = { renameFilter(filter.id, "") },
+                            renameFilter = {
+                                openFilterDialog(
+                                    FilterDialog.RenameFilter(filter.id, filter.name),
+                                )
+                            },
                             removeFilter = { removeFilter(filter.id) },
                             copyUrl = { copyUrl(filter.id) },
                         )
                     }
                 }
             }
+        }
+
+        when (filterDialog) {
+            is FilterDialog.AddFilter ->
+                FilterAddDialog(
+                    onDismissRequest = closeFilterDialog,
+                    onConfirm = { name, url ->
+                        closeFilterDialog()
+                        addFilter(name, url)
+                    },
+                )
+
+            is FilterDialog.RenameFilter ->
+                FilterRenameDialog(
+                    oldName = filterDialog.oldName,
+                    onDismissRequest = closeFilterDialog,
+                    onConfirm = { name ->
+                        closeFilterDialog()
+                        renameFilter(filterDialog.id, name)
+                    },
+                )
+
+            else -> { }
         }
     }
 }
@@ -324,6 +364,126 @@ private fun FilterDropdownMenu(
                 removeFilter()
             },
         )
+    }
+}
+
+@Composable
+fun FilterAddDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: (String, String) -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    var url by remember { mutableStateOf("") }
+
+    val focusRequester = remember { FocusRequester() }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                enabled = url.isNotBlank(),
+                onClick = {
+                    onConfirm(name.trim(), url.trim())
+                    onDismissRequest()
+                },
+            ) {
+                Text(text = stringResource(MR.strings.action_add))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+        title = {
+            Text(text = "Add filter")
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
+                    value = name,
+                    onValueChange = { name = it },
+                    label = {
+                        Text(text = stringResource(MR.strings.name))
+                    },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
+                    value = url,
+                    onValueChange = { url = it },
+                    label = {
+                        Text(text = "URL")
+                    },
+                    supportingText = {
+                        Text(text = stringResource(MR.strings.information_required_plain))
+                    },
+                    singleLine = true,
+                )
+            }
+        },
+    )
+
+    LaunchedEffect(focusRequester) {
+        // TODO: https://issuetracker.google.com/issues/204502668
+        delay(0.1.seconds)
+        focusRequester.requestFocus()
+    }
+}
+
+@Composable
+fun FilterRenameDialog(
+    oldName: String,
+    onDismissRequest: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var name by remember { mutableStateOf(oldName) }
+
+    val focusRequester = remember { FocusRequester() }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(name.trim())
+                    onDismissRequest()
+                },
+            ) {
+                Text(text = stringResource(MR.strings.action_rename_category))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+        title = {
+            Text(text = "Rename filter")
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
+                    value = name,
+                    onValueChange = { name = it },
+                    label = {
+                        Text(text = stringResource(MR.strings.name))
+                    },
+                    singleLine = true,
+                )
+            }
+        },
+    )
+
+    LaunchedEffect(focusRequester) {
+        // TODO: https://issuetracker.google.com/issues/204502668
+        delay(0.1.seconds)
+        focusRequester.requestFocus()
     }
 }
 
