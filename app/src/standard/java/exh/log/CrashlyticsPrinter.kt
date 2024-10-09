@@ -4,6 +4,7 @@ import com.elvishew.xlog.printer.Printer
 import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.crashlytics
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.util.system.isDevFlavor
 
 class CrashlyticsPrinter(private val logLevel: Int) : Printer {
     /**
@@ -16,7 +17,9 @@ class CrashlyticsPrinter(private val logLevel: Int) : Printer {
     override fun println(logLevel: Int, tag: String?, msg: String?) {
         if (logLevel >= this.logLevel) {
             try {
-                Firebase.crashlytics.log("$logLevel/$tag: $msg")
+                if (!isDevFlavor) {
+                    Firebase.crashlytics.log("$logLevel/$tag: $msg")
+                }
             } catch (t: Throwable) {
                 // Crash in debug if shit like this happens
                 if (BuildConfig.DEBUG) throw t

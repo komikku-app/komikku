@@ -10,7 +10,6 @@ import android.view.WindowManager
 import android.webkit.WebChromeClient.CustomViewCallback
 import java.lang.ref.WeakReference
 
-
 /**
  * Created by Edsuns@qq.com on 2021/4/4.
  */
@@ -31,9 +30,10 @@ object Fullscreen {
         setImmersiveMode(activity, true)
         view.setBackgroundColor(Color.BLACK)
         activity.addContentView(
-            view, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-            )
+            view,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
         )
     }
 
@@ -57,12 +57,14 @@ object Fullscreen {
 
     private fun setImmersiveMode(activity: Activity, enable: Boolean) {
         var flags = activity.window.decorView.systemUiVisibility
-        val immersiveModeFlags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        val immersiveModeFlags = (
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            )
         flags = if (enable) {
             flags or immersiveModeFlags
         } else {
