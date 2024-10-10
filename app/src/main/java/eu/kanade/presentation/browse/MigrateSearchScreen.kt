@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -39,10 +39,11 @@ fun MigrateSearchScreen(
         topBar = { scrollBehavior ->
             // KMK -->
             if (bulkFavoriteState.selectionMode) {
-                SelectionToolbar(
+                BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         state.filteredItems.forEach { (_, result) ->
                             when (result) {
@@ -74,6 +75,7 @@ fun MigrateSearchScreen(
                     scrollBehavior = scrollBehavior,
                     // KMK -->
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    isRunning = bulkFavoriteState.isRunning,
                     // KMK <--
                 )
             }

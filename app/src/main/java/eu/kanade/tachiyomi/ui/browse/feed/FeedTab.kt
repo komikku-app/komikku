@@ -122,7 +122,10 @@ fun feedTab(
                     icon = Icons.Outlined.SwapVert,
                     onClick = { showingFeedOrderScreen.value = true },
                 ),
-                bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                bulkSelectionButton(
+                    isRunning = bulkFavoriteState.isRunning,
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                ),
                 // KMK <--
             )
         },

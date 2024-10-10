@@ -13,7 +13,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -49,10 +49,11 @@ fun GlobalSearchScreen(
         topBar = { scrollBehavior ->
             // KMK -->
             if (bulkFavoriteState.selectionMode) {
-                SelectionToolbar(
+                BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         state.filteredItems.forEach { (_, result) ->
                             when (result) {
@@ -84,6 +85,7 @@ fun GlobalSearchScreen(
                     scrollBehavior = scrollBehavior,
                     // KMK -->
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    isRunning = bulkFavoriteState.isRunning,
                     // KMK <--
                 )
             }

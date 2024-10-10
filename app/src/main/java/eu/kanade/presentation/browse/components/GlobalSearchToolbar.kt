@@ -50,6 +50,7 @@ fun GlobalSearchToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    isRunning: Boolean,
     // KMK <--
 ) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -65,7 +66,7 @@ fun GlobalSearchToolbar(
                 actions = {
                     AppBarActions(
                         actions = persistentListOf(
-                            bulkSelectionButton(toggleSelectionMode),
+                            bulkSelectionButton(isRunning, toggleSelectionMode),
                         ),
                     )
                 },

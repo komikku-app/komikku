@@ -140,10 +140,14 @@ fun DuplicateMangasDialog(
     onOpenManga: () -> Unit,
     onAllowDuplicate: () -> Unit,
     onSkipDuplicate: () -> Unit,
+    stopRunning: () -> Unit,
     duplicatedName: String,
 ) {
     AlertDialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            stopRunning()
+            onDismissRequest()
+        },
         title = {
             Text(text = duplicatedName)
         },
@@ -202,6 +206,7 @@ fun DuplicateMangasDialog(
                 FlowColumn {
                     TextButton(
                         onClick = {
+                            stopRunning()
                             onDismissRequest()
                             onOpenManga()
                         },
@@ -212,6 +217,7 @@ fun DuplicateMangasDialog(
 
                     TextButton(
                         onClick = {
+                            stopRunning()
                             onDismissRequest()
                         },
                         Modifier.align(Alignment.CenterHorizontally),
@@ -235,6 +241,7 @@ fun DuplicateMangasDialogPreview() {
         onAllowDuplicate = { },
         onSkipDuplicate = { },
         duplicatedName = "Berserk",
+        stopRunning = { },
     )
 }
 // KMK <--

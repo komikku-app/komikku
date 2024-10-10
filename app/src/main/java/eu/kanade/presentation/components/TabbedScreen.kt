@@ -66,10 +66,11 @@ fun TabbedScreen(
             val searchEnabled = tab.searchEnabled
             // KMK -->
             if (bulkFavoriteState.selectionMode) {
-                SelectionToolbar(
+                BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         feedState.items?.forEach {
                             it.results?.forEach { manga ->

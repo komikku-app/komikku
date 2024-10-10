@@ -48,6 +48,7 @@ fun BrowseSourceToolbar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    isRunning: Boolean,
     // KMK <--
 ) {
     // Avoid capturing unstable source in actions lambda
@@ -82,7 +83,7 @@ fun BrowseSourceToolbar(
                             )
                         }
                         // KMK -->
-                        add(bulkSelectionButton(toggleSelectionMode))
+                        add(bulkSelectionButton(isRunning, toggleSelectionMode))
                         // KMK <--
                         if (isLocalSource) {
                             if (isConfigurableSource && displayMode != null) {

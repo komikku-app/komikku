@@ -2,13 +2,13 @@ package eu.kanade.tachiyomi.ui.browse
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
@@ -21,6 +21,7 @@ import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.DuplicateMangasDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -112,8 +113,15 @@ class BulkFavoriteScreenModel(
         }
     }
 
+    /**
+     * Called when user click on [BulkSelectionToolbar]'s `Favorite` button.
+     * It will then look for any duplicated mangas.
+     * - If there is any, it will show the [DuplicateMangasDialog].
+     * - If not then it will call the [addFavoriteDuplicate].
+     */
     fun addFavorite(startIdx: Int = 0) {
         screenModelScope.launch {
+            startRunning()
             val mangaWithDup = getDuplicateLibraryManga(startIdx)
             if (mangaWithDup != null) {
                 setDialog(Dialog.AllowDuplicate(mangaWithDup))
@@ -123,10 +131,15 @@ class BulkFavoriteScreenModel(
         }
     }
 
+    /**
+     * Add mangas to library if there is default category or no category exists.
+     * If not, it shows the categories list.
+     */
     fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
         screenModelScope.launch {
             val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             if (mangaList.isEmpty()) {
+                stopRunning()
                 toggleSelectionMode()
                 return@launch
             }
@@ -137,11 +150,13 @@ class BulkFavoriteScreenModel(
             when {
                 // Default category set
                 defaultCategory != null -> {
+                    stopRunning()
                     setMangasCategories(mangaList, listOf(defaultCategory.id), emptyList())
                 }
 
                 // Automatic 'Default' or no categories
                 defaultCategoryId == 0 || categories.isEmpty() -> {
+                    stopRunning()
                     // Automatic 'Default' or no categories
                     setMangasCategories(mangaList, emptyList(), emptyList())
                 }
@@ -160,6 +175,7 @@ class BulkFavoriteScreenModel(
                             }
                         }
                         .toImmutableList()
+                    stopRunning()
                     setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
                 }
             }
@@ -201,6 +217,7 @@ class BulkFavoriteScreenModel(
      */
     fun setMangasCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
         screenModelScope.launchNonCancellable {
+            startRunning()
             mangaList.fastForEach { manga ->
                 val categoryIds = getCategories.await(manga.id)
                     .map { it.id }
@@ -210,6 +227,7 @@ class BulkFavoriteScreenModel(
 
                 moveMangaToCategoriesAndAddToLibrary(manga, categoryIds)
             }
+            stopRunning()
         }
         toggleSelectionMode()
     }
@@ -374,6 +392,18 @@ class BulkFavoriteScreenModel(
         }
     }
 
+    private fun startRunning() {
+        mutableState.update {
+            it.copy(isRunning = true)
+        }
+    }
+
+    fun stopRunning() {
+        mutableState.update {
+            it.copy(isRunning = false)
+        }
+    }
+
     interface Dialog {
         data class RemoveManga(val manga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
@@ -393,6 +423,7 @@ class BulkFavoriteScreenModel(
         val dialog: Dialog? = null,
         val selection: PersistentList<Manga> = persistentListOf(),
         val selectionMode: Boolean = false,
+        val isRunning: Boolean = false,
     )
 }
 
@@ -487,19 +518,17 @@ fun AllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
             bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
         },
         duplicatedName = dialog.duplicatedManga.second.title,
+        stopRunning = bulkFavoriteScreenModel::stopRunning,
     )
 }
 
 @Composable
-fun bulkSelectionButton(toggleSelectionMode: () -> Unit) =
-    AppBar.Action(
-        title = stringResource(KMR.strings.action_bulk_select),
-        icon = Icons.Outlined.Checklist,
-        onClick = toggleSelectionMode,
-    )
-
-@Preview
-@Composable
-fun BulkSelectionButtonPreview() {
-    bulkSelectionButton { }
-}
+fun bulkSelectionButton(
+    isRunning: Boolean,
+    toggleSelectionMode: () -> Unit,
+) = AppBar.Action(
+    title = stringResource(KMR.strings.action_bulk_select),
+    icon = Icons.Outlined.Checklist,
+    iconTint = MaterialTheme.colorScheme.primary.takeIf { isRunning },
+    onClick = toggleSelectionMode,
+)

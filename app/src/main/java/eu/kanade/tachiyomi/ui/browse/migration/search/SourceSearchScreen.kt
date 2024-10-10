@@ -16,8 +16,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
@@ -76,10 +76,11 @@ data class SourceSearchScreen(
             topBar = { scrollBehavior ->
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    SelectionToolbar(
+                    BulkSelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
                                 if (!bulkFavoriteState.selection.contains(manga)) {
@@ -100,7 +101,10 @@ data class SourceSearchScreen(
                         actions = {
                             AppBarActions(
                                 actions = persistentListOf(
-                                    bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                                    bulkSelectionButton(
+                                        isRunning = bulkFavoriteState.isRunning,
+                                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                                    ),
                                 ),
                             )
                         },

@@ -15,7 +15,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
@@ -65,10 +65,11 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
             topBar = { scrollBehavior ->
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    SelectionToolbar(
+                    BulkSelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
                                 if (!bulkFavoriteState.selection.contains(manga)) {
@@ -87,6 +88,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                         scrollBehavior = scrollBehavior,
                         // KMK -->
                         toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                        isRunning = bulkFavoriteState.isRunning,
                         // KMK <--
                     )
                 }

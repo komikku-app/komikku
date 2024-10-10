@@ -34,6 +34,7 @@ fun BrowseSourceSimpleToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    isRunning: Boolean,
     // KMK <--
 ) {
     AppBar(
@@ -56,7 +57,7 @@ fun BrowseSourceSimpleToolbar(
                         onClick = { selectingDisplayMode = true },
                     ),
                     // KMK -->
-                    bulkSelectionButton(toggleSelectionMode),
+                    bulkSelectionButton(isRunning, toggleSelectionMode),
                     // KMK <--
                 ),
             )
