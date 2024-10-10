@@ -12,6 +12,7 @@ import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.max
 
 class SyncChapterProgressWithTrack(
     private val updateChapter: UpdateChapter,
@@ -59,7 +60,8 @@ class SyncChapterProgressWithTrack(
         // only take into account continuous reading
         val localLastRead = sortedChapters.takeWhile { it.read }.lastOrNull()?.chapterNumber ?: 0F
         // Tracker will update to latest read chapter
-        val updatedTrack = remoteTrack.copy(lastChapterRead = localLastRead.toDouble())
+        val lastRead = max(remoteTrack.lastChapterRead, localLastRead.toDouble())
+        val updatedTrack = remoteTrack.copy(lastChapterRead = lastRead)
 
         try {
             // Update Tracker to localLastRead if needed
