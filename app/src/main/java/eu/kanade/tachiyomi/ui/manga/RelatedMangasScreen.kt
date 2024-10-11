@@ -57,11 +57,15 @@ fun RelatedMangasScreen(
                         successState.relatedMangasSorted?.forEach {
                             val relatedManga = it as RelatedManga.Success
                             relatedManga.mangaList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        successState.relatedMangasSorted
+                            ?.map { it as RelatedManga.Success }
+                            ?.flatMap { it.mangaList }
+                            ?.let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {

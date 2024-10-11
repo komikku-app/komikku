@@ -74,11 +74,15 @@ fun TabbedScreen(
                     onSelectAll = {
                         feedState.items?.forEach {
                             it.results?.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        feedState.items
+                            ?.mapNotNull { it.results }
+                            ?.flatten()
+                            ?.let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {

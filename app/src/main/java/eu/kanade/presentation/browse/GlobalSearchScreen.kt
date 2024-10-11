@@ -59,14 +59,19 @@ fun GlobalSearchScreen(
                             when (result) {
                                 is SearchItemResult.Success -> {
                                     result.result.forEach { manga ->
-                                        if (!bulkFavoriteState.selection.contains(manga)) {
-                                            bulkFavoriteScreenModel.select(manga)
-                                        }
+                                        bulkFavoriteScreenModel.select(manga)
                                     }
                                 }
                                 else -> {}
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        bulkFavoriteScreenModel.reverseSelection(
+                            state.filteredItems.values
+                                .filterIsInstance<SearchItemResult.Success>()
+                                .flatMap { it.result },
+                        )
                     },
                 )
             } else {

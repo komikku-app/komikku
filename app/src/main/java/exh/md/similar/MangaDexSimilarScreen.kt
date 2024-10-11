@@ -72,10 +72,11 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
+                        },
+                        onReverseSelection = {
+                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
                         },
                     )
                 } else {

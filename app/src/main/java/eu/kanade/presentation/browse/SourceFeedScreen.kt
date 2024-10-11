@@ -126,11 +126,15 @@ fun SourceFeedScreen(
                     onSelectAll = {
                         items.forEach {
                             it.results?.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        bulkFavoriteScreenModel.reverseSelection(
+                            items.mapNotNull { it.results }
+                                .flatten(),
+                        )
                     },
                 )
             } else {

@@ -34,6 +34,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -89,10 +90,6 @@ class BulkFavoriteScreenModel(
         toggleSelection(manga, toSelectedState = true)
     }
 
-    fun unselect(manga: Manga) {
-        toggleSelection(manga, toSelectedState = false)
-    }
-
     /**
      * @param toSelectedState set to true to only Select, set to false to only Unselect
      */
@@ -105,11 +102,22 @@ class BulkFavoriteScreenModel(
                     list.add(manga)
                 }
             }
-            state.copy(selection = newSelection)
-        }.also {
-            if (state.value.selection.isEmpty()) {
-                toggleSelectionMode()
-            }
+            state.copy(
+                selection = newSelection,
+                selectionMode = newSelection.isNotEmpty(),
+            )
+        }
+    }
+
+    fun reverseSelection(mangas: List<Manga>) {
+        mutableState.update { state ->
+            val newSelection = mangas.filterNot { manga ->
+                state.selection.contains(manga)
+            }.toPersistentList()
+            state.copy(
+                selection = newSelection,
+                selectionMode = newSelection.isNotEmpty(),
+            )
         }
     }
 
