@@ -45,6 +45,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesScreen
@@ -70,10 +71,20 @@ object SettingsSecurityScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
-        val context = LocalContext.current
         val securityPreferences = remember { Injekt.get<SecurityPreferences>() }
-        val authSupported = remember { context.isAuthenticationSupported() }
+        val privacyPreferences = remember { Injekt.get<PrivacyPreferences>() }
+        return listOf(
+            getSecurityGroup(securityPreferences),
+            getFirebaseGroup(privacyPreferences),
+        )
+    }
 
+    @Composable
+    private fun getSecurityGroup(
+        securityPreferences: SecurityPreferences,
+    ): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val authSupported = remember { context.isAuthenticationSupported() }
         val useAuthPref = securityPreferences.useAuthenticator()
         val useAuth by useAuthPref.collectAsState()
 
@@ -81,129 +92,157 @@ object SettingsSecurityScreen : SearchableSettings {
         val isCbzPasswordSet by remember { CbzCrypto.isPasswordSetState(scope) }.collectAsState()
         val passwordProtectDownloads by securityPreferences.passwordProtectDownloads().collectAsState()
 
-        return listOf(
-            Preference.PreferenceItem.SwitchPreference(
-                pref = useAuthPref,
-                title = stringResource(MR.strings.lock_with_biometrics),
-                enabled = authSupported,
-                onValueChanged = {
-                    (context as FragmentActivity).authenticate(
-                        title = context.stringResource(MR.strings.lock_with_biometrics),
-                    )
-                },
-            ),
-            Preference.PreferenceItem.ListPreference(
-                pref = securityPreferences.lockAppAfter(),
-                title = stringResource(MR.strings.lock_when_idle),
-                enabled = authSupported && useAuth,
-                entries = LockAfterValues
-                    .associateWith {
-                        when (it) {
-                            -1 -> stringResource(MR.strings.lock_never)
-                            0 -> stringResource(MR.strings.lock_always)
-                            else -> pluralStringResource(MR.plurals.lock_after_mins, count = it, it)
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.pref_security),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = useAuthPref,
+                    title = stringResource(MR.strings.lock_with_biometrics),
+                    enabled = authSupported,
+                    onValueChanged = {
+                        (context as FragmentActivity).authenticate(
+                            title = context.stringResource(MR.strings.lock_with_biometrics),
+                        )
+                    },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = securityPreferences.lockAppAfter(),
+                    title = stringResource(MR.strings.lock_when_idle),
+                    enabled = authSupported && useAuth,
+                    entries = LockAfterValues
+                        .associateWith {
+                            when (it) {
+                                -1 -> stringResource(MR.strings.lock_never)
+                                0 -> stringResource(MR.strings.lock_always)
+                                else -> pluralStringResource(MR.plurals.lock_after_mins, count = it, it)
+                            }
                         }
+                        .toImmutableMap(),
+                    onValueChanged = {
+                        (context as FragmentActivity).authenticate(
+                            title = context.stringResource(MR.strings.lock_when_idle),
+                        )
+                    },
+                ),
+
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = securityPreferences.hideNotificationContent(),
+                    title = stringResource(MR.strings.hide_notification_content),
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = securityPreferences.secureScreen(),
+                    title = stringResource(MR.strings.secure_screen),
+                    entries = SecurityPreferences.SecureScreenMode.entries
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                ),
+                // SY -->
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = securityPreferences.passwordProtectDownloads(),
+                    title = stringResource(SYMR.strings.password_protect_downloads),
+                    subtitle = stringResource(SYMR.strings.password_protect_downloads_summary),
+                    enabled = isCbzPasswordSet,
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = securityPreferences.encryptionType(),
+                    title = stringResource(SYMR.strings.encryption_type),
+                    entries = SecurityPreferences.EncryptionType.entries
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    enabled = passwordProtectDownloads,
+
+                ),
+                kotlin.run {
+                    var dialogOpen by remember { mutableStateOf(false) }
+                    if (dialogOpen) {
+                        PasswordDialog(
+                            onDismissRequest = { dialogOpen = false },
+                            onReturnPassword = { password ->
+                                dialogOpen = false
+
+                                CbzCrypto.deleteKeyCbz()
+                                securityPreferences.cbzPassword().set(CbzCrypto.encryptCbz(password.replace("\n", "")))
+                            },
+                        )
                     }
-                    .toImmutableMap(),
-                onValueChanged = {
-                    (context as FragmentActivity).authenticate(
-                        title = context.stringResource(MR.strings.lock_when_idle),
-                    )
-                },
-            ),
-            Preference.PreferenceItem.SwitchPreference(
-                pref = securityPreferences.hideNotificationContent(),
-                title = stringResource(MR.strings.hide_notification_content),
-            ),
-            Preference.PreferenceItem.ListPreference(
-                pref = securityPreferences.secureScreen(),
-                title = stringResource(MR.strings.secure_screen),
-                entries = SecurityPreferences.SecureScreenMode.entries
-                    .associateWith { stringResource(it.titleRes) }
-                    .toImmutableMap(),
-            ),
-            // SY -->
-            Preference.PreferenceItem.SwitchPreference(
-                pref = securityPreferences.passwordProtectDownloads(),
-                title = stringResource(SYMR.strings.password_protect_downloads),
-                subtitle = stringResource(SYMR.strings.password_protect_downloads_summary),
-                enabled = isCbzPasswordSet,
-            ),
-            Preference.PreferenceItem.ListPreference(
-                pref = securityPreferences.encryptionType(),
-                title = stringResource(SYMR.strings.encryption_type),
-                entries = SecurityPreferences.EncryptionType.entries
-                    .associateWith { stringResource(it.titleRes) }
-                    .toImmutableMap(),
-                enabled = passwordProtectDownloads,
-
-            ),
-            kotlin.run {
-                var dialogOpen by remember { mutableStateOf(false) }
-                if (dialogOpen) {
-                    PasswordDialog(
-                        onDismissRequest = { dialogOpen = false },
-                        onReturnPassword = { password ->
-                            dialogOpen = false
-
-                            CbzCrypto.deleteKeyCbz()
-                            securityPreferences.cbzPassword().set(CbzCrypto.encryptCbz(password.replace("\n", "")))
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(SYMR.strings.set_cbz_zip_password),
+                        onClick = {
+                            dialogOpen = true
                         },
                     )
-                }
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(SYMR.strings.set_cbz_zip_password),
-                    onClick = {
-                        dialogOpen = true
-                    },
-                )
-            },
-            Preference.PreferenceItem.TextPreference(
-                title = stringResource(SYMR.strings.delete_cbz_archive_password),
-                onClick = {
-                    CbzCrypto.deleteKeyCbz()
-                    securityPreferences.cbzPassword().set("")
                 },
-                enabled = isCbzPasswordSet,
-            ),
-            kotlin.run {
-                val navigator = LocalNavigator.currentOrThrow
-                val count by securityPreferences.authenticatorTimeRanges().collectAsState()
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(SYMR.strings.action_edit_biometric_lock_times),
-                    subtitle = pluralStringResource(
-                        SYMR.plurals.num_lock_times,
-                        count.size,
-                        count.size,
-                    ),
+                    title = stringResource(SYMR.strings.delete_cbz_archive_password),
                     onClick = {
-                        navigator.push(BiometricTimesScreen())
+                        CbzCrypto.deleteKeyCbz()
+                        securityPreferences.cbzPassword().set("")
                     },
-                    enabled = useAuth,
-                )
-            },
-            kotlin.run {
-                val selection by securityPreferences.authenticatorDays().collectAsState()
-                var dialogOpen by remember { mutableStateOf(false) }
-                if (dialogOpen) {
-                    SetLockedDaysDialog(
-                        onDismissRequest = { dialogOpen = false },
-                        initialSelection = selection,
-                        onDaysSelected = {
-                            dialogOpen = false
-                            securityPreferences.authenticatorDays().set(it)
+                    enabled = isCbzPasswordSet,
+                ),
+                kotlin.run {
+                    val navigator = LocalNavigator.currentOrThrow
+                    val count by securityPreferences.authenticatorTimeRanges().collectAsState()
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(SYMR.strings.action_edit_biometric_lock_times),
+                        subtitle = pluralStringResource(
+                            SYMR.plurals.num_lock_times,
+                            count.size,
+                            count.size,
+                        ),
+                        onClick = {
+                            navigator.push(BiometricTimesScreen())
                         },
+                        enabled = useAuth,
                     )
-                }
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(SYMR.strings.biometric_lock_days),
-                    subtitle = stringResource(SYMR.strings.biometric_lock_days_summary),
-                    onClick = { dialogOpen = true },
-                    enabled = useAuth,
-                )
-            },
-            // SY <--
-            Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.secure_screen_summary)),
+                },
+                kotlin.run {
+                    val selection by securityPreferences.authenticatorDays().collectAsState()
+                    var dialogOpen by remember { mutableStateOf(false) }
+                    if (dialogOpen) {
+                        SetLockedDaysDialog(
+                            onDismissRequest = { dialogOpen = false },
+                            initialSelection = selection,
+                            onDaysSelected = {
+                                dialogOpen = false
+                                securityPreferences.authenticatorDays().set(it)
+                            },
+                        )
+                    }
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(SYMR.strings.biometric_lock_days),
+                        subtitle = stringResource(SYMR.strings.biometric_lock_days_summary),
+                        onClick = { dialogOpen = true },
+                        enabled = useAuth,
+                    )
+                },
+                // SY <--
+                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.secure_screen_summary)),
+            ),
+        )
+    }
+
+    @Composable
+    private fun getFirebaseGroup(
+        privacyPreferences: PrivacyPreferences,
+    ): Preference.PreferenceGroup {
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.pref_firebase),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = privacyPreferences.crashlytics(),
+                    title = stringResource(MR.strings.onboarding_permission_crashlytics),
+                    subtitle = stringResource(MR.strings.onboarding_permission_crashlytics_description),
+                ),
+                /*
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = privacyPreferences.analytics(),
+                    title = stringResource(MR.strings.onboarding_permission_analytics),
+                    subtitle = stringResource(MR.strings.onboarding_permission_analytics_description),
+                ),
+                 */
+                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.firebase_summary)),
+            ),
         )
     }
 
