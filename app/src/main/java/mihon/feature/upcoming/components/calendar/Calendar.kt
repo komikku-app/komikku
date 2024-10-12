@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import io.woong.compose.grid.SimpleGridCells
 import io.woong.compose.grid.VerticalGrid
 import kotlinx.collections.immutable.ImmutableMap
@@ -117,15 +119,19 @@ private fun CalendarGrid(
 @Preview
 @Composable
 fun CalendarDayPreview() {
-    Calendar(
-        selectedYearMonth = YearMonth.now(),
-        events = persistentMapOf(
-            LocalDate.now() to 3,
-            LocalDate.now().plusDays(1) to 1,
-            LocalDate.now().minusDays(15) to 1,
-        ),
-        setSelectedYearMonth = {},
-        onClickDay = {},
-    )
+    TachiyomiPreviewTheme {
+        Surface {
+            Calendar(
+                selectedYearMonth = YearMonth.now(),
+                events = persistentMapOf(
+                    LocalDate.now() to 3,
+                    LocalDate.now().plusDays(1) to 1,
+                    LocalDate.now().minusDays(15) to 1,
+                ),
+                setSelectedYearMonth = {},
+                onClickDay = {},
+            )
+        }
+    }
 }
 // KMK <--
