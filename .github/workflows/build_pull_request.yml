@@ -6,8 +6,16 @@ on:
   #    paths-ignore:
   #      - '**.md'
   pull_request:
-    paths-ignore:
-      - '**.md'
+    paths:
+      - '**'
+      - '!i18n/src/commonMain/moko-resources/**/strings.xml'
+      - '!i18n/src/commonMain/moko-resources/**/plurals.xml'
+      - 'i18n/src/commonMain/moko-resources/base/strings.xml'
+      - 'i18n/src/commonMain/moko-resources/base/plurals.xml'
+      - 'i18n-sy/src/commonMain/moko-resources/base/strings.xml'
+      - 'i18n-sy/src/commonMain/moko-resources/base/plurals.xml'
+      - 'i18n-kmk/src/commonMain/moko-resources/base/strings.xml'
+      - 'i18n-kmk/src/commonMain/moko-resources/base/plurals.xml'
   # Dispatch or Manual triggers
   workflow_dispatch:
 
