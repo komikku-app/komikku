@@ -119,6 +119,7 @@ import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.random.Random
 import tachiyomi.domain.source.model.Source as DomainSource
 
 /**
@@ -461,6 +462,9 @@ class LibraryScreenModel(
                     val item2Score = trackerScores[i2.libraryManga.id] ?: defaultTrackerScoreSortValue
                     item1Score.compareTo(item2Score)
                 }
+                LibrarySort.Type.Random -> {
+                    error("Why Are We Still Here? Just To Suffer?")
+                }
                 // SY -->
                 LibrarySort.Type.TagList -> {
                     val manga1IndexOfTag = listOfTags.indexOfFirst {
@@ -476,14 +480,14 @@ class LibraryScreenModel(
         }
 
         return mapValues { (key, value) ->
-            val comparator = key.sort.comparator()
-                .let {
-                    if (/* SY --> */ groupSort?.isAscending ?: /* SY <-- */ key.sort.isAscending) {
-                        it
-                    } else {
-                        it.reversed()
-                    }
-                }
+            // SY -->
+            val sort = groupSort ?: key.sort
+            if (sort.type == LibrarySort.Type.Random) {
+                return@mapValues value.shuffled(Random(libraryPreferences.randomSortSeed().get()))
+            }
+            val comparator = sort.comparator()
+                // SY <--
+                .let { if (/* SY --> */ sort.isAscending /* SY <-- */) it else it.reversed() }
                 .thenComparator(sortAlphabetically)
 
             value.sortedWith(comparator)
