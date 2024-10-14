@@ -51,6 +51,10 @@ class MangaRepositoryImpl(
         return handler.awaitList { mangasQueries.getFavorites(MangaMapper::mapManga) }
     }
 
+    override suspend fun getReadMangaNotInLibrary(): List<Manga> {
+        return handler.awaitList { mangasQueries.getReadMangaNotInLibrary(MangaMapper::mapManga) }
+    }
+
     override suspend fun getLibraryManga(): List<LibraryManga> {
         return handler.awaitListExecutable {
             (handler as AndroidDatabaseHandler).getLibraryQuery()
@@ -198,7 +202,7 @@ class MangaRepositoryImpl(
         handler.await { mangasQueries.deleteById(mangaId) }
     }
 
-    override suspend fun getReadMangaNotInLibrary(): List<LibraryManga> {
+    override suspend fun getReadMangaNotInLibraryView(): List<LibraryManga> {
         return handler.awaitListExecutable {
             (handler as AndroidDatabaseHandler).getLibraryQuery("M.favorite = 0 AND C.readCount != 0")
         }.map(MangaMapper::mapLibraryView)
