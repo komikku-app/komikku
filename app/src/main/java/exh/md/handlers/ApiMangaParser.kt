@@ -43,6 +43,7 @@ class ApiMangaParser(
         statistics: StatisticsMangaDto?,
         coverFileName: String?,
         coverQuality: String,
+        altTitlesInDesc: Boolean,
     ): SManga {
         val mangaId = getManga.await(manga.url, sourceId)?.id
         val metadata = if (mangaId != null) {
@@ -52,7 +53,7 @@ class ApiMangaParser(
             newMetaInstance()
         }
 
-        parseIntoMetadata(metadata, input, simpleChapters, statistics, coverFileName, coverQuality)
+        parseIntoMetadata(metadata, input, simpleChapters, statistics, coverFileName, coverQuality, altTitlesInDesc)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             insertFlatMetadata.await(metadata.flatten())
@@ -68,6 +69,7 @@ class ApiMangaParser(
         statistics: StatisticsMangaDto?,
         coverFileName: String?,
         coverQuality: String,
+        altTitlesInDesc: Boolean,
     ) {
         with(metadata) {
             try {
@@ -88,13 +90,14 @@ class ApiMangaParser(
                             MdUtil.cdnCoverUrl(mangaDto.data.id, "$coverFileName$coverQuality")
                         }
                 }
+                val rawDesc = MdUtil.getFromLangMap(
+                    langMap = mangaAttributesDto.description.asMdMap(),
+                    currentLang = lang,
+                    originalLanguage = mangaAttributesDto.originalLanguage,
+                ).orEmpty()
 
                 description = MdUtil.cleanDescription(
-                    MdUtil.getFromLangMap(
-                        langMap = mangaAttributesDto.description.asMdMap(),
-                        currentLang = lang,
-                        originalLanguage = mangaAttributesDto.originalLanguage,
-                    ).orEmpty(),
+                    if (altTitlesInDesc) MdUtil.addAltTitleToDesc(rawDesc, altTitles) else rawDesc,
                 )
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->

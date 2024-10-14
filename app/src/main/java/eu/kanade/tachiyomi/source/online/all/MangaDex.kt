@@ -89,6 +89,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private fun blockedUploaders() = sourcePreferences.getString(getBlockedUploaderPrefKey(mdLang.lang), "").orEmpty()
     private fun coverQuality() = sourcePreferences.getString(getCoverQualityPrefKey(mdLang.lang), "").orEmpty()
     private fun tryUsingFirstVolumeCover() = sourcePreferences.getBoolean(getTryUsingFirstVolumeCoverKey(mdLang.lang), false)
+    private fun altTitlesInDesc() = sourcePreferences.getBoolean(getAltTitlesInDescKey(mdLang.lang), false)
 
     private val mangadexService by lazy {
         MangaDexService(client)
@@ -191,11 +192,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return mangaHandler.fetchMangaDetailsObservable(manga, id, coverQuality(), tryUsingFirstVolumeCover())
+        return mangaHandler.fetchMangaDetailsObservable(manga, id, coverQuality(), tryUsingFirstVolumeCover(), altTitlesInDesc())
     }
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
-        return mangaHandler.getMangaDetails(manga, id, coverQuality(), tryUsingFirstVolumeCover())
+        return mangaHandler.getMangaDetails(manga, id, coverQuality(), tryUsingFirstVolumeCover(), altTitlesInDesc())
     }
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
@@ -241,7 +242,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override fun newMetaInstance() = MangaDexSearchMetadata()
 
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {
-        apiMangaParser.parseIntoMetadata(metadata, input.first, input.second, input.third, null, coverQuality())
+        apiMangaParser.parseIntoMetadata(metadata, input.first, input.second, input.third, null, coverQuality(), altTitlesInDesc())
     }
 
     // LoginSource methods
@@ -347,6 +348,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
         fun getTryUsingFirstVolumeCoverKey(dexLang: String): String {
             return "${tryUsingFirstVolumeCover}_$dexLang"
+        }
+
+        private const val altTitlesInDesc = "altTitlesInDesc"
+
+        fun getAltTitlesInDescKey(dexLang: String): String {
+            return "${altTitlesInDesc}_$dexLang"
         }
     }
 }
