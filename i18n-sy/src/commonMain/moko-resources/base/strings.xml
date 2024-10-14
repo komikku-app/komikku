@@ -395,13 +395,14 @@
 
     <!-- Entry Info Edit -->
     <string name="reset_tags">Reset Tags</string>
-    <string name="add_tag">Add Tag</string>
+    <string name="add_tags">Add Tags</string>
     <string name="reset_info">Reset Info</string>
     <string name="title_hint">Title: %1$s</string>
     <string name="description_hint">Description: %1$s</string>
     <string name="author_hint">Author: %1$s</string>
     <string name="artist_hint">Artist: %1$s</string>
     <string name="thumbnail_url_hint">Thumbnail Url: %1$s</string>
+    <string name="multi_tags_comma_separated">Enter tag(s), seperated by commas.</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -436,6 +437,7 @@
     <string name="feed_add">Add %1$s to feed?</string>
 
     <!-- Sort by tags -->
+    <string name="add_tag">Add Tag</string>
     <string name="pref_tag_sorting">Tag sorting tags</string>
     <string name="tag_sorting">Tag sorting</string>
     <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is\n\"female: sole female\"\nwithout quotes!\nAdding multiple variants of the same tag is supported, so feel free to do \"tag: netorare\" for NHentai and \"female: netorare\" for E-Hentai!</string>
