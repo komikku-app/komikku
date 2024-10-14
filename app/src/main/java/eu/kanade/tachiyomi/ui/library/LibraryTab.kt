@@ -173,6 +173,7 @@ object LibraryTab : Tab {
                     },
                     // SY -->
                     onClickSyncExh = screenModel::openFavoritesSyncDialog.takeIf { state.showSyncExh },
+                    isSyncEnabled = state.isSyncEnabled,
                     // SY <--
                     searchQuery = state.searchQuery,
                     onSearchQueryChange = screenModel::search,
