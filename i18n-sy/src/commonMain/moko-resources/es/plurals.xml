@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="cleanup_done">
-        <item quantity="one">Limpieza realizada. Carpeta %d eliminada</item>
-        <item quantity="many">Limpieza realizada. Carpetas %d eliminadas</item>
-        <item quantity="other">Limpieza realizada. Carpetas %d eliminadas</item>
+        <item quantity="one">Limpieza realizada. %d carpeta eliminada</item>
+        <item quantity="many">Limpieza realizada. %d carpetas eliminadas</item>
+        <item quantity="other">Limpieza realizada. %d carpetas eliminadas</item>
     </plurals>
     <plurals name="num_lock_times">
         <item quantity="one">%d tiempo de bloqueo</item>
-        <item quantity="many">%d tiempo de bloqueo</item>
-        <item quantity="other">%d tiempo de bloqueo</item>
+        <item quantity="many">%d tiempos de bloqueo</item>
+        <item quantity="other">%d tiempos de bloqueo</item>
     </plurals>
     <plurals name="eh_retry_toast">
         <item quantity="one">Reintentando %1$d página fallida…</item>
@@ -77,8 +77,8 @@
     </plurals>
     <plurals name="pref_tag_sorting_desc">
         <item quantity="one">%1$d etiqueta en la lista de clasificación. Esto añade una opción en la biblioteca para ordenar por una prioridad basada en la lista de etiquetas, lo que significa que las entradas se ordenarán de una manera de dar prioridad a los que tienen las etiquetas que desees</item>
-        <item quantity="many">%1$d etiquetas en la lista de clasificación. Esto añade una opción en la biblioteca para ordenar por una prioridad basada en la lista de etiquetas, lo que significa que las entradas se ordenarán de una manera de dar prioridad a los que tienen las etiquetas que desees</item>
-        <item quantity="other">%1$d etiquetas en la lista de clasificación. Esto añade una opción en la biblioteca para ordenar por una prioridad basada en la lista de etiquetas, lo que significa que las entradas se ordenarán de una manera de dar prioridad a los que tienen las etiquetas que desees</item>
+        <item quantity="many">%1$d etiquetas en la lista de ordenación. Esto añade una opción en la biblioteca para ordenar por una prioridad basada en la lista de etiquetas, lo que significa que las entradas se ordenarán de una manera de dar prioridad a los que tienen las etiquetas que desees</item>
+        <item quantity="other">%1$d etiquetas en la lista de ordenación. Esto añade una opción en la biblioteca para ordenar por una prioridad basada en la lista de etiquetas, lo que significa que las entradas se ordenarán de una manera de dar prioridad a los que tienen las etiquetas que desees</item>
     </plurals>
     <plurals name="row_count">
         <item quantity="one">%d fila</item>

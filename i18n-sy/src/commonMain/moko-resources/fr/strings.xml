@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
     <string name="action_skip_entry">Ne migrez pas</string>
@@ -8,29 +8,28 @@
     <string name="action_clean_titles">Nettoyer les titres</string>
     <string name="action_start_reading">Commencer à lire</string>
     <string name="action_edit_info">Modifier les informations</string>
-
     <!-- Manga Type -->
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
     <string name="entry_type_comic">Comic</string>
     <string name="entry_type_webtoon">Webtoon</string>
-
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Toute sources</string>
     <string name="pref_category_eh">E-Hentai</string>
-<!--    <string name="pref_category_fork">Fork Settings</string>-->
+    <!--    <string name="pref_category_fork">Fork Settings</string>-->
     <string name="pref_category_mangadex">MangaDex</string>
-
-
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Paramètres du compte du site Web E-Hentai</string>
     <string name="enable_exhentai">Activer ExHentai</string>
     <string name="requires_login">Nécessite une connexion</string>
     <string name="use_hentai_at_home">Utiliser le Réseau Hentai@Home</string>
-    <string name="use_hentai_at_home_summary">Souhaitez-vous charger des images via le réseau Hentai@Home, si disponible? La désactivation de cette option réduira le nombre de pages que vous pouvez afficher \nOptions: \n- Tout client (recommandé) \n- Default port clients only (peut être plus lent. Activer si derrière un pare-feu/proxy qui bloque les ports non standard sortants.)</string>
-    <string name="use_hentai_at_home_option_1">Tout client (recommandé)</string>
-    <string name="use_hentai_at_home_option_2">Default port clients only</string>
+    <string name="use_hentai_at_home_summary">Souhaitez-vous charger des images via le réseau Hentai@Home, si disponible ? La désactivation de cette option réduira le nombre de pages que vous pouvez afficher
+\nOptions :
+\n- Tout client (Recommandé)
+\n- Port clients par défaut uniquement (Peut être plus lent. Activer si derrière un pare-feu/proxy qui bloque les ports sortants non standard.)</string>
+    <string name="use_hentai_at_home_option_1">Tout client (Recommandé)</string>
+    <string name="use_hentai_at_home_option_2">Port clients par défaut uniquement</string>
     <string name="show_japanese_titles">Afficher les titres japonais dans les résultats de recherche</string>
     <string name="show_japanese_titles_option_1">Affichage actuel des titres japonais dans les résultats de recherche. Effacez le cache du chapitre après avoir modifié cela (dans la section Avancé)</string>
     <string name="show_japanese_titles_option_2">Affiche actuellement les titres anglais/romaji dans les résultats de recherche. Effacez le cache du chapitre après avoir modifié cela (dans la section Avancé)</string>
@@ -92,7 +91,6 @@
     <string name="gallery_updater_stats_text">Le programme de mise à jour a exécuté pour la dernière fois %1$s, et a vérifié %2$d parmi les %3$d galeries prêtes à être vérifiées.</string>
     <string name="gallery_updater_not_ran_yet">Le programme de mise à jour n\'est pas encore exécuté.</string>
     <string name="gallery_updater_stats_time">\nGaleries vérifiées au cours de la dernière:\n- heure: %1$d\n- 6 heures: %2$d\n- 12 heures: %3$d\n- jour: %4$d\n- 2 jours: %5$d\n- semaine: %6$d\n- mois: %7$d\n- année: %8$d</string>
-
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Remarque sur le profil des paramètres</string>
     <string name="settings_profile_note_message">dffgfhfghfdvcvdfgfgndfhgbfdgdfhfgbfgh</string>
@@ -102,7 +100,6 @@
     <string name="eh_settings_uploading_to_server">Téléchargement des paramètres sur le serveur</string>
     <string name="eh_settings_uploading_to_server_message">Veuillez patienter, cela peut prendre un certain temps…</string>
     <string name="eh_settings_out_of_slots_error">Vous n\'avez plus d\'emplacements de profil sur %1$s, veuillez supprimer un profil!</string>
-
     <!-- Advanced Settings -->
     <string name="developer_tools">Outils Développeur </string>
     <string name="toggle_hentai_features">Activer les fonctionnalités hentai intégrées</string>
@@ -119,8 +116,7 @@
     <string name="clean_up_downloaded_chapters">Clean up downloaded chapters</string>
     <string name="delete_unused_chapters">Supprimer les dossiers de chapitres inexistants, partiellement téléchargés et lus</string>
     <string name="no_folders_to_cleanup">Aucun dossier à nettoyer</string>
-
-<!--    <string name="clean_orphaned_downloads">Clean orphaned</string>-->
+    <!--    <string name="clean_orphaned_downloads">Clean orphaned</string>-->
 
     <string name="clean_read_downloads">Lecture propre</string>
     <string name="clean_read_entries_not_in_library">Nettoyer les mangas pas dans la bibliothèque</string>
@@ -135,7 +131,6 @@
     <string name="data_saver_image_format_summary_off">La taille du fichier Jpeg est considérablement plus petite que celle de Webp (ce qui signifie que plus de données sont économisées), mais cela fait également perdre plus de qualité aux images. \n. Actuellement compresse en Webp</string>
     <string name="data_saver_color_bw">Convertir en noir et blanc</string>
     <string name="data_saver_server_summary">Mettez ici l\'URL du serveur Bandwidth Hero Proxy</string>
-
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
     <string name="log_extra">Supplémentaire</string>
@@ -143,12 +138,10 @@
     <string name="log_minimal_desc">Erreurs critiques uniquement</string>
     <string name="log_extra_desc">Tout consigner</string>
     <string name="log_extreme_desc">Mode d\'inspection du réseau</string>
-
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Développez tous les filtres de recherche par défaut</string>
     <string name="put_recommends_in_overflow">Afficher les Recommandations</string>
     <string name="put_recommends_in_overflow_summary">Met le bouton de recommandations dans le menu à déroulant de la page du manga</string>
-
     <!-- Library settings -->
     <string name="pref_sorting_settings">Paramètres de tri</string>
     <string name="pref_skip_pre_migration_summary">Utilisez les dernières préférences et sources de pré-migration enregistrées pour migrer en masse</string>
@@ -156,13 +149,11 @@
     <string name="library_group_updates_global">Lancez toujours les mises à jour mondiales</string>
     <string name="library_group_updates_all_but_ungrouped">Lancer des mises à jour globales uniquement pour les mises à jour de catégories non groupées pour les autres</string>
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
-
     <!-- Browse settings -->
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>
     <string name="pref_source_navigation_summery">Remplacer le dernier bouton par une vue de navigation personnalisée qui inclut à la fois la dernière et la navigation</string>
     <string name="pref_local_source_hidden_folders">Dossiers cachés de la source locale</string>
     <string name="pref_local_source_hidden_folders_summery">Autoriser la source locale à lire les dossiers cachés</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Temps de verrouillage biométrique</string>
     <string name="action_edit_biometric_lock_times">Modifier les heures de verrouillage</string>
@@ -170,7 +161,6 @@
     <string name="biometric_lock_time_conflicts">Un temps de verrouillage entre en conflit avec celui qui existe déjà!</string>
     <string name="biometric_lock_start_time">Entrez l\'heure de début</string>
     <string name="biometric_lock_end_time">Entrez l\'heure de fin</string>
-
     <!-- Reader Settings -->
 <!--        <string name="download_threads">Download threads</string>-->
     <string name="download_threads_summary">Des valeurs plus élevées peuvent accélérer considérablement le téléchargement des images, mais peuvent également déclencher des Bannissement. La valeur recommandée est 2 ou 3. La valeur actuelle est: %s</string>
@@ -195,8 +185,7 @@
     <string name="auto_webtoon_mode_summary">Utilisez le mode Webtoon automatique pour les mangas détectés comme susceptibles d\'utiliser le format de bande longue</string>
     <string name="enable_zoom_out">Activer le zoom arrière</string>
     <string name="tap_scroll_page">Appuyez sur faire défiler par page</string>
-
-<!--    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>-->
+    <!--    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>-->
 
     <!-- Reader -->
     <!-- Reader Actions -->
@@ -209,20 +198,16 @@
     <string name="eh_retry_all_help_message">Ajouter à nouveau toutes les pages ayant échoué à la file d\'attente de téléchargement.</string>
     <string name="eh_boost_page_help">Aide de la page Boost</string>
     <string name="eh_boost_page_help_message">Normalement, le téléchargeur ne peut télécharger qu\'un nombre spécifique de pages en même temps. Cela signifie que vous pouvez attendre le téléchargement d\'une page, mais le téléchargeur ne commencera pas à télécharger la page tant qu\'elle n\'aura pas un emplacement de téléchargement gratuit. Appuyez sur \"Boost pagé\" pour forcer le téléchargeur à commencer le téléchargement de la page actuelle, qu\'il y ait ou non un emplacement disponible..</string>
-
     <!-- Auto Webtoon Mode -->
     <string name="eh_auto_webtoon_snack">Lire en style Webtoon</string>
-
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">Voir les recommandations</string>
     <string name="merge">Fusionner</string>
     <string name="merge_with_another_source">Fusionner avec une autre</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Réinitialiser les Tags</string>
     <string name="add_tag">Ajouter un Tag</string>
-
     <!-- Browse -->
     <!-- Saved Searches -->
     <string name="saved_searches">Recherches sauvegardées</string>
@@ -232,11 +217,9 @@
     <string name="save_search_failed_to_load_message">Une erreur s\'est produite lors du chargement de vos recherches enregistrées.</string>
     <string name="save_search_delete">Supprimer la requête de recherche enregistrée?</string>
     <string name="save_search_delete_message">Voulez-vous vraiment supprimer votre requête de recherche enregistrée: \'%1$s\'?</string>
-
     <!-- Source Categories -->
     <string name="no_source_categories">Aucune catégorie de source disponible</string>
     <string name="invalid_category_name">Nom de catégorie non valide</string>
-
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Tag de tri des Tags</string>
     <string name="tag_sorting">Tri des tags</string>
@@ -244,11 +227,9 @@
     <string name="action_edit_tags">Éditer tags</string>
     <string name="information_empty_tags">Vous n\'avez aucun tag. Appuyez sur le bouton plus pour en créer un pour trier votre bibliothèque par Tags</string>
     <string name="error_tag_exists">Cette Tag existe!</string>
-
     <!-- Extension section -->
     <string name="ext_redundant">Redondante</string>
     <string name="redundant_extension_message">Cette extension est redondante et ne sera pas utilisée dans cette version de Tachiyomi.</string>
-
     <!-- Migration -->
     <string name="select_sources">Sélectionnez les sources</string>
     <string name="select_none">Ne rien sélectionner</string>
@@ -269,16 +250,13 @@
     <string name="no_chapters_found_for_migration">Aucun chapitre trouvé, ce manga ne peut pas être utilisé pour la migration</string>
     <string name="no_alternatives_found">Aucune alternative trouvée</string>
     <string name="stop_migrating">Arrêter la migration?</string>
-
     <!-- Library -->
     <!-- Library Sheet -->
     <string name="lewd">Obscène</string>
-
     <!-- Library Grouping -->
     <string name="tracking_status">Statut de suivi</string>
     <string name="ungrouped">Source non groupée</string>
     <string name="not_tracked">Non suivi</string>
-
     <!-- Favorites Sync -->
     <string name="sync_favorites">Sync les favoris</string>
     <string name="favorites_sync_error">Erreur de sync des favoris</string>
@@ -319,7 +297,6 @@
     <string name="favorites_sync_notes_message"><![CDATA[1. Les modifications apportées aux noms de catégorie dans l\'application ne sont<b>PAS</b>synchronisées! Veuillez<i>modifier les noms de catégorie sur ExHentai à la place</i>. Les noms des catégories seront copiés à partir des serveurs ExHentai à chaque synchronisation.<br><br>2. Les catégories favorites sur ExHentai correspondent aux <b> 10 premières catégories de l\'application</b>(à l\'exclusion de la catégorie\'Par défaut\').<i>Les galeries des autres catégories ne seront<b>PAS</b>synchronisées!</i><br><br>3.<font color=\'red\'><b>ASSUREZ-VOUS D\'AVOIR UNE CONNEXION INTERNET STABLE LORSQUE LA SYNCHRONISATION EST EN COURS!</b></font>Si Internet se déconnecte pendant la synchronisation de l\'application, vos favoris peuvent être laissés dans un<i>état partiellement synchronisé</i>.<br><br>4. Gardez l\'application ouverte pendant la synchronisation des favoris. Android fermera parfois les applications qui sont parfois en arrière-plan et qui pourraient être mauvaises si cela se produit pendant la synchronisation de l\'application.<br> <br> 5.<b> Ne mettez PAS de favoris dans plusieurs catégories</b>(l\'application prend en charge cela). Cela peut perturber l\'algorithme de synchronisation car ExHentai n\'autorise que chaque favori à être dans une seule catégorie.<br><br>Cette boîte de dialogue n\'apparaîtra qu\'une seule fois. Vous pouvez relire ces notes en accédant à \'Paramètres> E-Hentai> Afficher les notes de synchronisation des favoris\'.]]></string>
     <string name="favorites_sync_reset">Êtes-vous sûr?</string>
     <string name="favorites_sync_reset_message">La réinitialisation de l\'état de synchronisation peut ralentir considérablement votre prochaine synchronisation.</string>
-
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Ajouter par lots</string>
@@ -344,13 +321,11 @@
     <string name="gallery_adder_uri_clean_error">Erreur de nettoyage de l\'URI source!</string>
     <string name="gallery_adder_chapter_fetch_error">Échec de la mise à jour des chapitres du manga: %1$s!</string>
     <string name="gallery_adder_could_not_add_gallery">Impossible d\'ajouter le manga (url: %1$s)!</string>
-
     <!-- Intercept Activity -->
     <string name="launching_app">Lancement de l\'application…</string>
     <string name="error_with_reason">Erreur: %1$s</string>
     <string name="could_not_open_entry">Impossible d\'ouvrir ce manga:\n\n%1$s</string>
     <string name="loading_entry">Chargement du manga…</string>
-
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Chef-d\'oeuvre</string>
     <string name="rating9">Incroyable</string>
@@ -364,8 +339,6 @@
     <string name="rating1">Insupportable</string>
     <string name="rating0">Catastrophique</string>
     <string name="no_rating">Non notée</string>
-
-
     <!-- Gallery types -->
     <string name="doujinshi">Doujinshi</string>
     <string name="artist_cg">Artiste CG</string>
@@ -378,7 +351,6 @@
     <string name="misc">Musique</string>
     <string name="artbook">Artbook</string>
     <string name="video">Video</string>
-
     <!-- More Info Menu -->
     <string name="more_info">Plus d\'informations</string>
     <string name="alt_title">Titre alternatif</string>
@@ -422,7 +394,6 @@
     <string name="mal_id">ID MyAnimeList</string>
     <string name="manga_updates_id">Identifiant des mises à jour du manga</string>
     <string name="anime_planet_id">Anime planet ID</string>
-
     <!-- Merged manga -->
     <string name="merge_settings">Paramètres de fusion</string>
     <string name="fetch_chapter_updates">Récupérer les mises à jour des chapitres</string>
@@ -438,7 +409,6 @@
     <string name="allow_deduplication">Autoriser la déduplication:</string>
     <string name="deduplication_mode">Mode de déduplication:</string>
     <string name="deduplication_entry_info">Info manga:</string>
-
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Désabonné</string>
     <string name="mangadex_sync_follows_to_library">Sync MangaDex manga dans Neko</string>
@@ -448,17 +418,20 @@
     <string name="mangadex_add_to_follows">Ajouter au suivie MangaDex</string>
     <string name="mangadex_follows">Suivie MangaDex</string>
     <string name="random">Aléatoire</string>
-
-
     <!-- Scanlator filters -->
     <!--<string name="select_scanlators">Scanlator groups to show</string>-->
     <!--<string name="no_scanlators">No scanlators available</string>-->
 
     <!-- Similar -->
     <string name="similar">Manga similaire %1$s</string>
-
     <!-- Humanize time -->
     <string name="humanize_fallback">un moment auparavant</string>
-
-
+    <string name="pref_ehentai_summary">Connexion E/ExHentai, synchronisation de la galerie</string>
+    <string name="entry_type_manga">Manga</string>
+    <string name="pref_category_fork">Paramètres de la duplication</string>
+    <string name="pref_mangadex_summary">Connexion MangaDex, synchronisation des abonnements</string>
+    <string name="changelog_version">Version %1$s</string>
+    <string name="recheck_login_status">Revérifier le statut de la connexion</string>
+    <string name="alternative_login_page">Page de connexion alternative</string>
+    <string name="skip_page_restyling">Ignorer la refonte de la page</string>
 </resources>

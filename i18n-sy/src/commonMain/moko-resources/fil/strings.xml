@@ -282,7 +282,7 @@
     <string name="gallery_update_checker">Tagapag-check ng mga update sa gallery</string>
     <string name="pref_smooth_scroll">Smooth na pag Awto Scroll</string>
     <string name="pref_crop_borders_pager">I-crop ang border ng Pahina</string>
-    <string name="pref_crop_borders_continuous_vertical">I-crop ang border sa Tuloy-tuloy na Vertical</string>
+    <string name="pref_crop_borders_continuous_vertical">I-crop ang border sa Tuloy-tuloy na pa-Vertical</string>
     <string name="action_clean_titles">Linsin ang mga title</string>
     <string name="frong_page_categories">Kategorya ng Front Page</string>
     <string name="action_set_first_page_cover">I-set ang unang pahina bilang cover</string>
@@ -505,8 +505,8 @@
     <string name="batch_add_unknown_type_log_message">Di-kilalang uri ng entry para sa gallery: %1$s</string>
     <string name="batch_add_summary">"
 \nBuod:
-\nIdinagdag: %1$d (mga) gallery
-\nNabigo: %2$d (mga) gallery"</string>
+\nIdinagdag: %1$d (na) gallery
+\nNabigo: %2$d (na) gallery"</string>
     <string name="batch_add_success_log_message">Idinagdag na gallery: %1$s</string>
     <string name="gallery_adder_source_uri_must_match">Error sa pagsusuri ng pagtutugma ng source URI!</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) ay di-balidong gallery!</string>
@@ -535,4 +535,71 @@
     <string name="uploader_capital">Naka-capitalize ang Uploader</string>
     <string name="deduplication_entry_info">Impo ng entry:</string>
     <string name="ext_redundant">Di na kinakailangan</string>
+    <string name="page_previews">Preview ng mga pahina</string>
+    <string name="eh_autoscroll">Awtomatikong mag-scroll</string>
+    <string name="lewd">Malaswa</string>
+    <string name="log_extreme">Itinodo</string>
+    <string name="ignore_non_library_entries">Di-pansinin ang mga entry na wala sa aklatan</string>
+    <string name="include_all_read_entries">Isali lahat ang mga nabasang entry</string>
+    <string name="relation_alternate_version">Alternatibong bersyon</string>
+    <string name="entry_type_comic">Komik</string>
+    <string name="watched_tags">Binabantayang mga Tag</string>
+    <string name="alt_title">Alternatibong Title</string>
+    <string name="entry_type_manga">Manga</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="data_saver">Data Saver</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="aes_256">AES 256</string>
+    <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
+    <string name="rating9">Kamangha-mangha</string>
+    <string name="rating7">Mabuti</string>
+    <string name="rating1">Hindi matiis</string>
+    <string name="rating0">Kalamidad</string>
+    <string name="deduplication_mode">Mode ng pag-dedupe:</string>
+    <string name="mangadex_follows">Follows ng MangaDex</string>
+    <string name="relation_main_story">Pangunahing kwento</string>
+    <string name="relation_doujinshi">Doujinshi</string>
+    <string name="relation_same_franchise">Kaparehong franchise</string>
+    <string name="relation_prequel">Prequel</string>
+    <string name="relation_side_story">Side story</string>
+    <string name="relation_preserialization">Bago na-serialize</string>
+    <string name="misc">Sari-sari</string>
+    <string name="auto_webtoon_mode">Awto pa-Webtoon na Mode</string>
+    <string name="average_rating">Average na rating</string>
+    <string name="rating2">Masakit</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
+    <string name="log_extreme_desc">Mode ng inspeksyon ng network</string>
+    <string name="pref_sync_service_category">Sync</string>
+    <string name="aes_128">AES 128</string>
+    <string name="pref_archive_reader_mode">Archive reader mode</string>
+    <string name="rating10">Obra maestra</string>
+    <string name="rating8">Mahusay</string>
+    <string name="rating6">Ayos</string>
+    <string name="rating5">Katamtaman</string>
+    <string name="rating4">Masama</string>
+    <string name="rating3">Kakila-kilabot</string>
+    <string name="doujinshi">Doujinshi</string>
+    <string name="artist_cg">Artist CG</string>
+    <string name="game_cg">Game CG</string>
+    <string name="non_h">Hindi-H</string>
+    <string name="image_set">Set ng Imahe</string>
+    <string name="asian_porn">Asyano Porno</string>
+    <string name="last_update_check">Pagsusuri ng huling update</string>
+    <string name="relation_adapted_from">Hinango mula sa</string>
+    <string name="relation_based_on">Batay sa</string>
+    <string name="relation_shared_universe">Nakabahaging universe</string>
+    <string name="relation_sequel">Karugtong</string>
+    <string name="relation_alternate_story">Alternatibong kwento</string>
+    <string name="relation_colored">Nakulayan</string>
 </resources>

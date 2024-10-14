@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="humanize_minute">
+        <item quantity="one">antaŭ %1$d minuto</item>
+        <item quantity="other">antaŭ %1$d minutoj</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">antaŭ %1$d jaro</item>
+        <item quantity="other">antaŭ %1$d jaroj</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">antaŭ %1$d monato</item>
+        <item quantity="other">antaŭ %1$d monatoj</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">antaŭ %1$d semajno</item>
+        <item quantity="other">antaŭ %1$d semajnoj</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">antaŭ %1$d horo</item>
+        <item quantity="other">antaŭ %1$d horoj</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">antaŭ %1$d sekundo</item>
+        <item quantity="other">antaŭ %1$d sekundoj</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d vico</item>
+        <item quantity="other">%d vicoj</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">antaŭ %1$d tago</item>
+        <item quantity="other">antaŭ %1$d tagoj</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d paĝo</item>
+        <item quantity="other">%2$s, %1$d paĝoj</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d paĝo</item>
+        <item quantity="other">%1$d paĝoj</item>
+    </plurals>
+</resources>

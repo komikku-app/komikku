@@ -30,19 +30,16 @@
         <item quantity="one">%d manga dipindahkan</item>
         <item quantity="other">%d manga dipindahkan</item>
     </plurals>
-
     <!-- Extra gallery info -->
     <plurals name="num_pages">
         <item quantity="one">%1$d page</item>
         <item quantity="other">%1$d pages</item>
     </plurals>
-
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
         <item quantity="one">%2$s %1$d page</item>
         <item quantity="other">%2$s %1$d pages</item>
     </plurals>
-
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="one">%1$d tahun yang lalu</item>
@@ -71,5 +68,8 @@
     <plurals name="humanize_second">
         <item quantity="one">%1$d detik yang lalu</item>
         <item quantity="other">%1$d detik yang lalu</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="other">%d baris</item>
     </plurals>
 </resources>

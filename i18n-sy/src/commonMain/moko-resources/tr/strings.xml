@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search_manually">El ile ara</string>
+    <string name="action_copy_now">Şimdi kopyala</string>
+    <string name="action_edit_info">Bilgi düzenle</string>
+    <string name="entry_type_manga">Manga</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Comic</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="action_start_reading">Okumaya başla</string>
+    <string name="changelog_version">Versiyon %1$s</string>
+    <string name="action_clean_titles">Başlıkları temizle</string>
+    <string name="pref_category_all_sources">Bütün Kaynaklar</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+    <string name="action_skip_entry">Taşıma yapma</string>
+</resources>

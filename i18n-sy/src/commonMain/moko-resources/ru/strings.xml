@@ -178,8 +178,8 @@
     <string name="pref_feed_position_summery">Поместить вкладку «Лента» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик». Не рекомендуется, если вы используете ограниченные сети(Моб. данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники, которые находятся в категориях, чтобы те не попадали под языковую фильтрацию</string>
-    <string name="pref_source_navigation">Убрать кнопку (Последняя)</string>
-    <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников. Взамен при нажатии на источник отображаются вкладки «Последняя» и «Поисковик»</string>
+    <string name="pref_source_navigation">Убрать кнопку (Последние)</string>
+    <string name="pref_source_navigation_summery">Убирает кнопку «Последние» возле источников. Взамен при нажатии на источник отображаются вкладки «Последние» и «Поисковик»</string>
     <string name="pref_local_source_hidden_folders">Просмотр скрытых папок</string>
     <string name="pref_local_source_hidden_folders_summery">Дать разрешение локальному источнику просматривать скрытые папки</string>
     <!-- Backup settings -->
