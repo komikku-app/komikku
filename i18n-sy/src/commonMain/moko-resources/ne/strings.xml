@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_search_manually">हातैले खोज्नुहोस्</string>
+    <string name="action_search_manually">आफैले खोज्नुहोस्</string>
     <string name="action_copy_now">अहिले प्रतिलिपि गर्नुहोस्</string>
     <string name="action_start_reading">पढ्न सुरु गर्नुहोस्</string>
     <string name="entry_type_manga">माङ्गा</string>
@@ -19,4 +19,25 @@
     <string name="show_japanese_titles_option_1">हाल खोज परिणामहरूमा जापानी शीर्षकहरू देखाउँदै। यसलाई परिवर्तन गरेपछि अध्याय क्यास खाली गर्नुहोस् (उन्नत सेक्सनमा)</string>
     <string name="show_japanese_titles">खोज परिणामहरूमा जापानी शीर्षकहरू देखाउनुहोस्</string>
     <string name="show_japanese_titles_option_2">हाल खोज परिणामहरूमा अंग्रेजी/रोमनाइज्ड शीर्षकहरू देखाउँदै। यसलाई परिवर्तन गरेपछि अध्याय क्यास खाली गर्नुहोस् (उन्नत सेक्सनमा)</string>
+    <string name="entry_type_webtoon">वेबटून</string>
+    <string name="action_clean_titles">शीर्षकहरू खाली गर्नुहोस्</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="pref_ehentai_summary">E/ExHentai लग-इन, ग्यालरी सिङ्क</string>
+    <string name="pref_mangadex_summary">MangaDex लग-इन, पछ्याएको माङ्गा सिङ्क</string>
+    <string name="ehentai_prefs_account_settings">E-Hentai साइटको खाता सेटिङ</string>
+    <string name="enable_exhentai">ExHentai सक्षम गर्नुहोस्</string>
+    <string name="use_hentai_at_home">Hentai@Home Network प्रयोग गर्नुहोस्</string>
+    <string name="use_hentai_at_home_summary">यदि उपलब्ध छ भने, के तपाई Hentai@Home Network मार्फत चित्रहरू लोड गर्न चाहनुहुन्छ? यो विकल्प असक्षम गर्नाले तपाईंले हेर्न सक्ने पृष्ठहरूको मात्रा घट्नेछ
+\nविकल्पहरू:
+\n- कुनै पनि क्लाइन्ट (सिफारिस गरिएको)
+\n- पूर्वनिर्धारित पोर्ट क्लाइन्टहरू मात्र (ढिलो हुन सक्छ। यसलाई सक्षम गर्नुहोस् यदि यो फायरवल/प्रोक्सी पछाडि छ जसले बाहिर जाने नॉन-स्ट्यान्डर्ड पोर्टहरू रोक्छ।)</string>
+    <string name="use_hentai_at_home_option_1">कुनै पनि क्लाइन्ट (सिफारिस गरिएको)</string>
+    <string name="use_hentai_at_home_option_2">पूर्वनिर्धारित पोर्ट क्लाइन्टहरू मात्र</string>
+    <string name="use_original_images_off">हाल रीस्याम्पल चित्रहरू प्रयोग गर्दै</string>
+    <string name="watched_tags_summary">तपाईंको E/ExHentai हेरिरहेको ट्याग पृष्ठमा WebView खोल्छ</string>
+    <string name="watched_tags">हेरिरहेको ट्यागहरू</string>
+    <string name="watched_tags_exh">ExHentai मा हेरिएको ट्यागहरू</string>
+    <string name="tag_filtering_threshold">ट्याग फिल्टरिङ थ्रेसहोल्ड</string>
+    <string name="tag_filtering_threshhold_error">-9999 र 0 को बीचमा हुनुपर्छ!</string>
 </resources>

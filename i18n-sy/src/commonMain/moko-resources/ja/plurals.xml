@@ -14,9 +14,7 @@
         <item quantity="other">失敗したページ %1$d を再試行しています…</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">並べ替えリストにタグを表示しません。これは、優先順位に基づいたタグリストで並べ替えするをオプションをライブラリに追加します</item>
-        <item quantity="one">1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
-        <item quantity="other">1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
+        <item quantity="other">%1$d タグを並べ替えリストに追加しました。これは、優先順位に基づいたタグリストで並べ替えをするオプションをライブラリに追加します</item>
     </plurals>
     <plurals name="migrate_entry">
         <item quantity="other">%1$d%2$s の作品を移行しますか？</item>

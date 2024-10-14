@@ -31,8 +31,8 @@
     <string name="use_hentai_at_home_option_1">任何用戶端（建議）</string>
     <string name="use_hentai_at_home_option_2">僅使用預設通訊埠的用戶端</string>
     <string name="show_japanese_titles">在搜尋結果中顯示日文標題</string>
-    <string name="show_japanese_titles_option_1">目前在搜尋結果中顯示日文標題。變更後請到進階設定清除章節快取。</string>
-    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬拼音的標題。變更後請到進階設定清除章節快取。</string>
+    <string name="show_japanese_titles_option_1">目前在搜尋結果中顯示日文標題，變更後請到進階設定清除章節快取</string>
+    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬拼音的標題。變更後請到進階設定清除章節快取</string>
     <string name="use_original_images">使用原圖</string>
     <string name="use_original_images_on">目前使用的是原始圖片</string>
     <string name="use_original_images_off">目前使用的是重新取樣圖片</string>
@@ -56,7 +56,7 @@
     <string name="eh_image_quality_auto">自動</string>
     <!-- EH Settings 2 -->
     <string name="pref_enhanced_e_hentai_view">增強的 E/ExHentai 瀏覽</string>
-    <string name="pref_enhanced_e_hentai_view_summary">啟用或停用為 E/ExHentai 製作的增強型瀏覽選單。</string>
+    <string name="pref_enhanced_e_hentai_view_summary">啟用或停用為 E/ExHentai 製作的增強型瀏覽選單</string>
     <string name="favorites_sync">E-Hentai 收藏同步</string>
     <string name="disable_favorites_uploading">停用收藏上傳</string>
     <string name="disable_favorites_uploading_summary">僅從 ExHentai 下載收藏夾。應用程式中對收藏夾的任何變更都不會被上傳。防止 ExHentai 上的收藏夾意外遺失。請注意，刪除的變更仍會被應用（如果您在 ExHentai 上刪除了一個收藏夾，它也會在本應用程式中刪除）。</string>
@@ -66,7 +66,7 @@
     <string name="ignore_sync_errors">盡可能忽略同步錯誤</string>
     <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止。當同步完成時，錯誤仍然會顯示。在某些情況下可能會導致收藏夾的遺失。在同步大型資料庫時很有用。</string>
     <string name="force_sync_state_reset">強制重設同步狀態</string>
-    <string name="force_sync_state_reset_summary">在下次同步時執行完全的重新同步。刪除的內容將不會被同步。應用程式中所有收藏夾將被重新上傳到 ExHentai，ExHentai 上的所有收藏夾將被重新下載。有助於在同步被中斷後修復同步。</string>
+    <string name="force_sync_state_reset_summary">在下一次同步時執行完整的重新同步，移除的項目將不會被同步。應用程式中的所有收藏將會重新上傳到 ExHentai，而 ExHentai 上的所有收藏也會重新下載到應用程式中。這在同步中斷後修復同步問題時非常有用。</string>
     <string name="sync_state_reset">同步狀態重設</string>
     <string name="gallery_update_checker">畫廊更新檢查器</string>
     <string name="auto_update_restrictions">自動更新限制</string>
@@ -172,7 +172,7 @@
     <!-- Browse settings -->
     <string name="pref_hide_feed">隱藏訂閱標籤</string>
     <string name="pref_feed_position">訂閱標籤位置</string>
-    <string name="pref_feed_position_summery">你想讓訂閱標籤成為瀏覽中的第一個標籤嗎？這將使它成為開啟瀏覽時的預設標籤，如果你使用的是資料或計費網路，則不建議使用。</string>
+    <string name="pref_feed_position_summery">您是否希望將「動態」標籤設為瀏覽中的第一個標籤？這將使其成為預設的瀏覽標籤，但如果您使用行動數據或有限網路，則不建議這樣做</string>
     <string name="pref_source_source_filtering">在目錄中過濾來源</string>
     <string name="pref_source_source_filtering_summery">篩選屬於類別的來源，使屬於某個類別的來源不會被放在語言下</string>
     <string name="pref_source_navigation">替換最新按鈕</string>
@@ -271,9 +271,9 @@
     <string name="reader_preload_amount_14_pages">14 頁</string>
     <string name="reader_preload_amount_16_pages">16 頁</string>
     <string name="reader_preload_amount_20_pages">20 頁</string>
-    <string name="reader_preload_amount_summary">要預載入的的頁面數量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的快取使用量，建議在使用更大的值時增加你分配的快取量。</string>
+    <string name="reader_preload_amount_summary">閱讀時預先載入的頁數。較高的數值將提供更流暢的閱讀體驗，但會增加快取使用量。建議在使用較大數值時，增加分配給快取的容量</string>
     <string name="reader_cache_size">閱讀器快取大小</string>
-    <string name="reader_cache_size_summary">閱讀時儲存在裝置上的圖片量。更高的值將帶來更流暢的閱讀體驗，但代價是更多的儲存空間使用率。</string>
+    <string name="reader_cache_size_summary">閱讀時保存於裝置上的圖片數量。較高的數值將提供更流暢的閱讀體驗，但會增加磁碟空間的使用量</string>
     <string name="preserve_reading_position">保留已閱讀作品的閱讀位置</string>
     <string name="auto_webtoon_mode">自動 Webtoon 模式</string>
     <string name="auto_webtoon_mode_summary">檢測到可能為長條形格式的作品時自動使用 Webtoon 模式</string>
@@ -287,7 +287,7 @@
     <string name="pref_left_handed_vertical_seekbar">將垂直進度條放在左側</string>
     <string name="pref_left_handed_vertical_seekbar_summary">變更進度條的方位</string>
     <string name="pref_force_horz_seekbar">強制使用水平進度條</string>
-    <string name="pref_force_horz_seekbar_summary">完全刪除垂直進度條，改用水平進度條。</string>
+    <string name="pref_force_horz_seekbar_summary">完全移除垂直捲動條，改為使用水平捲動條</string>
     <string name="pref_smooth_scroll">平滑自動翻頁</string>
     <!-- Reader -->
     <!-- Reader Actions -->
@@ -298,7 +298,7 @@
     <string name="eh_autoscroll_help_message">在指定的時間間隔內自動翻到下一頁。間隔的單位是秒。</string>
     <string name="eh_autoscroll_freq_invalid">無效頻率</string>
     <string name="eh_retry_all_help">重試所有說明</string>
-    <string name="eh_retry_all_help_message">重新新增失敗的頁面到下載隊列</string>
+    <string name="eh_retry_all_help_message">將所有下載失敗的頁面重新加入下載佇列。</string>
     <string name="eh_boost_page_help">加速頁面說明</string>
     <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用“加速頁面”將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
     <string name="eh_boost_page_invalid">此頁面無法加速（無效頁面）！</string>
@@ -411,14 +411,14 @@
     <string name="use_intelligent_search">搜尋標題 +標題關鍵字</string>
     <string name="data_to_include_in_migration">遷移中包含的資料</string>
     <string name="include_extra_search_parameter">搜尋時包含額外的搜尋參數</string>
-    <string name="use_most_chapters">使用具有最多章節的來源（較慢）。</string>
+    <string name="use_most_chapters">使用章節數最多的來源（較慢）</string>
     <string name="use_first_source">使用第一個來源的備用方案</string>
     <string name="skip_this_step_next_time">下次跳過此步驟</string>
     <string name="hide_not_found_entries">隱藏未找到的作品</string>
     <string name="search_parameter">搜尋參數（例如：language:chinese）</string>
     <string name="latest_">最新：%1$s</string>
     <string name="migrating_to">遷移到</string>
-    <string name="match_pinned_sources">匹組態頂的來源</string>
+    <string name="match_pinned_sources">匹配置頂的來源</string>
     <string name="match_enabled_sources">匹配啟用的來源</string>
     <string name="no_chapters_found_for_migration">未找到章節，此作品無法用於遷移</string>
     <string name="no_alternatives_found">未找到替代方案</string>
@@ -510,7 +510,7 @@
     <string name="pref_clear_page_preview_cache">清除頁面預覽快取</string>
     <string name="page_preview_page_go_to">跳轉到</string>
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
-    <string name="rating10">太神啦!</string>
+    <string name="rating10">傑作</string>
     <string name="rating9">根本把持不住</string>
     <string name="rating8">很棒</string>
     <string name="rating7">不錯</string>
@@ -520,7 +520,7 @@
     <string name="rating3">超爛</string>
     <string name="rating2">快瞎了</string>
     <string name="rating1">快要窒息了</string>
-    <string name="rating0">下去!</string>
+    <string name="rating0">災難作</string>
     <string name="no_rating">沒有評分</string>
     <!-- Gallery types -->
     <string name="doujinshi">同人誌</string>
@@ -564,7 +564,7 @@
     <string name="uploader">上傳者</string>
     <string name="rating_string">評分字串</string>
     <string name="collection">集合</string>
-    <string name="parodies">Parodies</string>
+    <string name="parodies">惡搞作</string>
     <string name="author">作者</string>
     <string name="last_chapter_number">最後一章編號</string>
     <string name="follow_status">收藏狀態</string>
@@ -577,7 +577,7 @@
     <string name="merge_settings">合併設定</string>
     <string name="fetch_chapter_updates">取得章節更新</string>
     <string name="delete_merged_entry">你確定嗎？</string>
-    <string name="delete_merged_entry_desc">這將從合併中刪除此作品，使用這個選項會遺失任何應用程式於合併後的作品的未儲存的變更。</string>
+    <string name="delete_merged_entry_desc">這將從合併中移除該項目，使用此功能時也會丟失對合併項目所做的任何未保存更改</string>
     <string name="chapter_updates_merged_entry">變更章節更新</string>
     <string name="chapter_updates_merged_entry_desc">變更此項將停用或啟用此已合併的漫畫的章節更新</string>
     <string name="download_merged_entry">變更新章節下載</string>
@@ -595,9 +595,9 @@
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">取消收藏</string>
     <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的作品到書櫃</string>
-    <string name="mangadex_sync_follows_to_library_summary">從 MangaDex 拉取未新增的作品到你的書櫃</string>
+    <string name="mangadex_sync_follows_to_library_summary">若項目尚未加入到您的資料庫，將會從 MangaDex 中拉取並加入。</string>
     <string name="mangadex_preffered_source">偏好 MangaDex 來源</string>
-    <string name="mangadex_preffered_source_summary">設定你所選擇的 MangaDex 來源，這將用於收藏和應用程式中一系列其他功能。</string>
+    <string name="mangadex_preffered_source_summary">設定您選擇的 MangaDex 來源，這將用於追蹤以及應用程式中的其他多項功能</string>
     <string name="mangadex_add_to_follows">新增到 MangaDex 收藏</string>
     <string name="mangadex_follows">MangaDex 收藏</string>
     <string name="random">隨機</string>

@@ -1,2 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <plurals name="migrate_entry">
+        <item quantity="one">%1$d%2$s Eintrag migrieren?</item>
+        <item quantity="other">%1$d%2$s Einträge migrieren?</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">%1$d fehlgeschlagene Seite wird wiederholt…</item>
+        <item quantity="other">%1$d fehlgeschlagene Seiten werden wiederholt…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d Tag in der Sortierliste. Dies fügt eine Option in der Bibliothek hinzu, um nach einer prioritätsbasierten Tag-Liste zu sortieren, was bedeutet, dass die Einträge so sortiert werden, dass die Einträge mit den gewünschten Tags Priorität haben</item>
+        <item quantity="other">%1$d Tags in der Sortierliste. Dies fügt eine Option in der Bibliothek hinzu, um nach einer prioritätsbasierten Tag-Liste zu sortieren, was bedeutet, dass die Einträge so sortiert werden, dass die Einträge mit den gewünschten Tags Priorität haben</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Reinigung beendet. %d Ordner entfernt</item>
+        <item quantity="other">Reinigung beendet. %d Ordner entfernt</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d Sperrzeit</item>
+        <item quantity="other">%d Sperrzeiten</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">%1$d%2$s Eintrag kopieren?</item>
+        <item quantity="other">%1$d%2$s Einträge kopieren?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d Eintrag migriert</item>
+        <item quantity="other">%d Einträge migriert</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d Seite</item>
+        <item quantity="other">%1$d Seiten</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d Seite</item>
+        <item quantity="other">%2$s, %1$d Seiten</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">vor %1$d Jahr</item>
+        <item quantity="other">vor %1$d Jahren</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">vor %1$d Monat</item>
+        <item quantity="other">vor %1$d Monaten</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">vor %1$d Woche</item>
+        <item quantity="other">vor %1$d Wochen</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">vor %1$d Tag</item>
+        <item quantity="other">vor %1$d Tagen</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">vor %1$d Stunde</item>
+        <item quantity="other">vor %1$d Stunden</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">vor %1$d Minute</item>
+        <item quantity="other">vor %1$d Minuten</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">vor %1$d Sekunde</item>
+        <item quantity="other">vor %1$d Sekunden</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d Reihe</item>
+        <item quantity="other">%d Reihen</item>
+    </plurals>
+</resources>

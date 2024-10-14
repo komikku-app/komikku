@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search_manually">Buscar manualmente</string>
+    <string name="action_migrate_now">Migrar ahora</string>
+    <string name="action_clean_titles">Limpiar títulos</string>
+    <string name="action_edit_info">Editar información</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Cómico</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="pref_ehentai_summary">Inicio de sesión en E/ExHentai, sincronización de galería</string>
+    <string name="pref_mangadex_summary">Inicio de sesión en MangaDex, seguir sincronización</string>
+    <string name="changelog_version">Versión %1$s</string>
+    <string name="ehentai_prefs_account_settings">Configuración de la cuenta del sitio web E-Hentai</string>
+    <string name="enable_exhentai">Habilitar ExHentai</string>
+    <string name="requires_login">Requiere iniciar sesión</string>
+    <string name="use_hentai_at_home_option_1">Cualquier cliente (Recomendado)</string>
+    <string name="use_hentai_at_home_option_2">Solo clientes de puerto predeterminado</string>
+    <string name="show_japanese_titles">Mostrar títulos japoneses en los resultados de búsqueda</string>
+    <string name="tag_filtering_threshhold_error">¡Debe estar entre -9999 y 0!</string>
+    <string name="tag_watching_threshhold_error">¡Debe estar entre 0 y 9999!</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="pref_enhanced_e_hentai_view">Exploración E/ExHentai mejorada</string>
+    <string name="action_skip_entry">No migrar</string>
+    <string name="action_copy_now">Copiar ahora</string>
+    <string name="action_start_reading">Empezar a leer</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+    <string name="entry_type_manga">Manga</string>
+    <string name="pref_category_all_sources">Todas las fuentes</string>
+    <string name="pref_category_fork">Ajustes de Bifurcación</string>
+    <string name="use_hentai_at_home">Use la red Hentai@Home</string>
+    <string name="use_hentai_at_home_summary">Desea cargar imágenes a través de la red de Hentai@Home, si está disponible? Deshabilitar esta opción reducirá la cantidad de páginas que puede ver
+\nOpciones:
+\n- Cualquier cliente (Recomendado)
+\n- Solo clientes de puerto predeterminado (Puede ser más lento. Habilítelo si está detrás de un firewall/proxy que bloquea puertos salientes no estándar.)</string>
+    <string name="show_japanese_titles_option_1">Actualmente se muestran títulos japoneses en los resultados de búsqueda. Borre el caché del capítulo después de cambiar esto (en la sección Avanzado)</string>
+    <string name="use_original_images_off">Actualmente usando imágenes remuestreadas</string>
+    <string name="use_original_images">Utiliza imágenes originales</string>
+    <string name="use_original_images_on">Actualmente usando imágenes originales</string>
+    <string name="watched_tags">Etiquetas vistas</string>
+    <string name="language_filtering">Filtrado de idioma</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="frong_page_categories">Categorías de la página principal</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_summary">La calidad de las imágenes descargadas</string>
+    <string name="eh_image_quality">Calidad de imagen</string>
+    <string name="eh_image_quality_auto">Auto</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="disable_favorites_uploading">Desactivar la subida de favoritos</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="show_japanese_titles_option_2">Actualmente se muestran los títulos en inglés/romanizado en los resultados de búsqueda. Borra la caché de capítulos después de cambiar esto (en la sección Avanzado)</string>
+    <string name="watched_tags_summary">Abre una vista web a tu página de etiquetas vistas de E/ExHentai</string>
+    <string name="fromt_page_categories_summary">¿Qué categorías te gustaría mostrar por defecto en la página principal y en las búsquedas? Aún pueden habilitarse activando sus filtros</string>
+    <string name="language_filtering_summary">Si deseas ocultar galerías en ciertos idiomas de la lista de galerías y búsquedas, selecciónalas en el cuadro de diálogo que aparecerá.
+\nTen en cuenta que las galerías coincidentes nunca aparecerán, sin importar tu consulta de búsqueda.
+\nTldr marcado = excluir</string>
+    <string name="watched_tags_exh">Etiquetas Observadas en ExHentai</string>
+    <string name="tag_filtering_threshold">Umbral de Filtrado de Etiquetas</string>
+    <string name="tag_watching_threshhold">Umbral de Monitoreo de Etiquetas</string>
+    <string name="tag_watching_threshhold_summary">Las galerías recientemente subidas se incluirán en la pantalla de observación si tienen al menos una etiqueta observada con peso positivo, y la suma de los pesos de sus etiquetas observadas alcanza este valor o es mayor. Este umbral se puede establecer entre 0 y 9999. Actualmente: %1$d</string>
+    <string name="watched_list_default">Estado Predeterminado del Filtro de la Lista Observada</string>
+    <string name="watched_list_state_summary">Cuando navegas por ExHentai/E-Hentai, ¿debería estar habilitado por defecto el filtro de la lista observada?</string>
+    <string name="pref_enhanced_e_hentai_view_summary">Habilitar/Deshabilitar el menú de navegación mejorado hecho para E/ExHentai</string>
+    <string name="favorites_sync">Sincronización de Favoritos de E-Hentai</string>
+    <string name="tag_filtering_threshhold_summary">Puedes filtrar suavemente las etiquetas añadiéndolas a la página Mis Etiquetas de E/ExHentai con un peso negativo. Si una galería tiene etiquetas que suman un peso inferior a este valor, se filtra de la vista. Este umbral se puede establecer entre -9999 y 0. Actualmente: %1$d</string>
+    <string name="disable_favorites_uploading_summary">Los favoritos solo se descargan desde ExHentai. Cualquier cambio en los favoritos en la aplicación no se cargará. Previene la pérdida accidental de favoritos en ExHentai. Ten en cuenta que las eliminaciones aún se descargarán (si eliminas un favorito en ExHentai, también se eliminará en la aplicación).</string>
+    <string name="show_favorite_sync_notes">Mostrar notas sincronizadas de favoritos</string>
+    <string name="show_favorite_sync_notes_summary">Mostrar información sobre la función de sincronización de favoritos</string>
+    <string name="please_login">¡Por favor inicia sesión!</string>
+    <string name="ignore_sync_errors">Ignorar errores de sincronización cuando sea posible</string>
+    <string name="force_sync_state_reset">Forzar el restablecimiento del estado de sincronización</string>
+    <string name="sync_state_reset">Restablecimiento del estado de sincronización</string>
+    <string name="ignore_sync_errors_summary">No canceles el proceso de sincronización inmediatamente si encuentras errores. Los errores se seguirán mostrando cuando se complete la sincronización. En algunos casos, puede provocar la pérdida de favoritos. Resulta útil cuando se sincronizan bibliotecas grandes.</string>
+    <string name="force_sync_state_reset_summary">Realiza una resincronización completa en la próxima sincronización. Las eliminaciones no se sincronizarán. Todos los favoritos de la aplicación se volverán a cargar en ExHentai y todos los favoritos de ExHentai se volverán a descargar en la aplicación. Útil para reparar la sincronización después de que se haya interrumpido.</string>
+    <string name="gallery_update_checker">Comprobador de actualizaciones de la galería</string>
+    <string name="auto_update_restrictions">Restricciones para actualizaciones automáticas</string>
+    <string name="time_between_batches">Tiempo entre actualizaciones</string>
+    <string name="time_between_batches_never">Nunca actualizar las galerías</string>
+    <string name="time_between_batches_1_hour">1 hora</string>
+    <string name="time_between_batches_2_hours">2 horas</string>
+    <string name="time_between_batches_3_hours">3 horas</string>
+    <string name="time_between_batches_6_hours">6 horas</string>
+    <string name="time_between_batches_12_hours">12 horas</string>
+    <string name="time_between_batches_24_hours">24 horas</string>
+    <string name="time_between_batches_48_hours">48 horas</string>
+    <string name="time_between_batches_summary_1">%1$s no comprobará nunca las galerías de su biblioteca en busca de actualizaciones.</string>
+    <string name="show_updater_statistics">Mostrar estadísticas del actualizador</string>
+    <string name="gallery_updater_statistics_collection">Recopilando estadísticas…</string>
+    <string name="gallery_updater_statistics">Estadísticas del actualizador de galerías</string>
+    <string name="gallery_updater_stats_text">El actualizador ejecutó %1$s por última vez, y comprobó %2$d de las %3$d galerías que estaban listas para ser comprobadas.</string>
+    <string name="gallery_updater_not_ran_yet">El actualizador aún no se ha ejecutado.</string>
+    <string name="settings_profile_note">Nota de perfil de configuración</string>
+    <string name="eh_settings_successfully_uploaded">¡Ajustes cargados correctamente!</string>
+    <string name="eh_settings_configuration_failed">¡Error en la configuración!</string>
+    <string name="eh_settings_configuration_failed_message">Se ha producido un error durante el proceso de configuración: %1$s</string>
+    <string name="eh_settings_uploading_to_server">Cargar la configuración en el servidor</string>
+    <string name="time_between_batches_summary_2">%1$s comprueba/actualiza las galerías por lotes. Esto significa que esperará %2$d hora(s), comprobará %3$d galerías, esperará %2$d hora(s), comprobará %3$d y así sucesivamente…</string>
+    <string name="gallery_updater_stats_time">"
+\nGalerías que se comprobaron en la última:
+\n- hora: %1$d
+\n- 6 horas: %2$d
+\n- 12 horas: %3$d
+\n- día: %4$d
+\n- 2 días: %5$d
+\n- semana: %6$d
+\n- mes: %7$d
+\n- año: %8$d"</string>
+    <string name="settings_profile_note_message">La aplicación añadirá ahora un nuevo perfil de configuración en E-Hentai y ExHentai para optimizar el rendimiento de la aplicación. Asegúrate de tener menos de tres perfiles en ambos sitios.
+\n
+\nSi no tienes ni idea de lo que son los perfiles de configuración, probablemente no importe, simplemente pulsa \"Aceptar\".</string>
+    <string name="eh_settings_uploading_to_server_message">Por favor espere, esto puede tardar algún tiempo…</string>
+    <string name="eh_settings_out_of_slots_error">¡No tienes espacios en tu perfil %1$s, por favor elimine un perfil!</string>
+    <string name="recheck_login_status">Vuelva a verificar el estado de inicio de sesión</string>
+    <string name="alternative_login_page">Página de inicio de sesión alternativa</string>
+    <string name="skip_page_restyling">Saltar el cambio de estilo de la página</string>
+    <string name="custom_igneous_cookie">Cookie ígneo personalizado</string>
+    <string name="custom_igneous_cookie_message">Algunos usuarios no pueden acceder a ExHentai de la manera normal y deben ingresar un valor específico de cookie ígneo. Esta opción es para esos usuarios.</string>
+    <string name="developer_tools">Herramientas de desarrollador</string>
+    <string name="toggle_hentai_features">Activar funciones integradas de hentai</string>
+    <string name="toggle_hentai_features_summary">Esta es una función experimental que desactivará todas las funciones de hentai si se desactiva</string>
+    <string name="toggle_delegated_sources">Activar fuentes delegadas</string>
+    <string name="toggle_delegated_sources_summary">Aplicar %1$s mejoras a las siguientes fuentes si están instaladas: %2$s</string>
+    <string name="log_level">Nivel de registro</string>
+    <string name="log_level_summary">Cambiar esto puede afectar el rendimiento de la aplicación. Reinicie la aplicación forzosamente después de realizar el cambio. Valor actual: %s</string>
+    <string name="enable_source_blacklist">Activar lista negra de fuentes</string>
+    <string name="enable_source_blacklist_summary">Ocultar extensiones/fuentes que son incompatibles con %1$s. Reinicie la aplicación forzosamente después de realizar el cambio.</string>
+    <string name="open_debug_menu">Abrir menú de depuración</string>
+    <string name="open_debug_menu_summary">¡NO TOQUES ESTE MENÚ A MENOS QUE SEPAS LO QUE ESTÁS HACIENDO! <font color="red">¡PUEDE CORROMPER TU BIBLIOTECA!</font></string>
+    <string name="starting_cleanup">Comenzando la limpieza</string>
+    <string name="clean_up_downloaded_chapters">Limpiar capítulos descargados</string>
+    <string name="delete_unused_chapters">Eliminar carpetas de capítulos inexistentes, parcialmente descargadas y leídas</string>
+    <string name="no_folders_to_cleanup">No hay carpetas para limpiar</string>
+    <string name="clean_orphaned_downloads">Limpiar huérfanos</string>
+    <string name="clean_read_downloads">Limpiar leídos</string>
+    <string name="clean_read_entries_not_in_library">Limpiar entradas no en la biblioteca</string>
+    <string name="data_saver">Ahorro de datos</string>
+    <string name="data_saver_summary">Comprimir imágenes antes de descargarlas o cargarlas en el lector</string>
+    <string name="data_saver_downloader">Usar ahorrador de datos en el descargador</string>
+    <string name="data_saver_ignore_jpeg">Ignorar imágenes JPEG</string>
+    <string name="data_saver_ignore_gif">Ignorar animaciones GIF</string>
+    <string name="data_saver_image_quality">Calidad de imagen</string>
+    <string name="data_saver_image_format">Comprimir a Jpeg</string>
+    <string name="data_saver_image_format_summary_on">El tamaño del archivo Jpeg es considerablemente más pequeño que el de Webp (lo que significa que se guarda más datos), pero también hace que las imágenes pierdan más calidad.
+\nActualmente, se comprime a Jpeg</string>
+    <string name="data_saver_image_quality_summary">Valores más altos significan que se guarda un mayor porcentaje de la calidad de la imagen, pero también implica que el tamaño del archivo es mayor; un 80 por ciento es una buena media entre el tamaño del archivo y la calidad de la imagen</string>
+    <string name="data_saver_image_format_summary_off">El tamaño de; archivo JPEG es considerablemente mas pequeño que el WEBP (lo que significa que ser guardan mas datos), pero tambien hace que las imagenes pierdan mucha calidad.
+\nActualmente se comprimen en WEBP</string>
+    <string name="data_saver_color_bw">Convertir en Blanco &amp; Negro</string>
+    <string name="bandwidth_hero">Bandwidth Hero ( Requiere un servidor proxy )</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="data_saver_server_summary">Pom aqui la URl del Servidor Proxy de Bandwidth Hero</string>
+    <string name="clear_db_exclude_read">Mantenga las entradas con capitulos leidos</string>
+    <string name="bandwidth_data_saver_server">Servidor Proxy de Bandwidth Hero</string>
+    <string name="log_minimal">Minimo</string>
+    <string name="log_extra">Extra</string>
+    <string name="log_extreme">Extremo</string>
+    <string name="log_minimal_desc">Solo errores criticos</string>
+    <string name="log_extra_desc">Todos los registros</string>
+    <string name="log_extreme_desc">Modo de inspeccion de red</string>
+    <string name="toggle_expand_search_filters">Ampliar todos los filtros de búsqueda de forma predeterminada</string>
+    <string name="pref_previews_row_count">Vista previa del recuento de filas</string>
+    <string name="pref_hide_updates_button">Mostrar actualizaciones en la barra de navegación</string>
+    <string name="pref_hide_history_button">Mostrar historial en la barra de navegación</string>
+    <string name="pref_show_bottom_bar_labels">Mostrar siempre las etiquetas de navegación</string>
+    <string name="pref_category_navbar">Barra de navegación</string>
+    <string name="put_recommends_in_overflow">Mostrar recomendaciones en el menú</string>
+    <string name="put_recommends_in_overflow_summary">Coloque el botón de recomendaciones en el menú adicional en lugar de en la página de entrada</string>
+    <string name="put_merge_in_overflow">Fusionar en el menú adicional</string>
+    <string name="put_merge_in_overflow_summary">Coloque el botón de fusión en el menú adicional en lugar de en la página de entrada</string>
+    <string name="pref_sorting_settings">Ajustes de ordenación</string>
+    <string name="pref_skip_pre_migration_summary">Utilizar las últimas preferencias y fuentes guardadas antes de la migración para migrar</string>
+    <string name="library_group_updates">Actualizaciones de categorías dinámicas de la biblioteca</string>
+    <string name="library_group_updates_global">Ejecutar siempre actualizaciones globales</string>
+</resources>
