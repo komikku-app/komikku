@@ -47,10 +47,8 @@ fun BottomReaderBar(
     dualPageSplitEnabled: Boolean,
     doublePages: Boolean,
     onClickChapterList: () -> Unit,
-    // KMK -->
-    onClickBrowser: (() -> Unit)?,
-    // KMK <--
     onClickWebView: (() -> Unit)?,
+    onClickBrowser: (() -> Unit)?,
     onClickShare: (() -> Unit)?,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
@@ -80,25 +78,23 @@ fun BottomReaderBar(
             }
         }
 
-        // KMK -->
-        if (ReaderBottomButton.Browser.isIn(enabledButtons) && onClickBrowser != null) {
-            IconButton(onClick = onClickBrowser) {
+        if (ReaderBottomButton.WebView.isIn(enabledButtons) && onClickWebView != null) {
+            IconButton(onClick = onClickWebView) {
                 Icon(
-                    imageVector = Icons.Outlined.Explore,
-                    contentDescription = stringResource(MR.strings.action_open_in_browser),
+                    imageVector = Icons.Outlined.Public,
+                    contentDescription = stringResource(MR.strings.action_open_in_web_view),
                     // KMK -->
                     tint = iconColor,
                     // KMK <--
                 )
             }
         }
-        // KMK <--
 
-        if (ReaderBottomButton.WebView.isIn(enabledButtons) && onClickWebView != null) {
-            IconButton(onClick = onClickWebView) {
+        if (ReaderBottomButton.Browser.isIn(enabledButtons) && onClickBrowser != null) {
+            IconButton(onClick = onClickBrowser) {
                 Icon(
-                    imageVector = Icons.Outlined.Public,
-                    contentDescription = stringResource(MR.strings.action_open_in_web_view),
+                    imageVector = Icons.Outlined.Explore,
+                    contentDescription = stringResource(MR.strings.action_open_in_browser),
                     // KMK -->
                     tint = iconColor,
                     // KMK <--
