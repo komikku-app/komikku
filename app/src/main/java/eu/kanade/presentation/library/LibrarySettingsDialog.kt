@@ -206,41 +206,47 @@ private fun ColumnScope.SortPage(
         globalSortMode.type
     }
     val sortDescending = if (screenModel.grouping == LibraryGroup.BY_DEFAULT) {
-        category.sort.isAscending
+        !category.sort.isAscending
     } else {
-        globalSortMode.isAscending
-    }.not()
+        !globalSortMode.isAscending
+    }
     val hasSortTags by remember {
         screenModel.libraryPreferences.sortTagsForLibrary().changes()
             .map { it.isNotEmpty() }
     }.collectAsState(initial = screenModel.libraryPreferences.sortTagsForLibrary().get().isNotEmpty())
     // SY <--
 
-    val trackerSortOption = if (trackers.isEmpty()) {
-        emptyList()
-    } else {
-        listOf(MR.strings.action_sort_tracker_score to LibrarySort.Type.TrackerMean)
-    }
-
-    listOfNotNull(
-        MR.strings.action_sort_alpha to LibrarySort.Type.Alphabetical,
-        MR.strings.action_sort_total to LibrarySort.Type.TotalChapters,
-        MR.strings.action_sort_last_read to LibrarySort.Type.LastRead,
-        MR.strings.action_sort_last_manga_update to LibrarySort.Type.LastUpdate,
-        MR.strings.action_sort_unread_count to LibrarySort.Type.UnreadCount,
-        MR.strings.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
-        MR.strings.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
-        MR.strings.action_sort_date_added to LibrarySort.Type.DateAdded,
-        MR.strings.action_sort_random to LibrarySort.Type.Random,
+    val options = remember(trackers.isEmpty()/* SY --> */, hasSortTags/* SY <-- */) {
+        val trackerMeanPair = if (trackers.isNotEmpty()) {
+            MR.strings.action_sort_tracker_score to LibrarySort.Type.TrackerMean
+        } else {
+            null
+        }
         // SY -->
-        if (hasSortTags) {
+        val tagSortPair = if (hasSortTags) {
             SYMR.strings.tag_sorting to LibrarySort.Type.TagList
         } else {
             null
-        },
+        }
         // SY <--
-        MR.strings.action_sort_random to LibrarySort.Type.Random,
-    ).plus(trackerSortOption).map { (titleRes, mode) ->
+        listOfNotNull(
+            MR.strings.action_sort_alpha to LibrarySort.Type.Alphabetical,
+            MR.strings.action_sort_total to LibrarySort.Type.TotalChapters,
+            MR.strings.action_sort_last_read to LibrarySort.Type.LastRead,
+            MR.strings.action_sort_last_manga_update to LibrarySort.Type.LastUpdate,
+            MR.strings.action_sort_unread_count to LibrarySort.Type.UnreadCount,
+            MR.strings.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
+            MR.strings.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
+            MR.strings.action_sort_date_added to LibrarySort.Type.DateAdded,
+            trackerMeanPair,
+            // SY -->
+            tagSortPair,
+            // SY <--
+            MR.strings.action_sort_random to LibrarySort.Type.Random,
+        )
+    }
+
+    options.map { (titleRes, mode) ->
         if (mode == LibrarySort.Type.Random) {
             BaseSortItem(
                 label = stringResource(titleRes),
