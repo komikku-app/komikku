@@ -42,7 +42,7 @@ import tachiyomi.domain.manga.interactor.GetMergedManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaById
 import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
-import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibrary
+import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibraryView
 import tachiyomi.domain.manga.interactor.GetSearchMetadata
 import tachiyomi.domain.manga.interactor.GetSearchTags
 import tachiyomi.domain.manga.interactor.GetSearchTitles
@@ -103,7 +103,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetPagePreviews(get(), get()) }
         addFactory { SearchEngine() }
         addFactory { IsTrackUnfollowed() }
-        addFactory { GetReadMangaNotInLibrary(get()) }
+        addFactory { GetReadMangaNotInLibraryView(get()) }
 
         // Required for [MetadataSource]
         addFactory<MetadataSource.GetMangaId> { GetManga(get()) }

@@ -24,7 +24,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.manga.interactor.GetLibraryManga
-import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibrary
+import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibraryView
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.source.local.isLocal
@@ -39,7 +39,7 @@ class StatsScreenModel(
     private val preferences: LibraryPreferences = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
     // SY -->
-    private val getReadMangaNotInLibrary: GetReadMangaNotInLibrary = Injekt.get(),
+    private val getReadMangaNotInLibraryView: GetReadMangaNotInLibraryView = Injekt.get(),
     // SY <--
 ) : StateScreenModel<StatsScreenState>(StatsScreenState.Loading) {
 
@@ -55,7 +55,7 @@ class StatsScreenModel(
         _allRead.onEach { allRead ->
             mutableState.update { StatsScreenState.Loading }
             val libraryManga = getLibraryManga.await() + if (allRead) {
-                getReadMangaNotInLibrary.await()
+                getReadMangaNotInLibraryView.await()
             } else {
                 emptyList()
             }
