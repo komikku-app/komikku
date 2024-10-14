@@ -45,6 +45,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.materialdialogs.binding
 import eu.kanade.tachiyomi.widget.materialdialogs.dismissDialog
 import eu.kanade.tachiyomi.widget.materialdialogs.setColors
+import eu.kanade.tachiyomi.widget.materialdialogs.setHint
 import eu.kanade.tachiyomi.widget.materialdialogs.setNegativeButton
 import eu.kanade.tachiyomi.widget.materialdialogs.setPositiveButton
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextEdit
@@ -404,7 +405,7 @@ private fun ChipGroup.setChips(
     }
 
     val addTagChip = Chip(context).apply {
-        text = SYMR.strings.add_tag.getString(context)
+        text = SYMR.strings.add_tags.getString(context)
         // KMK -->
         setTextColor(colors.tagTextColor)
         // KMK <--
@@ -427,12 +428,15 @@ private fun ChipGroup.setChips(
 
             val builder = MaterialAlertDialogBuilder(context)
             val binding = builder.binding(context)
-                .setTitle(SYMR.strings.add_tag.getString(context))
+                .setTitle(SYMR.strings.add_tags.getString(context))
+                .setHint(SYMR.strings.multi_tags_comma_separated.getString(context))
                 .setPositiveButton(MR.strings.action_ok.getString(context)) {
                     dialog?.dismissDialog()
                     // KMK <--
-                    val newTag = it.trimOrNull()
-                    if (newTag != null) setChips(items + listOfNotNull(newTag), scope, colors)
+                    val newTags = it.trimOrNull()
+                    newTags?.let { tags ->
+                        setChips(items + tags.split(",").mapNotNull { tag -> tag.trimOrNull() }, scope, colors)
+                    }
                     // KMK -->
                 }
                 .setNegativeButton(MR.strings.action_cancel.getString(context)) {
@@ -451,7 +455,7 @@ private fun ChipGroup.setChips(
 }
 
 private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
-    if (it is Chip && !it.text.toString().contains(context.stringResource(SYMR.strings.add_tag), ignoreCase = true)) {
+    if (it is Chip && !it.text.toString().contains(context.stringResource(SYMR.strings.add_tags), ignoreCase = true)) {
         it.text.toString()
     } else {
         null
