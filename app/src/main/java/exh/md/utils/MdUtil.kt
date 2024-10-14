@@ -1,7 +1,9 @@
 package exh.md.utils
 
+import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.POST
@@ -255,6 +257,16 @@ class MdUtil {
         inline fun <reified T> encodeToBody(body: T): RequestBody {
             return jsonParser.encodeToString(body)
                 .toRequestBody("application/json".toMediaType())
+        }
+
+        fun addAltTitleToDesc(description: String, altTitles: List<String>?): String {
+            return if (altTitles.isNullOrEmpty()) {
+                description
+            } else {
+                val altTitlesDesc = altTitles
+                    .joinToString("\n", "${Injekt.get<Application>().getString(R.string.alt_titles)}:\n") { "• $it" }
+                description + (if (description.isBlank()) "" else "\n\n") + altTitlesDesc
+            }
         }
     }
 }
