@@ -23,6 +23,7 @@ import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.manga.interactor.SmartSearchMerge
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
 import eu.kanade.presentation.manga.DownloadAction
@@ -154,6 +155,7 @@ class LibraryScreenModel(
     private val searchEngine: SearchEngine = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
+    private val syncPreferences: SyncPreferences = Injekt.get(),
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
@@ -282,6 +284,13 @@ class LibraryScreenModel(
                 mutableState.update { state ->
                     state.copy(groupType = it)
                 }
+            }
+            .launchIn(screenModelScope)
+        syncPreferences.syncService()
+            .changes()
+            .distinctUntilChanged()
+            .onEach { syncService ->
+                mutableState.update { it.copy(isSyncEnabled = syncService != 0) }
             }
             .launchIn(screenModelScope)
         // SY <--
@@ -1444,6 +1453,7 @@ class LibraryScreenModel(
         val dialog: Dialog? = null,
         // SY -->
         val showSyncExh: Boolean = false,
+        val isSyncEnabled: Boolean = false,
         val ogCategories: List<Category> = emptyList(),
         val groupType: Int = LibraryGroup.BY_DEFAULT,
         // SY <--
