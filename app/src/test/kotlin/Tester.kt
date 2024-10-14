@@ -17,6 +17,8 @@ import okio.source
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
@@ -26,8 +28,6 @@ import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.FavoriteEntry
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.CustomMangaRepository
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.addSingletonFactory
 import java.io.File
 
 class Tester {
@@ -168,11 +168,17 @@ class Tester {
         @JvmStatic
         @BeforeAll
         fun before() {
-            Injekt.addSingletonFactory {
-                GetCustomMangaInfo(
-                    object : CustomMangaRepository {
-                        override fun get(mangaId: Long) = null
-                        override fun set(mangaInfo: CustomMangaInfo) = Unit
+            startKoin {
+                modules(
+                    module {
+                        single {
+                            GetCustomMangaInfo(
+                                object : CustomMangaRepository {
+                                    override fun get(mangaId: Long) = null
+                                    override fun set(mangaInfo: CustomMangaInfo) = Unit
+                                },
+                            )
+                        }
                     },
                 )
             }

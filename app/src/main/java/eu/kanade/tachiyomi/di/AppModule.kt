@@ -50,10 +50,8 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.LocalSourceFileSystem
-import uy.kohesive.injekt.api.InjektModule
+import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektRegistrar
-import uy.kohesive.injekt.api.addSingleton
-import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
@@ -173,6 +171,8 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { EHentaiUpdateHelper(app) }
 
         addSingletonFactory { PagePreviewCache(app) }
+
+        addSingletonFactory { GoogleDriveService(app) }
         // SY <--
 
         // KMK -->
@@ -180,22 +180,22 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { SyncStatus() }
         addSingletonFactory { LibraryUpdateStatus() }
         // KMK <--
+    }
+}
 
-        // Asynchronously init expensive components for a faster cold start
-        ContextCompat.getMainExecutor(app).execute {
-            get<NetworkHelper>()
+fun initExpensiveComponents(app: Application) {
+    // Asynchronously init expensive components for a faster cold start
+    ContextCompat.getMainExecutor(app).execute {
+        Injekt.get<NetworkHelper>()
 
-            get<SourceManager>()
+        Injekt.get<SourceManager>()
 
-            get<Database>()
+        Injekt.get<Database>()
 
-            get<DownloadManager>()
+        Injekt.get<DownloadManager>()
 
-            // SY -->
-            get<GetCustomMangaInfo>()
-            // SY <--
-        }
-
-        addSingletonFactory { GoogleDriveService(app) }
+        // SY -->
+        Injekt.get<GetCustomMangaInfo>()
+        // SY <--
     }
 }

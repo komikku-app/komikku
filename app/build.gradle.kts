@@ -319,6 +319,10 @@ dependencies {
 
     // Google drive
     implementation(sylibs.google.api.services.drive)
+
+    // Koin
+    implementation(sylibs.koin.core)
+    implementation(sylibs.koin.android)
 }
 
 androidComponents {
