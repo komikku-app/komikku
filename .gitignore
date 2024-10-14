@@ -1,28 +1,22 @@
+# Build files
 .gradle
-.vscode
+#.vscode
 .kotlin
-/local.properties
-/.idea/workspace.xml
-.DS_Store
+build
+
+# IDE files
+*.iml
 .idea/*
 !.idea/icon.png
-*iml
-*.iml
-/mainframer
-/.mainframer
-
-# Built files
-*/build
-/build
-*.apk
-app/**/output*.json
-
-# Unnecessary file
-*.swp
-
-TODO.md
-CHANGELOG.md
 /captures
-build.sh
+
+# Configuration files
+local.properties
+
+# macOS specific files
+.DS_Store
+
 /app/src/main/assets/client_secrets.json
+/app/google-services.json
 *.jks
+app/standard/preview/*
