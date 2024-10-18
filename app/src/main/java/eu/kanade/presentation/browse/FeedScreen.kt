@@ -34,6 +34,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceIcon
+import eu.kanade.presentation.components.SourcesSearchBox
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
@@ -331,7 +332,7 @@ fun RadioSelectorSearchable(
     onSelectOption: (Int) -> Unit = {},
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        SourcesSearch(
+        SourcesSearchBox(
             searchQuery = queryString,
             onChangeSearchQuery = onChangeSearchQuery ?: {},
             modifier = Modifier

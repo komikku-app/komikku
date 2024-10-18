@@ -40,9 +40,9 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.SourcesSearch
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.SourcesSearchBox
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
@@ -207,7 +207,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
                     )
                 }
                 // KMK -->
-                SourcesSearch(
+                SourcesSearchBox(
                     modifier = Modifier
                         .onSizeChanged { searchBoxHeight = it.height }
                         .background(MaterialTheme.colorScheme.background)
