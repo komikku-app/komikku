@@ -39,6 +39,7 @@ fun GlobalSearchScreen(
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    hasPinnedSources: Boolean,
     // KMK <--
 ) {
     // KMK -->
@@ -91,6 +92,7 @@ fun GlobalSearchScreen(
                     // KMK -->
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     isRunning = bulkFavoriteState.isRunning,
+                    hasPinnedSources = hasPinnedSources,
                     // KMK <--
                 )
             }

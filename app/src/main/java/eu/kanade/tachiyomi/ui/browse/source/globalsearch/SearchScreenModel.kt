@@ -101,6 +101,16 @@ abstract class SearchScreenModel(
             )
     }
 
+    // KMK -->
+    fun hasPinnedSources(): Boolean = getEnabledSources().any { "${it.id}" in pinnedSources }
+
+    fun shouldPinnedSourcesHidden() {
+        if (!hasPinnedSources()) {
+            preferences.globalSearchPinnedState().set(SourceFilter.All)
+        }
+    }
+    // KMK <--
+
     private fun getSelectedSources(): List<CatalogueSource> {
         val enabledSources = getEnabledSources()
 

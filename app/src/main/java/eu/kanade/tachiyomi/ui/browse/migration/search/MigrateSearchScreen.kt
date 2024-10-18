@@ -69,6 +69,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
             // KMK -->
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+            hasPinnedSources = screenModel.hasPinnedSources(),
             // KMK <--
         )
 
