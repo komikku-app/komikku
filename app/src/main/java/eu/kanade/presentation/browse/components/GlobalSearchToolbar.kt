@@ -50,6 +50,7 @@ fun GlobalSearchToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    hasPinnedSources: Boolean,
     // KMK <--
 ) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -88,21 +89,25 @@ fun GlobalSearchToolbar(
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         ) {
             // TODO: make this UX better; it only applies when triggering a new search
-            FilterChip(
-                selected = sourceFilter == SourceFilter.PinnedOnly,
-                onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.PushPin,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(FilterChipDefaults.IconSize),
-                    )
-                },
-                label = {
-                    Text(text = stringResource(MR.strings.pinned_sources))
-                },
-            )
+            // KMK -->
+            if (hasPinnedSources) {
+                // KMK <--
+                FilterChip(
+                    selected = sourceFilter == SourceFilter.PinnedOnly,
+                    onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.PushPin,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(FilterChipDefaults.IconSize),
+                        )
+                    },
+                    label = {
+                        Text(text = stringResource(MR.strings.pinned_sources))
+                    },
+                )
+            }
             FilterChip(
                 selected = sourceFilter == SourceFilter.All,
                 onClick = { onChangeSearchFilter(SourceFilter.All) },

@@ -29,6 +29,7 @@ fun MigrateSearchScreen(
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    hasPinnedSources: Boolean,
     // KMK <--
 ) {
     // KMK -->
@@ -74,6 +75,7 @@ fun MigrateSearchScreen(
                     scrollBehavior = scrollBehavior,
                     // KMK -->
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    hasPinnedSources = hasPinnedSources,
                     // KMK <--
                 )
             }

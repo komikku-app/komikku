@@ -76,6 +76,10 @@ abstract class SearchScreenModel(
                 mutableState.update { it.copy(sourceFilter = state) }
             }
         }
+
+        if (!hasPinnedSources()) {
+            preferences.globalSearchPinnedState().set(SourceFilter.All)
+        }
         // KMK <--
     }
 
@@ -100,6 +104,10 @@ abstract class SearchScreenModel(
                 ),
             )
     }
+
+    // KMK -->
+    fun hasPinnedSources(): Boolean = getEnabledSources().any { "${it.id}" in pinnedSources }
+    // KMK <--
 
     private fun getSelectedSources(): List<CatalogueSource> {
         val enabledSources = getEnabledSources()

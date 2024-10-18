@@ -111,6 +111,7 @@ class GlobalSearchScreen(
                 },
                 // KMK -->
                 bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+                hasPinnedSources = screenModel.hasPinnedSources(),
                 // KMK <--
             )
         }
