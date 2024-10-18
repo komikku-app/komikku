@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -11,6 +10,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastMaxOfOrNull
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.palette.graphics.Palette
@@ -1480,23 +1480,15 @@ class MangaScreenModel(
             )
 
             if (!read) return@launchIO
-
-            val tracks = getTracks.await(mangaId)
-            val maxChapterNumber = chapters.maxOf { it.chapterNumber }
-            val shouldPromptTrackingUpdate = tracks.any { track -> maxChapterNumber > track.lastChapterRead }
-
-            if (!shouldPromptTrackingUpdate) return@launchIO
-
-            val result = snackbarHostState.showSnackbar(
-                message = context.stringResource(MR.strings.confirm_tracker_update, maxChapterNumber.toInt()),
-                actionLabel = context.stringResource(MR.strings.action_ok),
-                duration = SnackbarDuration.Short,
-                withDismissAction = true,
-            )
-
-            if (result == SnackbarResult.ActionPerformed) {
-                trackChapter.await(context, mangaId, maxChapterNumber)
-            }
+            // KMK -->
+            if (!trackPreferences.updateTrackMarkedRead().get()) return@launchIO
+            chapters.fastMaxOfOrNull { it.chapterNumber }
+                ?.also { chapterNumber ->
+                    screenModelScope.launchNonCancellable {
+                        trackChapter.await(context, mangaId, chapterNumber)
+                    }
+                }
+            // KMK <--
         }
     }
 
