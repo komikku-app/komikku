@@ -120,7 +120,6 @@ fun FeedScreen(
                         val nextFeed = feeds.getOrNull(index + 1)
                         // KMK <--
                         GlobalSearchResultItem(
-                            modifier = Modifier.animateItem(),
                             title = item.title,
                             subtitle = item.subtitle,
                             onLongClick = {
@@ -135,6 +134,7 @@ fun FeedScreen(
                                     onClickSource(item.source)
                                 }
                             },
+                            modifier = Modifier.animateItem(),
                         ) {
                             FeedItem(
                                 item = item,

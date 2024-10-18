@@ -319,8 +319,10 @@ private fun ChapterNavigatorPreview() {
             currentPage = currentPage,
             totalPages = 10,
             onSliderValueChange = { currentPage = it },
+            // SY -->
+            currentPageText = "1",
             isVerticalSlider = false,
-            currentPageText = "currentPageText",
+            // SY <--
         )
     }
 }
