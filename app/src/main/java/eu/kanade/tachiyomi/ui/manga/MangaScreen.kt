@@ -137,15 +137,9 @@ class MangaScreen(
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val lifecycleOwner = LocalLifecycleOwner.current
-        val screenModel =
-            rememberScreenModel {
-                MangaScreenModel(
-                    context, lifecycleOwner.lifecycle, mangaId, fromSource,
-                    // SY -->
-                    smartSearchConfig != null,
-                    // SY <--
-                )
-            }
+        val screenModel = rememberScreenModel {
+            MangaScreenModel(context, lifecycleOwner.lifecycle, mangaId, fromSource, smartSearchConfig != null)
+        }
 
         val state by screenModel.state.collectAsStateWithLifecycle()
 

@@ -8,11 +8,11 @@ import java.util.Properties
 plugins {
     id("mihon.android.application")
     id("mihon.android.application.compose")
-    // id("com.github.zellius.shortcut-helper")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
-    id("com.github.ben-manes.versions")
+    // id("com.github.zellius.shortcut-helper")
     alias(libs.plugins.aboutLibraries)
+    id("com.github.ben-manes.versions")
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
