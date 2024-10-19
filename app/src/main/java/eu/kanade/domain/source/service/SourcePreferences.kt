@@ -41,6 +41,10 @@ class SourcePreferences(
 
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
 
+    // KMK -->
+    fun hideInLibraryFeedItems() = preferenceStore.getBoolean("feed_hide_in_library_items", false)
+    // KMK <--
+
     @Deprecated("Use ExtensionRepoRepository instead", replaceWith = ReplaceWith("ExtensionRepoRepository.getAll()"))
     fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
 

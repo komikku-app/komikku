@@ -105,6 +105,12 @@ object SettingsBrowseScreen : SearchableSettings {
                         subtitle = stringResource(SYMR.strings.pref_feed_position_summery),
                         enabled = hideFeedTab.not(),
                     ),
+                    // KMK -->
+                    Preference.PreferenceItem.SwitchPreference(
+                        pref = sourcePreferences.hideInLibraryFeedItems(),
+                        title = stringResource(MR.strings.pref_hide_in_library_items),
+                    ),
+                    // KMK <--
                 ),
             ),
             // SY <--

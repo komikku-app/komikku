@@ -276,6 +276,10 @@ open class FeedScreenModel(
         )
     }
 
+    // KMK -->
+    private val hideInLibraryFeedItems = sourcePreferences.hideInLibraryFeedItems()
+    // KMK <--
+
     /**
      * Initiates get manga per feed.
      */
@@ -315,7 +319,10 @@ open class FeedScreenModel(
                         itemUI.copy(
                             results = page.map {
                                 networkToLocalManga.await(it.toDomainManga(itemUI.source!!.id))
-                            },
+                            }
+                                // KMK -->
+                                .filter { !hideInLibraryFeedItems.get() || !it.favorite },
+                            // KMK <--
                         )
                     }
 
