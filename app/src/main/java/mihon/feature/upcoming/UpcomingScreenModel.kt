@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.domain.upcoming.interactor.GetUpcomingManga
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -25,6 +26,9 @@ import java.time.YearMonth
 class UpcomingScreenModel(
     private val getUpcomingManga: GetUpcomingManga = Injekt.get(),
 ) : StateScreenModel<UpcomingScreenModel.State>(State()) {
+    // KMK -->
+    private val libraryPreferences: LibraryPreferences = Injekt.get()
+    // KMK <--
 
     init {
         screenModelScope.launch {
@@ -39,6 +43,18 @@ class UpcomingScreenModel(
                 }
             }
         }
+        // KMK -->
+        screenModelScope.launch {
+            mutableState.update { state ->
+                val updatingItems = getUpcomingManga.updatingMangas().toUpcomingUIModels()
+                state.copy(
+                    updatingItems = updatingItems,
+                    updatingEvents = updatingItems.toEvents(),
+                    updatingHeaderIndexes = updatingItems.getHeaderIndexes(),
+                )
+            }
+        }
+        // KMK <--
     }
 
     private fun List<Manga>.toUpcomingUIModels(): ImmutableList<UpcomingUIModel> {
@@ -81,10 +97,36 @@ class UpcomingScreenModel(
         mutableState.update { it.copy(selectedYearMonth = yearMonth) }
     }
 
+    // KMK -->
+    val restriction by lazy { libraryPreferences.autoUpdateMangaRestrictions().get() }
+
+    fun showUpdatingMangas() {
+        mutableState.update { state ->
+            state.copy(
+                isShowingUpdatingMangas = true,
+            )
+        }
+    }
+
+    fun hideUpdatingMangas() {
+        mutableState.update { state ->
+            state.copy(
+                isShowingUpdatingMangas = false,
+            )
+        }
+    }
+    // KMK <--
+
     data class State(
         val selectedYearMonth: YearMonth = YearMonth.now(),
         val items: ImmutableList<UpcomingUIModel> = persistentListOf(),
         val events: ImmutableMap<LocalDate, Int> = persistentMapOf(),
         val headerIndexes: ImmutableMap<LocalDate, Int> = persistentMapOf(),
+        // KMK -->
+        val isShowingUpdatingMangas: Boolean = false,
+        val updatingItems: ImmutableList<UpcomingUIModel> = persistentListOf(),
+        val updatingEvents: ImmutableMap<LocalDate, Int> = persistentMapOf(),
+        val updatingHeaderIndexes: ImmutableMap<LocalDate, Int> = persistentMapOf(),
+        // KMK <--
     )
 }
