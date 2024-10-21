@@ -99,10 +99,9 @@ open class SourceFeedScreenModel(
             // KMK <--
 
             setFilters(source.getFilterList())
-            screenModelScope.launchIO {
-                val searches = loadSearches()
-                mutableState.update { it.copy(savedSearches = searches) }
-            }
+            // KMK -->
+            reloadSavedSearches()
+            // KMK <--
             getFeedSavedSearchBySourceId.subscribe(source.id)
                 .onEach {
                     val items = getSourcesToGetFeed(it)
@@ -266,6 +265,16 @@ open class SourceFeedScreenModel(
                 }
         }
     }
+
+    // KMK -->
+    fun reloadSavedSearches() {
+        screenModelScope.launchIO {
+            val searches = loadSearches()
+            mutableState.update { it.copy(savedSearches = searches) }
+        }
+    }
+    // KMK <--
+
     private suspend fun loadSearches() =
         getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
