@@ -269,6 +269,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     },
                     // KMK -->
                     onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_add_feed),
+                    shouldShowSavingButton = false,
                     // KMK <--
                     openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
                         {

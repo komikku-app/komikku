@@ -52,6 +52,7 @@ fun SourceFilterDialog(
     onSavedSearchPress: (EXHSavedSearch) -> Unit,
     // KMK -->
     onSavedSearchPressDesc: String,
+    shouldShowSavingButton: Boolean = true,
     // KMK <--
     openMangaDexRandom: (() -> Unit)?,
     openMangaDexFollows: (() -> Unit)?,
@@ -78,15 +79,19 @@ fun SourceFilterDialog(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // SY -->
-                    IconButton(onClick = onSave) {
-                        Icon(
-                            Icons.Default.Save,
-                            contentDescription = stringResource(MR.strings.action_save),
-                            tint = MaterialTheme.colorScheme.onBackground,
-                        )
+                    // KMK -->
+                    if (shouldShowSavingButton) {
+                        // KMK <--
+                        // SY -->
+                        IconButton(onClick = onSave) {
+                            Icon(
+                                Icons.Default.Save,
+                                contentDescription = stringResource(MR.strings.action_save),
+                                tint = MaterialTheme.colorScheme.onBackground,
+                            )
+                        }
+                        // SY <--
                     }
-                    // SY <--
                     Button(onClick = {
                         onFilter()
                         onDismissRequest()
