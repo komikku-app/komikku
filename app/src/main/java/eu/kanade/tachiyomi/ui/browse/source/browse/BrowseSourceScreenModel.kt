@@ -160,7 +160,7 @@ open class BrowseSourceScreenModel(
                         toolbarQuery = query,
                     )
                 }
-            }
+            }.join()
 
             if (!basePreferences.incognitoMode().get()) {
                 sourcePreferences.lastUsedSource().set(source.id)
