@@ -51,8 +51,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.analytics
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.AppStateBanners
@@ -87,7 +85,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
@@ -183,7 +180,6 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         val didMigration = if (isLaunch) {
-            addAnalytics()
             Migrator.awaitAndRelease()
         } else {
             false
@@ -594,14 +590,6 @@ class MainActivity : BaseActivity() {
         ready = true
         return true
     }
-
-    // SY -->
-    private fun addAnalytics() {
-        if (!isDevFlavor && (isPreviewBuildType)) {
-            Firebase.analytics.setUserProperty("preview_version", BuildConfig.COMMIT_COUNT)
-        }
-    }
-    // SY <--
 
     companion object {
         const val INTENT_SEARCH = "eu.kanade.tachiyomi.SEARCH"
