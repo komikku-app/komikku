@@ -173,7 +173,13 @@ open class BrowseSourceScreenModel(
             if (savedSearchFilters != null) {
                 val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
                 if (savedSearch != null) {
-                    search(query = savedSearch.query, filters = savedSearch.filterList)
+                    search(
+                        query = savedSearch.query,
+                        filters = savedSearch.filterList,
+                        // KMK -->
+                        savedSearchId = savedSearchFilters,
+                        // KMK <--
+                    )
                 }
             } else if (jsonFilters != null) {
                 runCatching {
@@ -269,7 +275,13 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    fun search(query: String? = null, filters: FilterList? = null) {
+    fun search(
+        query: String? = null,
+        filters: FilterList? = null,
+        // KMK -->
+        savedSearchId: Long? = null,
+        // KMK <--
+    ) {
         // KMK -->
         val source = source
         // KMK <--
@@ -288,6 +300,9 @@ open class BrowseSourceScreenModel(
                 listing = input.copy(
                     query = query ?: input.query,
                     filters = filters ?: input.filters,
+                    // KMK -->
+                    savedSearchId = savedSearchId,
+                    // KMK <--
                 ),
                 toolbarQuery = query ?: input.query,
             )
