@@ -440,6 +440,9 @@ class MangaScreen(
                         migrateManga(navigator, dialog.duplicate, screenModel.manga!!.id)
                         // SY <--
                     },
+                    // KMK -->
+                    duplicate = dialog.duplicate,
+                    // KMK <--
                 )
             }
 
