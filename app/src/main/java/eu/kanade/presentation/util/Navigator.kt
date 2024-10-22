@@ -15,7 +15,7 @@ import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.ScreenTransitionContent
-import eu.kanade.tachiyomi.util.system.isReleaseBuildType
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -94,7 +94,7 @@ fun ScreenTransition(
         modifier = modifier,
         label = "screen-transition",
     ) { screen ->
-        if (!isReleaseBuildType) {
+        if (isPreviewBuildType) {
             logcat(LogPriority.ERROR) { "ScreenTransition: ${screen.key}" }
         }
         navigator.saveableState("screen-transition", screen) {
