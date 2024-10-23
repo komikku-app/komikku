@@ -473,6 +473,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             )
                                             else -> e.message
                                         }
+                                        writeErrorsToDB(manga to errorMessage)
                                         failedUpdates.add(manga to errorMessage)
                                     }
                                 }
@@ -494,7 +495,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         if (failedUpdates.isNotEmpty()) {
             // KMK -->
-            writeErrorsToDB(failedUpdates)
             // val errorFile = writeErrorFile(failedUpdates)
             // KMK <--
             notifier.showUpdateErrorNotification(
@@ -749,9 +749,19 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     }
 
     // KMK -->
+    private suspend fun writeErrorsToDB(error: Pair<Manga, String?>) {
+        val errorMessage = error.second ?: "???"
+        val errorMessageId = insertLibraryUpdateErrorMessages.get(errorMessage)
+            ?: insertLibraryUpdateErrorMessages.insert(
+                libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
+            )
+
+        insertLibraryUpdateErrors.upsert(
+            LibraryUpdateError(id = -1L, mangaId = error.first.id, messageId = errorMessageId),
+        )
+    }
+
     private suspend fun writeErrorsToDB(errors: List<Pair<Manga, String?>>) {
-        deleteLibraryUpdateErrorMessages.await()
-        deleteLibraryUpdateErrors.await()
         val libraryErrors = errors.groupBy({ it.second }, { it.first })
         val errorMessages = insertLibraryUpdateErrorMessages.insertAll(
             libraryUpdateErrorMessages = libraryErrors.keys.map { errorMessage ->
