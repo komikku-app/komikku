@@ -131,17 +131,18 @@ fun LibraryUpdateErrorScreen(
                 },
             )
         },
-    ) { paddingValues ->
+    ) { contentPadding ->
         when {
-            state.isLoading -> LoadingScreen(modifier = Modifier.padding(paddingValues))
+            state.isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
             state.items.isEmpty() -> EmptyScreen(
                 message = stringResource(KMR.strings.info_empty_library_update_errors),
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier.padding(contentPadding),
             )
 
             else -> {
                 FastScrollLazyColumn(
-                    contentPadding = paddingValues,
+                    // Using modifier instead of contentPadding so we can use stickyHeader
+                    modifier = Modifier.padding(contentPadding),
                     state = listState,
                 ) {
                     libraryUpdateErrorUiItems(
