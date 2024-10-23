@@ -12,7 +12,7 @@ jobs:
   codeberg:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
       - uses: pixta-dev/repository-mirroring-action@674e65a7d483ca28dafaacba0d07351bdcc8bd75 # v1.1.1
