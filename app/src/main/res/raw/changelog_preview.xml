@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9484" changeDate="October 23, 2024">
+        <changelogtext>[b]New:[/b] show all entries going to be checked for Smart update on Upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] allow Feed to hide entries already in Library</changelogtext>
+        <changelogtext>[b]New:[/b] Added random library sort</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to opt out of Crashlytics</changelogtext>
+        <changelogtext>[b]Improve:[/b] show duplicating manga cover on Duplicate dialog</changelogtext>
+        <changelogtext>[b]Improve:[/b] always enable panorama cover for Feed &amp; Global search</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add Quantity Badge to Upcoming Screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] make global search pinned/all sticky</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide Pinned chip in Global/Migrate Search if no pinned sources available</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow adding multiple tags separated by commas</changelogtext>
+        <changelogtext>[b]Improve:[/b] show loading indicator while bulk-selection is running</changelogtext>
+        <changelogtext>[b]Improve:[/b] bulk-selection: reverse selection</changelogtext>
+        <changelogtext>[b]Improve:[/b] auto select saved-search tab if opened from another screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reload saved-searches when screen is navigated back to</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide Filter save-button on SourceFeedScreen</changelogtext>
+        <changelogtext>[b]Improve:[/b] only load suggestions after entry finished loading info &amp; chapters</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide sync library option when sync is disabled</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show download state and progress on reader chapter list.</changelogtext>
+        <changelogtext>[b]Improve:[/b] Confirmation dialog when removing privately installed extensions</changelogtext>
+        <changelogtext>[b]Fix:[/b] Revert to automatically sync marked read chapters to trackers</changelogtext>
+        <changelogtext>[b]Fix:[/b] late loading saved-searches when jump from SourceFeedScreen or FeedScreen</changelogtext>
+        <changelogtext>[b]Fix:[/b] color when using custom theme with AndroidView on DownloadQueue &amp; MigrationBottomSheetDialog</changelogtext>
+        <changelogtext>[b]Fix:[/b] source search box's height</changelogtext>
+        <changelogtext>[b]Fix:[/b] issue with not showing source names in merged manga sometimes</changelogtext>
+        <changelogtext>[b]Fix:[/b] EnhancedTracker not auto binding when adding manga to library</changelogtext>
+        <changelogtext>[b]Fix:[/b] Retain remote last chapter read if it's higher than the local one for EnhancedTracker</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9404" changeDate="September 27, 2024">
         <changelogtext>[b]New:[/b] feat(ui): Panorama cover</changelogtext>
         <changelogtext>[b]New:[/b] feat(ui): read/resume button movable</changelogtext>
