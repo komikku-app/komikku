@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -258,12 +259,23 @@ object DownloadQueueScreen : Screen() {
             val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
             val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
 
+            // KMK -->
+            val progressIndicatorColor = MaterialTheme.colorScheme.primary.toArgb()
+            val progressTrackColor = MaterialTheme.colorScheme.secondaryContainer.toArgb()
+            // KMK <--
+
             Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
                 AndroidView(
                     modifier = Modifier.fillMaxWidth(),
                     factory = { context ->
                         screenModel.controllerBinding = DownloadListBinding.inflate(LayoutInflater.from(context))
-                        screenModel.adapter = DownloadAdapter(screenModel.listener)
+                        screenModel.adapter = DownloadAdapter(
+                            screenModel.listener,
+                            // KMK -->
+                            progressIndicatorColor = progressIndicatorColor,
+                            progressTrackColor = progressTrackColor,
+                            // KMK <--
+                        )
                         screenModel.controllerBinding.root.adapter = screenModel.adapter
                         screenModel.adapter?.isHandleDragEnabled = true
                         screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(context)

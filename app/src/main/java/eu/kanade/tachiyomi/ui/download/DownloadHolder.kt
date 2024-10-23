@@ -28,9 +28,9 @@ class DownloadHolder(private val view: View, val adapter: DownloadAdapter) :
     private lateinit var download: Download
 
     /**
-     * Binds this holder with the given category.
+     * Binds this holder with the given download.
      *
-     * @param category The category to bind.
+     * @param download The download to bind.
      */
     fun bind(download: Download) {
         this.download = download
@@ -51,6 +51,10 @@ class DownloadHolder(private val view: View, val adapter: DownloadAdapter) :
             notifyProgress()
             notifyDownloadedPages()
         }
+        // KMK -->
+        binding.downloadProgress.trackColor = adapter.progressTrackColor
+        binding.downloadProgress.setIndicatorColor(adapter.progressIndicatorColor)
+        // KMK <--
     }
 
     /**

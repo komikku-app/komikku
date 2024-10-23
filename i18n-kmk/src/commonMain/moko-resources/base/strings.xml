@@ -18,7 +18,7 @@
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
-    <string name="pref_details_page_theme">Details page</string>
+    <string name="pref_details_page_theme">Manga details page</string>
     <string name="pref_theme_cover_based">Theme based on cover</string>
     <string name="pref_theme_cover_based_style">Cover based theme style</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>

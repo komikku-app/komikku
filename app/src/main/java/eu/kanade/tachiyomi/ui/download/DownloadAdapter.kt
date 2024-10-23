@@ -9,7 +9,13 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
  *
  * @param downloadItemListener Listener called when an item of the list is released.
  */
-class DownloadAdapter(val downloadItemListener: DownloadItemListener) : FlexibleAdapter<AbstractFlexibleItem<*>>(
+class DownloadAdapter(
+    val downloadItemListener: DownloadItemListener,
+    // KMK -->
+    val progressIndicatorColor: Int,
+    val progressTrackColor: Int,
+    // KMK <--
+) : FlexibleAdapter<AbstractFlexibleItem<*>>(
     null,
     downloadItemListener,
     true,

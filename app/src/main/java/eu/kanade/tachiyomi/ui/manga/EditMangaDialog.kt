@@ -86,7 +86,7 @@ fun EditMangaDialog(
     // KMK -->
     val colors = EditMangaDialogColors(
         textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-        textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
+        textHighlightColor = MaterialTheme.colorScheme.inversePrimary.toArgb(),
         iconColor = MaterialTheme.colorScheme.primary.toArgb(),
         tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
         tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
