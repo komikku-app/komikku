@@ -488,10 +488,10 @@ class MangaScreenModel(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                 )
+                fetchFromSourceTasks.awaitAll()
                 // KMK -->
                 launch { fetchRelatedMangasFromSource() }
                 // KMK <--
-                fetchFromSourceTasks.awaitAll()
             }
 
             // Initial loading finished
