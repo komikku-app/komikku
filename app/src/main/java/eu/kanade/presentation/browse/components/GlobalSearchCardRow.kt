@@ -75,7 +75,7 @@ internal fun MangaItem(
     onLongClick: () -> Unit,
     // KMK -->
     isSelected: Boolean = false,
-    panoramaCover: Boolean? = null,
+    panoramaCover: Boolean = true,
     // KMK <--
 ) {
     // KMK -->
