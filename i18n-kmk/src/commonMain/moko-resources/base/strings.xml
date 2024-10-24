@@ -85,7 +85,6 @@
     <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
 
     <!-- Tracking section -->
-    <string name="pref_update_tracking_marked_read">Update progress when marked as read</string>
     <string name="pref_auto_sync_read_chapters">Auto sync read chapters from Trackers</string>
 
     <!-- Sync section -->

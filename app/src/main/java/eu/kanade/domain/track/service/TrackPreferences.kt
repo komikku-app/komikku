@@ -36,9 +36,9 @@ class TrackPreferences(
 
     fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
 
-    // KMK -->
-    fun updateTrackMarkedRead() = preferenceStore.getBoolean("pref_update_tracking_marked_read_key", true)
+    fun autoUpdateTrackOnMarkRead() = preferenceStore.getBoolean("pref_auto_update_manga_on_mark_read", true)
 
+    // KMK -->
     fun autoSyncReadChapters() = preferenceStore.getBoolean("pref_auto_sync_read_chapters_key", true)
     // KMK <--
 }
