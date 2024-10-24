@@ -44,6 +44,6 @@ class TrackPreferences(
     )
 
     // KMK -->
-    fun autoSyncReadChapters() = preferenceStore.getBoolean("pref_auto_sync_read_chapters_key", true)
+    fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
     // KMK <--
 }

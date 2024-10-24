@@ -559,7 +559,7 @@ class MangaScreenModel(
     }
 
     private suspend fun syncTrackers() {
-        if (!trackPreferences.autoSyncReadChapters().get()) return
+        if (!trackPreferences.autoSyncProgressFromTrackers().get()) return
 
         val refreshTracks = Injekt.get<RefreshTracks>()
         refreshTracks.await(mangaId)
