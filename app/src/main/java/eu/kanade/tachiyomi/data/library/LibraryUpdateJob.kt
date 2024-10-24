@@ -161,6 +161,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         // KMK -->
         libraryUpdateStatus.start()
+
+        deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
         // KMK <--
 
         setForegroundSafely()
