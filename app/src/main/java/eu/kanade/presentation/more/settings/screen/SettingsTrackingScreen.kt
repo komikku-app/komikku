@@ -139,8 +139,8 @@ object SettingsTrackingScreen : SearchableSettings {
             ),
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(
-                pref = trackPreferences.autoSyncReadChapters(),
-                title = stringResource(KMR.strings.pref_auto_sync_read_chapters),
+                pref = trackPreferences.autoSyncProgressFromTrackers(),
+                title = stringResource(KMR.strings.pref_auto_sync_progress_from_trackers),
             ),
             // KMK <--
             Preference.PreferenceGroup(

@@ -25,7 +25,7 @@ class SyncChapterProgressWithTrack(
         mangaId: Long,
         remoteTrack: Track,
         tracker: Tracker,
-    ) {
+    ): Int? {
         // KKM -->
         // if (tracker !is EnhancedTracker) {
         //     return
@@ -70,17 +70,26 @@ class SyncChapterProgressWithTrack(
 
         try {
             // Update Tracker to localLastRead if needed
-            if (updatedTrack.lastChapterRead > remoteTrack.lastChapterRead) {
+            if (lastRead > remoteTrack.lastChapterRead) {
                 tracker.update(updatedTrack.toDbTrack())
                 // update Track in database
                 insertTrack.await(updatedTrack)
             }
-            // Update local chapters following Tracker
-            if (trackPreferences.autoSyncReadChapters().get() && !tracker.hasNotStartedReading(remoteTrack.status)) {
+            // KMK -->
+            // Always update local chapters following Tracker even past chapters
+            if (chapterUpdates.isNotEmpty() &&
+                trackPreferences.autoSyncProgressFromTrackers().get() &&
+                !tracker.hasNotStartedReading(remoteTrack.status)
+            ) {
                 updateChapter.awaitAll(chapterUpdates)
+                return lastRead.toInt()
             }
+            // KMK <--
         } catch (e: Throwable) {
             logcat(LogPriority.WARN, e)
         }
+        // KMK -->
+        return null
+        // KMK <--
     }
 }
