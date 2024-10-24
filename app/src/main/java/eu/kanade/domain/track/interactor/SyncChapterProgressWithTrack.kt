@@ -32,10 +32,10 @@ class SyncChapterProgressWithTrack(
         // }
         // <-- KKM
 
-        // Current chapters in database
+        // Current chapters in database, sort by source's order because database's order is a mess
         val dbChapters = getChaptersByMangaId.await(mangaId)
             // KMK -->
-            .reversed()
+            .sortedByDescending { it.sourceOrder }
             // KMK <--
             .filter { it.isRecognizedNumber }
 
@@ -43,10 +43,15 @@ class SyncChapterProgressWithTrack(
             .sortedBy { it.chapterNumber }
 
         // KMK -->
-        // Chapters to update to follow tracker: only continuous incremental chapters
-        // any abnormal chapter number will stop it from updating read status further
         var lastCheckChapter: Double
         var checkingChapter = 0.0
+
+        /**
+         * Chapters to update to follow tracker: only continuous incremental chapters
+         * any abnormal chapter number will stop it from updating read status further.
+         * Some mangas has name such as Volume 2 Chapter 1 which will corrupt the order
+         * if we sort by chapterNumber.
+         */
         val chapterUpdates = dbChapters
             .takeWhile { chapter ->
                 lastCheckChapter = checkingChapter
