@@ -35,6 +35,7 @@ import mihon.feature.upcoming.components.calendar.Calendar
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -129,7 +130,12 @@ private fun UpcomingToolbar(
     val uriHandler = LocalUriHandler.current
 
     AppBar(
-        title = stringResource(MR.strings.label_upcoming),
+        title =
+        if (isShowingUpdatingMangas) {
+            stringResource(KMR.strings.label_to_be_updated)
+        } else {
+            stringResource(MR.strings.label_upcoming)
+        },
         navigateUp = navigator::pop,
         actions = {
             // KMK -->
