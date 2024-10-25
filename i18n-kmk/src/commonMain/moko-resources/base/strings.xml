@@ -138,4 +138,7 @@
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
+
+    <!-- Misc -->
+    <string name="label_to_be_updated">To be updated</string>
 </resources>
