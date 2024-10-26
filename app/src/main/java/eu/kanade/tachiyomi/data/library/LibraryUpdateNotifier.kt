@@ -152,12 +152,7 @@ class LibraryUpdateNotifier(
      *
      * @param failed Number of entries that failed to update.
      */
-    fun showUpdateErrorNotification(
-        failed: Int,
-        // KMK -->
-        // uri: Uri,
-        // KMK <--
-    ) {
+    fun showUpdateErrorNotification(failed: Int) {
         if (failed == 0) {
             return
         }
