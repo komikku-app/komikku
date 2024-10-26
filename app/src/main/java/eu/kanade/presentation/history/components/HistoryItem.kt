@@ -15,7 +15,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
@@ -36,9 +34,6 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 private val HistoryItemHeight = 96.dp
 
@@ -50,6 +45,7 @@ fun HistoryItem(
     onClickDelete: () -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    usePanoramaCover: Boolean,
     coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
     // KMK <--
 ) {
@@ -62,7 +58,6 @@ fun HistoryItem(
     ) {
         // KMK -->
         val mangaCover = history.coverData
-        val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
         val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
@@ -150,6 +145,7 @@ private fun HistoryItemPreviews(
                 onClickCover = {},
                 onClickResume = {},
                 onClickDelete = {},
+                usePanoramaCover = false,
             )
         }
     }

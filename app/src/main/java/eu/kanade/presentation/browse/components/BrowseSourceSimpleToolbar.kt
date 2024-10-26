@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
@@ -21,9 +20,6 @@ import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 @Composable
 fun BrowseSourceSimpleToolbar(
@@ -73,15 +69,12 @@ fun BrowseSourceSimpleToolbar(
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.ComfortableGrid)
                 }
-                val usePanoramaCover by lazy { Injekt.get<UiPreferences>().usePanoramaCover() }
-                if (!usePanoramaCover.collectAsState().value) {
-                    RadioMenuItem(
-                        text = { Text(text = stringResource(KMR.strings.action_display_comfortable_grid_panorama)) },
-                        isChecked = displayMode == LibraryDisplayMode.ComfortableGridPanorama,
-                    ) {
-                        selectingDisplayMode = false
-                        onDisplayModeChange(LibraryDisplayMode.ComfortableGridPanorama)
-                    }
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.action_display_comfortable_grid_panorama)) },
+                    isChecked = displayMode == LibraryDisplayMode.ComfortableGridPanorama,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.ComfortableGridPanorama)
                 }
                 RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_grid)) },

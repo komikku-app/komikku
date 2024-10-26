@@ -36,7 +36,7 @@ fun BrowseSourceComfortableGrid(
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
-    usePanoramaCover: Boolean? = null,
+    usePanoramaCover: Boolean = false,
     // KMK <--
 ) {
     LazyVerticalGrid(
@@ -90,7 +90,7 @@ internal fun BrowseSourceComfortableGridItem(
     onLongClick: () -> Unit = onClick,
     // KMK -->
     isSelected: Boolean = false,
-    usePanoramaCover: Boolean?,
+    usePanoramaCover: Boolean,
     // KMK <--
 ) {
     MangaComfortableGridItem(
@@ -104,7 +104,7 @@ internal fun BrowseSourceComfortableGridItem(
         ),
         // KMK -->
         isSelected = isSelected,
-        panoramaCover = usePanoramaCover,
+        usePanoramaCover = usePanoramaCover,
         fitToPanoramaCover = true,
         // KMK <--
         coverAlpha = if (manga.favorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,

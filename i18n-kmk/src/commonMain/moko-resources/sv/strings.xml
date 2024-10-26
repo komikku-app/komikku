@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Växla endast NSFW</string>
   <string name="action_bulk_select">Bulk markeringsläge</string>
   <string name="action_faq_and_guides">Vanliga frågor och guider</string>
-  <string name="pref_details_page_theme">Detaljer sida</string>
+  <string name="pref_manga_info_theme">Detaljer sida</string>
   <string name="download_cache_renew_interval">Hämta cache förnyelseintervall</string>
   <string name="download_cache_renew_interval_manual">Manuell</string>
   <string name="download_cache_renew_interval_1hour">1 timme</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Visa dolda kategorier</string>
-  <string name="pref_use_panorama_cover">Panorama omslag</string>
-  <string name="pref_use_panorama_cover_summary">Visa omslaget i liggande läge om det är en bred bild</string>
+  <string name="pref_panorama_cover">Panorama omslag</string>
+  <string name="pref_panorama_cover_summary">Visa omslaget i liggande läge om det är en bred bild</string>
   <string name="action_display_comfortable_grid_panorama">Panorama bekvämt rutnät</string>
 </resources>

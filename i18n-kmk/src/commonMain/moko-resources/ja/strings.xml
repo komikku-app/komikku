@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">NSFWのみ切り替え</string>
   <string name="action_bulk_select">一括選択モード</string>
   <string name="action_faq_and_guides">FAQ とガイド</string>
-  <string name="pref_details_page_theme">詳細ページ</string>
+  <string name="pref_manga_info_theme">詳細ページ</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>
   <string name="download_cache_renew_interval_1hour">1 時間</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">非表示のカテゴリを表示</string>
-  <string name="pref_use_panorama_cover">パノラマカバー</string>
-  <string name="pref_use_panorama_cover_summary">横向き時にカバーを表示する</string>
+  <string name="pref_panorama_cover">パノラマカバー</string>
+  <string name="pref_panorama_cover_summary">横向き時にカバーを表示する</string>
   <string name="action_display_comfortable_grid_panorama">パノラマ快適なグリッド</string>
 </resources>

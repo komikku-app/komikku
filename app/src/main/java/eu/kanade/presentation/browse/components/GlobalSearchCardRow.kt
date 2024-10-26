@@ -75,17 +75,17 @@ internal fun MangaItem(
     onLongClick: () -> Unit,
     // KMK -->
     isSelected: Boolean = false,
-    panoramaCover: Boolean = true,
+    usePanoramaCover: Boolean? = null,
     // KMK <--
 ) {
     // KMK -->
-    val usePanoramaCover = panoramaCover ?: Injekt.get<UiPreferences>().usePanoramaCover().collectAsState().value
+    val panoramaCover = usePanoramaCover ?: Injekt.get<UiPreferences>().usePanoramaCoverFlow().collectAsState().value
     val coverRatio = remember { mutableFloatStateOf(1f) }
     // KMK <--
     Box(
         modifier = Modifier.width(
             // KMK -->
-            if (usePanoramaCover && coverRatio.floatValue <= RatioSwitchToPanorama) 205.dp else 96.dp,
+            if (panoramaCover && coverRatio.floatValue <= RatioSwitchToPanorama) 205.dp else 96.dp,
             // KMK <--
         ),
     ) {
@@ -99,7 +99,7 @@ internal fun MangaItem(
             // KMK -->
             isSelected = isSelected,
             coverRatio = coverRatio,
-            panoramaCover = usePanoramaCover,
+            usePanoramaCover = panoramaCover,
             fitToPanoramaCover = true,
             // KMK <--
             coverAlpha = if (isFavorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,

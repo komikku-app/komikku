@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Alleen NSFW in-/uitschakelen</string>
   <string name="action_bulk_select">Bulk selectiemodus</string>
   <string name="action_faq_and_guides">FAQ en handleidingen</string>
-  <string name="pref_details_page_theme">Details pagina</string>
+  <string name="pref_manga_info_theme">Details pagina</string>
   <string name="download_cache_renew_interval">Download de cache vernieuwingsinterval</string>
   <string name="download_cache_renew_interval_manual">Handleiding</string>
   <string name="download_cache_renew_interval_1hour">1 uur</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Toon verborgen categorieën</string>
-  <string name="pref_use_panorama_cover">Panorama Omslag</string>
-  <string name="pref_use_panorama_cover_summary">Toon omslag in liggende modus als het breed beeld is</string>
+  <string name="pref_panorama_cover">Panorama Omslag</string>
+  <string name="pref_panorama_cover_summary">Toon omslag in liggende modus als het breed beeld is</string>
   <string name="action_display_comfortable_grid_panorama">Panorama comfortabel raster</string>
 </resources>

@@ -22,7 +22,7 @@ internal fun LibraryComfortableGrid(
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
     // KMK -->
-    usePanoramaCover: Boolean? = null,
+    usePanoramaCover: Boolean = false,
     // KMK <--
 ) {
     LazyLibraryGrid(
@@ -71,7 +71,7 @@ internal fun LibraryComfortableGrid(
                     null
                 },
                 // KMK -->
-                panoramaCover = usePanoramaCover,
+                usePanoramaCover = usePanoramaCover,
                 // KMK <--
             )
         }

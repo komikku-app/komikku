@@ -13,12 +13,13 @@
     <string name="action_remove_merged">Remove merged entries?</string>
     <string name="action_hide">Hide</string>
     <string name="action_show_hidden_categories">Show hidden categories</string>
+    <string name="action_panorama_cover">Panorama cover</string>
 
 
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
-    <string name="pref_details_page_theme">Manga details page</string>
+    <string name="pref_manga_info_theme">Manga Info</string>
     <string name="pref_theme_cover_based">Theme based on cover</string>
     <string name="pref_theme_cover_based_style">Cover based theme style</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
@@ -30,8 +31,10 @@
     <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
     <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
     <string name="pref_theme_cover_based_style_content">Content</string>
-    <string name="pref_use_panorama_cover">Panorama Cover</string>
-    <string name="pref_use_panorama_cover_summary">Show cover in landscape mode if it\'s a wide image</string>
+    <string name="pref_panorama_cover">Panorama Cover</string>
+    <string name="pref_panorama_cover_summary">Show cover in landscape mode if it\'s a wide image</string>
+    <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
+    <string name="pref_panorama_cover_flow_summary">Show panorama cover in Global Search &amp; Suggestions</string>
     <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
     <string name="pref_expand_related_mangas">Expand Suggestions</string>
     <string name="pref_expand_related_mangas_summary">If turned off, Suggestions won\'t automatically load &amp; show expanded</string>

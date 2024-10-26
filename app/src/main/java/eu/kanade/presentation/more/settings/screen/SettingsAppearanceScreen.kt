@@ -51,7 +51,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         return listOf(
             getThemeGroup(uiPreferences = uiPreferences),
             // KMK -->
-            getDetailsPageThemeGroup(uiPreferences = uiPreferences),
+            getMangaInfoThemeGroup(uiPreferences = uiPreferences),
             // KMK <--
             getDisplayGroup(uiPreferences = uiPreferences),
             // SY -->
@@ -156,15 +156,15 @@ object SettingsAppearanceScreen : SearchableSettings {
 
     // KMK -->
     @Composable
-    private fun getDetailsPageThemeGroup(
+    private fun getMangaInfoThemeGroup(
         uiPreferences: UiPreferences,
     ): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
-        val detailsPageThemeCoverBased by remember {
+        val mangaInfoThemeCoverBased by remember {
             Injekt.get<UiPreferences>().themeCoverBased().asState(scope)
         }
         return Preference.PreferenceGroup(
-            title = stringResource(KMR.strings.pref_details_page_theme),
+            title = stringResource(KMR.strings.pref_manga_info_theme),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.themeCoverBased(),
@@ -173,7 +173,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     pref = uiPreferences.themeCoverBasedStyle(),
                     title = stringResource(KMR.strings.pref_theme_cover_based_style),
-                    enabled = detailsPageThemeCoverBased,
+                    enabled = mangaInfoThemeCoverBased,
                     entries = PaletteStyle.entries
                         .associateWith {
                             when (it) {
@@ -199,6 +199,11 @@ object SettingsAppearanceScreen : SearchableSettings {
                             }
                         }
                         .toImmutableMap(),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.usePanoramaCoverMangaInfo(),
+                    title = stringResource(KMR.strings.pref_panorama_cover),
+                    subtitle = stringResource(KMR.strings.pref_panorama_cover_summary),
                 ),
             ),
         )
@@ -274,9 +279,9 @@ object SettingsAppearanceScreen : SearchableSettings {
             preferenceItems = persistentListOf(
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.usePanoramaCover(),
-                    title = stringResource(KMR.strings.pref_use_panorama_cover),
-                    subtitle = stringResource(KMR.strings.pref_use_panorama_cover_summary),
+                    pref = uiPreferences.usePanoramaCoverFlow(),
+                    title = stringResource(KMR.strings.pref_panorama_cover_flow),
+                    subtitle = stringResource(KMR.strings.pref_panorama_cover_flow_summary),
                 ),
                 // KMK <--
                 Preference.PreferenceItem.SwitchPreference(

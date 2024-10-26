@@ -65,7 +65,11 @@ class UiPreferences(
 
     fun readButtonPosition() = preferenceStore.getString("reading_button_position", FabPosition.End.toString())
 
-    fun usePanoramaCover() = preferenceStore.getBoolean("use_panorama_cover", false)
+    fun usePanoramaCoverFlow() = preferenceStore.getBoolean("use_panorama_cover_flow", false)
+
+    fun usePanoramaCoverAlways() = preferenceStore.getBoolean("use_panorama_cover_grid", true)
+
+    fun usePanoramaCoverMangaInfo() = preferenceStore.getBoolean("use_panorama_cover_manga_info", false)
     // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)

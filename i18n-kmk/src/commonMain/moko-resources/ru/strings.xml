@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Переключить только NSFW</string>
   <string name="action_bulk_select">Режим массового выбора</string>
   <string name="action_faq_and_guides">FAQ и руководства</string>
-  <string name="pref_details_page_theme">Детали</string>
+  <string name="pref_manga_info_theme">Детали</string>
   <string name="download_cache_renew_interval">Загрузить интервал обновления кэша</string>
   <string name="download_cache_renew_interval_manual">Ручной</string>
   <string name="download_cache_renew_interval_1hour">1 час</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Показать скрытые категории</string>
-  <string name="pref_use_panorama_cover">Покрытие Панорамы</string>
-  <string name="pref_use_panorama_cover_summary">Показывать обложку в альбомном режиме, если это широкое изображение</string>
+  <string name="pref_panorama_cover">Покрытие Панорамы</string>
+  <string name="pref_panorama_cover_summary">Показывать обложку в альбомном режиме, если это широкое изображение</string>
   <string name="action_display_comfortable_grid_panorama">Удобная сетка для панорамы</string>
 </resources>

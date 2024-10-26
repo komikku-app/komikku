@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
   <string name="action_bulk_select">Modo de seleção em massa</string>
   <string name="action_faq_and_guides">FAQ e Guias</string>
-  <string name="pref_details_page_theme">Página de detalhes</string>
+  <string name="pref_manga_info_theme">Página de detalhes</string>
   <string name="download_cache_renew_interval">Baixar intervalo de renovação do cache</string>
   <string name="download_cache_renew_interval_manual">Manualmente</string>
   <string name="download_cache_renew_interval_1hour">number@@0 horas</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Mostrar categorias ocultas</string>
-  <string name="pref_use_panorama_cover">Capa do Panorama</string>
-  <string name="pref_use_panorama_cover_summary">Mostrar capa no modo paisagem se for uma imagem larga</string>
+  <string name="pref_panorama_cover">Capa do Panorama</string>
+  <string name="pref_panorama_cover_summary">Mostrar capa no modo paisagem se for uma imagem larga</string>
   <string name="action_display_comfortable_grid_panorama">Grade de panorama confortável</string>
 </resources>
