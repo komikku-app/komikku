@@ -41,6 +41,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.TrackChapter
+import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -241,6 +242,7 @@ class MangaScreenModel(
 
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
+    private var autoTrackState = trackPreferences.autoUpdateTrackOnMarkRead().get()
 
     private val skipFiltered by readerPreferences.skipFiltered().asState(screenModelScope)
 
@@ -1338,15 +1340,20 @@ class MangaScreenModel(
                 chapters = chapters.toTypedArray(),
             )
 
-            if (!read) return@launchIO
+            if (
+                successState?.hasLoggedInTrackers == false ||
+                !read ||
+                autoTrackState == AutoTrackState.NEVER
+            ) {
+                return@launchIO
+            }
 
             val tracks = getTracks.await(mangaId)
             val maxChapterNumber = chapters.maxOf { it.chapterNumber }
             val shouldPromptTrackingUpdate = tracks.any { track -> maxChapterNumber > track.lastChapterRead }
 
             if (!shouldPromptTrackingUpdate) return@launchIO
-
-            if (trackPreferences.autoUpdateTrackOnMarkRead().get()) {
+            if (autoTrackState == AutoTrackState.ALWAYS) {
                 trackChapter.await(context, mangaId, maxChapterNumber)
                 withUIContext {
                     context.toast(context.stringResource(MR.strings.trackers_updated_summary, maxChapterNumber.toInt()))
