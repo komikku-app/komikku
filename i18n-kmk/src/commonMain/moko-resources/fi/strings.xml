@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Vaihda vain NSFW</string>
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>
-  <string name="pref_details_page_theme">Yksityiskohdat sivu</string>
+  <string name="pref_manga_info_theme">Yksityiskohdat sivu</string>
   <string name="download_cache_renew_interval">Lataa välimuistin uusimisväli</string>
   <string name="download_cache_renew_interval_manual">Manuaalinen</string>
   <string name="download_cache_renew_interval_1hour">1 tunti</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Näytä piilotetut kategoriat</string>
-  <string name="pref_use_panorama_cover">Panoraama Kansi</string>
-  <string name="pref_use_panorama_cover_summary">Näytä kansi vaakatilassa, jos se on leveä kuva</string>
+  <string name="pref_panorama_cover">Panoraama Kansi</string>
+  <string name="pref_panorama_cover_summary">Näytä kansi vaakatilassa, jos se on leveä kuva</string>
   <string name="action_display_comfortable_grid_panorama">Panorama mukava ruudukko</string>
 </resources>

@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Comută numai NSFW</string>
   <string name="action_bulk_select">Mod selecţie în masă</string>
   <string name="action_faq_and_guides">Întrebări frecvente și ghiduri</string>
-  <string name="pref_details_page_theme">Pagina de detalii</string>
+  <string name="pref_manga_info_theme">Pagina de detalii</string>
   <string name="download_cache_renew_interval">Interval reînnoire descărcare geocutie</string>
   <string name="download_cache_renew_interval_manual">Manual</string>
   <string name="download_cache_renew_interval_1hour">1 oră</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Arată categoriile ascunse</string>
-  <string name="pref_use_panorama_cover">Copertă panoramă</string>
-  <string name="pref_use_panorama_cover_summary">Arată coperta în modul peisaj dacă este o imagine largă</string>
+  <string name="pref_panorama_cover">Copertă panoramă</string>
+  <string name="pref_panorama_cover_summary">Arată coperta în modul peisaj dacă este o imagine largă</string>
   <string name="action_display_comfortable_grid_panorama">Rețea confortabilă a panoramei</string>
 </resources>

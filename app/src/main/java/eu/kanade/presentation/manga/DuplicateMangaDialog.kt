@@ -62,7 +62,7 @@ fun DuplicateMangaDialog(
     val minHeight = LocalPreferenceMinHeight.current
 
     // KMK -->
-    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverAlways().collectAsState()
     val coverRatio = remember { mutableFloatStateOf(1f) }
     val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
     // KMK <--
@@ -196,7 +196,7 @@ fun DuplicateMangasDialog(
     mangaName: String,
     duplicate: Manga,
 ) {
-    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverAlways().collectAsState()
     val coverRatio = remember { mutableFloatStateOf(1f) }
     val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
 

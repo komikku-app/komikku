@@ -126,7 +126,7 @@ fun MangaInfoBox(
     // KMK <--
 ) {
     // KMK -->
-    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCover().collectAsState()
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverMangaInfo().collectAsState()
     // KMK <--
     Box(modifier = modifier) {
         // Backdrop

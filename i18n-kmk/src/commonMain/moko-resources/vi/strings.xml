@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Chỉ 18+</string>
   <string name="action_bulk_select">Chế độ lựa chọn hàng loạt</string>
   <string name="action_faq_and_guides">Hỏi đáp &amp; Hướng dẫn</string>
-  <string name="pref_details_page_theme">Trang chi tiết</string>
+  <string name="pref_manga_info_theme">Trang chi tiết</string>
   <string name="download_cache_renew_interval">Khoảng thời gian làm bộ nhớ tải xuống</string>
   <string name="download_cache_renew_interval_manual">Thủ công</string>
   <string name="download_cache_renew_interval_1hour">1 tiếng</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Hiện các danh mục ẩn</string>
-  <string name="pref_use_panorama_cover">Ảnh bìa toàn cảnh</string>
-  <string name="pref_use_panorama_cover_summary">Hiển thị ảnh bìa dạng ngang nếu là hình ảnh rộng</string>
+  <string name="pref_panorama_cover">Ảnh bìa toàn cảnh</string>
+  <string name="pref_panorama_cover_summary">Hiển thị ảnh bìa dạng ngang nếu là hình ảnh rộng</string>
   <string name="action_display_comfortable_grid_panorama">Lưới toàn cảnh</string>
 </resources>

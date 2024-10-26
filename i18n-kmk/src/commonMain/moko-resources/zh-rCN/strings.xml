@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">切换仅 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
-  <string name="pref_details_page_theme">详细信息页面</string>
+  <string name="pref_manga_info_theme">详细信息页面</string>
   <string name="download_cache_renew_interval">下载缓存更新间隔</string>
   <string name="download_cache_renew_interval_manual">手动模式</string>
   <string name="download_cache_renew_interval_1hour">1 小时</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">显示隐藏分类</string>
-  <string name="pref_use_panorama_cover">全景封面</string>
-  <string name="pref_use_panorama_cover_summary">横向显示宽屏封面</string>
+  <string name="pref_panorama_cover">全景封面</string>
+  <string name="pref_panorama_cover_summary">横向显示宽屏封面</string>
   <string name="action_display_comfortable_grid_panorama">全景松散网格</string>
 </resources>

@@ -4,7 +4,7 @@
   <string name="action_toggle_nsfw_only">Εναλλαγή μόνο NSFW</string>
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
-  <string name="pref_details_page_theme">Σελίδα λεπτομερειών</string>
+  <string name="pref_manga_info_theme">Σελίδα λεπτομερειών</string>
   <string name="download_cache_renew_interval">Χρονικό διάστημα ανανέωσης προσωρινής μνήμης</string>
   <string name="download_cache_renew_interval_manual">Χειροκίνητα</string>
   <string name="download_cache_renew_interval_1hour">1 ώρα</string>
@@ -98,7 +98,7 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Εμφάνιση κρυφών κατηγοριών</string>
-  <string name="pref_use_panorama_cover">Κάλυψη Πανοράματος</string>
-  <string name="pref_use_panorama_cover_summary">Εμφάνιση εξωφύλλου σε λειτουργία τοπίου αν είναι μια ευρεία εικόνα</string>
+  <string name="pref_panorama_cover">Κάλυψη Πανοράματος</string>
+  <string name="pref_panorama_cover_summary">Εμφάνιση εξωφύλλου σε λειτουργία τοπίου αν είναι μια ευρεία εικόνα</string>
   <string name="action_display_comfortable_grid_panorama">Πανόραμα άνετο πλέγμα</string>
 </resources>
