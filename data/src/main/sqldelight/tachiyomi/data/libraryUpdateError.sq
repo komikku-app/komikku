@@ -1,0 +1,41 @@
+CREATE TABLE libraryUpdateError (
+    _id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    manga_id INTEGER NOT NULL UNIQUE,
+    message_id INTEGER NOT NULL
+);
+
+getAllErrors:
+SELECT *
+FROM libraryUpdateError;
+
+insert:
+INSERT INTO libraryUpdateError(manga_id, message_id) VALUES (:mangaId, :messageId);
+
+upsert:
+INSERT INTO libraryUpdateError(manga_id, message_id)
+VALUES (:mangaId, :messageId)
+ON CONFLICT(manga_id)
+DO UPDATE
+SET
+    message_id = :messageId
+WHERE manga_id = :mangaId;
+
+deleteAllErrors:
+DELETE FROM libraryUpdateError;
+
+deleteError:
+DELETE FROM libraryUpdateError
+WHERE _id = :_id;
+
+deleteMangaError:
+DELETE FROM libraryUpdateError
+WHERE manga_id = :mangaId;
+
+cleanUnrelevantMangaErrors:
+DELETE FROM libraryUpdateError
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM mangas
+    WHERE libraryUpdateError.manga_id = mangas._id
+    AND mangas.favorite == 1
+);

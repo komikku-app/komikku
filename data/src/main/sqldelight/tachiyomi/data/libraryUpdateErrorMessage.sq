@@ -1,0 +1,21 @@
+CREATE TABLE libraryUpdateErrorMessage (
+    _id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    message TEXT NOT NULL UNIQUE
+);
+
+getAllErrorMessages:
+SELECT *
+FROM libraryUpdateErrorMessage;
+
+getErrorMessages:
+SELECT *
+FROM libraryUpdateErrorMessage WHERE message == :message;
+
+insert:
+INSERT INTO libraryUpdateErrorMessage(message) VALUES (:message);
+
+deleteAllErrorMessages:
+DELETE FROM libraryUpdateErrorMessage;
+
+selectLastInsertedRowId:
+SELECT last_insert_rowid();
