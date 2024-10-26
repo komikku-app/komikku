@@ -11,7 +11,7 @@ public object AssetsGroup
 public val ExhGroup.Assets: AssetsGroup
     get() = AssetsGroup
 
-@Suppress("ObjectPropertyName", "ktlint:standard:backing-property-naming")
+@Suppress("ObjectPropertyName")
 private var __AllAssets: ____KtList<ImageVector>? = null
 
 public val AssetsGroup.AllAssets: ____KtList<ImageVector>

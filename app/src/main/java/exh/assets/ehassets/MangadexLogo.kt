@@ -427,5 +427,5 @@ public val EhAssets.MangadexLogo: ImageVector
         return _mangadexLogo!!
     }
 
-@Suppress("ObjectPropertyName", "ktlint:standard:backing-property-naming")
+@Suppress("ObjectPropertyName")
 private var _mangadexLogo: ImageVector? = null
