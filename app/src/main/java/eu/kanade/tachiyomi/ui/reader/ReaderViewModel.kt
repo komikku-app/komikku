@@ -1338,6 +1338,7 @@ class ReaderViewModel @JvmOverloads constructor(
         @IntRange(from = -100, to = 100) val brightnessOverlayValue: Int = 0,
 
         // SY -->
+        /** for display page number in double-page mode */
         val currentPageText: String = "",
         val meta: RaisedSearchMetadata? = null,
         val mergedManga: Map<Long, Manga>? = null,
