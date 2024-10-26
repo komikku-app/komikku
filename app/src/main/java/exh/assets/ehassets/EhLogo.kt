@@ -165,5 +165,5 @@ public val EhAssets.EhLogo: ImageVector
         return _ehLogo!!
     }
 
-@Suppress("ObjectPropertyName", "ktlint:standard:backing-property-naming")
+@Suppress("ObjectPropertyName")
 private var _ehLogo: ImageVector? = null
