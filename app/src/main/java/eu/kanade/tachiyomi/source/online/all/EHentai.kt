@@ -449,7 +449,11 @@ class EHentai(
     private fun parseChapterPage(response: Element) = with(response) {
         select(".gdtm a").map {
             Pair(it.child(0).attr("alt").toInt(), it.attr("href"))
-        }.sortedBy(Pair<Int, String>::first).map { it.second }
+        }.plus(
+            select("#gdt a").map {
+                Pair(it.child(0).attr("title").removePrefix("Page ").substringBefore(":").toInt(), it.attr("href"))
+            },
+        ).sortedBy(Pair<Int, String>::first).map { it.second }
     }
 
     private fun chapterPageCall(np: String): Observable<Response> {
@@ -1214,7 +1218,8 @@ class EHentai(
 
         val body = doc.body()
         val previews = body
-            .select("#gdt div div")
+            .select("#gdt > div > div")
+            .plus(body.select("#gdt > a"))
             .map {
                 val preview = parseNormalPreview(it)
                 PagePreviewInfo(preview.index, imageUrl = preview.toUrl())
@@ -1250,8 +1255,15 @@ class EHentai(
      * Parse normal previews with regular expressions
      */
     private fun parseNormalPreview(element: Element): EHentaiThumbnailPreview {
-        val index = element.selectFirst("img")!!.attr("alt").toInt()
-        val styles = element.attr("style").split(";").mapNotNull { it.trimOrNull() }
+        val imgElement = element.selectFirst("img")
+        val index = imgElement?.attr("alt")?.toInt()
+            ?: element.child(0).attr("title").removePrefix("Page ").substringBefore(":").toInt()
+        val styleElement = if (imgElement != null) {
+            element
+        } else {
+            element.child(0)
+        }
+        val styles = styleElement.attr("style").split(";").mapNotNull { it.trimOrNull() }
         val width = styles.first { it.startsWith("width:") }
             .removePrefix("width:")
             .removeSuffix("px")
@@ -1275,7 +1287,7 @@ class EHentai(
             .removeSuffix("px")
             .toInt()
 
-        return EHentaiThumbnailPreview(url, width, height, widthOffset, index).also(::println)
+        return EHentaiThumbnailPreview(url, width, height, widthOffset, index)
     }
     data class EHentaiThumbnailPreview(
         val imageUrl: String,
