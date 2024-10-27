@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="cleanup_done">
-        <item quantity="other">清理完成。清理了 %d 個資料夾</item>
+        <item quantity="other">已清理，清理了 %d 個資料夾</item>
     </plurals>
     <plurals name="num_lock_times">
         <item quantity="other">%d 個鎖定時間表</item>
@@ -10,9 +10,8 @@
         <item quantity="other">重試 %1$d 個失敗的頁面……</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="other">%1$d 個標籤在排序列表中。 這在書架中增加了一個選項，以基於優先級的標籤列表進行排序，這意味著作品將以你想要的標籤優先的方式進行排序。</item>
+        <item quantity="other">%1$d 個標籤在排序列表中， 這在書櫃中增加了一個選項，以基於優先級的標籤列表進行排序，這意味著作品將以你想要的標籤優先的方式進行排序</item>
     </plurals>
-
     <plurals name="migrate_entry">
         <item quantity="other">遷移 %1$d%2$s 作品？</item>
     </plurals>
@@ -22,17 +21,14 @@
     <plurals name="entry_migrated">
         <item quantity="other">%d 個作品已遷移</item>
     </plurals>
-
     <!-- Extra gallery info -->
     <plurals name="num_pages">
         <item quantity="other">%1$d 頁</item>
     </plurals>
-
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
         <item quantity="other">%2$s %1$d 頁</item>
     </plurals>
-
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="other">%1$d 年前</item>
@@ -55,7 +51,7 @@
     <plurals name="humanize_second">
         <item quantity="other">%1$d 秒前</item>
     </plurals>
-        <plurals name="row_count">
+    <plurals name="row_count">
         <item quantity="other">%d 行</item>
     </plurals>
 </resources>
