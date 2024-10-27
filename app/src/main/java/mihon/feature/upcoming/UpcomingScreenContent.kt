@@ -41,6 +41,7 @@ import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.LoadingScreen
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -63,6 +64,7 @@ fun UpcomingScreenContent(
     val headerIndexes = if (state.isShowingUpdatingMangas) state.updatingHeaderIndexes else state.headerIndexes
     val items = if (state.isShowingUpdatingMangas) state.updatingItems else state.items
     val events = if (state.isShowingUpdatingMangas) state.updatingEvents else state.events
+    val isLoading = if (state.isShowingUpdatingMangas) state.isLoadingUpdating else state.isLoadingUpcoming
     // KMK <--
 
     val onClickDay: (LocalDate, Int) -> Unit = { date, offset ->
@@ -85,6 +87,12 @@ fun UpcomingScreenContent(
         },
         modifier = modifier,
     ) { paddingValues ->
+        // KMK -->
+        if (isLoading) {
+            LoadingScreen(modifier = Modifier.padding(paddingValues))
+            return@Scaffold
+        }
+        // KMK <--
         if (isTabletUi()) {
             UpcomingScreenLargeImpl(
                 listState = listState,
