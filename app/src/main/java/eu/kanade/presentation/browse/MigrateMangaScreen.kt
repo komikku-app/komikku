@@ -60,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBarTitle
+import eu.kanade.presentation.manga.components.BaseMangaListItem
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.R
@@ -84,7 +85,7 @@ fun MigrateMangaScreen(
     title: String?,
     state: MigrateMangaScreenModel.State,
     onClickItem: (MigrateMangaItem) -> Unit,
-    onClickCover: (MigrateMangaItem) -> Unit,
+    onClickCover: (Manga) -> Unit,
     // KMK -->
     onMultiMigrateClicked: (() -> Unit),
     onSelectAll: (Boolean) -> Unit,
@@ -111,14 +112,15 @@ fun MigrateMangaScreen(
 
     Scaffold(
         topBar = { scrollBehavior ->
-            MigrateMangaScreenAppBar(
+            // KMK -->
+            MigrateMangaToolbar(
                 title = title,
                 actionModeCounter = state.selected.size,
                 scrollBehavior = scrollBehavior,
             )
         },
         bottomBar = {
-            MigrateMangaScreenBottomBar(
+            MigrateMangaBottomBar(
                 selected = state.selected,
                 itemCount = state.titles.size,
                 enableScrollToTop = enableScrollToTop,
@@ -138,6 +140,7 @@ fun MigrateMangaScreen(
                         listState.scrollToItem(state.titles.size - 1)
                     }
                 },
+                // KMK <--
             )
         },
     ) { contentPadding ->
@@ -154,8 +157,10 @@ fun MigrateMangaScreen(
             state = state,
             onClickItem = onClickItem,
             onClickCover = onClickCover,
+            // KMK -->
             onMangaSelected = onMangaSelected,
             listState = listState,
+            // KMK <--
         )
     }
 }
@@ -165,7 +170,8 @@ private fun MigrateMangaContent(
     contentPadding: PaddingValues,
     state: MigrateMangaScreenModel.State,
     onClickItem: (MigrateMangaItem) -> Unit,
-    onClickCover: (MigrateMangaItem) -> Unit,
+    onClickCover: (Manga) -> Unit,
+    // KMK -->
     onMangaSelected: (MigrateMangaItem, Boolean, Boolean, Boolean) -> Unit,
     listState: LazyListState,
 ) {
@@ -173,74 +179,55 @@ private fun MigrateMangaContent(
         contentPadding = contentPadding,
         state = listState,
     ) {
-        items(
-            items = state.titles,
-        ) {
-            MigrateMangaScreenUiItem(
-                modifier = Modifier.animateItemFastScroll(),
+        // KMK <--
+        items(items = state.titles) {
+            MigrateMangaItem(
                 manga = it.manga,
-                selected = it.selected,
-                onClick = {
+                onClickItem = {
+                    // KMK -->
                     when {
                         state.selectionMode -> onMangaSelected(it, !it.selected, true, false)
+                        // KMK <--
                         else -> onClickItem(it)
                     }
                 },
+                onClickCover = { onClickCover(it.manga) }.takeIf { !state.selectionMode },
+                // KMK -->
                 onLongClick = { onMangaSelected(it, !it.selected, true, true) },
-                onClickCover = { onClickCover(it) }.takeIf { !state.selectionMode },
+                selected = it.selected,
+                modifier = Modifier.animateItemFastScroll(),
+                // KMK <--
             )
         }
     }
 }
 
 @Composable
-private fun MigrateMangaScreenUiItem(
-    modifier: Modifier,
+private fun MigrateMangaItem(
     manga: Manga,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
+    onClickItem: () -> Unit,
     onClickCover: (() -> Unit)?,
+    // KMK -->
+    onLongClick: () -> Unit,
+    selected: Boolean,
+    // KMK <--
+    modifier: Modifier = Modifier,
 ) {
-    val haptic = LocalHapticFeedback.current
-
-    Row(
-        modifier = modifier
-            .selectedBackground(selected)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = {
-                    onLongClick()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-            )
-            .padding(horizontal = MaterialTheme.padding.medium),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        MangaCover.Square(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .height(48.dp),
-            data = manga,
-            onClick = onClickCover,
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(horizontal = MaterialTheme.padding.medium, vertical = 5.dp)
-                .weight(1f),
-        ) {
-            Text(
-                text = manga.title,
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Visible,
-            )
-        }
-    }
+    BaseMangaListItem(
+        modifier = modifier,
+        manga = manga,
+        onClickItem = onClickItem,
+        onClickCover = { onClickCover?.invoke() },
+        // KMK -->
+        onLongClick = onLongClick,
+        selected = selected,
+        // KMK <--
+    )
 }
 
+// KMK -->
 @Composable
-private fun MigrateMangaScreenAppBar(
+private fun MigrateMangaToolbar(
     modifier: Modifier = Modifier,
     title: String?,
     actionModeCounter: Int,
@@ -273,7 +260,7 @@ private fun MigrateMangaScreenAppBar(
 }
 
 @Composable
-private fun MigrateMangaScreenBottomBar(
+private fun MigrateMangaBottomBar(
     modifier: Modifier = Modifier,
     selected: List<MigrateMangaItem>,
     itemCount: Int,
@@ -453,3 +440,4 @@ private fun RowScope.Button(
         content?.invoke()
     }
 }
+// KMK <--

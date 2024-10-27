@@ -51,7 +51,7 @@ data class MigrateMangaScreen(
                 )
                 // SY <--
             },
-            onClickCover = { navigator.push(MangaScreen(it.manga.id)) },
+            onClickCover = { navigator.push(MangaScreen(it.id)) },
             // KMK -->
             onMultiMigrateClicked = {
                 if (state.selectionMode) {

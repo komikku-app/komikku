@@ -53,9 +53,11 @@ class MigrateMangaScreenModel(
                         state.copy(titleList = persistentListOf())
                     }
                 }
+                // KMK -->
                 .map { manga ->
                     toMigrationMangaScreenItems(manga)
                 }
+                // KMK <--
                 .map { manga ->
                     manga
                         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.manga.title })
@@ -171,8 +173,8 @@ class MigrateMangaScreenModel(
     data class State(
         val source: Source? = null,
         private val titleList: ImmutableList<MigrateMangaItem>? = null,
-        // KMK -->
     ) {
+        // KMK -->
         val selected = titles.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
         // KMK <--
@@ -192,8 +194,10 @@ sealed interface MigrationMangaEvent {
     data object FailedFetchingFavorites : MigrationMangaEvent
 }
 
+// KMK -->
 @Immutable
 data class MigrateMangaItem(
     val manga: Manga,
     val selected: Boolean,
 )
+// KMK <--
