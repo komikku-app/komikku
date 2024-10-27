@@ -61,7 +61,7 @@
     <string name="log_level">Level ng pag-log</string>
     <string name="log_level_summary">Ang pagbabago nito ay maaaring makaapekto sa performance ng app. Piliting i-restart ang app pagkatapos baguhin. Kasalukuyang halaga: %s</string>
     <string name="open_debug_menu">Buksan ang menu ng pag-debug</string>
-    <string name="open_debug_menu_summary">HUWAG PAKIALAMAN ANG MENU NA ITO MALIBAN KUNG ALAM MO ANG GINAGAWA MO! <font color="red">MAARI ITONG MA-CORRUPT ANG IYONG AKLATAN! </font></string>
+    <string name="open_debug_menu_summary"><![CDATA[HUWAG PAKIALAMAN ANG MENU NA ITO MALIBAN KUNG ALAM MO ANG GINAGAWA MO! <font color=\'red\'>MAARI ITONG MA-CORRUPT ANG IYONG AKLATAN!</font>]]></string>
     <string name="clean_orphaned_downloads">Linisin ang na-orphan</string>
     <string name="clean_read_downloads">Linisin ang nabasa-na</string>
     <string name="clean_read_entries_not_in_library">Linisin ang mga entry na wala sa aklatan</string>
@@ -602,4 +602,10 @@
     <string name="relation_sequel">Karugtong</string>
     <string name="relation_alternate_story">Alternatibong kwento</string>
     <string name="relation_colored">Nakulayan</string>
+    <string name="add_tags">Magdagdag ng Mga Tag</string>
+    <string name="multi_tags_comma_separated">Maglagay ng (mga) tag, na pinaghihiwalay ng mga kuwit (,).</string>
+    <string name="settings_profile_note">Profile note na mga setting</string>
+    <string name="pref_sync_api_key">API key</string>
+    <string name="alt_titles">Alternatibong mga Title</string>
+    <string name="pref_sync_host">Host</string>
 </resources>

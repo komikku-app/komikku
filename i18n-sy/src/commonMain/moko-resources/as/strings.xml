@@ -272,7 +272,7 @@
     <string name="friday">শুক্ৰবাৰ</string>
     <string name="encrypt_database">ডেটাবেছ এনক্ৰিপ্ট কৰক</string>
     <string name="encrypt_database_subtitle">প্ৰভাৱিত হ’বলৈ অ্যাপ পুনৰাৰম্ভৰ প্ৰয়োজন</string>
-    <string name="encrypt_database_message">&lt;font color=\'red\'&gt;ই চমু হোৱাৰ অৰ্থ হৈছে নতুন ডেটাবেছ সৃষ্টি কৰা হ’ব। আপোনাৰ ডাটা সংৰক্ষণৰ বাবে এই পদক্ষেপসমূহ ব্যৱহাৰ কৰক&lt;br&gt;1. SETTINGS -&gt; BACKUP -&gt; CREATE&lt;br&gt;2. SYSTEM SETTINGS -&gt; CLEAR APP DATA&lt;br&gt;3. APP খোলক আৰু এনক্ৰিপ্ট কৰক&lt;br&gt;4. SYSTEM SETTINGS -&gt; FORCE RESTART&lt;br&gt;5. SETTINGS -&gt; BACKUP -&gt; RESTORE&lt;/font&gt;</string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>ই চমু হোৱাৰ অৰ্থ হৈছে নতুন ডেটাবেছ সৃষ্টি কৰা হ’ব। আপোনাৰ ডাটা সংৰক্ষণৰ বাবে এই পদক্ষেপসমূহ ব্যৱহাৰ কৰক<br>1. SETTINGS -> BACKUP -> CREATE<br>2. SYSTEM SETTINGS -> CLEAR APP DATA<br>3. APP খোলক আৰু এনক্ৰিপ্ট কৰক<br>4. SYSTEM SETTINGS -> FORCE RESTART<br>5. SETTINGS -> BACKUP -> RESTORE</font>]]></string>
     <string name="password_protect_downloads">ডাউনলোডসমূহ পাসৱৰ্ডৰ দ্বাৰা ৰক্ষা কৰক</string>
     <string name="delete_cbz_archive_password">CBZ আর্কাইভ পাসৱৰ্ড মচি দিয়ক</string>
     <string name="cbz_archive_password">CBZ আর্কাইভ পাসৱৰ্ড</string>
@@ -472,7 +472,7 @@
     <string name="favorites_sync_processing_throttle">%1$s
 \n
 \nচিঞৰ বৰ্তমান থ্ৰ\'টেল হৈছে (ExHentaiৰ পৰা নিষিদ্ধ হোৱাৰ পৰা বাচিবলৈ) আৰু সম্পূৰ্ণ হ\'বলৈ বহু সময় লাগিব পাৰে।</string>
-    <string name="favorites_sync_notes_message">1. এপৰ বিভাগৰ নামত হোৱা পৰিবৰ্তনসমূহ &lt;b&gt;সমন্বিত নহয়&lt;/b&gt;! দয়া কৰি &lt;i&gt;ExHentaiত বিভাগৰ নাম সলনি কৰক&lt;/i&gt;। বিভাগৰ নামবোৰ প্ৰত্যেকবাৰ সমন্বয়ৰ সময়ত ExHentai চাৰ্ভাৰসমূহৰ পৰা নকল কৰা হব।&lt;br&gt;&lt;br&gt;2. ExHentaiত থকা পছন্দৰ বিভাগসমূহ এপৰ &lt;b&gt;প্ৰথম 10 বিভাগৰ সৈতে মিলে&lt;/b&gt; (‘Default’ বিভাগ বাদে)। &lt;i&gt;অন্যান্য বিভাগৰ গেছবুকসমূহ &lt;b&gt;সমন্বিত নহ’ব&lt;/b&gt;!&lt;/i&gt;&lt;br&gt;&lt;br&gt;3. &lt;font color=\'red\'&gt;&lt;b&gt;সমন্বয়ৰ সময়ত নিশ্চিত কৰক যে আপোনাৰ ইণ্টাৰনেট সংযোগ স্থিৰ আছে!&lt;/b&gt;&lt;/font&gt; যদি চিঞৰ চলি থকা সময়ত ইণ্টাৰনেট বিচ্ছিন্ন হয়, তেন্তে আপোনাৰ চিঞৰসমূহ &lt;i&gt;আংশিকভাৱে সমন্বিত অৱস্থা&lt;/i&gt;ত ৰোৱা হ\'ব পাৰে।&lt;br&gt;&lt;br&gt;4. চিঞৰ চলি থকা সময়ত এপ খোলা ৰাখক। Android পিছৰ পটত থকা এপসমূহ বন্ধ কৰিব পাৰে আৰু ই যদি চিঞৰ চলি থকা সময়ত হয় তেন্তে ই বেয়া হ\'ব পাৰে।&lt;br&gt;&lt;br&gt;5. &lt;b&gt;পছন্দসমূহ একাধিক বিভাগত ৰাখিব নালাগে&lt;/b&gt; (এপই ইয়াৰ সমৰ্থন কৰে)। এইয়ে সমন্বয় এলগ\'ৰিদমৰ বিভ্ৰান্তি সৃষ্টি কৰিব পাৰে কিয়নো ExHentai প্ৰত্যেক পছন্দৰ একেটা বিভাগতে থকাটো অনুমতি দিয়ে।&lt;br&gt;&lt;br&gt;এই সংলাপ মাত্ৰ একবাৰ আহিব। আপুনি \'Settings &gt; E-Hentai &gt; Show favorites sync notes\' ত গৈ পুনৰ এই মন্তব্যসমূহ পঢ়িব পাৰে।</string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. এপৰ বিভাগৰ নামত হোৱা পৰিবৰ্তনসমূহ <b>সমন্বিত নহয়</b>! দয়া কৰি <i>ExHentaiত বিভাগৰ নাম সলনি কৰক</i>। বিভাগৰ নামবোৰ প্ৰত্যেকবাৰ সমন্বয়ৰ সময়ত ExHentai চাৰ্ভাৰসমূহৰ পৰা নকল কৰা হব।<br><br>2. ExHentaiত থকা পছন্দৰ বিভাগসমূহ এপৰ <b>প্ৰথম 10 বিভাগৰ সৈতে মিলে</b> (‘\Default\’ বিভাগ বাদে)। <i>অন্যান্য বিভাগৰ গেছবুকসমূহ <b>সমন্বিত নহ’ব</b>!</i><br><br>3. <font color=\'red\'><b>সমন্বয়ৰ সময়ত নিশ্চিত কৰক যে আপোনাৰ ইণ্টাৰনেট সংযোগ স্থিৰ আছে!</b></font> যদি চিঞৰ চলি থকা সময়ত ইণ্টাৰনেট বিচ্ছিন্ন হয়, তেন্তে আপোনাৰ চিঞৰসমূহ <i>আংশিকভাৱে সমন্বিত অৱস্থা</i>ত ৰোৱা হ'ব পাৰে।<br><br>4. চিঞৰ চলি থকা সময়ত এপ খোলা ৰাখক। Android পিছৰ পটত থকা এপসমূহ বন্ধ কৰিব পাৰে আৰু ই যদি চিঞৰ চলি থকা সময়ত হয় তেন্তে ই বেয়া হ'ব পাৰে।<br><br>5. <b>পছন্দসমূহ একাধিক বিভাগত ৰাখিব নালাগে</b> (এপই ইয়াৰ সমৰ্থন কৰে)। এইয়ে সমন্বয় এলগ'ৰিদমৰ বিভ্ৰান্তি সৃষ্টি কৰিব পাৰে কিয়নো ExHentai প্ৰত্যেক পছন্দৰ একেটা বিভাগতে থকাটো অনুমতি দিয়ে।<br><br>এই সংলাপ মাত্ৰ একবাৰ আহিব। আপুনি \'Settings > E-Hentai > Show favorites sync notes'\ ত গৈ পুনৰ এই মন্তব্যসমূহ পঢ়িব পাৰে।]]></string>
     <string name="favorites_sync_reset">আপুনি নিশ্চিতনে?</string>
     <string name="favorites_sync_conformation_message">আপুনি নিশ্চিত যে আপোনাৰ পছন্দসমূহ E-Hentaiৰ সৈতে সমন্বয় কৰিবলৈ ইচ্ছা কৰিছে?</string>
     <string name="favorites_sync_reset_message">চিঞৰ অৱস্থা পুনৰ ছেট কৰাৰ ফলত আপোনাৰ পৰবর্তী চিঞৰ অত্যন্ত ধীৰ গতিত হ\'ব পাৰে।</string>
@@ -636,4 +636,7 @@
 \nসতর্কতা: পাসৱৰ্ড ভুলিলে আর্কাইভৰ ভিতৰ ডাটা চিৰদিনৰ বাবে হেৰাই যাব</string>
     <string name="rating5">মধ্যমীয়া</string>
     <string name="relation_sequel">ছিকুৱেল</string>
+    <string name="add_tags">টেগ যোগ কৰক</string>
+    <string name="multi_tags_comma_separated">টেগ(সমূহ), ক\'মা ব্যৱহাৰ কৰি প্ৰৱেশ কৰক।</string>
+    <string name="alt_titles">বিকল্প শিৰোনামসমূহ</string>
 </resources>

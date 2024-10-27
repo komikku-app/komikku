@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_skip_entry">Non migrare</string>
+    <string name="action_search_manually">Cerca manualmente</string>
+    <string name="action_migrate_now">Migra ora</string>
+    <string name="action_copy_now">Copia ora</string>
+</resources>

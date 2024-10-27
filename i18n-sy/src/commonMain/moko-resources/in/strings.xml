@@ -564,4 +564,11 @@
     <string name="pref_hide_feed">Sembunyikan tab Umpan</string>
     <string name="pref_feed_position">Posisi tab Umpan</string>
     <string name="pref_feed_position_summery">Apakah Anda ingin tab Umpan menjadi tab pertama dalam penjelajahan? Ini akan menjadikannya tab default saat membuka penjelajahan, tidak disarankan jika Anda menggunakan data atau jaringan terukur</string>
+    <string name="error_uploading_sync_data">Terjadi kesalahan saat mengunggah data sinkronisasi ke Google Drive</string>
+    <string name="google_drive_login_failed">Gagal masuk ke Google Drive: %s</string>
+    <string name="google_drive_not_signed_in">Belum masuk ke Google Drive</string>
+    <string name="pref_sync_options">Buat pemicu sinkronisasi</string>
+    <string name="error_deleting_google_drive_lock_file">Kesalahan saat menghapus file kunci Google Drive</string>
+    <string name="error_before_sync_gdrive">Gagal sebelum sinkron: %s</string>
+    <string name="pref_purge_confirmation_title">Konfirmasi pembersihan</string>
 </resources>
