@@ -643,4 +643,19 @@
     <string name="action_copy_second_page">复制第二页</string>
     <string name="action_copy_combined_page">复制合并页</string>
     <string name="only_show_updated_entries">仅显示包含新章节的条目</string>
+    <string name="url">Url</string>
+    <string name="alt_titles">别名</string>
+    <string name="add_tags">添加标签</string>
+    <string name="multi_tags_comma_separated">输入标签，用逗号隔开。</string>
+    <string name="aes_128">AES 128</string>
+    <string name="aged">年龄限制</string>
+    <string name="anilist_id">Anilist id</string>
+    <string name="kitsu_id">Kitsu id</string>
+    <string name="mal_id">Mal id</string>
+    <string name="anime_planet_id">Anime planet id</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="aes_256">AES 256</string>
+    <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
+    <string name="id">Id</string>
+    <string name="token">Token</string>
 </resources>

@@ -27,12 +27,12 @@
     <string name="enable_exhentai">啟用 ExHentai</string>
     <string name="requires_login">需要登入</string>
     <string name="use_hentai_at_home">使用 Hentai@Home 網路</string>
-    <string name="use_hentai_at_home_summary">如果可用，您是否希望透過 Hentai@Home 網路載入圖片？停用此選項將減少您能夠瀏覽的頁面數量。\n選項：\n- 任何用戶端（建議）\n- 使用預設通訊埠的用戶端（可能會稍慢。如果防火牆或代理阻止非標準的流量時啟用此選項）</string>
+    <string name="use_hentai_at_home_summary">如果可用，您是否希望透過 Hentai@Home 網路載入圖片？停用此選項將減少您能夠瀏覽的頁面數量\n選項：\n- 任何用戶端（建議）\n- 使用預設通訊埠的用戶端（可能會稍慢，如果防火牆或代理阻止非標準的流量時啟用此選項）</string>
     <string name="use_hentai_at_home_option_1">任何用戶端（建議）</string>
     <string name="use_hentai_at_home_option_2">僅使用預設通訊埠的用戶端</string>
     <string name="show_japanese_titles">在搜尋結果中顯示日文標題</string>
     <string name="show_japanese_titles_option_1">目前在搜尋結果中顯示日文標題，變更後請到進階設定清除章節快取</string>
-    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬拼音的標題。變更後請到進階設定清除章節快取</string>
+    <string name="show_japanese_titles_option_2">目前在搜尋結果中顯示英文/羅馬拼音的標題，變更後請到進階設定清除章節快取</string>
     <string name="use_original_images">使用原圖</string>
     <string name="use_original_images_on">目前使用的是原始圖片</string>
     <string name="use_original_images_off">目前使用的是重新取樣圖片</string>
@@ -41,12 +41,12 @@
     <string name="watched_tags_exh">ExHentai 收藏的標籤</string>
     <string name="tag_filtering_threshold">標籤過濾臨界值</string>
     <string name="tag_filtering_threshhold_error">必須介於 -9999 和 0！</string>
-    <string name="tag_filtering_threshhold_summary">你可以透過在 "我的 Tags E/ExHentai" 頁面新增負的權重來軟過濾標籤。如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉。這個臨界值可以在 -9999 和 0 之間設定。 目前：%1$d</string>
+    <string name="tag_filtering_threshhold_summary">你可以透過在「我的 Tags E/ExHentai」頁面新增負的權重來軟過濾標籤，如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉，這個臨界值可以在 -9999 和 0 之間設定， 目前：%1$d</string>
     <string name="tag_watching_threshhold">標籤收藏臨界值</string>
     <string name="tag_watching_threshhold_error">必須介於 0 和 9999！</string>
-    <string name="tag_watching_threshhold_summary">如果最近上傳的畫廊至少有一個權重為正的已收藏標籤，並且其已收藏標籤的權重之和達到這個值或更高，就會被列入已收藏頁面。這個臨界值可以在 0 到 9999 之間設定。目前：%1$d</string>
+    <string name="tag_watching_threshhold_summary">如果最近上傳的畫廊至少有一個權重為正的已收藏標籤，並且其已收藏標籤的權重之和達到這個值或更高，就會被列入已收藏頁面，這個臨界值可以在 0 到 9999 之間設定，目前：%1$d</string>
     <string name="language_filtering">語言過濾</string>
-    <string name="language_filtering_summary">如果您想在畫廊列表和搜尋中隱藏某些語言的畫廊，請在彈出的對話框中選擇它們。\n請注意，無論您的搜尋條件為何，匹配的畫廊都不會出現。\n勾選 = 排除</string>
+    <string name="language_filtering_summary">如果您想在畫廊列表和搜尋中隱藏某些語言的畫廊，請在彈出的對話框中選擇它們\n請注意，無論您的搜尋條件為何，匹配的畫廊都不會出現\n勾選 = 排除</string>
     <string name="frong_page_categories">首頁類別</string>
     <string name="fromt_page_categories_summary">你希望在首頁和搜尋中預設顯示哪些類別？它們仍然可以透過啟用它們的過濾器而被啟用</string>
     <string name="watched_list_default">監視列表過濾器預設狀態</string>
@@ -59,14 +59,14 @@
     <string name="pref_enhanced_e_hentai_view_summary">啟用或停用為 E/ExHentai 製作的增強型瀏覽選單</string>
     <string name="favorites_sync">E-Hentai 收藏同步</string>
     <string name="disable_favorites_uploading">停用收藏上傳</string>
-    <string name="disable_favorites_uploading_summary">僅從 ExHentai 下載收藏夾。應用程式中對收藏夾的任何變更都不會被上傳。防止 ExHentai 上的收藏夾意外遺失。請注意，刪除的變更仍會被應用（如果您在 ExHentai 上刪除了一個收藏夾，它也會在本應用程式中刪除）。</string>
+    <string name="disable_favorites_uploading_summary">僅從 ExHentai 下載收藏夾，應用程式中對收藏夾的任何變更都不會被上傳，防止 ExHentai 上的收藏夾意外遺失，請注意，刪除的變更仍會被應用（如果您在 ExHentai 上刪除了一個收藏夾，它也會在本應用程式中刪除）</string>
     <string name="show_favorite_sync_notes">顯示收藏夾同步注意事項</string>
     <string name="show_favorite_sync_notes_summary">顯示一些關於收藏夾同步功能的注意事項</string>
     <string name="please_login">請登入！</string>
     <string name="ignore_sync_errors">盡可能忽略同步錯誤</string>
-    <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止。當同步完成時，錯誤仍然會顯示。在某些情況下可能會導致收藏夾的遺失。在同步大型資料庫時很有用。</string>
+    <string name="ignore_sync_errors_summary">在同步過程中遇到錯誤時，不要立即中止，當同步完成時，錯誤仍然會顯示，在某些情況下可能會導致收藏夾的遺失，在同步大型資料庫時很有用</string>
     <string name="force_sync_state_reset">強制重設同步狀態</string>
-    <string name="force_sync_state_reset_summary">在下一次同步時執行完整的重新同步，移除的項目將不會被同步。應用程式中的所有收藏將會重新上傳到 ExHentai，而 ExHentai 上的所有收藏也會重新下載到應用程式中。這在同步中斷後修復同步問題時非常有用。</string>
+    <string name="force_sync_state_reset_summary">在下一次同步時執行完整的重新同步，移除的項目將不會被同步，應用程式中的所有收藏將會重新上傳到 ExHentai，而 ExHentai 上的所有收藏也會重新下載到應用程式中，這在同步中斷後修復同步問題時非常有用</string>
     <string name="sync_state_reset">同步狀態重設</string>
     <string name="gallery_update_checker">畫廊更新檢查器</string>
     <string name="auto_update_restrictions">自動更新限制</string>
@@ -79,17 +79,17 @@
     <string name="time_between_batches_12_hours">12 小時</string>
     <string name="time_between_batches_24_hours">24 小時</string>
     <string name="time_between_batches_48_hours">48 小時</string>
-    <string name="time_between_batches_summary_1">在 %1$s 以內不會檢查您書櫃中的畫廊是否有更新。</string>
-    <string name="time_between_batches_summary_2">%1$s 會分批檢查/更新畫廊。這代表它將等待 %2$d 小時，檢查 %3$d 畫廊，等待 %2$d 小時，檢查 %3$d ……</string>
+    <string name="time_between_batches_summary_1">在 %1$s 以內不會檢查您書櫃中的畫廊是否有更新</string>
+    <string name="time_between_batches_summary_2">%1$s 會分批檢查/更新畫廊，這代表它將等待 %2$d 小時，檢查 %3$d 畫廊，等待 %2$d 小時，檢查 %3$d ……</string>
     <string name="show_updater_statistics">顯示更新器的統計資料</string>
     <string name="gallery_updater_statistics_collection">收集統計資料中……</string>
     <string name="gallery_updater_statistics">畫廊更新器統計</string>
-    <string name="gallery_updater_stats_text">更新器最後執行於 %1$s，檢查了可檢查的 %3$d 個畫廊中的 %2$d 個。</string>
-    <string name="gallery_updater_not_ran_yet">更新器從未執行。</string>
+    <string name="gallery_updater_stats_text">更新器最後執行於 %1$s，檢查了可檢查的 %3$d 個畫廊中的 %2$d 個</string>
+    <string name="gallery_updater_not_ran_yet">更新器從未執行</string>
     <string name="gallery_updater_stats_time">\n上一次檢查的畫廊：\n- 1 小時: %1$d\n- 6 小時: %2$d\n- 12 小時: %3$d\n- 1 天: %4$d\n- 2 天: %5$d\n- 1 周: %6$d\n- 1 個月: %7$d\n- 1 年: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">建立設定檔說明</string>
-    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的性能。請確保您在這兩個網站上擁有的設定檔少於三個。\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊“確定”。</string>
+    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的性能。請確保您在這兩個網站上擁有的設定檔少於三個\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊「確定」</string>
     <string name="eh_settings_successfully_uploaded">設定檔上傳成功！</string>
     <string name="eh_settings_configuration_failed">設定失敗！</string>
     <string name="eh_settings_configuration_failed_message">在設定過程中出現錯誤：%1$s</string>
@@ -101,7 +101,7 @@
     <string name="alternative_login_page">備用登入頁面</string>
     <string name="skip_page_restyling">跳過頁面重排</string>
     <string name="custom_igneous_cookie">自訂 igneous cookie</string>
-    <string name="custom_igneous_cookie_message">某些使用者無法正常存取 ExHentai，必須輸入特定的 igneous cookie，此選項為這些使用者設計。</string>
+    <string name="custom_igneous_cookie_message">某些使用者無法正常存取 ExHentai，必須輸入特定的 igneous cookie，此選項為這些使用者設計</string>
     <!-- Advanced Settings -->
     <string name="developer_tools">開發者工具</string>
     <string name="toggle_hentai_features">啟用整合的 Hentai 功能</string>
@@ -109,7 +109,7 @@
     <string name="toggle_delegated_sources">啟用代理來源</string>
     <string name="toggle_delegated_sources_summary">下列來源如果已安裝則應用程式 %1$s 代理: %2$s</string>
     <string name="log_level">日誌等級</string>
-    <string name="log_level_summary">變更此選項會影響應用程式性能。變更需要完全重啟應用程式才能生效。現在的值：%s</string>
+    <string name="log_level_summary">變更此選項會影響應用程式性能，變更需要完全重啟應用程式才能生效，現在的值：%s</string>
     <string name="enable_source_blacklist">啟用來源黑名單</string>
     <string name="enable_source_blacklist_summary">如果與 %1$s 不相容則隱藏擴充套件或來源。變更需要完全重啟應用程式才能生效。</string>
     <string name="open_debug_menu">開啟 Debug 選單</string>
@@ -300,7 +300,7 @@
     <string name="eh_retry_all_help">重試所有說明</string>
     <string name="eh_retry_all_help_message">將所有下載失敗的頁面重新加入下載佇列。</string>
     <string name="eh_boost_page_help">加速頁面說明</string>
-    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用“加速頁面”將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
+    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用「加速頁面」將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
     <string name="eh_boost_page_invalid">此頁面無法加速（無效頁面）！</string>
     <string name="eh_boost_page_errored">頁面載入失敗，請按重試按鈕！</string>
     <string name="eh_boost_page_downloading">此頁面已經在下載了！</string>
@@ -657,4 +657,7 @@
     <string name="action_copy_second_page">複製第二頁</string>
     <string name="action_copy_combined_page">複製合併頁</string>
     <string name="only_show_updated_entries">僅顯示包含新章節的條目</string>
+    <string name="add_tags">新增標籤</string>
+    <string name="multi_tags_comma_separated">輸入標籤，可用逗號分隔</string>
+    <string name="alt_titles">替代標題</string>
 </resources>

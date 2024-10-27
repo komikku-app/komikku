@@ -656,4 +656,18 @@
     <string name="action_copy_second_page">Копировать вторую страницу</string>
     <string name="only_show_updated_entries">Показывать серии только с новыми главами</string>
     <string name="action_copy_combined_page">Копировать объединенную страницу</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="aes_256">AES 256</string>
+    <string name="aes_128">AES 128</string>
+    <string name="add_tags">Добавить тэги</string>
+    <string name="multi_tags_comma_separated">Введите тэг(и), разделёнными запятыми.</string>
+    <string name="alt_titles">Альт. названия</string>
 </resources>
