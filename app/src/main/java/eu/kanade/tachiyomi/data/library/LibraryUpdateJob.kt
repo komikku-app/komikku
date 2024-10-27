@@ -427,7 +427,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                                         it.read
                                                     }
                                                     val newReadChapters = this.filter { chapter ->
-                                                        chapter.chapterNumber > 0 &&
+                                                        chapter.chapterNumber >= 0 &&
                                                             readChapters.any {
                                                                 it.chapterNumber == chapter.chapterNumber
                                                             }
