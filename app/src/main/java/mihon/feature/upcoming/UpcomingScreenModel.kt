@@ -36,6 +36,9 @@ class UpcomingScreenModel(
                 mutableState.update { state ->
                     val upcomingItems = it.toUpcomingUIModels()
                     state.copy(
+                        // KMK -->
+                        isLoadingUpcoming = false,
+                        // KMK <--
                         items = upcomingItems,
                         events = upcomingItems.toEvents(),
                         headerIndexes = upcomingItems.getHeaderIndexes(),
@@ -48,6 +51,7 @@ class UpcomingScreenModel(
             mutableState.update { state ->
                 val updatingItems = getUpcomingManga.updatingMangas().toUpcomingUIModels()
                 state.copy(
+                    isLoadingUpdating = false,
                     updatingItems = updatingItems,
                     updatingEvents = updatingItems.toEvents(),
                     updatingHeaderIndexes = updatingItems.getHeaderIndexes(),
@@ -123,10 +127,12 @@ class UpcomingScreenModel(
         val events: ImmutableMap<LocalDate, Int> = persistentMapOf(),
         val headerIndexes: ImmutableMap<LocalDate, Int> = persistentMapOf(),
         // KMK -->
+        val isLoadingUpcoming: Boolean = true,
         val isShowingUpdatingMangas: Boolean = false,
         val updatingItems: ImmutableList<UpcomingUIModel> = persistentListOf(),
         val updatingEvents: ImmutableMap<LocalDate, Int> = persistentMapOf(),
         val updatingHeaderIndexes: ImmutableMap<LocalDate, Int> = persistentMapOf(),
+        val isLoadingUpdating: Boolean = true,
         // KMK <--
     )
 }
