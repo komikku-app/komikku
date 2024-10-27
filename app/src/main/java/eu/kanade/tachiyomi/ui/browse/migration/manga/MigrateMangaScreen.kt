@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -52,6 +52,7 @@ data class MigrateMangaScreen(
                 // SY <--
             },
             onClickCover = { navigator.push(MangaScreen(it.manga.id)) },
+            // KMK -->
             onMultiMigrateClicked = {
                 if (state.selectionMode) {
                     PreMigrationScreen.navigateToMigration(
@@ -60,7 +61,7 @@ data class MigrateMangaScreen(
                         state.selected.map { it.manga.id },
                     )
                 } else {
-                    context.toast(SYMR.strings.migrating_all_entries)
+                    context.toast(KMR.strings.migrating_all_entries)
                     PreMigrationScreen.navigateToMigration(
                         Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                         navigator,
@@ -71,6 +72,7 @@ data class MigrateMangaScreen(
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
             onMangaSelected = screenModel::toggleSelection,
+            // KMK <--
         )
 
         LaunchedEffect(Unit) {

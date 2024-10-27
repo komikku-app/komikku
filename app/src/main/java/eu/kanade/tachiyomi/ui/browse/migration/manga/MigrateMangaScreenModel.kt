@@ -33,9 +33,11 @@ class MigrateMangaScreenModel(
     private val _events: Channel<MigrationMangaEvent> = Channel()
     val events: Flow<MigrationMangaEvent> = _events.receiveAsFlow()
 
+    // KMK -->
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
     private val selectedMangaIds: HashSet<Long> = HashSet()
+    // KMK <--
 
     init {
         screenModelScope.launch {
@@ -65,9 +67,10 @@ class MigrateMangaScreenModel(
         }
     }
 
-    private fun toMigrationMangaScreenItems(mangas: List<Manga>): List<MigrationMangaScreenItem> {
+    // KMK -->
+    private fun toMigrationMangaScreenItems(mangas: List<Manga>): List<MigrateMangaItem> {
         return mangas.map { manga ->
-            MigrationMangaScreenItem(
+            MigrateMangaItem(
                 manga = manga,
                 selected = manga.id in selectedMangaIds,
             )
@@ -75,7 +78,7 @@ class MigrateMangaScreenModel(
     }
 
     fun toggleSelection(
-        item: MigrationMangaScreenItem,
+        item: MigrateMangaItem,
         selected: Boolean,
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
@@ -162,17 +165,19 @@ class MigrateMangaScreenModel(
         selectedPositions[0] = -1
         selectedPositions[1] = -1
     }
+    // KMK <--
 
     @Immutable
     data class State(
         val source: Source? = null,
-        private val titleList: ImmutableList<MigrationMangaScreenItem>? = null,
+        private val titleList: ImmutableList<MigrateMangaItem>? = null,
+        // KMK -->
     ) {
-
         val selected = titles.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
+        // KMK <--
 
-        val titles: ImmutableList<MigrationMangaScreenItem>
+        val titles: ImmutableList<MigrateMangaItem>
             get() = titleList ?: persistentListOf()
 
         val isLoading: Boolean
@@ -188,7 +193,7 @@ sealed interface MigrationMangaEvent {
 }
 
 @Immutable
-data class MigrationMangaScreenItem(
+data class MigrateMangaItem(
     val manga: Manga,
     val selected: Boolean,
 )

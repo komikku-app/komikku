@@ -151,6 +151,7 @@
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
+    <string name="migrating_all_entries">Migrating all entries from source</string>
 
     <!-- Misc -->
     <string name="label_to_be_updated">To be updated</string>

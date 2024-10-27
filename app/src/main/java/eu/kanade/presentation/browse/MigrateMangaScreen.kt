@@ -64,7 +64,7 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaScreenItem
+import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -83,12 +83,13 @@ fun MigrateMangaScreen(
     navigateUp: () -> Unit,
     title: String?,
     state: MigrateMangaScreenModel.State,
-    onClickItem: (MigrationMangaScreenItem) -> Unit,
-    onClickCover: (MigrationMangaScreenItem) -> Unit,
+    onClickItem: (MigrateMangaItem) -> Unit,
+    onClickCover: (MigrateMangaItem) -> Unit,
+    // KMK -->
     onMultiMigrateClicked: (() -> Unit),
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
-    onMangaSelected: (MigrationMangaScreenItem, Boolean, Boolean, Boolean) -> Unit,
+    onMangaSelected: (MigrateMangaItem, Boolean, Boolean, Boolean) -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
@@ -106,6 +107,7 @@ fun MigrateMangaScreen(
             listState.canScrollForward
         }
     }
+    // KMK <--
 
     Scaffold(
         topBar = { scrollBehavior ->
@@ -162,9 +164,9 @@ fun MigrateMangaScreen(
 private fun MigrateMangaContent(
     contentPadding: PaddingValues,
     state: MigrateMangaScreenModel.State,
-    onClickItem: (MigrationMangaScreenItem) -> Unit,
-    onClickCover: (MigrationMangaScreenItem) -> Unit,
-    onMangaSelected: (MigrationMangaScreenItem, Boolean, Boolean, Boolean) -> Unit,
+    onClickItem: (MigrateMangaItem) -> Unit,
+    onClickCover: (MigrateMangaItem) -> Unit,
+    onMangaSelected: (MigrateMangaItem, Boolean, Boolean, Boolean) -> Unit,
     listState: LazyListState,
 ) {
     FastScrollLazyColumn(
@@ -273,7 +275,7 @@ private fun MigrateMangaScreenAppBar(
 @Composable
 private fun MigrateMangaScreenBottomBar(
     modifier: Modifier = Modifier,
-    selected: List<MigrationMangaScreenItem>,
+    selected: List<MigrateMangaItem>,
     itemCount: Int,
     enableScrollToTop: Boolean,
     enableScrollToBottom: Boolean,
