@@ -1,6 +1,7 @@
 package eu.kanade.presentation.manga.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -182,18 +183,33 @@ fun MangaBottomActionMenu(
 }
 
 @Composable
-private fun RowScope.Button(
+internal fun RowScope.Button(
     title: String,
     icon: ImageVector,
     toConfirm: Boolean,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
+    // KMK -->
+    enabled: Boolean = true,
+    // KMK <--
     content: (@Composable () -> Unit)? = null,
 ) {
     val animatedWeight by animateFloatAsState(
         targetValue = if (toConfirm) 2f else 1f,
         label = "weight",
     )
+    // KMK -->
+    val animatedColor by animateColorAsState(
+        if (enabled) {
+            MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(
+                alpha = 0.38f,
+            )
+        },
+        label = "color",
+    )
+    // KMK <--
     Column(
         modifier = Modifier
             .size(48.dp)
@@ -210,6 +226,9 @@ private fun RowScope.Button(
         Icon(
             imageVector = icon,
             contentDescription = title,
+            // KMK -->
+            tint = animatedColor,
+            // KMK <--
         )
         AnimatedVisibility(
             visible = toConfirm,
@@ -221,6 +240,9 @@ private fun RowScope.Button(
                 overflow = TextOverflow.Visible,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelSmall,
+                // KMK -->
+                color = animatedColor,
+                // KMK <--
             )
         }
         content?.invoke()

@@ -16,16 +16,15 @@ import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
@@ -57,9 +56,6 @@ fun MigrateSourceScreen(
     onClickItem: (Source) -> Unit,
     onToggleSortingDirection: () -> Unit,
     onToggleSortingMode: () -> Unit,
-    // SY -->
-    onClickAll: (Source) -> Unit,
-    // SY <--
     // KMK -->
     onChangeSearchQuery: (String?) -> Unit,
     // KMK <--
@@ -87,9 +83,6 @@ fun MigrateSourceScreen(
                 onToggleSortingMode = onToggleSortingMode,
                 sortingDirection = state.sortingDirection,
                 onToggleSortingDirection = onToggleSortingDirection,
-                // SY -->
-                onClickAll = onClickAll,
-                // SY <--
                 // KMK -->
                 state = state,
                 onChangeSearchQuery = onChangeSearchQuery,
@@ -108,9 +101,6 @@ private fun MigrateSourceList(
     onToggleSortingMode: () -> Unit,
     sortingDirection: SetMigrateSorting.Direction,
     onToggleSortingDirection: () -> Unit,
-    // SY -->
-    onClickAll: (Source) -> Unit,
-    // SY <--
     // KMK -->
     state: MigrateSourceScreenModel.State,
     onChangeSearchQuery: (String?) -> Unit,
@@ -199,9 +189,6 @@ private fun MigrateSourceList(
                     count = count,
                     onClickItem = { onClickItem(source) },
                     onLongClickItem = { onLongClickItem(source) },
-                    // SY -->
-                    onClickAll = { onClickAll(source) },
-                    // SY <--
                 )
             }
         }
@@ -214,9 +201,6 @@ private fun MigrateSourceItem(
     count: Long,
     onClickItem: () -> Unit,
     onLongClickItem: () -> Unit,
-    // SY -->
-    onClickAll: () -> Unit,
-    // SY <--
     modifier: Modifier = Modifier,
 ) {
     BaseSourceItem(
@@ -230,16 +214,6 @@ private fun MigrateSourceItem(
             BadgeGroup {
                 Badge(text = "$count")
             }
-            // SY -->
-            TextButton(onClick = onClickAll) {
-                Text(
-                    text = stringResource(MR.strings.all),
-                    style = LocalTextStyle.current.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                    ),
-                )
-            }
-            // SY <--
         },
         content = { _, sourceLangString, /* KMK --> */ lang /* KMK <-- */ ->
             Column(
@@ -276,6 +250,17 @@ private fun MigrateSourceItem(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                        // KMK -->
+                    } else if (source.installedExtension?.isObsolete == true) {
+                        Text(
+                            modifier = Modifier.secondaryItemAlpha(),
+                            text = stringResource(MR.strings.ext_obsolete),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        // KMK <--
                     }
                 }
             }
