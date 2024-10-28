@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">切换仅 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
-  <string name="pref_manga_info_theme">详细信息页面</string>
   <string name="download_cache_renew_interval">下载缓存更新间隔</string>
   <string name="download_cache_renew_interval_manual">手动模式</string>
   <string name="download_cache_renew_interval_1hour">1 小时</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 小时</string>
   <string name="download_cache_renew_interval_24hour">1天</string>
   <string name="download_cache_renew_interval_info">如果设置为“手动”，请刷新每部漫画或使用“高级”中的“清除下载索引”</string>
-  <string name="pref_update_tracking_marked_read">当标记为已读时更新进度</string>
-  <string name="pref_auto_sync_read_chapters">从 Tracker 自动同步已读章节</string>
   <string name="pref_clean_invalid_downloads">清除无效的下载</string>
   <string name="pref_clean_invalid_downloads_summary">查找并删除所有未保存到您的书架中的下载、文件和文件夹</string>
   <string name="invalid_downloads_cleaned">已清理无效的下载</string>
@@ -31,10 +28,10 @@
   <string name="too_many_in_feed">你的订阅源太多，不能超过添加限制 (20)</string>
   <string name="current_">当前: %1$s</string>
   <string name="pref_theme_cover_based">基于封面的主题</string>
-  <string name="pref_theme_cover_based_style_tonalspot">彩点</string>
+  <string name="pref_theme_cover_based_style_tonalspot">色调点</string>
   <string name="pref_theme_cover_based_style_neutral">中性</string>
-  <string name="pref_theme_cover_based_style_vibrant">振动</string>
-  <string name="pref_theme_cover_based_style_expressive">表现</string>
+  <string name="pref_theme_cover_based_style_vibrant">鲜艳</string>
+  <string name="pref_theme_cover_based_style_expressive">表现力</string>
   <string name="pref_theme_cover_based_style_rainbow">彩虹</string>
   <string name="pref_theme_cover_based_style_fruitsalad">水果沙拉</string>
   <string name="pref_theme_cover_based_style_monochrome">单色</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">显示隐藏分类</string>
-  <string name="pref_panorama_cover">全景封面</string>
-  <string name="pref_panorama_cover_summary">横向显示宽屏封面</string>
   <string name="action_display_comfortable_grid_panorama">全景松散网格</string>
+  <string name="action_panorama_cover">全景封面</string>
+  <string name="pref_panorama_cover">全景封面</string>
+  <string name="pref_panorama_cover_summary">显示横屏模式下的封面，如果是宽幅图像</string>
+  <string name="pref_panorama_cover_flow">全景封面流</string>
+  <string name="pref_panorama_cover_flow_summary">在全局搜索和建议中显示全景封面</string>
+  <string name="pref_auto_sync_progress_from_trackers">从 Tracker 自动同步进度</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">从 Trackers 同步到第 %d 章</string>
+  <string name="option_label_library_update_errors">库更新错误</string>
+  <string name="label_library_update_errors">库更新错误 (%d)</string>
+  <string name="info_empty_library_update_errors">您没有库更新错误。</string>
+  <string name="action_scroll_to_top">滚动到顶部</string>
+  <string name="action_scroll_to_bottom">滚动到底部</string>
+  <string name="action_scroll_to_previous">滚动到上一个</string>
+  <string name="action_scroll_to_next">滚动到下一个</string>
+  <string name="migrating_all_entries">从源代码迁移所有条目</string>
+  <string name="label_to_be_updated">待更新</string>
+  <string name="pref_manga_info">漫画信息</string>
 </resources>

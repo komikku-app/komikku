@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Alleen NSFW in-/uitschakelen</string>
   <string name="action_bulk_select">Bulk selectiemodus</string>
   <string name="action_faq_and_guides">FAQ en handleidingen</string>
-  <string name="pref_manga_info_theme">Details pagina</string>
   <string name="download_cache_renew_interval">Download de cache vernieuwingsinterval</string>
   <string name="download_cache_renew_interval_manual">Handleiding</string>
   <string name="download_cache_renew_interval_1hour">1 uur</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 uur</string>
   <string name="download_cache_renew_interval_24hour">1 dag</string>
   <string name="download_cache_renew_interval_info">Indien ingesteld op \"handmatig\", verververs manga of gebruik de \"Ongevalideer downloads index\" actie in \"Geavanceerd\"</string>
-  <string name="pref_update_tracking_marked_read">Update voortgang wanneer gemarkeerd als gelezen</string>
-  <string name="pref_auto_sync_read_chapters">Automatisch synchroniseren van gelezen hoofdstukken van Trackers</string>
   <string name="pref_clean_invalid_downloads">Ongeldige downloads opschonen</string>
   <string name="pref_clean_invalid_downloads_summary">Zoek en verwijder alle downloads, bestanden, mappen die niet worden opgeslagen in uw bibliotheek</string>
   <string name="invalid_downloads_cleaned">Ongeldige downloads opgeschoond</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Toon verborgen categorieën</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama comfortabel raster</string>
+  <string name="action_panorama_cover">Panorama omslag</string>
   <string name="pref_panorama_cover">Panorama Omslag</string>
   <string name="pref_panorama_cover_summary">Toon omslag in liggende modus als het breed beeld is</string>
-  <string name="action_display_comfortable_grid_panorama">Panorama comfortabel raster</string>
+  <string name="pref_panorama_cover_flow">Panorama omslag Flow</string>
+  <string name="pref_panorama_cover_flow_summary">Toon panorama omslag in Globaal Zoeken &amp; Suggesties</string>
+  <string name="pref_auto_sync_progress_from_trackers">Automatisch synchroniseren van trackers</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchroniseer de voortgang van trackers tot hoofdstuk %d</string>
+  <string name="option_label_library_update_errors">Bibliotheek update fouten</string>
+  <string name="label_library_update_errors">Bibliotheek update fouten (%d)</string>
+  <string name="info_empty_library_update_errors">U hebt geen update fouten in de bibliotheek.</string>
+  <string name="action_scroll_to_top">Scroll naar boven</string>
+  <string name="action_scroll_to_bottom">Scroll naar beneden</string>
+  <string name="action_scroll_to_previous">Scroll naar vorige</string>
+  <string name="action_scroll_to_next">Scroll naar volgende</string>
+  <string name="migrating_all_entries">Alle invoergegevens vanuit bron migreren</string>
+  <string name="label_to_be_updated">Te updaten</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

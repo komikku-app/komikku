@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Εναλλαγή μόνο NSFW</string>
   <string name="action_bulk_select">Λειτουργία μαζικής επιλογής</string>
   <string name="action_faq_and_guides">Συχνές ερωτήσεις και οδηγοί</string>
-  <string name="pref_manga_info_theme">Σελίδα λεπτομερειών</string>
   <string name="download_cache_renew_interval">Χρονικό διάστημα ανανέωσης προσωρινής μνήμης</string>
   <string name="download_cache_renew_interval_manual">Χειροκίνητα</string>
   <string name="download_cache_renew_interval_1hour">1 ώρα</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 ώρες</string>
   <string name="download_cache_renew_interval_24hour">1 ημέρα</string>
   <string name="download_cache_renew_interval_info">Εάν επιλέξετε \"εγχειρίδιο\", είτε ανανεώστε κάθε manga είτε χρησιμοποιώντας την ενέργεια \"Invalidate downloads index\" στο \"Advanced\"</string>
-  <string name="pref_update_tracking_marked_read">Πρόοδος ενημέρωσης όταν επισημαίνεται ως αναγνωσμένη</string>
-  <string name="pref_auto_sync_read_chapters">Αυτόματος συγχρονισμός κεφαλαίων ανάγνωσης από Trackers</string>
   <string name="pref_clean_invalid_downloads">Καθαρισμός μη έγκυρων λήψεων</string>
   <string name="pref_clean_invalid_downloads_summary">Βρείτε και αφαιρέστε όλες τις λήψεις, αρχεία, φακέλους που δεν αποθηκεύονται στη βιβλιοθήκη σας</string>
   <string name="invalid_downloads_cleaned">Μη έγκυρες λήψεις καθαρίστηκαν</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Εμφάνιση κρυφών κατηγοριών</string>
+  <string name="action_display_comfortable_grid_panorama">Πανόραμα άνετο πλέγμα</string>
+  <string name="action_panorama_cover">Κάλυμμα πανοράματος</string>
   <string name="pref_panorama_cover">Κάλυψη Πανοράματος</string>
   <string name="pref_panorama_cover_summary">Εμφάνιση εξωφύλλου σε λειτουργία τοπίου αν είναι μια ευρεία εικόνα</string>
-  <string name="action_display_comfortable_grid_panorama">Πανόραμα άνετο πλέγμα</string>
+  <string name="pref_panorama_cover_flow">Ροή Κάλυψης Πανοράματος</string>
+  <string name="pref_panorama_cover_flow_summary">Show panorama cover in Global Search &amp; Suggestions</string>
+  <string name="pref_auto_sync_progress_from_trackers">Πρόοδος αυτόματου συγχρονισμού από Trackers</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Πρόοδος συγχρονισμού από Trackers μέχρι το κεφάλαιο %d</string>
+  <string name="option_label_library_update_errors">Σφάλματα ενημέρωσης βιβλιοθήκης</string>
+  <string name="label_library_update_errors">Σφάλμα ενημέρωσης βιβλιοθήκης (%d)</string>
+  <string name="info_empty_library_update_errors">Δεν έχετε κανένα σφάλμα ενημέρωσης βιβλιοθήκης.</string>
+  <string name="action_scroll_to_top">Κύλιση στην κορυφή</string>
+  <string name="action_scroll_to_bottom">Κύλιση προς τα κάτω</string>
+  <string name="action_scroll_to_previous">Κύλιση στο προηγούμενο</string>
+  <string name="action_scroll_to_next">Κύλιση στο επόμενο</string>
+  <string name="migrating_all_entries">Μεταφορά όλων των καταχωρήσεων από την πηγή</string>
+  <string name="label_to_be_updated">Να ενημερωθεί</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

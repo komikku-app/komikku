@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Chỉ 18+</string>
   <string name="action_bulk_select">Chế độ lựa chọn hàng loạt</string>
   <string name="action_faq_and_guides">Hỏi đáp &amp; Hướng dẫn</string>
-  <string name="pref_manga_info_theme">Trang chi tiết</string>
   <string name="download_cache_renew_interval">Khoảng thời gian làm bộ nhớ tải xuống</string>
   <string name="download_cache_renew_interval_manual">Thủ công</string>
   <string name="download_cache_renew_interval_1hour">1 tiếng</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 tiếng</string>
   <string name="download_cache_renew_interval_24hour">1 ngày</string>
   <string name="download_cache_renew_interval_info">Nếu đặt thành \"thủ công\", cần làm mới từng truyện hoặc sử dụng \"Vô hiệu hóa chỉ mục tải xuống\" trong \"Nâng cao\"</string>
-  <string name="pref_update_tracking_marked_read">Cập nhật tiến độ khi đánh dấu đã đọc</string>
-  <string name="pref_auto_sync_read_chapters">Tự động đồng bộ chương đã đọc từ các dịch vụ theo dõi</string>
   <string name="pref_clean_invalid_downloads">Dọn dẹp các dữ liệu tải xuống không hợp lệ</string>
   <string name="pref_clean_invalid_downloads_summary">Tìm và xóa các dữ liệu, tệp và thư mục tải xuống mà không nằm trong thư viện</string>
   <string name="invalid_downloads_cleaned">Đã dọn dẹp giữ liệu tải xuống không hợp lệ</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Hiện các danh mục ẩn</string>
-  <string name="pref_panorama_cover">Ảnh bìa toàn cảnh</string>
-  <string name="pref_panorama_cover_summary">Hiển thị ảnh bìa dạng ngang nếu là hình ảnh rộng</string>
   <string name="action_display_comfortable_grid_panorama">Lưới toàn cảnh</string>
+  <string name="action_panorama_cover">Ảnh bìa toàn cảnh</string>
+  <string name="pref_panorama_cover">Ảnh bìa toàn cảnh</string>
+  <string name="pref_panorama_cover_summary">Hiện ảnh bìa ở chế độ nằm ngang nếu đó là ảnh cỡ rộng</string>
+  <string name="pref_panorama_cover_flow">Dải ảnh bìa toàn cảnh</string>
+  <string name="pref_panorama_cover_flow_summary">Hiển thị ảnh bìa toàn cảnh ở màn hình tìm kiếm tổng &amp; thanh gợi ý truyện</string>
+  <string name="pref_auto_sync_progress_from_trackers">Tự động đồng bộ chương đã đọc từ các dịch vụ theo dõi</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Đã động bộ tiến độ từ bộ theo dõi tới chương %d</string>
+  <string name="option_label_library_update_errors">Lỗi cập nhật thư viện</string>
+  <string name="label_library_update_errors">Lỗi cập nhật thư viện (%d)</string>
+  <string name="info_empty_library_update_errors">Bạn không có lỗi cập nhật thư viện nào.</string>
+  <string name="action_scroll_to_top">Cuộn lên đầu</string>
+  <string name="action_scroll_to_bottom">Cuộn xuống dưới cùng</string>
+  <string name="action_scroll_to_previous">Nhảy tới nhóm trước</string>
+  <string name="action_scroll_to_next">Nhảy tới nhóm sau</string>
+  <string name="migrating_all_entries">Di chuyển tất cả truyện của nguồn</string>
+  <string name="label_to_be_updated">Truyện sẽ được cập nhật</string>
+  <string name="pref_manga_info">Trang thông tin truyện</string>
 </resources>

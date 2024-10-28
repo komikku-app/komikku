@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Vaihda vain NSFW</string>
   <string name="action_bulk_select">Bulk valintatila</string>
   <string name="action_faq_and_guides">UKK ja oppaat</string>
-  <string name="pref_manga_info_theme">Yksityiskohdat sivu</string>
   <string name="download_cache_renew_interval">Lataa välimuistin uusimisväli</string>
   <string name="download_cache_renew_interval_manual">Manuaalinen</string>
   <string name="download_cache_renew_interval_1hour">1 tunti</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 tuntia</string>
   <string name="download_cache_renew_interval_24hour">1 päivä</string>
   <string name="download_cache_renew_interval_info">Jos asetus on \"manuaalinen\", joko päivitä jokainen manga tai käyttämällä \"mitätöidä latausindeksi\" toimintoa \"Lisäasetukset\"</string>
-  <string name="pref_update_tracking_marked_read">Päivitä edistys, kun merkitty luetuksi</string>
-  <string name="pref_auto_sync_read_chapters">Synkronoi automaattisesti lukemat Seuraajista</string>
   <string name="pref_clean_invalid_downloads">Puhdista virheelliset lataukset</string>
   <string name="pref_clean_invalid_downloads_summary">Etsi ja poista kaikki lataukset, tiedostot, kansiot, joita ei ole tallennettu kirjastoosi</string>
   <string name="invalid_downloads_cleaned">Virheelliset lataukset puhdistettu</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Näytä piilotetut kategoriat</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama mukava ruudukko</string>
+  <string name="action_panorama_cover">Panoraama kansi</string>
   <string name="pref_panorama_cover">Panoraama Kansi</string>
   <string name="pref_panorama_cover_summary">Näytä kansi vaakatilassa, jos se on leveä kuva</string>
-  <string name="action_display_comfortable_grid_panorama">Panorama mukava ruudukko</string>
+  <string name="pref_panorama_cover_flow">Panoraama Kansikuva</string>
+  <string name="pref_panorama_cover_flow_summary">Näytä panoraamakansikuva globaalissa haussa &amp; Ehdotukset</string>
+  <string name="pref_auto_sync_progress_from_trackers">Synkronoi seuranta automaattisesti</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synkronoi edistyminen Seuraajista lukuihin %d</string>
+  <string name="option_label_library_update_errors">Kirjaston päivitysvirheet</string>
+  <string name="label_library_update_errors">Kirjaston päivitysvirheet (%d)</string>
+  <string name="info_empty_library_update_errors">Sinulla ei ole päivitysvirheitä.</string>
+  <string name="action_scroll_to_top">Vieritä ylös</string>
+  <string name="action_scroll_to_bottom">Siirry alareunaan</string>
+  <string name="action_scroll_to_previous">Vieritä edelliseen</string>
+  <string name="action_scroll_to_next">Vieritä seuraavaan</string>
+  <string name="migrating_all_entries">Siirretään kaikki merkinnät lähteestä</string>
+  <string name="label_to_be_updated">Päivittääksesi</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

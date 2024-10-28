@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Alternar sólo NSFW</string>
   <string name="action_bulk_select">Modo de selección masiva</string>
   <string name="action_faq_and_guides">Preguntas frecuentes y guías</string>
-  <string name="pref_manga_info_theme">Página de detalles</string>
   <string name="download_cache_renew_interval">Descargar el intervalo de renovación de caché</string>
   <string name="download_cache_renew_interval_manual">Manual</string>
   <string name="download_cache_renew_interval_1hour">1 hora</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 horas</string>
   <string name="download_cache_renew_interval_24hour">1 día</string>
   <string name="download_cache_renew_interval_info">Si se establece en \"manual\", actualice cada manga o utilice la acción \"Invalidar índice de descargas\" en \"Avanzado\"</string>
-  <string name="pref_update_tracking_marked_read">Actualizar progreso al marcar como leído</string>
-  <string name="pref_auto_sync_read_chapters">Sincronizar automáticamente los capítulos de lectura de los rastreadores</string>
   <string name="pref_clean_invalid_downloads">Limpiar descargas inválidas</string>
   <string name="pref_clean_invalid_downloads_summary">Encuentra y elimina todas las descargas, archivos, carpetas que no están guardadas en tu biblioteca</string>
   <string name="invalid_downloads_cleaned">Descargas no válidas limpiadas</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Mostrar categorías ocultas</string>
+  <string name="action_display_comfortable_grid_panorama">Cuadrícula panorámica cómoda</string>
+  <string name="action_panorama_cover">Portada panorámica</string>
   <string name="pref_panorama_cover">Portada Panorama</string>
   <string name="pref_panorama_cover_summary">Mostrar la portada en modo apaisado si es una imagen ancha</string>
-  <string name="action_display_comfortable_grid_panorama">Cuadrícula panorámica cómoda</string>
+  <string name="pref_panorama_cover_flow">Flujo de portada Panorama</string>
+  <string name="pref_panorama_cover_flow_summary">Mostrar portada panorámica en Búsqueda global &amp; Sugerencias</string>
+  <string name="pref_auto_sync_progress_from_trackers">Progreso de sincronización automática de rastreadores</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Progreso de sincronización desde los rastreadores hasta el capítulo %d</string>
+  <string name="option_label_library_update_errors">Error de actualización de la biblioteca</string>
+  <string name="label_library_update_errors">Errores de actualización de la biblioteca (%d)</string>
+  <string name="info_empty_library_update_errors">No tiene errores de actualización de la biblioteca.</string>
+  <string name="action_scroll_to_top">Desplazar hasta arriba</string>
+  <string name="action_scroll_to_bottom">Desplazar hacia abajo</string>
+  <string name="action_scroll_to_previous">Desplazar hasta anterior</string>
+  <string name="action_scroll_to_next">Desplazar hasta el siguiente</string>
+  <string name="migrating_all_entries">Migrando todas las entradas desde la fuente</string>
+  <string name="label_to_be_updated">Para actualizar</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

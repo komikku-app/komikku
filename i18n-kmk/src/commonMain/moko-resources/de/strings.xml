@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Nur NSFW umschalten</string>
   <string name="action_bulk_select">Massenauswahlmodus</string>
   <string name="action_faq_and_guides">FAQ und Anleitungen</string>
-  <string name="pref_manga_info_theme">Detailseite</string>
   <string name="download_cache_renew_interval">Download-Cache Erneuerungsintervall</string>
   <string name="download_cache_renew_interval_manual">Manuell</string>
   <string name="download_cache_renew_interval_1hour">1 Stunde</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 Stunden</string>
   <string name="download_cache_renew_interval_24hour">1 Tag</string>
   <string name="download_cache_renew_interval_info">Wenn auf \"Handbuch\" gesetzt, aktualisieren Sie entweder jede Manga oder verwenden Sie die Aktion \"Ungültiger Download-Index\" in \"Erweitert\"</string>
-  <string name="pref_update_tracking_marked_read">Aktualisiere Fortschritt wenn als gelesen markiert</string>
-  <string name="pref_auto_sync_read_chapters">Auto-Sync gelesene Kapitel von Trackers</string>
   <string name="pref_clean_invalid_downloads">Ungültige Downloads bereinigen</string>
   <string name="pref_clean_invalid_downloads_summary">Finden und entfernen Sie alle Downloads, Dateien, Ordner die nicht in Ihrer Bibliothek gespeichert sind</string>
   <string name="invalid_downloads_cleaned">Ungültige Downloads bereinigt</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Versteckte Kategorien anzeigen</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama-bequemes Raster</string>
+  <string name="action_panorama_cover">Panorama-Cover</string>
   <string name="pref_panorama_cover">Panorama-Cover</string>
   <string name="pref_panorama_cover_summary">Cover im Querformat anzeigen, wenn es ein breites Bild ist</string>
-  <string name="action_display_comfortable_grid_panorama">Panorama-bequemes Raster</string>
+  <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
+  <string name="pref_panorama_cover_flow_summary">Zeige Panorama-Cover in globalen Suchvorschlägen &amp;</string>
+  <string name="pref_auto_sync_progress_from_trackers">Automatischer Synchronisationsfortschritt von Trackern</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchronisationsfortschritt von Trackern bis zu Kapitel %d</string>
+  <string name="option_label_library_update_errors">Bibliotheksaktualisierungsfehler</string>
+  <string name="label_library_update_errors">Fehler beim Aktualisieren der Bibliothek (%d)</string>
+  <string name="info_empty_library_update_errors">Sie haben keine Bibliotheks-Aktualisierungsfehler.</string>
+  <string name="action_scroll_to_top">Nach oben scrollen</string>
+  <string name="action_scroll_to_bottom">Nach unten scrollen</string>
+  <string name="action_scroll_to_previous">Zum vorherigen scrollen</string>
+  <string name="action_scroll_to_next">Zum nächsten scrollen</string>
+  <string name="migrating_all_entries">Alle Einträge aus der Quelle migrieren</string>
+  <string name="label_to_be_updated">Zu aktualisieren</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

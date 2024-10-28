@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Yalnız yetişkin içerikler</string>
   <string name="action_bulk_select">Toplu seçim modu</string>
   <string name="action_faq_and_guides">SSS ve Yönergeler</string>
-  <string name="pref_manga_info_theme">Detaylar sayfası</string>
   <string name="download_cache_renew_interval">İndirme önbelleği yenileme aralığı</string>
   <string name="download_cache_renew_interval_manual">Manuel</string>
   <string name="download_cache_renew_interval_1hour">1 saat</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 saat</string>
   <string name="download_cache_renew_interval_24hour">1 gün</string>
   <string name="download_cache_renew_interval_info">\"Manuel\" olarak ayarlanmışsa, ya her mangayı yenileyin ya da \"Gelişmiş\" bölümündeki \"İndirilenler dizinini geçersiz kıl\" eylemini kullanın</string>
-  <string name="pref_update_tracking_marked_read">Okunmuş olarak işaretlendiği zaman ilerlemeyi güncelle</string>
-  <string name="pref_auto_sync_read_chapters">İzleyicilerden okunan bölümleri otomatik senkronize et</string>
   <string name="pref_clean_invalid_downloads">Geçersiz indirmeleri temizle</string>
   <string name="pref_clean_invalid_downloads_summary">Kütüphanenize kaydedilmemiş olan tüm indirmeleri, dosyaları, klasörleri bul ve hepsini temizle</string>
   <string name="invalid_downloads_cleaned">Geçersiz indirmeler temizlendi</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Gizli kategorileri göster</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
+  <string name="action_panorama_cover">Panorama cover</string>
   <string name="pref_panorama_cover">Panorama Cover</string>
   <string name="pref_panorama_cover_summary">Show cover in landscape mode if it\'s a wide image</string>
-  <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
+  <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
+  <string name="pref_panorama_cover_flow_summary">Show panorama cover in Global Search &amp; Suggestions</string>
+  <string name="pref_auto_sync_progress_from_trackers">Auto sync progress from Trackers</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
+  <string name="option_label_library_update_errors">Library update errors</string>
+  <string name="label_library_update_errors">Library update errors (%d)</string>
+  <string name="info_empty_library_update_errors">You have no library update errors.</string>
+  <string name="action_scroll_to_top">Scroll to top</string>
+  <string name="action_scroll_to_bottom">Scroll to bottom</string>
+  <string name="action_scroll_to_previous">Scroll to previous</string>
+  <string name="action_scroll_to_next">Scroll to next</string>
+  <string name="migrating_all_entries">Migrating all entries from source</string>
+  <string name="label_to_be_updated">To be updated</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

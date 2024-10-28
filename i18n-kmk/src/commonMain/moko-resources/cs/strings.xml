@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Přepnout pouze NSFW</string>
   <string name="action_bulk_select">Režim hromadného výběru</string>
   <string name="action_faq_and_guides">FAQ a návody</string>
-  <string name="pref_manga_info_theme">Stránka s podrobnostmi</string>
   <string name="download_cache_renew_interval">Interval obnovení mezipaměti</string>
   <string name="download_cache_renew_interval_manual">Ruční</string>
   <string name="download_cache_renew_interval_1hour">1 hodina</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 hodin</string>
   <string name="download_cache_renew_interval_24hour">1 den</string>
   <string name="download_cache_renew_interval_info">Je-li nastaveno na \"manuální\", obnovte každý manga nebo použijte akci \"Invalidovat stahování\" v \"Pokročilé\"</string>
-  <string name="pref_update_tracking_marked_read">Probíhá aktualizace při označení jako přečtené.</string>
-  <string name="pref_auto_sync_read_chapters">Automatická synchronizace kapitol čtení ze sledovačů</string>
   <string name="pref_clean_invalid_downloads">Vyčistit neplatné stahování</string>
   <string name="pref_clean_invalid_downloads_summary">Najít a odstranit všechna stahování, soubory, složky, které nejsou uloženy ve vaší knihovně</string>
   <string name="invalid_downloads_cleaned">Neplatné stahování vyčištěno</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Zobrazit skryté kategorie</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama pohodlná mřížka</string>
+  <string name="action_panorama_cover">potah Panoramy</string>
   <string name="pref_panorama_cover">Kryt Panoramy</string>
   <string name="pref_panorama_cover_summary">Zobrazit obal v režimu na šířku, pokud je to široký obrázek</string>
-  <string name="action_display_comfortable_grid_panorama">Panorama pohodlná mřížka</string>
+  <string name="pref_panorama_cover_flow">Tok překrytí Panoramy</string>
+  <string name="pref_panorama_cover_flow_summary">Zobrazit obal panorama v globálním vyhledávání &amp; Návrhy</string>
+  <string name="pref_auto_sync_progress_from_trackers">Automatická synchronizace postupu z Trackeru</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchronizovat postup od Trackeru až po kapitolu %d</string>
+  <string name="option_label_library_update_errors">Chyba aktualizace knihovny</string>
+  <string name="label_library_update_errors">Chyby aktualizace knihovny (%d)</string>
+  <string name="info_empty_library_update_errors">Nemáte žádné chyby aktualizace knihovny.</string>
+  <string name="action_scroll_to_top">Přejít na začátek</string>
+  <string name="action_scroll_to_bottom">Přejít na konec</string>
+  <string name="action_scroll_to_previous">Přejít na předchozí</string>
+  <string name="action_scroll_to_next">Přejít na další</string>
+  <string name="migrating_all_entries">Migrovat všechny záznamy ze zdroje</string>
+  <string name="label_to_be_updated">Bude aktualizováno</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

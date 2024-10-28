@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Переключить только NSFW</string>
   <string name="action_bulk_select">Режим массового выбора</string>
   <string name="action_faq_and_guides">FAQ и руководства</string>
-  <string name="pref_manga_info_theme">Детали</string>
   <string name="download_cache_renew_interval">Загрузить интервал обновления кэша</string>
   <string name="download_cache_renew_interval_manual">Ручной</string>
   <string name="download_cache_renew_interval_1hour">1 час</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 часов</string>
   <string name="download_cache_renew_interval_24hour">1 день</string>
   <string name="download_cache_renew_interval_info">Если присвоено значение «вручную», то обновите каждый манга или используйте действие «Индекс непроверенных загрузок» в разделе «Дополнительно»</string>
-  <string name="pref_update_tracking_marked_read">Обновить прогресс при отмеченном как прочитанный</string>
-  <string name="pref_auto_sync_read_chapters">Автосинхронизация чтения глав от трекеров</string>
   <string name="pref_clean_invalid_downloads">Очистить некорректные загрузки</string>
   <string name="pref_clean_invalid_downloads_summary">Найдите и удалите все загрузки, файлы, папки, которые не сохранены в вашей библиотеке</string>
   <string name="invalid_downloads_cleaned">Очистка некорректных загрузок</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Показать скрытые категории</string>
+  <string name="action_display_comfortable_grid_panorama">Удобная сетка для панорамы</string>
+  <string name="action_panorama_cover">Обложка панорамы</string>
   <string name="pref_panorama_cover">Покрытие Панорамы</string>
   <string name="pref_panorama_cover_summary">Показывать обложку в альбомном режиме, если это широкое изображение</string>
-  <string name="action_display_comfortable_grid_panorama">Удобная сетка для панорамы</string>
+  <string name="pref_panorama_cover_flow">Покрытие Панорамы</string>
+  <string name="pref_panorama_cover_flow_summary">Показывать обложку панорамы в глобальном поиске &amp; Предложения</string>
+  <string name="pref_auto_sync_progress_from_trackers">Автосинхронизация прогресса от трекеров</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Синхронизировать прогресс трекеров до главы %d</string>
+  <string name="option_label_library_update_errors">Ошибки обновления библиотеки</string>
+  <string name="label_library_update_errors">Ошибки обновления библиотеки (%d)</string>
+  <string name="info_empty_library_update_errors">У вас нет ошибок обновления библиотеки.</string>
+  <string name="action_scroll_to_top">Прокрутка вверх</string>
+  <string name="action_scroll_to_bottom">Прокрутка вниз</string>
+  <string name="action_scroll_to_previous">Прокрутка до предыдущей</string>
+  <string name="action_scroll_to_next">Прокрутка до следующего</string>
+  <string name="migrating_all_entries">Миграция всех записей из источника</string>
+  <string name="label_to_be_updated">Будет обновлено</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

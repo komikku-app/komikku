@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Przełącz tylko NSFW</string>
   <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
   <string name="action_faq_and_guides">FAQ i przewodniki</string>
-  <string name="pref_manga_info_theme">Strona szczegółów</string>
   <string name="download_cache_renew_interval">Częstotliwość odnawiania pamięci podręcznej pobierania</string>
   <string name="download_cache_renew_interval_manual">Ręcznie</string>
   <string name="download_cache_renew_interval_1hour">1 godzina</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 godzin</string>
   <string name="download_cache_renew_interval_24hour">1 dzień</string>
   <string name="download_cache_renew_interval_info">Jeśli ustawiono na \"manual\", odśwież każdy manga lub użyj akcji \"Invalidate downloads index\" w \"Advanced\"</string>
-  <string name="pref_update_tracking_marked_read">Aktualizacja postępu po oznaczeniu jako przeczytane</string>
-  <string name="pref_auto_sync_read_chapters">Automatyczna synchronizacja odczytanych rozdziałów z trackerów</string>
   <string name="pref_clean_invalid_downloads">Wyczyść nieprawidłowe pobieranie</string>
   <string name="pref_clean_invalid_downloads_summary">Znajdź i usuń wszystkie pobierania, pliki, foldery, które nie są zapisywane w twojej bibliotece</string>
   <string name="invalid_downloads_cleaned">Wyczyszczono nieprawidłowe pobieranie</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Pokaż ukryte kategorie</string>
+  <string name="action_display_comfortable_grid_panorama">Siatka wygodna panorama</string>
+  <string name="action_panorama_cover">Okładka panorama</string>
   <string name="pref_panorama_cover">Pokładka panorama</string>
   <string name="pref_panorama_cover_summary">Pokaż okładkę w trybie poziomym, jeśli jest szerokim obrazem</string>
-  <string name="action_display_comfortable_grid_panorama">Siatka wygodna panorama</string>
+  <string name="pref_panorama_cover_flow">Przepływ Okładki Panoramy</string>
+  <string name="pref_panorama_cover_flow_summary">Pokaż okładkę panoramy w wyszukiwarce globalnej &amp; Sugestie</string>
+  <string name="pref_auto_sync_progress_from_trackers">Automatyczna synchronizacja postępu z trackerów</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchronizuj postęp z trackerów do rozdziału %d</string>
+  <string name="option_label_library_update_errors">Błędy aktualizacji biblioteki</string>
+  <string name="label_library_update_errors">Błędy aktualizacji biblioteki (%d)</string>
+  <string name="info_empty_library_update_errors">Nie masz błędów aktualizacji biblioteki.</string>
+  <string name="action_scroll_to_top">Przewiń do góry</string>
+  <string name="action_scroll_to_bottom">Przewiń na dół</string>
+  <string name="action_scroll_to_previous">Przewiń do poprzedniego</string>
+  <string name="action_scroll_to_next">Przewiń do następnego</string>
+  <string name="migrating_all_entries">Migracja wszystkich wpisów ze źródła</string>
+  <string name="label_to_be_updated">Do aktualizacji</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>

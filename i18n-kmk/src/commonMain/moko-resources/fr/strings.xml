@@ -4,7 +4,6 @@
   <string name="action_toggle_nsfw_only">Activer/désactiver uniquement NSFW</string>
   <string name="action_bulk_select">Mode de sélection en bloc</string>
   <string name="action_faq_and_guides">FAQ et tutoriels</string>
-  <string name="pref_manga_info_theme">Page de détails</string>
   <string name="download_cache_renew_interval">Intervalle de renouvellement du cache de téléchargement</string>
   <string name="download_cache_renew_interval_manual">Manuelle</string>
   <string name="download_cache_renew_interval_1hour">1 heure</string>
@@ -13,8 +12,6 @@
   <string name="download_cache_renew_interval_12hour">12 heures</string>
   <string name="download_cache_renew_interval_24hour">1 jour</string>
   <string name="download_cache_renew_interval_info">Si réglé sur \"manuel\", rafraîchissez chaque manga ou utilisez l\'action \"Invalider l\'index des téléchargements\" dans \"Avancé\"</string>
-  <string name="pref_update_tracking_marked_read">Progression de la mise à jour lorsque marqué comme lu</string>
-  <string name="pref_auto_sync_read_chapters">Synchronisation automatique des chapitres depuis les Trackers</string>
   <string name="pref_clean_invalid_downloads">Nettoyer les téléchargements invalides</string>
   <string name="pref_clean_invalid_downloads_summary">Rechercher et supprimer tous les téléchargements, fichiers, dossiers qui ne sont pas enregistrés dans votre bibliothèque</string>
   <string name="invalid_downloads_cleaned">Téléchargements invalides nettoyés</string>
@@ -98,7 +95,22 @@
   <string name="custom_theme_palette_lcd">Ecran LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">Afficher les catégories masquées</string>
+  <string name="action_display_comfortable_grid_panorama">Grille confortable Panorama</string>
+  <string name="action_panorama_cover">Couverture Panorama</string>
   <string name="pref_panorama_cover">Couverture Panorama</string>
   <string name="pref_panorama_cover_summary">Afficher la couverture en mode paysage s\'il s\'agit d\'une image large</string>
-  <string name="action_display_comfortable_grid_panorama">Grille confortable Panorama</string>
+  <string name="pref_panorama_cover_flow">Flux de couverture Panorama</string>
+  <string name="pref_panorama_cover_flow_summary">Afficher la couverture panoramique dans la recherche globale &amp; Suggestions</string>
+  <string name="pref_auto_sync_progress_from_trackers">Progression de la synchronisation automatique depuis les mouchards</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchroniser la progression des Trackers vers le chapitre %d</string>
+  <string name="option_label_library_update_errors">Erreurs de mise à jour de la bibliothèque</string>
+  <string name="label_library_update_errors">Erreurs de mise à jour de la bibliothèque (%d)</string>
+  <string name="info_empty_library_update_errors">Vous n\'avez pas d\'erreurs de mise à jour de la bibliothèque.</string>
+  <string name="action_scroll_to_top">Défiler vers le haut</string>
+  <string name="action_scroll_to_bottom">Défiler vers le bas</string>
+  <string name="action_scroll_to_previous">Défiler vers le précédent</string>
+  <string name="action_scroll_to_next">Défiler vers le suivant</string>
+  <string name="migrating_all_entries">Migrer toutes les entrées de la source</string>
+  <string name="label_to_be_updated">A mettre à jour</string>
+  <string name="pref_manga_info">Manga Info</string>
 </resources>
