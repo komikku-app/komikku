@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
@@ -244,6 +245,15 @@ private fun MigrateSourceItem(
                         Text(
                             modifier = Modifier.secondaryItemAlpha(),
                             text = stringResource(MR.strings.not_installed),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    } else if (source.installedExtension?.isObsolete == true) {
+                        Text(
+                            modifier = Modifier.secondaryItemAlpha(),
+                            text = stringResource(MR.strings.ext_obsolete),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             style = MaterialTheme.typography.bodySmall,
