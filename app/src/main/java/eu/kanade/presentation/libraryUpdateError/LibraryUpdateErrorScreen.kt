@@ -1,19 +1,8 @@
 package eu.kanade.presentation.libraryUpdateError
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -31,12 +20,10 @@ import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.VerticalAlignBottom
 import androidx.compose.material.icons.outlined.VerticalAlignTop
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.ripple
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -45,16 +32,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.libraryUpdateError.components.libraryUpdateErrorUiItems
+import eu.kanade.presentation.manga.components.Button
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorScreenState
 import kotlinx.collections.immutable.persistentListOf
@@ -74,7 +59,6 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun LibraryUpdateErrorScreen(
     state: LibraryUpdateErrorScreenState,
-    modifier: Modifier = Modifier,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
     onMultiMigrateClicked: (() -> Unit),
@@ -83,8 +67,15 @@ fun LibraryUpdateErrorScreen(
     onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
     navigateUp: () -> Unit,
 ) {
-    val listState = rememberLazyListState()
+    BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
+
     val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    val headerIndexes = remember { mutableStateOf<List<Int>>(emptyList()) }
+    LaunchedEffect(state) {
+        headerIndexes.value = state.getHeaderIndexes()
+    }
 
     val enableScrollToTop by remember {
         derivedStateOf {
@@ -98,10 +89,6 @@ fun LibraryUpdateErrorScreen(
         }
     }
 
-    val headerIndexes = remember { mutableStateOf<List<Int>>(emptyList()) }
-    LaunchedEffect(state) {
-        headerIndexes.value = state.getHeaderIndexes()
-    }
     val enableScrollToPrevious by remember {
         derivedStateOf {
             headerIndexes.value.any { it < listState.firstVisibleItemIndex }
@@ -113,11 +100,9 @@ fun LibraryUpdateErrorScreen(
         }
     }
 
-    BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
-
     Scaffold(
         topBar = { scrollBehavior ->
-            LibraryUpdateErrorsAppBar(
+            LibraryUpdateErrorAppBar(
                 title = stringResource(
                     KMR.strings.label_library_update_errors,
                     state.items.size,
@@ -132,8 +117,7 @@ fun LibraryUpdateErrorScreen(
             )
         },
         bottomBar = {
-            LibraryUpdateErrorsBottomBar(
-                modifier = modifier,
+            LibraryUpdateErrorBottomBar(
                 selected = state.selected,
                 onMultiMigrateClicked = onMultiMigrateClicked,
                 enableScrollToTop = enableScrollToTop,
@@ -198,7 +182,7 @@ fun LibraryUpdateErrorScreen(
 }
 
 @Composable
-private fun LibraryUpdateErrorsBottomBar(
+private fun LibraryUpdateErrorBottomBar(
     modifier: Modifier = Modifier,
     selected: List<LibraryUpdateErrorItem>,
     onMultiMigrateClicked: (() -> Unit),
@@ -212,13 +196,19 @@ private fun LibraryUpdateErrorsBottomBar(
     scrollToNext: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val animatedElevation by animateDpAsState(
+        targetValue = if (selected.isNotEmpty()) 3.dp else 0.dp,
+        label = "elevation",
+    )
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large.copy(
             bottomEnd = ZeroCornerSize,
             bottomStart = ZeroCornerSize,
         ),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(
+            elevation = animatedElevation,
+        ),
     ) {
         val haptic = LocalHapticFeedback.current
         val confirm = remember { mutableStateListOf(false, false, false, false, false) }
@@ -306,62 +296,7 @@ private fun LibraryUpdateErrorsBottomBar(
 }
 
 @Composable
-private fun RowScope.Button(
-    title: String,
-    icon: ImageVector,
-    toConfirm: Boolean,
-    enabled: Boolean,
-    onLongClick: () -> Unit,
-    onClick: (() -> Unit),
-    content: (@Composable () -> Unit)? = null,
-) {
-    val animatedWeight by animateFloatAsState(if (toConfirm) 2f else 1f)
-    val animatedColor by animateColorAsState(
-        if (enabled) {
-            MaterialTheme.colorScheme.onSurface
-        } else {
-            MaterialTheme.colorScheme.onSurface.copy(
-                alpha = 0.38f,
-            )
-        },
-    )
-    Column(
-        modifier = Modifier
-            .size(48.dp)
-            .weight(animatedWeight)
-            .combinedClickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = false),
-                onLongClick = onLongClick,
-                onClick = onClick,
-            ),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = animatedColor,
-        )
-        AnimatedVisibility(
-            visible = toConfirm,
-            enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
-        ) {
-            Text(
-                text = title,
-                overflow = TextOverflow.Visible,
-                maxLines = 1,
-                style = MaterialTheme.typography.labelSmall,
-                color = animatedColor,
-            )
-        }
-        content?.invoke()
-    }
-}
-
-@Composable
-private fun LibraryUpdateErrorsAppBar(
+private fun LibraryUpdateErrorAppBar(
     title: String,
     itemCnt: Int,
     navigateUp: () -> Unit,
