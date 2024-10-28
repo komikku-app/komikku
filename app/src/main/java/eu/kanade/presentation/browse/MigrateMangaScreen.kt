@@ -58,7 +58,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun MigrateMangaScreen(
     navigateUp: () -> Unit,
-    title: String?,
+    title: String,
     state: MigrateMangaScreenModel.State,
     onClickItem: (MigrateMangaItem) -> Unit,
     onClickCover: (Manga) -> Unit,

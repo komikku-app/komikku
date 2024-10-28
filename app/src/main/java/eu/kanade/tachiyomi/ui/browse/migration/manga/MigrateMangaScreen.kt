@@ -40,7 +40,7 @@ data class MigrateMangaScreen(
 
         MigrateMangaScreen(
             navigateUp = navigator::pop,
-            title = state.source!!.name,
+            title = state.source?.name ?: "???",
             state = state,
             onClickItem = {
                 // SY -->
