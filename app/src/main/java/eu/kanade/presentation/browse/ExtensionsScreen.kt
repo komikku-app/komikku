@@ -580,7 +580,7 @@ private fun ExtensionTrustDialog(
 }
 
 // KMK -->
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun ExtensionItemContentPreview() {
     val extAvail = Extension.Available(

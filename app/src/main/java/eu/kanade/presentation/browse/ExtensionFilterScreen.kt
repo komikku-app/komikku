@@ -108,9 +108,8 @@ private fun ExtensionFilterContent(
 }
 
 // KMK -->
-@Preview
+@Preview(showBackground = true)
 @Composable
-@Suppress("UnusedPrivateMember")
 private fun ExtensionFilterContentPreview() {
     ExtensionFilterContent(
         contentPadding = PaddingValues(),

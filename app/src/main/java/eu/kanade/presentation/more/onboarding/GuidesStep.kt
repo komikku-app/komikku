@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import tachiyomi.i18n.MR
@@ -58,7 +58,7 @@ internal class GuidesStep(
 
 const val GETTING_STARTED_URL = "https://mihon.app/docs/guides/getting-started"
 
-@PreviewLightDark
+@Preview(showBackground = true)
 @Composable
 private fun GuidesStepPreview() {
     TachiyomiPreviewTheme {

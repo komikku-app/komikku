@@ -339,7 +339,7 @@ internal fun ThemeColorPickerWidget(
     )
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ThemeColorPickerWidgetPreview() {
     ThemeColorPickerWidget(

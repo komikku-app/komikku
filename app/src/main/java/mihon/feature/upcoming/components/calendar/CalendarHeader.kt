@@ -89,7 +89,7 @@ private fun getTitleText(monthYear: YearMonth): String {
     return formatter.format(monthYear)
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun CalenderHeaderPreview() {
     CalenderHeader(

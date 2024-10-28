@@ -39,8 +39,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.theme.TachiyomiTheme
+import tachiyomi.core.common.preference.InMemoryPreferenceStore
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.fullType
 
 @Composable
 fun ExhUtils(
@@ -245,21 +250,24 @@ fun ExhUtils(
 @Composable
 @PreviewLightDark
 private fun ExhUtilsPreview() {
-    Surface {
-        ExhUtils(
-            isVisible = true,
-            onSetExhUtilsVisibility = {},
-            backgroundColor = Color.Black,
-            isAutoScroll = true,
-            isAutoScrollEnabled = true,
-            onToggleAutoscroll = {},
-            autoScrollFrequency = "3.0",
-            onSetAutoScrollFrequency = {},
-            onClickAutoScrollHelp = {},
-            onClickBoostPage = {},
-            onClickBoostPageHelp = {},
-            onClickRetryAll = {},
-            onClickRetryAllHelp = {},
-        )
+    Injekt.addSingleton(fullType<UiPreferences>(), UiPreferences(InMemoryPreferenceStore()))
+    TachiyomiTheme {
+        Surface {
+            ExhUtils(
+                isVisible = true,
+                onSetExhUtilsVisibility = {},
+                backgroundColor = Color.Black,
+                isAutoScroll = true,
+                isAutoScrollEnabled = true,
+                onToggleAutoscroll = {},
+                autoScrollFrequency = "3.0",
+                onSetAutoScrollFrequency = {},
+                onClickAutoScrollHelp = {},
+                onClickBoostPage = {},
+                onClickBoostPageHelp = {},
+                onClickRetryAll = {},
+                onClickRetryAllHelp = {},
+            )
+        }
     }
 }
