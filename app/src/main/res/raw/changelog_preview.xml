@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9512" changeDate="October 28, 2024">
+        <changelogtext>[b]New:[/b] Error screen (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]New:[/b] Range-selection for Migration (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Loading screen for Upcomping/Updating screen (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read (@Luqman)</changelogtext>
+        <changelogtext>[b]Improve:[/b] rework panorama cover settings (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow completely disabling "Update tracker" snackbar on mark as read (@Roshan Varughese)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExHentai (@az4521, @jobobby04)</changelogtext>
+        <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] reader slider (@AntsyLich)</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings SliderItem steps count (@abdurisaq)</changelogtext>
+        <changelogtext>[b]Fix:[/b] title for Checking update screen to "To be updated" (@Cuong-Tran)</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9484" changeDate="October 23, 2024">
         <changelogtext>[b]New:[/b] show all entries going to be checked for Smart update on Upcoming screen</changelogtext>
         <changelogtext>[b]New:[/b] allow Feed to hide entries already in Library</changelogtext>

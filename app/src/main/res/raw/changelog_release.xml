@@ -1,6 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.11.2" changeDate="Augh 08, 2024">
+    <changelogversion versionName="1.11.3" changeDate="Oct 28, 2024">
+        <changelogtext>[b]New:[/b] Error screen</changelogtext>
+        <changelogtext>[b]New:[/b] Hidden categories</changelogtext>
+        <changelogtext>[b]New:[/b] Range-selection for Migration</changelogtext>
+        <changelogtext>[b]New:[/b] show all entries going to be checked for Smart update on Upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] allow Feed to hide entries already in Library</changelogtext>
+        <changelogtext>[b]New:[/b] Added random library sort</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to opt out of Crashlytics</changelogtext>
+        <changelogtext>[b]New:[/b] Panorama cover</changelogtext>
+        <changelogtext>[b]New:[/b] read/resume button movable</changelogtext>
+        <changelogtext>[b]New:[/b] show number of entries on upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] saved search tabs for browse source</changelogtext>
+        <changelogtext>[b]New:[/b] reorder feeds &amp; saved-searches</changelogtext>
+        <changelogtext>[b]New:[/b] disable smart-update for individual &amp; fix custom interval</changelogtext>
+        <changelogtext>[b]New:[/b] Option to update trackers when chapter marked as read</changelogtext>
+        <changelogtext>[b]New:[/b] Add source search, icon flags on Feed adding dialog</changelogtext>
+        <changelogtext>[b]New:[/b] Showing source icon in library</changelogtext>
+        <changelogtext>[b]New:[/b] Use language flags</changelogtext>
+        <changelogtext>[b]New:[/b] Bulk-merging multiple library entries</changelogtext>
+        <changelogtext>[b]New:[/b] Ability to enable/disable repo</changelogtext>
+        <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
+        <changelogtext>[b]New:[/b] Custom themes</changelogtext>
+        <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
+        <changelogtext>[b]New:[/b] Add 'show entry' action to download notifications</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
+        <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
+        <changelogtext>[b]New:[/b] Add migrate option to only show entries with new chapters</changelogtext>
+        <changelogtext>[b]New:[/b] add source search to pre-migration screen</changelogtext>
+        <changelogtext>[b]New:[/b] Add Copy Tracker URL on icon long press</changelogtext>
+        <changelogtext>[b]New:[/b] Add a button to select all scanlators</changelogtext>
+        <changelogtext>[b]New:[/b] Add an "open in browser" button to reader menu</changelogtext>
+        <changelogtext>[b]New:[/b] Add Backup and Restore of Extension Repos</changelogtext>
+        <changelogtext>[b]New:[/b] Remove the 'UNOFFICIAL' status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]Improve:[/b] Default disable Integrated hentai features</changelogtext>
+        <changelogtext>[b]Improve:[/b] show duplicating manga cover on Duplicate dialog</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] rework panorama cover settings</changelogtext>
+        <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added</changelogtext>
+        <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow completely disabling "Update tracker" snackbar on mark as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add Quantity Badge to Upcoming Screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] make global search pinned/all sticky</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide Pinned chip in Global/Migrate Search if no pinned sources available</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow adding multiple tags separated by commas</changelogtext>
+        <changelogtext>[b]Improve:[/b] show loading indicator while bulk-selection is running</changelogtext>
+        <changelogtext>[b]Improve:[/b] bulk-selection: reverse selection</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reload saved-searches when screen is navigated back to</changelogtext>
+        <changelogtext>[b]Improve:[/b] only load suggestions after entry finished loading info &amp; chapters</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide sync library option when sync is disabled</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show download state and progress on reader chapter list.</changelogtext>
+        <changelogtext>[b]Improve:[/b] Confirmation dialog when removing privately installed extensions</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide batch add if integrated H &amp; Delegated src is off</changelogtext>
+        <changelogtext>[b]Improve:[/b] add MangaDex to Batch-Add example</changelogtext>
+        <changelogtext>[b]Improve:[/b] Support skip-downloading-duplicate-read-chapters for merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show local chapters as downloaded on merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
+        <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add option to update library each 6 hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Back-button on pre-migration source</changelogtext>
+        <changelogtext>[b]Improve:[/b] Don't expand description on the manga while merging</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide keyboard when a Tracker SearchResultItem is clicked</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move dropdown menu to correct position</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add extensions list refresh menu</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add confirmation when adding repo via URI</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect privacy settings in extension update notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] Option to not backup Saved searches &amp; Feeds</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow canceling search for a migrating manga without remove it</changelogtext>
+        <changelogtext>[b]Improve:[/b] put Suggestions in overflow</changelogtext>
+        <changelogtext>[b]Improve:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExHentai</changelogtext>
+        <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration</changelogtext>
+        <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker</changelogtext>
+        <changelogtext>[b]Fix:[/b] late loading saved-searches when jump from SourceFeedScreen or FeedScreen</changelogtext>
+        <changelogtext>[b]Fix:[/b] reader slider</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings SliderItem steps count</changelogtext>
+        <changelogtext>[b]Fix:[/b] source search box's height</changelogtext>
+        <changelogtext>[b]Fix:[/b] issue with not showing source names in merged manga sometimes</changelogtext>
+        <changelogtext>[b]Fix:[/b] EnhancedTracker not auto binding when adding manga to library</changelogtext>
+        <changelogtext>[b]Fix:[/b] Retain remote last chapter read if it's higher than the local one for EnhancedTracker</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `ratingTwenty` being typed as String</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `synopsis` nullability</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update Kitsu's domain to kitsu.app</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong feed adding when filter search</changelogtext>
+        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Suggestions</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings to show/hide progress-banner were not working</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix MAL search results not showing start dates</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong initial number of migrating items</changelogtext>
+        <changelogtext>[b]Fix:[/b] Don't crash on ill-formed URLs</changelogtext>
+        <changelogtext>[b]Fix:[/b] Handle Android SDK 35 API collision</changelogtext>
+        <changelogtext>[b]Based on Mihon stable 0.17.0 (Oct 26, 2024)[/b]</changelogtext>
+        <changelogtext>[b]Based on TachiyomiSY stable 1.11.0 (Oct 28, 2024)[/b]</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.11.2" changeDate="Aug 08, 2024">
         <changelogtext>[b]New:[/b] Support for backing up and restoring Feeds</changelogtext>
         <changelogtext>[b]New:[/b] Allow changing feeds' order</changelogtext>
         <changelogtext>[b]New:[/b] Show progress-banner for sync/restore/update</changelogtext>
