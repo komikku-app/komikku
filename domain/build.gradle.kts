@@ -27,10 +27,6 @@ dependencies {
 
     compileOnly(libs.compose.stablemarker)
 
-    // SY -->
-    implementation(libs.injekt)
-    // SY <--
-
     testImplementation(libs.bundles.test)
     testImplementation(kotlinx.coroutines.test)
 }
