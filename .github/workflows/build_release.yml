@@ -60,13 +60,10 @@ jobs:
         run: |
           set -e
 
-          prev_commit_count=$(echo "${{ steps.last_release.outputs.tag_name }}" | sed -e "s/^r//")
-          echo "prev_commit_count=$prev_commit_count"
+          commit_count_diff=$(git rev-list --count "${{ steps.last_release.outputs.tag_name }}"..HEAD)
 
           # Fake at least 1 commits (to avoid no changes)
-          if [ "${{ steps.current_commit.outputs.COMMIT_COUNT }}" -gt "$prev_commit_count" ]; then
-            commit_count_diff="$(expr ${{ steps.current_commit.outputs.COMMIT_COUNT }} - $prev_commit_count)"
-          else
+          if [ "${commit_count_diff}" -eq 0 ]; then
             commit_count_diff=1
           fi
 
@@ -99,20 +96,6 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-
-      - name: Clone Submodule
-        run: |
-          mkdir -p $HOME/.ssh
-          echo '${{ secrets.ADBLOCKANDROID_DEPLOY }}' > $HOME/.ssh/ssh.key
-          chmod 600 $HOME/.ssh/ssh.key
-          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/ssh.key"
-          git submodule set-url ${{ env.SUBMODULE_PATH }} git@github.com:${{ env.REPO }}.git
-          git submodule update --init --recursive
-          git submodule set-url ${{ env.SUBMODULE_PATH }} https://github.com/${{ env.REPO }}.git
-          unset GIT_SSH_COMMAND
-        env:
-          SUBMODULE_PATH: AdblockAndroid
-          REPO: komikku-app/AdblockAndroid
 
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
@@ -208,14 +191,14 @@ jobs:
           tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
           name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
           body: |
-            ## What's Changed
-            ### New
+            ### What's Changed
+            #### New
 
-            ### Improve
+            #### Improve
 
-            ### Fix
+            #### Fix
 
-            #### Based on
+            ##### Based on
             
             **Full Changelog**: https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}
 

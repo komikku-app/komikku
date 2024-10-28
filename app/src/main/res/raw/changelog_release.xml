@@ -39,7 +39,7 @@
         <changelogtext>[b]Improve:[/b] rework panorama cover settings</changelogtext>
         <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added</changelogtext>
         <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers</changelogtext>
-        <changelogtext>[b]Improve:[/b] Allow completely disabling "Update tracker" snackbar on mark as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow Always/Ask/Nerver update trackers on mark as read</changelogtext>
         <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings</changelogtext>
         <changelogtext>[b]Improve:[/b] Add Quantity Badge to Upcoming Screen</changelogtext>
         <changelogtext>[b]Improve:[/b] make global search pinned/all sticky</changelogtext>
