@@ -308,7 +308,7 @@ dependencies {
 
     // SY -->
     // Text distance (EH)
-    implementation(sylibs.simularity)
+    implementation(sylibs.similarity)
 
     // Better logging (EH)
     implementation(sylibs.xlog)
