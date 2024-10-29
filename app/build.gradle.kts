@@ -279,7 +279,7 @@ dependencies {
 
     // KMK -->
     implementation(libs.palette.ktx)
-    implementation(libs.material.kolor)
+    implementation(libs.materialKolor)
     implementation(libs.haze)
     implementation(compose.colorpicker)
     implementation(projects.flagkit)
