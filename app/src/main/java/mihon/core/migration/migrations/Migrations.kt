@@ -47,5 +47,6 @@ val migrations: List<Migration>
         TrustExtensionRepositoryMigration(),
         // KMK -->
         OfficialExtensionRepositoryMigration(),
+        IntegratedHentaiMigration(),
         // KMK <--
     )
