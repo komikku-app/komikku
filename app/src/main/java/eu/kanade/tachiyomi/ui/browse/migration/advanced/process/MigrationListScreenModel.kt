@@ -296,7 +296,7 @@ class MigrationListScreenModel(
                         }
                     }
                     // KMK -->
-                    manga.searchingJob.await()
+                    manga.searchingJob?.await()
                     // KMK <--
                 } catch (e: CancellationException) {
                     // Ignore canceled migrations
@@ -571,7 +571,8 @@ class MigrationListScreenModel(
         screenModelScope.launchIO {
             val item = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
-            item.searchingJob.cancel()
+            item.searchingJob?.cancel()
+            item.searchingJob = null
             item.searchResult.value = SearchResult.NotFound
             sourceFinished()
         }
