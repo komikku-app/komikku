@@ -489,6 +489,10 @@ class MigrationListScreenModel(
                     context.toast(SYMR.strings.no_chapters_found_for_migration, Toast.LENGTH_LONG)
                 }
             }
+
+            // KMK -->
+            sourceFinished()
+            // KMK <--
         }
     }
 
