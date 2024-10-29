@@ -108,6 +108,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             skipManga = { screenModel.removeManga(it) },
             // KMK -->
             cancelManga = { screenModel.cancelManga(it) },
+            navigateUp = { navigator.pop() },
             // KMK <--
             searchManually = { migrationItem ->
                 val sources = screenModel.getMigrationSources()

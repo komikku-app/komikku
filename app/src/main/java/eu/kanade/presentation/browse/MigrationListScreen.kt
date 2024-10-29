@@ -53,6 +53,7 @@ fun MigrationListScreen(
     skipManga: (Long) -> Unit,
     // KMK -->
     cancelManga: (Long) -> Unit,
+    navigateUp: () -> Unit,
     // KMK <--
     searchManually: (MigratingManga) -> Unit,
     migrateNow: (Long) -> Unit,
@@ -68,6 +69,9 @@ fun MigrationListScreen(
             }
             AppBar(
                 title = title,
+                // KMK -->
+                navigateUp = navigateUp,
+                // KMK <--
                 actions = {
                     AppBarActions(
                         persistentListOf(
