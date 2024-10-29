@@ -43,7 +43,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-object MoreTab : Tab {
+data object MoreTab : Tab {
     private fun readResolve(): Any = MoreTab
 
     override val options: TabOptions

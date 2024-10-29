@@ -75,11 +75,11 @@ object HomeScreen : Screen() {
     private const val TAB_FADE_DURATION = 200
     private const val TAB_NAVIGATOR_KEY = "HomeTabs"
 
-    private val tabs = listOf(
+    private val TABS = listOf(
         LibraryTab,
         UpdatesTab,
         HistoryTab,
-        BrowseTab(),
+        BrowseTab,
         MoreTab,
     )
 
@@ -104,7 +104,7 @@ object HomeScreen : Screen() {
                     startBar = {
                         if (isTabletUi()) {
                             NavigationRail {
-                                tabs
+                                TABS
                                     // SY -->
                                     .fastFilter { it.isEnabled() }
                                     // SY <--
@@ -125,7 +125,7 @@ object HomeScreen : Screen() {
                                 exit = shrinkVertically(),
                             ) {
                                 NavigationBar {
-                                    tabs
+                                    TABS
                                         // SY -->
                                         .fastFilter { it.isEnabled() }
                                         // SY <--
@@ -182,7 +182,12 @@ object HomeScreen : Screen() {
                             is Tab.Library -> LibraryTab
                             Tab.Updates -> UpdatesTab
                             Tab.History -> HistoryTab
-                            is Tab.Browse -> BrowseTab(it.toExtensions)
+                            is Tab.Browse -> {
+                                if (it.toExtensions) {
+                                    BrowseTab.showExtension()
+                                }
+                                BrowseTab
+                            }
                             is Tab.More -> MoreTab
                         }
 
