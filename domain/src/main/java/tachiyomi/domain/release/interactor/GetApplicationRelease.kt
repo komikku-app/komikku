@@ -117,6 +117,7 @@ class GetApplicationRelease(
                 if (newSemVer[index] > i) {
                     return true
                 }
+                if (newSemVer[index] < i) return false
             }
 
             false

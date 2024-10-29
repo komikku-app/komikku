@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.11.3" changeDate="Oct 28, 2024">
+    <changelogversion versionName="1.12.1" changeDate="Oct 29, 2024">
         <changelogtext>[b]New:[/b] Error screen</changelogtext>
         <changelogtext>[b]New:[/b] Hidden categories</changelogtext>
         <changelogtext>[b]New:[/b] Range-selection for Migration</changelogtext>

@@ -48,7 +48,7 @@ val gitHubUsernameMentionRegex =
  * to: [komikku-app/komikku@23d862d17...48fb4a2e6](https://github.com/komikku-app/komikku/compare/23d862d17...48fb4a2e6)
  */
 val gitHubCommitsCompareRegex =
-    """https://github.com/(?<owner>[^/]+)/(?<repo>[^/]+)/compare/(?<from>[0-9a-f.rv]+)\.\.\.(?<to>[0-9a-f.rv]+)"""
+    """(\[[^]+]]\()?https://github.com/(?<owner>[^/]+)/(?<repo>[^/]+)/compare/(?<from>[0-9a-f.rv]+)\.\.\.(?<to>[0-9a-f.rv]+)\)?"""
         .toRegex(RegexOption.IGNORE_CASE)
 // KMK <--
 
