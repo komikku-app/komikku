@@ -191,18 +191,18 @@ jobs:
           tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
           name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
           body: |
-            ### What's Changed
-            #### New
+            #### What's Changed
+            ##### New
 
-            #### Improve
+            ##### Improve
 
-            #### Fix
+            ##### Fix
+
+            ${{ needs.prepare-build.outputs.COMMIT_LOGS }}
 
             ##### Based on
             
-            **Full Changelog**: https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}
-
-            ${{ needs.prepare-build.outputs.COMMIT_LOGS }}
+            **Full Changelog**: [${{ needs.prepare-build.outputs.VERSION_TAG }}](https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }})
 
             ---
 
