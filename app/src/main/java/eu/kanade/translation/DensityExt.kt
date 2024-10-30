@@ -35,12 +35,18 @@ fun Density.toIntSize(dpSize: DpSize): IntSize =
     IntSize(dpSize.width.roundToPx(), dpSize.height.roundToPx())
 
 fun Density.toSize(dpSize: DpSize): Size =
-    if (dpSize.isSpecified) Size(dpSize.width.toPx(), dpSize.height.toPx())
-    else Size.Unspecified
+    if (dpSize.isSpecified) {
+        Size(dpSize.width.toPx(), dpSize.height.toPx())
+    } else {
+        Size.Unspecified
+    }
 
 fun Density.toDpSize(size: Size): DpSize =
-    if (size.isSpecified) DpSize(size.width.toDp(), size.height.toDp())
-    else DpSize.Unspecified
+    if (size.isSpecified) {
+        DpSize(size.width.toDp(), size.height.toDp())
+    } else {
+        DpSize.Unspecified
+    }
 
 fun Density.toDpSize(intSize: IntSize): DpSize =
     DpSize(intSize.width.toDp(), intSize.height.toDp())
@@ -50,12 +56,18 @@ fun Density.toIntOffset(dpOffset: DpOffset): IntOffset =
     IntOffset(dpOffset.x.roundToPx(), dpOffset.y.roundToPx())
 
 fun Density.toOffset(dpOffset: DpOffset): Offset =
-    if (dpOffset.isSpecified) Offset(dpOffset.x.toPx(), dpOffset.y.toPx())
-    else Offset.Unspecified
+    if (dpOffset.isSpecified) {
+        Offset(dpOffset.x.toPx(), dpOffset.y.toPx())
+    } else {
+        Offset.Unspecified
+    }
 
 fun Density.toDpOffset(offset: Offset): DpOffset =
-    if (offset.isSpecified) DpOffset(offset.x.toDp(), offset.y.toDp())
-    else DpOffset.Unspecified
+    if (offset.isSpecified) {
+        DpOffset(offset.x.toDp(), offset.y.toDp())
+    } else {
+        DpOffset.Unspecified
+    }
 
 fun Density.toDpOffset(intOffset: IntOffset): DpOffset =
     DpOffset(intOffset.x.toDp(), intOffset.y.toDp())

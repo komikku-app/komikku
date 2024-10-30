@@ -160,12 +160,10 @@ fun SetIntervalDialog(
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onValueChanged?.invoke(selectedInterval)
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onValueChanged?.invoke(selectedInterval)
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },

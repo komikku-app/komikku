@@ -66,7 +66,7 @@ class TranslationManager(
 
             logcat { "Deleted translation for ${chapter.name}" }
         } catch (e: Exception) {
-            logcat { "Failed to delete translation for ${chapterId}: ${e.message}" }
+            logcat { "Failed to delete translation for $chapterId: ${e.message}" }
         }
     }
 
@@ -89,10 +89,8 @@ class TranslationManager(
             ) ?: return emptyMap()
             return getChapterTranslation(file)
         } catch (_: Exception) {
-
         }
         return emptyMap()
-
     }
 
     fun getChapterTranslation(
@@ -129,6 +127,4 @@ class TranslationManager(
         if (file.exists()) return Translation.State.TRANSLATED
         return Translation.State.NOT_TRANSLATED
     }
-
 }
-

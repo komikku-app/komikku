@@ -195,7 +195,6 @@ data class SourceSearchScreen(
                     // SY <--
                 )
             }
-
             else -> {}
         }
 

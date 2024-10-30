@@ -103,7 +103,6 @@ class AppModule(val app: Application) : InjektModule {
                         setPragma(db, "journal_mode = WAL")
                         setPragma(db, "synchronous = NORMAL")
                     }
-
                     private fun setPragma(db: SupportSQLiteDatabase, pragma: String) {
                         val cursor = db.query("PRAGMA $pragma")
                         cursor.moveToFirst()
@@ -171,9 +170,6 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { LocalSourceFileSystem(get()) }
         addSingletonFactory { LocalCoverManager(app, get()) }
         addSingletonFactory { StorageManager(app, get()) }
-        //TachiyomiAT
-        addSingletonFactory { TranslationProvider(app) }
-        addSingletonFactory { TranslationManager(app) }
 
         // SY -->
         addSingletonFactory { EHentaiUpdateHelper(app) }
@@ -186,6 +182,10 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { SyncStatus() }
         addSingletonFactory { LibraryUpdateStatus() }
         // KMK <--
+
+        // TachiyomiAT
+        addSingletonFactory { TranslationProvider(app) }
+        addSingletonFactory { TranslationManager(app) }
 
         // Asynchronously init expensive components for a faster cold start
         ContextCompat.getMainExecutor(app).execute {

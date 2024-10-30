@@ -237,7 +237,6 @@ class MangaCoverFetcher(
                 // don't take up okhttp cache
                 request.cacheControl(CACHE_CONTROL_NO_STORE)
             }
-
             else -> {
                 // This causes the request to fail with a 504 Unsatisfiable Request.
                 request.cacheControl(CACHE_CONTROL_NO_NETWORK_NO_CACHE)

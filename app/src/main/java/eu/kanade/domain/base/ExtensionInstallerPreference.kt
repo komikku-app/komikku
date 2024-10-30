@@ -18,14 +18,13 @@ class ExtensionInstallerPreference(
 
     override fun key() = "extension_installer"
 
-    val entries
-        get() = ExtensionInstaller.entries.run {
-            if (context.hasMiuiPackageInstaller) {
-                filter { it != ExtensionInstaller.PACKAGEINSTALLER }
-            } else {
-                toList()
-            }
+    val entries get() = ExtensionInstaller.entries.run {
+        if (context.hasMiuiPackageInstaller) {
+            filter { it != ExtensionInstaller.PACKAGEINSTALLER }
+        } else {
+            toList()
         }
+    }
 
     override fun defaultValue() = if (context.hasMiuiPackageInstaller) {
         ExtensionInstaller.LEGACY
@@ -38,11 +37,9 @@ class ExtensionInstallerPreference(
             ExtensionInstaller.PACKAGEINSTALLER -> {
                 if (context.hasMiuiPackageInstaller) return ExtensionInstaller.LEGACY
             }
-
             ExtensionInstaller.SHIZUKU -> {
                 if (!context.isShizukuInstalled) return defaultValue()
             }
-
             else -> {}
         }
         return value

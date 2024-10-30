@@ -91,7 +91,6 @@ class DownloadQueueScreenModel(
                         }
                         reorder(newDownloads)
                     }
-
                     R.id.move_to_top_series, R.id.move_to_bottom_series -> {
                         val (selectedSeries, otherSeries) = adapter?.currentItems
                             ?.filterIsInstance<DownloadItem>()
@@ -104,11 +103,9 @@ class DownloadQueueScreenModel(
                             reorder(otherSeries + selectedSeries)
                         }
                     }
-
                     R.id.cancel_download -> {
                         cancel(listOf(item.download))
                     }
-
                     R.id.cancel_series -> {
                         val allDownloadsForSeries = adapter?.currentItems
                             ?.filterIsInstance<DownloadItem>()
@@ -212,13 +209,11 @@ class DownloadQueueScreenModel(
                 // Initial update of the downloaded pages
                 onUpdateDownloadedPages(download)
             }
-
             Download.State.DOWNLOADED -> {
                 cancelProgressJob(download)
                 onUpdateProgress(download)
                 onUpdateDownloadedPages(download)
             }
-
             Download.State.ERROR -> cancelProgressJob(download)
             else -> {
                 /* unused */

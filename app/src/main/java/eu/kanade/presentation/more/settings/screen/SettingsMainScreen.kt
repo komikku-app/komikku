@@ -49,6 +49,7 @@ import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -205,8 +206,8 @@ object SettingsMainScreen : Screen() {
             screen = SettingsDownloadScreen,
         ),
         Item(
-            titleRes = MR.strings.pref_category_translation,
-            subtitleRes = MR.strings.pref_translation_summary,
+            titleRes = KMR.strings.pref_category_translation,
+            subtitleRes = KMR.strings.pref_translation_summary,
             icon = Icons.Outlined.GetApp,
             screen = SettingsTranslationScreen,
         ),

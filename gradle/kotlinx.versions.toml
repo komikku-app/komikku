@@ -15,6 +15,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android" }
 coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava" }
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
+coroutines-play-services = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1"
 
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization_version" }
 serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "serialization_version" }

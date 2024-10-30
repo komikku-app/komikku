@@ -71,10 +71,9 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
-import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.translation.Translation
 import eu.kanade.translation.TranslationManager
-import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.log.xLogD
@@ -131,6 +130,7 @@ import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.chapter.service.calculateChapterGap
 import tachiyomi.domain.chapter.service.getChapterSort
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.DeleteMergeById
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
@@ -195,6 +195,8 @@ class MangaScreenModel(
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
+    private val translationManager: TranslationManager = Injekt.get(),
+    private val downloadPreferences: DownloadPreferences = Injekt.get(),
     // KMK <--
     private val updateMergedSettings: UpdateMergedSettings = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -213,12 +215,10 @@ class MangaScreenModel(
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
-    private val translationManager: TranslationManager = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
-    private val sourceManager: SourceManager = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val mangaRepository: MangaRepository = Injekt.get(),
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get(),
@@ -1004,7 +1004,6 @@ class MangaScreenModel(
                     }
                 }
         }
-
     }
 
     private fun updateDownloadState(download: Download) {
@@ -1034,6 +1033,7 @@ class MangaScreenModel(
             successState.copy(chapters = newChapters)
         }
     }
+
     private fun List<Chapter>.toChapterListItems(
         manga: Manga,
         // SY -->
@@ -1082,8 +1082,8 @@ class MangaScreenModel(
                     manga.title,
                     sourceManager.getOrStub(manga.source),
                 )
-
             }
+
             ChapterList.Item(
                 chapter = chapter,
                 downloadState = downloadState,
@@ -1094,8 +1094,7 @@ class MangaScreenModel(
                 showScanlator = !isExhManga,
                 // SY <--
                 translationState = translationState,
-
-                )
+            )
         }
     }
 
@@ -1246,21 +1245,17 @@ class MangaScreenModel(
             LibraryPreferences.ChapterSwipeAction.ToggleRead -> {
                 markChaptersRead(listOf(chapter), !chapter.read)
             }
-
             LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> {
                 bookmarkChapters(listOf(chapter), !chapter.bookmark)
             }
-
             LibraryPreferences.ChapterSwipeAction.Download -> {
                 val downloadAction: ChapterDownloadAction = when (chapterItem.downloadState) {
                     Download.State.ERROR,
                     Download.State.NOT_DOWNLOADED,
                     -> ChapterDownloadAction.START_NOW
-
                     Download.State.QUEUE,
                     Download.State.DOWNLOADING,
                     -> ChapterDownloadAction.CANCEL
-
                     Download.State.DOWNLOADED -> ChapterDownloadAction.DELETE
                 }
                 runChapterDownloadActions(
@@ -1268,7 +1263,6 @@ class MangaScreenModel(
                     action = downloadAction,
                 )
             }
-
             LibraryPreferences.ChapterSwipeAction.Disabled -> throw IllegalStateException()
         }
     }
@@ -1340,17 +1334,14 @@ class MangaScreenModel(
                     downloadManager.startDownloads()
                 }
             }
-
             ChapterDownloadAction.START_NOW -> {
                 val chapter = items.singleOrNull()?.chapter ?: return
                 startDownload(listOf(chapter), true)
             }
-
             ChapterDownloadAction.CANCEL -> {
                 val chapterId = items.singleOrNull()?.id ?: return
                 cancelDownload(chapterId)
             }
-
             ChapterDownloadAction.DELETE -> {
                 deleteChapters(items.map { it.chapter })
             }
@@ -1386,18 +1377,15 @@ class MangaScreenModel(
             }
 
             ChapterTranslationAction.DELETE -> {
-
                 try {
                     runBlocking { translationManager.deleteTranslation(item.chapter.id) }
                     downloadCache.notifyChanges()
                 } catch (e: Throwable) {
                     logcat(LogPriority.ERROR, e)
                 }
-
             }
         }
     }
-
 
     fun runDownloadAction(action: DownloadAction) {
         val chaptersToDownload = when (action) {
@@ -1809,7 +1797,6 @@ class MangaScreenModel(
             val manga: Manga,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
-
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
 

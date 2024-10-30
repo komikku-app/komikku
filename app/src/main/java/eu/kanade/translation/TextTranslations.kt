@@ -8,7 +8,7 @@ data class TextTranslations(
     var imgWidth: Float = 0f,
     var imgHeight: Float = 0f,
 
-    ) {
+) {
     companion object {
         val EMPTY = TextTranslations()
     }

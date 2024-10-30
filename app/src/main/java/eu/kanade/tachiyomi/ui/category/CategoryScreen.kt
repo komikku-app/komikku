@@ -60,7 +60,6 @@ class CategoryScreen : Screen() {
                     categories = successState.categories.fastMap { it.name }.toImmutableList(),
                 )
             }
-
             is CategoryDialog.Rename -> {
                 CategoryRenameDialog(
                     onDismissRequest = screenModel::dismissDialog,
@@ -69,7 +68,6 @@ class CategoryScreen : Screen() {
                     category = dialog.category.name,
                 )
             }
-
             is CategoryDialog.Delete -> {
                 CategoryDeleteDialog(
                     onDismissRequest = screenModel::dismissDialog,
@@ -77,7 +75,6 @@ class CategoryScreen : Screen() {
                     category = dialog.category.name,
                 )
             }
-
             is CategoryDialog.SortAlphabetically -> {
                 CategorySortAlphabeticallyDialog(
                     onDismissRequest = screenModel::dismissDialog,

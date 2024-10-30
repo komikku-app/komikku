@@ -1,17 +1,15 @@
 package eu.kanade.presentation.more.settings.screen
 
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
-import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.R
 import eu.kanade.translation.TranslationFonts
 import eu.kanade.translation.translators.LanguageTranslators
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -20,7 +18,7 @@ object SettingsTranslationScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    override fun getTitleRes() = StringResource(R.string.pref_category_translation)
+    override fun getTitleRes() = KMR.strings.pref_category_translation
 
     @Composable
     override fun getPreferences(): List<Preference> {
@@ -112,8 +110,7 @@ object SettingsTranslationScreen : SearchableSettings {
 
                 Preference.PreferenceItem.InfoPreference("Please Read the Github page Instructions for Setting up Open Router"),
 
-
-                ),
+            ),
         )
     }
 }

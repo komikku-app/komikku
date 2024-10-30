@@ -76,7 +76,6 @@ class GlobalSearchScreen(
                             showSingleLoadingScreen = false
                         }
                     }
-
                     else -> showSingleLoadingScreen = false
                 }
             }

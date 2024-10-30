@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Komikku</string>
-    <!-- TachiyomiAT -->
-    <string name="pref_category_translation">Translations</string>
-    <string name="pref_translation_summary">Automatic Translations</string>
 
     <!-- Generic strings -->
     <string name="on">On</string>

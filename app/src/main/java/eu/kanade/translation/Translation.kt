@@ -14,7 +14,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data class Translation(
-    val chapter: Chapter, val manga: Manga,
+    val chapter: Chapter,
+    val manga: Manga,
     val dir: UniFile,
     val saveFile: UniFile,
     private val state: State = State.NOT_TRANSLATED,
@@ -62,6 +63,5 @@ data class Translation(
             if (saveFile != null && dir != null) return Translation(chapter, manga, dir, saveFile, state)
             return null
         }
-
     }
 }

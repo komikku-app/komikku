@@ -233,7 +233,6 @@ class ReaderViewModel @JvmOverloads constructor(
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark)
                         }
-
                         else -> false
                     }
                 }
@@ -244,7 +243,6 @@ class ReaderViewModel @JvmOverloads constructor(
                     filteredChapters + listOf(selectedChapter)
                 }
             }
-
             else -> chapters
         }
 
@@ -402,9 +400,8 @@ class ReaderViewModel @JvmOverloads constructor(
                         mergedReferences = mergedReferences,
                         mergedManga = mergedManga,
                         // SY <--
-                        translationManager=translationManager,
-                        downloadPreferences=downloadPreferences,
-                        )
+                        translationManager = translationManager,
+                    )
 
                     loadChapter(
                         loader!!,

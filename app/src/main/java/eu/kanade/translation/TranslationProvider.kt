@@ -15,7 +15,6 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-
 /**
  * This class is used to provide the directories where the translations should be saved.
  * It uses the following path scheme: /<root translation dir>/<source name>/<manga>/<chapter>

@@ -8,10 +8,6 @@ shizuku_version = "13.1.0"
 sqldelight = "2.0.2"
 sqlite = "2.4.0"
 voyager = "1.0.0"
-detekt = "1.23.6"
-detektCompose = "0.3.12"
-media3ExtractorVersion = "1.3.1"
-media3ExoplayerVersion = "1.3.1"
 spotless = "6.25.0"
 ktlint-core = "1.4.0"
 firebase-bom = "33.5.1"
@@ -106,13 +102,17 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 voyager-tab-navigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
 
-detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
-detekt-rules-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
-detekt-rules-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
-media3-extractor = { group = "androidx.media3", name = "media3-extractor", version.ref = "media3ExtractorVersion" }
-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3ExoplayerVersion" }
 spotless-gradle = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 ktlint-core = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint-core" }
+
+media3-extractor = { group = "androidx.media3", name = "media3-extractor", version = "1.3.1" }
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version = "1.3.1" }
+mlkit-text-recognition = "com.google.mlkit:text-recognition:16.0.0"
+mlkit-text-recognition-chinese = "com.google.mlkit:text-recognition-chinese:16.0.0"
+mlkit-text-recognition-japanese = "com.google.mlkit:text-recognition-japanese:16.0.0"
+mlkit-text-recognition-korean = "com.google.mlkit:text-recognition-korean:16.0.0"
+mlkit-translate = "com.google.mlkit:translate:17.0.2"
+ai-generative = "com.google.ai.client.generativeai:generativeai:0.9.0"
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }

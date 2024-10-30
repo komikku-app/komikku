@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 
-
 class WebtoonTranslationsView :
     AbstractComposeView {
 
@@ -81,8 +80,11 @@ class WebtoonTranslationsView :
                 .fillMaxSize()
                 .onSizeChanged {
                     size = it
-                    if (size == IntSize.Zero) hide()
-                    else show()
+                    if (size == IntSize.Zero) {
+                        hide()
+                    } else {
+                        show()
+                    }
                 },
         ) {
             if (size == IntSize.Zero) return
@@ -111,7 +113,7 @@ class WebtoonTranslationsView :
                         .rotate(if (translation.angle < 88) translation.angle else 0f)
                         .background(Color.White, shape = RoundedCornerShape(4.dp)),
 
-                    )
+                )
                 TextBlock(
                     translation = translation,
                     modifier = Modifier

@@ -1,6 +1,5 @@
 package eu.kanade.translation.translators
 
-
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
@@ -20,7 +19,6 @@ class MLKitTranslator(langFrom: ScanLanguage, langTo: Locale) : LanguageTranslat
     private var conditions = DownloadConditions.Builder().build()
     override suspend fun translate(pages: HashMap<String, TextTranslations>) {
         try {
-
             translator.downloadModelIfNeeded(conditions).await()
 //             translator.downloadModelIfNeeded(conditions).await()
             pages.mapValues { (_, v) ->
@@ -28,10 +26,8 @@ class MLKitTranslator(langFrom: ScanLanguage, langTo: Locale) : LanguageTranslat
                     b.translated = translator.translate(b.text).await()
                 }
             }
-
         } catch (e: Exception) {
             logcat { "Image Translation Error : ${e.message}" }
         }
-
     }
 }

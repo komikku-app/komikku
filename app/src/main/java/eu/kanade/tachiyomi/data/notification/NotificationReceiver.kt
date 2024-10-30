@@ -72,7 +72,6 @@ class NotificationReceiver : BroadcastReceiver() {
                     intent.getParcelableExtraCompat(EXTRA_URI)!!,
                     "application/x-protobuf+gzip",
                 )
-
             ACTION_CANCEL_RESTORE -> cancelRestore(context)
 
             ACTION_CANCEL_SYNC -> cancelSync(context)

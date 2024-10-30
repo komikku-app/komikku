@@ -59,6 +59,7 @@ class StorageManager(
     fun getDownloadsDirectory(): UniFile? {
         return baseDir?.createDirectory(DOWNLOADS_PATH)
     }
+
     fun getTranslationsDirectory(): UniFile? {
         return baseDir?.createDirectory(TRANSLATIONS_PATH)
     }

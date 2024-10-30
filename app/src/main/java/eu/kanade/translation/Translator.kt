@@ -80,7 +80,6 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
         }
     }
 
-
     private suspend fun startTranslationNow(translation: Translation) {
         try {
             chapterTranslator.translateChapter(translation)
@@ -106,7 +105,6 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
             cancelCurrent()
         }
         _queueState.update { it -> it.filter { it.chapter.id != chapterId } }
-
     }
 
     fun clearQueue() {
@@ -127,7 +125,6 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
     suspend fun translateChapters(chapterIds: List<Long>) {
         // Update the queue state directly.
         _queueState.value += chapterIds.mapNotNull {
-
             val ts = Translation.fromChapterId(
                 it,
             )
@@ -135,12 +132,9 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
                 ts.status = Translation.State.QUEUE
             }
             ts
-
         }
         // Start the translator if it's not already running.
         startTranslations()
-
-
     }
 
     suspend fun translateChapter(chapterId: Long) {
@@ -152,5 +146,4 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
         // Start the translator if it's not already running.
         startTranslations()
     }
-
 }

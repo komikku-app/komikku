@@ -34,7 +34,6 @@ import tachiyomi.presentation.core.components.material.IconButtonTokens
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
-
 enum class ChapterTranslationAction {
     START,
     CANCEL,
@@ -48,9 +47,7 @@ fun ChapterTranslationIndicator(
     onClick: (ChapterTranslationAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     when (val state = translationStateProvider()) {
-
         Translation.State.NOT_TRANSLATED -> NotTranslatedIndicator(
             enabled = enabled,
             modifier = modifier,
@@ -114,7 +111,8 @@ private fun NotTranslatedIndicator(
 private fun TranslatingIndicator(
     enabled: Boolean,
     onClick: (ChapterTranslationAction) -> Unit,
-    modifier: Modifier = Modifier, translationEnabled: Boolean = false,
+    modifier: Modifier = Modifier,
+    translationEnabled: Boolean = false,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -193,7 +191,6 @@ private fun TranslatedIndicator(
         }
     }
 }
-
 
 @Composable
 private fun ErrorIndicator(

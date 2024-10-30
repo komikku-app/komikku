@@ -12,9 +12,9 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.calculateChapterGap
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
+import eu.kanade.translation.TranslationManager
 import kotlinx.coroutines.delay
 import tachiyomi.core.common.util.lang.launchUI
-import eu.kanade.translation.TranslationManager
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -225,7 +225,6 @@ class PagerViewerAdapter(
             is L2RPagerViewer,
             is VerticalPagerViewer,
             -> currentIndex + 1
-
             else -> currentIndex
         }
 

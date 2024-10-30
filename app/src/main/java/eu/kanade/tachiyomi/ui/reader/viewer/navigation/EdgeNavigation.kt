@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * +---+---+---+
  * | N | P | N |   N: Next
  * +---+---+---+
- */
+*/
 class EdgeNavigation : ViewerNavigation() {
 
     override var regionList: List<Region> = listOf(

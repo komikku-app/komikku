@@ -127,7 +127,6 @@ fun SourcesScreen(
                                 // SY <--
                             )
                         }
-
                         is SourceUiModel.Item -> SourceItem(
                             modifier = Modifier.animateItemFastScroll(),
                             source = model.source,

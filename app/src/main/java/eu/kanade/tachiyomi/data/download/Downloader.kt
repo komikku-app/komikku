@@ -119,6 +119,7 @@ class Downloader(
      */
     val isRunning: Boolean
         get() = downloaderJob?.isActive ?: false
+
     private var translateOnDownload = false
 
     /**
@@ -134,7 +135,6 @@ class Downloader(
             downloadPreferences.translateOnDownload().changes().onEach {
                 translateOnDownload = it
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
-
         }
     }
 
@@ -432,7 +432,11 @@ class Downloader(
             DiskUtil.createNoMediaFile(tmpDir, context)
 
             download.status = Download.State.DOWNLOADED
-            if (translateOnDownload) scope.launchIO { translationManager.translateChapter(chapterID = download.chapter.id) }
+            if (translateOnDownload) {
+                scope.launchIO {
+                    translationManager.translateChapter(chapterID = download.chapter.id)
+                }
+            }
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
             // If the page list threw, it will resume here

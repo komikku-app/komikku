@@ -150,11 +150,9 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
         is Filter.Header -> {
             HeadingItem(filter.name)
         }
-
         is Filter.Separator -> {
             HorizontalDivider()
         }
-
         is Filter.CheckBox -> {
             CheckboxItem(
                 label = filter.name,
@@ -164,7 +162,6 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 onUpdate()
             }
         }
-
         is Filter.TriState -> {
             TriStateItem(
                 label = filter.name,
@@ -174,7 +171,6 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 onUpdate()
             }
         }
-
         is Filter.Text -> {
             TextItem(
                 label = filter.name,
@@ -184,7 +180,6 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 onUpdate()
             }
         }
-
         is Filter.Select<*> -> {
             SelectItem(
                 label = filter.name,
@@ -195,7 +190,6 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 onUpdate()
             }
         }
-
         is Filter.Sort -> {
             CollapsibleBox(
                 heading = filter.name,
@@ -225,7 +219,6 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 }
             }
         }
-
         is Filter.Group<*> -> {
             CollapsibleBox(
                 heading = filter.name,

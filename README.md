@@ -29,11 +29,10 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 * Banner shows Library syncing / Backup restoring / Library updating progress.
 * Configurable interval to refresh entries from downloaded storage.
 * App custom theme, more app themes & better UI, improvements...
-  * Translate Chapters into any language
+* Translate Chapters into any language
   * Choose Font You Like
-  * Automatic Translation on Download
-  * Many options for Translators
-  * Supported Languages (Translate From These to Any Other Language)
+  * Automatic Translation on Download or Manually
+  * Supported Languages (From These to Any Other Language)
     * Chinese
     * Korean
     * Japanese
@@ -44,7 +43,7 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
     * OpenRouter: [Get API Key Here](https://openrouter.ai/ "Get API Key Here")
       * Must provide the model you want to use in settings default is : google/gemma-2-9b-it:free
 
-### Translation Comparison
+#### Translation Comparison
 
 Source : Tian Zuan : Chapter 615
 

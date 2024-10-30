@@ -53,7 +53,7 @@ class WebtoonPageHolder(
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
     private val font: FontFamily,
-    private val readerPreferences: ReaderPreferences = Injekt.get(),
+    readerPreferences: ReaderPreferences = Injekt.get(),
 ) : WebtoonBaseHolder(frame, viewer) {
 
     private var showTranslations = true
@@ -107,7 +107,6 @@ class WebtoonPageHolder(
             } else {
                 translationsView?.hide()
             }
-
         }.launchIn(scope)
     }
 
@@ -119,7 +118,6 @@ class WebtoonPageHolder(
         loadJob?.cancel()
         loadJob = scope.launch { loadPageAndProcessStatus() }
         refreshLayoutParams()
-
     }
 
     private fun refreshLayoutParams() {
@@ -175,7 +173,6 @@ class WebtoonPageHolder(
                     Page.State.READY -> {
                         setImage()
                         addTranslationsView()
-
                     }
 
                     Page.State.ERROR -> setError()

@@ -103,6 +103,10 @@
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
     <string name="preload_library_cover_color">Preload library's cover color</string>
 
+    <!-- Translation section -->
+    <string name="pref_category_translation">Translations</string>
+    <string name="pref_translation_summary">Automatic Translations</string>
+
       <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
     <string name="onboarding_permission_external_storage_description">Allow using custom covers in entry's Edit Info</string>

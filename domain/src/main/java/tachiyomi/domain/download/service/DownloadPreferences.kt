@@ -6,15 +6,14 @@ class DownloadPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
-    //TachiyomiAT
+    // TachiyomiAT
     fun translateOnDownload() = preferenceStore.getBoolean("auto_translate_on_download", false)
     fun translateFromLanguage() = preferenceStore.getInt("auto_translate_language_from", 0)
     fun translateToLanguage() = preferenceStore.getString("auto_translate_language_to", "en")
-    fun translationFont() = preferenceStore.getInt("auto_translate_font",0)
+    fun translationFont() = preferenceStore.getInt("auto_translate_font", 0)
     fun translationEngine() = preferenceStore.getInt("auto_translation_engine", 0)
     fun translationEngineModel() = preferenceStore.getString("translation_engine_model", "google/gemma-2-9b-it:free")
     fun translationApiKey() = preferenceStore.getString("auto_translation_api_key", "")
-
 
     fun downloadOnlyOverWifi() = preferenceStore.getBoolean(
         "pref_download_only_over_wifi_key",

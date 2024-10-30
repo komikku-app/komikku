@@ -5,8 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.PointF
 import android.view.LayoutInflater
-import androidx.annotation.ColorInt
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.annotation.ColorInt
 import androidx.compose.ui.text.font.FontFamily
 import androidx.core.view.isVisible
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -37,9 +37,9 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
-import kotlin.math.max
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.max
 
 /**
  * View of the ViewPager that contains a page of a chapter.
@@ -54,7 +54,7 @@ class PagerPageHolder(
     @ColorInt private val seedColor: Int? = null,
     // KMK <--
     private val font: FontFamily,
-    private val readerPreferences: ReaderPreferences = Injekt.get(),
+    readerPreferences: ReaderPreferences = Injekt.get(),
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
     private var showTranslations = true
     private var translationsView: PagedTranslationsView? = null
@@ -100,7 +100,6 @@ class PagerPageHolder(
             } else {
                 translationsView?.hide()
             }
-
         }.launchIn(scope)
     }
 
@@ -448,7 +447,6 @@ class PagerPageHolder(
         progressIndicator?.hide()
         translationsView?.hide()
         showErrorLayout()
-
     }
 
     override fun onImageLoaded() {
@@ -461,7 +459,7 @@ class PagerPageHolder(
     private fun addTranslationsView() {
         if (page.translations == null) return
         removeView(translationsView)
-        translationsView = PagedTranslationsView(context, translations = page.translations!!, font = font,translationOffset=viewer.config.translationOffset)
+        translationsView = PagedTranslationsView(context, translations = page.translations!!, font = font, translationOffset = viewer.config.translationOffset)
         if (!showTranslations) translationsView?.hide()
         addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
@@ -488,7 +486,6 @@ class PagerPageHolder(
     override fun onCenterChanged(newCenter: PointF?) {
         super.onCenterChanged(newCenter)
         updateTranslationCoords(pageView as SubsamplingScaleImageView)
-
     }
 
     private fun updateTranslationCoords(vi: SubsamplingScaleImageView) {

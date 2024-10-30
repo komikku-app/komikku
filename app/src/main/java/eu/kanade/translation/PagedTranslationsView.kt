@@ -34,7 +34,6 @@ import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.flow.MutableStateFlow
 
-
 class PagedTranslationsView : AbstractComposeView {
 
     private val translations: TextTranslations
@@ -86,20 +85,21 @@ class PagedTranslationsView : AbstractComposeView {
                 .fillMaxSize()
                 .onSizeChanged {
                     size = it
-                    if (size == IntSize.Zero) hide()
-                    else show()
+                    if (size == IntSize.Zero) {
+                        hide()
+                    } else {
+                        show()
+                    }
                 },
         ) {
             if (size == IntSize.Zero) return
             val scale by scaleState.collectAsState()
             val viewTL by viewTLState.collectAsState()
 
-
             val offsetX = translationOffset.x.toFloat() / 100 - translationOffset.width.toFloat() / 200
             val offsetY = translationOffset.y.toFloat() / 100 - translationOffset.height.toFloat() / 200
             val heightMultiplier = 1 + translationOffset.height.toFloat() / 100
             val widthMultiplier = 1 + translationOffset.width.toFloat() / 100
-
 
             translations.translations.forEach { translation ->
 
@@ -127,8 +127,6 @@ class PagedTranslationsView : AbstractComposeView {
                         .offset(pxToDp(xPx), pxToDp(yPx))
                         .requiredSize(pxToDp(width), pxToDp(height)),
                 )
-
-
             }
         }
     }
@@ -161,4 +159,3 @@ class PagedTranslationsView : AbstractComposeView {
         return Dp(px / (context.resources.displayMetrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT))
     }
 }
-

@@ -44,12 +44,10 @@ fun HistoryDeleteDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onDelete(removeEverything)
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onDelete(removeEverything)
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_remove))
             }
         },
@@ -75,12 +73,10 @@ fun HistoryDeleteAllDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onDelete()
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onDelete()
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },

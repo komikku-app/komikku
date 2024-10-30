@@ -194,12 +194,10 @@ fun CategoryDeleteDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onDelete()
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onDelete()
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },
@@ -229,12 +227,10 @@ fun CategorySortAlphabeticallyDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onSort()
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onSort()
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },
@@ -286,12 +282,10 @@ fun ChangeCategoryDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Row {
-                tachiyomi.presentation.core.components.material.TextButton(
-                    onClick = {
-                        onDismissRequest()
-                        onEditCategories()
-                    },
-                ) {
+                tachiyomi.presentation.core.components.material.TextButton(onClick = {
+                    onDismissRequest()
+                    onEditCategories()
+                }) {
                     Text(text = stringResource(MR.strings.action_edit))
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -344,7 +338,6 @@ fun ChangeCategoryDialog(
                                     onClick = { onChange(checkbox) },
                                 )
                             }
-
                             is CheckboxState.State -> {
                                 Checkbox(
                                     checked = checkbox.isChecked,

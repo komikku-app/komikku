@@ -164,7 +164,6 @@ fun MoreScreen(
                                 }"
                             }
                         }
-
                         is DownloadQueueState.Downloading -> {
                             val pending = downloadQueueState.pending
                             pluralStringResource(MR.plurals.download_queue_summary, count = pending, pending)

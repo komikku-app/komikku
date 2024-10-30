@@ -441,15 +441,12 @@ class LibraryScreenModel(
                 LibrarySort.Type.Alphabetical -> {
                     sortAlphabetically(i1, i2)
                 }
-
                 LibrarySort.Type.LastRead -> {
                     i1.libraryManga.lastRead.compareTo(i2.libraryManga.lastRead)
                 }
-
                 LibrarySort.Type.LastUpdate -> {
                     i1.libraryManga.manga.lastUpdate.compareTo(i2.libraryManga.manga.lastUpdate)
                 }
-
                 LibrarySort.Type.UnreadCount -> when {
                     // Ensure unread content comes first
                     i1.libraryManga.unreadCount == i2.libraryManga.unreadCount -> 0
@@ -457,23 +454,18 @@ class LibraryScreenModel(
                     i2.libraryManga.unreadCount == 0L -> if (sort.isAscending) -1 else 1
                     else -> i1.libraryManga.unreadCount.compareTo(i2.libraryManga.unreadCount)
                 }
-
                 LibrarySort.Type.TotalChapters -> {
                     i1.libraryManga.totalChapters.compareTo(i2.libraryManga.totalChapters)
                 }
-
                 LibrarySort.Type.LatestChapter -> {
                     i1.libraryManga.latestUpload.compareTo(i2.libraryManga.latestUpload)
                 }
-
                 LibrarySort.Type.ChapterFetchDate -> {
                     i1.libraryManga.chapterFetchedAt.compareTo(i2.libraryManga.chapterFetchedAt)
                 }
-
                 LibrarySort.Type.DateAdded -> {
                     i1.libraryManga.manga.dateAdded.compareTo(i2.libraryManga.manga.dateAdded)
                 }
-
                 LibrarySort.Type.TrackerMean -> {
                     val item1Score = trackerScores[i1.libraryManga.id] ?: defaultTrackerScoreSortValue
                     val item2Score = trackerScores[i2.libraryManga.id] ?: defaultTrackerScoreSortValue
@@ -1280,7 +1272,6 @@ class LibraryScreenModel(
             val manga: List<Manga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
-
         data class DeleteManga(val manga: List<Manga>) : Dialog
         data object SyncFavoritesWarning : Dialog
         data object SyncFavoritesConfirm : Dialog

@@ -106,7 +106,6 @@ fun ChapterSettingsDialog(
                         onScanlatorFilterClicked = onScanlatorFilterClicked,
                     )
                 }
-
                 1 -> {
                     SortPage(
                         sortingMode = manga?.sorting ?: 0,
@@ -114,7 +113,6 @@ fun ChapterSettingsDialog(
                         onItemSelected = onSortModeChanged,
                     )
                 }
-
                 2 -> {
                     DisplayPage(
                         displayMode = manga?.displayMode ?: 0,

@@ -169,7 +169,6 @@ sealed class Image(
                         ByteArrayInputStream(baos.toByteArray())
                     }
                 }
-
                 is Page -> inputStream
             }
         }

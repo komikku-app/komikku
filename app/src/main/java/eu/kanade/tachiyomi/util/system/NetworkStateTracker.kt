@@ -30,7 +30,6 @@ fun Context.networkStateFlow() = callbackFlow {
         override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
             trySend(activeNetworkState())
         }
-
         override fun onLost(network: Network) {
             trySend(activeNetworkState())
         }

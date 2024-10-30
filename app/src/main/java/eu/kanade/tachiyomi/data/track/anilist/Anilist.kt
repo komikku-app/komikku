@@ -130,6 +130,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
                 0.0 -> "0 ★"
                 else -> "${((score + 10) / 20).toInt()} ★"
             }
+
             POINT_3 -> when {
                 score == 0.0 -> "0"
                 score <= 35 -> "😦"

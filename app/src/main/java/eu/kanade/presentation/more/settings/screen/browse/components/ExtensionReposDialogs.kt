@@ -132,12 +132,10 @@ fun ExtensionRepoDeleteDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onDelete()
-                    onDismissRequest()
-                },
-            ) {
+            TextButton(onClick = {
+                onDelete()
+                onDismissRequest()
+            }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },

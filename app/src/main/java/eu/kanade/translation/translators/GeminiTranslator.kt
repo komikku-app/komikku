@@ -1,6 +1,5 @@
 package eu.kanade.translation.translators
 
-
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
@@ -85,12 +84,8 @@ class GeminiTranslator(private val langFrom: ScanLanguage, private val langTo: L
                 v.translations =
                     v.translations.filterNot { it.translated.contains("RTMTH") } as ArrayList<BlockTranslation>
             }
-
         } catch (e: Exception) {
             logcat { "Image Translation Error : ${e.stackTraceToString()}" }
         }
-
     }
-
-
 }

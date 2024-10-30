@@ -25,13 +25,13 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-
 class ChapterTranslator(
     private val context: Context,
     private var scanLanguage: ScanLanguage = ScanLanguage.Chinese,
     private var translateLanguage: Locale = Locale.ENGLISH,
     private var translationEngine: LanguageTranslators = LanguageTranslators.MLKIT,
-    private var apiKey: String = "", var font: Int = 0,
+    private var apiKey: String = "",
+    var font: Int = 0,
 ) {
     private var debug = true
 
@@ -68,8 +68,8 @@ class ChapterTranslator(
                 logcat { "ERROR : ${e.stackTraceToString()}" }
             }
         }
-        //Translate All Pages
 
+        // Translate All Pages
         textTranslator.translate(pages)
         Json.encodeToStream(pages, translation.saveFile.openOutputStream())
     }
@@ -97,7 +97,6 @@ class ChapterTranslator(
         val translations = resultant.translations
         val sortedBlocks = blocks.sortedBy { it.boundingBox?.top ?: 0 }
         for (block in sortedBlocks) {
-
             val bounds = block.boundingBox ?: continue
             val symbolBound =
                 block.lines.firstOrNull()?.elements?.firstOrNull()?.symbols?.firstOrNull()?.boundingBox
@@ -134,7 +133,6 @@ class ChapterTranslator(
                     ),
                 )
             }
-
         }
         for (tt in translations) {
             tt.x *= scale
@@ -176,7 +174,6 @@ class ChapterTranslator(
         }
     }
 
-
     fun updateEngine(engine: LanguageTranslators) {
         this.translationEngine = engine
         this.textTranslator = getTranslator(translationEngine, scanLanguage, translateLanguage, apiKey)
@@ -191,6 +188,4 @@ class ChapterTranslator(
         this.font = fontIndex
         this.textPaint.typeface = ResourcesCompat.getFont(context, fonts[font])
     }
-
 }
-

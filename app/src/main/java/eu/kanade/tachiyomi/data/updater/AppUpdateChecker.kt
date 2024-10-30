@@ -33,7 +33,6 @@ class AppUpdateChecker(
                 is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
                     context,
                 ).promptFdroidUpdate()
-
                 else -> {}
             }
 

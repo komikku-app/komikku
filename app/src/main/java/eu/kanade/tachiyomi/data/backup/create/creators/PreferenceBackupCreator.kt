@@ -54,7 +54,6 @@ class PreferenceBackupCreator(
                     is Set<*> -> (value as? Set<String>)?.let {
                         BackupPreference(key, StringSetPreferenceValue(it))
                     }
-
                     else -> null
                 }
             }

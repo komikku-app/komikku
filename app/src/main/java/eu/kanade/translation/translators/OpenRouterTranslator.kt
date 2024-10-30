@@ -1,6 +1,5 @@
 package eu.kanade.translation.translators
 
-
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.translation.BlockTranslation
 import eu.kanade.translation.TextTranslations
@@ -80,7 +79,6 @@ class OpenRouterTranslator(
                         put("content", "JSON $json")
                     }
                 }
-
             }.toString()
             val body = jsonObject.toRequestBody(mediaType)
             val access = "https://openrouter.ai/api/v1/chat/completions"
@@ -105,13 +103,8 @@ class OpenRouterTranslator(
                 v.translations =
                     v.translations.filterNot { it.translated.contains("RTMTH") } as ArrayList<BlockTranslation>
             }
-
-
         } catch (e: Exception) {
             logcat { "Image Translation Error : ${e.stackTraceToString()}" }
         }
-
     }
-
-
 }

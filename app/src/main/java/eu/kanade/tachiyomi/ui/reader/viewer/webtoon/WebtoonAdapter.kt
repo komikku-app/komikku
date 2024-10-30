@@ -136,7 +136,6 @@ class WebtoonAdapter(
                     font = translationManager.font,
                 )
             }
-
             TRANSITION_VIEW -> {
                 val view = LinearLayout(readerThemedContext)
                 WebtoonTransitionHolder(
@@ -147,7 +146,6 @@ class WebtoonAdapter(
                     // KMK <--
                 )
             }
-
             else -> error("Unknown view type")
         }
     }

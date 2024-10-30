@@ -35,7 +35,6 @@ fun relativeTimeSpanString(epochMillis: Long): String {
         now - epochMillis < 1.minutes.inWholeMilliseconds -> stringResource(
             MR.strings.updates_last_update_info_just_now,
         )
-
         else -> DateUtils.getRelativeTimeSpanString(epochMillis, now, DateUtils.MINUTE_IN_MILLIS).toString()
     }
 }

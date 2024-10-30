@@ -53,14 +53,12 @@ class KavitaApi(private val client: OkHttpClient, interceptor: KavitaInterceptor
                             }
                             throw IOException("Unauthorized / api key not valid")
                         }
-
                         500 -> {
                             logcat(
                                 LogPriority.WARN,
                             ) { "Error fetching JWT token. API URL: $apiUrl, empty API key: ${apiKey.isEmpty()}" }
                             throw IOException("Error fetching JWT token")
                         }
-
                         else -> {}
                     }
                 }
@@ -173,15 +171,11 @@ class KavitaApi(private val client: OkHttpClient, interceptor: KavitaInterceptor
     }
 
     suspend fun updateProgress(track: Track): Track {
-        val requestUrl = "${
-            getApiFromUrl(
-                track.tracking_url,
-            )
-        }/Tachiyomi/mark-chapter-until-as-read?seriesId=${
-            getIdFromUrl(
-                track.tracking_url,
-            )
-        }&chapterNumber=${track.last_chapter_read}"
+        val requestUrl = "${getApiFromUrl(
+            track.tracking_url,
+        )}/Tachiyomi/mark-chapter-until-as-read?seriesId=${getIdFromUrl(
+            track.tracking_url,
+        )}&chapterNumber=${track.last_chapter_read}"
         authClient.newCall(
             POST(requestUrl, body = "{}".toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())),
         )

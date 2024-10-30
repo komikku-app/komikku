@@ -26,11 +26,9 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
                     b.translated = translateText(langTo.language, b.text)
                 }
             }
-
         } catch (e: Exception) {
             logcat { "Image Translation Error : ${e.message}" }
         }
-
     }
 
     private fun rshift(j: Long, j2: Long): Long {
@@ -67,14 +65,21 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
             } else if (charCodeAt < 2048) {
                 list.add(Integer.valueOf((charCodeAt shr 6) or PsExtractor.AUDIO_STREAM))
                 list.add((charCodeAt and 63) or 128)
-            } else if ((55296 == (charCodeAt and 64512) && (i2 + 1).also {
-                    i = it
-                } < str.length) && 56320 == (64512 and charCodeAt(str, i))) {
+            } else if ((
+                    55296 == (charCodeAt and 64512) &&
+                        (i2 + 1).also {
+                            i = it
+                        } < str.length
+                    ) &&
+                56320 == (64512 and charCodeAt(str, i))
+            ) {
                 val charCodeAt2 =
-                    ((charCodeAt and AnalyticsListener.EVENT_DRM_KEYS_LOADED) shl 10) + 65536 + (charCodeAt(
-                        str,
-                        i,
-                    ) and AnalyticsListener.EVENT_DRM_KEYS_LOADED)
+                    ((charCodeAt and AnalyticsListener.EVENT_DRM_KEYS_LOADED) shl 10) + 65536 + (
+                        charCodeAt(
+                            str,
+                            i,
+                        ) and AnalyticsListener.EVENT_DRM_KEYS_LOADED
+                        )
                 list.add(Integer.valueOf((charCodeAt2 shr 18) or PsExtractor.VIDEO_STREAM_MASK))
                 list.add(((charCodeAt2 shr 12) and 63) or 128)
                 list.add((charCodeAt2 and 63) or 128)
@@ -127,7 +132,6 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
     }
 
     suspend fun translateText(lang: String, text: String): String {
-
         val access = getTranslateUrl(lang, text)
         val build: Request = Request.Builder().url(access).build()
         val newCall = okHttpClient.newCall(build)
@@ -145,7 +149,6 @@ class GoogleTranslator(private val langFrom: ScanLanguage, private val langTo: L
                 }
             }
             return str
-
         } catch (e: Exception) {
             logcat { "Image Translation Error : $e" }
         }

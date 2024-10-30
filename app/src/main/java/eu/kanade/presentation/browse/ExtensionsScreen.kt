@@ -117,7 +117,6 @@ fun ExtensionScreen(
                     ),
                 )
             }
-
             else -> {
                 ExtensionContent(
                     state = state,

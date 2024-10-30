@@ -164,7 +164,6 @@ internal class ExtensionInstaller(private val context: Context) {
 
                 context.startActivity(intent)
             }
-
             BasePreferences.ExtensionInstaller.PRIVATE -> {
                 val extensionManager = Injekt.get<ExtensionManager>()
                 val tempFile = File(context.cacheDir, "temp_$downloadId")
@@ -194,7 +193,6 @@ internal class ExtensionInstaller(private val context: Context) {
 
                 tempFile.delete()
             }
-
             else -> {
                 val intent = ExtensionInstallService.getIntent(context, downloadId, uri, installer)
                 ContextCompat.startForegroundService(context, intent)

@@ -25,7 +25,5 @@ class TextRecognizer(scanLanguage: ScanLanguage) {
             ScanLanguage.Japanese -> JapaneseTextRecognizerOptions.Builder().build()
             ScanLanguage.Korean -> KoreanTextRecognizerOptions.Builder().build()
         }
-
     }
-
 }

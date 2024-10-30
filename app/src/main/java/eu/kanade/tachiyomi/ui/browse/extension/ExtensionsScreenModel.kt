@@ -74,7 +74,6 @@ class ExtensionsScreenModel(
                             } ||
                                 extension.name.contains(input, ignoreCase = true)
                         }
-
                         is Extension.Installed -> {
                             extension.sources.any {
                                 it.name.contains(input, ignoreCase = true) ||
@@ -87,7 +86,6 @@ class ExtensionsScreenModel(
                             } ||
                                 extension.name.contains(input, ignoreCase = true)
                         }
-
                         is Extension.Untrusted -> extension.name.contains(input, ignoreCase = true)
                     }
                 }

@@ -59,7 +59,6 @@ fun MangaChapterListItem(
     // SY <--
     read: Boolean,
     bookmark: Boolean,
-    translationStateProvider: () -> Translation.State,
     selected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> Download.State,
@@ -68,10 +67,12 @@ fun MangaChapterListItem(
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
-    onTranslateClick: ((ChapterTranslationAction) -> Unit)?,
     onDownloadClick: ((ChapterDownloadAction) -> Unit)?,
     onChapterSwipe: (LibraryPreferences.ChapterSwipeAction) -> Unit,
-    modifier: Modifier = Modifier, translationEnabled: Boolean = false,
+    translationStateProvider: () -> Translation.State,
+    onTranslateClick: ((ChapterTranslationAction) -> Unit)?,
+    translationEnabled: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     val start = getSwipeAction(
         action = chapterSwipeStartAction,
@@ -193,18 +194,21 @@ fun MangaChapterListItem(
                     }
                 }
             }
-            if (downloadStateProvider() == Download.State.DOWNLOADED) ChapterTranslationIndicator(
-                enabled = downloadIndicatorEnabled,
-                modifier = Modifier.padding(start = 4.dp),
-                translationStateProvider = translationStateProvider,
-                onClick = { onTranslateClick?.invoke(it) },
-            )
+            if (downloadStateProvider() == Download.State.DOWNLOADED) {
+                ChapterTranslationIndicator(
+                    enabled = downloadIndicatorEnabled,
+                    modifier = Modifier.padding(start = 4.dp),
+                    translationStateProvider = translationStateProvider,
+                    onClick = { onTranslateClick?.invoke(it) },
+                )
+            }
             ChapterDownloadIndicator(
                 enabled = downloadIndicatorEnabled,
                 modifier = Modifier.padding(start = 4.dp),
                 downloadStateProvider = downloadStateProvider,
                 downloadProgressProvider = downloadProgressProvider,
-                onClick = { onDownloadClick?.invoke(it) }, translationEnabled = translationEnabled,
+                onClick = { onDownloadClick?.invoke(it) },
+                translationEnabled = translationEnabled,
             )
         }
     }
@@ -225,14 +229,12 @@ private fun getSwipeAction(
             isUndo = read,
             onSwipe = onSwipe,
         )
-
         LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> swipeAction(
             icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove,
             background = background,
             isUndo = bookmark,
             onSwipe = onSwipe,
         )
-
         LibraryPreferences.ChapterSwipeAction.Download -> swipeAction(
             icon = when (downloadState) {
                 Download.State.NOT_DOWNLOADED, Download.State.ERROR -> Icons.Outlined.Download
@@ -242,7 +244,6 @@ private fun getSwipeAction(
             background = background,
             onSwipe = onSwipe,
         )
-
         LibraryPreferences.ChapterSwipeAction.Disabled -> null
     }
 }

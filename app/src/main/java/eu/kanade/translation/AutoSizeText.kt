@@ -221,15 +221,16 @@ fun AutoSizeText(
             }
 
             val electedFontSize = kotlin.run {
-                if (suggestedFontSizesStatus == SuggestedFontSizesStatus.VALID)
+                if (suggestedFontSizesStatus == SuggestedFontSizesStatus.VALID) {
                     suggestedFontSizes.value
-                else
+                } else {
                     remember(key1 = suggestedFontSizes) {
                         suggestedFontSizes.value
                             .filter { it.isSp }
                             .takeIf { it.isNotEmpty() }
                             ?.sortedBy { it.value }
                     }
+                }
             }
                 ?.findElectedValue(shouldMoveBackward = shouldMoveBackward)
                 ?: rememberCandidateFontSizesIntProgress(
@@ -243,7 +244,7 @@ fun AutoSizeText(
                     shouldMoveBackward = shouldMoveBackward,
                 )
 
-            if (electedFontSize == 0.sp)
+            if (electedFontSize == 0.sp) {
                 Log.w(
                     "AutoSizeText",
                     """The text cannot be displayed. Please consider the following options:
@@ -252,6 +253,7 @@ fun AutoSizeText(
                       |  3. Adjusting the 'minTextSize' parameter to a suitable value and ensuring the overflow parameter is set to "TextOverflow.Ellipsis".
                     """.trimMargin(),
                 )
+            }
 
             Text(
                 text = text,
@@ -369,23 +371,28 @@ private fun <E> IntProgression.findElectedValue(
     var high = last / step
     while (low <= high) {
         val mid = low + (high - low) / 2
-        if (shouldMoveBackward(transform(mid * step)))
+        if (shouldMoveBackward(transform(mid * step))) {
             high = mid - 1
-        else
+        } else {
             low = mid + 1
+        }
     }
     transform((high * step).coerceAtLeast(minimumValue = first * step))
 }
 
 enum class SuggestedFontSizesStatus {
-    VALID, INVALID, UNKNOWN;
+    VALID,
+    INVALID,
+    UNKNOWN,
+    ;
 
     companion object {
         val List<TextUnit>.suggestedFontSizesStatus
-            get() = if (isNotEmpty() && all { it.isSp } && sortedBy { it.value } == this)
+            get() = if (isNotEmpty() && all { it.isSp } && sortedBy { it.value } == this) {
                 VALID
-            else
+            } else {
                 INVALID
+            }
         val ImmutableWrapper<List<TextUnit>>.rememberSuggestedFontSizesStatus
             @Composable get() = remember(key1 = this) { value.suggestedFontSizesStatus }
     }

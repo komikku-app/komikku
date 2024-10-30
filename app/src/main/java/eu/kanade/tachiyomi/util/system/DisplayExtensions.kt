@@ -30,7 +30,6 @@ fun Context.prepareTabletUiContext(): Context {
                 Configuration.ORIENTATION_PORTRAIT -> TABLET_UI_MIN_SCREEN_WIDTH_PORTRAIT_DP
                 else -> TABLET_UI_MIN_SCREEN_WIDTH_LANDSCAPE_DP
             }
-
         TabletUiMode.ALWAYS -> true
         TabletUiMode.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         TabletUiMode.NEVER -> false

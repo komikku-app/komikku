@@ -100,7 +100,6 @@ internal fun LazyListScope.updatesUiItems(
                     text = relativeDateText(item.date),
                 )
             }
-
             is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
                 UpdatesUiItem(
