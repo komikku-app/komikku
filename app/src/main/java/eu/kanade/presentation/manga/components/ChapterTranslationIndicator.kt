@@ -43,11 +43,11 @@ enum class ChapterTranslationAction {
 @Composable
 fun ChapterTranslationIndicator(
     enabled: Boolean,
-    translationStateProvider: () -> Translation.State,
+    translationStateProvider: (() -> Translation.State)?,
     onClick: (ChapterTranslationAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (val state = translationStateProvider()) {
+    when (translationStateProvider?.invoke()) {
         Translation.State.NOT_TRANSLATED -> NotTranslatedIndicator(
             enabled = enabled,
             modifier = modifier,
@@ -77,6 +77,8 @@ fun ChapterTranslationIndicator(
             modifier = modifier,
             onClick = onClick,
         )
+
+        null -> {}
     }
 }
 
