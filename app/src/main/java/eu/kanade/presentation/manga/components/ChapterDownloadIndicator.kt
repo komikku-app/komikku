@@ -17,6 +17,7 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +54,9 @@ fun ChapterDownloadIndicator(
     downloadProgressProvider: () -> Int,
     onClick: (ChapterDownloadAction) -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     when (val downloadState = downloadStateProvider()) {
         Download.State.NOT_DOWNLOADED -> NotDownloadedIndicator(
@@ -67,7 +70,9 @@ fun ChapterDownloadIndicator(
             downloadState = downloadState,
             downloadProgressProvider = downloadProgressProvider,
             onClick = onClick,
+            // KMK -->
             translationEnabled = translationEnabled,
+            // KMK <--
         )
         Download.State.DOWNLOADED -> DownloadedIndicator(
             enabled = enabled,
@@ -116,7 +121,9 @@ private fun DownloadingIndicator(
     downloadProgressProvider: () -> Int,
     onClick: (ChapterDownloadAction) -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -132,10 +139,21 @@ private fun DownloadingIndicator(
     ) {
         val arrowColor: Color
         val strokeColor = MaterialTheme.colorScheme.primary // KMK: onSurfaceVariant
-        var isTranslating = false
         val downloadProgress = downloadProgressProvider()
         val indeterminate = downloadState == Download.State.QUEUE ||
             (downloadState == Download.State.DOWNLOADING && downloadProgress == 0)
+        // KMK -->
+        val animatedProgress by animateFloatAsState(
+            targetValue = downloadProgress / 100f,
+            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+            label = "downloadProgress",
+        )
+        val isTranslating by remember {
+            derivedStateOf {
+                translationEnabled && animatedProgress == 1f
+            }
+        }
+        // KMK <--
         if (indeterminate) {
             arrowColor = strokeColor
             CircularProgressIndicator(
@@ -146,11 +164,7 @@ private fun DownloadingIndicator(
                 strokeCap = StrokeCap.Butt,
             )
         } else {
-            val animatedProgress by animateFloatAsState(
-                targetValue = downloadProgress / 100f,
-                animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-            )
-            isTranslating = translationEnabled && animatedProgress == 1f
+            // KMK -->
             if (isTranslating) {
                 arrowColor = strokeColor
                 CircularProgressIndicator(
@@ -161,6 +175,7 @@ private fun DownloadingIndicator(
                     strokeCap = StrokeCap.Butt,
                 )
             } else {
+                // KMK <--
                 arrowColor = if (animatedProgress < 0.5f) {
                     strokeColor
                 } else {
@@ -193,6 +208,7 @@ private fun DownloadingIndicator(
                 },
             )
         }
+        // KMK -->
         if (isTranslating) {
             Icon(
                 painter = painterResource(R.drawable.ic_translate),
@@ -201,6 +217,7 @@ private fun DownloadingIndicator(
                 tint = arrowColor,
             )
         } else {
+            // KMK <--
             Icon(
                 imageVector = Icons.Outlined.ArrowDownward,
                 contentDescription = null,
