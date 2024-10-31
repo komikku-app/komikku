@@ -2,6 +2,7 @@ package eu.kanade.presentation.more.settings.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.translation.TranslationFonts
@@ -9,12 +10,16 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import mihon.domain.translation.translators.LanguageTranslators
 import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
 
 object SettingsTranslationScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsTranslationScreen
 
     @ReadOnlyComposable
     @Composable
@@ -23,16 +28,28 @@ object SettingsTranslationScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
+        val saveChapterAsCBZ by downloadPreferences.saveChaptersAsCBZ().collectAsState()
         return listOf(
+            Preference.PreferenceItem.InfoPreference("Must turn-off CBZ for now"),
             Preference.PreferenceItem.SwitchPreference(
-                pref = downloadPreferences.translateOnDownload(),
-                title = "Auto Translate On Download",
+                pref = downloadPreferences.saveChaptersAsCBZ(),
+                title = stringResource(MR.strings.save_chapter_as_cbz),
             ),
-            getTranslateFromLanguage(downloadPreferences = downloadPreferences),
-            getTranslateToLanguage(downloadPreferences = downloadPreferences),
-            getTranslateFont(downloadPreferences = downloadPreferences),
-            getTranslateEngineGroup(downloadPreferences = downloadPreferences),
-        )
+        ) +
+            if (!saveChapterAsCBZ) {
+                listOf(
+                    Preference.PreferenceItem.SwitchPreference(
+                        pref = downloadPreferences.translateOnDownload(),
+                        title = "Auto Translate On Download",
+                    ),
+                    getTranslateFromLanguage(downloadPreferences = downloadPreferences),
+                    getTranslateToLanguage(downloadPreferences = downloadPreferences),
+                    getTranslateFont(downloadPreferences = downloadPreferences),
+                    getTranslateEngineGroup(downloadPreferences = downloadPreferences),
+                )
+            } else {
+                emptyList()
+            }
     }
 
     @Composable
@@ -99,15 +116,22 @@ object SettingsTranslationScreen : SearchableSettings {
                     pref = downloadPreferences.translationApiKey(),
                     subtitle = "Secret Key",
                     title = "Translator API Key",
+                    enabled = translationEngine in listOf(
+                        LanguageTranslators.GEMINI,
+                        LanguageTranslators.OPENROUTER,
+                    ),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = downloadPreferences.translationEngineModel(),
                     subtitle = "Model for open router",
                     title = "Translator Model",
+                    enabled = translationEngine in listOf(
+                        LanguageTranslators.OPENROUTER,
+                    ),
                 ),
-
-                Preference.PreferenceItem.InfoPreference("Please Read the Github page Instructions for Setting up Open Router"),
-
+                Preference.PreferenceItem.InfoPreference(
+                    title = "Please Read the Github page Instructions for Setting up Open Router",
+                ),
             ),
         )
     }
