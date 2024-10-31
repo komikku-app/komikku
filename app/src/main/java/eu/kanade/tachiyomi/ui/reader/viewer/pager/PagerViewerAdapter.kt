@@ -26,8 +26,8 @@ class PagerViewerAdapter(
     private val viewer: PagerViewer,
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
-    // KMK <--
     private val translationManager: TranslationManager = Injekt.get(),
+    // KMK <--
 ) : ViewPagerAdapter() {
 
     /**
@@ -180,8 +180,8 @@ class PagerViewerAdapter(
                 item2 as? ReaderPage,
                 // KMK -->
                 seedColor = seedColor,
-                // KMK <--
                 font = translationManager.font,
+                // KMK <--
             )
             is ChapterTransition -> PagerTransitionHolder(
                 readerThemedContext,

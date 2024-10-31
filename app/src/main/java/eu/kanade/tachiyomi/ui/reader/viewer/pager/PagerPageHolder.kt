@@ -52,12 +52,10 @@ class PagerPageHolder(
     private var extraPage: ReaderPage? = null,
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
-    // KMK <--
     private val font: FontFamily,
     readerPreferences: ReaderPreferences = Injekt.get(),
+    // KMK <--
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
-    private var showTranslations = true
-    private var translationsView: PagedTranslationsView? = null
 
     /**
      * Item that identifies this view. Needed by the adapter to not recreate views.
@@ -87,11 +85,17 @@ class PagerPageHolder(
      */
     private var extraLoadJob: Job? = null
 
+    // KMK -->
+    private var showTranslations = true
+    private var translationsView: PagedTranslationsView? = null
+    // KMK <--
+
     init {
         loadJob = scope.launch { loadPageAndProcessStatus(1) }
         // SY -->
         extraLoadJob = scope.launch { loadPageAndProcessStatus(2) }
         // SY <--
+        // KMK -->
         showTranslations = readerPreferences.showTranslations().get()
         readerPreferences.showTranslations().changes().onEach {
             showTranslations = it
@@ -101,6 +105,7 @@ class PagerPageHolder(
                 translationsView?.hide()
             }
         }.launchIn(scope)
+        // KMK <--
     }
 
     /**
@@ -156,7 +161,9 @@ class PagerPageHolder(
 
                     Page.State.READY -> {
                         setImage()
+                        // KMK -->
                         addTranslationsView()
+                        // KMK <--
                     }
 
                     Page.State.ERROR -> setError()
@@ -445,17 +452,22 @@ class PagerPageHolder(
      */
     private fun setError() {
         progressIndicator?.hide()
+        // KMK -->
         translationsView?.hide()
+        // KMK <--
         showErrorLayout()
     }
 
     override fun onImageLoaded() {
         super.onImageLoaded()
         progressIndicator?.hide()
+        // KMK -->
         translationsView?.show()
         updateTranslationCoords(pageView as SubsamplingScaleImageView)
+        // KMK <--
     }
 
+    // KMK -->
     private fun addTranslationsView() {
         if (page.translations == null) return
         removeView(translationsView)
@@ -463,6 +475,7 @@ class PagerPageHolder(
         if (!showTranslations) translationsView?.hide()
         addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
+    // KMK <--
 
     /**
      * Called when an image fails to decode.
@@ -470,7 +483,9 @@ class PagerPageHolder(
     override fun onImageLoadError() {
         super.onImageLoadError()
         setError()
+        // KMK -->
         translationsView?.hide()
+        // KMK <--
     }
 
     /**
@@ -480,9 +495,12 @@ class PagerPageHolder(
         super.onScaleChanged(newScale)
         viewer.activity.hideMenu()
 
+        // KMK -->
         updateTranslationCoords(pageView as SubsamplingScaleImageView)
+        // KMK <--
     }
 
+    // KMK -->
     override fun onCenterChanged(newCenter: PointF?) {
         super.onCenterChanged(newCenter)
         updateTranslationCoords(pageView as SubsamplingScaleImageView)
@@ -496,6 +514,7 @@ class PagerPageHolder(
         }
         translationsView?.scaleState?.value = vi.scale
     }
+    // KMK <--
 
     private fun showErrorLayout(): ReaderErrorBinding {
         if (errorLayout == null) {

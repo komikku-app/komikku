@@ -13,8 +13,6 @@ import tachiyomi.core.common.preference.Preference
  */
 abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val scope: CoroutineScope) {
 
-    var translationOffset = TranslationOffset()
-
     var imagePropertyChangedListener: (() -> Unit)? = null
 
     var navigationModeChangedListener: (() -> Unit)? = null
@@ -47,7 +45,12 @@ abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val sc
     abstract var navigator: ViewerNavigation
         protected set
 
+    // KMK -->
+    var translationOffset = TranslationOffset()
+    // KMK <--
+
     init {
+        // KMK -->
         readerPreferences.translationOffsetX()
             .register({ translationOffset.x = it }, { imagePropertyChangedListener?.invoke() })
         readerPreferences.translationOffsetY()
@@ -56,6 +59,7 @@ abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val sc
             .register({ translationOffset.width = it }, { imagePropertyChangedListener?.invoke() })
         readerPreferences.translationOffsetHeight()
             .register({ translationOffset.height = it }, { imagePropertyChangedListener?.invoke() })
+        // KMK <--
         readerPreferences.readWithLongTap()
             .register({ longTapEnabled = it })
 

@@ -1,13 +1,13 @@
 package eu.kanade.translation.translators
 
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.translation.BlockTranslation
-import eu.kanade.translation.TextTranslations
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
+import mihon.domain.translation.BlockTranslation
+import mihon.domain.translation.TextTranslations
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

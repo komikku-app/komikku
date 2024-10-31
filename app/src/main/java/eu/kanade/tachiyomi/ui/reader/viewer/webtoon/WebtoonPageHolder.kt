@@ -51,13 +51,10 @@ class WebtoonPageHolder(
     viewer: WebtoonViewer,
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
-    // KMK <--
     private val font: FontFamily,
     readerPreferences: ReaderPreferences = Injekt.get(),
+    // KMK <--
 ) : WebtoonBaseHolder(frame, viewer) {
-
-    private var showTranslations = true
-    private var translationsView: WebtoonTranslationsView? = null
 
     /**
      * Loading progress bar to indicate the current progress.
@@ -93,12 +90,18 @@ class WebtoonPageHolder(
      */
     private var loadJob: Job? = null
 
+    // KMK -->
+    private var showTranslations = true
+    private var translationsView: WebtoonTranslationsView? = null
+    // KMK <--
+
     init {
         refreshLayoutParams()
 
         frame.onImageLoaded = { onImageDecoded() }
         frame.onImageLoadError = { setError() }
         frame.onScaleChanged = { viewer.activity.hideMenu() }
+        // KMK -->
         showTranslations = readerPreferences.showTranslations().get()
         readerPreferences.showTranslations().changes().onEach {
             showTranslations = it
@@ -108,6 +111,7 @@ class WebtoonPageHolder(
                 translationsView?.hide()
             }
         }.launchIn(scope)
+        // KMK <--
     }
 
     /**
@@ -172,7 +176,9 @@ class WebtoonPageHolder(
 
                     Page.State.READY -> {
                         setImage()
+                        // KMK -->
                         addTranslationsView()
+                        // KMK <--
                     }
 
                     Page.State.ERROR -> setError()
@@ -276,7 +282,9 @@ class WebtoonPageHolder(
     private fun setError() {
         progressContainer.isVisible = false
         initErrorLayout()
+        // KMK -->
         translationsView?.hide()
+        // KMK <--
     }
 
     /**
@@ -285,9 +293,12 @@ class WebtoonPageHolder(
     private fun onImageDecoded() {
         progressContainer.isVisible = false
         removeErrorLayout()
+        // KMK -->
         translationsView?.show()
+        // KMK <--
     }
 
+    // KMK -->
     private fun addTranslationsView() {
         if (page?.translations == null) return
         frame.removeView(translationsView)
@@ -295,6 +306,7 @@ class WebtoonPageHolder(
         if (!showTranslations) translationsView?.hide()
         frame.addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
+    // KMK <--
 
     /**
      * Creates a new progress bar.

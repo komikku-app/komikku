@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
+import mihon.domain.translation.BlockTranslation
+import mihon.domain.translation.TextTranslations
 
 class WebtoonTranslationsView :
     AbstractComposeView {

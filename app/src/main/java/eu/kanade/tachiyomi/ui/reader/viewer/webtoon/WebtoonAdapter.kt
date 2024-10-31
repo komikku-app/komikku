@@ -23,8 +23,8 @@ class WebtoonAdapter(
     val viewer: WebtoonViewer,
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
-    // KMK <--
     private val translationManager: TranslationManager = Injekt.get(),
+    // KMK <--
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /**
@@ -132,8 +132,8 @@ class WebtoonAdapter(
                     viewer,
                     // KMK -->
                     seedColor = seedColor,
-                    // KMK <--
                     font = translationManager.font,
+                    // KMK <--
                 )
             }
             TRANSITION_VIEW -> {

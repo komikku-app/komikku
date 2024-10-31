@@ -6,8 +6,8 @@ import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
-import eu.kanade.translation.BlockTranslation
-import eu.kanade.translation.TextTranslations
+import mihon.domain.translation.BlockTranslation
+import mihon.domain.translation.TextTranslations
 import org.json.JSONObject
 import tachiyomi.core.common.util.system.logcat
 import java.util.Locale

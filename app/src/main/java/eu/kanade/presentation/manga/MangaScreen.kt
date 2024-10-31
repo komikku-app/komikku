@@ -1,6 +1,5 @@
 package eu.kanade.presentation.manga
 
-import ChapterTranslationAction
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -76,6 +75,7 @@ import eu.kanade.presentation.browse.RelatedMangaTitle
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
+import eu.kanade.presentation.manga.components.ChapterTranslationAction
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
@@ -212,9 +212,9 @@ fun MangaScreen(
     coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
-    // KMK <--
-    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    onTranslateChapter: (ChapterList.Item, ChapterTranslationAction) -> Unit,
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
@@ -279,9 +279,9 @@ fun MangaScreen(
             coverRatio = coverRatio,
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
-            // KMK <--
             onTranslateChapter = onTranslateChapter,
             translationEnabled = translationEnabled,
+            // KMK <--
         )
     } else {
         MangaScreenLargeImpl(
@@ -339,9 +339,9 @@ fun MangaScreen(
             coverRatio = coverRatio,
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
-            // KMK <--
             onTranslateChapter = onTranslateChapter,
             translationEnabled = translationEnabled,
+            // KMK <--
         )
     }
 }
@@ -416,9 +416,9 @@ private fun MangaScreenSmallImpl(
     coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
-    // KMK <--
-    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    onTranslateChapter: (ChapterList.Item, ChapterTranslationAction) -> Unit,
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
 
@@ -801,8 +801,10 @@ private fun MangaScreenSmallImpl(
                         onDownloadChapter = onDownloadChapter,
                         onChapterSelected = onChapterSelected,
                         onChapterSwipe = onChapterSwipe,
+                        // KMK -->
                         onTranslateChapter = onTranslateChapter,
                         translationEnabled = translationEnabled,
+                        // KMK <--
                     )
                 }
             }
@@ -880,9 +882,9 @@ private fun MangaScreenLargeImpl(
     coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
-    // KMK <--
-    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    onTranslateChapter: (ChapterList.Item, ChapterTranslationAction) -> Unit,
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -1240,8 +1242,10 @@ private fun MangaScreenLargeImpl(
                                 onDownloadChapter = onDownloadChapter,
                                 onChapterSelected = onChapterSelected,
                                 onChapterSwipe = onChapterSwipe,
+                                // KMK -->
                                 onTranslateChapter = onTranslateChapter,
                                 translationEnabled = translationEnabled,
+                                // KMK <--
                             )
                         }
                     }
@@ -1307,8 +1311,10 @@ private fun LazyListScope.sharedChapterItems(
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
-    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    // KMK -->
+    onTranslateChapter: (ChapterList.Item, ChapterTranslationAction) -> Unit,
     translationEnabled: Boolean = false,
+    // KMK <--
 ) {
     items(
         items = chapters,
@@ -1395,13 +1401,11 @@ private fun LazyListScope.sharedChapterItems(
                     onChapterSwipe = {
                         onChapterSwipe(item, it)
                     },
+                    // KMK -->
                     translationStateProvider = { item.translationState },
-                    onTranslateClick = if (onTranslateChapter != null) {
-                        { onTranslateChapter(item, it) }
-                    } else {
-                        null
-                    },
+                    onTranslateClick = { onTranslateChapter(item, it) },
                     translationEnabled = translationEnabled,
+                    // KMK <--
                 )
             }
         }

@@ -1,4 +1,4 @@
-package eu.kanade.translation
+package mihon.domain.translation
 
 import kotlinx.serialization.Serializable
 

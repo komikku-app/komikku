@@ -65,7 +65,10 @@ open class ReaderPageImageView @JvmOverloads constructor(
     var onImageLoadError: (() -> Unit)? = null
     var onScaleChanged: ((newScale: Float) -> Unit)? = null
     var onViewClicked: (() -> Unit)? = null
+
+    // KMK -->
     private var onCenterChanged: ((newCenter: PointF) -> Unit)? = null
+    // KMK <--
 
     /**
      * For automatic background. Will be set as background color when [onImageLoaded] is called.
@@ -88,10 +91,12 @@ open class ReaderPageImageView @JvmOverloads constructor(
         onScaleChanged?.invoke(newScale)
     }
 
+    // KMK -->
     @CallSuper
     open fun onCenterChanged(newCenter: PointF?) {
         if (newCenter != null) onCenterChanged?.invoke(newCenter)
     }
+    // KMK <--
 
     @CallSuper
     open fun onViewClicked() {
@@ -249,7 +254,9 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     }
 
                     override fun onCenterChanged(newCenter: PointF?, origin: Int) {
+                        // KMK -->
                         this@ReaderPageImageView.onCenterChanged(newCenter)
+                        // KMK <--
                     }
                 },
             )

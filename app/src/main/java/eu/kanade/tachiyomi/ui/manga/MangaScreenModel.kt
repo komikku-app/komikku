@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.manga
 
-import ChapterTranslationAction
 import android.content.Context
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -48,6 +47,7 @@ import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
+import eu.kanade.presentation.manga.components.ChapterTranslationAction
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.data.coil.getBestColor
@@ -107,7 +107,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import tachiyomi.core.common.i18n.stringResource
@@ -231,6 +230,7 @@ class MangaScreenModel(
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
     val themeCoverBased = uiPreferences.themeCoverBased().get()
+    val translationEnabled by downloadPreferences.translateOnDownload().asState(screenModelScope)
     // KMK <--
 
     val manga: Manga?
@@ -259,7 +259,6 @@ class MangaScreenModel(
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
-    val translationEnabled get() = downloadPreferences.translateOnDownload().get()
 
     // EXH -->
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
@@ -362,7 +361,9 @@ class MangaScreenModel(
                 .combine(downloadCache.changes) { state, _ -> state }
                 .combine(downloadManager.queueState) { state, _ -> state }
                 // SY <--
+                // KMK -->
                 .combine(translationManager.queueState) { state, _ -> state }
+                // KMK <--
                 .flowWithLifecycle(lifecycle)
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
@@ -416,7 +417,10 @@ class MangaScreenModel(
         }
 
         observeDownloads()
+        // KMK -->
         observeTranslations()
+        // KMK <--
+
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
@@ -993,6 +997,7 @@ class MangaScreenModel(
         }
     }
 
+    // KMK -->
     private fun observeTranslations() {
         screenModelScope.launchIO {
             translationManager.statusFlow()
@@ -1005,6 +1010,7 @@ class MangaScreenModel(
                 }
         }
     }
+    // KMK <--
 
     private fun updateDownloadState(download: Download) {
         updateSuccessState { successState ->
@@ -1020,6 +1026,7 @@ class MangaScreenModel(
         }
     }
 
+    // KMK -->
     private fun updateTranslationState(translation: Translation) {
         updateSuccessState { successState ->
             val modifiedIndex = successState.chapters.indexOfFirst { it.id == translation.chapter.id }
@@ -1033,6 +1040,7 @@ class MangaScreenModel(
             successState.copy(chapters = newChapters)
         }
     }
+    // KMK <--
 
     private fun List<Chapter>.toChapterListItems(
         manga: Manga,
@@ -1073,6 +1081,7 @@ class MangaScreenModel(
                 downloaded -> Download.State.DOWNLOADED
                 else -> Download.State.NOT_DOWNLOADED
             }
+            // KMK -->
             var translationState = Translation.State.NOT_TRANSLATED
             if (downloadState == Download.State.DOWNLOADED) {
                 translationState = translationManager.getChapterTranslationStatus(
@@ -1083,6 +1092,7 @@ class MangaScreenModel(
                     sourceManager.getOrStub(manga.source),
                 )
             }
+            // KMK <--
 
             ChapterList.Item(
                 chapter = chapter,
@@ -1093,7 +1103,9 @@ class MangaScreenModel(
                 sourceName = source?.getNameForMangaInfo(),
                 showScanlator = !isExhManga,
                 // SY <--
+                // KMK -->
                 translationState = translationState,
+                // KMK <--
             )
         }
     }
@@ -1348,6 +1360,7 @@ class MangaScreenModel(
         }
     }
 
+    // KMK -->
     fun runChapterTranslateActions(
         item: ChapterList.Item,
         action: ChapterTranslationAction,
@@ -2015,7 +2028,9 @@ sealed class ChapterList {
     data class Item(
         val chapter: Chapter,
         val downloadState: Download.State,
+        // KMK -->
         val translationState: Translation.State,
+        // KMK <--
         val downloadProgress: Int,
         val selected: Boolean = false,
         // SY -->

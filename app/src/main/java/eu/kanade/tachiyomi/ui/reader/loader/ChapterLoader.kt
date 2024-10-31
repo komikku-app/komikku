@@ -37,7 +37,9 @@ class ChapterLoader(
     private val mergedReferences: List<MergedMangaReference>,
     private val mergedManga: Map<Long, Manga>,
     // SY <--
+    // KMK -->
     private val translationManager: TranslationManager,
+    // KMK <--
 ) {
 
     /**
@@ -124,7 +126,9 @@ class ChapterLoader(
                         source = source,
                         downloadManager = downloadManager,
                         downloadProvider = downloadProvider,
+                        // KMK -->
                         translationManager = translationManager,
+                        // KMK <--
                     )
                     source is HttpSource -> HttpPageLoader(chapter, source)
                     source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
@@ -144,7 +148,9 @@ class ChapterLoader(
                 source,
                 downloadManager,
                 downloadProvider,
+                // KMK -->
                 translationManager,
+                // KMK <--
             )
             source is LocalSource -> source.getFormat(chapter.chapter).let { format ->
                 when (format) {

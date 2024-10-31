@@ -1,3 +1,5 @@
+package eu.kanade.presentation.manga.components
+
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -28,17 +30,10 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.translation.Translation
-import tachiyomi.core.common.util.lang.launchNow
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.IconButtonTokens
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
-
-enum class ChapterTranslationAction {
-    START,
-    CANCEL,
-    DELETE,
-}
 
 @Composable
 fun ChapterTranslationIndicator(
@@ -114,7 +109,6 @@ private fun TranslatingIndicator(
     enabled: Boolean,
     onClick: (ChapterTranslationAction) -> Unit,
     modifier: Modifier = Modifier,
-    translationEnabled: Boolean = false,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -238,6 +232,12 @@ private fun Modifier.commonClickable(
         radius = IconButtonTokens.StateLayerSize / 2,
     ),
 )
+
+enum class ChapterTranslationAction {
+    START,
+    CANCEL,
+    DELETE,
+}
 
 private val IndicatorSize = 23.dp
 private val IndicatorPadding = 2.dp

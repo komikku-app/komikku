@@ -125,7 +125,6 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getManga: GetManga = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
-    private val translationManager: TranslationManager = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
@@ -138,6 +137,9 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     // SY <--
+    // KMK -->
+    private val translationManager: TranslationManager = Injekt.get(),
+    // KMK <--
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(State())
@@ -400,7 +402,9 @@ class ReaderViewModel @JvmOverloads constructor(
                         mergedReferences = mergedReferences,
                         mergedManga = mergedManga,
                         // SY <--
+                        // KMK -->
                         translationManager = translationManager,
+                        // KMK <--
                     )
 
                     loadChapter(

@@ -18,6 +18,8 @@ import eu.kanade.translation.translators.OpenRouterTranslator
 import eu.kanade.translation.translators.ScanLanguage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
+import mihon.domain.translation.BlockTranslation
+import mihon.domain.translation.TextTranslations
 import mihon.domain.translation.translators.LanguageTranslators
 import tachiyomi.core.common.util.system.logcat
 import java.util.Locale

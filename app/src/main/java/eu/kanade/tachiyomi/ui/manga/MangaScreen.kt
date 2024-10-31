@@ -401,9 +401,9 @@ class MangaScreen(
             coverRatio = coverRatio,
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             hazeState = hazeState,
-            // KMK <--
             onTranslateChapter = screenModel::runChapterTranslateActions,
             translationEnabled = screenModel.translationEnabled,
+            // KMK <--
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }

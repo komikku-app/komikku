@@ -5,7 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.extractor.ts.PsExtractor
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.translation.TextTranslations
+import mihon.domain.translation.TextTranslations
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray

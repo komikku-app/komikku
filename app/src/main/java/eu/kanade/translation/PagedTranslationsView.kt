@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.flow.MutableStateFlow
+import mihon.domain.translation.BlockTranslation
+import mihon.domain.translation.TextTranslations
 
 class PagedTranslationsView : AbstractComposeView {
 

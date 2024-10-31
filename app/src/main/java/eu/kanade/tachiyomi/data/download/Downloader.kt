@@ -1,8 +1,6 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.model.getComicInfo
@@ -87,12 +85,14 @@ class Downloader(
     private val chapterCache: ChapterCache = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val xml: XML = Injekt.get(),
-    private val translationManager: TranslationManager = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     // SY -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     // SY <--
+    // KMK -->
+    private val translationManager: TranslationManager = Injekt.get(),
+    // KMK <--
 ) {
 
     /**
@@ -120,7 +120,9 @@ class Downloader(
     val isRunning: Boolean
         get() = downloaderJob?.isActive ?: false
 
+    // KMK -->
     private var translateOnDownload = false
+    // KMK <--
 
     /**
      * Whether the downloader is paused
@@ -434,11 +436,13 @@ class Downloader(
             DiskUtil.createNoMediaFile(tmpDir, context)
 
             download.status = Download.State.DOWNLOADED
+            // KMK -->
             if (translateOnDownload) {
                 scope.launchIO {
                     translationManager.translateChapter(chapterID = download.chapter.id)
                 }
             }
+            // KMK <--
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
             // If the page list threw, it will resume here

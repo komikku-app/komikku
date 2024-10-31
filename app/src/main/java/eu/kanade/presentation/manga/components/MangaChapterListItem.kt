@@ -1,7 +1,5 @@
 package eu.kanade.presentation.manga.components
 
-import ChapterTranslationAction
-import ChapterTranslationIndicator
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,10 +67,12 @@ fun MangaChapterListItem(
     onClick: () -> Unit,
     onDownloadClick: ((ChapterDownloadAction) -> Unit)?,
     onChapterSwipe: (LibraryPreferences.ChapterSwipeAction) -> Unit,
+    modifier: Modifier = Modifier,
+    // KMK -->
     translationStateProvider: (() -> Translation.State)? = null,
     onTranslateClick: ((ChapterTranslationAction) -> Unit)? = null,
     translationEnabled: Boolean = false,
-    modifier: Modifier = Modifier,
+    // KMK <--
 ) {
     val start = getSwipeAction(
         action = chapterSwipeStartAction,
@@ -194,6 +194,7 @@ fun MangaChapterListItem(
                     }
                 }
             }
+            // KMK -->
             if (downloadStateProvider() == Download.State.DOWNLOADED) {
                 ChapterTranslationIndicator(
                     enabled = downloadIndicatorEnabled,
@@ -202,13 +203,16 @@ fun MangaChapterListItem(
                     onClick = { onTranslateClick?.invoke(it) },
                 )
             }
+            // KMK <--
             ChapterDownloadIndicator(
                 enabled = downloadIndicatorEnabled,
                 modifier = Modifier.padding(start = 4.dp),
                 downloadStateProvider = downloadStateProvider,
                 downloadProgressProvider = downloadProgressProvider,
                 onClick = { onDownloadClick?.invoke(it) },
+                // KMK -->
                 translationEnabled = translationEnabled,
+                // KMK <--
             )
         }
     }

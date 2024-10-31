@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
-import eu.kanade.translation.TextTranslations
 import eu.kanade.translation.TranslationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -18,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mihon.core.archive.ArchiveReader
+import mihon.domain.translation.TextTranslations
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.injectLazy
@@ -28,10 +28,13 @@ import java.io.File
  */
 internal class ArchivePageLoader(
     private val reader: ArchiveReader,
+    // KMK -->
     private val chapter: ReaderChapter? = null,
     private val manga: Manga? = null,
     private val source: Source? = null,
     private val translationManager: TranslationManager? = null,
+
+    // KMK <--
 ) : PageLoader() {
     // SY -->
     private val mutex = Mutex()
@@ -71,6 +74,7 @@ internal class ArchivePageLoader(
     override var isLocal: Boolean = true
 
     override suspend fun getPages(): List<ReaderPage> {
+        // KMK -->
         val pageTranslations: Map<String, TextTranslations> =
             if (translationManager != null && chapter != null && manga != null && source != null) {
                 translationManager.getChapterTranslation(
@@ -82,6 +86,7 @@ internal class ArchivePageLoader(
             } else {
                 emptyMap()
             }
+        // KMK <--
 
         return reader.useEntries { entries ->
             // SY -->
@@ -115,7 +120,9 @@ internal class ArchivePageLoader(
                         stream = { imageBytes?.copyOf()?.inputStream() ?: reader.getInputStream(entry.name)!! }
                         // SY <--
                         status = Page.State.READY
+                        // KMK -->
                         translations = pageTranslations[entry.name]
+                        // KMK <--
                     }
                 }
                 .toList()

@@ -10,12 +10,9 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.translation.TextTranslations
 import eu.kanade.translation.TranslationManager
 import mihon.core.archive.archiveReader
-import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -27,7 +24,9 @@ internal class DownloadPageLoader(
     private val source: Source,
     private val downloadManager: DownloadManager,
     private val downloadProvider: DownloadProvider,
+    // KMK -->
     private val translationManager: TranslationManager,
+    // KMK <--
 ) : PageLoader() {
 
     private val context: Application by injectLazy()
@@ -54,10 +53,12 @@ internal class DownloadPageLoader(
     private suspend fun getPagesFromArchive(file: UniFile): List<ReaderPage> {
         val loader = ArchivePageLoader(
             file.archiveReader(context),
+            // KMK -->
             chapter,
             manga,
             source,
             translationManager,
+            // KMK <--
         ).also { archivePageLoader = it }
         return loader.getPages()
     }
