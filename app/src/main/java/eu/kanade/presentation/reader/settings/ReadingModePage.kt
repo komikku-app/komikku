@@ -31,6 +31,8 @@ import java.text.NumberFormat
 internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.pref_category_for_this_series)
     val manga by screenModel.mangaFlow.collectAsState()
+
+    // KMK -->
     val translationOffsetX by screenModel.preferences.translationOffsetX().collectAsState()
     val translationOffsetY by screenModel.preferences.translationOffsetY().collectAsState()
     val translationOffsetWidth by screenModel.preferences.translationOffsetWidth().collectAsState()
@@ -44,7 +46,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset X",
         value = translationOffsetX,
-        valueText = "$translationOffsetX$%",
+        valueText = "$translationOffsetX%",
         onChange = { screenModel.preferences.translationOffsetX().set(it) },
         max = 100,
         min = -100,
@@ -52,7 +54,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Y",
         value = translationOffsetY,
-        valueText = "$translationOffsetY$%",
+        valueText = "$translationOffsetY%",
         onChange = { screenModel.preferences.translationOffsetY().set(it) },
         max = 100,
         min = -100,
@@ -60,7 +62,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Width",
         value = translationOffsetWidth,
-        valueText = "$translationOffsetWidth$%",
+        valueText = "$translationOffsetWidth%",
         onChange = { screenModel.preferences.translationOffsetWidth().set(it) },
         max = 100,
         min = -100,
@@ -68,7 +70,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     SliderItem(
         label = "Offset Height",
         value = translationOffsetHeight,
-        valueText = "$translationOffsetHeight$%",
+        valueText = "$translationOffsetHeight%",
         onChange = { screenModel.preferences.translationOffsetHeight().set(it) },
         max = 100,
         min = -100,
@@ -83,6 +85,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
             screenModel.preferences.translationOffsetHeight().set(0)
         },
     )
+    // KMK <--
 
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }
     SettingsChipRow(MR.strings.pref_category_reading_mode) {
