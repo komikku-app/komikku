@@ -143,8 +143,7 @@ private fun TranslatingIndicator(
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_cancel)) },
                 onClick = {
-                    launchNow { onClick(ChapterTranslationAction.CANCEL) }
-
+                    onClick(ChapterTranslationAction.CANCEL)
                     isMenuExpanded = false
                 },
             )
@@ -186,7 +185,7 @@ private fun TranslatedIndicator(
             DropdownMenuItem(
                 text = { Text(text = stringResource(MR.strings.action_delete)) },
                 onClick = {
-                    launchNow { onClick(ChapterTranslationAction.DELETE) }
+                    onClick(ChapterTranslationAction.DELETE)
                     isMenuExpanded = false
                 },
             )

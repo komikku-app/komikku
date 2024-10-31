@@ -1377,15 +1377,18 @@ class MangaScreenModel(
             }
 
             ChapterTranslationAction.DELETE -> {
-                try {
-                    runBlocking { translationManager.deleteTranslation(item.chapter.id) }
-                    downloadCache.notifyChanges()
-                } catch (e: Throwable) {
-                    logcat(LogPriority.ERROR, e)
+                ioCoroutineScope.launchIO {
+                    try {
+                        translationManager.deleteTranslation(item.chapter.id)
+                        downloadCache.notifyChanges()
+                    } catch (e: Throwable) {
+                        logcat(LogPriority.ERROR, e)
+                    }
                 }
             }
         }
     }
+    // KMK <--
 
     fun runDownloadAction(action: DownloadAction) {
         val chaptersToDownload = when (action) {

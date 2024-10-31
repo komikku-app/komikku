@@ -132,9 +132,11 @@ class Downloader(
         launchNow {
             val chapters = async { store.restore() }
             addAllToQueue(chapters.await())
+            // KMK -->
             downloadPreferences.translateOnDownload().changes().onEach {
                 translateOnDownload = it
-            }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
+            }.launchIn(scope)
+            // KMK <--
         }
     }
 
