@@ -3,7 +3,7 @@ package eu.kanade.presentation.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,8 +66,8 @@ fun BulkSelectionToolbar(
                         } else {
                             add(
                                 AppBar.Action(
-                                    title = stringResource(MR.strings.action_bookmark),
-                                    icon = Icons.Filled.BookmarkAdd,
+                                    title = stringResource(MR.strings.add_to_library),
+                                    icon = Icons.Filled.Favorite,
                                     onClick = {
                                         if (selectedCount > 0) {
                                             onChangeCategoryClick()
