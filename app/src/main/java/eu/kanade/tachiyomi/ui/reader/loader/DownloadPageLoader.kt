@@ -63,32 +63,31 @@ internal class DownloadPageLoader(
     }
 
     private fun getPagesFromDirectory(): List<ReaderPage> {
-        val dbChapter = chapter.chapter.toDomainChapter()!!
-        val chapterDir = downloadProvider.findChapterDir(
-            dbChapter.name,
-            dbChapter.scanlator,
-            manga.title,
-            source,
-        )
-        val files = chapterDir?.listFiles().orEmpty()
-            .filter { "image" in it.type.orEmpty() }.sortedBy { it.name }
-
-        if (files.isEmpty()) {
-            throw Exception(context.stringResource(MR.strings.page_list_empty_error))
-        }
-        val pageTranslations: Map<String, TextTranslations> = translationManager.getChapterTranslation(
+        // KMK -->
+        val pageTranslations = translationManager.getChapterTranslation(
             chapter.chapter.name,
             chapter.chapter.scanlator,
             manga.title,
             source,
         )
-        val pages = files.mapIndexed { i, file ->
-            Page(i, uri = file.uri).apply {
-                status = Page.State.READY
-            }
-        }
-        return pages.mapIndexed { i, page ->
-            ReaderPage(page.index, page.url, page.imageUrl, translations = pageTranslations[files[i].name]) {
+        // KMK <--
+        val pages = downloadManager.buildPageList(
+            source,
+            manga,
+            chapter.chapter.toDomainChapter()!!,
+            // KMK -->
+            pageTranslations,
+            // KMK <--
+        )
+        return pages.map { (page, textTranslations) ->
+            ReaderPage(
+                page.index,
+                page.url,
+                page.imageUrl,
+                // KMK -->
+                translations = textTranslations,
+                // KMK <--
+            ) {
                 context.contentResolver.openInputStream(page.uri ?: Uri.EMPTY)!!
             }.apply {
                 status = Page.State.READY

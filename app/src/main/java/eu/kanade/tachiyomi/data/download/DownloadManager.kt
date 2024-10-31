@@ -163,7 +163,14 @@ class DownloadManager(
      * @param chapter the downloaded chapter.
      * @return the list of pages from the chapter.
      */
-    fun buildPageList(source: Source, manga: Manga, chapter: Chapter): List<Page> {
+    fun buildPageList(
+        source: Source,
+        manga: Manga,
+        chapter: Chapter,
+        // KMK -->
+        pageTranslations: Map<String, TextTranslations>,
+        // KMK <--
+    ): Map<Page, TextTranslations?> {
         val chapterDir = provider.findChapterDir(
             chapter.name,
             chapter.scanlator,
@@ -179,8 +186,12 @@ class DownloadManager(
 
         return files.sortedBy { it.name }
             .mapIndexed { i, file ->
-                Page(i, uri = file.uri).apply { status = Page.State.READY }
+                Page(i, uri = file.uri).apply { status = Page.State.READY } to
+                    // KMK -->
+                    pageTranslations[file.name]
             }
+            .toMap()
+        // KMK <--
     }
 
     /**
