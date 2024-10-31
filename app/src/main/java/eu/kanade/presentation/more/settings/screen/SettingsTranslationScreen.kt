@@ -5,9 +5,9 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.translation.TranslationFonts
-import eu.kanade.translation.translators.LanguageTranslators
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
+import mihon.domain.translation.translators.LanguageTranslators
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
@@ -84,17 +84,15 @@ object SettingsTranslationScreen : SearchableSettings {
     private fun getTranslateEngineGroup(
         downloadPreferences: DownloadPreferences,
     ): Preference.PreferenceGroup {
-        val opts = LanguageTranslators.entries.map { v -> v.label }
+        val translationEngine by downloadPreferences.translationEngine().collectAsState()
         return Preference.PreferenceGroup(
             title = "Translation Engine",
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     pref = downloadPreferences.translationEngine(),
                     title = "Translator",
-                    entries = listOf(0, 1, 2, 3)
-                        .associateWith {
-                            opts[it]
-                        }
+                    entries = LanguageTranslators.entries
+                        .associateWith { it.label }
                         .toImmutableMap(),
                 ),
                 Preference.PreferenceItem.EditTextPreference(

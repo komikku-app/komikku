@@ -13,12 +13,12 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.translation.translators.GeminiTranslator
 import eu.kanade.translation.translators.GoogleTranslator
 import eu.kanade.translation.translators.LanguageTranslator
-import eu.kanade.translation.translators.LanguageTranslators
 import eu.kanade.translation.translators.MLKitTranslator
 import eu.kanade.translation.translators.OpenRouterTranslator
 import eu.kanade.translation.translators.ScanLanguage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
+import mihon.domain.translation.translators.LanguageTranslators
 import tachiyomi.core.common.util.system.logcat
 import java.util.Locale
 import kotlin.math.abs

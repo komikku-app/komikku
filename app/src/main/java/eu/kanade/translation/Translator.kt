@@ -3,7 +3,6 @@ package eu.kanade.translation
 import android.content.Context
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import eu.kanade.translation.translators.LanguageTranslators
 import eu.kanade.translation.translators.ScanLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,7 +46,7 @@ class Translator(context: Context, private val downloadPreferences: DownloadPref
                 chapterTranslator.updateFont(it)
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
             downloadPreferences.translationEngine().changes().onEach {
-                chapterTranslator.updateEngine(LanguageTranslators.entries[it])
+                chapterTranslator.updateEngine(it)
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
         }
     }
