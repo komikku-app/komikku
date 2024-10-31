@@ -101,7 +101,6 @@ object SettingsTrackingScreen : SearchableSettings {
                         onDismissRequest = { dialog = null },
                     )
                 }
-
                 is LogoutDialog -> {
                     TrackingLogoutDialog(
                         tracker = tracker,
