@@ -132,7 +132,7 @@ data object BrowseTab : Tab {
         )
         LaunchedEffect(Unit) {
             switchToExtensionTabChannel.receiveAsFlow()
-                .collectLatest { state.scrollToPage(2) }
+                .collectLatest { state.scrollToPage(/* SY --> */2/* SY <-- */) }
         }
 
         LaunchedEffect(Unit) {
