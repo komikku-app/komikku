@@ -95,11 +95,9 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = false,
