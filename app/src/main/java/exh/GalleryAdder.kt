@@ -136,11 +136,11 @@ class GalleryAdder(
 
             // Use manga in DB if possible, otherwise, make a new manga
             var manga = networkToLocalManga.await(
-                    Manga.create().copy(
-                        source = source.id,
-                        url = cleanedMangaUrl,
-                    ),
-                )
+                Manga.create().copy(
+                    source = source.id,
+                    url = cleanedMangaUrl,
+                ),
+            )
 
             // Fetch and copy details
             val newManga = retry(retry) { source.getMangaDetails(manga.toSManga()) }

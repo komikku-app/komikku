@@ -40,8 +40,8 @@ class NetworkToLocalManga(
             toMangaUpdate()
                 .copy(
                     id = id,
-                    thumbnailUrl = ogThumbnailUrl?.nullIfBlank()
-                )
+                    thumbnailUrl = ogThumbnailUrl?.nullIfBlank(),
+                ),
         )
     }
 }
