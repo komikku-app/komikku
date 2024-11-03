@@ -135,8 +135,7 @@ class GalleryAdder(
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            var manga = getManga.await(cleanedMangaUrl, source.id)
-                ?: networkToLocalManga.await(
+            var manga = networkToLocalManga.await(
                     Manga.create().copy(
                         source = source.id,
                         url = cleanedMangaUrl,
