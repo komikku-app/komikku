@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.onEach
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -180,15 +181,17 @@ class InterceptActivity : BaseActivity() {
             status.value = InterceptResult.Loading
             val sources = galleryAdder.pickSource(gallery)
             if (sources.size > 1) {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(MR.strings.label_sources.getString(this))
-                    .setSingleChoiceItems(sources.map { it.toString() }.toTypedArray(), 0) { dialog, index ->
-                        dialog.dismiss()
-                        lifecycleScope.launchIO {
-                            loadGalleryEnd(gallery, sources[index])
+                withUIContext {
+                    MaterialAlertDialogBuilder(this@InterceptActivity)
+                        .setTitle(MR.strings.label_sources.getString(this@InterceptActivity))
+                        .setSingleChoiceItems(sources.map { it.toString() }.toTypedArray(), 0) { dialog, index ->
+                            dialog.dismiss()
+                            lifecycleScope.launchIO {
+                                loadGalleryEnd(gallery, sources[index])
+                            }
                         }
-                    }
-                    .show()
+                        .show()
+                }
             } else {
                 loadGalleryEnd(gallery)
             }
