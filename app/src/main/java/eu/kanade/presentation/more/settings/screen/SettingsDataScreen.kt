@@ -556,7 +556,7 @@ object SettingsDataScreen : SearchableSettings {
                     subtitle = stringResource(SYMR.strings.pref_sync_now_subtitle),
                     onClick = {
                         if (!SyncDataJob.isRunning(context)) {
-                            SyncDataJob.startNow(context)
+                            SyncDataJob.startNow(context, manual = true)
                         } else {
                             context.toast(SYMR.strings.sync_in_progress)
                         }

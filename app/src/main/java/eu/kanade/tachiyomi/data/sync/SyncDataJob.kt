@@ -16,6 +16,7 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.SyncStatus
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.cancelNotification
+import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
@@ -37,6 +38,9 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
 
     override suspend fun doWork(): Result {
         if (tags.contains(TAG_AUTO)) {
+            if (!context.isOnline()) {
+                return Result.retry()
+            }
             // Find a running manual worker. If exists, try again later
             if (context.workManager.isRunning(TAG_MANUAL)) {
                 return Result.retry()
@@ -106,17 +110,18 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             }
         }
 
-        fun startNow(context: Context) {
+        fun startNow(context: Context, manual: Boolean = false) {
             val wm = context.workManager
             if (wm.isRunning(TAG_JOB)) {
                 // Already running either as a scheduled or manual job
                 return
             }
+            val tag = if (manual) TAG_MANUAL else TAG_AUTO
             val request = OneTimeWorkRequestBuilder<SyncDataJob>()
                 .addTag(TAG_JOB)
-                .addTag(TAG_MANUAL)
+                .addTag(tag)
                 .build()
-            context.workManager.enqueueUniqueWork(TAG_MANUAL, ExistingWorkPolicy.KEEP, request)
+            context.workManager.enqueueUniqueWork(tag, ExistingWorkPolicy.KEEP, request)
         }
 
         fun stop(context: Context) {
