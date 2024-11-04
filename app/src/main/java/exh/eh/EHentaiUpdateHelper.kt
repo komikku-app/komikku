@@ -54,7 +54,7 @@ class EHentaiUpdateHelper(context: Context) {
     suspend fun findAcceptedRootAndDiscardOthers(
         sourceId: Long,
         chapters: List<Chapter>,
-    ): Triple<ChapterChain, List<ChapterChain>, Boolean> {
+    ): Triple<ChapterChain, List<ChapterChain>, List<Chapter>> {
         // Find other chains
         val chains = chapters
             .flatMap { chapter ->
@@ -149,7 +149,7 @@ class EHentaiUpdateHelper(context: Context) {
                 setMangaCategories.await(it.manga.id, newCategories)
             }
 
-            Triple(newAccepted, toDiscard, new)
+            Triple(newAccepted, toDiscard, newChapters)
         } else {
             /*val notNeeded = chains.filter { it.manga.id != accepted.manga.id }
             val (newChapters, new) = getChapterList(accepted, notNeeded, chainsAsChapters)
@@ -158,7 +158,7 @@ class EHentaiUpdateHelper(context: Context) {
             // Insert new chapters for accepted manga
             db.insertChapters(newAccepted.chapters).await()*/
 
-            Triple(accepted, emptyList(), false)
+            Triple(accepted, emptyList(), emptyList())
         }
     }
 

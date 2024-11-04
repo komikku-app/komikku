@@ -169,13 +169,13 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 }
 
                 // Find accepted root and discard others
-                val (acceptedRoot, discardedRoots, hasNew) =
+                val (acceptedRoot, discardedRoots, exhNew) =
                     updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
 
-                if ((new.isNotEmpty() && manga.id == acceptedRoot.manga.id) ||
-                    (hasNew && updatedManga.none { it.first.id == acceptedRoot.manga.id })
-                ) {
+                if (new.isNotEmpty() && manga.id == acceptedRoot.manga.id) {
                     updatedManga += acceptedRoot.manga to new.toTypedArray()
+                } else if (exhNew.isNotEmpty() && updatedManga.none { it.first.id == acceptedRoot.manga.id }) {
+                    updatedManga += acceptedRoot.manga to exhNew.toTypedArray()
                 }
 
                 modifiedThisIteration += acceptedRoot.manga.id
