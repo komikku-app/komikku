@@ -327,7 +327,15 @@ class Downloader(
      * @param download the chapter to be downloaded.
      */
     private suspend fun downloadChapter(download: Download) {
-        val mangaDir = provider.getMangaDir(/* SY --> */ download.manga.ogTitle /* SY <-- */, download.source)
+        val mangaDir: UniFile
+        try {
+            mangaDir = provider.getMangaDir(/* SY --> */ download.manga.ogTitle /* SY <-- */, download.source)
+        } catch (error: Exception) {
+            logcat(LogPriority.ERROR, error)
+            download.status = Download.State.ERROR
+            notifier.onError(error.message, download.chapter.name, download.manga.title, download.manga.id)
+            return
+        }
 
         val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
         if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {
