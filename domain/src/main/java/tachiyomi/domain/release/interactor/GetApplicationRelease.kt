@@ -94,11 +94,6 @@ class GetApplicationRelease(
         return if (isPreview) {
             // Preview builds: based on releases in "komikku-app/komikku-preview" repo
             // tagged as something like "r1234"
-            // KMK -->
-            // When has stable update but current app is preview version (same repo) expect new update
-            // TODO: remove this when all users has finished switching from preview to stable
-            if (newVersion.matches("""\d.\d.\d""".toRegex())) return true
-            // KMK <--
             newVersion.toInt() > commitCount
         } else {
             // Release builds: based on releases in "komikku-app/komikku" repo
@@ -108,11 +103,6 @@ class GetApplicationRelease(
             val newSemVer = newVersion.split(".").map { it.toInt() }
             val oldSemVer = oldVersion.split(".").map { it.toInt() }
 
-            // KMK -->
-            // When has stable update with preview version but current app is stable version expect no update
-            // TODO: remove this when all users has finished switching from preview to stable
-            if (newSemVer.size != oldSemVer.size) return false
-            // KMK <--
             oldSemVer.mapIndexed { index, i ->
                 if (newSemVer[index] > i) {
                     return true
