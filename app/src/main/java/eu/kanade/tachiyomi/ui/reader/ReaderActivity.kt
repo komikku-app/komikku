@@ -163,10 +163,6 @@ class ReaderActivity : BaseActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
         }
-
-        const val SHIFT_DOUBLE_PAGES = "shiftingDoublePages"
-        const val SHIFTED_PAGE_INDEX = "shiftedPageIndex"
-        const val SHIFTED_CHAP_INDEX = "shiftedChapterIndex"
     }
 
     private val readerPreferences = Injekt.get<ReaderPreferences>()
@@ -735,6 +731,9 @@ class ReaderActivity : BaseActivity() {
         binding.dialogRoot.setComposeContent {
             TachiyomiTheme(
                 seedColor = seedColorState().takeIf { themeCoverBased },
+                typography = MaterialTheme.typography.copy(
+                    bodyLarge = MaterialTheme.typography.bodySmall,
+                ),
             ) {
                 dialogRootContent()
             }

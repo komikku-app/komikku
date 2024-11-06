@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -53,15 +54,13 @@ fun TachiyomiTheme(
 
 @Composable
 fun TachiyomiTheme(
-    // KMK -->
     seedColor: Color?,
-    // KMK <--
     appTheme: AppTheme? = null,
     amoled: Boolean? = null,
+    typography: Typography = MaterialTheme.typography,
     content: @Composable () -> Unit,
 ) {
     val uiPreferences = Injekt.get<UiPreferences>()
-    // KMK -->
     val context = LocalContext.current
     val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
     if (seedColor != null) {
@@ -70,6 +69,7 @@ fun TachiyomiTheme(
             useDarkTheme = isSystemInDarkTheme(),
             withAmoled = isAmoled,
             style = uiPreferences.themeCoverBasedStyle().get(),
+            typography = typography,
             animate = true,
             content = content,
             contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -79,7 +79,6 @@ fun TachiyomiTheme(
             },
         )
     } else {
-        // KMK <--
         BaseTachiyomiTheme(
             appTheme = appTheme ?: uiPreferences.appTheme().get(),
             isAmoled = isAmoled,
