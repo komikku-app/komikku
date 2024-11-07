@@ -47,6 +47,7 @@ import exh.search.Namespace
 import exh.search.QueryComponent
 import exh.search.SearchEngine
 import exh.search.Text
+import exh.search.isMatch
 import exh.source.EH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -118,6 +119,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
+import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.random.Random
@@ -985,6 +987,26 @@ class LibraryScreenModel(
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
+            Timber.e("### Number of QueryComponent: ${parsedQuery.size}")
+            parsedQuery.forEach {
+                when (it) {
+                    is Text -> {
+                        Timber.e("Text: query '${it.asQuery()}' - raw '${it.rawTextOnly()}' - exact: ${it.exact} - excluded: ${it.excluded}")
+                        it.components.forEach {
+                            Timber.e("-- ${it.rawText}")
+                        }
+                    }
+
+                    is Namespace -> {
+                        Timber.e("Namespace: '${it.namespace}' - Tag: '${it.tag}' - exact: ${it.exact} - excluded: ${it.excluded}")
+                    }
+
+                    else -> {
+                        Timber.e("Else: $it")
+                    }
+                }
+
+            }
             val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
             val tracks = if (loggedInTrackServices.isNotEmpty()) {
                 getTracks.await().groupBy { it.mangaId }
@@ -1056,20 +1078,20 @@ class LibraryScreenModel(
                 false -> when (queryComponent) {
                     is Text -> {
                         val query = queryComponent.asQuery()
-                        manga.title.contains(query, true) ||
-                            (manga.author?.contains(query, true) == true) ||
-                            (manga.artist?.contains(query, true) == true) ||
-                            (manga.description?.contains(query, true) == true) ||
-                            (source?.name?.contains(query, true) == true) ||
+                        manga.title.isMatch(query, true) ||
+                            (manga.author?.isMatch(query, true) == true) ||
+                            (manga.artist?.isMatch(query, true) == true) ||
+                            (manga.description?.isMatch(query, true) == true) ||
+                            (source?.name?.isMatch(query, true) == true) ||
                             (sourceIdString != null && sourceIdString == query) ||
                             (
                                 loggedInTrackServices.isNotEmpty() &&
                                     tracks != null &&
                                     filterTracks(query, tracks, context)
                                 ) ||
-                            (genre.fastAny { it.contains(query, true) }) ||
-                            (searchTags?.fastAny { it.name.contains(query, true) } == true) ||
-                            (searchTitles?.fastAny { it.title.contains(query, true) } == true)
+                            (genre.fastAny { it.isMatch(query, true) }) ||
+                            (searchTags?.fastAny { it.name.isMatch(query, true) } == true) ||
+                            (searchTitles?.fastAny { it.title.isMatch(query, true) } == true)
                     }
                     is Namespace -> {
                         searchTags != null &&
@@ -1077,7 +1099,7 @@ class LibraryScreenModel(
                                 val tag = queryComponent.tag
                                 (
                                     it.namespace.equals(queryComponent.namespace, true) &&
-                                        tag?.run { it.name.contains(tag.asQuery(), true) } == true
+                                        tag?.run { it.name.isMatch(tag.asQuery(), true) } == true
                                     ) ||
                                     (tag == null && it.namespace.equals(queryComponent.namespace, true))
                             }
@@ -1089,20 +1111,20 @@ class LibraryScreenModel(
                         val query = queryComponent.asQuery()
                         query.isBlank() ||
                             (
-                                (!manga.title.contains(query, true)) &&
-                                    (manga.author?.contains(query, true) != true) &&
-                                    (manga.artist?.contains(query, true) != true) &&
-                                    (manga.description?.contains(query, true) != true) &&
-                                    (source?.name?.contains(query, true) != true) &&
+                                (!manga.title.isMatch(query, true)) &&
+                                    (manga.author?.isMatch(query, true) != true) &&
+                                    (manga.artist?.isMatch(query, true) != true) &&
+                                    (manga.description?.isMatch(query, true) != true) &&
+                                    (source?.name?.isMatch(query, true) != true) &&
                                     (sourceIdString != null && sourceIdString != query) &&
                                     (
                                         loggedInTrackServices.isEmpty() ||
                                             tracks == null ||
                                             !filterTracks(query, tracks, context)
                                         ) &&
-                                    (!genre.fastAny { it.contains(query, true) }) &&
-                                    (searchTags?.fastAny { it.name.contains(query, true) } != true) &&
-                                    (searchTitles?.fastAny { it.title.contains(query, true) } != true)
+                                    (!genre.fastAny { it.isMatch(query, true) }) &&
+                                    (searchTags?.fastAny { it.name.isMatch(query, true) } != true) &&
+                                    (searchTitles?.fastAny { it.title.isMatch(query, true) } != true)
                                 )
                     }
                     is Namespace -> {
@@ -1111,14 +1133,14 @@ class LibraryScreenModel(
                             (queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()) ||
                             searchTags.fastAll { mangaTag ->
                                 if (queryComponent.namespace.isBlank() && !searchedTag.isNullOrBlank()) {
-                                    !mangaTag.name.contains(searchedTag, true)
+                                    !mangaTag.name.isMatch(searchedTag, true)
                                 } else if (searchedTag.isNullOrBlank()) {
                                     mangaTag.namespace == null ||
                                         !mangaTag.namespace.equals(queryComponent.namespace, true)
                                 } else if (mangaTag.namespace.isNullOrBlank()) {
                                     true
                                 } else {
-                                    !mangaTag.name.contains(searchedTag, true) ||
+                                    !mangaTag.name.isMatch(searchedTag, true) ||
                                         !mangaTag.namespace.equals(queryComponent.namespace, true)
                                 }
                             }
@@ -1137,7 +1159,7 @@ class LibraryScreenModel(
                     context.stringResource(it)
                 }
                 val name = trackerManager.get(track.trackerId)?.name
-                status?.contains(constraint, true) == true || name?.contains(constraint, true) == true
+                status?.isMatch(constraint, true) == true || name?.isMatch(constraint, true) == true
             } else {
                 false
             }
