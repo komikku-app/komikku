@@ -16,30 +16,39 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 
 ## Features
 
-### Komikku's key features:
-- [x] Built-in extensions repository, always up-to-date with Keiyoushi with a few more sources & improvements.
-- [x] `Suggestions` automatically showing source-website's recommendations/suggestions/related to current entry for all sources.
-- [x] Auto theme color based on each entry's cover for entry View & Reader.
-- [x] 2-way sync progress with trackers, automatically.
-- [x] `Feed` now supports all sources, with more items (20 for now).
-- [x] `Bulk-selection` to add to library & change categories of multiple entries all at once, everywhere.
-- [x] Long-click to add/remove single entry to/from library, everywhere.
-- [x] Search for sources & Quick NSFW sources filter in Extensions, Browse & Migration screen.
-- [x] `Feed` backup/restore/sync/re-order.
-- [x] Banner shows Library syncing / Backup restoring / Library updating progress.
-- [x] Configurable interval to refresh entries from downloaded storage.
-- [x] App custom theme, more app themes & better UI, improvements...
+### Komikku's unique features:
+- `Suggestions` automatically showing source-website's recommendations / suggestions / related to current entry for all sources.
+- `Hidden categories` to hide yours things from *nosy* people.
+- `Auto theme color` based on each entry's cover for entry View & Reader.
+- `App custom theme` with `Color palettes` for endless color lover.
+- `Bulk-favorite` multiple entries all at once.
+- `Feed` now supports **all** sources, with more items (20 for now).
+- Auto `2-way sync` progress with trackers.
+- Chips for `Saved search` in source browse
+- `Panorama cover` showing wide cover in full.
+- `Merge multiple` library entries together at same time.
+- `Range-selection` for Migration.
+- Ability to `enable/disable repo`.
+- `Update Error` screen & migrating them away.
+- `to-be-updated` screen: which entries are going to be checked with smart-update?
+- `Search for sources` & Quick NSFW sources filter in Extensions, Browse & Migration screen.
+- `Feed` backup/restore/sync/re-order.
+- Long-click to add/remove single entry to/from library, everywhere.
+- Docking Read/Resume button.
+- Banner shows Library syncing / Backup restoring / Library updating progress.
+- Configurable interval to refresh entries from downloaded storage.
+- More app themes & better UI, improvements...
 
 
 <details>
-  <summary>Features from Mihon/Tachiyomi</summary>
+  <summary>Features from Mihon / Tachiyomi</summary>
 
-#### All up-to-date features from Mihon/Tachiyomi (original), include:
+#### All up-to-date features from Mihon / Tachiyomi (original), include:
 
 * Online reading from a variety of sources
 * Local reading of downloaded content
 * A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), and [Bangumi](https://bgm.tv/) support
+* Tracker support: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), [Bangumi](https://bgm.tv/)
 * Categories to organize your library
 * Light and dark themes
 * Schedule updating your library for new chapters
@@ -95,13 +104,12 @@ Additional features for some extensions, features include custom description, op
 </details>
 
 ## Download
-Get the app from our [releases page](https://github.com/komikku-app/komikku/releases/latest).
-
-If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/komikku-app/komikku-preview/releases/latest).
+* [Stable](https://github.com/komikku-app/komikku/releases/latest)
+* [Preview](https://github.com/komikku-app/komikku-preview/releases/latest) to try latest features.
 
 ## Issues, Feature Requests and Contributing
 
-Please make sure to read the full guidelines. Your issue may be closed without warning if you do not.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 <details><summary>Issues</summary>
 
@@ -140,10 +148,23 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 </details>
 
+### Credits
+
+Thank you to all the people who have contributed!
+
+<a href="https://github.com/komikku-app/komikku/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=komikku-app/komikku" alt="Komikku app contributors" title="Komikku app contributors" width="800"/>
+</a>
+
+### Disclaimer
+
+The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
+
 ## FAQ
 
-[See our website.](https://komikku-app.github.io/)
-You can also reach out to us on [Discord](https://discord.gg/85jB7V5AJR).
+* Komikku [website](https://komikku-app.github.io/) / [Discord](https://discord.gg/85jB7V5AJR)
+
+* Mihon [website](https://mihon.app/) / [Discord](https://discord.gg/mihon)
 
 ## License
 
