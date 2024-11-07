@@ -44,7 +44,7 @@ fun ReorderableCollectionItemScope.CategoryListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onRename() }
-                .padding(MaterialTheme.padding.medium),
+                .padding(MaterialTheme.padding.small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
@@ -62,7 +62,7 @@ fun ReorderableCollectionItemScope.CategoryListItem(
                 // KMK <--
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = MaterialTheme.padding.medium),
+                    .padding(start = MaterialTheme.padding.small),
             )
             IconButton(onClick = onRename) {
                 Icon(
