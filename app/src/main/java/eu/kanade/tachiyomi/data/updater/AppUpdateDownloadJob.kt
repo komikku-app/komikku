@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.content.pm.ServiceInfo
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.work.BackoffPolicy
@@ -67,13 +69,15 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             if (!context.packageManager.canRequestPackageInstalls()) {
                 return Result.failure()
             }
-            val restrictions = preferences.appShouldAutoUpdate().get()
-            if ((AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) &&
-                !context.isConnectedToWifi() ||
-                (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) &&
-                context.connectivityManager.isActiveNetworkMetered
-            ) {
-                return Result.retry()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                val restrictions = preferences.appShouldAutoUpdate().get()
+                if ((AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) &&
+                    !context.isConnectedToWifi() ||
+                    (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) &&
+                    context.connectivityManager.isActiveNetworkMetered
+                ) {
+                    return Result.retry()
+                }
             }
         }
         // KMK <--
@@ -284,15 +288,25 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                     if (scheduled) {
                         data.putBoolean(SCHEDULED_RUN, true)
                         val restrictions = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
-                        val constraints = Constraints(
-                            requiredNetworkType = if (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) {
-                                NetworkType.UNMETERED
-                            } else {
-                                NetworkType.CONNECTED
-                            },
-                            requiresCharging = AppUpdatePolicy.DEVICE_CHARGING in restrictions,
-                            requiresBatteryNotLow = true,
-                        )
+                        val networkType = if (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) {
+                            NetworkType.UNMETERED
+                        } else {
+                            NetworkType.CONNECTED
+                        }
+                        val networkRequestBuilder = NetworkRequest.Builder()
+                        if (AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) {
+                            networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                        }
+                        if (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) {
+                            networkRequestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                        }
+                        val constraints = Constraints.Builder()
+                            // 'networkRequest' only applies to Android 9+, otherwise 'networkType' is used
+                            .setRequiredNetworkRequest(networkRequestBuilder.build(), networkType)
+                            .setRequiresCharging(AppUpdatePolicy.DEVICE_CHARGING in restrictions)
+                            .setRequiresBatteryNotLow(true)
+                            .build()
+
                         setConstraints(constraints)
                         setInitialDelay(10, TimeUnit.MINUTES)
                         setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
