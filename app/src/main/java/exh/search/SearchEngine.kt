@@ -191,7 +191,7 @@ class SearchEngine {
                     else -> flushed
                 }
                 namespace = Namespace(flushed, null)
-            } else if (char == ' ' && !inQuotes) {
+            } else if (arrayOf(' ', ',').contains(char) && !inQuotes) {
                 flushAll()
             } else {
                 queuedRawText.append(char)
