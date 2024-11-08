@@ -10,7 +10,7 @@ class SearchEngine {
      * Each `Text` can have multiple [Text.components].
      * A component can be a word, a wildcard, or a string of quoted words.
      */
-    fun parseQuery(query: String, enableWildcard: Boolean = true) = queryCache.getOrPut(query) {
+    fun parseQuery(query: String) = queryCache.getOrPut(query) {
         val res = mutableListOf<QueryComponent>()
 
         var inQuotes = false
@@ -115,7 +115,10 @@ fun wildcardToRegex(pattern: String): String {
         .replace("?", ".")     // `?` matches any single character
 }
 
-fun String.isMatch(pattern: String, ignoreCase: Boolean = true): Boolean {
+fun String.isMatch(pattern: String, ignoreCase: Boolean = true, enableWildcard: Boolean = true): Boolean {
+    if (!enableWildcard) {
+        return contains(pattern, ignoreCase)
+    }
     // Convert the wildcard pattern to a regex pattern
     val regexPattern = if (ignoreCase) {
         wildcardToRegex(pattern).toRegex(RegexOption.IGNORE_CASE)
