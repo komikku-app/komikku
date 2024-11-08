@@ -102,9 +102,11 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 SnackbarHost(hostState = snackbarHostState)
             },
         ) { paddingValues ->
+            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
+
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
+                mangaList = pagingFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
