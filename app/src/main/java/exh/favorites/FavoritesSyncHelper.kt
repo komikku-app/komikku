@@ -445,7 +445,7 @@ class FavoritesSyncHelper(val context: Context) {
     }
 }
 
-sealed class FavoritesSyncStatus() {
+sealed class FavoritesSyncStatus {
     abstract val message: String
 
     data class Error(override val message: String) : FavoritesSyncStatus()

@@ -24,6 +24,6 @@ enum class MangaDexRelation(val res: StringResource, val mdString: String?) {
     ;
 
     companion object {
-        fun fromDex(mdString: String) = values().find { it.mdString == mdString }
+        fun fromDex(mdString: String) = entries.find { it.mdString == mdString }
     }
 }
