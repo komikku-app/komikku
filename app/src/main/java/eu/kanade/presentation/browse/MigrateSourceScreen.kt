@@ -40,13 +40,11 @@ import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
-import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
@@ -64,7 +62,7 @@ fun MigrateSourceScreen(
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
         // KMK -->
-        state.searchQuery.isNullOrBlank() &&
+        state.searchQuery == null &&
             // KMK <--
             state.isEmpty -> EmptyScreen(
             stringRes = MR.strings.information_empty_library,
@@ -110,12 +108,12 @@ private fun MigrateSourceList(
     val lazyListState = rememberLazyListState()
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
-        onChangeSearchQuery(null)
+        onChangeSearchQuery("")
     }
 
     Column(
         // Wrap around so we can use stickyHeader
-        modifier = Modifier.padding(contentPadding + topSmallPaddingValues),
+        modifier = Modifier.padding(contentPadding),
     ) {
         AnimatedFloatingSearchBox(
             listState = lazyListState,
@@ -125,7 +123,7 @@ private fun MigrateSourceList(
             modifier = Modifier
                 .padding(
                     horizontal = MaterialTheme.padding.medium,
-                    vertical = MaterialTheme.padding.extraSmall,
+                    vertical = MaterialTheme.padding.small,
                 ),
         )
 

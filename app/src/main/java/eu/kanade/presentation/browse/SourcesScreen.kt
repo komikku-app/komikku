@@ -68,14 +68,14 @@ fun SourcesScreen(
     val lazyListState = rememberLazyListState()
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
-        onChangeSearchQuery(null)
+        onChangeSearchQuery("")
     }
     // KMK <--
 
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
         // KMK -->
-        state.searchQuery.isNullOrBlank() &&
+        state.searchQuery == null &&
             // KMK <--
             state.isEmpty -> EmptyScreen(
             MR.strings.source_empty_screen,

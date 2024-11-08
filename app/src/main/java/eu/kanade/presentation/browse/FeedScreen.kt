@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -331,6 +332,10 @@ fun RadioSelectorSearchable(
     selected: Int?,
     onSelectOption: (Int) -> Unit = {},
 ) {
+    BackHandler(enabled = !queryString.isNullOrBlank()) {
+        onChangeSearchQuery?.invoke("")
+    }
+
     Column(Modifier.verticalScroll(rememberScrollState())) {
         SourcesSearchBox(
             searchQuery = queryString,

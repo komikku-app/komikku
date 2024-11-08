@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -33,14 +34,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
-import tachiyomi.presentation.core.util.isScrollingUp
+import tachiyomi.presentation.core.util.isScrolledToStart
+import tachiyomi.presentation.core.util.isScrollingDown
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
@@ -51,9 +56,12 @@ fun AnimatedFloatingSearchBox(
     onChangeSearchQuery: (String?) -> Unit,
     modifier: Modifier = Modifier,
     placeholderText: String? = null,
+    focusManager: FocusManager = LocalFocusManager.current,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
 ) {
     AnimatedVisibility(
-        visible = listState.isScrollingUp(),
+        visible = listState.isScrolledToStart() || !listState.isScrollingDown(),
         enter = expandVertically(),
         exit = shrinkVertically(),
         modifier = modifier,
@@ -62,6 +70,9 @@ fun AnimatedFloatingSearchBox(
             searchQuery = searchQuery,
             onChangeSearchQuery = onChangeSearchQuery,
             placeholderText = placeholderText,
+            focusManager = focusManager,
+            focusRequester = focusRequester,
+            keyboardController = keyboardController,
         )
     }
 }
@@ -72,23 +83,22 @@ fun SourcesSearchBox(
     onChangeSearchQuery: (String?) -> Unit,
     modifier: Modifier = Modifier,
     placeholderText: String? = null,
+    focusManager: FocusManager = LocalFocusManager.current,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
 ) {
-    val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
     val searchAndClearFocus: () -> Unit = f@{
         if (searchQuery.isNullOrBlank()) return@f
         focusManager.clearFocus()
         keyboardController?.hide()
     }
     val onClickClearSearch: () -> Unit = {
-        onChangeSearchQuery(null)
+        onChangeSearchQuery("")
         focusRequester.requestFocus()
         keyboardController?.show()
     }
     val onClickCloseSearch: () -> Unit = {
-        onClickClearSearch()
+        onChangeSearchQuery("")
         focusManager.clearFocus()
         keyboardController?.hide()
     }
@@ -131,16 +141,14 @@ fun SourcesSearchBox(
                 },
                 leadingIcon = {
                     SearchBoxLeadingIcon(
-                        isFocused || !searchQuery.isNullOrBlank(),
-                        modifier = Modifier,
-                        onClickCloseSearch,
+                        isSearching = isFocused || !searchQuery.isNullOrBlank(),
+                        onClickCloseSearch = onClickCloseSearch,
                     )
                 },
                 trailingIcon = {
                     SearchBoxTrailingIcon(
-                        searchQuery.isNullOrEmpty(),
-                        modifier = Modifier,
-                        onClickClearSearch,
+                        isEmpty = searchQuery.isNullOrEmpty(),
+                        onClickClearSearch = onClickClearSearch,
                     )
                 },
                 shape = RoundedCornerShape(24.dp),
@@ -150,7 +158,7 @@ fun SourcesSearchBox(
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.onBackground,
                 ),
-                contentPadding = PaddingValues(12.dp),
+                contentPadding = PaddingValues(MaterialTheme.padding.small),
             )
         },
     )
@@ -159,11 +167,12 @@ fun SourcesSearchBox(
 @Composable
 fun SearchBoxLeadingIcon(
     isSearching: Boolean,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     onClickCloseSearch: () -> Unit = {},
 ) {
     if (isSearching) {
         IconButton(
+            modifier = modifier,
             onClick = onClickCloseSearch,
         ) {
             Icon(
@@ -173,6 +182,7 @@ fun SearchBoxLeadingIcon(
         }
     } else {
         Icon(
+            modifier = modifier,
             imageVector = Icons.Filled.Search,
             contentDescription = "Search",
         )
@@ -182,11 +192,12 @@ fun SearchBoxLeadingIcon(
 @Composable
 fun SearchBoxTrailingIcon(
     isEmpty: Boolean,
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     onClickClearSearch: () -> Unit = {},
 ) {
     if (!isEmpty) {
         IconButton(
+            modifier = modifier,
             onClick = onClickClearSearch,
         ) {
             Icon(
@@ -195,4 +206,13 @@ fun SearchBoxTrailingIcon(
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewClearFocusOnKeyboardDismissExample() {
+    SourcesSearchBox(
+        searchQuery = "Hello World",
+        onChangeSearchQuery = {},
+    )
 }
