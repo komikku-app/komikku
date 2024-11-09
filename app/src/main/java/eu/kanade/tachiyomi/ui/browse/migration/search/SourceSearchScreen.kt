@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -29,6 +30,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
+import eu.kanade.tachiyomi.util.system.toast
 import exh.ui.ifSourcesLoaded
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.Constants
@@ -64,6 +66,8 @@ data class SourceSearchScreen(
         val snackbarHostState = remember { SnackbarHostState() }
 
         // KMK -->
+        val context = LocalContext.current
+
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -93,7 +97,7 @@ data class SourceSearchScreen(
                 } else {
                     // KMK <--
                     SearchToolbar(
-                        searchQuery = state.toolbarQuery ?: "",
+                        searchQuery = state.toolbarQuery,
                         onChangeSearchQuery = screenModel::setToolbarQuery,
                         onClickCloseSearch = navigator::pop,
                         onSearch = screenModel::search,
@@ -184,10 +188,15 @@ data class SourceSearchScreen(
                     // SY -->
                     startExpanded = screenModel.startExpanded,
                     onSave = {},
-                    savedSearches = persistentListOf(),
-                    onSavedSearch = {},
                     // KMK -->
+                    savedSearches = state.savedSearches,
+                    onSavedSearch = { search ->
+                        screenModel.onSavedSearch(search) {
+                            context.toast(it)
+                        }
+                    },
                     onSavedSearchPressDesc = stringResource(SYMR.strings.saved_searches),
+                    shouldShowSavingButton = false,
                     // KMK <--
                     onSavedSearchPress = {},
                     openMangaDexRandom = null,
