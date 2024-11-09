@@ -122,6 +122,8 @@ open class SourceFeedScreenModel(
         if (source !is CatalogueSource) return
 
         setFilters(source.getFilterList())
+
+        reloadSavedSearches()
     }
     // KMK <--
 
@@ -276,7 +278,7 @@ open class SourceFeedScreenModel(
     }
 
     // KMK -->
-    fun reloadSavedSearches() {
+    private fun reloadSavedSearches() {
         screenModelScope.launchIO {
             val searches = loadSearches()
             mutableState.update { it.copy(savedSearches = searches) }
@@ -311,8 +313,11 @@ open class SourceFeedScreenModel(
         }
     }
 
+    /** Open a saved search */
     fun onSavedSearch(
-        search: EXHSavedSearch,
+        // KMK -->
+        loadedSearch: EXHSavedSearch,
+        // KMK <--
         onBrowseClick: (query: String?, searchId: Long) -> Unit,
         onToast: (StringResource) -> Unit,
     ) {
@@ -321,6 +326,10 @@ open class SourceFeedScreenModel(
         // KMK <--
         if (source !is CatalogueSource) return
         screenModelScope.launchIO {
+            // KMK -->
+            val search = getExhSavedSearch.awaitOne(loadedSearch.id, source::getFilterList) ?: loadedSearch
+            // KMK <--
+
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
                     onToast(SYMR.strings.save_search_invalid)

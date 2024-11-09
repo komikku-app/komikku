@@ -78,8 +78,8 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         }
 
         LaunchedEffect(navigator.lastItem) {
-            // Reload saved-searches when screen is navigated back to
-            screenModel.reloadSavedSearches()
+            // Reset filters & reload saved-searches when screen is navigated back to
+            screenModel.resetFilters()
         }
 
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }

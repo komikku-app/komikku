@@ -167,17 +167,17 @@ open class BrowseSourceScreenModel(
             }
 
             // SY -->
-            val savedSearchFilters = savedSearch
+            val savedSearchId = savedSearch
             val jsonFilters = filtersJson
             val filters = state.value.filters
-            if (savedSearchFilters != null) {
-                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
+            if (savedSearchId != null) {
+                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchId) { filters } }
                 if (savedSearch != null) {
                     search(
                         query = savedSearch.query,
                         filters = savedSearch.filterList,
                         // KMK -->
-                        savedSearchId = savedSearchFilters,
+                        savedSearchId = savedSearchId,
                         // KMK <--
                     )
                 }
@@ -258,7 +258,11 @@ open class BrowseSourceScreenModel(
         // KMK <--
         if (source !is CatalogueSource) return
 
-        mutableState.update { it.copy(filters = source.getFilterList()) }
+        // KMK -->
+        setFilters(source.getFilterList())
+
+        reloadSavedSearches()
+        // KMK <--
     }
 
     fun setListing(listing: Listing) {
@@ -289,7 +293,9 @@ open class BrowseSourceScreenModel(
         if (source !is CatalogueSource) return
         // SY -->
         if (filters != null && filters !== state.value.filters) {
-            mutableState.update { state -> state.copy(filters = filters) }
+            // KMK -->
+            setFilters(filters)
+            // KMK <--
         }
         // SY <--
         val input = state.value.listing as? Listing.Search
@@ -521,7 +527,20 @@ open class BrowseSourceScreenModel(
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
 
+    // KMK -->
+    private fun reloadSavedSearches() {
+        screenModelScope.launchIO {
+            getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
+                .let { savedSearches ->
+                    mutableState.update { it.copy(savedSearches = savedSearches.toImmutableList()) }
+                }
+        }
+    }
+    // KMK <--
+
     // EXH -->
+    /** Show a dialog to enter name for new saved search */
     fun onSaveSearch() {
         screenModelScope.launchIO {
             val names = state.value.savedSearches.map { it.name }.toImmutableList()
@@ -529,15 +548,25 @@ open class BrowseSourceScreenModel(
         }
     }
 
+    /** Open a saved search */
     fun onSavedSearch(
-        search: EXHSavedSearch,
+        // KMK -->
+        loadedSearch: EXHSavedSearch,
+        // KMK <--
         onToast: (StringResource) -> Unit,
     ) {
+        // KMK -->
+        resetFilters()
+        // KMK <--
         screenModelScope.launchIO {
             // KMK -->
             val source = source
             // KMK <--
             if (source !is CatalogueSource) return@launchIO
+
+            // KMK -->
+            val search = getExhSavedSearch.awaitOne(loadedSearch.id, source::getFilterList) ?: loadedSearch
+            // KMK <--
 
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
@@ -569,10 +598,12 @@ open class BrowseSourceScreenModel(
         }
     }
 
+    /** Show dialog to delete saved search */
     fun onSavedSearchPress(search: EXHSavedSearch) {
         mutableState.update { it.copy(dialog = Dialog.DeleteSavedSearch(search.id, search.name)) }
     }
 
+    /** Save a search */
     fun saveSearch(
         name: String,
     ) {
