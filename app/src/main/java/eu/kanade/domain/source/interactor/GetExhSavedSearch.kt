@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import tachiyomi.core.common.util.lang.withIOContext
@@ -43,13 +42,14 @@ class GetExhSavedSearch(
     }
 
     private fun loadSearch(search: SavedSearch, getFilterList: () -> FilterList): EXHSavedSearch {
+        val originalFilters = getFilterList()
         val filters = getFilters(search.filtersJson)
 
         return EXHSavedSearch(
             id = search.id,
             name = search.name,
             query = search.query?.nullIfBlank(),
-            filterList = filters?.let { deserializeFilters(it, getFilterList) },
+            filterList = filters?.let { deserializeFilters(it, originalFilters) },
         )
     }
 
@@ -61,9 +61,8 @@ class GetExhSavedSearch(
         }.getOrNull()
     }
 
-    private fun deserializeFilters(filters: JsonArray, getFilterList: () -> FilterList): FilterList? {
+    private fun deserializeFilters(filters: JsonArray, originalFilters: FilterList): FilterList? {
         return runCatching {
-            val originalFilters = getFilterList()
             filterSerializer.deserialize(originalFilters, filters)
             originalFilters
         }.onFailure {

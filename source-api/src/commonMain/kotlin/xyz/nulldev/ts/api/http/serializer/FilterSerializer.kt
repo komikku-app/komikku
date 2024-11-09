@@ -15,6 +15,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
+import logcat.LogPriority
+import logcat.asLog
+import tachiyomi.core.common.util.system.logcat
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.isSubclassOf
 
@@ -69,7 +72,15 @@ class FilterSerializer {
 
     fun deserialize(filters: FilterList, json: JsonArray) {
         filters.filterIsInstance<Filter<Any?>>().zip(json).forEach { (filter, obj) ->
-            deserialize(filter, obj.jsonObject)
+            // KMK -->
+            try {
+                // KMK <--
+                deserialize(filter, obj.jsonObject)
+                // KMK -->
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR) { e.asLog() }
+            }
+            // KMK <--
         }
     }
 
