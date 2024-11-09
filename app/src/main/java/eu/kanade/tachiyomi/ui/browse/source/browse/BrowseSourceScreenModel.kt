@@ -167,17 +167,17 @@ open class BrowseSourceScreenModel(
             }
 
             // SY -->
-            val savedSearchFilters = savedSearch
+            val savedSearchId = savedSearch
             val jsonFilters = filtersJson
             val filters = state.value.filters
-            if (savedSearchFilters != null) {
-                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
+            if (savedSearchId != null) {
+                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchId) { filters } }
                 if (savedSearch != null) {
                     search(
                         query = savedSearch.query,
                         filters = savedSearch.filterList,
                         // KMK -->
-                        savedSearchId = savedSearchFilters,
+                        savedSearchId = savedSearchId,
                         // KMK <--
                     )
                 }
@@ -258,7 +258,11 @@ open class BrowseSourceScreenModel(
         // KMK <--
         if (source !is CatalogueSource) return
 
-        mutableState.update { it.copy(filters = source.getFilterList()) }
+        // KMK -->
+        setFilters(source.getFilterList())
+
+        reloadSavedSearches()
+        // KMK <--
     }
 
     fun setListing(listing: Listing) {
@@ -289,7 +293,9 @@ open class BrowseSourceScreenModel(
         if (source !is CatalogueSource) return
         // SY -->
         if (filters != null && filters !== state.value.filters) {
-            mutableState.update { state -> state.copy(filters = filters) }
+            // KMK -->
+            setFilters(filters)
+            // KMK <--
         }
         // SY <--
         val input = state.value.listing as? Listing.Search
@@ -520,6 +526,18 @@ open class BrowseSourceScreenModel(
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
+
+    // KMK -->
+    private fun reloadSavedSearches() {
+        screenModelScope.launchIO {
+            getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
+                .let { savedSearches ->
+                    mutableState.update { it.copy(savedSearches = savedSearches.toImmutableList()) }
+                }
+        }
+    }
+    // KMK <--
 
     // EXH -->
     fun onSaveSearch() {

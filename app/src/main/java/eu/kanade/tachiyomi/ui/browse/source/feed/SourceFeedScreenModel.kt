@@ -122,6 +122,8 @@ open class SourceFeedScreenModel(
         if (source !is CatalogueSource) return
 
         setFilters(source.getFilterList())
+
+        reloadSavedSearches()
     }
     // KMK <--
 
@@ -276,7 +278,7 @@ open class SourceFeedScreenModel(
     }
 
     // KMK -->
-    fun reloadSavedSearches() {
+    private fun reloadSavedSearches() {
         screenModelScope.launchIO {
             val searches = loadSearches()
             mutableState.update { it.copy(savedSearches = searches) }
