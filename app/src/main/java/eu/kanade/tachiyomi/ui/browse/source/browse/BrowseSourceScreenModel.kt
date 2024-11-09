@@ -540,6 +540,7 @@ open class BrowseSourceScreenModel(
     // KMK <--
 
     // EXH -->
+    /** Show a dialog to enter name for new saved search */
     fun onSaveSearch() {
         screenModelScope.launchIO {
             val names = state.value.savedSearches.map { it.name }.toImmutableList()
@@ -547,15 +548,25 @@ open class BrowseSourceScreenModel(
         }
     }
 
+    /** Open a saved search */
     fun onSavedSearch(
-        search: EXHSavedSearch,
+        // KMK -->
+        loadedSearch: EXHSavedSearch,
+        // KMK <--
         onToast: (StringResource) -> Unit,
     ) {
+        // KMK -->
+        resetFilters()
+        // KMK <--
         screenModelScope.launchIO {
             // KMK -->
             val source = source
             // KMK <--
             if (source !is CatalogueSource) return@launchIO
+
+            // KMK -->
+            val search = getExhSavedSearch.awaitOne(loadedSearch.id, source::getFilterList) ?: loadedSearch
+            // KMK <--
 
             if (search.filterList == null && state.value.filters.isNotEmpty()) {
                 withUIContext {
@@ -587,10 +598,12 @@ open class BrowseSourceScreenModel(
         }
     }
 
+    /** Show dialog to delete saved search */
     fun onSavedSearchPress(search: EXHSavedSearch) {
         mutableState.update { it.copy(dialog = Dialog.DeleteSavedSearch(search.id, search.name)) }
     }
 
+    /** Save a search */
     fun saveSearch(
         name: String,
     ) {
