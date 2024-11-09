@@ -116,6 +116,15 @@ open class SourceFeedScreenModel(
         }
     }
 
+    // KMK-->
+    fun resetFilters() {
+        val source = source
+        if (source !is CatalogueSource) return
+
+        setFilters(source.getFilterList())
+    }
+    // KMK <--
+
     fun setFilters(filters: FilterList) {
         mutableState.update { it.copy(filters = filters) }
     }

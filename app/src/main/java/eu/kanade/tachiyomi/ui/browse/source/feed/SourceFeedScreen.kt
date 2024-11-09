@@ -231,7 +231,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
                     filters = state.filters,
-                    onReset = {},
+                    // KMK -->
+                    onReset = screenModel::resetFilters,
+                    // KMK <--
                     onFilter = {
                         screenModel.onFilter { query, filters ->
                             onBrowseClick(
