@@ -12,13 +12,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -106,6 +112,7 @@ private fun MigrateSourceList(
 ) {
     // KMK -->
     val lazyListState = rememberLazyListState()
+    var filterObsoleteSource by remember { mutableStateOf(false) }
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
         onChangeSearchQuery("")
@@ -145,6 +152,14 @@ private fun MigrateSourceList(
                         style = MaterialTheme.typography.header,
                     )
 
+                    IconButton(onClick = { filterObsoleteSource = !filterObsoleteSource }) {
+                        Icon(
+                            Icons.Outlined.NewReleases,
+                            contentDescription = stringResource(MR.strings.ext_obsolete),
+                            tint = MaterialTheme.colorScheme.error
+                                .takeIf { filterObsoleteSource } ?: LocalContentColor.current,
+                        )
+                    }
                     IconButton(onClick = onToggleSortingMode) {
                         when (sortingMode) {
                             SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
@@ -175,7 +190,7 @@ private fun MigrateSourceList(
             }
 
             items(
-                items = list,
+                items = list.filter { !filterObsoleteSource || it.first.installedExtension?.isObsolete == true },
                 key = { (source, _) -> "migrate-${source.id}" },
             ) { (source, count) ->
                 MigrateSourceItem(
