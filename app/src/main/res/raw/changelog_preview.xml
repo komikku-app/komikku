@@ -1,21 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9576" changeDate="November 10, 2024">
+        <changelogtext>[b]New:[/b] filter only Obsolete sources in Migration screen</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to always use SSIV for image decoding</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve saved-search usage</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow using saved-search while migration source search</changelogtext>
+        <changelogtext>[b]Improve:[/b] Trying to load saved-search as much as possible even though filterList might changed</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow reset filters on SourceFeedScreen</changelogtext>
+        <changelogtext>[b]Improve:[/b] change bulk-favorite icon to Heart</changelogtext>
+        <changelogtext>[b]Improve:[/b] Bump default user agent</changelogtext>
+        <changelogtext>[b]Improve:[/b] Auto format extension repo URLs</changelogtext>
+        <changelogtext>[b]Improve:[/b] Some improvements to Bangumi tracker search</changelogtext>
+        <changelogtext>[b]Improve:[/b] support comma (,) delimiter when searching library</changelogtext>
+        <changelogtext>[b]Improve:[/b] Do not sync automatically when not connected to a network.</changelogtext>
+        <changelogtext>[b]Fix:[/b] source-search clear causing disappearance of search box</changelogtext>
+        <changelogtext>[b]Fix:[/b] a possible crash with auto-zoom</changelogtext>
+        <changelogtext>[b]Fix:[/b] multiple issues with the E-Hentai updater</changelogtext>
+        <changelogtext>[b]Fix:[/b] Reader's dialog font size</changelogtext>
+        <changelogtext>[b]Fix:[/b] crash on MigrationListScreen with null accessing a mutableState when it's being put in the background</changelogtext>
+        <changelogtext>[b]Fix:[/b] app onStart sync</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashes from Exh Updater</changelogtext>
+        <changelogtext>[b]Fix:[/b] InterceptActivity crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] long strip images not loading in some old devices</changelogtext>
+        <changelogtext>[b]Fix:[/b] a rare crash when invoking "Mark previous as read" action</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9523" changeDate="October 29, 2024">
+        <changelogtext>[b]Improve:[/b] add Back button on Migration screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Migration integrated H enable</changelogtext>
+        <changelogtext>[b]Fix:[/b] unable to migrate after manually cancel &amp; search for entry</changelogtext>
+        <changelogtext>[b]Fix:[/b] crash if cancel migration too soon</changelogtext>
+        <changelogtext>[b]Fix:[/b] release update version checking &amp; update release note template</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9512" changeDate="October 28, 2024">
-        <changelogtext>[b]New:[/b] Error screen (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]New:[/b] Range-selection for Migration (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Improve:[/b] Loading screen for Upcomping/Updating screen (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read (@Luqman)</changelogtext>
-        <changelogtext>[b]Improve:[/b] rework panorama cover settings (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Improve:[/b] Allow Always/Ask/Nerver update trackers on mark as read (@Roshan Varughese)</changelogtext>
-        <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Fix:[/b] for ExHentai (@az4521, @jobobby04)</changelogtext>
-        <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker (@Cuong-Tran)</changelogtext>
-        <changelogtext>[b]Fix:[/b] reader slider (@AntsyLich)</changelogtext>
-        <changelogtext>[b]Fix:[/b] settings SliderItem steps count (@abdurisaq)</changelogtext>
-        <changelogtext>[b]Fix:[/b] title for Checking update screen to "To be updated" (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]New:[/b] Error screen</changelogtext>
+        <changelogtext>[b]New:[/b] Range-selection for Migration</changelogtext>
+        <changelogtext>[b]Improve:[/b] Loading screen for Upcomping/Updating screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] rework panorama cover settings</changelogtext>
+        <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added</changelogtext>
+        <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow Always/Ask/Nerver update trackers on mark as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExHentai</changelogtext>
+        <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration</changelogtext>
+        <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker</changelogtext>
+        <changelogtext>[b]Fix:[/b] reader slider</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings SliderItem steps count</changelogtext>
+        <changelogtext>[b]Fix:[/b] title for Checking update screen to "To be updated"</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9484" changeDate="October 23, 2024">
         <changelogtext>[b]New:[/b] show all entries going to be checked for Smart update on Upcoming screen</changelogtext>

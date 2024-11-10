@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="" changeDate="">
+        filter only Obsolete sources in Migration screen
+        Improve saved-search usage
+        allow using saved-search while migration source search
+        allow reset filters on SourceFeedScreen
+        Trying to load saved-search as much as possible even though filterList might changed
+        fix source-search clear causing disappearance of search box
+        Fix a possible crash with auto-zoom
+        Fix multiple issues with the E-Hentai updater
+        support comma (,) delimiter when searching library
+        fix Reader's dialog font size
+        Fix crash on MigrationListScreen with null accessing a mutableState when it's being put in the background
+        Do not sync automatically when not connected to a network.
+        Fix app onStart sync
+        Fix crashes from Exh Updater
+        Add option to always use SSIV for image decoding
+        Fix InterceptActivity crash
+        Bump default user agent
+        Fix long strip images not loading in some old devices
+        Fix a rare crash when invoking "Mark previous as read" action
+        Auto format extension repo URLs
+        Some improvements to Bangumi tracker search
+        change bulk-favorite icon to Heart
+    </changelogversion>
     <changelogversion versionName="1.12.1" changeDate="Oct 29, 2024">
         <changelogtext>[b]New:[/b] Error screen</changelogtext>
         <changelogtext>[b]New:[/b] Hidden categories</changelogtext>
