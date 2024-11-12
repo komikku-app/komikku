@@ -99,7 +99,9 @@ open /* SY <-- */ class NetworkHelper(
      * normally it would get a Timeout exception.
      */
     fun downloadFileWithResume(url: String, outputFile: File, progressListener: ProgressListener) {
-        val client = client
+        val client = clientWithTimeOut(
+            callTimeout = 120,
+        )
 
         var downloadedBytes: Long
 
