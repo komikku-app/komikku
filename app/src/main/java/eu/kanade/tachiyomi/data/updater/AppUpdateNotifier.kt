@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.util.system.notify
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.release.model.Release
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 internal class AppUpdateNotifier(private val context: Context) {
 
@@ -165,9 +166,19 @@ internal class AppUpdateNotifier(private val context: Context) {
      *
      * @param url web location of apk to download.
      */
-    fun onDownloadError(url: String) {
+    fun onDownloadError(
+        url: String,
+        // KMK -->
+        error: String? = null,
+        // KMK <--
+    ) {
         with(notificationBuilder) {
-            setContentText(context.stringResource(MR.strings.update_check_notification_download_error))
+            setContentText(
+                context.stringResource(MR.strings.update_check_notification_download_error) +
+                    // KMK -->
+                    (": $error".takeIf { error != null } ?: ""),
+                // KMK <--
+            )
             setSmallIcon(R.drawable.ic_warning_white_24dp)
             setOnlyAlertOnce(false)
             setProgress(0, 0, false)
@@ -183,6 +194,16 @@ internal class AppUpdateNotifier(private val context: Context) {
                 context.stringResource(MR.strings.action_cancel),
                 NotificationReceiver.dismissNotificationPendingBroadcast(context, Notifications.ID_APP_UPDATE_PROMPT),
             )
+            // KMK -->
+            addAction(
+                R.drawable.ic_get_app_24dp,
+                context.stringResource(KMR.strings.manual_download),
+                NotificationHandler.openUrl(
+                    context,
+                    url,
+                ),
+            )
+            // KMK <--
         }
         notificationBuilder.show(Notifications.ID_APP_UPDATE_PROMPT)
     }

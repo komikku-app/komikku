@@ -126,6 +126,7 @@
 
     <!-- About -->
     <string name="changelogs">Change Logs</string>
+    <string name="manual_download">Manual download</string>
 
     <!-- Browse settings -->
     <string name="pref_source_related_mangas">Suggestions</string>

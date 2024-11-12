@@ -117,7 +117,12 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             if (shouldCancel) {
                 notifier.cancel()
             } else {
-                notifier.onDownloadError(url)
+                notifier.onDownloadError(
+                    url,
+                    // KMK -->
+                    e.message,
+                    // KMK <--
+                )
             }
         }
     }
