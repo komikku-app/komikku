@@ -68,11 +68,16 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
      *
      * @param url url location of file
      */
-    private suspend fun downloadApk(title: String, url: String) {
+    private fun downloadApk(title: String, url: String) {
         // Show notification download starting.
         notifier.onDownloadStarted(title)
 
         val progressListener = object : ProgressListener {
+            // KMK -->
+            // Total size of the downloading file, should be set when starting and kept over retries
+            var totalSize = 0L
+            // KMK <--
+
             // Progress of the download
             var savedProgress = 0
 
@@ -80,7 +85,16 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             var lastTick = 0L
 
             override fun update(bytesRead: Long, contentLength: Long, done: Boolean) {
-                val progress = (100 * (bytesRead.toFloat() / contentLength)).toInt()
+                // KMK -->
+                val downloadedSize: Long
+                if (totalSize == 0L) {
+                    totalSize = contentLength
+                    downloadedSize = bytesRead
+                } else {
+                    downloadedSize = totalSize - contentLength + bytesRead
+                }
+                // KMK <--
+                val progress = (100 * (downloadedSize.toFloat() / totalSize)).toInt()
                 val currentTime = System.currentTimeMillis()
                 if (progress > savedProgress && currentTime - 200 > lastTick) {
                     savedProgress = progress
