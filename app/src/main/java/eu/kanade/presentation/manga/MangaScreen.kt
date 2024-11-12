@@ -60,14 +60,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
-import com.materialkolor.ktx.blend
-import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -431,7 +427,6 @@ private fun MangaScreenSmallImpl(
     val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
-    val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
 
     var layoutSize by remember { mutableStateOf(IntSize.Zero) }
     var fabSize by remember { mutableStateOf(IntSize.Zero) }
@@ -579,10 +574,6 @@ private fun MangaScreenSmallImpl(
             }
             .haze(
                 state = hazeState,
-                style = HazeStyle(
-                    tint = HazeDefaults.tint(fullCoverBackground),
-                    blurRadius = 10.dp,
-                ),
             ),
         // KMK <--
     ) { contentPadding ->
@@ -890,7 +881,6 @@ private fun MangaScreenLargeImpl(
     val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
-    val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
 
     var layoutSize by remember { mutableStateOf(IntSize.Zero) }
     var fabSize by remember { mutableStateOf(IntSize.Zero) }
@@ -1037,10 +1027,6 @@ private fun MangaScreenLargeImpl(
             }
             .haze(
                 state = hazeState,
-                style = HazeStyle(
-                    tint = HazeDefaults.tint(fullCoverBackground),
-                    blurRadius = 10.dp,
-                ),
             ),
         // KMK <--
     ) { contentPadding ->
