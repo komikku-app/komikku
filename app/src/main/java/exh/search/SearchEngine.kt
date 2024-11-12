@@ -99,13 +99,16 @@ class SearchEngine {
         fun wildcardToRegex(pattern: String): String {
             // Escape all regex special characters
             return pattern
-                .split("\\*").joinToString(separator = "\\*") { tok1 ->
-                    tok1.split("\\?").joinToString(separator = "\\?") { tok2 ->
+                // Replace `*` with `.*` and `?` with `.` to handle wildcards
+                .split("$*").joinToString(separator = ".*") { tok1 ->
+                    tok1.split("$?").joinToString(separator = ".") { tok2 ->
                         tok2.replace("\\", "\\\\")  // Escape `\` first to avoid double escaping
 
                             .replace(".", "\\.")
                             .replace("^", "\\^")
                             .replace("$", "\\$")
+                            .replace("*", "\\*")
+                            .replace("?", "\\?")
                             .replace("{", "\\{")
                             .replace("}", "\\}")
                             .replace("(", "\\(")
@@ -114,10 +117,6 @@ class SearchEngine {
                             .replace("]", "\\]")
                             .replace("|", "\\|")
                             .replace("+", "\\+")
-
-                            // Replace `*` with `.*` and `?` with `.` to handle wildcards
-                            .replace("*", ".*")    // `*` matches any sequence of characters
-                            .replace("?", ".")     // `?` matches any single character
                     }
                 }
         }
