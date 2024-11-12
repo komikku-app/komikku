@@ -12,13 +12,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
-import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
 import eu.kanade.tachiyomi.util.storage.getUriCompat
-import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import logcat.LogPriority
@@ -95,19 +91,11 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
 
         try {
-            // Download the new update.
-            val response = network.client.newCachelessCallWithProgress(GET(url), progressListener)
-                .await()
-
             // File where the apk will be saved.
             val apkFile = File(context.externalCacheDir, "update.apk")
-
-            if (response.isSuccessful) {
-                response.body.source().saveTo(apkFile)
-            } else {
-                response.close()
-                throw Exception("Unsuccessful response")
-            }
+            // KMK -->
+            network.downloadFileWithResume(url, apkFile, progressListener)
+            // KMK <--
             notifier.cancel()
             notifier.promptInstall(apkFile.getUriCompat(context))
         } catch (e: Exception) {
