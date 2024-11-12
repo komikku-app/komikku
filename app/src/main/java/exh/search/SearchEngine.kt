@@ -14,14 +14,18 @@ class SearchEngine {
         val res = mutableListOf<QueryComponent>()
 
         var inQuotes = false
+
+        /** string of parsed component */
         val queuedRawText = StringBuilder()
+
+        /** list of parsed components, waiting before dumping all into [Text.components] */
         val queuedText = mutableListOf<TextComponent>()
         var namespace: Namespace? = null
 
         var nextIsExcluded = false
         var nextIsExact = false
 
-        // Put a word into queued, wildcard is treated as a word
+        /** Put a word into queued */
         fun flushText() {
             if (queuedRawText.isNotEmpty()) {
                 queuedText += StringTextComponent(queuedRawText.toString())
@@ -29,12 +33,13 @@ class SearchEngine {
             }
         }
 
-        // Create a new Text, put all words (queued) into it, clear queued
+        /** Create a new [Text], put all words (queued) into it, clear queued */
         fun flushToText() = Text().apply {
             components += queuedText
             queuedText.clear()
         }
 
+        /** Complete a keyword, which is either [Namespace] or [Text] (word or quoted words) */
         fun flushAll() {
             flushText()
             if (queuedText.isNotEmpty() || namespace != null) {
@@ -95,24 +100,28 @@ class SearchEngine {
 
 fun wildcardToRegex(pattern: String): String {
     // Escape all regex special characters
-    val escapedPattern = pattern
-        .replace("\\", "\\\\")  // Escape `\` first to avoid double escaping
-        .replace(".", "\\.")
-        .replace("^", "\\^")
-        .replace("$", "\\$")
-        .replace("{", "\\{")
-        .replace("}", "\\}")
-        .replace("(", "\\(")
-        .replace(")", "\\)")
-        .replace("[", "\\[")
-        .replace("]", "\\]")
-        .replace("|", "\\|")
-        .replace("+", "\\+")
+    return pattern
+        .split("\\*").joinToString(separator = "\\*") { tok1 ->
+            tok1.split("\\?").joinToString(separator = "\\?") { tok2 ->
+                tok2.replace("\\", "\\\\")  // Escape `\` first to avoid double escaping
 
-    // Replace `*` with `.*` and `?` with `.` to handle wildcards
-    return escapedPattern
-        .replace("*", ".*")    // `*` matches any sequence of characters
-        .replace("?", ".")     // `?` matches any single character
+                    .replace(".", "\\.")
+                    .replace("^", "\\^")
+                    .replace("$", "\\$")
+                    .replace("{", "\\{")
+                    .replace("}", "\\}")
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
+                    .replace("[", "\\[")
+                    .replace("]", "\\]")
+                    .replace("|", "\\|")
+                    .replace("+", "\\+")
+
+                    // Replace `*` with `.*` and `?` with `.` to handle wildcards
+                    .replace("*", ".*")    // `*` matches any sequence of characters
+                    .replace("?", ".")     // `?` matches any single character
+            }
+        }
 }
 
 fun String.isMatch(pattern: String, ignoreCase: Boolean = true, enableWildcard: Boolean = true): Boolean {
