@@ -1,6 +1,6 @@
 
-import exh.search.isMatch
-import exh.search.wildcardToRegex
+import exh.search.SearchEngine.Companion.isMatch
+import exh.search.SearchEngine.Companion.wildcardToRegex
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

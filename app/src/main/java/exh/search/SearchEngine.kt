@@ -95,46 +95,46 @@ class SearchEngine {
                 .replace("_", "\\_")
                 .replace("%", "\\%")
         }
-    }
-}
 
-fun wildcardToRegex(pattern: String): String {
-    // Escape all regex special characters
-    return pattern
-        .split("\\*").joinToString(separator = "\\*") { tok1 ->
-            tok1.split("\\?").joinToString(separator = "\\?") { tok2 ->
-                tok2.replace("\\", "\\\\")  // Escape `\` first to avoid double escaping
+        fun wildcardToRegex(pattern: String): String {
+            // Escape all regex special characters
+            return pattern
+                .split("\\*").joinToString(separator = "\\*") { tok1 ->
+                    tok1.split("\\?").joinToString(separator = "\\?") { tok2 ->
+                        tok2.replace("\\", "\\\\")  // Escape `\` first to avoid double escaping
 
-                    .replace(".", "\\.")
-                    .replace("^", "\\^")
-                    .replace("$", "\\$")
-                    .replace("{", "\\{")
-                    .replace("}", "\\}")
-                    .replace("(", "\\(")
-                    .replace(")", "\\)")
-                    .replace("[", "\\[")
-                    .replace("]", "\\]")
-                    .replace("|", "\\|")
-                    .replace("+", "\\+")
+                            .replace(".", "\\.")
+                            .replace("^", "\\^")
+                            .replace("$", "\\$")
+                            .replace("{", "\\{")
+                            .replace("}", "\\}")
+                            .replace("(", "\\(")
+                            .replace(")", "\\)")
+                            .replace("[", "\\[")
+                            .replace("]", "\\]")
+                            .replace("|", "\\|")
+                            .replace("+", "\\+")
 
-                    // Replace `*` with `.*` and `?` with `.` to handle wildcards
-                    .replace("*", ".*")    // `*` matches any sequence of characters
-                    .replace("?", ".")     // `?` matches any single character
-            }
+                            // Replace `*` with `.*` and `?` with `.` to handle wildcards
+                            .replace("*", ".*")    // `*` matches any sequence of characters
+                            .replace("?", ".")     // `?` matches any single character
+                    }
+                }
         }
-}
 
-fun String.isMatch(pattern: String, ignoreCase: Boolean = true, enableWildcard: Boolean = true): Boolean {
-    if (!enableWildcard) {
-        return contains(pattern, ignoreCase)
-    }
-    // Convert the wildcard pattern to a regex pattern
-    val regexPattern = if (ignoreCase) {
-        wildcardToRegex(pattern).toRegex(RegexOption.IGNORE_CASE)
-    } else {
-        wildcardToRegex(pattern).toRegex()
-    }
+        fun String.isMatch(pattern: String, ignoreCase: Boolean = true, enableWildcard: Boolean = true): Boolean {
+            if (!enableWildcard) {
+                return contains(pattern, ignoreCase)
+            }
+            // Convert the wildcard pattern to a regex pattern
+            val regexPattern = if (ignoreCase) {
+                wildcardToRegex(pattern).toRegex(RegexOption.IGNORE_CASE)
+            } else {
+                wildcardToRegex(pattern).toRegex()
+            }
 
-    // Use `containsMatchIn` to allow substring matching
-    return regexPattern.containsMatchIn(this)
+            // Use `containsMatchIn` to allow substring matching
+            return regexPattern.containsMatchIn(this)
+        }
+    }
 }

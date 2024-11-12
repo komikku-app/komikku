@@ -46,8 +46,8 @@ import exh.metadata.sql.models.SearchTitle
 import exh.search.Namespace
 import exh.search.QueryComponent
 import exh.search.SearchEngine
+import exh.search.SearchEngine.Companion.isMatch
 import exh.search.Text
-import exh.search.isMatch
 import exh.source.EH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
