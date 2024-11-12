@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
+        uses: gradle/actions/wrapper-validation@473878a77f1b98e2b5ac4af93489d1656a80a5ed # v4
 
       - name: Get previous release
         id: last_release
@@ -98,7 +98,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
+        uses: gradle/actions/wrapper-validation@473878a77f1b98e2b5ac4af93489d1656a80a5ed # v4
 
       - name: Setup Android SDK
         run: |
@@ -125,7 +125,7 @@ jobs:
           write-mode: overwrite
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
+        uses: gradle/actions/setup-gradle@473878a77f1b98e2b5ac4af93489d1656a80a5ed # v4
 
       - name: Build app and run unit tests
         run: ./gradlew spotlessCheck assembleStandardRelease testStandardReleaseUnitTest testReleaseUnitTest --stacktrace
@@ -186,7 +186,7 @@ jobs:
           echo "APK_X86_64_SHA=$sha" >> $GITHUB_OUTPUT
 
       - name: Create release
-        uses: softprops/action-gh-release@e7a8f85e1c67a31e6ed99a94b41bd0b71bbee6b8 # v2.0.9
+        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
         with:
           tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
           name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
