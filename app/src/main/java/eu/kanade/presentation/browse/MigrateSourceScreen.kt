@@ -190,7 +190,7 @@ private fun MigrateSourceList(
             }
 
             items(
-                items = list.filter { !filterObsoleteSource || it.first.installedExtension?.isObsolete == true },
+                items = list.filter { !filterObsoleteSource || it.first.installedExtension?.isObsolete != false },
                 key = { (source, _) -> "migrate-${source.id}" },
             ) { (source, count) ->
                 MigrateSourceItem(
