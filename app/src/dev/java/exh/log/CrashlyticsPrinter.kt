@@ -11,4 +11,8 @@ class CrashlyticsPrinter(private val logLevel: Int) : Printer {
      * @param msg the msg of log
      */
     override fun println(logLevel: Int, tag: String?, msg: String?) = Unit
+
+    companion object {
+        fun reportNonFatal(e: Exception) = Unit
+    }
 }
