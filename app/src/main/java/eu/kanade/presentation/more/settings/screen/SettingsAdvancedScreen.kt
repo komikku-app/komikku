@@ -388,10 +388,6 @@ object SettingsAdvancedScreen : SearchableSettings {
                         chooseColorProfile.launch(arrayOf("*/*"))
                     },
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = basePreferences.alwaysUseSSIVToDecode(),
-                    title = stringResource(MR.strings.pref_always_use_ssiv_to_decode),
-                ),
             ),
         )
     }
