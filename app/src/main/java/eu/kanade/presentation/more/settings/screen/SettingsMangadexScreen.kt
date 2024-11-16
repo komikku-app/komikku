@@ -140,7 +140,7 @@ object SettingsMangadexScreen : SearchableSettings {
             title = mdex.name + " Login",
             content = {
                 BasePreferenceWidget(
-                    title = it.title,
+                    title = mdex.name + " Login",
                     widget = {
                         Icon(
                             imageVector = Icons.Outlined.PeopleAlt,
