@@ -27,9 +27,6 @@ class PagerConfig(
     readerPreferences: ReaderPreferences = Injekt.get(),
 ) : ViewerConfig(readerPreferences, scope) {
 
-    var theme = readerPreferences.readerTheme().get()
-        private set
-
     var automaticBackground = false
         private set
 
@@ -81,10 +78,18 @@ class PagerConfig(
         readerPreferences.readerTheme()
             .register(
                 {
-                    theme = it
+                    // SY -->
+                    themeToColor(it)
+                    // SY <--
                     automaticBackground = it == 3
                 },
-                { imagePropertyChangedListener?.invoke() },
+                {
+                    imagePropertyChangedListener?.invoke()
+                    // SY -->
+                    themeToColor(it)
+                    reloadChapterListener?.invoke(doublePages)
+                    // SY <--
+                },
             )
 
         readerPreferences.imageScaleType()
@@ -139,16 +144,7 @@ class PagerConfig(
         // SY -->
         readerPreferences.pageTransitionsPager()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
-        readerPreferences.readerTheme()
-            .register(
-                {
-                    themeToColor(it)
-                },
-                {
-                    themeToColor(it)
-                    reloadChapterListener?.invoke(doublePages)
-                },
-            )
+
         readerPreferences.pageLayout()
             .register(
                 {

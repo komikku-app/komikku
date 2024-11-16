@@ -42,8 +42,6 @@ class WebtoonConfig(
 
     var doubleTapZoomChangedListener: ((Boolean) -> Unit)? = null
 
-    val theme = readerPreferences.readerTheme().get()
-
     // SY -->
     var usePageTransitions = false
 
