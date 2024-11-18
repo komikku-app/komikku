@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@473878a77f1b98e2b5ac4af93489d1656a80a5ed # v4
+        uses: gradle/actions/wrapper-validation@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4
 
       - name: Prepare build
         id: prepare_build
