@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -33,6 +32,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.ui.ifSourcesLoaded
 import kotlinx.collections.immutable.persistentListOf
+import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
@@ -138,7 +138,7 @@ data class SourceSearchScreen(
             }
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,

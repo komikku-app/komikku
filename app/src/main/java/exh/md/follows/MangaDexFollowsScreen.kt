@@ -11,7 +11,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -30,6 +29,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import exh.ui.ifSourcesLoaded
+import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.sy.SYMR
@@ -104,7 +104,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
