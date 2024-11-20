@@ -60,6 +60,7 @@ import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
@@ -378,9 +379,23 @@ object SettingsAdvancedScreen : SearchableSettings {
                 basePreferences.displayProfile().set(uri.toString())
             }
         }
+        val hardwareBitmapThresholdPref = basePreferences.hardwareBitmapThreshold()
+        val hardwareBitmapThreshold by hardwareBitmapThresholdPref.collectAsState()
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_reader),
             preferenceItems = persistentListOf(
+                Preference.PreferenceItem.ListPreference(
+                    pref = hardwareBitmapThresholdPref,
+                    title = stringResource(MR.strings.pref_hardware_bitmap_threshold),
+                    subtitle = stringResource(
+                        MR.strings.pref_hardware_bitmap_threshold_summary,
+                        hardwareBitmapThreshold,
+                    ),
+                    enabled = GLUtil.DEVICE_TEXTURE_LIMIT > GLUtil.SAFE_TEXTURE_LIMIT,
+                    entries = GLUtil.CUSTOM_TEXTURE_LIMIT_OPTIONS
+                        .associateWith { it.toString() }
+                        .toImmutableMap(),
+                ),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_display_profile),
                     subtitle = basePreferences.displayProfile().get(),
