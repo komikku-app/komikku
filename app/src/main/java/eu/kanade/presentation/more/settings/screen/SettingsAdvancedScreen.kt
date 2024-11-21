@@ -1,7 +1,6 @@
 package eu.kanade.presentation.more.settings.screen
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
@@ -26,7 +25,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -44,6 +42,7 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_360
@@ -174,7 +173,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                     }
                     .toImmutableMap(),
                 onValueChanged = {
-                    (context as? Activity)?.let { ActivityCompat.recreate(it) }
+                    if (it != AppUpdatePolicy.NEVER) {
+                        AppUpdateJob.setupTask(context)
+                    }
                     true
                 },
             ),

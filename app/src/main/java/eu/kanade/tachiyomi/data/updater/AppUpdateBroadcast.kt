@@ -13,7 +13,10 @@ import tachiyomi.i18n.kmk.KMR
 
 class AppUpdateBroadcast : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (AppUpdateDownloadJob.PACKAGE_INSTALLED_ACTION == intent.action) {
+        if (intent.action == AppUpdateDownloadJob.PACKAGE_INSTALLED_ACTION) {
+            /*
+             * Callback on PackageInstaller status
+             */
             val extras = intent.extras ?: return
             when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
@@ -45,6 +48,10 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                 }
             }
         } else if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            /*
+             * System broadcast that is sent when the current application package has been replaced with a new version,
+             * to perform actions when app is updated or reinstalled.
+             */
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val notifyOnInstall = prefs.getBoolean(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY, false)
             prefs.edit {

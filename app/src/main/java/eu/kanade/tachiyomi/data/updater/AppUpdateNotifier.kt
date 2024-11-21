@@ -37,7 +37,11 @@ internal class AppUpdateNotifier(private val context: Context) {
         NotificationReceiver.dismissNotification(context, Notifications.ID_APP_UPDATER)
     }
 
-    @SuppressLint("LaunchActivityFromNotification")
+    /**
+     * Create a notification to prompt user there is new update, with action to:
+     * - Download update [AppUpdateDownloadJob.start]
+     * - Show Github's release notes
+     */
     fun promptUpdate(release: Release) {
         val updateIntent = NotificationReceiver.downloadAppUpdatePendingBroadcast(
             context,
