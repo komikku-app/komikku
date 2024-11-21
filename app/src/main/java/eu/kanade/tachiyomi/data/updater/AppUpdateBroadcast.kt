@@ -15,7 +15,7 @@ class AppUpdateBroadcast : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (AppUpdateDownloadJob.PACKAGE_INSTALLED_ACTION == intent.action) {
             val extras = intent.extras ?: return
-            when (val status = extras.getInt(PackageInstaller.EXTRA_STATUS)) {
+            when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                     val confirmIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
                     context.startActivity(confirmIntent?.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -25,7 +25,7 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                     prefs.edit {
                         remove(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY)
                     }
-                    val notifyOnInstall = extras.getBoolean(AppUpdateDownloadJob.EXTRA_NOTIFY_ON_INSTALL, false)
+                    val notifyOnInstall = extras.getBoolean(AppUpdateDownloadJob.EXTRA_NOTIFY_ON_INSTALL, true)
                     try {
                         if (notifyOnInstall) {
                             AppUpdateNotifier(context).onInstallFinished()

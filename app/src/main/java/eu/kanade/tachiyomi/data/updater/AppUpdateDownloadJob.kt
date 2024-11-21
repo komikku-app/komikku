@@ -57,7 +57,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
 
         setForegroundSafely()
 
-        val notifyOnInstall = inputData.getBoolean(EXTRA_NOTIFY_ON_INSTALL, false)
+        val notifyOnInstall = inputData.getBoolean(EXTRA_NOTIFY_ON_INSTALL, true)
 
         withIOContext {
             downloadApk(title, url, notifyOnInstall)
@@ -87,7 +87,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         title: String,
         url: String,
         // KMK -->
-        notifyOnInstall: Boolean,
+        notifyOnInstall: Boolean = true,
         // KMK <--
         ) {
         // Show notification download starting.
@@ -155,7 +155,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
     }
 
     @RequiresApi(31)
-    private suspend fun startInstalling(file: File, notifyOnInstall: Boolean) {
+    private suspend fun startInstalling(file: File, notifyOnInstall: Boolean = true) {
         try {
             val packageInstaller = context.packageManager.packageInstaller
             val data = file.inputStream()
