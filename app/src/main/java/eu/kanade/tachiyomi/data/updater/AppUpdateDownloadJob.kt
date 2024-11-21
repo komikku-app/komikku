@@ -1,8 +1,14 @@
 package eu.kanade.tachiyomi.data.updater
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.content.pm.ServiceInfo
 import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -11,16 +17,23 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
 import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import okhttp3.internal.http2.ErrorCode
 import okhttp3.internal.http2.StreamResetException
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
@@ -44,8 +57,10 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
 
         setForegroundSafely()
 
+        val notifyOnInstall = inputData.getBoolean(EXTRA_NOTIFY_ON_INSTALL, false)
+
         withIOContext {
-            downloadApk(title, url)
+            downloadApk(title, url, notifyOnInstall)
         }
 
         return Result.success()
@@ -68,7 +83,13 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
      *
      * @param url url location of file
      */
-    private fun downloadApk(title: String, url: String) {
+    private suspend fun downloadApk(
+        title: String,
+        url: String,
+        // KMK -->
+        notifyOnInstall: Boolean,
+        // KMK <--
+        ) {
         // Show notification download starting.
         notifier.onDownloadStarted(title)
 
@@ -111,7 +132,11 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             network.downloadFileWithResume(url, apkFile, progressListener)
             // KMK <--
             notifier.cancel()
-            notifier.promptInstall(apkFile.getUriCompat(context))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                startInstalling(apkFile, notifyOnInstall)
+            } else {
+                notifier.promptInstall(apkFile.getUriCompat(context))
+            }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR) { e.toString() }
             val shouldCancel = e is CancellationException ||
@@ -129,13 +154,82 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
     }
 
+    @RequiresApi(31)
+    private suspend fun startInstalling(file: File, notifyOnInstall: Boolean) {
+        try {
+            val packageInstaller = context.packageManager.packageInstaller
+            val data = file.inputStream()
+
+            val params = PackageInstaller.SessionParams(
+                PackageInstaller.SessionParams.MODE_FULL_INSTALL,
+            )
+            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+            val sessionId = packageInstaller.createSession(params)
+            val session = packageInstaller.openSession(sessionId)
+            session.openWrite("package", 0, -1).use { packageInSession ->
+                data.copyTo(packageInSession)
+            }
+            if (notifyOnInstall) {
+                PreferenceManager.getDefaultSharedPreferences(context).edit {
+                    putBoolean(NOTIFY_ON_INSTALL_KEY, true)
+                }
+            }
+
+            val newIntent = Intent(context, AppUpdateBroadcast::class.java)
+                .setAction(PACKAGE_INSTALLED_ACTION)
+                .putExtra(EXTRA_NOTIFY_ON_INSTALL, notifyOnInstall)
+                .putExtra(EXTRA_FILE_URI, file.getUriCompat(context).toString())
+
+            val pendingIntent = PendingIntent.getBroadcast(context, -10053, newIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+            val statusReceiver = pendingIntent.intentSender
+            session.commit(statusReceiver)
+            notifier.onInstalling()
+            withContext(Dispatchers.IO) {
+                data.close()
+            }
+            launchUI {
+                delay(5000)
+                val hasNotification = context.notificationManager
+                    .activeNotifications.any { it.id == Notifications.ID_APP_UPDATER }
+                // If the package manager crashes for whatever reason (china phone)
+                // set a timeout and let the user manually install
+                if (packageInstaller.getSessionInfo(sessionId) == null && !hasNotification) {
+                    notifier.cancelInstallNotification()
+                    notifier.promptInstall(file.getUriCompat(context))
+                    PreferenceManager.getDefaultSharedPreferences(context).edit {
+                        remove(NOTIFY_ON_INSTALL_KEY)
+                    }
+                }
+            }
+        } catch (error: Exception) {
+            // Either install package can't be found (probably bots) or there's a security exception
+            // with the download manager. Nothing we can workaround.
+            context.toast(error.message)
+            notifier.cancelInstallNotification()
+            notifier.promptInstall(file.getUriCompat(context))
+            PreferenceManager.getDefaultSharedPreferences(context).edit {
+                remove(NOTIFY_ON_INSTALL_KEY)
+            }
+        }
+    }
+
     companion object {
         private const val TAG = "AppUpdateDownload"
+        const val PACKAGE_INSTALLED_ACTION =
+            "${BuildConfig.APPLICATION_ID}.SESSION_SELF_API_PACKAGE_INSTALLED"
+        internal const val EXTRA_FILE_URI = "${BuildConfig.APPLICATION_ID}.AppInstaller.FILE_URI"
+        internal const val EXTRA_NOTIFY_ON_INSTALL = "ACTION_ON_INSTALL"
+        internal const val NOTIFY_ON_INSTALL_KEY = "notify_on_install_complete"
+        private const val IDLE_RUN = "idle_run"
 
         const val EXTRA_DOWNLOAD_URL = "DOWNLOAD_URL"
         const val EXTRA_DOWNLOAD_TITLE = "DOWNLOAD_TITLE"
 
-        fun start(context: Context, url: String, title: String? = null) {
+        const val ALWAYS = 0
+        const val ONLY_ON_UNMETERED = 1
+        const val NEVER = 2
+
+        fun start(context: Context, url: String, title: String? = null, notifyOnInstall: Boolean = true, waitUntilIdle: Boolean = false) {
             val constraints = Constraints(
                 requiredNetworkType = NetworkType.CONNECTED,
             )

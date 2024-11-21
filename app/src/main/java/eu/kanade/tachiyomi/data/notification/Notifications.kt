@@ -75,6 +75,8 @@ object Notifications {
     const val ID_APP_UPDATER = 1
     const val ID_APP_UPDATE_PROMPT = 2
     const val ID_APP_UPDATE_ERROR = 3
+    const val ID_APP_INSTALL = 4
+    const val ID_APP_INSTALLED = 5
     const val CHANNEL_EXTENSIONS_UPDATE = "ext_apk_update_channel"
     const val ID_UPDATES_TO_EXTS = -401
     const val ID_EXTENSION_INSTALLER = -402

@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.settings.screen
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
@@ -25,6 +26,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -90,6 +92,7 @@ import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
+import tachiyomi.domain.release.service.AppUpdatePolicy
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -116,6 +119,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
         val basePreferences = remember { Injekt.get<BasePreferences>() }
         val networkPreferences = remember { Injekt.get<NetworkPreferences>() }
+        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
 
         return listOf(
             Preference.PreferenceItem.TextPreference(
@@ -129,7 +133,7 @@ object SettingsAdvancedScreen : SearchableSettings {
             ),
             /* SY --> Preference.PreferenceItem.SwitchPreference(
                 pref = networkPreferences.verboseLogging(),
-                title = stringResource(MR.strings.pref_verbose_logging),
+                title = stringResource(MR.strings.dpref_verbose_logging),
                 subtitle = stringResource(MR.strings.pref_verbose_logging_summary),
                 onValueChanged = {
                     context.toast(MR.strings.requires_app_restart)
@@ -151,6 +155,27 @@ object SettingsAdvancedScreen : SearchableSettings {
                         putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                     }
                     context.startActivity(intent)
+                },
+            ),
+            Preference.PreferenceItem.ListPreference(
+                pref = unsortedPreferences.appShouldAutoUpdate(),
+                title = stringResource(KMR.strings.auto_update_app),
+                entries = AppUpdatePolicy.entries
+                    .associateWith {
+                        when (it) {
+                            AppUpdatePolicy.NEVER ->
+                                stringResource(KMR.strings.auto_update_app_never)
+                            AppUpdatePolicy.ALWAYS ->
+                                stringResource(KMR.strings.auto_update_app_always)
+                            AppUpdatePolicy.ONLY_ON_WIFI ->
+                                stringResource(KMR.strings.auto_update_app_wifi_only)
+                            else -> it.name
+                        }
+                    }
+                    .toImmutableMap(),
+                onValueChanged = {
+                    (context as? Activity)?.let { ActivityCompat.recreate(it) }
+                    true
                 },
             ),
             getBackgroundActivityGroup(),

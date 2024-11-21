@@ -102,6 +102,10 @@
     <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
     <string name="preload_library_cover_color">Preload library's cover color</string>
+    <string name="auto_update_app">Auto-update app</string>
+    <string name="auto_update_app_never">Don\&apos;t auto-update</string>
+    <string name="auto_update_app_always">Over any network</string>
+    <string name="auto_update_app_wifi_only">Over Wi-Fi only</string>
 
       <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
@@ -120,6 +124,10 @@
 
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
+    <string name="update_completed">Update completed</string>
+    <string name="open">Open</string>
+    <string name="release_page">Release page</string>
+    <string name="could_not_install_update">Could not install update</string>
 
     <!--UpdateCheck Notifications-->
     <string name="update_check_notification_preview_available">Coming (soon) updates!</string>

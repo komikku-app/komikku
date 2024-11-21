@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -206,5 +208,91 @@ internal class AppUpdateNotifier(private val context: Context) {
             // KMK <--
         }
         notificationBuilder.show(Notifications.ID_APP_UPDATE_ERROR)
+    }
+
+    fun onInstalling() {
+        with(notificationBuilder) {
+            setContentTitle(context.stringResource(MR.strings.ext_installing))
+            setSmallIcon(android.R.drawable.stat_sys_download)
+            setProgress(0, 0, true)
+            setOnlyAlertOnce(true)
+            clearActions()
+            show(Notifications.ID_APP_INSTALL)
+        }
+    }
+
+    /** Call when apk download is finished. */
+    fun onInstallFinished() {
+        with(notificationBuilder) {
+            setContentTitle(context.stringResource(KMR.strings.update_completed))
+            setContentText(context.stringResource(MR.strings.updated_version, BuildConfig.VERSION_NAME))
+            setSmallIcon(R.drawable.ic_komikku)
+            setAutoCancel(true)
+            setOngoing(false)
+            setProgress(0, 0, false)
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                context.packageManager.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            setContentIntent(pendingIntent)
+            clearActions()
+            addAction(
+                R.drawable.ic_system_update_alt_white_24dp,
+                context.stringResource(KMR.strings.open),
+                pendingIntent,
+            )
+            addReleasePageAction()
+            show(Notifications.ID_APP_INSTALLED)
+        }
+    }
+
+    private fun NotificationCompat.Builder.addReleasePageAction() {
+        releasePageUrl?.let { releaseUrl ->
+            val releaseIntent = Intent(Intent.ACTION_VIEW, releaseUrl.toUri()).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            addAction(
+                R.drawable.ic_new_releases_24dp,
+                context.stringResource(KMR.strings.release_page),
+                PendingIntent.getActivity(context, releaseUrl.hashCode(), releaseIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE),
+            )
+        }
+    }
+
+    fun onInstallError(uri: Uri) {
+        with(notificationBuilder) {
+            setContentTitle(context.stringResource(MR.strings.app_name))
+            setContentText(context.stringResource(KMR.strings.could_not_install_update))
+            setSmallIcon(android.R.drawable.stat_sys_warning)
+            setOnlyAlertOnce(false)
+            setAutoCancel(false)
+            setProgress(0, 0, false)
+            color = ContextCompat.getColor(context, R.color.tachiyomi_secondary)
+            clearActions()
+            // Retry action
+            addAction(
+                R.drawable.ic_refresh_24dp,
+                context.stringResource(MR.strings.action_retry),
+                NotificationHandler.installApkPendingActivity(context, uri),
+            )
+            // Cancel action
+            addAction(
+                R.drawable.ic_close_24dp,
+                context.stringResource(MR.strings.action_cancel),
+                NotificationReceiver.dismissNotificationPendingBroadcast(context, Notifications.ID_APP_UPDATER),
+            )
+            addReleasePageAction()
+        }
+        notificationBuilder.show(Notifications.ID_APP_UPDATER)
+    }
+
+    fun cancelInstallNotification() {
+        NotificationReceiver.dismissNotification(context, Notifications.ID_APP_INSTALL)
+    }
+
+    companion object {
+        var releasePageUrl: String? = null
     }
 }

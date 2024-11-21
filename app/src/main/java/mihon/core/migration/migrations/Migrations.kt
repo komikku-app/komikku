@@ -48,5 +48,6 @@ val migrations: List<Migration>
         // KMK -->
         OfficialExtensionRepositoryMigration(),
         IntegratedHentaiMigration(),
+        SetupAppUpdateMigration(),
         // KMK <--
     )

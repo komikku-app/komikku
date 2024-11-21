@@ -4,18 +4,28 @@ import android.content.Context
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class AppUpdateChecker(
     // KMK -->
     private val peekIntoPreview: Boolean = false,
+    private val preferences: UnsortedPreferences = Injekt.get(),
     // KMK <--
 ) {
 
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
-    suspend fun checkForUpdate(context: Context, forceCheck: Boolean = false): GetApplicationRelease.Result {
+    suspend fun checkForUpdate(
+        context: Context,
+        forceCheck: Boolean = false,
+        // KMK -->
+        doExtrasAfterNewUpdate: Boolean = true,
+        // KMK <--
+    ): GetApplicationRelease.Result {
         return withIOContext {
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
@@ -35,6 +45,15 @@ class AppUpdateChecker(
                 ).promptFdroidUpdate()
                 else -> {}
             }
+
+//            if (doExtrasAfterNewUpdate && result is GetApplicationRelease.Result.NewUpdate) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+//                    preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
+//                ) {
+//                    AppUpdateDownloadJob.start(context, null, false, waitUntilIdle = true)
+//                }
+//                AppUpdateNotifier(context).promptUpdate(result.release)
+//            }
 
             result
         }
