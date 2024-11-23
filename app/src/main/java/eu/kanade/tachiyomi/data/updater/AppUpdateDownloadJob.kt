@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -133,7 +134,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             // KMK <--
             notifier.cancel()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                startInstalling(apkFile, notifyOnInstall)
+                startInstalling(apkFile, title, notifyOnInstall)
             } else {
                 notifier.promptInstall(apkFile.getUriCompat(context))
             }
@@ -155,16 +156,18 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
     }
 
     @RequiresApi(31)
-    private suspend fun startInstalling(file: File, notifyOnInstall: Boolean = true) {
+    private suspend fun startInstalling(file: File, title: String, notifyOnInstall: Boolean = true) {
         try {
             val packageInstaller = context.packageManager.packageInstaller
             val data = file.inputStream()
 
-            val params = PackageInstaller.SessionParams(
+            val installParams = PackageInstaller.SessionParams(
                 PackageInstaller.SessionParams.MODE_FULL_INSTALL,
             )
-            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
-            val sessionId = packageInstaller.createSession(params)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                installParams.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+            }
+            val sessionId = packageInstaller.createSession(installParams)
             val session = packageInstaller.openSession(sessionId)
             session.openWrite("package", 0, -1).use { packageInSession ->
                 data.copyTo(packageInSession)
@@ -179,28 +182,34 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                 .setAction(PACKAGE_INSTALLED_ACTION)
                 .putExtra(EXTRA_NOTIFY_ON_INSTALL, notifyOnInstall)
                 .putExtra(EXTRA_FILE_URI, file.getUriCompat(context).toString())
+                .putExtra(EXTRA_DOWNLOAD_TITLE, title)
 
-            val pendingIntent = PendingIntent.getBroadcast(context, -10053, newIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                sessionId,
+                newIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
+            )
             val statusReceiver = pendingIntent.intentSender
             session.commit(statusReceiver)
             notifier.onInstalling()
             withContext(Dispatchers.IO) {
                 data.close()
             }
-            launchUI {
-                delay(5000)
-                val hasNotification = context.notificationManager
-                    .activeNotifications.any { it.id == Notifications.ID_APP_UPDATER }
-                // If the package manager crashes for whatever reason (china phone)
-                // set a timeout and let the user manually install
-                if (packageInstaller.getSessionInfo(sessionId) == null && !hasNotification) {
-                    notifier.cancelInstallNotification()
-                    notifier.promptInstall(file.getUriCompat(context))
-                    PreferenceManager.getDefaultSharedPreferences(context).edit {
-                        remove(NOTIFY_ON_INSTALL_KEY)
-                    }
-                }
-            }
+//            launchUI {
+//                delay(5000)
+//                val hasNotification = context.notificationManager
+//                    .activeNotifications.any { it.id == Notifications.ID_APP_UPDATER }
+//                // If the package manager crashes for whatever reason (china phone)
+//                // set a timeout and let the user manually install
+//                if (packageInstaller.getSessionInfo(sessionId) == null && !hasNotification) {
+//                    notifier.cancelInstallNotification()
+//                    notifier.promptInstall(file.getUriCompat(context))
+//                    PreferenceManager.getDefaultSharedPreferences(context).edit {
+//                        remove(NOTIFY_ON_INSTALL_KEY)
+//                    }
+//                }
+//            }
         } catch (error: Exception) {
             // Either install package can't be found (probably bots) or there's a security exception
             // with the download manager. Nothing we can workaround.

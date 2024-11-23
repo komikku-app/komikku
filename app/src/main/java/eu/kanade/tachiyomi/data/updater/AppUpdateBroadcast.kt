@@ -13,6 +13,8 @@ import tachiyomi.i18n.kmk.KMR
 
 class AppUpdateBroadcast : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val appUpdateNotifier = AppUpdateNotifier(context)
+
         if (intent.action == AppUpdateDownloadJob.PACKAGE_INSTALLED_ACTION) {
             /*
              * Callback on PackageInstaller status
@@ -22,6 +24,11 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                     val confirmIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
                     context.startActivity(confirmIntent?.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+
+                    appUpdateNotifier.cancelInstallNotification()
+                    val uri = intent.getStringExtra(AppUpdateDownloadJob.EXTRA_FILE_URI) ?: return
+                    val title = intent.getStringExtra(AppUpdateDownloadJob.EXTRA_DOWNLOAD_TITLE)
+                    appUpdateNotifier.promptInstall(uri.toUri(), title)
                 }
                 PackageInstaller.STATUS_SUCCESS -> {
                     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -31,19 +38,26 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                     val notifyOnInstall = extras.getBoolean(AppUpdateDownloadJob.EXTRA_NOTIFY_ON_INSTALL, true)
                     try {
                         if (notifyOnInstall) {
-                            AppUpdateNotifier(context).onInstallFinished()
+                            appUpdateNotifier.onInstallFinished()
                         }
                     } finally {
                         AppUpdateDownloadJob.stop(context)
+                        appUpdateNotifier.cancelInstallNotification()
                     }
                 }
-                PackageInstaller.STATUS_FAILURE, PackageInstaller.STATUS_FAILURE_ABORTED, PackageInstaller.STATUS_FAILURE_BLOCKED, PackageInstaller.STATUS_FAILURE_CONFLICT, PackageInstaller.STATUS_FAILURE_INCOMPATIBLE, PackageInstaller.STATUS_FAILURE_INVALID, PackageInstaller.STATUS_FAILURE_STORAGE -> {
+                PackageInstaller.STATUS_FAILURE,
+                PackageInstaller.STATUS_FAILURE_ABORTED,
+                PackageInstaller.STATUS_FAILURE_BLOCKED,
+                PackageInstaller.STATUS_FAILURE_CONFLICT,
+                PackageInstaller.STATUS_FAILURE_INCOMPATIBLE,
+                PackageInstaller.STATUS_FAILURE_INVALID,
+                PackageInstaller.STATUS_FAILURE_STORAGE -> {
                     if (status != PackageInstaller.STATUS_FAILURE_ABORTED) {
                         context.toast(KMR.strings.could_not_install_update)
                         val uri = intent.getStringExtra(AppUpdateDownloadJob.EXTRA_FILE_URI) ?: return
-                        val appUpdateNotifier = AppUpdateNotifier(context)
+                        val title = intent.getStringExtra(AppUpdateDownloadJob.EXTRA_DOWNLOAD_TITLE)
                         appUpdateNotifier.cancelInstallNotification()
-                        appUpdateNotifier.onInstallError(uri.toUri())
+                        appUpdateNotifier.onInstallError(uri.toUri(), title)
                     }
                 }
             }
@@ -58,7 +72,7 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                 remove(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY)
             }
             if (notifyOnInstall) {
-                AppUpdateNotifier(context).onInstallFinished()
+                appUpdateNotifier.onInstallFinished()
             }
         }
     }

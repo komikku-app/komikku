@@ -121,9 +121,10 @@ internal class AppUpdateNotifier(private val context: Context) {
      *
      * @param uri path location of apk.
      */
-    fun promptInstall(uri: Uri) {
+    fun promptInstall(uri: Uri, title: String? = null) {
         val installIntent = NotificationHandler.installApkPendingActivity(context, uri)
         with(notificationBuilder) {
+            title?.let { setContentTitle(title) }
             setContentText(context.stringResource(MR.strings.update_check_notification_download_complete))
             setSmallIcon(android.R.drawable.stat_sys_download_done)
             setOnlyAlertOnce(false)
@@ -216,7 +217,7 @@ internal class AppUpdateNotifier(private val context: Context) {
 
     fun onInstalling() {
         with(notificationBuilder) {
-            setContentTitle(context.stringResource(MR.strings.ext_installing))
+            setContentText(context.stringResource(MR.strings.ext_installing))
             setSmallIcon(android.R.drawable.stat_sys_download)
             setProgress(0, 0, true)
             setOnlyAlertOnce(true)
@@ -265,9 +266,9 @@ internal class AppUpdateNotifier(private val context: Context) {
         }
     }
 
-    fun onInstallError(uri: Uri) {
+    fun onInstallError(uri: Uri, title: String?) {
         with(notificationBuilder) {
-            setContentTitle(context.stringResource(MR.strings.app_name))
+            title?.let { setContentTitle(title) }
             setContentText(context.stringResource(KMR.strings.could_not_install_update))
             setSmallIcon(android.R.drawable.stat_sys_warning)
             setOnlyAlertOnce(false)
@@ -294,6 +295,7 @@ internal class AppUpdateNotifier(private val context: Context) {
 
     fun cancelInstallNotification() {
         NotificationReceiver.dismissNotification(context, Notifications.ID_APP_INSTALL)
+        NotificationReceiver.dismissNotification(context, Notifications.ID_APP_UPDATE_PROMPT)
     }
 
     companion object {
