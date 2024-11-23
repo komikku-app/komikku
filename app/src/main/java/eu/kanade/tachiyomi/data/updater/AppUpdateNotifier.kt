@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.updater
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -244,7 +243,7 @@ internal class AppUpdateNotifier(private val context: Context) {
             setContentIntent(pendingIntent)
             clearActions()
             addAction(
-                R.drawable.ic_system_update_alt_white_24dp,
+                R.drawable.ic_launch,
                 context.stringResource(KMR.strings.open),
                 pendingIntent,
             )
@@ -259,7 +258,7 @@ internal class AppUpdateNotifier(private val context: Context) {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             addAction(
-                R.drawable.ic_new_releases_24dp,
+                R.drawable.ic_info_24dp,
                 context.stringResource(KMR.strings.release_page),
                 PendingIntent.getActivity(context, releaseUrl.hashCode(), releaseIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE),
             )
@@ -270,11 +269,10 @@ internal class AppUpdateNotifier(private val context: Context) {
         with(notificationBuilder) {
             title?.let { setContentTitle(title) }
             setContentText(context.stringResource(KMR.strings.could_not_install_update))
-            setSmallIcon(android.R.drawable.stat_sys_warning)
+            setSmallIcon(R.drawable.ic_warning_white_24dp)
             setOnlyAlertOnce(false)
             setAutoCancel(false)
             setProgress(0, 0, false)
-            color = ContextCompat.getColor(context, R.color.tachiyomi_secondary)
             clearActions()
             // Retry action
             addAction(
