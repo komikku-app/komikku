@@ -1,11 +1,13 @@
 package eu.kanade.tachiyomi.data.updater
 
 import android.content.Context
+import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.domain.release.service.AppUpdatePolicy
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -23,7 +25,7 @@ class AppUpdateChecker(
         context: Context,
         forceCheck: Boolean = false,
         // KMK -->
-        doExtrasAfterNewUpdate: Boolean = true,
+        pendingAutoUpdate: Boolean = true,
         // KMK <--
     ): GetApplicationRelease.Result {
         return withIOContext {
@@ -46,14 +48,18 @@ class AppUpdateChecker(
                 else -> {}
             }
 
-//            if (doExtrasAfterNewUpdate && result is GetApplicationRelease.Result.NewUpdate) {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-//                    preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
-//                ) {
-//                    AppUpdateDownloadJob.start(context, null, false, waitUntilIdle = true)
-//                }
-//                AppUpdateNotifier(context).promptUpdate(result.release)
-//            }
+            if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
+                ) {
+                    AppUpdateDownloadJob.start(
+                        context = context,
+                        url = result.release.getDownloadLink(),
+                        title = result.release.version,
+                        waitUntilIdle = true
+                    )
+                }
+            }
 
             result
         }

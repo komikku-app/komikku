@@ -29,6 +29,7 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
                     context = context,
                     url = result.release.getDownloadLink(),
                     title = result.release.version,
+                    waitUntilIdle = true,
                 )
             }
             Result.success()

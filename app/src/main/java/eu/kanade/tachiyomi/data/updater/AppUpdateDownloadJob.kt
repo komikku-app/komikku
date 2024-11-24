@@ -12,10 +12,12 @@ import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import eu.kanade.tachiyomi.BuildConfig
@@ -23,23 +25,33 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
 import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
+import exh.log.xLogE
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
+import okhttp3.Call
 import okhttp3.internal.http2.ErrorCode
 import okhttp3.internal.http2.StreamResetException
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.domain.release.service.AppUpdatePolicy
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
+import java.lang.ref.WeakReference
 import kotlin.coroutines.cancellation.CancellationException
 
 class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerParameters) :
@@ -47,8 +59,21 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
 
     private val notifier = AppUpdateNotifier(context)
     private val network: NetworkHelper by injectLazy()
+    private val preferences = Injekt.get<UnsortedPreferences>()
 
     override suspend fun doWork(): Result {
+        val idleRun = inputData.getBoolean(IDLE_RUN, false)
+        if (idleRun) {
+            if (!context.packageManager.canRequestPackageInstalls()) {
+                return Result.failure()
+            }
+            if (preferences.appShouldAutoUpdate().get() == AppUpdatePolicy.ONLY_ON_WIFI &&
+                context.connectivityManager.isActiveNetworkMetered
+            ) {
+                return Result.retry()
+            }
+        }
+
         val url = inputData.getString(EXTRA_DOWNLOAD_URL)
         val title = inputData.getString(EXTRA_DOWNLOAD_TITLE) ?: context.stringResource(MR.strings.app_name)
 
@@ -57,12 +82,15 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
 
         setForegroundSafely()
+        instance = WeakReference(this)
 
         val notifyOnInstall = inputData.getBoolean(EXTRA_NOTIFY_ON_INSTALL, true)
 
         withIOContext {
             downloadApk(title, url, notifyOnInstall)
         }
+
+        instance = null
 
         return Result.success()
     }
@@ -90,7 +118,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         // KMK -->
         notifyOnInstall: Boolean = true,
         // KMK <--
-        ) {
+        ) = coroutineScope {
         // Show notification download starting.
         notifier.onDownloadStarted(title)
 
@@ -132,6 +160,10 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             // KMK -->
             network.downloadFileWithResume(url, apkFile, progressListener)
             // KMK <--
+            if (isStopped) {
+                cancel()
+                return@coroutineScope
+            }
             notifier.cancel()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 startInstalling(apkFile, title, notifyOnInstall)
@@ -139,8 +171,8 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                 notifier.promptInstall(apkFile.getUriCompat(context))
             }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR) { e.toString() }
-            val shouldCancel = e is CancellationException ||
+            xLogE("App update stopped:", e)
+            val shouldCancel = e is CancellationException || isStopped ||
                 (e is StreamResetException && e.errorCode == ErrorCode.CANCEL)
             if (shouldCancel) {
                 notifier.cancel()
@@ -234,24 +266,46 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         const val EXTRA_DOWNLOAD_URL = "DOWNLOAD_URL"
         const val EXTRA_DOWNLOAD_TITLE = "DOWNLOAD_TITLE"
 
-        const val ALWAYS = 0
-        const val ONLY_ON_UNMETERED = 1
-        const val NEVER = 2
+        private var instance: WeakReference<AppUpdateDownloadJob>? = null
 
-        fun start(context: Context, url: String, title: String? = null, notifyOnInstall: Boolean = true, waitUntilIdle: Boolean = false) {
-            val constraints = Constraints(
-                requiredNetworkType = NetworkType.CONNECTED,
-            )
-
+        fun start(
+            context: Context,
+            url: String,
+            title: String? = null,
+            notifyOnInstall: Boolean = true,
+            waitUntilIdle: Boolean = false,
+        ) {
+            val data = Data.Builder()
+            data.putString(EXTRA_DOWNLOAD_URL, url)
+            data.putString(EXTRA_DOWNLOAD_TITLE, title)
+            data.putBoolean(EXTRA_NOTIFY_ON_INSTALL, notifyOnInstall)
             val request = OneTimeWorkRequestBuilder<AppUpdateDownloadJob>()
-                .setConstraints(constraints)
                 .addTag(TAG)
-                .setInputData(
-                    workDataOf(
-                        EXTRA_DOWNLOAD_URL to url,
-                        EXTRA_DOWNLOAD_TITLE to title,
-                    ),
-                )
+                .apply {
+                    if (waitUntilIdle) {
+                        data.putBoolean(IDLE_RUN, true)
+                        val shouldAutoUpdate = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
+                        val constraints = Constraints.Builder()
+                            .setRequiredNetworkType(
+                                if (shouldAutoUpdate == AppUpdatePolicy.ALWAYS) {
+                                    NetworkType.CONNECTED
+                                } else {
+                                    NetworkType.UNMETERED
+                                },
+                            )
+                            .setRequiresDeviceIdle(true)
+                            .build()
+                        setConstraints(constraints)
+                    } else {
+                        setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                        setConstraints(
+                            Constraints(
+                                requiredNetworkType = NetworkType.CONNECTED,
+                            )
+                        )
+                    }
+                    setInputData(data.build())
+                }
                 .build()
 
             context.workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
