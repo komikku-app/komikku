@@ -175,6 +175,8 @@ object SettingsAdvancedScreen : SearchableSettings {
                 onValueChanged = {
                     if (it != AppUpdatePolicy.NEVER) {
                         AppUpdateJob.setupTask(context)
+                    } else {
+                        AppUpdateJob.cancelTask(context)
                     }
                     true
                 },
