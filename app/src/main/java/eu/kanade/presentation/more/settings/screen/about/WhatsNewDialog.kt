@@ -61,13 +61,17 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
             Column {
                 val changelog by produceState<List<DisplayChangelog>?>(initialValue = null) {
                     value = withIOContext {
-                        XML.decodeFromReader<Changelog>(
-                            AndroidXmlReader(
-                                context.resources.openRawResource(
-                                    if (isReleaseBuildType) R.raw.changelog_release else R.raw.changelog_preview,
-                                ).bufferedReader(),
-                            ),
-                        ).toDisplayChangelog()
+                        try {
+                            XML.decodeFromReader<Changelog>(
+                                AndroidXmlReader(
+                                    context.resources.openRawResource(
+                                        if (isReleaseBuildType) R.raw.changelog_release else R.raw.changelog_preview,
+                                    ).bufferedReader(),
+                                ),
+                            ).toDisplayChangelog()
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
                     }
                 }
                 if (changelog != null) {
