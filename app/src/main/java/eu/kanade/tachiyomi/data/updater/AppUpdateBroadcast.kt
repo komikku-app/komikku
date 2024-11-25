@@ -4,9 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
-import androidx.core.content.edit
 import androidx.core.net.toUri
-import androidx.preference.PreferenceManager
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.kmk.KMR
@@ -19,7 +17,6 @@ class AppUpdateBroadcast : BroadcastReceiver() {
             /*
              * Callback on PackageInstaller status
              */
-            val extras = intent.extras ?: return
             when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                     val confirmIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
@@ -31,15 +28,8 @@ class AppUpdateBroadcast : BroadcastReceiver() {
                     appUpdateNotifier.promptInstall(uri.toUri(), title)
                 }
                 PackageInstaller.STATUS_SUCCESS -> {
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-                    prefs.edit {
-                        remove(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY)
-                    }
-                    val notifyOnInstall = extras.getBoolean(AppUpdateDownloadJob.EXTRA_NOTIFY_ON_INSTALL, true)
                     try {
-                        if (notifyOnInstall) {
-                            appUpdateNotifier.onInstallFinished()
-                        }
+                        appUpdateNotifier.onInstallFinished()
                     } finally {
                         AppUpdateDownloadJob.stop(context)
                         appUpdateNotifier.cancelInstallNotification()
@@ -66,14 +56,7 @@ class AppUpdateBroadcast : BroadcastReceiver() {
              * System broadcast that is sent when the current application package has been replaced with a new version,
              * to perform actions when app is updated or reinstalled.
              */
-            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            val notifyOnInstall = prefs.getBoolean(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY, false)
-            prefs.edit {
-                remove(AppUpdateDownloadJob.NOTIFY_ON_INSTALL_KEY)
-            }
-            if (notifyOnInstall) {
-                appUpdateNotifier.onInstallFinished()
-            }
+            appUpdateNotifier.onInstallFinished()
         }
     }
 }
