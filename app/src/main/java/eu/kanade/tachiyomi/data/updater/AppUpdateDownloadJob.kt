@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.connectivityManager
+import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
@@ -29,11 +30,13 @@ import exh.log.xLogE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.internal.http2.ErrorCode
 import okhttp3.internal.http2.StreamResetException
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.service.AppUpdatePolicy
@@ -205,20 +208,17 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             withContext(Dispatchers.IO) {
                 data.close()
             }
-//            launchUI {
-//                delay(5000)
-//                val hasNotification = context.notificationManager
-//                    .activeNotifications.any { it.id == Notifications.ID_APP_UPDATER }
-//                // If the package manager crashes for whatever reason (china phone)
-//                // set a timeout and let the user manually install
-//                if (packageInstaller.getSessionInfo(sessionId) == null && !hasNotification) {
-//                    notifier.cancelInstallNotification()
-//                    notifier.promptInstall(file.getUriCompat(context))
-//                    PreferenceManager.getDefaultSharedPreferences(context).edit {
-//                        remove(NOTIFY_ON_INSTALL_KEY)
-//                    }
-//                }
-//            }
+            launchUI {
+                delay(1000)
+                val hasNotification = context.notificationManager
+                    .activeNotifications.any { it.id == Notifications.ID_APP_INSTALL }
+                // If the package manager crashes for whatever reason (china phone)
+                // set a timeout and let the user manually install
+                if (packageInstaller.getSessionInfo(sessionId) == null && !hasNotification) {
+                    notifier.cancelInstallNotification()
+                    notifier.promptInstall(file.getUriCompat(context))
+                }
+            }
         } catch (error: Exception) {
             // Either install package can't be found (probably bots) or there's a security exception
             // with the download manager. Nothing we can workaround.
