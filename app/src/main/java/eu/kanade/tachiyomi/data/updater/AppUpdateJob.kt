@@ -10,7 +10,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.ui.more.ComingUpdatesScreen
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.log.xLogE
 import kotlinx.coroutines.coroutineScope
@@ -22,16 +21,7 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
-            val result = AppUpdateChecker().checkForUpdate(context)
-            if (result is GetApplicationRelease.Result.NewUpdate) {
-                AppUpdateNotifier.releasePageUrl = result.release.releaseLink
-                AppUpdateDownloadJob.start(
-                    context = context,
-                    url = result.release.getDownloadLink(),
-                    title = result.release.version,
-                    waitUntilIdle = true,
-                )
-            }
+            AppUpdateChecker().checkForUpdate(context)
             Result.success()
         } catch (e: Exception) {
             xLogE("Unable to check for update", e)
