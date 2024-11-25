@@ -8,7 +8,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.ComingUpdatesScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.updater.AppUpdateDownloadJob
-import eu.kanade.tachiyomi.data.updater.AppUpdateNotifier
 import eu.kanade.tachiyomi.util.system.openInBrowser
 
 class ComingUpdatesScreen(
@@ -32,7 +31,6 @@ class ComingUpdatesScreen(
             onOpenInBrowser = { context.openInBrowser(releaseLink) },
             onRejectUpdate = navigator::pop,
             onAcceptUpdate = {
-                AppUpdateNotifier.releasePageUrl = releaseLink
                 AppUpdateDownloadJob.start(
                     context = context,
                     url = downloadLink,

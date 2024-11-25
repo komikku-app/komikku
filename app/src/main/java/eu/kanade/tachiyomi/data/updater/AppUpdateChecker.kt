@@ -40,24 +40,31 @@ class AppUpdateChecker(
                 ),
             )
 
-            when (result) {
-                is GetApplicationRelease.Result.NewUpdate -> AppUpdateNotifier(context).promptUpdate(result.release)
-                is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
-                    context,
-                ).promptFdroidUpdate()
-                else -> {}
-            }
+            if (!peekIntoPreview) {
+                when (result) {
+                    is GetApplicationRelease.Result.NewUpdate -> {
+                        AppUpdateNotifier.releasePageUrl = result.release.releaseLink
+                        AppUpdateNotifier(context).promptUpdate(result.release)
+                    }
 
-            if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                    preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
-                ) {
-                    AppUpdateDownloadJob.start(
-                        context = context,
-                        url = result.release.getDownloadLink(),
-                        title = result.release.version,
-                        waitUntilIdle = true
-                    )
+                    is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
+                        context,
+                    ).promptFdroidUpdate()
+
+                    else -> {}
+                }
+
+                if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                        preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
+                    ) {
+                        AppUpdateDownloadJob.start(
+                            context = context,
+                            url = result.release.getDownloadLink(),
+                            title = result.release.version,
+                            waitUntilIdle = true,
+                        )
+                    }
                 }
             }
 
