@@ -46,7 +46,7 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
                 .build()
 
             val request = PeriodicWorkRequestBuilder<AppUpdateJob>(
-                2,
+                3,
                 TimeUnit.DAYS,
                 3,
                 TimeUnit.HOURS,
