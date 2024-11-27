@@ -25,6 +25,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -173,10 +174,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                     }
                     .toImmutableMap(),
                 onValueChanged = {
-                    if (it != AppUpdatePolicy.NEVER) {
-                        AppUpdateJob.setupTask(context)
-                    } else {
-                        AppUpdateJob.cancelTask(context)
+                    // Post to event looper to allow the preference to be updated.
+                    ContextCompat.getMainExecutor(context).execute {
+                        if (it != AppUpdatePolicy.NEVER) {
+                            AppUpdateJob.setupTask(context)
+                        } else {
+                            AppUpdateJob.cancelTask(context)
+                        }
                     }
                     true
                 },

@@ -158,7 +158,8 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             }
         } catch (e: Exception) {
             xLogE("App update stopped:", e)
-            val shouldCancel = e is CancellationException || isStopped ||
+            val shouldCancel = e is CancellationException ||
+                isStopped ||
                 (e is StreamResetException && e.errorCode == ErrorCode.CANCEL)
             if (shouldCancel) {
                 notifier.cancel()
@@ -271,7 +272,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                         setConstraints(
                             Constraints(
                                 requiredNetworkType = NetworkType.CONNECTED,
-                            )
+                            ),
                         )
                     }
                     setInputData(data.build())

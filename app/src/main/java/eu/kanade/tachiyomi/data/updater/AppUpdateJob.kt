@@ -38,7 +38,7 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
     }
 
     companion object {
-        private const val TAG = "UpdateChecker"
+        private const val TAG = "AppUpdateChecker"
 
         fun setupTask(context: Context) {
             val constraints = Constraints.Builder()
