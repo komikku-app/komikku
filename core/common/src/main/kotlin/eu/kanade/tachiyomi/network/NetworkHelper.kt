@@ -25,12 +25,26 @@ open /* SY <-- */ class NetworkHelper(
     open /* SY <-- */val cookieJar = AndroidCookieJar()
 
     /* SY --> */
-    open /* SY <-- */val client: OkHttpClient = run {
+    open /* SY <-- */val client: OkHttpClient =
+        // KMK -->
+        clientWithTimeOut()
+
+    /**
+     * Timeout in unit of seconds.
+     */
+    fun clientWithTimeOut(
+        connectTimeout: Long = 30,
+        readTimeout: Long = 30,
+        callTimeout: Long = 120,
+        // KMK <--
+    ): OkHttpClient = run {
         val builder = OkHttpClient.Builder()
             .cookieJar(cookieJar)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .callTimeout(2, TimeUnit.MINUTES)
+            // KMK -->
+            .connectTimeout(connectTimeout, TimeUnit.SECONDS)
+            .readTimeout(readTimeout, TimeUnit.SECONDS)
+            .callTimeout(callTimeout, TimeUnit.SECONDS)
+            // KMK <--
             .cache(
                 Cache(
                     directory = File(context.cacheDir, "network_cache"),
@@ -74,10 +88,11 @@ open /* SY <-- */ class NetworkHelper(
     /**
      * @deprecated Since extension-lib 1.5
      */
-    @Deprecated("The regular client handles Cloudflare by default")
+    @Deprecated("The regular client handles Cloudflare by default", ReplaceWith("client"))
     @Suppress("UNUSED")
     /* SY --> */
-    open /* SY <-- */val cloudflareClient: OkHttpClient = client
+    open /* SY <-- */val cloudflareClient: OkHttpClient
+        get() = client
 
     fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
 }
