@@ -22,6 +22,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
@@ -210,17 +211,32 @@ class NotificationReceiver : BroadcastReceiver() {
     private fun markAsRead(chapterUrls: Array<String>, mangaId: Long) {
         val downloadPreferences: DownloadPreferences = Injekt.get()
         val sourceManager: SourceManager = Injekt.get()
+        // KMK -->
+        val getCategories: GetCategories = Injekt.get()
+        // KMK <--
 
         launchIO {
+            // KMK -->
+            // Retrieve the categories that are set to exclude from being deleted on read
+            val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong).toSet()
+            // KMK <--
+
             val toUpdate = chapterUrls.mapNotNull { getChapter.await(it, mangaId) }
                 .map {
                     val chapter = it.copy(read = true)
                     if (downloadPreferences.removeAfterMarkedAsRead().get()) {
                         val manga = getManga.await(mangaId)
                         if (manga != null) {
-                            val source = sourceManager.get(manga.source)
-                            if (source != null) {
-                                downloadManager.deleteChapters(listOf(it), manga, source)
+                            // KMK -->
+                            val categoriesForManga = getCategories.await(mangaId)
+                                .map { it.id }
+                                .ifEmpty { listOf(0) }
+                            if (categoriesForManga.intersect(categoriesToExclude).isEmpty()) {
+                                // KMK <--
+                                val source = sourceManager.get(manga.source)
+                                if (source != null) {
+                                    downloadManager.deleteChapters(listOf(it), manga, source)
+                                }
                             }
                         }
                     }
