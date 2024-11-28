@@ -5,17 +5,12 @@ import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
-import tachiyomi.domain.release.service.AppUpdatePolicy
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class AppUpdateChecker(
     // KMK -->
     private val peekIntoPreview: Boolean = false,
-    private val preferences: UnsortedPreferences = Injekt.get(),
     // KMK <--
 ) {
 
@@ -55,14 +50,12 @@ class AppUpdateChecker(
                 }
 
                 if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                        preferences.appShouldAutoUpdate().get() != AppUpdatePolicy.NEVER
-                    ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         AppUpdateDownloadJob.start(
                             context = context,
                             url = result.release.getDownloadLink(),
                             title = result.release.version,
-                            waitUntilIdle = true,
+                            scheduled = true,
                         )
                     }
                 }

@@ -7,6 +7,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -22,6 +23,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.connectivityManager
+import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.toast
@@ -46,6 +48,7 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerParameters) :
@@ -56,12 +59,14 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
     private val preferences = Injekt.get<UnsortedPreferences>()
 
     override suspend fun doWork(): Result {
-        val idleRun = inputData.getBoolean(IDLE_RUN, false)
+        val idleRun = inputData.getBoolean(SCHEDULED_RUN, false)
         if (idleRun) {
             if (!context.packageManager.canRequestPackageInstalls()) {
                 return Result.failure()
             }
-            if (preferences.appShouldAutoUpdate().get() == AppUpdatePolicy.ONLY_ON_WIFI &&
+            val restrictions = preferences.appShouldAutoUpdate().get()
+            if ((AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) && !context.isConnectedToWifi() ||
+                (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) &&
                 context.connectivityManager.isActiveNetworkMetered
             ) {
                 return Result.retry()
@@ -234,7 +239,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         const val PACKAGE_INSTALLED_ACTION =
             "${BuildConfig.APPLICATION_ID}.SESSION_SELF_API_PACKAGE_INSTALLED"
         internal const val EXTRA_FILE_URI = "${BuildConfig.APPLICATION_ID}.AppInstaller.FILE_URI"
-        private const val IDLE_RUN = "idle_run"
+        private const val SCHEDULED_RUN = "scheduled_run"
 
         const val EXTRA_DOWNLOAD_URL = "DOWNLOAD_URL"
         const val EXTRA_DOWNLOAD_TITLE = "DOWNLOAD_TITLE"
@@ -245,7 +250,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             context: Context,
             url: String,
             title: String? = null,
-            waitUntilIdle: Boolean = false,
+            scheduled: Boolean = false,
         ) {
             val data = Data.Builder()
             data.putString(EXTRA_DOWNLOAD_URL, url)
@@ -253,20 +258,21 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             val request = OneTimeWorkRequestBuilder<AppUpdateDownloadJob>()
                 .addTag(TAG)
                 .apply {
-                    if (waitUntilIdle) {
-                        data.putBoolean(IDLE_RUN, true)
-                        val shouldAutoUpdate = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
-                        val constraints = Constraints.Builder()
-                            .setRequiredNetworkType(
-                                if (shouldAutoUpdate == AppUpdatePolicy.ALWAYS) {
-                                    NetworkType.CONNECTED
-                                } else {
-                                    NetworkType.UNMETERED
-                                },
-                            )
-                            .setRequiresDeviceIdle(true)
-                            .build()
+                    if (scheduled) {
+                        data.putBoolean(SCHEDULED_RUN, true)
+                        val restrictions = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
+                        val constraints = Constraints(
+                            requiredNetworkType = if (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) {
+                                NetworkType.UNMETERED
+                            } else {
+                                NetworkType.CONNECTED
+                            },
+                            requiresCharging = AppUpdatePolicy.DEVICE_CHARGING in restrictions,
+                            requiresBatteryNotLow = true,
+                        )
                         setConstraints(constraints)
+                        setInitialDelay(10, TimeUnit.MINUTES)
+                        setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
                     } else {
                         setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                         setConstraints(

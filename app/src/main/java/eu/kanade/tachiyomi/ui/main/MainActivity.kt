@@ -439,7 +439,7 @@ class MainActivity : BaseActivity() {
         LaunchedEffect(Unit) {
             if (BuildConfig.INCLUDE_UPDATER) {
                 try {
-                    AppUpdateJob.rearmTask(context)
+                    AppUpdateJob.setupTask(context)
                     val result = AppUpdateChecker().checkForUpdate(context)
                     if (result is GetApplicationRelease.Result.NewUpdate) {
                         val updateScreen = NewUpdateScreen(

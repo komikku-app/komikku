@@ -13,10 +13,6 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.log.xLogE
 import kotlinx.coroutines.coroutineScope
-import tachiyomi.domain.UnsortedPreferences
-import tachiyomi.domain.release.service.AppUpdatePolicy
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
 
 class AppUpdateJob(private val context: Context, workerParams: WorkerParameters) :
@@ -60,14 +56,6 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
 
         fun cancelTask(context: Context) {
             WorkManager.getInstance(context).cancelAllWorkByTag(TAG)
-        }
-
-        fun rearmTask(context: Context) {
-            val shouldAutoUpdate = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
-            cancelTask(context)
-            if (shouldAutoUpdate != AppUpdatePolicy.NEVER) {
-                setupTask(context)
-            }
         }
     }
 }

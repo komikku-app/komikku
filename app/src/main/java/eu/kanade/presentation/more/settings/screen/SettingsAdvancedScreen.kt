@@ -157,31 +157,18 @@ object SettingsAdvancedScreen : SearchableSettings {
                     context.startActivity(intent)
                 },
             ),
-            Preference.PreferenceItem.ListPreference(
+            Preference.PreferenceItem.MultiSelectListPreference(
                 pref = unsortedPreferences.appShouldAutoUpdate(),
                 title = stringResource(KMR.strings.auto_update_app),
-                entries = AppUpdatePolicy.entries
-                    .associateWith {
-                        when (it) {
-                            AppUpdatePolicy.NEVER ->
-                                stringResource(KMR.strings.auto_update_app_never)
-                            AppUpdatePolicy.ALWAYS ->
-                                stringResource(KMR.strings.auto_update_app_always)
-                            AppUpdatePolicy.ONLY_ON_WIFI ->
-                                stringResource(KMR.strings.auto_update_app_wifi_only)
-                            else -> it.name
-                        }
-                    }
-                    .toImmutableMap(),
+                subtitle = stringResource(MR.strings.restrictions),
+                entries = persistentMapOf(
+                    AppUpdatePolicy.DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
+                    AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED to stringResource(MR.strings.network_not_metered),
+                    AppUpdatePolicy.DEVICE_CHARGING to stringResource(MR.strings.charging),
+                ),
                 onValueChanged = {
                     // Post to event looper to allow the preference to be updated.
-                    ContextCompat.getMainExecutor(context).execute {
-                        if (it != AppUpdatePolicy.NEVER) {
-                            AppUpdateJob.setupTask(context)
-                        } else {
-                            AppUpdateJob.cancelTask(context)
-                        }
-                    }
+                    ContextCompat.getMainExecutor(context).execute { AppUpdateJob.setupTask(context) }
                     true
                 },
             ),
