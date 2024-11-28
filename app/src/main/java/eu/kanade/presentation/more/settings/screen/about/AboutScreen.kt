@@ -312,7 +312,9 @@ object AboutScreen : Screen() {
         // KMK <--
     ) {
         val updateChecker = AppUpdateChecker(
+            // KMK -->
             peekIntoPreview = peekIntoPreview,
+            // KMK <--
         )
         withUIContext {
             try {

@@ -122,7 +122,9 @@ internal class AppUpdateNotifier(private val context: Context) {
     fun promptInstall(uri: Uri, title: String? = null) {
         val installIntent = NotificationHandler.installApkPendingActivity(context, uri)
         with(notificationBuilder) {
+            // KMK -->
             title?.let { setContentTitle(title) }
+            // KMK <--
             setContentText(context.stringResource(MR.strings.update_check_notification_download_complete))
             setSmallIcon(android.R.drawable.stat_sys_download_done)
             setOnlyAlertOnce(false)
@@ -213,6 +215,7 @@ internal class AppUpdateNotifier(private val context: Context) {
         notificationBuilder.show(Notifications.ID_APP_UPDATE_ERROR)
     }
 
+    // KMK -->
     fun onInstalling() {
         with(notificationBuilder) {
             setContentText(context.stringResource(MR.strings.ext_installing))
@@ -303,4 +306,5 @@ internal class AppUpdateNotifier(private val context: Context) {
     companion object {
         var releasePageUrl: String? = null
     }
+    // KMK <--
 }

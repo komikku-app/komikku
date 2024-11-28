@@ -133,7 +133,7 @@ object SettingsAdvancedScreen : SearchableSettings {
             ),
             /* SY --> Preference.PreferenceItem.SwitchPreference(
                 pref = networkPreferences.verboseLogging(),
-                title = stringResource(MR.strings.dpref_verbose_logging),
+                title = stringResource(MR.strings.pref_verbose_logging),
                 subtitle = stringResource(MR.strings.pref_verbose_logging_summary),
                 onValueChanged = {
                     context.toast(MR.strings.requires_app_restart)
@@ -157,6 +157,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     context.startActivity(intent)
                 },
             ),
+            // KMK -->
             Preference.PreferenceItem.MultiSelectListPreference(
                 pref = unsortedPreferences.appShouldAutoUpdate(),
                 title = stringResource(KMR.strings.auto_update_app),
@@ -172,6 +173,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     true
                 },
             ),
+            // KMK <--
             getBackgroundActivityGroup(),
             getDataGroup(),
             getNetworkGroup(networkPreferences = networkPreferences),

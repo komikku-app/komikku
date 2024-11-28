@@ -35,10 +35,14 @@ class AppUpdateChecker(
                 ),
             )
 
+            // KMK -->
             if (!peekIntoPreview) {
+                // KMK <--
                 when (result) {
                     is GetApplicationRelease.Result.NewUpdate -> {
+                        // KMK -->
                         AppUpdateNotifier.releasePageUrl = result.release.releaseLink
+                        // KMK <--
                         AppUpdateNotifier(context).promptUpdate(result.release)
                     }
 
@@ -49,6 +53,7 @@ class AppUpdateChecker(
                     else -> {}
                 }
 
+                // KMK -->
                 if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         AppUpdateDownloadJob.start(
@@ -59,6 +64,7 @@ class AppUpdateChecker(
                         )
                     }
                 }
+                // KMK <--
             }
 
             result
