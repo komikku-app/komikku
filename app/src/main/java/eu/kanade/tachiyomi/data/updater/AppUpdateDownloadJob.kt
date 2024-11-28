@@ -12,13 +12,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.ProgressListener
-import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
 import eu.kanade.tachiyomi.util.storage.getUriCompat
-import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import logcat.LogPriority
@@ -72,11 +68,16 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
      *
      * @param url url location of file
      */
-    private suspend fun downloadApk(title: String, url: String) {
+    private fun downloadApk(title: String, url: String) {
         // Show notification download starting.
         notifier.onDownloadStarted(title)
 
         val progressListener = object : ProgressListener {
+            // KMK -->
+            // Total size of the downloading file, should be set when starting and kept over retries
+            var totalSize = 0L
+            // KMK <--
+
             // Progress of the download
             var savedProgress = 0
 
@@ -84,7 +85,16 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             var lastTick = 0L
 
             override fun update(bytesRead: Long, contentLength: Long, done: Boolean) {
-                val progress = (100 * (bytesRead.toFloat() / contentLength)).toInt()
+                // KMK -->
+                val downloadedSize: Long
+                if (totalSize == 0L) {
+                    totalSize = contentLength
+                    downloadedSize = bytesRead
+                } else {
+                    downloadedSize = totalSize - contentLength + bytesRead
+                }
+                // KMK <--
+                val progress = (100 * (downloadedSize.toFloat() / totalSize)).toInt()
                 val currentTime = System.currentTimeMillis()
                 if (progress > savedProgress && currentTime - 200 > lastTick) {
                     savedProgress = progress
@@ -95,19 +105,11 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
 
         try {
-            // Download the new update.
-            val response = network.client.newCachelessCallWithProgress(GET(url), progressListener)
-                .await()
-
             // File where the apk will be saved.
             val apkFile = File(context.externalCacheDir, "update.apk")
-
-            if (response.isSuccessful) {
-                response.body.source().saveTo(apkFile)
-            } else {
-                response.close()
-                throw Exception("Unsuccessful response")
-            }
+            // KMK -->
+            network.downloadFileWithResume(url, apkFile, progressListener)
+            // KMK <--
             notifier.cancel()
             notifier.promptInstall(apkFile.getUriCompat(context))
         } catch (e: Exception) {
