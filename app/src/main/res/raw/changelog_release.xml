@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
     <changelogversion versionName="" changeDate="">
-        filter only Obsolete sources in Migration screen
-        Improve saved-search usage
-        allow using saved-search while migration source search
-        allow reset filters on SourceFeedScreen
-        Trying to load saved-search as much as possible even though filterList might changed
-        fix source-search clear causing disappearance of search box
-        Fix a possible crash with auto-zoom
-        Fix multiple issues with the E-Hentai updater
-        support comma (,) delimiter when searching library
-        fix Reader's dialog font size
-        Fix crash on MigrationListScreen with null accessing a mutableState when it's being put in the background
-        Do not sync automatically when not connected to a network.
-        Fix app onStart sync
-        Fix crashes from Exh Updater
-        Add option to always use SSIV for image decoding
-        Fix InterceptActivity crash
-        Bump default user agent
-        Fix long strip images not loading in some old devices
-        Fix a rare crash when invoking "Mark previous as read" action
-        Auto format extension repo URLs
-        Some improvements to Bangumi tracker search
-        change bulk-favorite icon to Heart
+        <changelogtext>[b]New:[/b] Auto install app update</changelogtext>
+        <changelogtext>[b]New:[/b] filter only Obsolete sources in Migration screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] App update retry/resume</changelogtext>
+        <changelogtext>[b]Improve:[/b] add manual download &amp; error message to app update error notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] add webp support to nh</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve saved-search usage</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow using saved-search while migration source search</changelogtext>
+        <changelogtext>[b]Improve:[/b] Trying to load saved-search as much as possible even though filterList might changed</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow reset filters on SourceFeedScreen</changelogtext>
+        <changelogtext>[b]Improve:[/b] change bulk-favorite icon to Heart</changelogtext>
+        <changelogtext>[b]Improve:[/b] Bump default user agent</changelogtext>
+        <changelogtext>[b]Improve:[/b] Auto format extension repo URLs</changelogtext>
+        <changelogtext>[b]Improve:[/b] Some improvements to Bangumi tracker search</changelogtext>
+        <changelogtext>[b]Improve:[/b] support comma (,) delimiter when searching library</changelogtext>
+        <changelogtext>[b]Improve:[/b] Do not sync automatically when not connected to a network.</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve hardware bitmap threshold option</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add option to lower the threshold for hardware bitmaps</changelogtext>
+        <changelogtext>[b]Improve:[/b] Switch to hardware bitmap in reader only if device can handle it</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add a Honor system app to list of invalid browsers</changelogtext>
+        <changelogtext>[b]Fix:[/b] source-search clear causing disappearance of search box</changelogtext>
+        <changelogtext>[b]Fix:[/b] a possible crash with auto-zoom</changelogtext>
+        <changelogtext>[b]Fix:[/b] multiple issues with the E-H updater</changelogtext>
+        <changelogtext>[b]Fix:[/b] Reader's dialog font size</changelogtext>
+        <changelogtext>[b]Fix:[/b] crash on MigrationListScreen with null accessing a mutableState when it's being put in the background</changelogtext>
+        <changelogtext>[b]Fix:[/b] app onStart sync</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashes from Exh Updater</changelogtext>
+        <changelogtext>[b]Fix:[/b] InterceptActivity crash</changelogtext>
+        <changelogtext>[b]Fix:[/b] long strip images not loading in some old devices</changelogtext>
+        <changelogtext>[b]Fix:[/b] a rare crash when invoking "Mark previous as read" action</changelogtext>
+        <changelogtext>[b]Fix:[/b] fix: app update error notification always disappeared</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix reader transition color scheme in auto background mode</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.12.1" changeDate="Oct 29, 2024">
         <changelogtext>[b]New:[/b] Error screen</changelogtext>
@@ -57,7 +66,7 @@
         <changelogtext>[b]New:[/b] Add an "open in browser" button to reader menu</changelogtext>
         <changelogtext>[b]New:[/b] Add Backup and Restore of Extension Repos</changelogtext>
         <changelogtext>[b]New:[/b] Remove the 'UNOFFICIAL' status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
-        <changelogtext>[b]Improve:[/b] Default disable Integrated hentai features</changelogtext>
+        <changelogtext>[b]Improve:[/b] Default disable Integrated H features</changelogtext>
         <changelogtext>[b]Improve:[/b] show duplicating manga cover on Duplicate dialog</changelogtext>
         <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read</changelogtext>
         <changelogtext>[b]Improve:[/b] rework panorama cover settings</changelogtext>
@@ -83,7 +92,7 @@
         <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
         <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
         <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
-        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for E-H</changelogtext>
         <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
         <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
         <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
@@ -100,7 +109,7 @@
         <changelogtext>[b]Improve:[/b] allow canceling search for a migrating manga without remove it</changelogtext>
         <changelogtext>[b]Improve:[/b] put Suggestions in overflow</changelogtext>
         <changelogtext>[b]Improve:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
-        <changelogtext>[b]Fix:[/b] for ExHentai</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExH</changelogtext>
         <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration</changelogtext>
         <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker</changelogtext>
         <changelogtext>[b]Fix:[/b] late loading saved-searches when jump from SourceFeedScreen or FeedScreen</changelogtext>
@@ -138,7 +147,7 @@
         <changelogtext>[b]Improve:[/b] Google drive sync</changelogtext>
         <changelogtext>[b]Improve:[/b] Make global search 'Has result' sticky</changelogtext>
         <changelogtext>[b]Improve:[/b] Background color for favorite entries</changelogtext>
-        <changelogtext>[b]Fix:[/b] Update E-Hentai to support libraryColored, bulk-selection overlay</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update E-H to support libraryColored, bulk-selection overlay</changelogtext>
         <changelogtext>[b]Fix:[/b] Copy icon (migration whole list) was always migrating instead of copy</changelogtext>
         <changelogtext>[b]Fix:[/b] Migrate/copy manga with 'Delete downloaded' unticked had no effect but always delete</changelogtext>
         <changelogtext>[b]Fix:[/b] Background color of selected entries</changelogtext>

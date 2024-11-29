@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9608" changeDate="November 30, 2024">
+        <changelogtext>[b]New:[/b] Auto install app update</changelogtext>
+        <changelogtext>[b]Improve:[/b] App update retry/resume</changelogtext>
+        <changelogtext>[b]Improve:[/b] add manual download &amp; error message to app update error notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] add webp support to nh</changelogtext>
+        <changelogtext>[b]Improve:[/b] remember migrate screen's obsolete option</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve hardware bitmap threshold option</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add option to lower the threshold for hardware bitmaps</changelogtext>
+        <changelogtext>[b]Improve:[/b] Switch to hardware bitmap in reader only if device can handle it</changelogtext>
+        <changelogtext>[b]Improve:[/b] Revert "Add option to always use SSIV for image decoding"</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add a Honor system app to list of invalid browsers</changelogtext>
+        <changelogtext>[b]Fix:[/b] fix: app update error notification always disappeared</changelogtext>
+        <changelogtext>[b]Fix:[/b] Fix reader transition color scheme in auto background mode</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9576" changeDate="November 10, 2024">
         <changelogtext>[b]New:[/b] filter only Obsolete sources in Migration screen</changelogtext>
         <changelogtext>[b]New:[/b] Add option to always use SSIV for image decoding</changelogtext>
@@ -15,7 +29,7 @@
         <changelogtext>[b]Improve:[/b] Do not sync automatically when not connected to a network.</changelogtext>
         <changelogtext>[b]Fix:[/b] source-search clear causing disappearance of search box</changelogtext>
         <changelogtext>[b]Fix:[/b] a possible crash with auto-zoom</changelogtext>
-        <changelogtext>[b]Fix:[/b] multiple issues with the E-Hentai updater</changelogtext>
+        <changelogtext>[b]Fix:[/b] multiple issues with the E-H updater</changelogtext>
         <changelogtext>[b]Fix:[/b] Reader's dialog font size</changelogtext>
         <changelogtext>[b]Fix:[/b] crash on MigrationListScreen with null accessing a mutableState when it's being put in the background</changelogtext>
         <changelogtext>[b]Fix:[/b] app onStart sync</changelogtext>
@@ -41,7 +55,7 @@
         <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers</changelogtext>
         <changelogtext>[b]Improve:[/b] Allow Always/Ask/Nerver update trackers on mark as read</changelogtext>
         <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings</changelogtext>
-        <changelogtext>[b]Fix:[/b] for ExHentai</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExH</changelogtext>
         <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration</changelogtext>
         <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker</changelogtext>
         <changelogtext>[b]Fix:[/b] reader slider</changelogtext>
@@ -81,7 +95,7 @@
         <changelogtext>[b]New:[/b] feat(ui): read/resume button movable</changelogtext>
         <changelogtext>[b]Improve:[/b] Colors palette for Custom theme</changelogtext>
         <changelogtext>[b]Improve:[/b] Improve custom theme</changelogtext>
-        <changelogtext>[b]Improve:[/b] Default disable Integrated hentai features</changelogtext>
+        <changelogtext>[b]Improve:[/b] Default disable Integrated H features</changelogtext>
         <changelogtext>[b]Improve:[/b] hide batch add if integrated H &amp; Delegated src is off</changelogtext>
         <changelogtext>[b]Improve:[/b] add MangaDex to Batch-Add example</changelogtext>
         <changelogtext>[b]Improve:[/b] enable hidden categories by default</changelogtext>
@@ -94,14 +108,14 @@
         <changelogtext>[b]New:[/b] feat: Hidden categories</changelogtext>
         <changelogtext>[b]New:[/b] disable smart-update for individual &amp; fix custom interval</changelogtext>
         <changelogtext>[b]New:[/b] Option to update trackers when chapter marked as read</changelogtext>
-        <changelogtext>[b]Improve:[/b] e-hentai language flag</changelogtext>
+        <changelogtext>[b]Improve:[/b] E-H language flag</changelogtext>
         <changelogtext>[b]Improve:[/b] Support skip-downloading-duplicate-read-chapters for merged entries</changelogtext>
         <changelogtext>[b]Improve:[/b] Show local chapters as downloaded on merged entries</changelogtext>
         <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
         <changelogtext>[b]Improve:[/b] Move "Choose what to sync" out of "Sync now"</changelogtext>
         <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
         <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
-        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for E-H</changelogtext>
         <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
         <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
         <changelogtext>[b]Fix:[/b] Kitsu `ratingTwenty` being typed as String</changelogtext>
@@ -180,7 +194,7 @@
     <changelogversion versionName="r9149" changeDate="July 22, 2024">
         <changelogtext>[b]New:[/b] Jump to entry from download queue item</changelogtext>
         <changelogtext>[b]Improve:[/b] Update default popular user-agent, better support Cloudflare</changelogtext>
-        <changelogtext>[b]Improve:[/b] Update E-Hentai to support libraryColored, bulk-selection overlay</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update E-H to support libraryColored, bulk-selection overlay</changelogtext>
         <changelogtext>[b]Improve:[/b] Background color for favorite entries</changelogtext>
         <changelogtext>[b]Fix:[/b] Background color of selected entries</changelogtext>
         <changelogtext>[b]Fix:[/b] (performance) rework cover's loading animation</changelogtext>
