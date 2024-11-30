@@ -75,6 +75,12 @@ object Notifications {
     const val ID_APP_UPDATER = 1
     const val ID_APP_UPDATE_PROMPT = 2
     const val ID_APP_UPDATE_ERROR = 3
+
+    // KMK -->
+    const val ID_APP_INSTALL = 4
+    const val ID_APP_INSTALLED = 5
+    // KMK <--
+
     const val CHANNEL_EXTENSIONS_UPDATE = "ext_apk_update_channel"
     const val ID_UPDATES_TO_EXTS = -401
     const val ID_EXTENSION_INSTALLER = -402
@@ -162,7 +168,7 @@ object Notifications {
                 buildNotificationChannel(CHANNEL_INCOGNITO_MODE, IMPORTANCE_LOW) {
                     setName(context.stringResource(MR.strings.pref_incognito_mode))
                 },
-                buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_DEFAULT) {
+                buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_HIGH) {
                     setGroup(GROUP_APK_UPDATES)
                     setName(context.stringResource(MR.strings.channel_app_updates))
                 },

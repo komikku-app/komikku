@@ -75,6 +75,7 @@ import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
+import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -438,6 +439,9 @@ class MainActivity : BaseActivity() {
         LaunchedEffect(Unit) {
             if (BuildConfig.INCLUDE_UPDATER) {
                 try {
+                    // KMK -->
+                    AppUpdateJob.setupTask(context)
+                    // KMK <--
                     val result = AppUpdateChecker().checkForUpdate(context)
                     if (result is GetApplicationRelease.Result.NewUpdate) {
                         val updateScreen = NewUpdateScreen(

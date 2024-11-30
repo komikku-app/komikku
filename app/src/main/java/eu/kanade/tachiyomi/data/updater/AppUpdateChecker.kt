@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.updater
 
 import android.content.Context
+import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
@@ -15,7 +16,13 @@ class AppUpdateChecker(
 
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
-    suspend fun checkForUpdate(context: Context, forceCheck: Boolean = false): GetApplicationRelease.Result {
+    suspend fun checkForUpdate(
+        context: Context,
+        forceCheck: Boolean = false,
+        // KMK -->
+        pendingAutoUpdate: Boolean = true,
+        // KMK <--
+    ): GetApplicationRelease.Result {
         return withIOContext {
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
@@ -28,12 +35,36 @@ class AppUpdateChecker(
                 ),
             )
 
-            when (result) {
-                is GetApplicationRelease.Result.NewUpdate -> AppUpdateNotifier(context).promptUpdate(result.release)
-                is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
-                    context,
-                ).promptFdroidUpdate()
-                else -> {}
+            // KMK -->
+            if (!peekIntoPreview) {
+                // KMK <--
+                when (result) {
+                    is GetApplicationRelease.Result.NewUpdate -> {
+                        // KMK -->
+                        AppUpdateNotifier.releasePageUrl = result.release.releaseLink
+                        // KMK <--
+                        AppUpdateNotifier(context).promptUpdate(result.release)
+                    }
+
+                    is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
+                        context,
+                    ).promptFdroidUpdate()
+
+                    else -> {}
+                }
+
+                // KMK -->
+                if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        AppUpdateDownloadJob.start(
+                            context = context,
+                            url = result.release.getDownloadLink(),
+                            title = result.release.version,
+                            scheduled = true,
+                        )
+                    }
+                }
+                // KMK <--
             }
 
             result
