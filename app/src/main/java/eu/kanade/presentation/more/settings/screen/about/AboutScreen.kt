@@ -311,7 +311,11 @@ object AboutScreen : Screen() {
         peekIntoPreview: Boolean = false,
         // KMK <--
     ) {
-        val updateChecker = AppUpdateChecker(peekIntoPreview)
+        val updateChecker = AppUpdateChecker(
+            // KMK -->
+            peekIntoPreview = peekIntoPreview,
+            // KMK <--
+        )
         withUIContext {
             try {
                 when (val result = withIOContext { updateChecker.checkForUpdate(context, forceCheck = true) }) {

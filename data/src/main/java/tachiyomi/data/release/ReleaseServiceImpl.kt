@@ -1,5 +1,6 @@
 package tachiyomi.data.release
 
+import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
@@ -25,9 +26,14 @@ class ReleaseServiceImpl(
 
     // KMK -->
     override suspend fun releaseNotes(repository: String): List<Release> {
+        val releases = if (BuildConfig.DEBUG) {
+            "https://raw.githubusercontent.com/$repository/refs/heads/master/app/src/debug/res/raw/releases.json"
+        } else {
+            "https://api.github.com/repos/$repository/releases"
+        }
         return with(json) {
             networkService.client
-                .newCall(GET("https://api.github.com/repos/$repository/releases"))
+                .newCall(GET(releases))
                 .awaitSuccess()
                 .parseAs<List<GithubRelease>>()
                 .map(releaseMapper)
