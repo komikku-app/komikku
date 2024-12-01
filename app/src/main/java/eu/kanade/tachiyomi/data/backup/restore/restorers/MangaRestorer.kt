@@ -189,7 +189,7 @@ class MangaRestorer(
                 when {
                     dbChapter == null -> chapter // New chapter
                     chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
-                    else -> updateChapterBasedOnSyncState(chapter, dbChapter)
+                    else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
                 }
             }
             .partition { it.id > 0 }
@@ -216,11 +216,24 @@ class MangaRestorer(
                     else -> it
                 }
             }
+                // KMK -->
+                .copy(id = dbChapter.id)
+            // KMK <--
         }
     }
 
     private fun Chapter.forComparison() =
-        this.copy(id = 0L, mangaId = 0L, dateFetch = 0L, dateUpload = 0L, lastModifiedAt = 0L, version = 0L)
+        this.copy(
+            id = 0L,
+            mangaId = 0L,
+            dateFetch = 0L,
+            // KMK -->
+            // dateUpload = 0L, some time source loses dateUpload so we overwrite with backup
+            sourceOrder = 0L, // ignore sourceOrder since it will be updated on refresh
+            // KMK <--
+            lastModifiedAt = 0L,
+            version = 0L,
+        )
 
     private suspend fun insertNewChapters(chapters: List<Chapter>) {
         handler.await(true) {
@@ -257,7 +270,9 @@ class MangaRestorer(
                     chapterNumber = null,
                     sourceOrder = null,
                     dateFetch = null,
-                    dateUpload = null,
+                    // KMK -->
+                    dateUpload = chapter.dateUpload,
+                    // KMK <--
                     chapterId = chapter.id,
                     version = chapter.version,
                     isSyncing = 1,
