@@ -27,6 +27,9 @@ data class MangaUpdate(
     // SY -->
     val filteredScanlators: List<String>? = null,
     // SY <--
+    // KMK -->
+    val progress: Float? = null,
+    // KMK <--
 )
 
 fun Manga.toMangaUpdate(): MangaUpdate {
@@ -54,5 +57,8 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         updateStrategy = updateStrategy,
         initialized = initialized,
         version = version,
+        // KMK -->
+        progress = progress,
+        // KMK <--
     )
 }

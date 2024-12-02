@@ -34,13 +34,16 @@ private val mapper = { cursor: SqlCursor ->
         favorite_modified_at = cursor.getLong(22),
         version = cursor.getLong(23)!!,
         is_syncing = cursor.getLong(24)!!,
-        totalCount = cursor.getLong(25)!!,
-        readCount = cursor.getDouble(26)!!,
-        latestUpload = cursor.getLong(27)!!,
-        chapterFetchedAt = cursor.getLong(28)!!,
-        lastRead = cursor.getLong(29)!!,
-        bookmarkCount = cursor.getDouble(30)!!,
-        category = cursor.getLong(31)!!,
+        // KMK -->
+        progress = cursor.getDouble(25),
+        // KMK <--
+        totalCount = cursor.getLong(26)!!,
+        readCount = cursor.getDouble(27)!!,
+        latestUpload = cursor.getLong(28)!!,
+        chapterFetchedAt = cursor.getLong(29)!!,
+        lastRead = cursor.getLong(30)!!,
+        bookmarkCount = cursor.getDouble(31)!!,
+        category = cursor.getLong(32)!!,
     )
 }
 

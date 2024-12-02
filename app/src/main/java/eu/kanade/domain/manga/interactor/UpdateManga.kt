@@ -113,4 +113,10 @@ class UpdateManga(
             MangaUpdate(id = mangaId, favorite = favorite, dateAdded = dateAdded),
         )
     }
+
+    // KMK -->
+    suspend fun awaitUpdateProgress(mangaId: Long, progress: Float?): Boolean {
+        return mangaRepository.update(MangaUpdate(id = mangaId, progress = progress))
+    }
+    // KMK <--
 }
