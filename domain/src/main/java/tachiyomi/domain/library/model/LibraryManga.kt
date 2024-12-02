@@ -17,6 +17,15 @@ data class LibraryManga(
     val unreadCount
         get() = totalChapters - readCount
 
+    // KMK -->
+    val progress
+        get() = if (hasStarted) {
+            readCount.toFloat() / totalChapters
+        } else {
+            -1f
+        }
+    // KMK <--
+
     val hasBookmarks
         get() = bookmarkCount > 0
 

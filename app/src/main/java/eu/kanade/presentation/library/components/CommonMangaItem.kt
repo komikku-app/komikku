@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,14 +14,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -39,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
@@ -68,6 +74,17 @@ private val ContinueReadingButtonIconSizeLarge = 20.dp
 private val ContinueReadingButtonGridPadding = 6.dp
 private val ContinueReadingButtonListSpacing = 8.dp
 
+// KMK -->
+private val ProgressIndicatorSizeSmall = 24.dp
+private val ProgressIndicatorSizeLarge = 32.dp
+
+private val ProgressIndicatorGridPadding = 6.dp
+private val ProgressIndicatorListSpacing = 2.dp
+
+private val ProgressIndicatorTextSizeSmall = 8.sp
+private val ProgressIndicatorTextSizeLarge = 10.sp
+// KMK <--
+
 internal const val GRID_SELECTED_COVER_ALPHA = 0.76f
 
 /**
@@ -87,6 +104,7 @@ fun MangaCompactGridItem(
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
+    progress: Float = -1f,
     // KMK <--
 ) {
     // KMK -->
@@ -132,6 +150,9 @@ fun MangaCompactGridItem(
                     CoverTextOverlay(
                         title = title,
                         onClickContinueReading = onClickContinueReading,
+                        // KMK -->
+                        progress = progress,
+                        // KMK <--
                     )
                 } else if (onClickContinueReading != null) {
                     ContinueReadingButton(
@@ -142,6 +163,17 @@ fun MangaCompactGridItem(
                             .padding(ContinueReadingButtonGridPadding)
                             .align(Alignment.BottomEnd),
                     )
+                    // KMK -->
+                } else {
+                    MangaProgressIndicator(
+                        progress = progress,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(ProgressIndicatorGridPadding)
+                            .size(ProgressIndicatorSizeLarge)
+                            .align(Alignment.BottomEnd),
+                    )
+                    // KMK <--
                 }
             },
         )
@@ -155,6 +187,9 @@ fun MangaCompactGridItem(
 private fun BoxScope.CoverTextOverlay(
     title: String,
     onClickContinueReading: (() -> Unit)? = null,
+    // KMK -->
+    progress: Float = -1f,
+    // KMK <--
 ) {
     Box(
         modifier = Modifier
@@ -197,6 +232,17 @@ private fun BoxScope.CoverTextOverlay(
                     bottom = ContinueReadingButtonGridPadding,
                 ),
             )
+            // KMK -->
+        } else {
+            MangaProgressIndicator(
+                progress = progress,
+                onClick = {},
+                fontSize = ProgressIndicatorTextSizeSmall,
+                modifier = Modifier
+                    .padding(ProgressIndicatorGridPadding)
+                    .size(ProgressIndicatorSizeSmall),
+            )
+            // KMK <--
         }
     }
 }
@@ -221,6 +267,7 @@ fun MangaComfortableGridItem(
     coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
     usePanoramaCover: Boolean,
     fitToPanoramaCover: Boolean = false,
+    progress: Float = -1f,
     // KMK <--
 ) {
     // KMK -->
@@ -309,6 +356,17 @@ fun MangaComfortableGridItem(
                                 .padding(ContinueReadingButtonGridPadding)
                                 .align(Alignment.BottomEnd),
                         )
+                        // KMK -->
+                    } else {
+                        MangaProgressIndicator(
+                            progress = progress,
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(ProgressIndicatorGridPadding)
+                                .size(ProgressIndicatorSizeLarge)
+                                .align(Alignment.BottomEnd),
+                        )
+                        // KMK <--
                     }
                 },
             )
@@ -439,6 +497,7 @@ fun MangaListItem(
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
+    progress: Float = -1f,
     // KMK <--
 ) {
     // KMK -->
@@ -498,9 +557,65 @@ fun MangaListItem(
                 onClick = onClickContinueReading,
                 modifier = Modifier.padding(start = ContinueReadingButtonListSpacing),
             )
+            // KMK -->
+        } else {
+            MangaProgressIndicator(
+                progress = progress,
+                onClick = {},
+                fontSize = ProgressIndicatorTextSizeSmall,
+                modifier = Modifier
+                    .padding(ProgressIndicatorListSpacing)
+                    .size(ProgressIndicatorSizeSmall),
+            )
+            // KMK <--
         }
     }
 }
+
+// KMK -->
+@Composable
+fun MangaProgressIndicator(
+    progress: Float,
+    onClick: () -> Unit,
+    fontSize: TextUnit = ProgressIndicatorTextSizeLarge,
+    modifier: Modifier = Modifier,
+) {
+    if (progress < 0) return
+    Box(
+        modifier = modifier
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            progress = { progress },
+            strokeWidth = 3.dp,
+            gapSize = 0.dp,
+            color = ProgressIndicatorDefaults.circularDeterminateTrackColor,
+            trackColor = ProgressIndicatorDefaults.circularColor,
+            modifier = Modifier
+                .background(
+                    color = ProgressIndicatorDefaults.circularColor,
+                    shape = CircleShape,
+                ),
+        )
+        if (progress == 1f) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .padding(4.dp),
+            )
+        } else {
+            Text(
+                text = (progress * 100).toInt().toString() + "%",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = fontSize,
+            )
+        }
+    }
+}
+// KMK <--
 
 @Composable
 private fun ContinueReadingButton(

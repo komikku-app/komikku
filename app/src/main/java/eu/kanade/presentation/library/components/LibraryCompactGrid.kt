@@ -68,6 +68,9 @@ internal fun LibraryCompactGrid(
                 } else {
                     null
                 },
+                // KMK -->
+                progress = libraryItem.progress,
+                // KMK <--
             )
         }
     }

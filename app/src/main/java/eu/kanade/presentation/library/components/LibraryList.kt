@@ -75,6 +75,9 @@ internal fun LibraryList(
                 } else {
                     null
                 },
+                // KMK -->
+                progress = libraryItem.progress,
+                // KMK <--
             )
         }
     }

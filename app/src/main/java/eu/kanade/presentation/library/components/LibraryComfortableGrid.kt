@@ -72,6 +72,7 @@ internal fun LibraryComfortableGrid(
                 },
                 // KMK -->
                 usePanoramaCover = usePanoramaCover,
+                progress = libraryItem.progress,
                 // KMK <--
             )
         }

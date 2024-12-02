@@ -579,6 +579,9 @@ class LibraryScreenModel(
                             0
                         },
                         unreadCount = libraryManga.unreadCount,
+                        // KMK -->
+                        progress = libraryManga.progress,
+                        // KMK <--
                         isLocal = if (prefs.localBadge) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             source.lang
