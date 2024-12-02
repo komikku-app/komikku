@@ -74,6 +74,7 @@ fun RelatedMangaCardRow(
                 isFavorite = manga.favorite,
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
+                progress = manga.progress,
                 isSelected = false,
             )
         }

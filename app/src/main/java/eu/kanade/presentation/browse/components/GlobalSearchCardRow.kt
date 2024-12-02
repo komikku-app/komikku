@@ -59,6 +59,7 @@ fun GlobalSearchCardRow(
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
                 // KMK -->
+                progress = title.progress,
                 isSelected = selection.fastAny { selected -> selected.id == title.id },
                 // KMK <--
             )
@@ -74,6 +75,7 @@ internal fun MangaItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     // KMK -->
+    progress: Float?,
     isSelected: Boolean = false,
     usePanoramaCover: Boolean? = null,
     // KMK <--
@@ -105,6 +107,9 @@ internal fun MangaItem(
             coverAlpha = if (isFavorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
             onClick = onClick,
             onLongClick = onLongClick,
+            // KMK -->
+            progress = progress,
+            // KMK <--
         )
     }
 }

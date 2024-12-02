@@ -128,5 +128,8 @@ internal fun BrowseSourceListItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
+        // KMK -->
+        progress = manga.progress,
+        // KMK <--
     )
 }

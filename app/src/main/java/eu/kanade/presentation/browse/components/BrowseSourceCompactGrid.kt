@@ -137,5 +137,8 @@ internal fun BrowseSourceCompactGridItem(
         // SY <--
         onLongClick = onLongClick,
         onClick = onClick,
+        // KMK -->
+        progress = manga.progress,
+        // KMK <--
     )
 }
