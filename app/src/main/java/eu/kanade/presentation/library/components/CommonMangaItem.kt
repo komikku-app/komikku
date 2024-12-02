@@ -104,7 +104,7 @@ fun MangaCompactGridItem(
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
-    progress: Float = -1f,
+    progress: Float?,
     // KMK <--
 ) {
     // KMK -->
@@ -154,6 +154,17 @@ fun MangaCompactGridItem(
                         progress = progress,
                         // KMK <--
                     )
+                    // KMK -->
+                } else if (progress != null) {
+                    MangaProgressIndicator(
+                        progress = progress,
+                        onClick = { onClickContinueReading?.invoke() },
+                        modifier = Modifier
+                            .padding(ProgressIndicatorGridPadding)
+                            .size(ProgressIndicatorSizeLarge)
+                            .align(Alignment.BottomEnd),
+                    )
+                    // KMK <--
                 } else if (onClickContinueReading != null) {
                     ContinueReadingButton(
                         size = ContinueReadingButtonSizeLarge,
@@ -163,17 +174,6 @@ fun MangaCompactGridItem(
                             .padding(ContinueReadingButtonGridPadding)
                             .align(Alignment.BottomEnd),
                     )
-                    // KMK -->
-                } else {
-                    MangaProgressIndicator(
-                        progress = progress,
-                        onClick = {},
-                        modifier = Modifier
-                            .padding(ProgressIndicatorGridPadding)
-                            .size(ProgressIndicatorSizeLarge)
-                            .align(Alignment.BottomEnd),
-                    )
-                    // KMK <--
                 }
             },
         )
@@ -188,7 +188,7 @@ private fun BoxScope.CoverTextOverlay(
     title: String,
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
-    progress: Float = -1f,
+    progress: Float?,
     // KMK <--
 ) {
     Box(
@@ -222,7 +222,18 @@ private fun BoxScope.CoverTextOverlay(
             ),
             minLines = 1,
         )
-        if (onClickContinueReading != null) {
+        // KMK -->
+        if (progress != null) {
+            MangaProgressIndicator(
+                progress = progress,
+                onClick = { onClickContinueReading?.invoke() },
+                fontSize = ProgressIndicatorTextSizeSmall,
+                modifier = Modifier
+                    .padding(ProgressIndicatorListSpacing)
+                    .size(ProgressIndicatorSizeSmall),
+            )
+            // KMK <--
+        } else if (onClickContinueReading != null) {
             ContinueReadingButton(
                 size = ContinueReadingButtonSizeSmall,
                 iconSize = ContinueReadingButtonIconSizeSmall,
@@ -232,17 +243,6 @@ private fun BoxScope.CoverTextOverlay(
                     bottom = ContinueReadingButtonGridPadding,
                 ),
             )
-            // KMK -->
-        } else {
-            MangaProgressIndicator(
-                progress = progress,
-                onClick = {},
-                fontSize = ProgressIndicatorTextSizeSmall,
-                modifier = Modifier
-                    .padding(ProgressIndicatorGridPadding)
-                    .size(ProgressIndicatorSizeSmall),
-            )
-            // KMK <--
         }
     }
 }
@@ -267,7 +267,7 @@ fun MangaComfortableGridItem(
     coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
     usePanoramaCover: Boolean,
     fitToPanoramaCover: Boolean = false,
-    progress: Float = -1f,
+    progress: Float?,
     // KMK <--
 ) {
     // KMK -->
@@ -347,7 +347,18 @@ fun MangaComfortableGridItem(
                 badgesStart = coverBadgeStart,
                 badgesEnd = coverBadgeEnd,
                 content = {
-                    if (onClickContinueReading != null) {
+                    // KMK -->
+                    if (progress != null) {
+                        MangaProgressIndicator(
+                            progress = progress,
+                            onClick = { onClickContinueReading?.invoke() },
+                            modifier = Modifier
+                                .padding(ProgressIndicatorGridPadding)
+                                .size(ProgressIndicatorSizeLarge)
+                                .align(Alignment.BottomEnd),
+                        )
+                        // KMK <--
+                    } else if (onClickContinueReading != null) {
                         ContinueReadingButton(
                             size = ContinueReadingButtonSizeLarge,
                             iconSize = ContinueReadingButtonIconSizeLarge,
@@ -356,17 +367,6 @@ fun MangaComfortableGridItem(
                                 .padding(ContinueReadingButtonGridPadding)
                                 .align(Alignment.BottomEnd),
                         )
-                        // KMK -->
-                    } else {
-                        MangaProgressIndicator(
-                            progress = progress,
-                            onClick = {},
-                            modifier = Modifier
-                                .padding(ProgressIndicatorGridPadding)
-                                .size(ProgressIndicatorSizeLarge)
-                                .align(Alignment.BottomEnd),
-                        )
-                        // KMK <--
                     }
                 },
             )
@@ -497,7 +497,7 @@ fun MangaListItem(
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
     libraryColored: Boolean = true,
-    progress: Float = -1f,
+    progress: Float?,
     // KMK <--
 ) {
     // KMK -->
@@ -550,24 +550,24 @@ fun MangaListItem(
             style = MaterialTheme.typography.bodyMedium,
         )
         BadgeGroup(content = badge)
-        if (onClickContinueReading != null) {
-            ContinueReadingButton(
-                size = ContinueReadingButtonSizeSmall,
-                iconSize = ContinueReadingButtonIconSizeSmall,
-                onClick = onClickContinueReading,
-                modifier = Modifier.padding(start = ContinueReadingButtonListSpacing),
-            )
-            // KMK -->
-        } else {
+        // KMK -->
+        if (progress != null) {
             MangaProgressIndicator(
                 progress = progress,
-                onClick = {},
+                onClick = { onClickContinueReading?.invoke() },
                 fontSize = ProgressIndicatorTextSizeSmall,
                 modifier = Modifier
                     .padding(ProgressIndicatorListSpacing)
                     .size(ProgressIndicatorSizeSmall),
             )
             // KMK <--
+        } else if (onClickContinueReading != null) {
+            ContinueReadingButton(
+                size = ContinueReadingButtonSizeSmall,
+                iconSize = ContinueReadingButtonIconSizeSmall,
+                onClick = onClickContinueReading,
+                modifier = Modifier.padding(start = ContinueReadingButtonListSpacing),
+            )
         }
     }
 }

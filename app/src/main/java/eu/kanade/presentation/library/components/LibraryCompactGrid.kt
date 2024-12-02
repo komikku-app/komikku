@@ -20,6 +20,9 @@ internal fun LibraryCompactGrid(
     onClick: (LibraryManga) -> Unit,
     onLongClick: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
+    // KMK -->
+    showReadingProgressIndicator: Boolean,
+    // KMK <--
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
 ) {
@@ -69,7 +72,7 @@ internal fun LibraryCompactGrid(
                     null
                 },
                 // KMK -->
-                progress = libraryItem.progress,
+                progress = libraryItem.progress.takeIf { showReadingProgressIndicator },
                 // KMK <--
             )
         }

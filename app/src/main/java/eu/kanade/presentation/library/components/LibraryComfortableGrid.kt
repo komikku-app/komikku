@@ -19,6 +19,9 @@ internal fun LibraryComfortableGrid(
     onClick: (LibraryManga) -> Unit,
     onLongClick: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
+    // KMK -->
+    showReadingProgressIndicator: Boolean,
+    // KMK <--
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
     // KMK -->
@@ -72,7 +75,7 @@ internal fun LibraryComfortableGrid(
                 },
                 // KMK -->
                 usePanoramaCover = usePanoramaCover,
-                progress = libraryItem.progress,
+                progress = libraryItem.progress.takeIf { showReadingProgressIndicator },
                 // KMK <--
             )
         }

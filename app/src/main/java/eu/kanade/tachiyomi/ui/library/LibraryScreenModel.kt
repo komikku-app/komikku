@@ -224,13 +224,19 @@ class LibraryScreenModel(
         combine(
             libraryPreferences.categoryTabs().changes(),
             libraryPreferences.categoryNumberOfItems().changes(),
+            // KMK -->
+            libraryPreferences.showReadingProgressIndicator().changes(),
+            // KMK <--
             libraryPreferences.showContinueReadingButton().changes(),
-        ) { a, b, c -> arrayOf(a, b, c) }
-            .onEach { (showCategoryTabs, showMangaCount, showMangaContinueButton) ->
+        ) { a, b, c, d -> arrayOf(a, b, c, d) }
+            .onEach { (showCategoryTabs, showMangaCount, /* KMK --> */ showReadingProgressIndicator /* KMK <-- */, showMangaContinueButton) ->
                 mutableState.update { state ->
                     state.copy(
                         showCategoryTabs = showCategoryTabs,
                         showMangaCount = showMangaCount,
+                        // KMK -->
+                        showReadingProgressIndicator = showReadingProgressIndicator,
+                        // KMK <--
                         showMangaContinueButton = showMangaContinueButton,
                     )
                 }
@@ -1452,6 +1458,9 @@ class LibraryScreenModel(
         val hasActiveFilters: Boolean = false,
         val showCategoryTabs: Boolean = false,
         val showMangaCount: Boolean = false,
+        // KMK -->
+        val showReadingProgressIndicator: Boolean = false,
+        // KMK <--
         val showMangaContinueButton: Boolean = false,
         val dialog: Dialog? = null,
         // SY -->

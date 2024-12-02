@@ -73,6 +73,13 @@ class LibraryPreferences(
 
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
 
+    // KMK -->
+    fun showReadingProgressIndicator() = preferenceStore.getBoolean(
+        "display_reading_progress_indicator",
+        true,
+    )
+    // KMK <--
+
     fun showContinueReadingButton() = preferenceStore.getBoolean(
         "display_continue_reading_button",
         false,

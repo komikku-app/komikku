@@ -353,11 +353,19 @@ private fun ColumnScope.DisplayPage(
         label = stringResource(KMR.strings.action_display_source_badge),
         pref = screenModel.libraryPreferences.sourceBadge(),
     )
-    // KMK <--
+
     CheckboxItem(
-        label = stringResource(MR.strings.action_display_show_continue_reading_button),
-        pref = screenModel.libraryPreferences.showContinueReadingButton(),
+        label = stringResource(KMR.strings.action_display_show_reading_progress_indicator),
+        pref = screenModel.libraryPreferences.showReadingProgressIndicator(),
     )
+    val showReadingProgressIndicator by screenModel.libraryPreferences.showReadingProgressIndicator().collectAsState()
+    if (!showReadingProgressIndicator) {
+        // KMK <--
+        CheckboxItem(
+            label = stringResource(MR.strings.action_display_show_continue_reading_button),
+            pref = screenModel.libraryPreferences.showContinueReadingButton(),
+        )
+    }
 
     HeadingItem(MR.strings.tabs_header)
     CheckboxItem(

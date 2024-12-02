@@ -40,6 +40,9 @@ fun LibraryPager(
     onClickManga: (LibraryManga) -> Unit,
     onLongClickManga: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
+    // KMK -->
+    showReadingProgressIndicator: Boolean,
+    // KMK <--
 ) {
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
@@ -83,6 +86,9 @@ fun LibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    // KMK -->
+                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    // KMK <--
                 )
             }
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
@@ -95,6 +101,9 @@ fun LibraryPager(
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
+                    // KMK -->
+                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
@@ -108,6 +117,9 @@ fun LibraryPager(
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
+                    // KMK -->
+                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
@@ -122,6 +134,9 @@ fun LibraryPager(
                     onClick = onClickManga,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
+                    // KMK -->
+                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                     usePanoramaCover = true,
