@@ -11,7 +11,7 @@ data class LibraryItem(
     val downloadCount: Long = -1,
     val unreadCount: Long = -1,
     // KMK -->
-    val progress: Float? = null,
+    val progress: Float = -1f,
     // KMK <--
     val isLocal: Boolean = false,
     val sourceLanguage: String = "",

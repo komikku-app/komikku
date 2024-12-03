@@ -162,9 +162,6 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
                 version = manga.version,
                 isSyncing = 1,
-                // KMK -->
-                progress = manga.progress?.toDouble(),
-                // KMK <--
             )
         }
         return manga

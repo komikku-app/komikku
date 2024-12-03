@@ -22,7 +22,7 @@ data class LibraryManga(
         get() = if (hasStarted) {
             readCount.toFloat() / totalChapters
         } else {
-            null
+            -1f
         }
     // KMK <--
 

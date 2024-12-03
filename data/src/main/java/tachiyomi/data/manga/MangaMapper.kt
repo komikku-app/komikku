@@ -36,9 +36,6 @@ object MangaMapper {
         version: Long,
         @Suppress("UNUSED_PARAMETER")
         isSyncing: Long,
-        // KMK -->
-        progress: Double?,
-        // KMK <--
     ): Manga = Manga(
         id = id,
         source = source,
@@ -65,9 +62,6 @@ object MangaMapper {
         lastModifiedAt = lastModifiedAt,
         favoriteModifiedAt = favoriteModifiedAt,
         version = version,
-        // KMK -->
-        progress = progress?.toFloat(),
-        // KMK <--
     )
 
     fun mapLibraryManga(
@@ -99,9 +93,6 @@ object MangaMapper {
         favoriteModifiedAt: Long?,
         version: Long,
         isSyncing: Long,
-        // KMK -->
-        progress: Double?,
-        // KMK <--
         totalCount: Long,
         readCount: Double,
         latestUpload: Long,
@@ -138,9 +129,6 @@ object MangaMapper {
             favoriteModifiedAt,
             version,
             isSyncing,
-            // KMK -->
-            progress,
-            // KMK <--
         ),
         category = category,
         totalChapters = totalCount,
@@ -177,9 +165,6 @@ object MangaMapper {
                 lastModifiedAt = libraryView.last_modified_at,
                 favoriteModifiedAt = libraryView.favorite_modified_at,
                 version = libraryView.version,
-                // KMK -->
-                progress = libraryView.progress?.toFloat(),
-                // KMK <--
             ),
             category = libraryView.category,
             totalChapters = libraryView.totalCount,

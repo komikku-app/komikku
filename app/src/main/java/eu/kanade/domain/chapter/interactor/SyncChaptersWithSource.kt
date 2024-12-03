@@ -141,12 +141,6 @@ class SyncChaptersWithSource(
             }
         }
 
-        // KMK -->
-        var chapters = chapterRepository.getChapterByMangaId(manga.id)
-        var progress = chapters.count { it.read }.toFloat() / chapters.count()
-        updateManga.awaitUpdateProgress(manga.id, progress.takeIf { progress > 0 })
-        // KMK <--
-
         // Return if there's nothing to add, delete, or update to avoid unnecessary db transactions.
         if (newChapters.isEmpty() && removedChapters.isEmpty() && updatedChapters.isEmpty()) {
             if (manualFetch || manga.fetchInterval == 0 || manga.nextUpdate < fetchWindow.first) {
@@ -233,12 +227,6 @@ class SyncChaptersWithSource(
         // Set this manga as updated since chapters were changed
         // Note that last_update actually represents last time the chapter list changed at all
         updateManga.awaitUpdateLastUpdate(manga.id)
-
-        // KMK -->
-        chapters = chapterRepository.getChapterByMangaId(manga.id)
-        progress = chapters.count { it.read }.toFloat() / chapters.count()
-        updateManga.awaitUpdateProgress(manga.id, progress.takeIf { progress > 0 })
-        // KMK <--
 
         val reAddedUrls = reAdded.map { it.url }.toHashSet()
 
