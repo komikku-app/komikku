@@ -107,6 +107,7 @@ fun SourceFeedScreen(
     onSourceSettingClick: (() -> Unit?)?,
     onSortFeedClick: (() -> Unit)?,
     onLongClickManga: (Manga) -> Unit,
+    showReadingProgress: Boolean,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     // KMK <--
 ) {
@@ -181,6 +182,7 @@ fun SourceFeedScreen(
                         onClickManga = onClickManga,
                         // KMK -->
                         onLongClickManga = onLongClickManga,
+                        showReadingProgress = showReadingProgress,
                         selection = bulkFavoriteState.selection,
                         // KMK <--
                     )
@@ -205,6 +207,7 @@ fun SourceFeedList(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -255,6 +258,7 @@ fun SourceFeedList(
                     onClickManga = onClickManga,
                     // KMK -->
                     onLongClickManga = onLongClickManga,
+                    showReadingProgress = showReadingProgress,
                     selection = selection,
                     // KMK <--
                 )
@@ -270,6 +274,7 @@ fun SourceFeedItem(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -288,6 +293,7 @@ fun SourceFeedItem(
                 onClick = onClickManga,
                 // KMK -->
                 onLongClick = onLongClickManga,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 // KMK <--
             )

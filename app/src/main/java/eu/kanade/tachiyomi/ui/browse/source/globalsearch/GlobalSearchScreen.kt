@@ -119,6 +119,7 @@ class GlobalSearchScreen(
                     }
                 },
                 // KMK -->
+                showReadingProgress = screenModel.showReadingProgress,
                 bulkFavoriteScreenModel = bulkFavoriteScreenModel,
                 hasPinnedSources = screenModel.hasPinnedSources(),
                 // KMK <--

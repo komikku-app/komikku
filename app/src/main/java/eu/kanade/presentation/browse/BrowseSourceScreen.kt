@@ -59,6 +59,7 @@ fun BrowseSourceContent(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -162,6 +163,7 @@ fun BrowseSourceContent(
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 // KMK <--
             )
@@ -175,6 +177,7 @@ fun BrowseSourceContent(
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 usePanoramaCover = true,
                 // KMK <--
@@ -188,6 +191,7 @@ fun BrowseSourceContent(
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 // KMK <--
             )
@@ -200,6 +204,7 @@ fun BrowseSourceContent(
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 // KMK <--
             )

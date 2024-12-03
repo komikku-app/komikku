@@ -30,6 +30,7 @@ fun RelatedMangasList(
     onMangaLongClick: (Manga) -> Unit,
     onKeywordClick: (String) -> Unit,
     onKeywordLongClick: (String) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
 ) {
     FastScrollLazyColumn(
@@ -90,6 +91,7 @@ fun RelatedMangasList(
                         manga = manga,
                         onClick = { onMangaClick(manga) },
                         onLongClick = { onMangaLongClick(manga) },
+                        showReadingProgress = showReadingProgress,
                         isSelected = selection.fastAny { selected -> selected.id == manga.id },
                         metadata = null,
                     )

@@ -189,6 +189,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                             }
                         }
                     },
+                    showReadingProgress = screenModel.showReadingProgress,
                     bulkFavoriteScreenModel = bulkFavoriteScreenModel,
                     // KMK <--
                 )

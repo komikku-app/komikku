@@ -38,6 +38,7 @@ fun GlobalSearchCardRow(
     onClick: (Manga) -> Unit,
     onLongClick: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -59,7 +60,7 @@ fun GlobalSearchCardRow(
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
                 // KMK -->
-                progress = title.progress,
+                progress = title.progress.takeIf { showReadingProgress },
                 isSelected = selection.fastAny { selected -> selected.id == title.id },
                 // KMK <--
             )

@@ -34,6 +34,7 @@ fun RelatedMangasComfortableGrid(
     onMangaLongClick: (Manga) -> Unit,
     onKeywordClick: (String) -> Unit,
     onKeywordLongClick: (String) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     usePanoramaCover: Boolean = false,
 ) {
@@ -88,6 +89,7 @@ fun RelatedMangasComfortableGrid(
                         manga = manga,
                         onClick = { onMangaClick(manga) },
                         onLongClick = { onMangaLongClick(manga) },
+                        showReadingProgress = showReadingProgress,
                         isSelected = selection.fastAny { selected -> selected.id == manga.id },
                         metadata = null,
                         usePanoramaCover = usePanoramaCover,

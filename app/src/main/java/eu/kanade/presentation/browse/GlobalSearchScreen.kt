@@ -38,6 +38,7 @@ fun GlobalSearchScreen(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     hasPinnedSources: Boolean,
     // KMK <--
@@ -106,6 +107,7 @@ fun GlobalSearchScreen(
             onClickItem = onClickItem,
             onLongClickItem = onLongClickItem,
             // KMK -->
+            showReadingProgress = showReadingProgress,
             selection = bulkFavoriteState.selection,
             // KMK <--
         )
@@ -122,6 +124,7 @@ internal fun GlobalSearchContent(
     onLongClickItem: (Manga) -> Unit,
     fromSourceId: Long? = null,
     // KMK -->
+    showReadingProgress: Boolean = false,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -168,6 +171,7 @@ internal fun GlobalSearchContent(
                                 onClick = onClickItem,
                                 onLongClick = onLongClickItem,
                                 // KMK -->
+                                showReadingProgress = showReadingProgress,
                                 selection = selection,
                                 // KMK <--
                             )

@@ -49,6 +49,7 @@ fun RelatedMangasContent(
     onMangaLongClick: (Manga) -> Unit,
     onKeywordClick: (String) -> Unit,
     onKeywordLongClick: (String) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
 ) {
     if (relatedMangas == null) {
@@ -77,6 +78,7 @@ fun RelatedMangasContent(
                 onMangaLongClick = onMangaLongClick,
                 onKeywordClick = onKeywordClick,
                 onKeywordLongClick = onKeywordLongClick,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
             )
         }
@@ -90,6 +92,7 @@ fun RelatedMangasContent(
                 onMangaLongClick = onMangaLongClick,
                 onKeywordClick = onKeywordClick,
                 onKeywordLongClick = onKeywordLongClick,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 usePanoramaCover = true,
             )
@@ -104,6 +107,7 @@ fun RelatedMangasContent(
                 onMangaLongClick = onMangaLongClick,
                 onKeywordClick = onKeywordClick,
                 onKeywordLongClick = onKeywordLongClick,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
             )
         }
@@ -116,6 +120,7 @@ fun RelatedMangasContent(
                 onMangaLongClick = onMangaLongClick,
                 onKeywordClick = onKeywordClick,
                 onKeywordLongClick = onKeywordLongClick,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
             )
         }

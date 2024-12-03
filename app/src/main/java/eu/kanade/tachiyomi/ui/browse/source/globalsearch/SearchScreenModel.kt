@@ -2,9 +2,11 @@ package eu.kanade.tachiyomi.ui.browse.source.globalsearch
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.ioCoroutineScope
@@ -63,6 +65,10 @@ abstract class SearchScreenModel(
             { "${it.name.lowercase()} (${it.lang})" },
         )
     }
+
+    // KMK -->
+    val showReadingProgress by sourcePreferences.showReadingProgress().asState(screenModelScope)
+    // KMK <--
 
     init {
         screenModelScope.launch {

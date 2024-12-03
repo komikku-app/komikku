@@ -2,10 +2,12 @@ package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
@@ -76,6 +78,10 @@ open class FeedScreenModel(
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
     var pushed: Boolean = false
+
+    // KMK -->
+    val showReadingProgress by sourcePreferences.showReadingProgress().asState(screenModelScope)
+    // KMK <--
 
     init {
         getFeedSavedSearchGlobal.subscribe()

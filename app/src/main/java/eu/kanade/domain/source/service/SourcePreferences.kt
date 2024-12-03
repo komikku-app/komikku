@@ -42,6 +42,8 @@ class SourcePreferences(
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
 
     // KMK -->
+    fun showReadingProgress() = preferenceStore.getBoolean("browse_show_reading_progress", true)
+
     fun hideInLibraryFeedItems() = preferenceStore.getBoolean("feed_hide_in_library_items", false)
     // KMK <--
 

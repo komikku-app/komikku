@@ -35,6 +35,7 @@ fun BrowseSourceComfortableGrid(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     usePanoramaCover: Boolean = false,
     // KMK <--
@@ -66,6 +67,7 @@ fun BrowseSourceComfortableGrid(
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 isSelected = selection.fastAny { selected -> selected.id == manga.id },
                 usePanoramaCover = usePanoramaCover,
                 // KMK <--
@@ -89,6 +91,7 @@ internal fun BrowseSourceComfortableGridItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
     // KMK -->
+    showReadingProgress: Boolean,
     isSelected: Boolean = false,
     usePanoramaCover: Boolean,
     // KMK <--
@@ -143,7 +146,7 @@ internal fun BrowseSourceComfortableGridItem(
         onLongClick = onLongClick,
         onClick = onClick,
         // KMK -->
-        progress = manga.progress,
+        progress = manga.progress.takeIf { showReadingProgress },
         // KMK <--
     )
 }

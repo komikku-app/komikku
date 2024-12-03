@@ -35,6 +35,7 @@ fun BrowseSourceCompactGrid(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -65,6 +66,7 @@ fun BrowseSourceCompactGrid(
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 isSelected = selection.fastAny { selected -> selected.id == manga.id },
                 // KMK <--
             )
@@ -87,6 +89,7 @@ internal fun BrowseSourceCompactGridItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
     // KMK -->
+    showReadingProgress: Boolean,
     isSelected: Boolean = false,
     // KMK <--
 ) {
@@ -138,7 +141,7 @@ internal fun BrowseSourceCompactGridItem(
         onLongClick = onLongClick,
         onClick = onClick,
         // KMK -->
-        progress = manga.progress,
+        progress = manga.progress.takeIf { showReadingProgress },
         // KMK <--
     )
 }

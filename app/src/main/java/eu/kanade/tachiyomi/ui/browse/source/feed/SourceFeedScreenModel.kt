@@ -11,6 +11,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -63,6 +64,7 @@ import tachiyomi.domain.manga.model.Manga as DomainManga
 open class SourceFeedScreenModel(
     val sourceId: Long,
     uiPreferences: UiPreferences = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -84,6 +86,10 @@ open class SourceFeedScreenModel(
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
+
+    // KMK -->
+    val showReadingProgress by sourcePreferences.showReadingProgress().asState(screenModelScope)
+    // KMK <--
 
     init {
         // KMK -->

@@ -80,6 +80,7 @@ fun FeedScreen(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
     onRefresh: () -> Unit,
@@ -145,6 +146,7 @@ fun FeedScreen(
                                 onClickManga = onClickManga,
                                 // KMK -->
                                 onLongClickManga = onLongClickManga,
+                                showReadingProgress = showReadingProgress,
                                 selection = selection,
                                 // KMK <--
                             )
@@ -163,6 +165,7 @@ fun FeedItem(
     onClickManga: (Manga) -> Unit,
     // KMK -->
     onLongClickManga: (Manga) -> Unit,
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -180,6 +183,7 @@ fun FeedItem(
                 onClick = onClickManga,
                 // KMK -->
                 onLongClick = onLongClickManga,
+                showReadingProgress = showReadingProgress,
                 selection = selection,
                 // KMK <--
             )

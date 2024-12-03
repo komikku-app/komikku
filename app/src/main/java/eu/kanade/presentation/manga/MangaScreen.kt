@@ -424,9 +424,11 @@ private fun MangaScreenSmallImpl(
     // SY <--
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
-    val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
+    val sourcePreferences = Injekt.get<SourcePreferences>()
+    val relatedMangasEnabled by sourcePreferences.relatedMangas().collectAsState()
+    val showReadingProgress by sourcePreferences.showReadingProgress().collectAsState()
 
     var layoutSize by remember { mutableStateOf(IntSize.Zero) }
     var fabSize by remember { mutableStateOf(IntSize.Zero) }
@@ -707,6 +709,7 @@ private fun MangaScreenSmallImpl(
                                             getMangaState = getMangaState,
                                             onMangaClick = onRelatedMangaClick,
                                             onMangaLongClick = onRelatedMangaLongClick,
+                                            showReadingProgress = showReadingProgress,
                                         )
                                     }
                                 }
@@ -878,9 +881,11 @@ private fun MangaScreenLargeImpl(
     // SY <--
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
-    val relatedMangasEnabled by Injekt.get<SourcePreferences>().relatedMangas().collectAsState()
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
+    val sourcePreferences = Injekt.get<SourcePreferences>()
+    val relatedMangasEnabled by sourcePreferences.relatedMangas().collectAsState()
+    val showReadingProgress by sourcePreferences.showReadingProgress().collectAsState()
 
     var layoutSize by remember { mutableStateOf(IntSize.Zero) }
     var fabSize by remember { mutableStateOf(IntSize.Zero) }
@@ -1165,6 +1170,7 @@ private fun MangaScreenLargeImpl(
                                                     getMangaState = getMangaState,
                                                     onMangaClick = onRelatedMangaClick,
                                                     onMangaLongClick = onRelatedMangaLongClick,
+                                                    showReadingProgress = showReadingProgress,
                                                 )
                                             }
                                         }

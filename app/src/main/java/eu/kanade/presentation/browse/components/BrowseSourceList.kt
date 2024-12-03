@@ -31,6 +31,7 @@ fun BrowseSourceList(
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
+    showReadingProgress: Boolean,
     selection: List<Manga>,
     // KMK <--
 ) {
@@ -58,6 +59,7 @@ fun BrowseSourceList(
                 onClick = { onMangaClick(manga) },
                 onLongClick = { onMangaLongClick(manga) },
                 // KMK -->
+                showReadingProgress = showReadingProgress,
                 isSelected = selection.fastAny { selected -> selected.id == manga.id },
                 // KMK <--
             )
@@ -80,6 +82,7 @@ internal fun BrowseSourceListItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
     // KMK -->
+    showReadingProgress: Boolean,
     isSelected: Boolean = false,
     // KMK <--
 ) {
@@ -129,7 +132,7 @@ internal fun BrowseSourceListItem(
         onLongClick = onLongClick,
         onClick = onClick,
         // KMK -->
-        progress = manga.progress,
+        progress = manga.progress.takeIf { showReadingProgress },
         // KMK <--
     )
 }
