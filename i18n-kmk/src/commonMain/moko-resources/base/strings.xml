@@ -74,7 +74,8 @@
     <string name="custom_theme_palette_pico">PICO-8</string>
 
     <!-- Library section -->
-    <string name="action_display_show_reading_progress_indicator">Show reading progress (Continue reading)</string>
+    <string name="action_display_show_completed_mark">Show reading completed mark</string>
+    <string name="action_display_show_reading_progress">Show reading progress</string>
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
     <string name="action_display_source_badge">Source icon</string>
     <string name="action_display_language_icon">Use language icon</string>

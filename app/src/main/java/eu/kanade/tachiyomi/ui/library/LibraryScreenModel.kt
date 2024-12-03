@@ -225,17 +225,19 @@ class LibraryScreenModel(
             libraryPreferences.categoryTabs().changes(),
             libraryPreferences.categoryNumberOfItems().changes(),
             // KMK -->
-            libraryPreferences.showReadingProgressIndicator().changes(),
+            libraryPreferences.showReadingProgress().changes(),
+            libraryPreferences.showCompletedMark().changes(),
             // KMK <--
             libraryPreferences.showContinueReadingButton().changes(),
-        ) { a, b, c, d -> arrayOf(a, b, c, d) }
-            .onEach { (showCategoryTabs, showMangaCount, /* KMK --> */ showReadingProgressIndicator /* KMK <-- */, showMangaContinueButton) ->
+        ) { a, b, c, d, e -> arrayOf(a, b, c, d, e) }
+            .onEach { (showCategoryTabs, showMangaCount, /* KMK --> */ showReadingProgress, showCompletedMark /* KMK <-- */, showMangaContinueButton) ->
                 mutableState.update { state ->
                     state.copy(
                         showCategoryTabs = showCategoryTabs,
                         showMangaCount = showMangaCount,
                         // KMK -->
-                        showReadingProgressIndicator = showReadingProgressIndicator,
+                        showReadingProgress = showReadingProgress,
+                        showCompletedMark = showCompletedMark,
                         // KMK <--
                         showMangaContinueButton = showMangaContinueButton,
                     )
@@ -1459,7 +1461,8 @@ class LibraryScreenModel(
         val showCategoryTabs: Boolean = false,
         val showMangaCount: Boolean = false,
         // KMK -->
-        val showReadingProgressIndicator: Boolean = false,
+        val showReadingProgress: Boolean = false,
+        val showCompletedMark: Boolean = false,
         // KMK <--
         val showMangaContinueButton: Boolean = false,
         val dialog: Dialog? = null,

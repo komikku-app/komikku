@@ -21,7 +21,8 @@ internal fun LibraryCompactGrid(
     onLongClick: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     // KMK -->
-    showReadingProgressIndicator: Boolean,
+    showReadingProgress: Boolean,
+    showCompletedMark: Boolean,
     // KMK <--
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
@@ -50,7 +51,12 @@ internal fun LibraryCompactGrid(
                 ),
                 coverBadgeStart = {
                     DownloadsBadge(count = libraryItem.downloadCount)
-                    UnreadBadge(count = libraryItem.unreadCount)
+                    UnreadBadge(
+                        count = libraryItem.unreadCount,
+                        // KMK -->
+                        isCompleted = showCompletedMark && libraryItem.progress == 1f,
+                        // KMK <--
+                    )
                 },
                 coverBadgeEnd = {
                     LanguageBadge(
@@ -72,7 +78,7 @@ internal fun LibraryCompactGrid(
                     null
                 },
                 // KMK -->
-                progress = libraryItem.progress.takeIf { showReadingProgressIndicator },
+                progress = libraryItem.progress.takeIf { showReadingProgress },
                 // KMK <--
             )
         }

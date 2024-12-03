@@ -355,11 +355,16 @@ private fun ColumnScope.DisplayPage(
     )
 
     CheckboxItem(
-        label = stringResource(KMR.strings.action_display_show_reading_progress_indicator),
-        pref = screenModel.libraryPreferences.showReadingProgressIndicator(),
+        label = stringResource(KMR.strings.action_display_show_completed_mark),
+        pref = screenModel.libraryPreferences.showCompletedMark(),
     )
-    val showReadingProgressIndicator by screenModel.libraryPreferences.showReadingProgressIndicator().collectAsState()
-    if (!showReadingProgressIndicator) {
+
+    CheckboxItem(
+        label = stringResource(KMR.strings.action_display_show_reading_progress),
+        pref = screenModel.libraryPreferences.showReadingProgress(),
+    )
+    val showReadingProgress by screenModel.libraryPreferences.showReadingProgress().collectAsState()
+    if (!showReadingProgress) {
         // KMK <--
         CheckboxItem(
             label = stringResource(MR.strings.action_display_show_continue_reading_button),

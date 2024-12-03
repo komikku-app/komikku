@@ -20,7 +20,8 @@ internal fun LibraryComfortableGrid(
     onLongClick: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     // KMK -->
-    showReadingProgressIndicator: Boolean,
+    showReadingProgress: Boolean,
+    showCompletedMark: Boolean,
     // KMK <--
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
@@ -52,7 +53,12 @@ internal fun LibraryComfortableGrid(
                 ),
                 coverBadgeStart = {
                     DownloadsBadge(count = libraryItem.downloadCount)
-                    UnreadBadge(count = libraryItem.unreadCount)
+                    UnreadBadge(
+                        count = libraryItem.unreadCount,
+                        // KMK -->
+                        isCompleted = showCompletedMark && libraryItem.progress == 1f,
+                        // KMK <--
+                    )
                 },
                 coverBadgeEnd = {
                     LanguageBadge(
@@ -75,7 +81,7 @@ internal fun LibraryComfortableGrid(
                 },
                 // KMK -->
                 usePanoramaCover = usePanoramaCover,
-                progress = libraryItem.progress.takeIf { showReadingProgressIndicator },
+                progress = libraryItem.progress.takeIf { showReadingProgress },
                 // KMK <--
             )
         }

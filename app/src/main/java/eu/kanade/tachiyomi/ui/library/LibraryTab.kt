@@ -296,10 +296,11 @@ data object LibraryTab : Tab {
                             }
                             Unit
                         }.takeIf {
-                            /* KMK --> */ state.showReadingProgressIndicator || /* KMK <-- */ state.showMangaContinueButton
+                            /* KMK --> */ state.showReadingProgress || /* KMK <-- */ state.showMangaContinueButton
                         },
                         // KMK -->
-                        showReadingProgressIndicator = state.showReadingProgressIndicator,
+                        showReadingProgress = state.showReadingProgress,
+                        showCompletedMark = state.showCompletedMark,
                         // KMK <--
                         onToggleSelection = screenModel::toggleSelection,
                         onToggleRangeSelection = {

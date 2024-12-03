@@ -3,6 +3,7 @@ package eu.kanade.presentation.library.components
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.LocalLibrary
@@ -35,9 +36,22 @@ internal fun DownloadsBadge(count: Long) {
 }
 
 @Composable
-internal fun UnreadBadge(count: Long) {
+internal fun UnreadBadge(
+    count: Long,
+    // KMK -->
+    isCompleted: Boolean = false,
+    // KMK <--
+) {
     if (count > 0) {
         Badge(text = "$count")
+        // KMK -->
+    } else if (isCompleted) {
+        Badge(
+            imageVector = Icons.Filled.Check,
+            iconColor = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        // KMK <--
     }
 }
 
@@ -121,6 +135,7 @@ private fun BadgePreview() {
         BadgeGroup {
             DownloadsBadge(count = 10)
             UnreadBadge(count = 10)
+            UnreadBadge(count = 0, isCompleted = true)
             LanguageBadge(isLocal = true, sourceLanguage = "en")
             LanguageBadge(isLocal = false, sourceLanguage = "en", useLangIcon = false)
             LanguageBadge(isLocal = false, sourceLanguage = "vi")

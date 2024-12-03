@@ -38,7 +38,8 @@ fun LibraryContent(
     onMangaClicked: (Long) -> Unit,
     onContinueReadingClicked: ((LibraryManga) -> Unit)?,
     // KMK -->
-    showReadingProgressIndicator: Boolean,
+    showReadingProgress: Boolean,
+    showCompletedMark: Boolean,
     // KMK <--
     onToggleSelection: (LibraryManga) -> Unit,
     onToggleRangeSelection: (LibraryManga) -> Unit,
@@ -114,7 +115,8 @@ fun LibraryContent(
                 onLongClickManga = onToggleRangeSelection,
                 onClickContinueReading = onContinueReadingClicked,
                 // KMK -->
-                showReadingProgressIndicator = showReadingProgressIndicator,
+                showReadingProgress = showReadingProgress,
+                showCompletedMark = showCompletedMark,
                 // KMK <--
             )
         }

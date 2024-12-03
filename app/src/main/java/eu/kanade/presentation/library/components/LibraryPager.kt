@@ -41,7 +41,8 @@ fun LibraryPager(
     onLongClickManga: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     // KMK -->
-    showReadingProgressIndicator: Boolean,
+    showReadingProgress: Boolean,
+    showCompletedMark: Boolean,
     // KMK <--
 ) {
     HorizontalPager(
@@ -87,7 +88,8 @@ fun LibraryPager(
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                     // KMK -->
-                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    showReadingProgress = showReadingProgress,
+                    showCompletedMark = showCompletedMark,
                     // KMK <--
                 )
             }
@@ -102,7 +104,8 @@ fun LibraryPager(
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     // KMK -->
-                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    showReadingProgress = showReadingProgress,
+                    showCompletedMark = showCompletedMark,
                     // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
@@ -118,7 +121,8 @@ fun LibraryPager(
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     // KMK -->
-                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    showReadingProgress = showReadingProgress,
+                    showCompletedMark = showCompletedMark,
                     // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
@@ -135,7 +139,8 @@ fun LibraryPager(
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     // KMK -->
-                    showReadingProgressIndicator = showReadingProgressIndicator,
+                    showReadingProgress = showReadingProgress,
+                    showCompletedMark = showCompletedMark,
                     // KMK <--
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
