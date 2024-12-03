@@ -55,6 +55,9 @@ data class BackupManga(
     @ProtoNumber(804) var customDescription: String? = null,
     @ProtoNumber(805) var customGenre: List<String>? = null,
 
+    // KMK -->
+    @ProtoNumber(900) var progress: Float?,
+    // KMK <--
 ) {
     fun getMangaImpl(): Manga {
         return Manga.create().copy(
@@ -77,6 +80,9 @@ data class BackupManga(
             lastModifiedAt = this@BackupManga.lastModifiedAt,
             favoriteModifiedAt = this@BackupManga.favoriteModifiedAt,
             version = this@BackupManga.version,
+            // KMK -->
+            progress = this@BackupManga.progress,
+            // KMK <--
         )
     }
 }
