@@ -134,9 +134,6 @@ class MangaRestorer(
             // SY <--
             initialized = this.initialized || newer.initialized,
             version = newer.version,
-            // KMK -->
-            progress = newer.progress,
-            // KMK <--
         )
     }
 
@@ -316,9 +313,6 @@ class MangaRestorer(
                 dateAdded = manga.dateAdded,
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
-                // KMK -->
-                progress = manga.progress?.toDouble(),
-                // KMK <--
             )
             mangasQueries.selectLastInsertedRowId()
         }

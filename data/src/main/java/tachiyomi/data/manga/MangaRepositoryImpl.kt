@@ -133,9 +133,6 @@ class MangaRepositoryImpl(
                 dateAdded = manga.dateAdded,
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
-                // KMK -->
-                progress = manga.progress?.toDouble(),
-                // KMK <--
             )
             mangasQueries.selectLastInsertedRowId()
         }
