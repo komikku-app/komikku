@@ -158,7 +158,7 @@ fun MangaCompactGridItem(
                 } else if (progress != null) {
                     MangaProgressIndicator(
                         progress = progress,
-                        onClick = { onClickContinueReading?.invoke() },
+                        onClick = onClickContinueReading,
                         modifier = Modifier
                             .padding(ProgressIndicatorGridPadding)
                             .size(ProgressIndicatorSizeLarge)
@@ -226,7 +226,7 @@ private fun BoxScope.CoverTextOverlay(
         if (progress != null) {
             MangaProgressIndicator(
                 progress = progress,
-                onClick = { onClickContinueReading?.invoke() },
+                onClick = onClickContinueReading,
                 fontSize = ProgressIndicatorTextSizeSmall,
                 modifier = Modifier
                     .padding(ProgressIndicatorListSpacing)
@@ -351,7 +351,7 @@ fun MangaComfortableGridItem(
                     if (progress != null) {
                         MangaProgressIndicator(
                             progress = progress,
-                            onClick = { onClickContinueReading?.invoke() },
+                            onClick = onClickContinueReading,
                             modifier = Modifier
                                 .padding(ProgressIndicatorGridPadding)
                                 .size(ProgressIndicatorSizeLarge)
@@ -554,7 +554,7 @@ fun MangaListItem(
         if (progress != null) {
             MangaProgressIndicator(
                 progress = progress,
-                onClick = { onClickContinueReading?.invoke() },
+                onClick = onClickContinueReading,
                 fontSize = ProgressIndicatorTextSizeSmall,
                 modifier = Modifier
                     .padding(ProgressIndicatorListSpacing)
@@ -576,14 +576,20 @@ fun MangaListItem(
 @Composable
 fun MangaProgressIndicator(
     progress: Float,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     fontSize: TextUnit = ProgressIndicatorTextSizeLarge,
     modifier: Modifier = Modifier,
 ) {
     if (progress < 0) return
     Box(
         modifier = modifier
-            .clickable { onClick() },
+            .let {
+                if (onClick != null) {
+                    it.clickable(interactionSource = null, indication = null, onClick = onClick)
+                } else {
+                    it
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
