@@ -68,8 +68,35 @@ WHERE _id = :id;
 
 -- TODO: this should ideally never really have more than 1 result
 getMangaByUrlAndSource:
-SELECT *
-FROM mangas
+SELECT M.*,
+-- KMK -->
+    CAST(C.progress AS REAL) AS progress
+-- KMK <--
+FROM mangas M
+-- KMK -->
+LEFT JOIN(
+    SELECT
+        chapters.manga_id,
+        count(*) AS total,
+        sum(read) AS readCount,
+        CASE
+            WHEN count(*) = 0 OR sum(read) = 0 THEN NULL
+            ELSE CAST(sum(read) AS REAL) / count(*)
+        END AS progress
+    FROM chapters
+    WHERE chapters.scanlator NOT IN (
+        SELECT scanlator
+        FROM excluded_scanlators
+        WHERE excluded_scanlators.manga_id = chapters.manga_id
+    )
+--     LEFT JOIN excluded_scanlators
+--     ON chapters.manga_id = excluded_scanlators.manga_id
+--     AND chapters.scanlator = excluded_scanlators.scanlator
+--     WHERE excluded_scanlators.scanlator IS NULL
+    GROUP BY chapters.manga_id
+) AS C
+ON M._id = C.manga_id
+-- KMK <--
 WHERE url = :url
 AND source = :source
 LIMIT 1;

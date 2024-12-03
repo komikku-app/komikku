@@ -35,6 +35,9 @@ data class Manga(
     val lastModifiedAt: Long,
     val favoriteModifiedAt: Long?,
     val version: Long,
+    // KMK -->
+    val progress: Float?,
+    // KMK <--
 ) : Serializable {
 
     // SY -->
@@ -165,6 +168,9 @@ data class Manga(
             lastModifiedAt = 0L,
             favoriteModifiedAt = null,
             version = 0L,
+            // KMK -->
+            progress = null,
+            // KMK <--
         )
 
         // SY -->
