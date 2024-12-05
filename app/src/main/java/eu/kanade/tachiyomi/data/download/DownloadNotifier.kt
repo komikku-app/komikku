@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -30,7 +31,8 @@ internal class DownloadNotifier(private val context: Context) {
 
     private val progressNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_PROGRESS) {
-            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setAutoCancel(false)
             setOnlyAlertOnce(true)
         }
@@ -38,6 +40,7 @@ internal class DownloadNotifier(private val context: Context) {
 
     private val errorNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_ERROR) {
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setAutoCancel(false)
         }
     }

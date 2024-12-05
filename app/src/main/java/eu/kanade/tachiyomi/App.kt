@@ -156,6 +156,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                         setContentTitle(stringResource(MR.strings.pref_incognito_mode))
                         setContentText(stringResource(MR.strings.notification_incognito_text))
                         setSmallIcon(R.drawable.ic_glasses_24dp)
+                        setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
                         setOngoing(true)
 
                         val pendingIntent = PendingIntent.getBroadcast(

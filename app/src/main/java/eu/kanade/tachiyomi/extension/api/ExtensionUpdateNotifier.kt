@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -35,6 +36,7 @@ class ExtensionUpdateNotifier(
                 setStyle(NotificationCompat.BigTextStyle().bigText(extNames))
             }
             setSmallIcon(R.drawable.ic_extension_24dp)
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setContentIntent(NotificationReceiver.openExtensionsPendingActivity(context))
             setAutoCancel(true)
         }

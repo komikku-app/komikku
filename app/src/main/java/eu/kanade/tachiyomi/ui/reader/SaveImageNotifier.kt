@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.CachePolicy
@@ -24,7 +25,9 @@ import tachiyomi.i18n.MR
  */
 class SaveImageNotifier(private val context: Context) {
 
-    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_COMMON)
+    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_COMMON) {
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+    }
     private val notificationId: Int = Notifications.ID_DOWNLOAD_IMAGE
 
     /**
