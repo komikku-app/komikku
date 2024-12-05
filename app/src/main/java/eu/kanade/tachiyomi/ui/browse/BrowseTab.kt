@@ -39,6 +39,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data object BrowseTab : Tab {
+    private fun readResolve(): Any = BrowseTab
 
     override val options: TabOptions
         @Composable
