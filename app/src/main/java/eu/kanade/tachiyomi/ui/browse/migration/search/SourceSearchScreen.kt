@@ -74,6 +74,8 @@ data class SourceSearchScreen(
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
             bulkFavoriteScreenModel.toggleSelectionMode()
         }
+
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
         // KMK <--
 
         Scaffold(
@@ -86,12 +88,17 @@ data class SourceSearchScreen(
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
-                            state.mangaDisplayingList.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { manga ->
+                                    bulkFavoriteScreenModel.select(manga)
+                                }
                         },
                         onReverseSelection = {
-                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                            bulkFavoriteScreenModel.reverseSelection(
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first },
+                            )
                         },
                     )
                 } else {
@@ -138,7 +145,7 @@ data class SourceSearchScreen(
             }
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -170,7 +177,6 @@ data class SourceSearchScreen(
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }

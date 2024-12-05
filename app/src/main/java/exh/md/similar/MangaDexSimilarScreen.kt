@@ -44,7 +44,6 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->
-        val state by screenModel.state.collectAsState()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -61,6 +60,9 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
 
         val snackbarHostState = remember { SnackbarHostState() }
 
+        // KMK -->
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+        // KMK <--
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
@@ -71,12 +73,17 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
-                            state.mangaDisplayingList.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { manga ->
+                                    bulkFavoriteScreenModel.select(manga)
+                                }
                         },
                         onReverseSelection = {
-                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                            bulkFavoriteScreenModel.reverseSelection(
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first },
+                            )
                         },
                     )
                 } else {
@@ -98,7 +105,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = false,
@@ -129,7 +136,6 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }

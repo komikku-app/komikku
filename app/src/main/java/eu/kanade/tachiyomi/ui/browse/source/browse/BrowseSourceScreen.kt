@@ -171,6 +171,9 @@ data class BrowseSourceScreen(
             assistUrl = (screenModel.source as? HttpSource)?.baseUrl
         }
 
+        // KMK -->
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+        // KMK <--
         Scaffold(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -182,12 +185,17 @@ data class BrowseSourceScreen(
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                             onSelectAll = {
-                                state.mangaDisplayingList.forEach { manga ->
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first }
+                                    .forEach { manga ->
+                                        bulkFavoriteScreenModel.select(manga)
+                                    }
                             },
                             onReverseSelection = {
-                                bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                                bulkFavoriteScreenModel.reverseSelection(
+                                    mangaList.itemSnapshotList.items
+                                        .map { it.value.first },
+                                )
                             },
                         )
                     } else {
@@ -314,7 +322,7 @@ data class BrowseSourceScreen(
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -370,7 +378,6 @@ data class BrowseSourceScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }

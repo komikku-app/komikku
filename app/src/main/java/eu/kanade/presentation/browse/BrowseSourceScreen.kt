@@ -12,7 +12,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
@@ -24,7 +23,6 @@ import eu.kanade.presentation.browse.components.BrowseSourceList
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.isEhBasedSource
 import kotlinx.collections.immutable.persistentListOf
@@ -62,7 +60,6 @@ fun BrowseSourceContent(
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
-    browseSourceState: BrowseSourceScreenModel.State,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -138,21 +135,8 @@ fun BrowseSourceContent(
         LoadingScreen(
             modifier = Modifier.padding(contentPadding),
         )
-        // KMK -->
-        browseSourceState.mangaDisplayingList.clear()
-        // KMK <--
         return
     }
-
-    // KMK -->
-    for (idx in browseSourceState.mangaDisplayingList.size..<mangaList.itemCount) {
-        mangaList[idx]?.collectAsState()?.value?.first?.let { manga ->
-            if (!browseSourceState.mangaDisplayingList.map { it.id }.contains(manga.id)) {
-                browseSourceState.mangaDisplayingList.add(manga)
-            }
-        }
-    }
-    // KMK <--
 
     // SY -->
     if (source?.isEhBasedSource() == true && ehentaiBrowseDisplayMode) {
