@@ -335,30 +335,34 @@ data class BrowseSourceScreen(
                 onLocalSourceHelpClick = onHelpClick,
                 onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(it)
-                    } else {
-                        // KMK <--
-                        navigator.push(
-                            MangaScreen(
-                                it.id,
-                                // KMK -->
-                                // Finding the entry to be merged to, so we don't want to expand description
-                                // so that user can see the `Merge to another` button
-                                smartSearchConfig != null,
-                                // KMK <--
-                                smartSearchConfig,
-                            ),
-                        )
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            navigator.push(
+                                MangaScreen(
+                                    manga.id,
+                                    // KMK -->
+                                    // Finding the entry to be merged to, so we don't want to expand description
+                                    // so that user can see the `Merge to another` button
+                                    smartSearchConfig != null,
+                                    // KMK <--
+                                    smartSearchConfig,
+                                ),
+                            )
+                        }
                     }
                 },
-                onMangaLongClick = { manga ->
+                onMangaLongClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        navigator.push(MangaScreen(manga.id, true))
-                    } else {
-                        // KMK <--
-                        scope.launchIO {
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            navigator.push(MangaScreen(manga.id, true))
+                        } else {
+                            // KMK <--
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(

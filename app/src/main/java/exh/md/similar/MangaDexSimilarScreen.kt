@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -25,6 +26,7 @@ import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -44,6 +46,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
 
         // KMK -->
+        val scope = rememberCoroutineScope()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -116,22 +119,28 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                 onWebViewClick = null,
                 onHelpClick = null,
                 onLocalSourceHelpClick = null,
-                onMangaClick = { manga ->
+                onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
-                        // KMK <--
-                        onMangaClick(manga)
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            onMangaClick(manga)
+                        }
                     }
                 },
-                onMangaLongClick = { manga ->
+                onMangaLongClick = {
                     // KMK -->
-                    if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        // KMK <--
-                        onMangaClick(manga)
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (!bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                        } else {
+                            // KMK <--
+                            onMangaClick(manga)
+                        }
                     }
                 },
                 // KMK -->
