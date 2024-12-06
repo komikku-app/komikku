@@ -87,6 +87,7 @@ import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -409,7 +410,8 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitleProvider = { value, options ->
                         stringResource(MR.strings.pref_hardware_bitmap_threshold_summary, options[value].orEmpty())
                     },
-                    enabled = GLUtil.DEVICE_TEXTURE_LIMIT > GLUtil.SAFE_TEXTURE_LIMIT,
+                    enabled = !ImageUtil.HARDWARE_BITMAP_UNSUPPORTED &&
+                        GLUtil.DEVICE_TEXTURE_LIMIT > GLUtil.SAFE_TEXTURE_LIMIT,
                     entries = GLUtil.CUSTOM_TEXTURE_LIMIT_OPTIONS
                         .mapIndexed { index, option ->
                             val display = if (index == 0) {
