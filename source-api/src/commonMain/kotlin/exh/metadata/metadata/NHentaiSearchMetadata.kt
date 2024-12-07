@@ -29,6 +29,10 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var mediaId: String? = null
 
+    // AZ -->
+    var mediaServer: Int? = null
+    // AZ <--
+
     var japaneseTitle by titleDelegate(TITLE_TYPE_JAPANESE)
     var englishTitle by titleDelegate(TITLE_TYPE_ENGLISH)
     var shortTitle by titleDelegate(TITLE_TYPE_SHORT)
