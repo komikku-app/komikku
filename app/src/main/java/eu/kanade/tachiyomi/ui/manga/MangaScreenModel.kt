@@ -72,7 +72,9 @@ import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
+import exh.log.CrashlyticsPrinter.Companion.reportNonFatal
 import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.utils.FollowStatus
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
@@ -1133,20 +1135,17 @@ class MangaScreenModel(
         // start fetching related mangas
         setRelatedMangasFetchedStatus(false)
 
-        fun exceptionHandler(e: Throwable) {
-            logcat(LogPriority.ERROR, e)
+        fun relatedMangaExceptionHandler(e: Throwable) {
             val message = with(context) { e.formattedMessage }
-
-            screenModelScope.launch {
-                snackbarHostState.showSnackbar(message = message)
-            }
+            xLogE(message)
+            reportNonFatal(e)
         }
         val state = successState ?: return
         val relatedMangasEnabled = sourcePreferences.relatedMangas().get()
 
         try {
             if (state.source !is StubSource && relatedMangasEnabled) {
-                state.source.getRelatedMangaList(state.manga.toSManga(), { e -> exceptionHandler(e) }) { pair, _ ->
+                state.source.getRelatedMangaList(state.manga.toSManga(), { e -> relatedMangaExceptionHandler(e) }) { pair, _ ->
                     /* Push found related mangas into collection */
                     val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
                         mangaList.map {
@@ -1164,8 +1163,8 @@ class MangaScreenModel(
                     }
                 }
             }
-        } catch (e: Exception) {
-            exceptionHandler(e)
+        } catch (e: Throwable) {
+            relatedMangaExceptionHandler(e)
         } finally {
             if (onFinish != null) {
                 onFinish()
