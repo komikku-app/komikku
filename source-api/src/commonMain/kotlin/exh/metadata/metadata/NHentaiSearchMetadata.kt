@@ -48,9 +48,9 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
     override fun createMangaInfo(manga: SManga): SManga {
         val key = nhId?.let { nhIdToPath(it) }
 
-        val cover = if (mediaId != null) {
+        val cover = if (mediaId != null && mediaServer != null) {
             typeToExtension(coverImageType)?.let {
-                "https://t.nhentai.net/galleries/$mediaId/cover.$it"
+                "https://t$mediaServer.nhentai.net/galleries/$mediaId/cover.$it"
             }
         } else {
             null
