@@ -204,7 +204,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
                     imageUrl = thumbnailUrlFromType(
                         metadata.mediaId!!,
                         // AZ -->
-                        metadata.mediaServer!!,
+                        metadata.mediaServer ?: 1,
                         // AZ <--
                         index + 1,
                         s,
