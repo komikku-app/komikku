@@ -33,9 +33,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -52,6 +54,7 @@ import kotlin.time.Duration.Companion.days
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
     private val preferences: UnsortedPreferences by injectLazy()
+    private val libraryPreferences: LibraryPreferences by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger: Logger by lazy { xLog() }
@@ -200,8 +203,10 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
 
                 if (new.isNotEmpty() && manga.id == acceptedRoot.manga.id) {
+                    libraryPreferences.newUpdatesCount().getAndSet { it + new.size }
                     updatedManga += acceptedRoot.manga to new.toTypedArray()
                 } else if (exhNew.isNotEmpty() && updatedManga.none { it.first.id == acceptedRoot.manga.id }) {
+                    libraryPreferences.newUpdatesCount().getAndSet { it + exhNew.size }
                     updatedManga += acceptedRoot.manga to exhNew.toTypedArray()
                 }
 
@@ -268,6 +273,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             context.workManager.enqueue(
                 OneTimeWorkRequestBuilder<EHentaiUpdateWorker>()
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .addTag(TAG)
                     .build(),
             )
         }
