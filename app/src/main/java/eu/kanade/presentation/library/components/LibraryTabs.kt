@@ -21,9 +21,7 @@ internal fun LibraryTabs(
     getNumberOfMangaForCategory: (Category) -> Int?,
     onTabItemClick: (Int) -> Unit,
 ) {
-    // SY -->
     val currentPageIndex = pagerState.currentPage.coerceAtMost(categories.lastIndex)
-    // SY <--
     Column(
         modifier = Modifier.zIndex(1f),
     ) {

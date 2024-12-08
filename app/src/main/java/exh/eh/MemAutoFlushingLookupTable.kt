@@ -92,7 +92,7 @@ class MemAutoFlushingLookupTable<T>(
                         val size = bb.getInt(4)
                         val strBArr = ByteArray(size)
                         if (!input.requireBytes(strBArr, size)) break
-                        table.put(k, serializer.read(strBArr.toString(Charsets.UTF_8)))
+                        table.put(k, serializer.read(strBArr.decodeToString()))
                     }
                 }
             } catch (e: FileNotFoundException) {
@@ -131,7 +131,7 @@ class MemAutoFlushingLookupTable<T>(
         try {
             val out = fos.sink().buffer()
             table.forEach { key, value ->
-                val v = serializer.write(value).toByteArray(Charsets.UTF_8)
+                val v = serializer.write(value).encodeToByteArray()
                 bb.putInt(0, key)
                 bb.putInt(4, v.size)
                 out.write(bb.array())
