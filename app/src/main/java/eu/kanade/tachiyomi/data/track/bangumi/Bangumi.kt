@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMOAuth
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -73,6 +74,10 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
 
     override suspend fun search(query: String): List<TrackSearch> {
         return api.search(query)
+    }
+
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+        return api.getMangaMetadata(track)
     }
 
     override suspend fun refresh(track: Track): Track {

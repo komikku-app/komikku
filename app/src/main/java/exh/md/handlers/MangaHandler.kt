@@ -128,6 +128,36 @@ class MangaHandler(
         }
     }
 
+    suspend fun getMangaMetadata(
+        track: Track,
+        sourceId: Long,
+        coverQuality: String,
+        tryUsingFirstVolumeCover: Boolean,
+        altTitlesInDesc: Boolean,
+    ): SManga? {
+        return withIOContext {
+            val mangaId = MdUtil.getMangaId(track.tracking_url)
+            val response = service.viewManga(mangaId)
+            val coverFileName = if (tryUsingFirstVolumeCover) {
+                service.fetchFirstVolumeCover(response)
+            } else {
+                null
+            }
+            apiMangaParser.parseToManga(
+                SManga.create().apply {
+                    url = track.tracking_url
+                },
+                sourceId,
+                response,
+                emptyList(),
+                null,
+                coverFileName,
+                coverQuality,
+                altTitlesInDesc,
+            )
+        }
+    }
+
     private suspend fun getSimpleChapters(manga: SManga): List<String> {
         return runCatching { service.aggregateChapters(MdUtil.getMangaId(manga.url), lang) }
             .onFailure {

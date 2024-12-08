@@ -3,10 +3,12 @@ package eu.kanade.tachiyomi.data.track.myanimelist
 import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItem
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItemStatus
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALManga
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALMangaMetadata
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALSearchResult
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUser
@@ -189,6 +191,41 @@ class MyAnimeListApi(
                 matches + findListItems(query, offset + LIST_PAGINATION_AMOUNT)
             } else {
                 matches
+            }
+        }
+    }
+
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+        return withIOContext {
+            val url = "$BASE_API_URL/manga".toUri().buildUpon()
+                .appendPath(track.remoteId.toString())
+                .appendQueryParameter(
+                    "fields",
+                    "id,title,synopsis,main_picture,authors{first_name,last_name}",
+                )
+                .build()
+            with(json) {
+                authClient.newCall(GET(url.toString()))
+                    .awaitSuccess()
+                    .parseAs<MALMangaMetadata>()
+                    .let {
+                        TrackMangaMetadata(
+                            remoteId = it.id,
+                            title = it.title,
+                            thumbnailUrl = it.covers.large.ifEmpty { null } ?: it.covers.medium,
+                            description = it.synopsis,
+                            authors = it.authors
+                                .filter { it.role == "Story" || it.role == "Story & Art" }
+                                .map { "${it.node.firstName} ${it.node.lastName}".trim() }
+                                .joinToString(separator = ", ")
+                                .ifEmpty { null },
+                            artists = it.authors
+                                .filter { it.role == "Art" || it.role == "Story & Art" }
+                                .map { "${it.node.firstName} ${it.node.lastName}".trim() }
+                                .joinToString(separator = ", ")
+                                .ifEmpty { null },
+                        )
+                    }
             }
         }
     }

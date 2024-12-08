@@ -145,6 +145,16 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp" />
 
+    <Button
+        android:id="@+id/autofill_from_tracker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/fill_from_tracker"
+        android:textAllCaps="false" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
