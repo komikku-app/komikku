@@ -514,6 +514,7 @@
     <string name="favorites_sync_removing_galleries">Removing %1$d galleries from remote server</string>
     <string name="favorites_sync_unable_to_delete">Unable to delete galleries from the remote servers!</string>
     <string name="favorites_sync_adding_to_remote">Adding gallery %1$d of %2$d to remote server</string>
+    <string name="favorites_sync_unable_to_add_to_remote">Unable to add gallery to remote server: '%1$s' (GID: %2$s)!</string>
     <string name="favorites_sync_remove_from_local">Removing gallery %1$d of %2$d from local library</string>
     <string name="favorites_sync_add_to_local">Adding gallery %1$d of %2$d to local library</string>
     <string name="favorites_sync_remote_not_exist">Remote gallery does not exist, skipping: %1$s!</string>
