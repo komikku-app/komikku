@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">即將更新！</string>
   <string name="changelogs">更新紀錄</string>
   <string name="related_mangas_more">更多類似這些...</string>
-  <string name="too_many_in_feed">您的訂閱來源過多，無法添加超過限制數(20)</string>
+  <string name="too_many_in_feed">你訂閱的來源太多了，不能大於 20</string>
   <string name="current_">當前：%1$s</string>
   <string name="pref_theme_cover_based">基於封面的主題</string>
   <string name="pref_theme_cover_based_style_tonalspot">音調點</string>

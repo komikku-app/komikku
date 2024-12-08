@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">Parating (malapit na) mga update!</string>
   <string name="changelogs">Mga Change Log</string>
   <string name="related_mangas_more">Mga katulad nito...</string>
-  <string name="too_many_in_feed">Masyadong maraming mga source sa iyong feed, hindi maaaring magdagdag ng mahigit dito (20)</string>
+  <string name="too_many_in_feed">Masyadong maraming source sa iyong feed, hindi maaaring magdagdag ng higit sa 20</string>
   <string name="current_">Kasalukuyan: %1$s</string>
   <string name="pref_theme_cover_based">Tema base sa cover</string>
   <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>

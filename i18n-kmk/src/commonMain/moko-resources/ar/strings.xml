@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">التحديثات القادمة (قريباً)!</string>
   <string name="changelogs">سجلات التغيير</string>
   <string name="related_mangas_more">أكثر مثل هذه...</string>
-  <string name="too_many_in_feed">العديد من المصادر في موجز الويب الخاص بك، لا يمكن إضافة أكثر من محدودة (20)</string>
+  <string name="too_many_in_feed">هناك عدد كبير جدًا من المصادر في صفحة الخلاصه الخاصة بك ، لا يمكن إضافة أكثر من 20</string>
   <string name="current_">حاليا: %1$s</string>
   <string name="pref_theme_cover_based">السمة المبنية على الغلاف</string>
   <string name="pref_theme_cover_based_style_tonalspot">بقعة الطون</string>

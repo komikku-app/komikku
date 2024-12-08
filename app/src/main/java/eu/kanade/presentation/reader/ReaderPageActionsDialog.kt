@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ActionButton
 import tachiyomi.presentation.core.components.material.padding
@@ -68,7 +69,7 @@ fun ReaderPageActionsDialog(
                     title = stringResource(
                         // SY -->
                         if (hasExtraPage) {
-                            SYMR.strings.action_copy_to_clipboard_first_page
+                            KMR.strings.action_copy_to_clipboard_first_page
                         } else {
                             MR.strings.action_copy_to_clipboard
                         },
@@ -135,7 +136,7 @@ fun ReaderPageActionsDialog(
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(SYMR.strings.action_copy_to_clipboard_second_page),
+                        title = stringResource(KMR.strings.action_copy_to_clipboard_second_page),
                         icon = Icons.Outlined.ContentCopy,
                         onClick = {
                             onShare(true, true)
@@ -166,7 +167,7 @@ fun ReaderPageActionsDialog(
                 ) {
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        title = stringResource(SYMR.strings.action_copy_to_clipboard_combined_page),
+                        title = stringResource(KMR.strings.action_copy_to_clipboard_combined_page),
                         icon = Icons.Outlined.ContentCopy,
                         onClick = {
                             onShareCombined(true)

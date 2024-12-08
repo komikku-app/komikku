@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_clean_titles">Limpar Títulos</string>
+    <string name="action_edit_info">Editar informação</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="entry_type_comic">Banda Desenhada</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+    <string name="pref_category_all_sources">Todas as fontes</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="action_skip_entry">Não migrar</string>
+    <string name="action_migrate_now">Migrar agora</string>
+    <string name="action_search_manually">Procurar Manualmente</string>
+    <string name="entry_type_manga">Manga</string>
+    <string name="entry_type_manhwa">Manhwa</string>
+    <string name="action_copy_now">Copiar agora</string>
+    <string name="action_start_reading">Começar a ler</string>
+    <string name="ehentai_prefs_account_settings">Definições de Conta E-Hentai Website</string>
+    <string name="requires_login">Login Necessário</string>
+    <string name="use_hentai_at_home">Utilizar Hentai@Home Network</string>
+    <string name="pref_ehentai_summary">E/ExHentai login, sincronização da galeria</string>
+    <string name="pref_mangadex_summary">MangaDex login, sincronização de seguidores</string>
+    <string name="changelog_version">Versão %1$s</string>
+    <string name="enable_exhentai">Ativar ExHentai</string>
+    <string name="watched_tags_exh">ExHentai Categorias Visualizadas</string>
+</resources>

@@ -2,8 +2,8 @@
 <resources>
     <!-- Actions -->
     <string name="action_skip_entry">Jangan pindahkan</string>
-    <string name="action_search_manually">Cari manual</string>
-    <string name="action_migrate_now">Pindahkan</string>
+    <string name="action_search_manually">Cari secara manual</string>
+    <string name="action_migrate_now">Pindahkan sekarang</string>
     <string name="action_copy_now">Salin</string>
     <string name="action_clean_titles">Hapus judul</string>
     <string name="action_start_reading">Mulai baca</string>
@@ -33,17 +33,17 @@
     <string name="use_original_images">Use original images</string>
     <string name="use_original_images_on">Currently using original images</string>
     <string name="use_original_images_off">Currently using resampled images</string>
-    <string name="watched_tags">Watched Tags</string>
-    <string name="watched_tags_summary">Opens a webview to your E/ExHentai watched tags page</string>
-    <string name="watched_tags_exh">ExHentai Watched Tags</string>
-    <string name="tag_filtering_threshold">Tag Filtering Threshold</string>
-    <string name="tag_filtering_threshhold_error">Must be between -9999 and 0!</string>
-    <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %1$d</string>
-    <string name="tag_watching_threshhold">Tag Watching Threshold</string>
-    <string name="tag_watching_threshhold_error">Must be between 0 and 9999!</string>
-    <string name="tag_watching_threshhold_summary">Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: %1$d</string>
+    <string name="watched_tags">Tag yang telah dibaca</string>
+    <string name="watched_tags_summary">Membuka tampilan web ke halaman tag yang telah Anda tonton di E/ExHentai</string>
+    <string name="watched_tags_exh">Tag yang Telah Ditonton di ExHentai</string>
+    <string name="tag_filtering_threshold">Batasan Pemfilteran Tag</string>
+    <string name="tag_filtering_threshhold_error">Harus diantara -9999 dan 0!</string>
+    <string name="tag_filtering_threshhold_summary">Anda dapat memfilter tag secara halus dengan menambahkannya ke halaman My Tags E/ExHentai dengan bobot negatif. Jika sebuah galeri memiliki tag yang jumlah bobotnya di bawah nilai ini, galeri tersebut akan disaring dari tampilan. Batasan ini dapat diatur antara -9999 dan 0. Saat ini: %1$d</string>
+    <string name="tag_watching_threshhold">Batasan Pengawasan Tag</string>
+    <string name="tag_watching_threshhold_error">Harus diantara 0 dan 9999!</string>
+    <string name="tag_watching_threshhold_summary">Galeri yang baru diunggah akan ditampilkan di layar yang dilihat jika memiliki setidaknya satu tag yang dilihat dengan bobot positif, dan jumlah bobot pada tag yang dilihat mencapai nilai ini atau lebih tinggi. Batasan ini dapat diatur antara 0 dan 9999. Saat ini: %1$d</string>
     <string name="language_filtering">Language Filtering</string>
-    <string name="language_filtering_summary">If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude</string>
+    <string name="language_filtering_summary">Jika Anda ingin menyembunyikan galeri dalam bahasa tertentu dari daftar galeri dan pencarian, pilih bahasa-bahasa tersebut dalam dialog yang akan muncul.\nPerhatikan bahwa galeri itu tidak akan pernah muncul terlepas dari kueri pencarian Anda.\nTL;DR: Centang = kecualikan.</string>
     <string name="frong_page_categories">Front Page Categories</string>
     <string name="fromt_page_categories_summary">What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters</string>
     <string name="watched_list_default">Watched List Filter Default State</string>
@@ -65,22 +65,22 @@
     <string name="show_favorite_sync_notes_summary">Show some information regarding the favorites sync feature</string>
     <string name="please_login">Silahkan login!</string>
     <string name="ignore_sync_errors">Ignore sync errors when possible</string>
-    <string name="ignore_sync_errors_summary">Do not abort immediately when encountering errors during the sync process. Errors will still be displayed when the sync is complete. Can cause loss of favorites in some cases. Useful when syncing large libraries.</string>
-    <string name="force_sync_state_reset">Force sync state reset</string>
-    <string name="force_sync_state_reset_summary">Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted.</string>
-    <string name="sync_state_reset">Sync state reset</string>
+    <string name="ignore_sync_errors_summary">Jangan langsung batalkan ketika menemui kesalahan selama proses sinkronisasi. Kesalahan tetap akan ditampilkan setelah sinkronisasi selesai. Dapat menyebabkan kehilangan favorit dalam beberapa kasus. Berguna saat menyinkronkan pustaka besar.</string>
+    <string name="force_sync_state_reset">Paksa reset status sinkronisasi</string>
+    <string name="force_sync_state_reset_summary">Melakukan resinkronisasi penuh pada sinkronisasi berikutnya. Penghapusan tidak akan disinkronkan. Semua favorit di aplikasi akan diunggah ulang ke ExHentai dan semua favorit di ExHentai akan diunduh ulang ke aplikasi. Berguna untuk memperbaiki sinkronisasi setelah sinkronisasi terhenti.</string>
+    <string name="sync_state_reset">Pengaturan ulang status sinkronisasi</string>
     <string name="gallery_update_checker">Gallery update checker</string>
     <string name="auto_update_restrictions">Auto update restrictions</string>
     <string name="time_between_batches">Time between update batches</string>
     <string name="time_between_batches_never">Never update galleries</string>
-    <string name="time_between_batches_1_hour">1 hour</string>
-    <string name="time_between_batches_2_hours">2 hours</string>
-    <string name="time_between_batches_3_hours">3 hours</string>
-    <string name="time_between_batches_6_hours">6 hours</string>
-    <string name="time_between_batches_12_hours">12 hours</string>
-    <string name="time_between_batches_24_hours">24 hours</string>
-    <string name="time_between_batches_48_hours">48 hours</string>
-    <string name="time_between_batches_summary_1">%1$s will currently never check galleries in your library for updates.</string>
+    <string name="time_between_batches_1_hour">1 jam</string>
+    <string name="time_between_batches_2_hours">2 jam</string>
+    <string name="time_between_batches_3_hours">3 jam</string>
+    <string name="time_between_batches_6_hours">6 jam</string>
+    <string name="time_between_batches_12_hours">12 jam</string>
+    <string name="time_between_batches_24_hours">24 jam</string>
+    <string name="time_between_batches_48_hours">48 jam</string>
+    <string name="time_between_batches_summary_1">%1$s saat ini tidak akan pernah memeriksa galeri di pustakamu untuk pembaruan.</string>
     <string name="time_between_batches_summary_2">%1$s checks/updates galleries in batches. This means it will wait %2$d hour(s), check %3$d galleries, wait %2$d hour(s), check %3$d and so on…</string>
     <string name="show_updater_statistics">Show updater statistics</string>
     <string name="gallery_updater_statistics_collection">Collecting statistics…</string>
@@ -98,11 +98,11 @@
     <string name="eh_settings_uploading_to_server_message">Please wait, this may take some time…</string>
     <string name="eh_settings_out_of_slots_error">You are out of profile slots on %1$s, please delete a profile!</string>
     <!-- EH Settings Login Activity -->
-    <string name="recheck_login_status">Recheck login status</string>
-    <string name="alternative_login_page">Alternative login page</string>
-    <string name="skip_page_restyling">Skip page restyling</string>
-    <string name="custom_igneous_cookie">Custom igneous cookie</string>
-    <string name="custom_igneous_cookie_message">Some users cannot access ExHentai the normal way, and have to pass in a specific igneous cookie value, this option is for those users.</string>
+    <string name="recheck_login_status">Periksa ulang status login</string>
+    <string name="alternative_login_page">Halaman login alternatif</string>
+    <string name="skip_page_restyling">Lewati penataan ulang halaman</string>
+    <string name="custom_igneous_cookie">Cookie igneous kustom</string>
+    <string name="custom_igneous_cookie_message">Beberapa pengguna tidak dapat mengakses ExHentai dengan cara biasa, dan harus memasukkan nilai cookie igneous tertentu, opsi ini adalah untuk pengguna tersebut.</string>
     <!-- Advanced Settings -->
     <string name="developer_tools">Opsi Pengembang</string>
     <string name="toggle_hentai_features">Aktifkan fitur hentai terintegrasi</string>
@@ -220,7 +220,7 @@
     <string name="pref_force_horz_seekbar_summary">Menghapus seekbar vertikal sepenuhnya dan menggantikanya dengan seekbar horizontal</string>
     <!-- Reader -->
     <!-- Reader Actions -->
-    <string name="eh_autoscroll">Gulir otomatis</string>
+    <string name="eh_autoscroll">Gulir Otomatis</string>
     <string name="eh_retry_all">Muat ulang</string>
     <string name="eh_boost_page">Percepat halaman</string>
     <string name="eh_autoscroll_help">Panduan Gulir Otomatis</string>
@@ -269,8 +269,8 @@
     <string name="merged_already">Manga ini sudah tergabung dengan manga saat ini!</string>
     <string name="merge_duplicate">Manga gabungan ini adalah duplikat!</string>
     <!-- Manga Info Edit -->
-    <string name="reset_tags">Reset Tagar</string>
-    <string name="add_tag">Tambah Tagar</string>
+    <string name="reset_tags">Reset Tag</string>
+    <string name="add_tag">Tambahkan Tag</string>
     <string name="title_hint">Judul: %1$s</string>
     <string name="description_hint">Deskripsi: %1$s</string>
     <string name="author_hint">Author: %1$s</string>
@@ -298,12 +298,12 @@
     <string name="no_source_categories">Tak ada kategori sumber yang tersedia</string>
     <string name="invalid_category_name">Nama kategori tidak valid</string>
     <!-- Sort by tags -->
-    <string name="pref_tag_sorting">Penyortir Tagar</string>
-    <string name="tag_sorting">Menyortir tagar</string>
-    <string name="action_add_tags_message">Baca ini! Tagar harus sama persis,maka tidak akan berjalan semestinya!</string>
-    <string name="action_edit_tags">Edit tagar</string>
+    <string name="pref_tag_sorting">Penyortir Tag</string>
+    <string name="tag_sorting">Menyortir Tag</string>
+    <string name="action_add_tags_message">Baca ini! Tag harus sama persis, tidak ada pencocokan parsial, Anda tidak dapat menggunakan netorare untuk memfilter \"female:netorare\" atau tag serupa!\nGaya untuk tag namespace adalah\n\"female: sole female\" \ntanpa tanda kutip!\nMenambahkan beberapa varian tag yang sama diperbolehkan, jadi jangan ragu untuk menggunakan \"tag: netorare\" untuk NHentai dan \"female: netorare\" untuk E-Hentai!</string>
+    <string name="action_edit_tags">Edit tag</string>
     <string name="information_empty_tags">Kamu tidak memiliki tagar. Ketuk tombol tambah untuk membuatnya</string>
-    <string name="error_tag_exists">Tagar ini sudah ada!</string>
+    <string name="error_tag_exists">Tag ini sudah ada!</string>
     <!-- Extension section -->
     <string name="ext_redundant">Duplikat</string>
     <string name="redundant_extension_message">Ekstensi ini duplikat dan tak akan digunakan di dalam versi Tachiyomi ini.</string>
@@ -319,13 +319,13 @@
     <string name="use_most_chapters">Pilih sumber dengan bab terbanyak (lambat)</string>
     <string name="use_first_source">Pilih sumber yang pertama terdeteksi</string>
     <string name="skip_this_step_next_time">Lewati langkah ini di lain waktu</string>
-    <string name="hide_not_found_entries">Sembunyikan manga yang tak ditemukan</string>
+    <string name="hide_not_found_entries">Sembunyikan komik yang tak ditemukan</string>
     <string name="search_parameter">Parameter penelusuran (cth. language:english)</string>
     <string name="latest_">Terbaru: %1$s</string>
     <string name="migrating_to">Pindahkan ke</string>
     <string name="match_pinned_sources">Gunakan sumber yang disematkan</string>
     <string name="match_enabled_sources">Gunakan sumber yang diaktifkan</string>
-    <string name="no_chapters_found_for_migration">Bab tak ditemukan, manga ini tak bisa dipindahkan ke sini</string>
+    <string name="no_chapters_found_for_migration">Bab tak ditemukan, komik ini tak bisa dipindahkan ke sini</string>
     <string name="no_alternatives_found">Tidak Ditemukan</string>
     <string name="stop_migrating">Hentikan migrasi?</string>
     <string name="skipping_">(melewati %1$d)</string>
@@ -561,9 +561,9 @@
     <string name="google_drive_sync_data_not_found">Tidak ada data sinkronisasi yang ditemukan di Google Drive</string>
     <string name="google_drive_sync_data_purge_error">Kesalahan membersihkan data sinkronisasi dari Google Drive, Coba masuk lagi.</string>
     <string name="google_drive_login_success">Masuk ke Google Drive</string>
-    <string name="pref_hide_feed">Sembunyikan tab Umpan</string>
-    <string name="pref_feed_position">Posisi tab Umpan</string>
-    <string name="pref_feed_position_summery">Apakah Anda ingin tab Umpan menjadi tab pertama dalam penjelajahan? Ini akan menjadikannya tab default saat membuka penjelajahan, tidak disarankan jika Anda menggunakan data atau jaringan terukur</string>
+    <string name="pref_hide_feed">Sembunyikan tab Daftar Konten</string>
+    <string name="pref_feed_position">Posisi tab Daftar Konten</string>
+    <string name="pref_feed_position_summery">Apakah Anda ingin tab Daftar Konten menjadi tab pertama dalam penjelajahan? Ini akan menjadikannya tab default saat membuka penjelajahan, tidak disarankan jika Anda menggunakan data atau jaringan terukur</string>
     <string name="error_uploading_sync_data">Terjadi kesalahan saat mengunggah data sinkronisasi ke Google Drive</string>
     <string name="google_drive_login_failed">Gagal masuk ke Google Drive: %s</string>
     <string name="google_drive_not_signed_in">Belum masuk ke Google Drive</string>
@@ -571,4 +571,75 @@
     <string name="error_deleting_google_drive_lock_file">Kesalahan saat menghapus file kunci Google Drive</string>
     <string name="error_before_sync_gdrive">Gagal sebelum sinkron: %s</string>
     <string name="pref_purge_confirmation_title">Konfirmasi pembersihan</string>
+    <string name="sync_on_chapter_read">Sinkronisasi pada Bab Baca</string>
+    <string name="sync_on_chapter_open">Sinkronisasi pada Bab Terbuka</string>
+    <string name="sync_on_app_resume">Sinkronisasi pada saat Melanjutkan Aplikasi</string>
+    <string name="sync_library">Sinkronkan pustaka</string>
+    <string name="delete_time_range_confirmation">Apakah Anda ingin menghapus rentang waktu %s?</string>
+    <string name="encrypt_database_subtitle">Membutuhkan restart aplikasi untuk menerapkannya</string>
+    <string name="set_cbz_zip_password">Tetapkan kata sandi arsip CBZ</string>
+    <string name="pref_sync_options_summ">Dapat digunakan untuk mengatur pemicu sinkronisasi</string>
+    <string name="encrypt_database">Enkripsi database</string>
+    <string name="pref_purge_confirmation_message">Menghapus data sinkronisasi akan menghapus semua data sinkronisasi dari Google Drive. Apakah Anda yakin ingin melanjutkan?</string>
+    <string name="sync_on_app_start">Sinkronisasi pada saat Aplikasi Dibuka</string>
+    <string name="delete_time_range">Hapus rentang waktu</string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>MENGAKTIFKAN INI AKAN MEMBUAT DATABASE BARU. GUNAKAN LANGKAH-LANGKAH INI UNTUK MENYIMPAN DATA ANDA<br>1. PENGATURAN -> CADANGAN -> BUAT<br>2. PENGATURAN SISTEM -> HAPUS DATA APLIKASI<br>3. BUKA APLIKASI DAN AKTIFKAN INI<br>4. PENGATURAN SISTEM -> PAKSA MULAI ULANG<br>5. PENGATURAN -> CADANGAN -> PULIHKAN</font>]]></string>
+    <string name="favorites_sync_conformation_message">Apakah Anda yakin untuk menyinkronkan favorit Anda dengan E-Hentai?</string>
+    <string name="relation_similar">Mirip</string>
+    <string name="relation_prequel">Prekuel</string>
+    <string name="alt_titles">Judul-Judul Alternatif</string>
+    <string name="encryption_type">Tipe enkripsi</string>
+    <string name="aes_256">AES 256</string>
+    <string name="relation_adapted_from">Diadaptasi dari</string>
+    <string name="relation_based_on">Berdasarkan dari</string>
+    <string name="relation_side_story">Cerita Sampingan</string>
+    <string name="relation_colored">Berwarna</string>
+    <string name="relation_serialization">Serialisasi</string>
+    <string name="page_preview_page_go_to">Pergi ke</string>
+    <string name="aes_128">AES 128</string>
+    <string name="community_recommendations">Rekomendasi komunitas</string>
+    <string name="relation_monochrome">Monokrom</string>
+    <string name="relation_main_story">Cerita Utama</string>
+    <string name="relation_doujinshi">Doujinshi</string>
+    <string name="relation_alternate_version">Versi Alternatif</string>
+    <string name="standard_zip_encryption">Enkripsi zip standar (cepat tetapi kurang aman)</string>
+    <string name="center_margin_double_and_wide_page">Tambahkan ke keduanya</string>
+    <string name="delete_tag">Hapus tag</string>
+    <string name="action_stop">Berhenti</string>
+    <string name="relation_sequel">Sekuel</string>
+    <string name="relation_alternate_story">Cerita alternatif</string>
+    <string name="feed_tab_empty">Anda tidak memiliki sumber apapun di daftar konten Anda, navigasikan ke kanan atas untuk menambahkan satu</string>
+    <string name="only_show_updated_entries">Tampilkan hanyak komik dengan bab baru</string>
+    <string name="archive_mode_cache_to_disk">Salin ke disk penyimpanan</string>
+    <string name="pref_archive_reader_mode">Mode pembaca arsip</string>
+    <string name="add_tags">Tambahkan Tag</string>
+    <string name="delete_cbz_archive_password">Hapus kata sandi arsip CBZ</string>
+    <string name="cbz_archive_password">Kata sandi arsip CBZ</string>
+    <string name="center_margin_none">Tidak Ada</string>
+    <string name="archive_mode_load_from_file">Muat dari berkas</string>
+    <string name="archive_mode_load_into_memory">Muatkan ke memori</string>
+    <string name="password_protect_downloads">Lindungi unduhan dengan kata sandi</string>
+    <string name="page_previews">Pratinjau halaman</string>
+    <string name="multi_tags_comma_separated">Masukkan tag, dipisahkan dengan koma.</string>
+    <string name="include_all_read_entries">Sertakan semua komik yang telah dibaca</string>
+    <string name="ignore_non_library_entries">Abaikan komik yang bukan bagian dari pustaka</string>
+    <string name="pref_clear_page_preview_cache">Hapus data yang tersimpan untuk pratinjau halaman</string>
+    <string name="password_protect_downloads_summary">Mengenkripsi unduhan arsip CBZ dengan kata sandi yang diberikan.\nPERINGATAN: DATA YANG ADA DI DALAM ARSIP AKAN HILANG SELAMANYA JIKA ANDA LUPA KATA SANDI</string>
+    <string name="feed_add">Tambahkan %1$s ke daftar konten?</string>
+    <string name="more_previews">Pratinjau lebih banyak</string>
+    <string name="pref_smooth_scroll">Gulir Otomatis Halus</string>
+    <string name="eh_autoscroll_freq_invalid">Frekuensi tidak valid</string>
+    <string name="save_search_invalid_name">Nama pencarian yang disimpan tidak valid</string>
+    <string name="relation_same_franchise">Franchise yang sama</string>
+    <string name="wrong_cbz_archive_password">Kata sandi arsip CBZ salah</string>
+    <string name="delete_tag_confirmation">Apakah Anda ingin menghapus tag %s?</string>
+    <string name="reset_info">Atur Ulang Info</string>
+    <string name="pref_archive_reader_mode_summary">Cara gambar di dalam arsip, seperti CBZ atau CBR, dimuat</string>
+    <string name="feed_delete">Hapus sumber dari daftar konten?</string>
+    <string name="pref_center_margin">Tipe margin tengah</string>
+    <string name="center_margin">Margin Tengah</string>
+    <string name="pref_center_margin_summary">Tambahkan pengisi ruang untuk mengakomodasi ruang kosong pada perangkat lipat.</string>
+    <string name="center_margin_double_page">Tambahkan ke Halaman ganda</string>
+    <string name="center_margin_wide_page">Tambahkan ke Halaman lebar</string>
+    <string name="feed">Daftar Konten</string>
 </resources>

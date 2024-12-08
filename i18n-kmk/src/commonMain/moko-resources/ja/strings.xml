@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">近日公開！</string>
   <string name="changelogs">変更ログ</string>
   <string name="related_mangas_more">これらのような...</string>
-  <string name="too_many_in_feed">フィードのソースが多すぎます。制限を超えることはできません（20）</string>
+  <string name="too_many_in_feed">フィードにソースが多すぎます。20 以上を追加できません。</string>
   <string name="current_">現在: %1$s</string>
   <string name="pref_theme_cover_based">カバーに基づくテーマ</string>
   <string name="pref_theme_cover_based_style_tonalspot">トーナルスポット</string>

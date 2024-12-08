@@ -4,4 +4,17 @@
     <string name="action_search_manually">Cerca manualmente</string>
     <string name="action_migrate_now">Migra ora</string>
     <string name="action_copy_now">Copia ora</string>
+    <string name="entry_type_webtoon">Webtoon</string>
+    <string name="entry_type_comic">Fumetto</string>
+    <string name="entry_type_manhua">Manhua</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="pref_category_fork">Impostazioni Fork</string>
+    <string name="action_start_reading">Inizia a leggere</string>
+    <string name="action_clean_titles">Titoli puliti</string>
+    <string name="changelog_version">Versione %1$s</string>
+    <string name="pref_mangadex_summary">Accesso MangaDex, sincronizzazione dei seguiti</string>
+    <string name="pref_ehentai_summary">Accesso E/ExHentai, sincronizzazione galleria</string>
+    <string name="action_edit_info">Modifica info</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_all_sources">Tutte le Fonti</string>
 </resources>

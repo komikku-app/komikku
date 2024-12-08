@@ -15,6 +15,12 @@
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
 
+    <!-- Reader -->
+      <!-- Reader Actions -->
+    <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
+    <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
+    <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
+
 
     <!-- Preferences -->
       <!-- Appearance section -->
@@ -151,7 +157,7 @@
     <string name="action_scroll_to_next">Scroll to next</string>
 
     <!-- Feed Tab -->
-    <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited (20)</string>
+    <string name="too_many_in_feed">Too many sources in your feed, cannot add more than 20</string>
     <string name="action_sort_feed">Sort feeds</string>
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
 

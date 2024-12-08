@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">Скоро (скоро) обновления!</string>
   <string name="changelogs">Сменить логи</string>
   <string name="related_mangas_more">Больше похожих...</string>
-  <string name="too_many_in_feed">Слишком много источников в вашем канале, нельзя добавить больше лимита (20)</string>
+  <string name="too_many_in_feed">Слишком большое количество источников в вашей ленте. Количество не должно превышать 20</string>
   <string name="current_">Текущий: %1$s</string>
   <string name="pref_theme_cover_based">Тема на основе обложки</string>
   <string name="pref_theme_cover_based_style_tonalspot">Тональная точка</string>

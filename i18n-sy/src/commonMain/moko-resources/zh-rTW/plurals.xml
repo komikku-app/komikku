@@ -10,7 +10,7 @@
         <item quantity="other">重試 %1$d 個失敗的頁面……</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="other">%1$d 個標籤在排序列表中， 這在書櫃中增加了一個選項，以基於優先級的標籤列表進行排序，這意味著作品將以你想要的標籤優先的方式進行排序</item>
+        <item quantity="other">%1$d 個標籤在排序列表中， 這在書櫃中增加了一個選項，以基於優先度的標籤列表進行排序，這意味著作品將以你想要的標籤優先的方式進行排序</item>
     </plurals>
     <plurals name="migrate_entry">
         <item quantity="other">遷移 %1$d%2$s 作品？</item>
@@ -27,7 +27,7 @@
     </plurals>
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="other">%2$s %1$d 頁</item>
+        <item quantity="other">%2$s, %1$d 頁</item>
     </plurals>
     <!-- Humanize time -->
     <plurals name="humanize_year">

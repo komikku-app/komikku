@@ -41,8 +41,8 @@
         <item quantity="other">%1$d na mga pahina</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s %1$d na pahina</item>
-        <item quantity="other">%2$s %1$d na mga pahina</item>
+        <item quantity="one">%2$s, %1$d na pahina</item>
+        <item quantity="other">%2$s, %1$d na mga pahina</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="one">%1$d taon ang nakalipas</item>

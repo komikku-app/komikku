@@ -51,4 +51,6 @@
     <string name="time_between_batches_24_hours">24 sati</string>
     <string name="time_between_batches_48_hours">48 sati</string>
     <string name="gallery_updater_statistics_collection">Sakupljanje statisktike …</string>
+    <string name="all_read_entries">Svi pročitani unosi</string>
+    <string name="random">Nasumce</string>
 </resources>
