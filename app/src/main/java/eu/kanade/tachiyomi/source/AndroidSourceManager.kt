@@ -79,8 +79,13 @@ class AndroidSourceManager(
                 .combine(preferences.enableExhentai().changes()) { extensions, enableExhentai ->
                     extensions to enableExhentai
                 }
+                // KMK -->
+                .combine(
+                    preferences.isHentaiEnabled().changes(),
+                ) { (a, b), c -> Triple(a, b, c) }
+                // KMK <--
                 // SY <--
-                .collectLatest { (extensions, enableExhentai) ->
+                .collectLatest { (extensions, enableExhentai/* KMK --> */, isHentaiEnabled/* KMK <-- */) ->
                     val mutableMap = ConcurrentHashMap<Long, Source>(
                         mapOf(
                             LocalSource.ID to LocalSource(
@@ -93,16 +98,20 @@ class AndroidSourceManager(
                             ),
                         ),
                     ).apply {
-                        // SY -->
-                        put(EH_SOURCE_ID, EHentai(EH_SOURCE_ID, false, context))
-                        if (enableExhentai) {
-                            put(EXH_SOURCE_ID, EHentai(EXH_SOURCE_ID, true, context))
+                        // KMK -->
+                        if (isHentaiEnabled) {
+                            // KMK <--
+                            // SY -->
+                            put(EH_SOURCE_ID, EHentai(EH_SOURCE_ID, false, context))
+                            if (enableExhentai) {
+                                put(EXH_SOURCE_ID, EHentai(EXH_SOURCE_ID, true, context))
+                            }
+                            put(MERGED_SOURCE_ID, MergedSource())
                         }
-                        put(MERGED_SOURCE_ID, MergedSource())
                         // SY <--
                     }
                     extensions.forEach { extension ->
-                        extension.sources.mapNotNull { it.toInternalSource() }.forEach {
+                        extension.sources.mapNotNull { it.toInternalSource(/* KMK --> */isHentaiEnabled/* KMK <-- */) }.forEach {
                             mutableMap[it.id] = it
                             registerStubSource(StubSource.from(it))
                         }
@@ -123,7 +132,11 @@ class AndroidSourceManager(
         }
     }
 
-    private fun Source.toInternalSource(): Source? {
+    private fun Source.toInternalSource(
+        // KMK -->
+        isHentaiEnabled: Boolean,
+        // KMK <--
+    ): Source? {
         // EXH -->
         val sourceQName = this::class.qualifiedName
         val factories = DELEGATED_SOURCES.entries
@@ -158,7 +171,12 @@ class AndroidSourceManager(
             this
         }
 
-        return if (id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
+        return if (
+            // KMK -->
+            isHentaiEnabled &&
+            // KMK <--
+            id in BlacklistedSources.BLACKLISTED_EXT_SOURCES
+        ) {
             xLogD(
                 "Removing blacklisted source: (id: %s, name: %s, lang: %s)!",
                 id,

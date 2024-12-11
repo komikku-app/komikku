@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -166,8 +167,16 @@ class ExtensionManager(
         }
     }
 
-    private fun Extension.isBlacklisted(blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get()): Boolean {
-        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
+    private fun Extension.isBlacklisted(
+        blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
+        // KMK -->
+        isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
+        // KMK <--
+    ): Boolean {
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled &&
+            // KMK -->
+            isHentaiEnabled
+        // KMK <--
     }
     // EXH <--
 
