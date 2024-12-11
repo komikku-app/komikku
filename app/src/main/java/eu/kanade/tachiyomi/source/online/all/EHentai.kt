@@ -289,7 +289,6 @@ class EHentai(
     private fun getDateTag(element: Element?): Long? {
         val text = element?.text()?.nullIfBlank()
         return if (text != null) {
-            println(text)
             val date = ZonedDateTime.parse(text, MetadataUtil.EX_DATE_FORMAT.withZone(ZoneOffset.UTC))
             date?.toInstant()?.toEpochMilli()
         } else {
