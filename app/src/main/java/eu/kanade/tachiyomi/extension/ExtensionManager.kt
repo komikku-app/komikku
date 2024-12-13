@@ -17,8 +17,8 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogD
 import exh.source.BlacklistedSources
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
+import exh.source.EHENTAI_EXT_SOURCES
+import exh.source.EXHENTAI_EXT_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -117,8 +117,10 @@ class ExtensionManager(
 
         // SY -->
         return when (sourceId) {
-            EH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
-            EXH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
+            // KMK -->
+            in EHENTAI_EXT_SOURCES.keys -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
+            in EXHENTAI_EXT_SOURCES.keys -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
+            // KMK <--
             MERGED_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_merged_source)
             else -> null
         }
@@ -173,7 +175,8 @@ class ExtensionManager(
         isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
         // KMK <--
     ): Boolean {
-        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled &&
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&
+            blacklistEnabled &&
             // KMK -->
             isHentaiEnabled
         // KMK <--

@@ -10,21 +10,25 @@ var nHentaiSourceIds: List<Long> = emptyList()
 
 var mangaDexSourceIds: List<Long> = emptyList()
 
+// KMK -->
 var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
-    EH_SOURCE_ID,
-    EXH_SOURCE_ID,
     PURURIN_SOURCE_ID,
-)
+) + EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys
+// KMK <--
 
 // This method MUST be fast!
 fun isMetadataSource(source: Long) = source in 6900..6999 ||
     metadataDelegatedSourceIds.binarySearch(source) >= 0
 
-fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
+// KMK -->
+fun Source.isEhBasedSource() = id in EHENTAI_EXT_SOURCES.keys || id in EXHENTAI_EXT_SOURCES.keys
+// KMK <--
 
 fun Source.isMdBasedSource() = id in mangaDexSourceIds
 
-fun Manga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
+// KMK -->
+fun Manga.isEhBasedManga() = source in EHENTAI_EXT_SOURCES.keys || source in EXHENTAI_EXT_SOURCES.keys
+// KMK <--
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
     this.source()
