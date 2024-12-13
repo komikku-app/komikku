@@ -740,13 +740,6 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.toggle_hentai_features),
                     subtitle = stringResource(SYMR.strings.toggle_hentai_features_summary),
                     onValueChanged = {
-                        if (it) {
-                            BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
-                            BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
-                        } else {
-                            BlacklistedSources.HIDDEN_SOURCES -= EH_SOURCE_ID
-                            BlacklistedSources.HIDDEN_SOURCES -= EXH_SOURCE_ID
-                        }
                         true
                     },
                 ),
