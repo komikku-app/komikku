@@ -118,8 +118,8 @@ class ExtensionManager(
         // SY -->
         return when (sourceId) {
             // KMK -->
-            in EHENTAI_EXT_SOURCES.keys -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
-            in EXHENTAI_EXT_SOURCES.keys -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
+            in EHENTAI_EXT_SOURCES -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
+            in EXHENTAI_EXT_SOURCES -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
             // KMK <--
             MERGED_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_merged_source)
             else -> null
