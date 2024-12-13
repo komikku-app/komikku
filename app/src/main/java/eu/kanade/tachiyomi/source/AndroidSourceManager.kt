@@ -15,9 +15,9 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import exh.log.xLogD
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
-import exh.source.EH_SOURCE_ID
+import exh.source.EHENTAI_EXT_SOURCES
 import exh.source.EIGHTMUSES_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
+import exh.source.EXHENTAI_EXT_SOURCES
 import exh.source.EnhancedHttpSource
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
@@ -100,15 +100,19 @@ class AndroidSourceManager(
                     ).apply {
                         // KMK -->
                         if (isHentaiEnabled) {
-                            // KMK <--
-                            // SY -->
-                            put(EH_SOURCE_ID, EHentai(EH_SOURCE_ID, false, context))
-                            if (enableExhentai) {
-                                put(EXH_SOURCE_ID, EHentai(EXH_SOURCE_ID, true, context))
+                            EHENTAI_EXT_SOURCES.forEach { (id, lang) ->
+                                put(id, EHentai(id, false, context, lang))
                             }
+                            if (enableExhentai) {
+                                EXHENTAI_EXT_SOURCES.forEach { (id, lang) ->
+                                    put(id, EHentai(id, true, context, lang))
+                                }
+                            }
+                            // SY -->
                             put(MERGED_SOURCE_ID, MergedSource())
+                            // SY <--
                         }
-                        // SY <--
+                        // KMK <--
                     }
                     extensions.forEach { extension ->
                         extension.sources.mapNotNull { it.toInternalSource(/* KMK --> */isHentaiEnabled/* KMK <-- */) }.forEach {
