@@ -1,7 +1,9 @@
 package exh
 
-import exh.source.BlacklistedSources
+import exh.source.EH_OLD_ID
 import exh.source.EH_SOURCE_ID
+import exh.source.EXH_OLD_ID
+import exh.source.EXH_SOURCE_ID
 import exh.source.HBROWSE_OLD_ID
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.NHENTAI_OLD_ID
@@ -42,12 +44,19 @@ object EXHMigrations {
             )
         }
 
+        // KMK -->
         // Allow importing of EHentai extension backups
-        if (newManga.source in BlacklistedSources.EHENTAI_EXT_SOURCES) {
+        if (newManga.source == EH_OLD_ID) {
             newManga = newManga.copy(
                 source = EH_SOURCE_ID,
             )
         }
+        if (newManga.source == EXH_OLD_ID) {
+            newManga = newManga.copy(
+                source = EXH_SOURCE_ID,
+            )
+        }
+        // KMK <--
 
         return newManga
     }
