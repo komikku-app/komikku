@@ -97,6 +97,9 @@ class EHentai(
     override val id: Long,
     val exh: Boolean,
     val context: Context,
+    // KMK -->
+    override val lang: String = "all",
+    // KMK <--
 ) : HttpSource(),
     MetadataSource<EHentaiSearchMetadata, Document>,
     UrlImportableSource,
@@ -114,8 +117,18 @@ class EHentai(
     override val baseUrl: String
         get() = "https://$domain"
 
-    override val lang = "all"
     override val supportsLatest = true
+
+    // KMK -->
+    private val ehLang = languageMapping[lang]
+
+    // true if lang is a "natural human language"
+    private fun isLangNatural(): Boolean = lang !in listOf("none", "other", "all")
+
+    private fun languageTag(): String {
+        return "language:$ehLang"
+    }
+    // KMK <--
 
     private val preferences: UnsortedPreferences by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
@@ -467,9 +480,18 @@ class EHentai(
         return if (it.text() == ">") it.attr("href") else null
     }
 
-    override fun popularMangaRequest(page: Int): Request {
-        return exGet("$baseUrl/popular")
-    }
+    override fun popularMangaRequest(page: Int) =
+        // KMK -->
+        if (isLangNatural()) {
+            exGet("$baseUrl/?f_search=${languageTag()}&f_srdd=5&f_sr=on", page)
+        } else {
+            if (page > 1) {
+                exGet("$baseUrl/?f_srdd=5&f_sr=on", page - 1)
+            } else {
+                // KMK <--
+                exGet("$baseUrl/popular")
+            }
+        }
 
     private fun <T : MangasPage> Observable<T>.checkValid(): Observable<MangasPage> = map {
         it.checkValid()
@@ -565,7 +587,14 @@ class EHentai(
         )
     }
 
-    override fun latestUpdatesRequest(page: Int) = exGet(baseUrl, page)
+    override fun latestUpdatesRequest(page: Int) =
+        // KMK -->
+        if (isLangNatural()) {
+            exGet("$baseUrl/?f_search=${languageTag()}", page)
+        } else {
+            // KMK <--
+            exGet(baseUrl, page)
+        }
 
     override fun popularMangaParse(response: Response) = genericMangaParse(response)
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
@@ -911,7 +940,7 @@ class EHentai(
         // Session-less extended display mode (for users without ExHentai)
         cookies["sl"] = "dm_2"
 
-        // Ignore all content warnings
+        // Ignore all content warnings ("Offensive For Everyone")
         cookies["nw"] = "1"
 
         return cookies
@@ -1382,5 +1411,27 @@ class EHentai(
         fun buildCookies(cookies: Map<String, String>) = cookies.entries.joinToString(separator = "; ") {
             "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
         }
+
+        // KMK -->
+        val languageMapping = mapOf(
+            "ja" to "japanese",
+            "en" to "english",
+            "zh" to "chinese",
+            "nl" to "dutch",
+            "fr" to "french",
+            "de" to "german",
+            "hu" to "hungarian",
+            "it" to "italian",
+            "ko" to "korean",
+            "pl" to "polish",
+            "pt-BR" to "portuguese",
+            "ru" to "russian",
+            "es" to "spanish",
+            "th" to "thai",
+            "vi" to "vietnamese",
+            "none" to "n/a",
+            "other" to "other",
+        )
+        // KMK <--
     }
 }
