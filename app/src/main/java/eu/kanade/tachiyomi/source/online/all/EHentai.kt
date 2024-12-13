@@ -101,6 +101,9 @@ class EHentai(
     override val lang: String = "all",
     // KMK <--
 ) : HttpSource(),
+    // KMK -->
+    EhBasedSource,
+    // KMK <--
     MetadataSource<EHentaiSearchMetadata, Document>,
     UrlImportableSource,
     NamespaceSource,
