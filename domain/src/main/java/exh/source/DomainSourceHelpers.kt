@@ -11,14 +11,18 @@ var nHentaiSourceIds: List<Long> = emptyList()
 
 var mangaDexSourceIds: List<Long> = emptyList()
 
-// KMK -->
 var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
+    EH_SOURCE_ID,
+    EXH_SOURCE_ID,
     PURURIN_SOURCE_ID,
-) + EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys
-// KMK <--
+)
 
 // This method MUST be fast!
 fun isMetadataSource(source: Long) = source in 6900..6999 ||
+    // KMK -->
+    source == EH_SOURCE_ID ||
+    source == EXH_SOURCE_ID ||
+    // KMK <--
     metadataDelegatedSourceIds.binarySearch(source) >= 0
 
 // KMK -->
