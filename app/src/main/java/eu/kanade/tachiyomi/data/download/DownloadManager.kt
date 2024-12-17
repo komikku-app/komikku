@@ -229,9 +229,23 @@ class DownloadManager(
      * @param manga the manga of the chapters.
      * @param source the source of the chapters.
      */
-    fun deleteChapters(chapters: List<Chapter>, manga: Manga, source: Source) {
+    fun deleteChapters(
+        chapters: List<Chapter>,
+        manga: Manga,
+        source: Source,
+        // KMK -->
+        /** Ignore categories exclusion */
+        ignoreCategoryExclusion: Boolean = false,
+        // KMK <--
+    ) {
         launchIO {
-            val filteredChapters = getChaptersToDelete(chapters, manga)
+            val filteredChapters = getChaptersToDelete(
+                chapters,
+                manga,
+                // KMK -->
+                ignoreCategoryExclusion,
+                // KMK <--
+            )
             if (filteredChapters.isEmpty()) {
                 return@launchIO
             }
@@ -427,17 +441,30 @@ class DownloadManager(
         }
     }
 
-    private suspend fun getChaptersToDelete(chapters: List<Chapter>, manga: Manga): List<Chapter> {
-        // Retrieve the categories that are set to exclude from being deleted on read
-        val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong).toSet()
-
-        val categoriesForManga = getCategories.await(manga.id)
-            .map { it.id }
-            .ifEmpty { listOf(0) }
-        val filteredCategoryManga = if (categoriesForManga.intersect(categoriesToExclude).isNotEmpty()) {
-            chapters.filterNot { it.read }
-        } else {
+    private suspend fun getChaptersToDelete(
+        chapters: List<Chapter>,
+        manga: Manga,
+        // KMK -->
+        /** Ignore categories exclusion */
+        ignoreCategoryExclusion: Boolean = false,
+        // KMK <--
+    ): List<Chapter> {
+        // KMK -->
+        val filteredCategoryManga = if (ignoreCategoryExclusion) {
             chapters
+        } else {
+            // KMK <--
+            // Retrieve the categories that are set to exclude from being deleted on read
+            val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong).toSet()
+
+            val categoriesForManga = getCategories.await(manga.id)
+                .map { it.id }
+                .ifEmpty { listOf(0) }
+            if (categoriesForManga.intersect(categoriesToExclude).isNotEmpty()) {
+                chapters.filterNot { it.read }
+            } else {
+                chapters
+            }
         }
 
         return if (!downloadPreferences.removeBookmarkedChapters().get()) {

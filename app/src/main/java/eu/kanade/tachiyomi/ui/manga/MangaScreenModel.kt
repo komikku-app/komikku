@@ -1421,6 +1421,9 @@ class MangaScreenModel(
                         chapters,
                         state.manga,
                         state.source,
+                        // KMK -->
+                        true,
+                        // KMK <--
                     )
                 }
             } catch (e: Throwable) {

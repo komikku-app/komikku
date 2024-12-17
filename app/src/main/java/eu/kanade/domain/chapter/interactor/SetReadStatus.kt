@@ -5,7 +5,6 @@ import exh.source.MERGED_SOURCE_ID
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
@@ -13,8 +12,6 @@ import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 class SetReadStatus(
     private val downloadPreferences: DownloadPreferences,
@@ -24,9 +21,6 @@ class SetReadStatus(
     // SY -->
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId,
     // SY <--
-    // KMK -->
-    private val getCategories: GetCategories = Injekt.get(),
-    // KMK <--
 ) {
 
     private val mapper = { chapter: Chapter, read: Boolean ->
@@ -58,26 +52,12 @@ class SetReadStatus(
         }
 
         if (read && downloadPreferences.removeAfterMarkedAsRead().get()) {
-            // KMK -->
-            // Retrieve the categories that are set to exclude from being deleted on read
-            val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong).toSet()
-            // KMK <--
-
             chaptersToUpdate
                 .groupBy { it.mangaId }
                 .forEach { (mangaId, chapters) ->
-                    // KMK -->
-                    val categoriesForManga = getCategories.await(mangaId)
-                        .map { it.id }
-                        .ifEmpty { listOf(0) }
-                    // KMK <--
                     deleteDownload.awaitAll(
                         manga = mangaRepository.getMangaById(mangaId),
-                        chapters = chapters
-                            // KMK -->
-                            .filter { categoriesForManga.intersect(categoriesToExclude).isEmpty() }
-                            // KMK <--
-                            .toTypedArray(),
+                        chapters = chapters.toTypedArray(),
                     )
                 }
         }
