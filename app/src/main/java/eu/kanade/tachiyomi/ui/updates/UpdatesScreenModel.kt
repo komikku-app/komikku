@@ -265,7 +265,14 @@ class UpdatesScreenModel(
                     val manga = getManga.await(mangaId) ?: return@forEach
                     val source = sourceManager.get(manga.source) ?: return@forEach
                     val chapters = updates.mapNotNull { getChapter.await(it.update.chapterId) }
-                    downloadManager.deleteChapters(chapters, manga, source)
+                    downloadManager.deleteChapters(
+                        chapters,
+                        manga,
+                        source,
+                        // KMK -->
+                        true,
+                        // KMK <--
+                    )
                 }
         }
         toggleAllSelection(false)
