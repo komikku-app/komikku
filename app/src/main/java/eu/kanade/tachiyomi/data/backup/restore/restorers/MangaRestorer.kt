@@ -205,6 +205,7 @@ class MangaRestorer(
                 bookmark = chapter.bookmark || dbChapter.bookmark,
                 read = chapter.read,
                 lastPageRead = chapter.lastPageRead,
+                sourceOrder = chapter.sourceOrder,
             )
         } else {
             chapter.copyFrom(dbChapter).let {
@@ -255,7 +256,7 @@ class MangaRestorer(
                     bookmark = chapter.bookmark,
                     lastPageRead = chapter.lastPageRead,
                     chapterNumber = null,
-                    sourceOrder = null,
+                    sourceOrder = if (isSync) chapter.sourceOrder else null,
                     dateFetch = null,
                     dateUpload = null,
                     chapterId = chapter.id,
