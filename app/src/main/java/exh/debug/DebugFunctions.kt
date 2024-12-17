@@ -53,7 +53,7 @@ object DebugFunctions {
     fun forceUpgradeMigration(): Boolean {
         val migrationContext = MigrationContext(dryrun = false)
         val migrationJobFactory = MigrationJobFactory(migrationContext, Migrator.scope)
-        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory, {})
+        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory) {}
         val strategy = migrationStrategyFactory.create(1, BuildConfig.VERSION_CODE)
         return runBlocking { strategy(migrations).await() }
     }
@@ -61,12 +61,12 @@ object DebugFunctions {
     fun forceSetupJobs(): Boolean {
         val migrationContext = MigrationContext(dryrun = false)
         val migrationJobFactory = MigrationJobFactory(migrationContext, Migrator.scope)
-        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory, {})
+        val migrationStrategyFactory = MigrationStrategyFactory(migrationJobFactory) {}
         val strategy = migrationStrategyFactory.create(0, BuildConfig.VERSION_CODE)
         return runBlocking { strategy(migrations).await() }
     }
 
-    fun resetAgedFlagInEXHManga() {
+    fun resetAgedFlagInExhManga() {
         runBlocking {
             getExhFavoriteMangaWithMetadata.await().forEach { manga ->
                 val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>() ?: return@forEach
@@ -106,14 +106,17 @@ object DebugFunctions {
 
     fun getEHMangaListWithAgedFlagInfo(): String {
         return runBlocking {
-            getExhFavoriteMangaWithMetadata.await().map { manga ->
-                val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>() ?: return@map
-                "Aged: ${meta.aged}\t Title: ${manga.title}"
+            val result = getExhFavoriteMangaWithMetadata.await().mapNotNull { manga ->
+                val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>()
+                // KMK -->
+                meta?.let { "Aged: ${meta.aged}\t-\tTitle: ${manga.title}" }
             }
+            listOf("Count: ${result.size}") + result
+            // KMK <--
         }.joinToString(",\n")
     }
 
-    fun countAgedFlagInEXHManga(): Int {
+    fun countAgedFlagInExhManga(): Int {
         return runBlocking {
             getExhFavoriteMangaWithMetadata.await()
                 .count { manga ->
