@@ -434,7 +434,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                                     }
 
                                                     if (newReadChapters.isNotEmpty()) {
-                                                        setReadStatus.await(true, *newReadChapters.toTypedArray())
+                                                        setReadStatus.await(
+                                                            true,
+                                                            *newReadChapters.toTypedArray(),
+                                                            // KMK -->
+                                                            manually = false,
+                                                            // KMK <--
+                                                        )
                                                     }
 
                                                     this.filterNot { newReadChapters.contains(it) }
