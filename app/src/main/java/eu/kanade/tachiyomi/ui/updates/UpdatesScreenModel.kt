@@ -270,7 +270,7 @@ class UpdatesScreenModel(
                         manga,
                         source,
                         // KMK -->
-                        true,
+                        ignoreCategoryExclusion = true,
                         // KMK <--
                     )
                 }

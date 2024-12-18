@@ -1422,7 +1422,7 @@ class MangaScreenModel(
                         state.manga,
                         state.source,
                         // KMK -->
-                        true,
+                        ignoreCategoryExclusion = true,
                         // KMK <--
                     )
                 }
