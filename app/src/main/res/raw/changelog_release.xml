@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="" changeDate="">
+    <changelogversion versionName="1.12.2" changeDate="December 18, 2024">
         <changelogtext>[b]New:[/b] Auto install app update</changelogtext>
         <changelogtext>[b]New:[/b] filter only Obsolete sources in Migration screen</changelogtext>
+        <changelogtext>[b]New:[/b] Get manga info from tracker</changelogtext>
         <changelogtext>[b]Improve:[/b] App update retry/resume</changelogtext>
         <changelogtext>[b]Improve:[/b] add manual download &amp; error message to app update error notification</changelogtext>
         <changelogtext>[b]Improve:[/b] add webp support to nh</changelogtext>
@@ -20,6 +21,15 @@
         <changelogtext>[b]Improve:[/b] Add option to lower the threshold for hardware bitmaps</changelogtext>
         <changelogtext>[b]Improve:[/b] Switch to hardware bitmap in reader only if device can handle it</changelogtext>
         <changelogtext>[b]Improve:[/b] Add a Honor system app to list of invalid browsers</changelogtext>
+        <changelogtext>[b]Improve:[/b] Increase new updates count when updates found</changelogtext>
+        <changelogtext>[b]Improve:[/b] favorites sync statuses</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update usage of work:work-runtime</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update tag lists</changelogtext>
+        <changelogtext>[b]Improve:[/b] Always use software bitmap on certain devices</changelogtext>
+        <changelogtext>[b]Fix:[/b] nH cover</changelogtext>
+        <changelogtext>[b]Fix:[/b] Maintain correct source order even when receiving new chapters from a sync service</changelogtext>
+        <changelogtext>[b]Fix:[/b] null categories in Settings/Downloads/Exclude</changelogtext>
+        <changelogtext>[b]Fix:[/b] idle status set</changelogtext>
         <changelogtext>[b]Fix:[/b] source-search clear causing disappearance of search box</changelogtext>
         <changelogtext>[b]Fix:[/b] a possible crash with auto-zoom</changelogtext>
         <changelogtext>[b]Fix:[/b] multiple issues with the E-H updater</changelogtext>

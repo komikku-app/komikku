@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9643" changeDate="December 18, 2024">
+        <changelogtext>[b]New:[/b] Get manga info from tracker</changelogtext>
+        <changelogtext>[b]Improve:[/b] Increase new updates count when updates found</changelogtext>
+        <changelogtext>[b]Improve:[/b] favorites sync statuses</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update usage of work:work-runtime</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update tag lists</changelogtext>
+        <changelogtext>[b]Improve:[/b] Always use software bitmap on certain devices</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update translation</changelogtext>
+        <changelogtext>[b]Fix:[/b] nH cover</changelogtext>
+        <changelogtext>[b]Fix:[/b] Maintain correct source order even when receiving new chapters from a sync service</changelogtext>
+        <changelogtext>[b]Fix:[/b] null categories in Settings/Downloads/Exclude</changelogtext>
+        <changelogtext>[b]Fix:[/b] idle status set</changelogtext>
+        <changelogtext>[b]Fix:[/b] Return newPage joinedItems check</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9608" changeDate="November 30, 2024">
         <changelogtext>[b]New:[/b] Auto install app update</changelogtext>
         <changelogtext>[b]Improve:[/b] App update retry/resume</changelogtext>
