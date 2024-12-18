@@ -233,7 +233,12 @@ abstract class SyncService(
                 localChapter != null && remoteChapter != null -> {
                     // Use version number to decide which chapter to keep
                     val chosenChapter = if (localChapter.version >= remoteChapter.version) {
-                        localChapter
+                        // If there mare more chapter on remote, local sourceOrder will need to be updated to maintain correct source order.
+                        if (localChapters.size < remoteChapters.size) {
+                            localChapter.copy(sourceOrder = remoteChapter.sourceOrder)
+                        } else {
+                            localChapter
+                        }
                     } else {
                         remoteChapter
                     }
@@ -500,6 +505,7 @@ abstract class SyncService(
                     logcat(LogPriority.DEBUG, logTag) { "Using remote saved search: ${remoteSearch.name}." }
                     remoteSearch
                 }
+
                 else -> {
                     logcat(LogPriority.DEBUG, logTag) {
                         "No saved search found for composite key: $compositeKey. Skipping."
