@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Siirretään kaikki merkinnät lähteestä</string>
   <string name="label_to_be_updated">Päivittääksesi</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Manuaalinen lataus</string>
+  <string name="auto_update_app">Päivitä sovellus automaattisesti</string>
+  <string name="update_completed">Päivitys suoritettu</string>
+  <string name="open">Avaa</string>
+  <string name="release_page">Julkaisu sivu</string>
+  <string name="could_not_install_update">Päivitystä ei voitu asentaa</string>
+  <string name="action_copy_to_clipboard_first_page">Kopioi ensimmäinen sivu leikepöydälle</string>
+  <string name="action_copy_to_clipboard_second_page">Kopioi toinen sivu leikepöydälle</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopioi yhdistetty sivu leikepöydälle</string>
 </resources>

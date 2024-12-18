@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Migrarea tuturor intrărilor de la sursă</string>
   <string name="label_to_be_updated">A se actualiza</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Descărcare manuală</string>
+  <string name="auto_update_app">Auto-actualizare aplicație</string>
+  <string name="update_completed">Actualizare finalizată</string>
+  <string name="open">Deschideți</string>
+  <string name="release_page">Pagina de lansare</string>
+  <string name="could_not_install_update">Nu s-a putut instala actualizarea</string>
+  <string name="action_copy_to_clipboard_first_page">Copiază prima pagină în clipboard</string>
+  <string name="action_copy_to_clipboard_second_page">Copiază a doua pagină în clipboard</string>
+  <string name="action_copy_to_clipboard_combined_page">Copiază pagina combinată în clipboard</string>
 </resources>

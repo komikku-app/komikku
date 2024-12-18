@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Alle invoergegevens vanuit bron migreren</string>
   <string name="label_to_be_updated">Te updaten</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Handmatige download</string>
+  <string name="auto_update_app">Auto-update app</string>
+  <string name="update_completed">Update voltooid</string>
+  <string name="open">Open</string>
+  <string name="release_page">Pagina vrijgeven</string>
+  <string name="could_not_install_update">Update kon niet worden geïnstalleerd</string>
+  <string name="action_copy_to_clipboard_first_page">Eerste pagina naar klembord kopiëren</string>
+  <string name="action_copy_to_clipboard_second_page">Tweede pagina naar klembord kopiëren</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopieer gecombineerde pagina naar klembord</string>
 </resources>

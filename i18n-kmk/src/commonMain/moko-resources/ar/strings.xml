@@ -45,7 +45,7 @@
   <string name="theme_matrix">مصفوفة</string>
   <string name="theme_mocha">موكا</string>
   <string name="theme_sapphire">الياقوت</string>
-  <string name="pref_show_updating_progress_banner">إظهار التحديث بنر التقدم</string>
+  <string name="pref_show_updating_progress_banner">إظهار شريط التقدم</string>
   <string name="pref_show_restoring_progress_banner">إظهار شعار استعادة التقدم</string>
   <string name="pref_show_syncing_progress_banner">إظهار شعار التقدم في المزامنة</string>
   <string name="saved_searches_feeds">عمليات البحث المحفوظة &amp; موجز الويب</string>
@@ -71,7 +71,7 @@
   <string name="put_related_mangas_in_overflow">اقتراحات في التجاوز</string>
   <string name="put_related_mangas_in_overflow_summary">ضع زر الاقتراحات في القائمة الزائدة بدلا من صفحة الإدخال</string>
   <string name="pref_show_home_on_related_mangas">الرئيسية من الاقتراحات</string>
-  <string name="pref_show_home_on_related_mangas_summary">إظهار أيقونة أثناء تصفح الاقتراحات للتنقل مباشرة إلى الصفحة الرئيسية</string>
+  <string name="pref_show_home_on_related_mangas_summary">إظهار أيقونة عند تصفح الاقتراحات للانتقال مباشرة إلى الصفحة الرئيسية</string>
   <string name="pref_source_related_mangas">اقتراحات</string>
   <string name="pref_source_related_mangas_summary">إظهار اقتراحات المصدر - الموقع أثناء عرض الإدخال</string>
   <string name="related_mangas_website_suggestions">اقتراحات الموقع</string>
@@ -83,15 +83,15 @@
   <string name="custom_color_description">اختر لون البذرة للسمة المخصصة</string>
   <string name="custom_theme_palette_casual">عادي</string>
   <string name="custom_theme_palette_sunset">غروب</string>
-  <string name="custom_theme_palette_outrun">Outrun</string>
-  <string name="custom_theme_palette_raspberry">Raspberry</string>
+  <string name="custom_theme_palette_outrun">هروب</string>
+  <string name="custom_theme_palette_raspberry">توت العليق</string>
   <string name="custom_theme_palette_pop">البوب</string>
-  <string name="custom_theme_palette_cathode">الكاثود</string>
-  <string name="custom_theme_palette_bubblegum">بوبليغوم</string>
+  <string name="custom_theme_palette_cathode">القطب السالب</string>
+  <string name="custom_theme_palette_bubblegum">علكة فقاعات</string>
   <string name="custom_theme_palette_night_at_the_beach">الليل عند الشاطئ</string>
   <string name="custom_theme_palette_spectral">الطيف</string>
   <string name="custom_theme_palette_patagonia">باتاغونيا</string>
-  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_springfield">حقل ربيعي</string>
   <string name="custom_theme_palette_lcd">LCD</string>
   <string name="custom_theme_palette_pico">PICO-8</string>
   <string name="action_show_hidden_categories">إظهار الفئات المخفية</string>
@@ -102,7 +102,7 @@
   <string name="pref_panorama_cover_flow">تدفق غطاء بانوراما</string>
   <string name="pref_panorama_cover_flow_summary">إظهار غلاف بانوراما في البحث العالمي &amp; اقتراحات</string>
   <string name="pref_auto_sync_progress_from_trackers">المزامنة التلقائية للتقدم من التتبع</string>
-  <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">مزامنة التقدم من التتبع حتى الفصل %d</string>
   <string name="option_label_library_update_errors">أخطاء تحديث المكتبة</string>
   <string name="label_library_update_errors">أخطاء تحديث المكتبة (%d)</string>
   <string name="info_empty_library_update_errors">ليس لديك أي أخطاء في تحديث المكتبة.</string>
@@ -112,5 +112,14 @@
   <string name="action_scroll_to_next">التمرير إلى التالي</string>
   <string name="migrating_all_entries">ترحيل جميع المدخلات من المصدر</string>
   <string name="label_to_be_updated">سيتم تحديثها</string>
-  <string name="pref_manga_info">Manga Info</string>
+  <string name="pref_manga_info">معلومات المانجا</string>
+  <string name="manual_download">تنزيل يدوي</string>
+  <string name="auto_update_app">تحديث تلقائي للتطبيق</string>
+  <string name="update_completed">اكتمل التحديث</string>
+  <string name="open">فتح</string>
+  <string name="release_page">صفحة الإصدار</string>
+  <string name="could_not_install_update">تعذر تثبيت التحديث</string>
+  <string name="action_copy_to_clipboard_first_page">نسخ الصفحة الأولى إلى الحافظة</string>
+  <string name="action_copy_to_clipboard_second_page">نسخ الصفحة الثانية إلى الحافظة</string>
+  <string name="action_copy_to_clipboard_combined_page">نسخ الصفحة المدمجة إلى الحافظة</string>
 </resources>

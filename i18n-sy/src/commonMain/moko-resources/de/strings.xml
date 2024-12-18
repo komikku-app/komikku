@@ -210,6 +210,9 @@
     <string name="action_share_first_page">Erste Seite teilen</string>
     <string name="action_share_second_page">Zweite Seite teilen</string>
     <string name="action_share_combined_page">Kombinierte Seite teilen</string>
+    <string name="action_copy_first_page">Erste Seite kopieren</string>
+    <string name="action_copy_second_page">Zweite Seite kopieren</string>
+    <string name="action_copy_combined_page">Kombinierte Seite kopieren</string>
     <string name="eh_auto_webtoon_snack">Lese im Webtoon-Stil</string>
     <string name="invert_double_pages">Doppelseiten invertieren</string>
     <string name="pref_center_margin">Typ des mitteleren Randes</string>

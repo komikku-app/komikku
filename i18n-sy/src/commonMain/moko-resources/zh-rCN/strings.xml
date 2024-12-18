@@ -631,6 +631,7 @@
     <string name="non_h">非色情</string>
     <string name="batch_add_ok">成功：</string>
     <string name="batch_add_error">错误：</string>
+    <string name="action_copy_first_page">复制第一页</string>
     <string name="eh_image_quality_1600">1600x</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_mangadex">MangaDex</string>
@@ -639,6 +640,8 @@
     <string name="eh_image_quality_980">980x</string>
     <string name="eh_image_quality_780">780x</string>
     <string name="wsrv">wsrv.nl</string>
+    <string name="action_copy_second_page">复制第二页</string>
+    <string name="action_copy_combined_page">复制合并页</string>
     <string name="only_show_updated_entries">仅显示包含新章节的条目</string>
     <string name="url">Url</string>
     <string name="alt_titles">别名</string>

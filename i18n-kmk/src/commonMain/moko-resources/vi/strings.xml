@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Di chuyển tất cả truyện của nguồn</string>
   <string name="label_to_be_updated">Truyện sẽ được cập nhật</string>
   <string name="pref_manga_info">Trang thông tin truyện</string>
+  <string name="manual_download">Tải về thủ công</string>
+  <string name="auto_update_app">Tự động cập nhật ứng dụng</string>
+  <string name="update_completed">Cập nhật thành công</string>
+  <string name="open">Mở</string>
+  <string name="release_page">Nội dung phát hành</string>
+  <string name="could_not_install_update">Không thể cài đặt cập nhật</string>
+  <string name="action_copy_to_clipboard_first_page">Sao chép trang đầu tiên vào clipboard</string>
+  <string name="action_copy_to_clipboard_second_page">Sao chép trang thứ hai vào clipboard</string>
+  <string name="action_copy_to_clipboard_combined_page">Sao chép trang đã kết hợp vào clipboard</string>
 </resources>

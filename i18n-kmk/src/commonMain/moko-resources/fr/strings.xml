@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Migrer toutes les entrées de la source</string>
   <string name="label_to_be_updated">A mettre à jour</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Téléchargement manuel</string>
+  <string name="auto_update_app">Mise à jour automatique de l\'application</string>
+  <string name="update_completed">Mise à jour terminée</string>
+  <string name="open">Ouvert</string>
+  <string name="release_page">Page de publication</string>
+  <string name="could_not_install_update">Impossible d\'installer la mise à jour</string>
+  <string name="action_copy_to_clipboard_first_page">Copier la première page dans le presse-papiers</string>
+  <string name="action_copy_to_clipboard_second_page">Copier la seconde page dans le presse-papiers</string>
+  <string name="action_copy_to_clipboard_combined_page">Copier la page combinée dans le presse-papiers</string>
 </resources>

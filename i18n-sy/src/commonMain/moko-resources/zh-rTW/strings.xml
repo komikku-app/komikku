@@ -653,6 +653,9 @@
     <string name="mal_id">Mal id</string>
     <string name="batch_add_error">[錯誤]</string>
     <string name="batch_add_ok">[確認]</string>
+    <string name="action_copy_first_page">複製第一頁</string>
+    <string name="action_copy_second_page">複製第二頁</string>
+    <string name="action_copy_combined_page">複製合併頁</string>
     <string name="only_show_updated_entries">僅顯示包含新章節的條目</string>
     <string name="add_tags">新增標籤</string>
     <string name="multi_tags_comma_separated">輸入標籤，可用逗號分隔</string>

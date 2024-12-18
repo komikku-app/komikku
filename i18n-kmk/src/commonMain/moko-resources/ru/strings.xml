@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Миграция всех записей из источника</string>
   <string name="label_to_be_updated">Будет обновлено</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Ручная загрузка</string>
+  <string name="auto_update_app">Автообновление</string>
+  <string name="update_completed">Обновление завершено</string>
+  <string name="open">Открыть</string>
+  <string name="release_page">Страница релиза</string>
+  <string name="could_not_install_update">Не удалось установить обновление</string>
+  <string name="action_copy_to_clipboard_first_page">Скопировать первую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_second_page">Копировать вторую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_combined_page">Скопировать объединенную страницу в буфер обмена</string>
 </resources>

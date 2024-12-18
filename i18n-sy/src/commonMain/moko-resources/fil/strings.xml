@@ -286,6 +286,7 @@
     <string name="action_clean_titles">Linsin ang mga title</string>
     <string name="frong_page_categories">Kategorya ng Front Page</string>
     <string name="action_set_first_page_cover">I-set ang unang pahina bilang cover</string>
+    <string name="action_copy_first_page">Kopyahin ang unang pahina</string>
     <string name="action_share_second_page">I-share ang ikalawang pahina</string>
     <string name="shift_double_pages">Ilipat ng isang pahina</string>
     <string name="pref_center_margin">Uri ng gitnang margin</string>
@@ -324,10 +325,12 @@
     <string name="favorites_sync_unable_to_delete">Hindi matanggal ang mga gallery mula sa mga remote server!</string>
     <string name="favorites_sync_remove_from_local">Tinatangal ang gallery %1$d ng %2$d mula sa lokal na aklatan</string>
     <string name="pref_crop_borders_webtoon">I-crop ang border pa-Webtoon</string>
+    <string name="action_copy_combined_page">Kopyahin ang pinagsamang pahina</string>
     <string name="action_share_first_page">I-share ang unang pahina</string>
     <string name="action_set_second_page_cover">I-set ang ikalawang pahina bilang cover</string>
     <string name="action_save_first_page">I-save ang unang pahina</string>
     <string name="action_share_combined_page">I-share ang pinagsamang pahina</string>
+    <string name="action_copy_second_page">Kopyahin ang ikalawang pahina</string>
     <string name="share_pages_info">%1$s: %2$s, mga pahinang %3$s</string>
     <string name="action_save_second_page">I-save ang ikalawang pahina</string>
     <string name="double_pages">Dobleng pahina</string>

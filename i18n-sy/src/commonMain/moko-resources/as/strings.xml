@@ -327,6 +327,9 @@
     <string name="action_share_second_page">দ্বিতীয় পৃষ্ঠা অংশীদাৰ কৰক</string>
     <string name="action_save_combined_page">মিলিত পৃষ্ঠা সংৰক্ষণ কৰক</string>
     <string name="action_share_combined_page">মিলিত পৃষ্ঠা অংশীদাৰ কৰক</string>
+    <string name="action_copy_first_page">প্ৰথম পৃষ্ঠা অনুকৰণ কৰক</string>
+    <string name="action_copy_second_page">দ্বিতীয় পৃষ্ঠা অনুকৰণ কৰক</string>
+    <string name="action_copy_combined_page">মিলিত পৃষ্ঠা অনুকৰণ কৰক</string>
     <string name="share_pages_info">%1$s: %2$s, পৃষ্ঠা %3$s</string>
     <string name="eh_auto_webtoon_snack">ওয়েবটুন শৈলী পঢ়া</string>
     <string name="page_layout">পৃষ্ঠা বিন্যাস</string>

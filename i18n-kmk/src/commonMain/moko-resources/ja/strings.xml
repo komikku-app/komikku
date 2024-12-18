@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">ソースを検索</string>
-  <string name="action_toggle_nsfw_only">NSFWのみ切り替え</string>
+  <string name="action_source_search">ソースで検索</string>
+  <string name="action_toggle_nsfw_only">NSFWのみを表示</string>
   <string name="action_bulk_select">一括選択モード</string>
-  <string name="action_faq_and_guides">FAQ とガイド</string>
+  <string name="action_faq_and_guides">FAQとガイド</string>
   <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
   <string name="download_cache_renew_interval_manual">マニュアル</string>
   <string name="download_cache_renew_interval_1hour">1 時間</string>
@@ -102,7 +102,7 @@
   <string name="pref_panorama_cover_flow">パノラマカバーフロー</string>
   <string name="pref_panorama_cover_flow_summary">グローバル検索 &amp; 提案でパノラマカバーを表示する</string>
   <string name="pref_auto_sync_progress_from_trackers">トラッカーからの進行状況を自動同期</string>
-  <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">トラッカーからチャプター %dまでの進行状況を同期</string>
   <string name="option_label_library_update_errors">ライブラリの更新エラー</string>
   <string name="label_library_update_errors">ライブラリの更新エラー (%d)</string>
   <string name="info_empty_library_update_errors">ライブラリの更新エラーがありません。</string>
@@ -111,6 +111,15 @@
   <string name="action_scroll_to_previous">前までスクロール</string>
   <string name="action_scroll_to_next">次までスクロール</string>
   <string name="migrating_all_entries">すべての項目をソースから移行中</string>
-  <string name="label_to_be_updated">更新するには</string>
-  <string name="pref_manga_info">Manga Info</string>
+  <string name="label_to_be_updated">更新予定</string>
+  <string name="pref_manga_info">マンガ情報</string>
+  <string name="manual_download">手動でダウンロード</string>
+  <string name="auto_update_app">アプリの自動アップデート</string>
+  <string name="update_completed">更新が完了しました</string>
+  <string name="open">開く</string>
+  <string name="release_page">リリースページ</string>
+  <string name="could_not_install_update">アップデートをインストールできませんでした</string>
+  <string name="action_copy_to_clipboard_first_page">最初のページをクリップボードにコピー</string>
+  <string name="action_copy_to_clipboard_second_page">2ページ目をクリップボードにコピー</string>
+  <string name="action_copy_to_clipboard_combined_page">結合ページをクリップボードにコピー</string>
 </resources>
