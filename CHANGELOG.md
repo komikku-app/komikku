@@ -11,12 +11,16 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - `Other` - for technical stuff.
 
 ## [Unreleased]
+### Added
+- Add option to always decode long strip images with SSIV
+
+## [v0.17.1] - 2024-12-06
 ### Changed
 - Bump default user agent ([@AntsyLich](https://github.com/AntsyLich)) ([`76dcf90`](https://github.com/mihonapp/mihon/commit/76dcf903403d565056f44c66d965c1ea8affffc3))
 
 ### Improved
 - Bangumi search now shows the score and summary of a search result ([@MajorTanya](https://github.com/MajorTanya)) ([#1396](https://github.com/mihonapp/mihon/pull/1396))
-- Extension repo URLs are now auto-formatted ([@AntsyLich](https://github.com/AntsyLich), [@MajorTanya](https://github.com/MajorTanya))
+- Extension repo URLs are now auto-formatted ([@AntsyLich](https://github.com/AntsyLich), [@MajorTanya](https://github.com/MajorTanya)) ([`22d8aad`](https://github.com/mihonapp/mihon/commit/22d8aad598bea8f00f2831779e45a6645392ca0f))
  
 ### Fixed
 - Fix "currentTab was used multiple times" ([@AntsyLich](https://github.com/AntsyLich)) ([`371c143`](https://github.com/mihonapp/mihon/commit/371c1432e218f6dcf129f05405dceb2cd351c647))
@@ -277,7 +281,8 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Branding to Mihon ([@AntsyLich](https://github.com/AntsyLich))
 - Minimum supported Android version to 8 ([@AntsyLich](https://github.com/AntsyLich)) ([`dfb3091`](https://github.com/mihonapp/mihon/commit/dfb3091e380dda3e9bfb64bf5c9a685cf3a03d0e))
 
-[unreleased]: https://github.com/mihonapp/mihon/compare/v0.17.0...main
+[unreleased]: https://github.com/mihonapp/mihon/compare/v0.17.1...main
+[v0.17.1]: https://github.com/mihonapp/mihon/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/mihonapp/mihon/compare/v0.16.5...v0.17.0
 [v0.16.5]: https://github.com/mihonapp/mihon/compare/v0.16.4...v0.16.5
 [v0.16.4]: https://github.com/mihonapp/mihon/compare/v0.16.3...v0.16.4
