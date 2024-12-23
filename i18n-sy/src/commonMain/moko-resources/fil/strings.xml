@@ -268,7 +268,7 @@
     <string name="friday">Biyernes</string>
     <string name="encrypt_database">I-encrypt ang database</string>
     <string name="encrypt_database_subtitle">Kinakailangang mag-restart ng app upang magkabisa</string>
-    <string name="encrypt_database_message">&lt;font color=\'red\'&gt;ANG PAGPAPAGANA NITO AY GAGAWA NG BAGONG DATABASE. GAMITIN ANG MGA HAKBANG NA ITO UPANG MAPANATILI ANG IYONG DATA&lt;br&gt;1. MGA SETTING -&gt; BACKUP -&gt; GUMAWA&lt;br&gt;2. MGA SETTING NG SISTEMA -&gt; I-CLEAR ANG APP DATA&lt;br&gt;3. BUKSAN ANG APP AT PAGANAHIN ITO&lt;br&gt;4. MGA SETTING NG SISTEMA -&gt; PILITING MAG-RESTART&lt;br&gt;5. MGA SETTING -&gt; BACKUP -&gt; I-RESTORE&lt;/font&gt;</string>
+    <string name="encrypt_database_message"><![CDATA[<font color='red'>ANG PAGPAPAGANA NITO AY GAGAWA NG BAGONG DATABASE. GAMITIN ANG MGA HAKBANG NA ITO UPANG MAPANATILI ANG IYONG DATA<br>1. MGA SETTING -> BACKUP -> GUMAWA<br>2. MGA SETTING NG SISTEMA -> I-CLEAR ANG APP DATA<br>3. BUKSAN ANG APP AT PAGANAHIN ITO<br>4. MGA SETTING NG SISTEMA -> PILITING MAG-RESTART<br>5. MGA SETTING -> BACKUP -> I-RESTORE</font>]]></string>
     <string name="set_cbz_zip_password">I-set ang archive password ng CBZ</string>
     <string name="password_protect_downloads">Protektahan ng password ang mga download</string>
     <string name="delete_cbz_archive_password">Alisin ang password ng CBZ archive</string>
@@ -347,7 +347,6 @@
     <string name="single_page">Isang pahina</string>
     <string name="center_margin_wide_page">Idagdag sa malawak na Pahina</string>
     <string name="archive_mode_load_into_memory">I-load sa memory</string>
-    <string name="too_many_in_feed">Masyadong maraming source sa iyong feed, hindi maaaring magdagdag ng higit sa 10</string>
     <string name="pref_center_margin_summary">Maglagay ng spacer upang mabawasan ang deadspace sa mga foldable na device.</string>
     <string name="archive_mode_load_from_file">Magload mula sa file</string>
     <string name="pref_archive_reader_mode_summary">Ang paraan kung paano naglo-load ang mga imahe sa loob ng mga archive, tulad ng CBZ o CBR</string>
@@ -499,9 +498,9 @@
     <string name="community_recommendations">Mga rekomendasyon ng komunidad</string>
     <string name="select_scanlators">Ipapakitang Scanlator group</string>
     <string name="similar">Katulad sa %1$s</string>
-    <string name="relation_similar">Katulad</string>
+    <string name="relation_similar">Katulad nito</string>
     <string name="humanize_fallback">ilang sandali ang nakalipas</string>
-    <string name="favorites_sync_notes_message">1. Ang mga pagbabago sa pangalan ng kategorya sa app ay &lt;b&gt;HINDI&lt;/b&gt; nai-sync! Mangyaring &lt;i&gt;palitan ang pangalan ng kategorya sa ExHentai sa halip&lt;/i&gt;. Ang mga pangalan ng kategorya ay kokopyahin mula sa ExHentai servers sa bawat pag-sync.&lt;br&gt;&lt;br&gt;2. Ang mga paboritong kategorya sa ExHentai ay tumutukoy sa &lt;b&gt;unang 10 kategorya sa app&lt;/b&gt; (hindi kasama ang \'Default\' na kategorya). &lt;i&gt;Ang mga gallery sa ibang mga kategorya ay &lt;b&gt;HINDI&lt;/b&gt; nai-sync!&lt;/i&gt;&lt;br&gt;&lt;br&gt;3. &lt;font color=\'red\'&gt;&lt;b&gt;PANATALIHING MAY MALAKAS NA KONEKSYON NG INTERNET KAPAG NAGPRPROSESO NG PAG-SYNC!&lt;/b&gt;&lt;/font&gt; Kung mawawalan ng koneksyon sa internet habang nag-sync ang app, ang iyong mga paborito ay maaaring maiwan sa isang &lt;i&gt;bahagyang nai-sync na estado&lt;/i&gt;.&lt;br&gt;&lt;br&gt;4. Panatilihing bukas ang app habang nag-sync ang mga paborito. Ang Android ay minsang nagsasara ng mga app na nasa background at maaaring hindi maganda kung mangyari ito habang nag-sisync ang app.&lt;br&gt;&lt;br&gt;5. &lt;b&gt;Huwag ilagay ang mga paborito sa maraming kategorya&lt;/b&gt; (suportado ito ng app). Maaari malilito ang algorithm ng pag-sync dahil pinapayagan lang ng ExH na ang bawat paborito ay nasa isang kategorya.&lt;br&gt;&lt;br&gt; Ang dialog na ito ay lilitaw lamang ng isang beses. Maaari mong basahin muli ang mga tala na ito sa pamamagitan ng pagpunta sa \'Mga Setting &gt; E-Hentai &gt; Ipakita ang sync note ng mga paborito\'.</string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. Ang mga pagbabago sa pangalan ng kategorya sa app ay <b>HINDI</b> nai-sync! Mangyaring <i>palitan ang pangalan ng kategorya sa ExHentai sa halip</i>. Ang mga pangalan ng kategorya ay kokopyahin mula sa ExHentai servers sa bawat pag-sync.<br><br>2. Ang mga paboritong kategorya sa ExHentai ay tumutukoy sa <b>unang 10 kategorya sa app</b> (hindi kasama ang 'Default' na kategorya). <i>Ang mga gallery sa ibang mga kategorya ay <b>HINDI</b> nai-sync!</i><br><br>3. <font color='red'><b>PANATALIHING MAY MALAKAS NA KONEKSYON NG INTERNET KAPAG NAGPRPROSESO NG PAG-SYNC!</b></font> Kung mawawalan ng koneksyon sa internet habang nag-sync ang app, ang iyong mga paborito ay maaaring maiwan sa isang <i>bahagyang nai-sync na estado</i>.<br><br>4. Panatilihing bukas ang app habang nag-sync ang mga paborito. Ang Android ay minsang nagsasara ng mga app na nasa background at maaaring hindi maganda kung mangyari ito habang nag-sisync ang app.<br><br>5. <b>Huwag ilagay ang mga paborito sa maraming kategorya</b> (suportado ito ng app). Maaari malilito ang algorithm ng pag-sync dahil pinapayagan lang ng ExH na ang bawat paborito ay nasa isang kategorya.<br><br> Ang dialog na ito ay lilitaw lamang ng isang beses. Maaari mong basahin muli ang mga tala na ito sa pamamagitan ng pagpunta sa 'Mga Setting > E-Hentai > Ipakita ang sync note ng mga paborito'.]]></string>
     <string name="batch_add_unknown_type_log_message">Di-kilalang uri ng entry para sa gallery: %1$s</string>
     <string name="batch_add_summary">"
 \nBuod:

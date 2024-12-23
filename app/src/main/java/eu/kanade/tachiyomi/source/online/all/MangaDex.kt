@@ -313,6 +313,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return similarHandler.getRelated(manga)
     }
 
+    suspend fun getMangaMetadata(track: Track): SManga? {
+        return mangaHandler.getMangaMetadata(track, id, coverQuality(), tryUsingFirstVolumeCover(), altTitlesInDesc())
+    }
+
     companion object {
         private const val dataSaverPref = "dataSaverV5"
 

@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Alle Einträge aus der Quelle migrieren</string>
   <string name="label_to_be_updated">Zu aktualisieren</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Manueller Download</string>
+  <string name="auto_update_app">App automatisch aktualisieren</string>
+  <string name="update_completed">Update abgeschlossen</string>
+  <string name="open">Öffnen</string>
+  <string name="release_page">Release-Seite</string>
+  <string name="could_not_install_update">Update konnte nicht installiert werden</string>
+  <string name="action_copy_to_clipboard_first_page">Erste Seite in Zwischenablage kopieren</string>
+  <string name="action_copy_to_clipboard_second_page">Zweite Seite in Zwischenablage kopieren</string>
+  <string name="action_copy_to_clipboard_combined_page">Kombinierte Seite in Zwischenablage kopieren</string>
 </resources>

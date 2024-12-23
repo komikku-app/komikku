@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Migrerer alle poster fra kilde</string>
   <string name="label_to_be_updated">Skal opdateres</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Manuel download</string>
+  <string name="auto_update_app">Auto-opdater app</string>
+  <string name="update_completed">Opdatering fuldført</string>
+  <string name="open">Åbn</string>
+  <string name="release_page">Udgivelsesside</string>
+  <string name="could_not_install_update">Kunne ikke installere opdatering</string>
+  <string name="action_copy_to_clipboard_first_page">Kopiér første side til udklipsholder</string>
+  <string name="action_copy_to_clipboard_second_page">Kopier anden side til udklipsholder</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopier kombineret side til udklipsholder</string>
 </resources>

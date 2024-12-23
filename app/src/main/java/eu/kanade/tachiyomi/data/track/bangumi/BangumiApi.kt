@@ -7,6 +7,9 @@ import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMCollectionResponse
 import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMOAuth
 import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMSearchItem
 import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMSearchResult
+import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMSubject
+import eu.kanade.tachiyomi.data.track.bangumi.dto.Infobox
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
@@ -21,6 +24,7 @@ import tachiyomi.core.common.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import tachiyomi.domain.track.model.Track as DomainTrack
 
 class BangumiApi(
     private val trackId: Long,
@@ -122,6 +126,34 @@ class BangumiApi(
                         track.last_chapter_read = it.epStatus!!.toDouble()
                         track.score = it.rating!!
                         track
+                    }
+            }
+        }
+    }
+
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
+        return withIOContext {
+            with(json) {
+                authClient.newCall(GET("${API_URL}/v0/subjects/${track.remoteId}"))
+                    .awaitSuccess()
+                    .parseAs<BGMSubject>()
+                    .let {
+                        TrackMangaMetadata(
+                            remoteId = it.id,
+                            title = it.nameCn,
+                            thumbnailUrl = it.images?.common,
+                            description = it.summary,
+                            authors = it.infobox
+                                .filter { it.key == "作者" }
+                                .filterIsInstance<Infobox.SingleValue>()
+                                .map { it.value }
+                                .joinToString(", "),
+                            artists = it.infobox
+                                .filter { it.key == "插图" }
+                                .filterIsInstance<Infobox.SingleValue>()
+                                .map { it.value }
+                                .joinToString(", "),
+                        )
                     }
             }
         }

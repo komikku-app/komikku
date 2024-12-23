@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">Скоро (скоро) обновления!</string>
   <string name="changelogs">Сменить логи</string>
   <string name="related_mangas_more">Больше похожих...</string>
-  <string name="too_many_in_feed">Слишком много источников в вашем канале, нельзя добавить больше лимита (20)</string>
+  <string name="too_many_in_feed">Слишком большое количество источников в вашей ленте. Количество не должно превышать 20</string>
   <string name="current_">Текущий: %1$s</string>
   <string name="pref_theme_cover_based">Тема на основе обложки</string>
   <string name="pref_theme_cover_based_style_tonalspot">Тональная точка</string>
@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Миграция всех записей из источника</string>
   <string name="label_to_be_updated">Будет обновлено</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Ручная загрузка</string>
+  <string name="auto_update_app">Автообновление</string>
+  <string name="update_completed">Обновление завершено</string>
+  <string name="open">Открыть</string>
+  <string name="release_page">Страница релиза</string>
+  <string name="could_not_install_update">Не удалось установить обновление</string>
+  <string name="action_copy_to_clipboard_first_page">Скопировать первую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_second_page">Копировать вторую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_combined_page">Скопировать объединенную страницу в буфер обмена</string>
 </resources>

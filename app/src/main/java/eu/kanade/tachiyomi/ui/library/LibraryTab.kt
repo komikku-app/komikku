@@ -380,8 +380,8 @@ data object LibraryTab : Tab {
         // SY -->
         SyncFavoritesProgressDialog(
             status = screenModel.favoritesSync.status.collectAsState().value,
-            setStatusIdle = { screenModel.favoritesSync.status.value = FavoritesSyncStatus.Idle(context) },
-            openManga = { navigator.push(MangaScreen(it.id)) },
+            setStatusIdle = { screenModel.favoritesSync.status.value = FavoritesSyncStatus.Idle },
+            openManga = { navigator.push(MangaScreen(it)) },
         )
         // SY <--
 

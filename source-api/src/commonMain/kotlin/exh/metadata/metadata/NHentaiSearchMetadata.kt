@@ -29,6 +29,10 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var mediaId: String? = null
 
+    // AZ -->
+    var mediaServer: Int? = null
+    // AZ <--
+
     var japaneseTitle by titleDelegate(TITLE_TYPE_JAPANESE)
     var englishTitle by titleDelegate(TITLE_TYPE_ENGLISH)
     var shortTitle by titleDelegate(TITLE_TYPE_SHORT)
@@ -45,8 +49,11 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         val key = nhId?.let { nhIdToPath(it) }
 
         val cover = if (mediaId != null) {
+            // AZ -->
+            val server = mediaServer ?: 1
+            // AZ <--
             typeToExtension(coverImageType)?.let {
-                "https://t.nhentai.net/galleries/$mediaId/cover.$it"
+                "https://t$server.nhentai.net/galleries/$mediaId/cover.$it"
             }
         } else {
             null

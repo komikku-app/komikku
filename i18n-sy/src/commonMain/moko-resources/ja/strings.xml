@@ -395,7 +395,6 @@
     <!-- Feed Tab -->
     <string name="feed">フィード</string>
     <string name="feed_delete">フィードのアイテムを削除しますか？</string>
-    <string name="too_many_in_feed">フィードにソースが多すぎます。10 以上を追加できません。</string>
     <string name="feed_tab_empty">フィードにソースがありません。右上に移動して追加してください</string>
     <string name="feed_add">フィードに %1$s を追加しますか？</string>
     <!-- Sort by tags -->

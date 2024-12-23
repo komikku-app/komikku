@@ -2,6 +2,8 @@ package exh.eh
 
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -33,9 +35,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -52,6 +56,7 @@ import kotlin.time.Duration.Companion.days
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
     private val preferences: UnsortedPreferences by injectLazy()
+    private val libraryPreferences: LibraryPreferences by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger: Logger by lazy { xLog() }
@@ -67,8 +72,11 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
     override suspend fun doWork(): Result {
         return try {
-            if (requiresWifiConnection(preferences) && !context.isConnectedToWifi()) {
-                Result.success() // retry again later
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P &&
+                requiresWifiConnection(preferences) &&
+                !context.isConnectedToWifi()
+            ) {
+                Result.retry() // retry again later
             } else {
                 setForegroundSafely()
                 startUpdating()
@@ -76,7 +84,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 Result.success()
             }
         } catch (e: Exception) {
-            Result.success() // retry again later
+            Result.retry() // retry again later
         } finally {
             updateNotifier.cancelProgressNotification()
         }
@@ -200,8 +208,10 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
 
                 if (new.isNotEmpty() && manga.id == acceptedRoot.manga.id) {
+                    libraryPreferences.newUpdatesCount().getAndSet { it + new.size }
                     updatedManga += acceptedRoot.manga to new.toTypedArray()
                 } else if (exhNew.isNotEmpty() && updatedManga.none { it.first.id == acceptedRoot.manga.id }) {
+                    libraryPreferences.newUpdatesCount().getAndSet { it + exhNew.size }
                     updatedManga += acceptedRoot.manga to exhNew.toTypedArray()
                 }
 
@@ -268,6 +278,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             context.workManager.enqueue(
                 OneTimeWorkRequestBuilder<EHentaiUpdateWorker>()
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .addTag(TAG)
                     .build(),
             )
         }
@@ -279,8 +290,14 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 val restrictions = prefRestrictions ?: preferences.exhAutoUpdateRequirements().get()
                 val acRestriction = DEVICE_CHARGING in restrictions
 
+                val networkRequestBuilder = NetworkRequest.Builder()
+                if (DEVICE_ONLY_ON_WIFI in restrictions) {
+                    networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                }
+
                 val constraints = Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    // 'networkRequest' only applies to Android 9+, otherwise 'networkType' is used
+                    .setRequiredNetworkRequest(networkRequestBuilder.build(), NetworkType.CONNECTED)
                     .setRequiresCharging(acRestriction)
                     .build()
 
@@ -306,7 +323,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
     }
 
-    fun requiresWifiConnection(preferences: UnsortedPreferences): Boolean {
+    private fun requiresWifiConnection(preferences: UnsortedPreferences): Boolean {
         val restrictions = preferences.exhAutoUpdateRequirements().get()
         return DEVICE_ONLY_ON_WIFI in restrictions
     }

@@ -15,6 +15,12 @@
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
 
+    <!-- Reader -->
+      <!-- Reader Actions -->
+    <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
+    <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
+    <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
+
 
     <!-- Preferences -->
       <!-- Appearance section -->
@@ -102,6 +108,7 @@
     <string name="pref_private_installer_warning">Avoid using Private Installer because it\'s not stable yet, will lead to really slow start/resume App.</string>
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
     <string name="preload_library_cover_color">Preload library's cover color</string>
+    <string name="auto_update_app">Auto-update app</string>
 
       <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
@@ -120,6 +127,10 @@
 
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
+    <string name="update_completed">Update completed</string>
+    <string name="open">Open</string>
+    <string name="release_page">Release page</string>
+    <string name="could_not_install_update">Could not install update</string>
 
     <!--UpdateCheck Notifications-->
     <string name="update_check_notification_preview_available">Coming (soon) updates!</string>
@@ -146,7 +157,7 @@
     <string name="action_scroll_to_next">Scroll to next</string>
 
     <!-- Feed Tab -->
-    <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited (20)</string>
+    <string name="too_many_in_feed">Too many sources in your feed, cannot add more than 20</string>
     <string name="action_sort_feed">Sort feeds</string>
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
 

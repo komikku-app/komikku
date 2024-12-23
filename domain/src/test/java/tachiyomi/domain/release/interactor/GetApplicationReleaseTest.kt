@@ -150,7 +150,7 @@ class GetApplicationReleaseTest {
     }
 
     @Test
-    fun `When now is before three days expect no new update`() = runTest {
+    fun `When now is before two days expect no new update`() = runTest {
         every { preference.get() } returns Instant.now().toEpochMilli()
         every { preference.set(any()) }.answers { }
 

@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Migrovat všechny záznamy ze zdroje</string>
   <string name="label_to_be_updated">Bude aktualizováno</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Ruční stahování</string>
+  <string name="auto_update_app">Automaticky aktualizovat aplikaci</string>
+  <string name="update_completed">Aktualizace dokončena</string>
+  <string name="open">Otevřít</string>
+  <string name="release_page">Stránka vydání</string>
+  <string name="could_not_install_update">Aktualizace se nepodařilo nainstalovat</string>
+  <string name="action_copy_to_clipboard_first_page">Zkopírovat první stránku do schránky</string>
+  <string name="action_copy_to_clipboard_second_page">Zkopírovat druhou stránku do schránky</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopírovat kombinovanou stránku do schránky</string>
 </resources>

@@ -374,8 +374,8 @@ class PagerViewerAdapter(
             else -> oldCurrent?.first ?: return
         }
 
-        val index = when (newPage) {
-            is ChapterTransition -> {
+        val index = when {
+            newPage is ChapterTransition && joinedItems.none { it.first == newPage || it.second == newPage } -> {
                 val filteredPages = joinedItems.filter {
                     it.first is ReaderPage &&
                         (it.first as ReaderPage).chapter == newPage.to

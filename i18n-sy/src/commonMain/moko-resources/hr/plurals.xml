@@ -1,2 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d stranica</item>
+        <item quantity="few">%1$d stranice</item>
+        <item quantity="other">%1$d stranica</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d stranica</item>
+        <item quantity="few">%2$s, %1$d stranice</item>
+        <item quantity="other">%2$s, %1$d stranica</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Čišćenje je gotovo. Uklonjena je %d mapa</item>
+        <item quantity="few">Čišćenje je gotovo. Uklonjene su %d mape</item>
+        <item quantity="other">Čišćenje je gotovo. Uklonjeno je %d mapa</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d vrijeme zaključavanja</item>
+        <item quantity="few">%d vremena zaključavanja</item>
+        <item quantity="other">%d vremena zaključavanja</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Premjestiti %1$d%2$s unos?</item>
+        <item quantity="few">Premjestiti %1$d%2$s unosa?</item>
+        <item quantity="other">Premjestiti %1$d%2$s unosa?</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Ponovni pokušaj %1$d neuspjele stranice…</item>
+        <item quantity="few">Ponovni pokušaj %1$d neuspjele stranice…</item>
+        <item quantity="other">Ponovni pokušaj %1$d neuspjelih stranica…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d oznaka na popisu za razvrstavanje. Ovo dodaje opciju u biblioteci za razvrstavanje prema popisu oznaka temeljenom na prioritetu, što znači da će se unosi razvrstati na način da daju prioritet onima s oznakama koje želiš</item>
+        <item quantity="few">%1$d oznake na popisu za razvrstavanje. Ovo dodaje opciju u biblioteci za razvrstavanje prema popisu oznaka temeljenom na prioritetu, što znači da će se unosi razvrstati na način da daju prioritet onima s oznakama koje želiš</item>
+        <item quantity="other">%1$d oznaka na popisu za razvrstavanje. Ovo dodaje opciju u biblioteci za razvrstavanje prema popisu oznaka temeljenom na prioritetu, što znači da će se unosi razvrstati na način da daju prioritet onima s oznakama koje želiš</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Kopirati %1$d%2$s unos?</item>
+        <item quantity="few">Kopirati %1$d%2$s unosa?</item>
+        <item quantity="other">Kopirati %1$d%2$s unosa?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d unos je premješten</item>
+        <item quantity="few">%d unosa su premještena</item>
+        <item quantity="other">%d unosa je premješteno</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">Prije %1$d dan</item>
+        <item quantity="few">Prije %1$d dana</item>
+        <item quantity="other">Prije %1$d dana</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">Prije %1$d sat</item>
+        <item quantity="few">Prije %1$d sata</item>
+        <item quantity="other">Prije %1$d sati</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">Prije %1$d minute</item>
+        <item quantity="few">Prije %1$d minute</item>
+        <item quantity="other">Prije %1$d minuta</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">Prije %1$d sekunde</item>
+        <item quantity="few">Prije %1$d sekunde</item>
+        <item quantity="other">Prije %1$d sekundi</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d redak</item>
+        <item quantity="few">%d retka</item>
+        <item quantity="other">%d redaka</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">Prije %1$d godine</item>
+        <item quantity="few">Prije %1$d godine</item>
+        <item quantity="other">Prije %1$d godina</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">Prije %1$d mjesec</item>
+        <item quantity="few">Prije %1$d mjeseca</item>
+        <item quantity="other">Prije %1$d mjeseci</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">Prije %1$d tjedan</item>
+        <item quantity="few">Prije %1$d tjedna</item>
+        <item quantity="other">Prije %1$d tjedna</item>
+    </plurals>
+</resources>

@@ -89,7 +89,7 @@
     <string name="gallery_updater_stats_time">\n上一次檢查的畫廊：\n- 1 小時: %1$d\n- 6 小時: %2$d\n- 12 小時: %3$d\n- 1 天: %4$d\n- 2 天: %5$d\n- 1 周: %6$d\n- 1 個月: %7$d\n- 1 年: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">建立設定檔說明</string>
-    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的性能。請確保您在這兩個網站上擁有的設定檔少於三個\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊「確定」</string>
+    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的效能。請確保您在這兩個網站上擁有的設定檔少於三個\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊「確定」</string>
     <string name="eh_settings_successfully_uploaded">設定檔上傳成功！</string>
     <string name="eh_settings_configuration_failed">設定失敗！</string>
     <string name="eh_settings_configuration_failed_message">在設定過程中出現錯誤：%1$s</string>
@@ -121,16 +121,16 @@
     <string name="clean_orphaned_downloads">清理孤立的下載</string>
     <string name="clean_read_downloads">清理已讀</string>
     <string name="clean_read_entries_not_in_library">清理不在書櫃中的作品</string>
-    <string name="data_saver">數據節省模式</string>
+    <string name="data_saver">資料節省模式</string>
     <string name="data_saver_summary">在閱讀器下載圖片前壓縮</string>
-    <string name="data_saver_downloader">在下載器中使用數據節省模式</string>
+    <string name="data_saver_downloader">在下載器中使用資料節省模式</string>
     <string name="data_saver_ignore_jpeg">忽略 JPEG 圖片</string>
     <string name="data_saver_ignore_gif">忽略 Gif 動畫</string>
     <string name="data_saver_image_quality">圖片品質</string>
     <string name="data_saver_image_quality_summary">更高值代表更佳的儲存的圖片品質，但這代表更大的檔案大小，80% 可以很好地平衡圖片品質和檔案大小</string>
     <string name="data_saver_image_format">壓縮為 JPEG</string>
-    <string name="data_saver_image_format_summary_on">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的數據），但它也會使圖片損失更多的品質。\n目前壓縮為 JPEG</string>
-    <string name="data_saver_image_format_summary_off">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的數據），但它也會使圖片損失更多的品質。\n目前壓縮為 Webp</string>
+    <string name="data_saver_image_format_summary_on">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的資料），但它也會使圖片損失更多的品質。\n目前壓縮為 JPEG</string>
+    <string name="data_saver_image_format_summary_off">JPEG 檔案的大小要比 Webp 小得多（代表節省了更多的資料），但它也會使圖片損失更多的品質。\n目前壓縮為 Webp</string>
     <string name="data_saver_color_bw">轉換為黑白</string>
     <string name="bandwidth_hero">Bandwidth Hero（需要一個 Bandwidth Hero 代理伺服器）</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero 代理伺服器</string>
@@ -175,7 +175,7 @@
     <string name="pref_feed_position_summery">您是否希望將「動態」標籤設為瀏覽中的第一個標籤？這將使其成為預設的瀏覽標籤，但如果您使用行動數據或有限網路，則不建議這樣做</string>
     <string name="pref_source_source_filtering">在目錄中過濾來源</string>
     <string name="pref_source_source_filtering_summery">篩選屬於類別的來源，使屬於某個類別的來源不會被放在語言下</string>
-    <string name="pref_source_navigation">替換最新按鈕</string>
+    <string name="pref_source_navigation">取代最新按鈕</string>
     <string name="pref_source_navigation_summery">用一個包括最新和瀏覽的自訂瀏覽檢視取代最新按鈕</string>
     <string name="pref_local_source_hidden_folders">本機來源隱藏資料夾</string>
     <string name="pref_local_source_hidden_folders_summery">允許本機源讀取隱藏資料夾</string>
@@ -211,13 +211,13 @@
     <string name="google_drive_login_success">成功登入 Google Drive</string>
     <string name="google_drive_login_failed">無法登入 Google Drive：%s</string>
     <string name="google_drive_not_signed_in">未登入 Google Drive</string>
-    <string name="error_uploading_sync_data">上傳同步數據至 Google Drive 時出錯</string>
+    <string name="error_uploading_sync_data">上傳同步資料至 Google Drive 時出錯</string>
     <string name="error_deleting_google_drive_lock_file">刪除 Google Drive 鎖定文件時出錯</string>
     <string name="error_before_sync_gdrive">同步前出錯：%s</string>
     <string name="pref_purge_confirmation_title">清除確認</string>
     <string name="pref_purge_confirmation_message">清除同步資料將從 Google Drive 中刪除所有同步資料。您確定要繼續嗎？</string>
-    <string name="pref_sync_options">創建同步觸發條件</string>
-    <string name="pref_sync_options_summ">可用於設置同步觸發條件</string>
+    <string name="pref_sync_options">建立同步觸發條件</string>
+    <string name="pref_sync_options_summ">可用於設定同步觸發條件</string>
     <string name="sync_on_chapter_read">閱讀章節時同步</string>
     <string name="sync_on_chapter_open">打開章節時同步</string>
     <string name="sync_on_app_start">啟動應用時同步</string>
@@ -260,7 +260,7 @@
     <string name="download_threads_summary">較高的值可以明顯加快頁面載入速度，同時容易被停權。建議值為 2 或 3。現在的值為：%s</string>
     <string name="aggressively_load_pages">積極地載入頁面</string>
     <string name="aggressively_load_pages_summary">在閱讀時緩慢地下載整個章節，而不是只載入你正在閱讀的頁面。</string>
-    <string name="skip_queue_on_retry">重試時跳過隊列</string>
+    <string name="skip_queue_on_retry">重試時跳過佇列</string>
     <string name="skip_queue_on_retry_summary">通常情況下，在下載失敗時按下重試按鈕，將等待下載器完成最後一頁的下載，然後開始重新下載失敗的頁面。啟用此功能將迫使下載器在你按下重試按鈕後立即開始重新下載失敗的頁面。</string>
     <string name="reader_preload_amount">預載入頁面數量</string>
     <string name="reader_preload_amount_4_pages">4 頁</string>
@@ -273,7 +273,7 @@
     <string name="reader_preload_amount_20_pages">20 頁</string>
     <string name="reader_preload_amount_summary">閱讀時預先載入的頁數。較高的數值將提供更流暢的閱讀體驗，但會增加快取使用量。建議在使用較大數值時，增加分配給快取的容量</string>
     <string name="reader_cache_size">閱讀器快取大小</string>
-    <string name="reader_cache_size_summary">閱讀時保存於裝置上的圖片數量。較高的數值將提供更流暢的閱讀體驗，但會增加磁碟空間的使用量</string>
+    <string name="reader_cache_size_summary">閱讀時儲存於裝置上的圖片數量。較高的數值將提供更流暢的閱讀體驗，但會增加磁碟空間的使用量</string>
     <string name="preserve_reading_position">保留已閱讀作品的閱讀位置</string>
     <string name="auto_webtoon_mode">自動 Webtoon 模式</string>
     <string name="auto_webtoon_mode_summary">檢測到可能為長條形格式的作品時自動使用 Webtoon 模式</string>
@@ -348,11 +348,11 @@
     <!-- Entry Info -->
     <string name="az_recommends">檢視推薦</string>
     <string name="merge">合併</string>
-    <string name="merge_with_another_source">與其他合併</string>
+    <string name="merge_with_another_source">和另一個合併</string>
     <string name="entry_merged">作品已合併！</string>
     <string name="failed_merge">作品合併失敗：%1$s</string>
     <string name="merge_unknown_entry">未知的作品 ID: %1$d</string>
-    <string name="merged_already">此作品已與當前作品合併！</string>
+    <string name="merged_already">此作品已與目前作品合併！</string>
     <string name="merge_duplicate">此已合併的作品重複了！</string>
     <!-- Entry Info Edit -->
     <string name="reset_tags">重設標籤</string>
@@ -366,15 +366,15 @@
     <!-- Browse -->
     <!-- Sources Tab -->
     <string name="find_in_another_source">搜尋其他來源</string>
-    <string name="data_saver_exclude">排除在數據節省模式之外</string>
-    <string name="data_saver_stop_exclude">停止排除在數據節省模式之外</string>
+    <string name="data_saver_exclude">排除在資料節省模式之外</string>
+    <string name="data_saver_stop_exclude">停止排除在資料節省模式之外</string>
     <!-- Smart Search -->
     <string name="searching_source">搜尋來源中……</string>
     <string name="could_not_find_entry">未能在來源中找到此作品！</string>
     <string name="automatic_search_error">進行自動搜尋過程中出現錯誤！</string>
     <!-- Saved Searches -->
     <string name="saved_searches">儲存搜尋</string>
-    <string name="save_search">儲存當前搜尋結果？</string>
+    <string name="save_search">儲存目前搜尋結果？</string>
     <string name="save_search_hint">我的搜尋名稱</string>
     <string name="save_search_failed_to_load">載入已儲存的搜尋失敗!</string>
     <string name="save_search_failed_to_load_message">載入已儲存的搜尋過程中出現問題。</string>
@@ -408,7 +408,7 @@
     <string name="migration">遷移</string>
     <string name="skip_pre_migration">跳過預遷移</string>
     <string name="pre_migration_skip_toast">要重新顯示此頁面，請到設定 -&gt; 書櫃。</string>
-    <string name="use_intelligent_search">搜尋標題 +標題關鍵字</string>
+    <string name="use_intelligent_search">搜尋標題 + 標題關鍵字</string>
     <string name="data_to_include_in_migration">遷移中包含的資料</string>
     <string name="include_extra_search_parameter">搜尋時包含額外的搜尋參數</string>
     <string name="use_most_chapters">使用章節數最多的來源（較慢）</string>
@@ -578,7 +578,7 @@
     <string name="merge_settings">合併設定</string>
     <string name="fetch_chapter_updates">取得章節更新</string>
     <string name="delete_merged_entry">你確定嗎？</string>
-    <string name="delete_merged_entry_desc">這將從合併中移除該項目，使用此功能時也會丟失對合併項目所做的任何未保存更改</string>
+    <string name="delete_merged_entry_desc">這將從合併中移除該項目，使用此功能時也會遺失對合併項目所做的任何未儲存更改</string>
     <string name="chapter_updates_merged_entry">變更章節更新</string>
     <string name="chapter_updates_merged_entry_desc">變更此項將停用或啟用此已合併的漫畫的章節更新</string>
     <string name="download_merged_entry">變更新章節下載</string>

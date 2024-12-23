@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d তালাবন্ধ সময়</item>
+        <item quantity="other">%d তালাবন্ধ সময়সমূহ</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">%1$d%2$s প্ৰৱেশ প্ৰব্ৰজন কৰা হব নেকি?</item>
+        <item quantity="other">%1$d%2$s প্ৰবিষ্টসমূহ প্ৰব্ৰজন কৰা হব নেকি?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">%1$d%2$s প্ৰৱেশ কপি কৰিবনে?</item>
+        <item quantity="other">%1$d%2$s প্ৰৱেশসমূহ কপি কৰিবনে?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d প্ৰৱেশ স্থানান্তৰিত হৈছে</item>
+        <item quantity="other">%d প্ৰৱেশসমূহ স্থানান্তৰিত হৈছে</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d পৃষ্ঠা</item>
+        <item quantity="other">%1$d পৃষ্ঠাসমূহ</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d পৃষ্ঠা</item>
+        <item quantity="other">%2$s, %1$d পৃষ্ঠাসমূহ</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d বৰ্ষ পূৰ্বে</item>
+        <item quantity="other">%1$d বৰ্ষৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d মাহ পূৰ্বে</item>
+        <item quantity="other">%1$d মাহৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d সপ্তাহ পূৰ্বে</item>
+        <item quantity="other">%1$d সপ্তাহৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d দিন পূৰ্বে</item>
+        <item quantity="other">%1$d দিনৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d ঘণ্টা পূৰ্বে</item>
+        <item quantity="other">%1$d ঘণ্টাৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d মিনিট পূৰ্বে</item>
+        <item quantity="other">%1$d মিনিটৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d ছেকেণ্ড পূৰ্বে</item>
+        <item quantity="other">%1$d ছেকেণ্ডৰ পূৰ্বে</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d পংক্তি</item>
+        <item quantity="other">%d পংক্তিসমূহ</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">চাফাই কাম কৰা হ’ল। %d ফোল্ডাৰ আঁতৰোৱা হৈছে</item>
+        <item quantity="other">চাফাই কাম কৰা হ’ল। %d ফোল্ডাৰসমূহ আঁতৰোৱা হৈছে</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">পুনৰ চেষ্টা কৰিছে %1$d বিফল পৃষ্ঠা…</item>
+        <item quantity="other">পুনৰ চেষ্টা কৰিছে %1$d বিফল পৃষ্ঠাসমূহ…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d টা টেগ শৃংখলাৰ সূচীত আছে। ই গ্ৰন্থাগাৰত এটা বিকল্প যোগ কৰে যাৰ সহায়ত অগ্ৰাধিকাৰ ভিত্তিত টেগ অনুসৰি শৃংখলা কৰিব পৰা যায়, অৰ্থাৎ আপুনি বিচৰা টেগৰ প্ৰাধান্য থকা বস্তুবোৰ সৰ্বপ্রথমে থাকিব।</item>
+        <item quantity="other">%1$d টেগ শৃংখলাৰ সূচীত আছে। ই গ্ৰন্থাগাৰত এটা বিকল্প যোগ কৰে যাৰ সহায়ত অগ্ৰাধিকাৰ ভিত্তিত টেগ অনুসৰি শৃংখলা কৰিব পৰা যায়, অৰ্থাৎ আপুনি বিচৰা টেগৰ প্ৰাধান্য থকা বস্তুবোৰ সৰ্বপ্রথমে থাকিব।</item>
+    </plurals>
+</resources>

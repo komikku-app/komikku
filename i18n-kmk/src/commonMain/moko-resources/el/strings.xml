@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Μεταφορά όλων των καταχωρήσεων από την πηγή</string>
   <string name="label_to_be_updated">Να ενημερωθεί</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Χειροκίνητη λήψη</string>
+  <string name="auto_update_app">Αυτόματη ενημέρωση εφαρμογής</string>
+  <string name="update_completed">Η ενημέρωση ολοκληρώθηκε</string>
+  <string name="open">Άνοιγμα</string>
+  <string name="release_page">Κυκλοφορία σελίδας</string>
+  <string name="could_not_install_update">Αδυναμία εγκατάστασης ενημέρωσης</string>
+  <string name="action_copy_to_clipboard_first_page">Αντιγραφή της πρώτης σελίδας στο πρόχειρο</string>
+  <string name="action_copy_to_clipboard_second_page">Αντιγραφή δεύτερης σελίδας στο πρόχειρο</string>
+  <string name="action_copy_to_clipboard_combined_page">Αντιγραφή συνδυασμένης σελίδας στο πρόχειρο</string>
 </resources>

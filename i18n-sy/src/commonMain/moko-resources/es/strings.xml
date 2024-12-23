@@ -60,7 +60,7 @@
     <string name="tag_watching_threshhold">Umbral de Monitoreo de Etiquetas</string>
     <string name="tag_watching_threshhold_summary">Las galerías recientemente subidas se incluirán en la pantalla de observación si tienen al menos una etiqueta observada con peso positivo, y la suma de los pesos de sus etiquetas observadas alcanza este valor o es mayor. Este umbral se puede establecer entre 0 y 9999. Actualmente: %1$d</string>
     <string name="watched_list_default">Estado Predeterminado del Filtro de la Lista Observada</string>
-    <string name="watched_list_state_summary">Al navegar por ExHentai/E-Hentai, ¿debería estar activado por defecto el filtro de la lista vigilada?</string>
+    <string name="watched_list_state_summary">Al navegar en ExHentai/E-Hentai, ¿debería estar habilitado el filtro de la lista de seguimiento de forma predeterminada?</string>
     <string name="pref_enhanced_e_hentai_view_summary">Habilitar/Deshabilitar el menú de navegación mejorado hecho para E/ExHentai</string>
     <string name="favorites_sync">Sincronización de Favoritos de E-Hentai</string>
     <string name="tag_filtering_threshhold_summary">Puedes filtrar suavemente las etiquetas añadiéndolas a la página Mis Etiquetas de E/ExHentai con un peso negativo. Si una galería tiene etiquetas que suman un peso inferior a este valor, se filtra de la vista. Este umbral se puede establecer entre -9999 y 0. Actualmente: %1$d</string>
@@ -459,6 +459,7 @@
     <string name="gallery_adder_importing_gallery">Importando la galería (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">¡Hubo un error al verificar coincidencias de URI de origen!</string>
     <string name="favorites_sync_conformation_message">¿Estás seguro de que deseas sincronizar tus favoritos con E-Hentai?</string>
+    <string name="md_batch_add_description">Ejemplo:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Ejemplo:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nTambién admite datos exportados de E-H\n</string>
     <string name="gallery_adder_uri_map_to_gallery_error">¡Error en el mapa URI de origen al asignarlo a la galería!</string>
     <string name="rating9">Increíble</string>
@@ -550,7 +551,6 @@
     <string name="pref_crop_borders_webtoon">Recortar bordes Webtoon</string>
     <string name="feed">Feed</string>
     <string name="feed_delete">¿Borrar artículo de feed?</string>
-    <string name="too_many_in_feed">Demasiadas fuentes en su feed, no puede añadir más de 10</string>
     <string name="action_add_tags_message">¡Lee esto! ¡Etiquetas deben ser exactas, no hay coincidencias parciales, no puedes hacer netorare para excluir mujer:netorare o similar!\nEl estilo para etiquetas de nombre es\n\"mujer: solo mujer\"\n¡sin citas!\n¡Se pueden añadir multiples variantes de la misma etiqueta, así que puedes hacer \"etiqueta:netorare\" para NHentai y \"mujer:netorare\" para E-Hentai!</string>
     <string name="select_none">Selecciona ninguno</string>
     <string name="feed_tab_empty">No tiene fuentes en su feed, navegar a la parte superior derecha para añadir una</string>

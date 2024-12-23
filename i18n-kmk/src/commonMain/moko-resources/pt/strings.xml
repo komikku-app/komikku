@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">Migrando todas as entradas da fonte</string>
   <string name="label_to_be_updated">A ser atualizado</string>
   <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Download manual</string>
+  <string name="auto_update_app">Atualizar app automaticamente</string>
+  <string name="update_completed">Atualização concluída</string>
+  <string name="open">Abertas</string>
+  <string name="release_page">Página de lançamento</string>
+  <string name="could_not_install_update">Não foi possível instalar a atualização</string>
+  <string name="action_copy_to_clipboard_first_page">Copiar a primeira página para área de transferência</string>
+  <string name="action_copy_to_clipboard_second_page">Copiar a segunda página para área de transferência</string>
+  <string name="action_copy_to_clipboard_combined_page">Copiar página combinada para área de transferência</string>
 </resources>

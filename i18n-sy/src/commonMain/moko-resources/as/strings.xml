@@ -129,16 +129,7 @@
     <string name="gallery_updater_statistics">গ্যালাৰী আপডেটাৰ পৰিসংখ্যা</string>
     <string name="gallery_updater_not_ran_yet">আপডেটাৰ এতিয়াও চলোৱা হোৱা নাই।</string>
     <string name="gallery_updater_stats_text">আপডেটাৰ সৰ্বশেষ %1$s ত চলিছিল, আৰু %2$d গ্যালাৰীৰ ভিতৰত %3$d গ্যালাৰী পৰীক্ষা কৰিছিল যি পৰীক্ষাৰ বাবে প্রস্তুত আছিল।</string>
-    <string name="gallery_updater_stats_time">"
-\nসর্বশেষ পৰীক্ষিত গ্যালাৰীৰ সংখ্যা:
-\n- ১ ঘণ্টা: %1$d
-\n- ৬ ঘণ্টা: %2$d
-\n- ১২ ঘণ্টা: %3$d
-\n- দিন: %4$d
-\n- ২ দিন: %5$d
-\n- সপ্তাহ: %6$d
-\n- মাহ: %7$d
-\n- বছৰ: %8$d"</string>
+    <string name="gallery_updater_stats_time">\nশেষত পৰীক্ষা কৰা গেলেৰীসমূহ:\n- ঘন্টা: %1$d\n- ৬ ঘন্টা: %2$d\n- ১২ ঘন্টা: %3$d\n- দিন: %4$d\n- ২ দিন: %5$d\n- সপ্তাহ: %6$d\n- মাহ: %7$d\n- বছৰ: %8$d</string>
     <string name="settings_profile_note">ছেটিংছ প্ৰফাইল নোট</string>
     <string name="settings_profile_note_message">এপ্পে এতিয়া E-Hentai আৰু ExHentai ত নতুন ছেটিংছ প্ৰফাইল যোগ কৰিব যাতে এপ্পৰ কাৰ্যক্ষমতা উন্নত হয়। অনুগ্ৰহ কৰি নিশ্চিত কৰক যে আপোনাৰ দুইটা স্থানতে তিনিটা প্ৰফাইলৰ পৰা কম আছে।
 \n
@@ -164,7 +155,7 @@
     <string name="enable_source_blacklist_summary">%1$s সँग অনুপযোগী এক্সটেনচনসমূহ/উৎসসমূহ লুকোৱা। পৰিবৰ্তনৰ পিছত এপ্প পুনৰ আৰম্ভ কৰক।</string>
     <string name="open_debug_menu">ডিবাগ মেনু খোলক</string>
     <string name="clean_up_downloaded_chapters">ডাউনলোড কৰা অধ্যায়সমূহ পৰিস্কাৰ কৰক</string>
-    <string name="open_debug_menu_summary">এই মেনুটি স্পর্শ নকৰিব যদি আপুনি কি কৰি আছে সেয়া জানেনে! <font color="red">এটি আপোনাৰ লাইব্ৰেৰী ক্ৰিয়া কৰিব পাৰে!</font></string>
+    <string name="open_debug_menu_summary"><![CDATA[এই মেনুটি স্পর্শ নকৰিব যদি আপুনি কি কৰি আছে সেয়া জানেনে! <font color=\'red\'>এটি আপোনাৰ লাইব্ৰেৰী ক্ৰিয়া কৰিব পাৰে!</font>]]></string>
     <string name="delete_unused_chapters">অস্থিত্বৰ, আংশিকভাৱে ডাউনলোড কৰা, আৰু পঢ়া অধ্যায়ৰ ফোল্ডাৰ মচি পেলাওক</string>
     <string name="no_folders_to_cleanup">পৰিস্কাৰ কৰিবলৈ কোনো ফোল্ডাৰ নাই</string>
     <string name="clean_orphaned_downloads">অৰ্পিত ডাউনলোডসমূহ পৰিস্কাৰ কৰক</string>
@@ -394,7 +385,6 @@
     <string name="invalid_category_name">অবৈধ শ্ৰেণী নাম</string>
     <string name="feed">ফিড</string>
     <string name="feed_delete">ফিড আইটেম মচি পেলামনে?</string>
-    <string name="too_many_in_feed">আপোনাৰ ফিডত বেছি সংখ্যক উৎস আছে, ১০ টাৰ পৰা অধিক যোগ কৰিব নোৱাৰিব</string>
     <string name="feed_tab_empty">আপোনাৰ ফিডত কোনো উৎস নাই, এটা যোগ কৰিবলৈ ওপৰৰ সোঁফালে যাউক</string>
     <string name="feed_add">%1$s ফিডত যোগ কৰিমনে?</string>
     <string name="pref_tag_sorting">টেগ শ্ৰেণীবিভাজন টেগসমূহ</string>
@@ -478,6 +468,7 @@
     <string name="favorites_sync_reset_message">চিঞৰ অৱস্থা পুনৰ ছেট কৰাৰ ফলত আপোনাৰ পৰবর্তী চিঞৰ অত্যন্ত ধীৰ গতিত হ\'ব পাৰে।</string>
     <string name="eh_batch_add">বেটছ যোগ</string>
     <string name="eh_batch_add_button">গেছবুকসমূহ যোগ কৰক</string>
+    <string name="md_batch_add_description">উদাহৰণ:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">উদাহৰণ:
 \n
 \nhttp://e-hentai.org/g/12345/1a2b3c4e
@@ -495,10 +486,7 @@
     <string name="batch_add">বেটছ যোগ</string>
     <string name="batch_add_ok">[ঠিক]</string>
     <string name="batch_add_error">[ভুল]</string>
-    <string name="batch_add_summary">"
-\nসাৰাংশ:
-\nযোগ কৰা হৈছে: %1$d গেছবুক
-\nব্যৰ্থ: %2$d গেছবুক"</string>
+    <string name="batch_add_summary">\nসাৰাংশ:\nযোগ কৰা হৈছে: %1$d গেলেৰী(সমূহ)\nব্যৰ্থ: %2$d গেলেৰী(সমূহ)</string>
     <string name="batch_add_success_log_message">যোগ কৰা গেছবুক: %1$s</string>
     <string name="batch_add_unknown_type_log_message">গেছবুকৰ বাবে অজানা প্ৰৱিষ্ট প্ৰকাৰ: %1$s</string>
     <string name="batch_add_unknown_source_log_message">গেছবুকৰ বাবে অজানা উৎস: %1$s</string>

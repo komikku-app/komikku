@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">(即将) 更新 ！</string>
   <string name="changelogs">更改日志</string>
   <string name="related_mangas_more">更多这样...</string>
-  <string name="too_many_in_feed">你的订阅源太多，不能超过添加限制 (20)</string>
+  <string name="too_many_in_feed">你订阅的图源太多了，不能大于 20</string>
   <string name="current_">当前: %1$s</string>
   <string name="pref_theme_cover_based">基于封面的主题</string>
   <string name="pref_theme_cover_based_style_tonalspot">色调点</string>
@@ -113,4 +113,13 @@
   <string name="migrating_all_entries">从源代码迁移所有条目</string>
   <string name="label_to_be_updated">待更新</string>
   <string name="pref_manga_info">漫画信息</string>
+  <string name="manual_download">手动下载</string>
+  <string name="auto_update_app">自动更新应用</string>
+  <string name="update_completed">更新完成</string>
+  <string name="open">打开</string>
+  <string name="release_page">发布页面</string>
+  <string name="could_not_install_update">无法安装更新</string>
+  <string name="action_copy_to_clipboard_first_page">复制第一页到剪贴板</string>
+  <string name="action_copy_to_clipboard_second_page">复制第二页到剪贴板</string>
+  <string name="action_copy_to_clipboard_combined_page">复制合并页面到剪贴板</string>
 </resources>

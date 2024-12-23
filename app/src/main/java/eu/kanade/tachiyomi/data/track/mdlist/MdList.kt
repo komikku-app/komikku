@@ -2,9 +2,11 @@ package eu.kanade.tachiyomi.data.track.mdlist
 
 import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -168,6 +170,21 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
     override fun logout() {
         super.logout()
         trackPreferences.trackToken(this).delete()
+    }
+
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+        return withIOContext {
+            val mdex = mdex ?: throw MangaDexNotFoundException()
+            val manga = mdex.getMangaMetadata(track.toDbTrack())
+            TrackMangaMetadata(
+                remoteId = 0,
+                title = manga?.title,
+                thumbnailUrl = manga?.thumbnail_url, // Doesn't load the actual cover because of Refer header
+                description = manga?.description,
+                authors = manga?.author,
+                artists = manga?.artist,
+            )
+        }
     }
 
     override val isLoggedIn: Boolean

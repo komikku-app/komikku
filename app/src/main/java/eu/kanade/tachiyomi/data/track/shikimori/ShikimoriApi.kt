@@ -3,9 +3,11 @@ package eu.kanade.tachiyomi.data.track.shikimori
 import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMAddMangaResponse
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMManga
+import eu.kanade.tachiyomi.data.track.shikimori.dto.SMMetadata
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMOAuth
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMUser
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMUserListEntry
@@ -129,6 +131,65 @@ class ShikimoriApi(
                 .awaitSuccess()
                 .parseAs<SMUser>()
                 .id
+        }
+    }
+
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
+        return withIOContext {
+            val query = """
+                |query(${'$'}ids: String!) {
+                    |mangas(ids: ${'$'}ids) {
+                        |id
+                        |name
+                        |description
+                        |poster {
+                            |originalUrl
+                        |}
+                        |personRoles {
+                            |person {
+                                |name
+                            |}
+                            |rolesEn
+                        |}
+                    |}
+                |}
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") {
+                    put("ids", "${track.remoteId}")
+                }
+            }
+            with(json) {
+                authClient.newCall(
+                    POST(
+                        "https://shikimori.one/api/graphql",
+                        body = payload.toString().toRequestBody(jsonMime),
+                    ),
+                )
+                    .awaitSuccess()
+                    .parseAs<SMMetadata>()
+                    .let {
+                        if (it.data.mangas.isEmpty()) throw Exception("Could not get metadata from Shikimori")
+                        val manga = it.data.mangas[0]
+                        TrackMangaMetadata(
+                            remoteId = manga.id.toLong(),
+                            title = manga.name,
+                            thumbnailUrl = manga.poster.originalUrl,
+                            description = manga.description,
+                            authors = manga.personRoles
+                                .filter { it.rolesEn.contains("Story") || it.rolesEn.contains("Story & Art") }
+                                .map { it.person.name }
+                                .joinToString(", ")
+                                .ifEmpty { null },
+                            artists = manga.personRoles
+                                .filter { it.rolesEn.contains("Art") || it.rolesEn.contains("Story & Art") }
+                                .map { it.person.name }
+                                .joinToString(", ")
+                                .ifEmpty { null },
+                        )
+                    }
+            }
         }
     }
 
