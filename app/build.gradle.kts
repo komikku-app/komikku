@@ -11,7 +11,6 @@ plugins {
     id("mihon.android.application.compose")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
-    // id("com.github.zellius.shortcut-helper")
     alias(libs.plugins.aboutLibraries)
     id("com.github.ben-manes.versions")
 }
@@ -22,8 +21,6 @@ if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
         apply(libs.plugins.firebase.crashlytics.get().pluginId)
     }
 }
-
-// shortcutHelper.setFilePath("./shortcuts.xml")
 
 val supportedAbis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
