@@ -23,4 +23,15 @@ class CrashlyticsPrinter(private val logLevel: Int) : Printer {
             }
         }
     }
+
+    companion object {
+        fun reportNonFatal(e: Throwable) {
+            try {
+                Firebase.crashlytics.recordException(e)
+            } catch (t: Throwable) {
+                // Crash in debug if shit like this happens
+                if (BuildConfig.DEBUG) throw t
+            }
+        }
+    }
 }
