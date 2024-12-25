@@ -20,11 +20,14 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
-import uy.kohesive.injekt.injectLazy
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Interceptor {
+class FlareSolverrInterceptor(
+    private val preferences: NetworkPreferences,
+    private val network: NetworkHelper,
+    private val json: Json,
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
@@ -47,7 +50,12 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
 
             val request =
                 runBlocking {
-                    CFClearance.resolveWithFlareSolverr(originalRequest)
+                    CFClearance.resolveWithFlareSolverr(
+                        originalRequest = originalRequest,
+                        networkPreferences = preferences,
+                        network = network,
+                        json = json,
+                    )
                 }
 
             chain.proceed(request)
@@ -59,11 +67,7 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
     }
 
     object CFClearance {
-        private val network: NetworkHelper by injectLazy()
-        private val json: Json by injectLazy()
         private val jsonMediaType = "application/json".toMediaType()
-        private val networkPreferences: NetworkPreferences by injectLazy()
-        private val flareSolverrUrl = networkPreferences.flareSolverrUrl().get()
         private val mutex = Mutex()
 
         @Serializable
@@ -122,9 +126,13 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
 
         suspend fun resolveWithFlareSolverr(
             originalRequest: Request,
+            networkPreferences: NetworkPreferences,
+            network: NetworkHelper,
+            json: Json,
             cookieManager: CookieManager = CookieManager.getInstance(),
         ): Request {
             val flareSolverTag = "FlareSolverr"
+            val flareSolverrUrl = networkPreferences.flareSolverrUrl().get()
 
             Log.d(flareSolverTag, "Requesting challenge solution for ${originalRequest.url}")
 

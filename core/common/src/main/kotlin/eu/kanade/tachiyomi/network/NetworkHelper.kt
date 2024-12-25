@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.network.interceptor.FlareSolverrInterceptor
 import eu.kanade.tachiyomi.network.interceptor.IgnoreGzipInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
+import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import okhttp3.Cache
 import okhttp3.Headers
@@ -25,6 +26,9 @@ import kotlin.random.Random
 open /* SY <-- */ class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
+    // KMK -->
+    private val json: Json,
+    // KMK <--
     // SY -->
     val isDebugBuild: Boolean,
     // SY <--
@@ -64,7 +68,13 @@ open /* SY <-- */ class NetworkHelper(
             .addInterceptor(UserAgentInterceptor(::defaultUserAgentProvider))
             .addNetworkInterceptor(IgnoreGzipInterceptor())
             .addNetworkInterceptor(BrotliInterceptor)
-            .addNetworkInterceptor(FlareSolverrInterceptor(preferences))
+            .addNetworkInterceptor(
+                FlareSolverrInterceptor(
+                    preferences = preferences,
+                    network = this,
+                    json = json,
+                ),
+            )
 
         if (isDebugBuild) {
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
