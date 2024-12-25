@@ -82,7 +82,6 @@ data class LibrarySort(
                 Type.ChapterFetchDate,
                 Type.DateAdded,
                 Type.TrackerMean,
-                Type.Random,
                 /* SY -->*/ Type.TagList, /* SY <--*/
                 Type.Random,
             )
@@ -112,7 +111,6 @@ data class LibrarySort(
                     "CHAPTER_FETCH_DATE" -> Type.ChapterFetchDate
                     "DATE_ADDED" -> Type.DateAdded
                     "TRACKER_MEAN" -> Type.TrackerMean
-                    "RANDOM" -> Type.Random
                     // SY -->
                     "TAG_LIST" -> Type.TagList
                     // SY <--
@@ -138,7 +136,6 @@ data class LibrarySort(
             Type.ChapterFetchDate -> "CHAPTER_FETCH_DATE"
             Type.DateAdded -> "DATE_ADDED"
             Type.TrackerMean -> "TRACKER_MEAN"
-            Type.Random -> "RANDOM"
             // SY -->
             Type.TagList -> "TAG_LIST"
             // SY <--
