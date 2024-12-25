@@ -87,5 +87,4 @@ class AndroidCookieJar : CookieJar {
 
         Log.d("AndroidCookieJar", "All cookies added for URL: $urlString")
     }
-
 }

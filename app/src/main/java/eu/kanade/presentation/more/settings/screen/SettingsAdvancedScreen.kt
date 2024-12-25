@@ -361,7 +361,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     pref = enableFlareSolverrPref,
                     title = stringResource(MR.strings.pref_enable_flare_solverr),
-                    subtitle = stringResource(MR.strings.pref_enable_flare_solverr_summary)
+                    subtitle = stringResource(MR.strings.pref_enable_flare_solverr_summary),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     pref = flareSolverrUrlPref,
@@ -378,7 +378,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                             testFlareSolverrAndUpdateUserAgent(flareSolverrUrlPref, userAgentPref, context)
                         }
                     },
-                )
+                ),
 
             ),
         )
@@ -882,7 +882,7 @@ object SettingsAdvancedScreen : SearchableSettings {
     private suspend fun testFlareSolverrAndUpdateUserAgent(
         flareSolverrUrlPref: BasePreference<String>,
         userAgentPref: BasePreference<String>,
-        context: android.content.Context
+        context: android.content.Context,
     ) {
         val json: Json by injectLazy()
         val jsonMediaType = "application/json".toMediaType()
@@ -891,22 +891,22 @@ object SettingsAdvancedScreen : SearchableSettings {
         try {
             withContext(Dispatchers.IO) {
                 val flareSolverUrl = flareSolverrUrlPref.get().trim()
-               val flareSolverResponse = with(json) {
-                   client.newCall(
-                       POST(
-                           url = flareSolverUrl,
-                           body =
-                           Json.encodeToString(
-                               FlareSolverrInterceptor.CFClearance.FlareSolverRequest(
-                                   "request.get",
-                                   "https://www.google.com/",
-                                   returnOnlyCookies = true,
-                                   maxTimeout = 60000,
-                               ),
-                           ).toRequestBody(jsonMediaType),
-                       ),
-                   ).awaitSuccess().parseAs<FlareSolverrInterceptor.CFClearance.FlareSolverResponse>()
-               }
+                val flareSolverResponse = with(json) {
+                    client.newCall(
+                        POST(
+                            url = flareSolverUrl,
+                            body =
+                            Json.encodeToString(
+                                FlareSolverrInterceptor.CFClearance.FlareSolverRequest(
+                                    "request.get",
+                                    "https://www.google.com/",
+                                    returnOnlyCookies = true,
+                                    maxTimeout = 60000,
+                                ),
+                            ).toRequestBody(jsonMediaType),
+                        ),
+                    ).awaitSuccess().parseAs<FlareSolverrInterceptor.CFClearance.FlareSolverResponse>()
+                }
 
                 if (flareSolverResponse.solution.status in 200..299) {
                     // Set the user agent to the one provided by FlareSolverr
@@ -924,8 +924,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 }
             }
         } catch (e: Exception) {
-            logcat (LogPriority.ERROR, tag = "FlareSolverr")
-            { "Failed to resolve with FlareSolverr: ${e.message}" }
+            logcat(LogPriority.ERROR, tag = "FlareSolverr") { "Failed to resolve with FlareSolverr: ${e.message}" }
             withContext(Dispatchers.Main) {
                 context.toast(SYMR.strings.flare_solver_error)
             }

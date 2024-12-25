@@ -126,7 +126,7 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
         ): Request {
             val flareSolverTag = "FlareSolverr"
 
-            Log.d( flareSolverTag, "Requesting challenge solution for ${originalRequest.url}")
+            Log.d(flareSolverTag, "Requesting challenge solution for ${originalRequest.url}")
 
             val flareSolverResponse =
                 with(json) {
@@ -203,7 +203,6 @@ class FlareSolverrInterceptor(private val preferences: NetworkPreferences) : Int
                 if (cookie.secure) append(" Secure;")
             }.toString()
         }
-
 
         private class CloudflareBypassException : Exception()
     }
