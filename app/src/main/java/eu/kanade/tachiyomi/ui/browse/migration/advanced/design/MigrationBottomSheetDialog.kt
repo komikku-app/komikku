@@ -22,9 +22,11 @@ import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 
@@ -32,10 +34,18 @@ import uy.kohesive.injekt.injectLazy
 fun MigrationBottomSheetDialog(
     onDismissRequest: () -> Unit,
     onStartMigration: (extraParam: String?) -> Unit,
+    // KMK -->
+    fullSettings: Boolean = true,
+    // KMK <--
 ) {
     val startMigration = rememberUpdatedState(onStartMigration)
     val state = remember {
-        MigrationBottomSheetDialogState(startMigration)
+        MigrationBottomSheetDialogState(
+            startMigration,
+            // KMK -->
+            fullSettings,
+            // KMK <--
+        )
     }
 
     // KMK -->
@@ -132,7 +142,12 @@ fun MigrationBottomSheetDialog(
     }
 }
 
-class MigrationBottomSheetDialogState(private val onStartMigration: State<(extraParam: String?) -> Unit>) {
+class MigrationBottomSheetDialogState(
+    private val onStartMigration: State<(extraParam: String?) -> Unit>,
+    // KMK -->
+    private val fullSettings: Boolean = true,
+    // KMK <--
+) {
     private val preferences: UnsortedPreferences by injectLazy()
 
     /**
@@ -186,6 +201,17 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
                 },
             )
         }
+
+        // KMK -->
+        if (!fullSettings) {
+            binding.useSmartSearch.isVisible = false
+            binding.extraSearchParam.isVisible = false
+            binding.extraSearchParamText.isVisible = false
+            binding.sourceGroup.isVisible = false
+            binding.skipStep.isVisible = false
+            binding.migrateBtn.text = binding.root.context.stringResource(MR.strings.action_save)
+        }
+        // KMK <--
     }
 
     private fun setFlags(binding: MigrationBottomSheetBinding) {

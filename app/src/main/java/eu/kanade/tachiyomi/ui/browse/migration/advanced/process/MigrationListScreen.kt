@@ -14,6 +14,7 @@ import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -25,6 +26,9 @@ import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
 
+/**
+ * Screen showing a list of pair of source-dest manga entries being migrated.
+ */
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
 
     var newSelectedItem: Pair<Long, Long>? = null
@@ -106,6 +110,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             // KMK -->
             cancelManga = { screenModel.cancelManga(it) },
             navigateUp = { navigator.pop() },
+            openMigrationOptionsDialog = screenModel::openMigrationOptionsDialog,
             // KMK <--
             searchManually = { migrationItem ->
                 val sources = screenModel.getMigrationSources()
@@ -143,6 +148,18 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                     exitMigration = navigator::pop,
                 )
             }
+            // KMK -->
+            MigrationListScreenModel.Dialog.MigrationOptionsDialog -> {
+                MigrationBottomSheetDialog(
+                    onDismissRequest = onDismissRequest,
+                    onStartMigration = { _ ->
+                        onDismissRequest()
+                        screenModel.updateOptions()
+                    },
+                    fullSettings = false,
+                )
+            }
+            // KMK <--
             null -> Unit
         }
 
