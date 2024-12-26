@@ -467,7 +467,12 @@ class DownloadManager(
             }
         }
 
-        return if (!downloadPreferences.removeBookmarkedChapters().get()) {
+        return if (!downloadPreferences.removeBookmarkedChapters().get() &&
+            // KMK -->
+            // if manually deleting single chapter then will allow deleting bookmark chapter
+            (chapters.size > 1 || !ignoreCategoryExclusion)
+            // KMK <--
+        ) {
             filteredCategoryManga.filterNot { it.bookmark }
         } else {
             filteredCategoryManga
