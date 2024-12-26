@@ -415,6 +415,8 @@ private fun onViewCreated(
         }
     }
 
+    binding.autofillFromTracker.setTextColor(colors.btnTextColor)
+    binding.autofillFromTracker.setBackgroundColor(colors.btnBgColor)
     binding.resetTags.setTextColor(colors.btnTextColor)
     binding.resetTags.setBackgroundColor(colors.btnBgColor)
     binding.resetInfo.setTextColor(colors.btnTextColor)
