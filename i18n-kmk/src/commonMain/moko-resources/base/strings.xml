@@ -109,6 +109,7 @@
     <string name="saved_searches_feeds">Saved Searches &amp; Feeds</string>
     <string name="preload_library_cover_color">Preload library's cover color</string>
     <string name="auto_update_app">Auto-update app</string>
+    <string name="auto_update_app_disable_auto_download">Don't auto download update</string>
 
       <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>

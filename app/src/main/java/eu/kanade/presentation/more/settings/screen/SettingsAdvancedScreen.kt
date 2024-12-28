@@ -167,6 +167,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     AppUpdatePolicy.DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
                     AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED to stringResource(MR.strings.network_not_metered),
                     AppUpdatePolicy.DEVICE_CHARGING to stringResource(MR.strings.charging),
+                    AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD to stringResource(KMR.strings.auto_update_app_disable_auto_download),
                 ),
                 onValueChanged = {
                     // Post to event looper to allow the preference to be updated.

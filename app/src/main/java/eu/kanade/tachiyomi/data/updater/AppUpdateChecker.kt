@@ -5,7 +5,11 @@ import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.domain.release.service.AppUpdatePolicy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class AppUpdateChecker(
@@ -16,11 +20,15 @@ class AppUpdateChecker(
 
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
+    // KMK -->
+    private val preferences by lazy { Injekt.get<UnsortedPreferences>() }
+    // KMK <--
+
     suspend fun checkForUpdate(
         context: Context,
         forceCheck: Boolean = false,
         // KMK -->
-        pendingAutoUpdate: Boolean = true,
+        autoUpdate: Boolean = AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD !in preferences.appShouldAutoUpdate().get(),
         // KMK <--
     ): GetApplicationRelease.Result {
         return withIOContext {
@@ -54,7 +62,7 @@ class AppUpdateChecker(
                 }
 
                 // KMK -->
-                if (pendingAutoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
+                if (autoUpdate && result is GetApplicationRelease.Result.NewUpdate) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         AppUpdateDownloadJob.start(
                             context = context,
