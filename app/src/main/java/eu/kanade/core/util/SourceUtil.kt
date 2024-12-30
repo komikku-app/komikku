@@ -1,4 +1,4 @@
-package exh.ui
+package eu.kanade.core.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

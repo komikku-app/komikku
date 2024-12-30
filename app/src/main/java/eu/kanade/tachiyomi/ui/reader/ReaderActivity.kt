@@ -63,6 +63,7 @@ import com.hippo.unifile.UniFile
 import com.materialkolor.Contrast
 import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
@@ -110,7 +111,6 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.source.isEhBasedSource
-import exh.ui.ifSourcesLoaded
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.collections.immutable.persistentSetOf
