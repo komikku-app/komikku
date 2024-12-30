@@ -27,6 +27,7 @@ import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
+import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -59,6 +60,9 @@ fun UpdateScreen(
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
     onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
+    // KMK -->
+    collapseToggle: (key: String) -> Unit,
+    // KMK <--
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
@@ -116,7 +120,18 @@ fun UpdateScreen(
                         updatesLastUpdatedItem(lastUpdated)
 
                         updatesUiItems(
-                            uiModels = state.getUiModel(),
+                            uiModels = state.getUiModel()
+                                // KMK -->
+                                .filter {
+                                    when (it) {
+                                        is UpdatesUiModel.Header, is UpdatesUiModel.Leader -> true
+                                        is UpdatesUiModel.Item ->
+                                            state.expandedState.contains(it.item.update.groupByDateAndManga())
+                                    }
+                                },
+                            expandedState = state.expandedState,
+                            collapseToggle = collapseToggle,
+                            // KMK <--
                             selectionMode = state.selectionMode,
                             // SY -->
                             preserveReadingPosition = preserveReadingPosition,
@@ -222,5 +237,9 @@ private fun UpdatesBottomBar(
 
 sealed interface UpdatesUiModel {
     data class Header(val date: LocalDate) : UpdatesUiModel
-    data class Item(val item: UpdatesItem) : UpdatesUiModel
+    open class Item(open val item: UpdatesItem) : UpdatesUiModel
+    // KMK -->
+    /** The first [Item] in a group of chapters from same manga */
+    data class Leader(override val item: UpdatesItem) : Item(item)
+    // KMK <--
 }

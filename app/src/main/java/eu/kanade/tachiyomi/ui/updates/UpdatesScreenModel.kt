@@ -23,6 +23,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -372,16 +373,34 @@ class UpdatesScreenModel(
         libraryPreferences.newUpdatesCount().set(0)
     }
 
+    // KMK -->
+    fun toggleExpandedState(key: String) {
+        mutableState.update {
+            it.copy(
+                expandedState = it.expandedState.toMutableSet().apply {
+                    if (it.expandedState.contains(key)) remove(key) else add(key)
+                },
+            )
+        }
+    }
+    // KMK <--
+
     @Immutable
     data class State(
         val isLoading: Boolean = true,
         val items: PersistentList<UpdatesItem> = persistentListOf(),
+        // KMK -->
+        val expandedState: Set<String> = persistentSetOf(),
+        // KMK <--
         val dialog: Dialog? = null,
     ) {
         val selected = items.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
 
         fun getUiModel(): List<UpdatesUiModel> {
+            // KMK -->
+            var lastMangaId = -1L
+            // KMK <--
             return items
                 .map { UpdatesUiModel.Item(it) }
                 .insertSeparators { before, after ->
@@ -393,6 +412,21 @@ class UpdatesScreenModel(
                         else -> null
                     }
                 }
+                // KMK -->
+                .map {
+                    if (it is UpdatesUiModel.Header) {
+                        lastMangaId = -1L
+                        it
+                    } else {
+                        if ((it as UpdatesUiModel.Item).item.update.mangaId != lastMangaId) {
+                            lastMangaId = it.item.update.mangaId
+                            UpdatesUiModel.Leader(it.item)
+                        } else {
+                            it
+                        }
+                    }
+                }
+            // KMK <--
         }
     }
 
@@ -419,3 +453,7 @@ data class UpdatesItem(
     }
     // SY <--
 }
+
+// KMK -->
+fun UpdatesWithRelations.groupByDateAndManga() = "${dateFetch.toLocalDate().toEpochDay()}-$mangaId"
+// KMK <--

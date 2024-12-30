@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
@@ -15,7 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +46,7 @@ import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
+import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ListGroupHeader
@@ -69,6 +74,10 @@ internal fun LazyListScope.updatesLastUpdatedItem(
 
 internal fun LazyListScope.updatesUiItems(
     uiModels: List<UpdatesUiModel>,
+    // KMK -->
+    expandedState: Set<String>,
+    collapseToggle: (key: String) -> Unit,
+    // KMK <--
     selectionMode: Boolean,
     // SY -->
     preserveReadingPosition: Boolean,
@@ -135,6 +144,11 @@ internal fun LazyListScope.updatesUiItems(
                     }.takeIf { !selectionMode },
                     downloadStateProvider = updatesItem.downloadStateProvider,
                     downloadProgressProvider = updatesItem.downloadProgressProvider,
+                    // KMK -->
+                    isLeader = item is UpdatesUiModel.Leader,
+                    expanded = expandedState.contains(updatesItem.update.groupByDateAndManga()),
+                    collapseToggle = collapseToggle,
+                    // KMK <--
                 )
             }
         }
@@ -153,6 +167,11 @@ private fun UpdatesUiItem(
     // Download Indicator
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
+    // KMK -->
+    isLeader: Boolean,
+    expanded: Boolean,
+    collapseToggle: (key: String) -> Unit,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -247,6 +266,15 @@ private fun UpdatesUiItem(
             }
         }
 
+        // KMK -->
+        if (isLeader) {
+            CollapseButton(
+                expanded = expanded,
+                collapseToggle = { collapseToggle(update.groupByDateAndManga()) },
+            )
+        }
+        // KMK <--
+
         ChapterDownloadIndicator(
             enabled = onDownloadChapter != null,
             modifier = Modifier.padding(start = 4.dp),
@@ -256,3 +284,28 @@ private fun UpdatesUiItem(
         )
     }
 }
+
+// KMK -->
+@Composable
+fun CollapseButton(
+    expanded: Boolean,
+    collapseToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(IndicatorSize),
+        contentAlignment = Alignment.Center,
+    ) {
+        IconButton(onClick = { collapseToggle() }) {
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+private val IndicatorSize = 18.dp
+// KMK <--
