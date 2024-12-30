@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.FlipToBack
+import androidx.compose.material.icons.outlined.Panorama
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -32,6 +34,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -64,6 +67,9 @@ fun UpdateScreen(
     collapseToggle: (key: String) -> Unit,
     // KMK <--
 ) {
+    // KMK -->
+    val usePanoramaCover = remember { mutableStateOf(false) }
+    // KMK <--
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
     Scaffold(
@@ -76,6 +82,10 @@ fun UpdateScreen(
                 onInvertSelection = { onInvertSelection() },
                 onCancelActionMode = { onSelectAll(false) },
                 scrollBehavior = scrollBehavior,
+                // KMK -->
+                usePanoramaCover = usePanoramaCover.value,
+                usePanoramaCoverClick = { usePanoramaCover.value = !usePanoramaCover.value },
+                // KMK
             )
         },
         bottomBar = {
@@ -131,6 +141,7 @@ fun UpdateScreen(
                                 },
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
+                            usePanoramaCover = usePanoramaCover.value,
                             // KMK <--
                             selectionMode = state.selectionMode,
                             // SY -->
@@ -158,6 +169,10 @@ private fun UpdatesAppBar(
     onInvertSelection: () -> Unit,
     onCancelActionMode: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    // KMK -->
+    usePanoramaCover: Boolean,
+    usePanoramaCoverClick: () -> Unit,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     AppBar(
@@ -166,6 +181,14 @@ private fun UpdatesAppBar(
         actions = {
             AppBarActions(
                 persistentListOf(
+                    // KMK -->
+                    AppBar.Action(
+                        title = stringResource(KMR.strings.action_panorama_cover),
+                        icon = Icons.Outlined.Panorama,
+                        iconTint = MaterialTheme.colorScheme.primary.takeIf { usePanoramaCover },
+                        onClick = usePanoramaCoverClick,
+                    ),
+                    // KMK <--
                     AppBar.Action(
                         title = stringResource(MR.strings.action_view_upcoming),
                         icon = Icons.Outlined.CalendarMonth,
