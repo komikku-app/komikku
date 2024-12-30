@@ -401,8 +401,15 @@ class UpdatesScreenModel(
             // KMK -->
             var lastMangaId = -1L
             // KMK <--
-            return items
-                .map { UpdatesUiModel.Item(it) }
+            return items.groupBy { it.update.dateFetch.toLocalDate() }
+                .flatMap { groupDate ->
+                    groupDate.value.groupBy { it.update.mangaId }
+                        .flatMap { groupManga ->
+                            val list = groupManga.value
+                            list.sortedBy { it.update.dateFetch }
+                                .map { UpdatesUiModel.Item(it, list.size > 1) }
+                        }
+                }
                 .insertSeparators { before, after ->
                     val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
                     val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
@@ -420,7 +427,7 @@ class UpdatesScreenModel(
                     } else {
                         if ((it as UpdatesUiModel.Item).item.update.mangaId != lastMangaId) {
                             lastMangaId = it.item.update.mangaId
-                            UpdatesUiModel.Leader(it.item)
+                            UpdatesUiModel.Leader(it.item, it.isExpandable)
                         } else {
                             it
                         }

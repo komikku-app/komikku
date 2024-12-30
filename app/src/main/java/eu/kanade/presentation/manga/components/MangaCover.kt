@@ -99,9 +99,9 @@ enum class MangaCover(val ratio: Float) {
                         modifier = Modifier
                             .size(
                                 when (size) {
-                                    Size.Big -> 16.dp
-                                    Size.Medium -> 24.dp
-                                    else -> 32.dp
+                                    Size.Big -> COVER_TEMPLATE_SIZE_BIG
+                                    Size.Medium -> COVER_TEMPLATE_SIZE_MEDIUM
+                                    else -> COVER_TEMPLATE_SIZE_NORMAL
                                 },
                             )
                             .align(Alignment.Center),
@@ -122,9 +122,9 @@ enum class MangaCover(val ratio: Float) {
                         modifier = Modifier
                             .size(
                                 when (size) {
-                                    Size.Big -> 16.dp
-                                    Size.Medium -> 24.dp
-                                    else -> 32.dp
+                                    Size.Big -> COVER_TEMPLATE_SIZE_BIG
+                                    Size.Medium -> COVER_TEMPLATE_SIZE_MEDIUM
+                                    else -> COVER_TEMPLATE_SIZE_NORMAL
                                 },
                             )
                             .align(Alignment.Center),
@@ -148,6 +148,12 @@ enum class MangaCover(val ratio: Float) {
             modifier = modifierColored,
             contentScale = scale,
         )
+    }
+
+    companion object {
+        val COVER_TEMPLATE_SIZE_BIG = 16.dp
+        val COVER_TEMPLATE_SIZE_MEDIUM = 24.dp
+        val COVER_TEMPLATE_SIZE_NORMAL = 32.dp
     }
 }
 
@@ -200,7 +206,7 @@ enum class MangaCoverHide(private val ratio: Float) {
     }
 }
 
-internal val RatioSwitchToPanorama = 0.75f
+internal const val RatioSwitchToPanorama = 0.75f
 
 internal val CoverPlaceholderColor = Color(0x1F888888)
 internal val CoverPlaceholderOnBgColor = Color(0x8F888888)

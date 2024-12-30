@@ -237,9 +237,9 @@ private fun UpdatesBottomBar(
 
 sealed interface UpdatesUiModel {
     data class Header(val date: LocalDate) : UpdatesUiModel
-    open class Item(open val item: UpdatesItem) : UpdatesUiModel
+    open class Item(open val item: UpdatesItem, open val isExpandable: Boolean = false) : UpdatesUiModel
     // KMK -->
     /** The first [Item] in a group of chapters from same manga */
-    data class Leader(override val item: UpdatesItem) : Item(item)
+    data class Leader(override val item: UpdatesItem, override val isExpandable: Boolean) : Item(item)
     // KMK <--
 }

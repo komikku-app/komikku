@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -146,6 +147,7 @@ internal fun LazyListScope.updatesUiItems(
                     downloadProgressProvider = updatesItem.downloadProgressProvider,
                     // KMK -->
                     isLeader = item is UpdatesUiModel.Leader,
+                    isExpandable = item.isExpandable,
                     expanded = expandedState.contains(updatesItem.update.groupByDateAndManga()),
                     collapseToggle = collapseToggle,
                     // KMK <--
@@ -169,6 +171,7 @@ private fun UpdatesUiItem(
     downloadProgressProvider: () -> Int,
     // KMK -->
     isLeader: Boolean,
+    isExpandable: Boolean,
     expanded: Boolean,
     collapseToggle: (key: String) -> Unit,
     // KMK <--
@@ -195,19 +198,32 @@ private fun UpdatesUiItem(
         val mangaCover = update.coverData
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
-        // KMK <--
-        MangaCover.Square(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .fillMaxHeight(),
-            data = mangaCover,
-            onClick = onClickCover,
-            // KMK -->
-            bgColor = bgColor,
-            tint = onBgColor,
-            size = MangaCover.Size.Big,
+        if (isLeader) {
             // KMK <--
-        )
+            MangaCover.Square(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .fillMaxHeight(),
+                data = mangaCover,
+                onClick = onClickCover,
+                // KMK -->
+                bgColor = bgColor,
+                tint = onBgColor,
+                size = MangaCover.Size.Big,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .fillMaxHeight(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f),
+                )
+            }
+            // KMK <--
+        }
 
         Column(
             modifier = Modifier
@@ -267,7 +283,7 @@ private fun UpdatesUiItem(
         }
 
         // KMK -->
-        if (isLeader) {
+        if (isLeader && isExpandable) {
             CollapseButton(
                 expanded = expanded,
                 collapseToggle = { collapseToggle(update.groupByDateAndManga()) },
