@@ -293,6 +293,7 @@ dependencies {
     implementation(libs.swipe)
     implementation(libs.compose.webview)
     implementation(libs.compose.grid)
+    implementation(libs.reorderable)
 
     // KMK -->
     implementation(libs.palette.ktx)
