@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.DoneAll
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,6 +55,7 @@ fun MigrationListScreen(
     // KMK -->
     cancelManga: (Long) -> Unit,
     navigateUp: () -> Unit,
+    openMigrationOptionsDialog: () -> Unit,
     // KMK <--
     searchManually: (MigratingManga) -> Unit,
     migrateNow: (Long) -> Unit,
@@ -75,6 +77,13 @@ fun MigrationListScreen(
                 actions = {
                     AppBarActions(
                         persistentListOf(
+                            // KMK -->
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_settings),
+                                icon = Icons.Outlined.Settings,
+                                onClick = openMigrationOptionsDialog,
+                            ),
+                            // KMK <--
                             AppBar.Action(
                                 title = stringResource(MR.strings.copy),
                                 icon = if (items.size == 1) Icons.Outlined.ContentCopy else Icons.Outlined.CopyAll,

@@ -99,6 +99,9 @@ sealed class MigrationType : Serializable {
     data class MangaSingle(val fromMangaId: Long, val toManga: Long?) : MigrationType()
 }
 
+/**
+ * The screen showing a list of selectable sources used for migration, with migration setting dialog.
+ */
 class PreMigrationScreen(val migration: MigrationType) : Screen() {
     @Composable
     override fun Content() {

@@ -58,6 +58,7 @@ import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.i18n.sy.SYMR
+import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger
@@ -93,8 +94,10 @@ class MigrationListScreenModel(
 
     val manualMigrations = MutableStateFlow(0)
 
-    val hideNotFound = preferences.hideNotFoundMigration().get()
-    val showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
+    var hideNotFound = preferences.hideNotFoundMigration().get()
+    private var showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
+    private var useSourceWithMost = preferences.useSourceWithMost().get()
+    private var useSmartSearch = preferences.smartMigration().get()
 
     val navigateOut = MutableSharedFlow<Unit>()
 
@@ -144,7 +147,7 @@ class MigrationListScreenModel(
     suspend fun getManga(result: SearchResult.Result) = getManga(result.id)
     suspend fun getManga(id: Long) = getManga.await(id)
     suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
-    suspend fun getChapterInfo(id: Long) = getChaptersByMangaId.await(id).let { chapters ->
+    private suspend fun getChapterInfo(id: Long) = getChaptersByMangaId.await(id).let { chapters ->
         MigratingManga.ChapterInfo(
             latestChapter = chapters.maxOfOrNull { it.chapterNumber },
             chapterCount = chapters.size,
@@ -160,8 +163,6 @@ class MigrationListScreenModel(
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         throttleManager.resetThrottle()
         // KMK: finishedCount.value = mangas.size
-        val useSourceWithMost = preferences.useSourceWithMost().get()
-        val useSmartSearch = preferences.smartMigration().get()
 
         val sources = getMigrationSources()
         for (manga in mangas) {
@@ -311,6 +312,7 @@ class MigrationListScreenModel(
                         // Ignore cancellations
                         throw e
                     } catch (e: Exception) {
+                        Timber.tag("MigrationListScreenModel").e(e, "Error updating manga from source")
                     }
                 }
 
@@ -346,10 +348,10 @@ class MigrationListScreenModel(
         }
     }
 
-    fun allMangasDone() = migratingItems.value.orEmpty().all { it.searchResult.value != SearchResult.Searching } &&
+    private fun allMangasDone() = migratingItems.value.orEmpty().all { it.searchResult.value != SearchResult.Searching } &&
         migratingItems.value.orEmpty().any { it.searchResult.value is SearchResult.Result }
 
-    fun mangasSkipped() = migratingItems.value.orEmpty().count { it.searchResult.value == SearchResult.NotFound }
+    private fun mangasSkipped() = migratingItems.value.orEmpty().count { it.searchResult.value == SearchResult.NotFound }
 
     private suspend fun migrateMangaInternal(
         prevManga: Manga,
@@ -480,6 +482,7 @@ class MigrationListScreenModel(
                     // Ignore cancellations
                     throw e
                 } catch (e: Exception) {
+                    Timber.tag("MigrationListScreenModel").e(e, "Error updating manga from source")
                 }
 
                 migratingManga.searchResult.value = SearchResult.Result(result.id)
@@ -593,7 +596,7 @@ class MigrationListScreenModel(
         }
     }
 
-    fun removeManga(item: MigratingManga) {
+    private fun removeManga(item: MigratingManga) {
         when (val migration = config.migration) {
             is MigrationType.MangaList -> {
                 val ids = migration.mangaIds.toMutableList()
@@ -626,8 +629,25 @@ class MigrationListScreenModel(
         )
     }
 
+    // KMK -->
+    fun openMigrationOptionsDialog() {
+        dialog.value = Dialog.MigrationOptionsDialog
+    }
+
+    fun updateOptions() {
+        hideNotFound = preferences.hideNotFoundMigration().get()
+        showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
+        useSourceWithMost = preferences.useSourceWithMost().get()
+        useSmartSearch = preferences.smartMigration().get()
+    }
+    // KMK <--
+
     sealed class Dialog {
         data class MigrateMangaDialog(val copy: Boolean, val mangaSet: Int, val mangaSkipped: Int) : Dialog()
-        object MigrationExitDialog : Dialog()
+        data object MigrationExitDialog : Dialog()
+
+        // KMK -->
+        data object MigrationOptionsDialog : Dialog()
+        // KMK <--
     }
 }
