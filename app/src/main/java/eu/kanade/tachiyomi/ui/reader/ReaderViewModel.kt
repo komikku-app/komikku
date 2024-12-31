@@ -709,7 +709,13 @@ class ReaderViewModel @JvmOverloads constructor(
                         }
                         .ifEmpty { null }
                         ?.also {
-                            setReadStatus.await(true, *it.toTypedArray())
+                            setReadStatus.await(
+                                true,
+                                *it.toTypedArray(),
+                                // KMK -->
+                                manually = false,
+                                // KMK <--
+                            )
                             it.forEach { chapter ->
                                 deleteChapterIfNeeded(ReaderChapter(chapter))
                             }

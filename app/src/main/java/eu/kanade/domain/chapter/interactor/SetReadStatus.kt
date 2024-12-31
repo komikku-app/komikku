@@ -1,6 +1,11 @@
 package eu.kanade.domain.chapter.interactor
 
 import eu.kanade.domain.download.interactor.DeleteDownload
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.ui.library.LibraryScreenModel
+import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
+import eu.kanade.tachiyomi.ui.reader.ReaderViewModel
+import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
 import exh.source.MERGED_SOURCE_ID
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withNonCancellableContext
@@ -31,7 +36,26 @@ class SetReadStatus(
         )
     }
 
-    suspend fun await(read: Boolean, vararg chapters: Chapter): Result = withNonCancellableContext {
+    /**
+     * Mark chapters as read/unread, also delete downloaded chapters if 'After manually marked as read' is set.
+     *
+     * Called from:
+     *  - [LibraryScreenModel]: Manually select mangas & mark as read
+     *  - [MangaScreenModel.markChaptersRead]: Manually select chapters & mark as read or swipe chapter as read
+     *  - [UpdatesScreenModel.markUpdatesRead]: Manually select chapters & mark as read
+     *  - [LibraryUpdateJob.updateChapterList]: when a manga is updated and has new chapter but already read,
+     *  it will mark that new **duplicated** chapter as read & delete downloading/downloaded -> should be treat as
+     *  automatically ~ no auto delete
+     *  - [ReaderViewModel.updateChapterProgress]: mark **duplicated** chapter as read after finish reading -> should be
+     *  treated as not manually mark as read so not auto-delete (there are cases where chapter number is mistaken by volume number)
+     */
+    suspend fun await(
+        read: Boolean,
+        vararg chapters: Chapter,
+        // KMK -->
+        manually: Boolean = true,
+        // KMK <--
+    ): Result = withNonCancellableContext {
         val chaptersToUpdate = chapters.filter {
             when (read) {
                 true -> !it.read
@@ -51,8 +75,17 @@ class SetReadStatus(
             return@withNonCancellableContext Result.InternalError(e)
         }
 
-        if (read && downloadPreferences.removeAfterMarkedAsRead().get()) {
+        if (
+            // KMK -->
+            manually &&
+            // KMK <--
+            read &&
+            downloadPreferences.removeAfterMarkedAsRead().get()
+        ) {
             chaptersToUpdate
+                // KMK -->
+                .map { it.copy(read = true) } // mark as read so it will respect category exclusion
+                // KMK <--
                 .groupBy { it.mangaId }
                 .forEach { (mangaId, chapters) ->
                     deleteDownload.awaitAll(

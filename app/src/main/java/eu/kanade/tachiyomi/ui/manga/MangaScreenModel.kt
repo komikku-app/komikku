@@ -1418,6 +1418,9 @@ class MangaScreenModel(
                         chapters,
                         state.manga,
                         state.source,
+                        // KMK -->
+                        ignoreCategoryExclusion = true,
+                        // KMK <--
                     )
                 }
             } catch (e: Throwable) {
