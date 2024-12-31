@@ -6,14 +6,14 @@
         <changelogtext>[b]Improve:[/b] Fast browsing</changelogtext>
         <changelogtext>[b]Improve:[/b] Allow disable app auto-update</changelogtext>
         <changelogtext>[b]Improve:[/b] Allow edit migration options while already being searching</changelogtext>
+        <changelogtext>[b]Improve:[/b] Don't auto-expand manga when browsing if is favorited</changelogtext>
         <changelogtext>[b]Improve:[/b] Add option to always use SSIV for image decoding</changelogtext>
         <changelogtext>[b]Fix:[/b] Duplicate chapters on backup restoring</changelogtext>
         <changelogtext>[b]Fix:[/b] Exclude categories when delete read chapter, except manually deleting</changelogtext>
-        <changelogtext>[b]Fix:[/b] Don't auto-expand manga when browsing if is favorited</changelogtext>
         <changelogtext>[b]Fix:[/b] Download job stops all together even if 1 entry is failed to create directory</changelogtext>
+        <changelogtext>[b]Fix:[/b] App shortcuts</changelogtext>
         <changelogtext>[b]Fix:[/b] Color Fill manga info from tracker</changelogtext>
         <changelogtext>[b]Fix:[/b] Some debug functions name</changelogtext>
-        <changelogtext>[b]Fix:[/b] App shortcuts</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9643" changeDate="December 18, 2024">
         <changelogtext>[b]New:[/b] Get manga info from tracker</changelogtext>
