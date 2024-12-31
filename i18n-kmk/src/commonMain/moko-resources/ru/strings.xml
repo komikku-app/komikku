@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Скопировать первую страницу в буфер обмена</string>
   <string name="action_copy_to_clipboard_second_page">Копировать вторую страницу в буфер обмена</string>
   <string name="action_copy_to_clipboard_combined_page">Скопировать объединенную страницу в буфер обмена</string>
+  <string name="auto_update_app_disable_auto_download">Не скачивать автоматически</string>
 </resources>

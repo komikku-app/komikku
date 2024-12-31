@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Zkopírovat první stránku do schránky</string>
   <string name="action_copy_to_clipboard_second_page">Zkopírovat druhou stránku do schránky</string>
   <string name="action_copy_to_clipboard_combined_page">Kopírovat kombinovanou stránku do schránky</string>
+  <string name="auto_update_app_disable_auto_download">Automaticky nestahovat aktualizaci</string>
 </resources>

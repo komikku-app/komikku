@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Eerste pagina naar klembord kopiëren</string>
   <string name="action_copy_to_clipboard_second_page">Tweede pagina naar klembord kopiëren</string>
   <string name="action_copy_to_clipboard_combined_page">Kopieer gecombineerde pagina naar klembord</string>
+  <string name="auto_update_app_disable_auto_download">Update niet automatisch downloaden</string>
 </resources>

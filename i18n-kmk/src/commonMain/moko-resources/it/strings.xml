@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Copia la prima pagina negli appunti</string>
   <string name="action_copy_to_clipboard_second_page">Copia la seconda pagina negli appunti</string>
   <string name="action_copy_to_clipboard_combined_page">Copia la pagina combinata negli appunti</string>
+  <string name="auto_update_app_disable_auto_download">Non scaricare automaticamente l\'aggiornamento</string>
 </resources>

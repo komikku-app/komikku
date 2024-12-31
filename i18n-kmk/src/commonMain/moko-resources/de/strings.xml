@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Erste Seite in Zwischenablage kopieren</string>
   <string name="action_copy_to_clipboard_second_page">Zweite Seite in Zwischenablage kopieren</string>
   <string name="action_copy_to_clipboard_combined_page">Kombinierte Seite in Zwischenablage kopieren</string>
+  <string name="auto_update_app_disable_auto_download">Update nicht automatisch herunterladen</string>
 </resources>

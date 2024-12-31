@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Αντιγραφή της πρώτης σελίδας στο πρόχειρο</string>
   <string name="action_copy_to_clipboard_second_page">Αντιγραφή δεύτερης σελίδας στο πρόχειρο</string>
   <string name="action_copy_to_clipboard_combined_page">Αντιγραφή συνδυασμένης σελίδας στο πρόχειρο</string>
+  <string name="auto_update_app_disable_auto_download">Να μην γίνεται αυτόματη λήψη ενημέρωσης</string>
 </resources>

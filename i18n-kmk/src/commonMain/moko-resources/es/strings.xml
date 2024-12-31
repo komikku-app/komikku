@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Copiar la primera página al portapapeles</string>
   <string name="action_copy_to_clipboard_second_page">Copiar segunda página al portapapeles</string>
   <string name="action_copy_to_clipboard_combined_page">Copiar página combinada al portapapeles</string>
+  <string name="auto_update_app_disable_auto_download">No descargar actualización automática</string>
 </resources>

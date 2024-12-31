@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="action_source_search">搜索源</string>
+  <string name="action_source_search">在源上搜索</string>
   <string name="action_toggle_nsfw_only">切换仅 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">复制第一页到剪贴板</string>
   <string name="action_copy_to_clipboard_second_page">复制第二页到剪贴板</string>
   <string name="action_copy_to_clipboard_combined_page">复制合并页面到剪贴板</string>
+  <string name="auto_update_app_disable_auto_download">不自动下载更新</string>
 </resources>

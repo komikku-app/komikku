@@ -15,7 +15,7 @@
   <string name="pref_clean_invalid_downloads">Linisin ang mga di-balidong mga download</string>
   <string name="pref_clean_invalid_downloads_summary">Hanapin at tanggalin ang mga download, file, folder na di naka-save sa iyong akalatan</string>
   <string name="invalid_downloads_cleaned">Nalinis ang mga di-balidong mga download</string>
-  <string name="pref_private_installer_warning">Iwasang gumamit ng Private na installer kasi di pa ito stable, na maghahatong sa pag-start/magpatuloy ng App.</string>
+  <string name="pref_private_installer_warning">Iwasang gumamit ng Private na installer dahil hindi pa ito stable, na maghahatong sa mabagal na pag-start/magpatuloy ng App.</string>
   <string name="whats_coming">Anong paparating (malapit na)</string>
   <string name="action_allow_duplicate_manga">Payagan ito</string>
   <string name="action_skip_duplicate_manga">Laktawan ito</string>
@@ -119,7 +119,8 @@
   <string name="open">Buksan</string>
   <string name="release_page">Pahina ng release</string>
   <string name="could_not_install_update">Hindi ma-install ang update</string>
-  <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
-  <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
-  <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
+  <string name="action_copy_to_clipboard_first_page">Kopyahin ang unang pahina sa clipboard</string>
+  <string name="action_copy_to_clipboard_second_page">Kopyahin ang ikalawang pahina sa clipboard</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopyahin ang pinagsamang pahina sa clipboard</string>
+  <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
 </resources>

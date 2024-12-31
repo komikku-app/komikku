@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
   <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
+  <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
 </resources>

@@ -122,4 +122,5 @@
   <string name="action_copy_to_clipboard_first_page">最初のページをクリップボードにコピー</string>
   <string name="action_copy_to_clipboard_second_page">2ページ目をクリップボードにコピー</string>
   <string name="action_copy_to_clipboard_combined_page">結合ページをクリップボードにコピー</string>
+  <string name="auto_update_app_disable_auto_download">更新プログラムを自動的にダウンロードしない</string>
 </resources>
