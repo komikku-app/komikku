@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
@@ -15,12 +15,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,10 +43,12 @@ import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
+import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ListGroupHeader
@@ -69,6 +76,11 @@ internal fun LazyListScope.updatesLastUpdatedItem(
 
 internal fun LazyListScope.updatesUiItems(
     uiModels: List<UpdatesUiModel>,
+    // KMK -->
+    expandedState: Set<String>,
+    collapseToggle: (key: String) -> Unit,
+    usePanoramaCover: Boolean,
+    // KMK <--
     selectionMode: Boolean,
     // SY -->
     preserveReadingPosition: Boolean,
@@ -96,7 +108,10 @@ internal fun LazyListScope.updatesUiItems(
         when (item) {
             is UpdatesUiModel.Header -> {
                 ListGroupHeader(
-                    modifier = Modifier.animateItemFastScroll(),
+                    modifier = Modifier.animateItemFastScroll()
+                        // KMK -->
+                        .padding(top = MaterialTheme.padding.extraSmall),
+                    // KMK <--
                     text = relativeDateText(item.date),
                 )
             }
@@ -135,6 +150,13 @@ internal fun LazyListScope.updatesUiItems(
                     }.takeIf { !selectionMode },
                     downloadStateProvider = updatesItem.downloadStateProvider,
                     downloadProgressProvider = updatesItem.downloadProgressProvider,
+                    // KMK -->
+                    isLeader = item is UpdatesUiModel.Leader,
+                    isExpandable = item.isExpandable,
+                    expanded = expandedState.contains(updatesItem.update.groupByDateAndManga()),
+                    collapseToggle = collapseToggle,
+                    usePanoramaCover = usePanoramaCover,
+                    // KMK <--
                 )
             }
         }
@@ -153,6 +175,14 @@ private fun UpdatesUiItem(
     // Download Indicator
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
+    // KMK -->
+    isLeader: Boolean,
+    isExpandable: Boolean,
+    expanded: Boolean,
+    collapseToggle: (key: String) -> Unit,
+    usePanoramaCover: Boolean,
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -168,27 +198,64 @@ private fun UpdatesUiItem(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 },
             )
-            .height(56.dp)
-            .padding(horizontal = MaterialTheme.padding.medium),
+            .padding(
+                // KMK -->
+                vertical = MaterialTheme.padding.extraSmall,
+                // KMK <--
+                horizontal = MaterialTheme.padding.medium,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // KMK -->
         val mangaCover = update.coverData
+        val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
-        // KMK <--
-        MangaCover.Square(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .fillMaxHeight(),
-            data = mangaCover,
-            onClick = onClickCover,
-            // KMK -->
-            bgColor = bgColor,
-            tint = onBgColor,
-            size = MangaCover.Size.Big,
+        if (isLeader) {
+            if (usePanoramaCover && coverIsWide) {
+                MangaCover.Panorama(
+                    modifier = Modifier
+                        .padding(top = MaterialTheme.padding.small)
+                        .width(UpdateItemPanoramaWidth),
+                    data = mangaCover,
+                    onClick = onClickCover,
+                    // KMK -->
+                    bgColor = bgColor,
+                    tint = onBgColor,
+                    size = MangaCover.Size.Medium,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                    // KMK <--
+                )
+            } else {
+                // KMK <--
+                MangaCover.Book(
+                    modifier = Modifier
+                        // KMK -->
+                        .padding(top = MaterialTheme.padding.small)
+                        .width(UpdateItemWidth),
+                    // KMK <--
+                    data = mangaCover,
+                    onClick = onClickCover,
+                    // KMK -->
+                    bgColor = bgColor,
+                    tint = onBgColor,
+                    size = MangaCover.Size.Medium,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .width(if (usePanoramaCover && coverIsWide) UpdateItemPanoramaWidth else UpdateItemWidth),
+            )
             // KMK <--
-        )
+        }
 
         Column(
             modifier = Modifier
@@ -247,6 +314,15 @@ private fun UpdatesUiItem(
             }
         }
 
+        // KMK -->
+        if (isLeader && isExpandable) {
+            CollapseButton(
+                expanded = expanded,
+                collapseToggle = { collapseToggle(update.groupByDateAndManga()) },
+            )
+        }
+        // KMK <--
+
         ChapterDownloadIndicator(
             enabled = onDownloadChapter != null,
             modifier = Modifier.padding(start = 4.dp),
@@ -256,3 +332,30 @@ private fun UpdatesUiItem(
         )
     }
 }
+
+// KMK -->
+@Composable
+fun CollapseButton(
+    expanded: Boolean,
+    collapseToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(IndicatorSize),
+        contentAlignment = Alignment.Center,
+    ) {
+        IconButton(onClick = { collapseToggle() }) {
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+private val IndicatorSize = 18.dp
+private val UpdateItemPanoramaWidth = 126.dp
+private val UpdateItemWidth = 56.dp
+// KMK <--

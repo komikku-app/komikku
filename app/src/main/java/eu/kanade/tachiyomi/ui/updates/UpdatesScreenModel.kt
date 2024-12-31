@@ -23,6 +23,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -379,18 +380,43 @@ class UpdatesScreenModel(
         libraryPreferences.newUpdatesCount().set(0)
     }
 
+    // KMK -->
+    fun toggleExpandedState(key: String) {
+        mutableState.update {
+            it.copy(
+                expandedState = it.expandedState.toMutableSet().apply {
+                    if (it.expandedState.contains(key)) remove(key) else add(key)
+                },
+            )
+        }
+    }
+    // KMK <--
+
     @Immutable
     data class State(
         val isLoading: Boolean = true,
         val items: PersistentList<UpdatesItem> = persistentListOf(),
+        // KMK -->
+        val expandedState: Set<String> = persistentSetOf(),
+        // KMK <--
         val dialog: Dialog? = null,
     ) {
         val selected = items.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
 
         fun getUiModel(): List<UpdatesUiModel> {
-            return items
-                .map { UpdatesUiModel.Item(it) }
+            // KMK -->
+            var lastMangaId = -1L
+            // KMK <--
+            return items.groupBy { it.update.dateFetch.toLocalDate() }
+                .flatMap { groupDate ->
+                    groupDate.value.groupBy { it.update.mangaId }
+                        .flatMap { groupManga ->
+                            val list = groupManga.value
+                            list.sortedBy { it.update.dateFetch }
+                                .map { UpdatesUiModel.Item(it, list.size > 1) }
+                        }
+                }
                 .insertSeparators { before, after ->
                     val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
                     val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
@@ -400,6 +426,21 @@ class UpdatesScreenModel(
                         else -> null
                     }
                 }
+                // KMK -->
+                .map {
+                    if (it is UpdatesUiModel.Header) {
+                        lastMangaId = -1L
+                        it
+                    } else {
+                        if ((it as UpdatesUiModel.Item).item.update.mangaId != lastMangaId) {
+                            lastMangaId = it.item.update.mangaId
+                            UpdatesUiModel.Leader(it.item, it.isExpandable)
+                        } else {
+                            it
+                        }
+                    }
+                }
+            // KMK <--
         }
     }
 
@@ -426,3 +467,7 @@ data class UpdatesItem(
     }
     // SY <--
 }
+
+// KMK -->
+fun UpdatesWithRelations.groupByDateAndManga() = "${dateFetch.toLocalDate().toEpochDay()}-$mangaId"
+// KMK <--

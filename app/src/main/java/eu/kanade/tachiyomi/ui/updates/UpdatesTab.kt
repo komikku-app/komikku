@@ -94,6 +94,9 @@ data object UpdatesTab : Tab {
                 context.startActivity(intent)
             },
             onCalendarClicked = { navigator.push(UpcomingScreen()) },
+            // KMK -->
+            collapseToggle = screenModel::toggleExpandedState,
+            // KMK <--
         )
 
         val onDismissDialog = { screenModel.setDialog(null) }
