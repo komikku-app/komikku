@@ -41,6 +41,7 @@ internal class DownloadNotifier(private val context: Context) {
     private val errorNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_ERROR) {
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setAutoCancel(false)
         }
     }
