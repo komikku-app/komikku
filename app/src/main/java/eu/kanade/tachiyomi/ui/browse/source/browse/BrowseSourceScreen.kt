@@ -171,6 +171,9 @@ data class BrowseSourceScreen(
             assistUrl = (screenModel.source as? HttpSource)?.baseUrl
         }
 
+        // KMK -->
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+        // KMK <--
         Scaffold(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -182,12 +185,17 @@ data class BrowseSourceScreen(
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                             onSelectAll = {
-                                state.mangaDisplayingList.forEach { manga ->
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first }
+                                    .forEach { manga ->
+                                        bulkFavoriteScreenModel.select(manga)
+                                    }
                             },
                             onReverseSelection = {
-                                bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                                bulkFavoriteScreenModel.reverseSelection(
+                                    mangaList.itemSnapshotList.items
+                                        .map { it.value.first },
+                                )
                             },
                         )
                     } else {
@@ -314,7 +322,7 @@ data class BrowseSourceScreen(
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -327,30 +335,34 @@ data class BrowseSourceScreen(
                 onLocalSourceHelpClick = onHelpClick,
                 onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(it)
-                    } else {
-                        // KMK <--
-                        navigator.push(
-                            MangaScreen(
-                                it.id,
-                                // KMK -->
-                                // Finding the entry to be merged to, so we don't want to expand description
-                                // so that user can see the `Merge to another` button
-                                smartSearchConfig != null,
-                                // KMK <--
-                                smartSearchConfig,
-                            ),
-                        )
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            navigator.push(
+                                MangaScreen(
+                                    manga.id,
+                                    // KMK -->
+                                    // Finding the entry to be merged to, so we don't want to expand description
+                                    // so that user can see the `Merge to another` button
+                                    smartSearchConfig != null,
+                                    // KMK <--
+                                    smartSearchConfig,
+                                ),
+                            )
+                        }
                     }
                 },
-                onMangaLongClick = { manga ->
+                onMangaLongClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        navigator.push(MangaScreen(manga.id, true))
-                    } else {
-                        // KMK <--
-                        scope.launchIO {
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            navigator.push(MangaScreen(manga.id, true))
+                        } else {
+                            // KMK <--
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(
@@ -370,7 +382,6 @@ data class BrowseSourceScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }

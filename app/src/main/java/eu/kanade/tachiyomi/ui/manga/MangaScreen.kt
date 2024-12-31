@@ -32,7 +32,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.model.rememberScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -367,12 +366,22 @@ class MangaScreen(
             getMangaState = { screenModel.getManga(initialManga = it) },
             onRelatedMangasScreenClick = {
                 if (successState.isRelatedMangasFetched == null) {
-                    screenModel.screenModelScope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
+                    scope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
                 }
                 showRelatedMangasScreen()
             },
-            onRelatedMangaClick = { navigator.push(MangaScreen(it.id, true)) },
-            onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
+            onRelatedMangaClick = {
+                scope.launchIO {
+                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    navigator.push(MangaScreen(manga.id, true))
+                }
+            },
+            onRelatedMangaLongClick = {
+                scope.launchIO {
+                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                }
+            },
             onSourceClick = {
                 if (successState.source !is StubSource) {
                     val screen = when {

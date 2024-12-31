@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +31,7 @@ fun BulkSelectionToolbar(
                 actions = persistentListOf<AppBar.AppBarAction>()
                     .builder()
                     .apply {
+                        /*
                         if (onSelectAll != null) {
                             add(
                                 AppBar.Action(
@@ -51,6 +50,7 @@ fun BulkSelectionToolbar(
                                 ),
                             )
                         }
+                         */
                         if (isRunning) {
                             add(
                                 AppBar.ActionCompose(

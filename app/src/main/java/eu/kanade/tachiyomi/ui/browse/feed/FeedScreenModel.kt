@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -58,7 +59,7 @@ open class FeedScreenModel(
     val sourceManager: SourceManager = Injekt.get(),
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
     private val countFeedSavedSearchGlobal: CountFeedSavedSearchGlobal = Injekt.get(),
@@ -318,9 +319,9 @@ open class FeedScreenModel(
                     val result = withIOContext {
                         itemUI.copy(
                             results = page.map {
-                                networkToLocalManga.await(it.toDomainManga(itemUI.source!!.id))
-                            }
                                 // KMK -->
+                                it.toDomainManga(itemUI.source!!.id)
+                            }
                                 .filter { !hideInLibraryFeedItems.get() || !it.favorite },
                             // KMK <--
                         )
@@ -355,8 +356,10 @@ open class FeedScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
-                    if (manga == null) return@collectLatest
                     value = manga
+                        // KMK -->
+                        ?: initialManga
+                    // KMK <--
                 }
         }
     }

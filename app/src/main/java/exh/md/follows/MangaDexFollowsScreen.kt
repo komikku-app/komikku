@@ -65,6 +65,9 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
 
         val snackbarHostState = remember { SnackbarHostState() }
 
+        // KMK -->
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+        // KMK <--
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
@@ -75,12 +78,17 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
-                            state.mangaDisplayingList.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { manga ->
+                                    bulkFavoriteScreenModel.select(manga)
+                                }
                         },
                         onReverseSelection = {
-                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                            bulkFavoriteScreenModel.reverseSelection(
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first },
+                            )
                         },
                     )
                 } else {
@@ -104,7 +112,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -117,20 +125,24 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onLocalSourceHelpClick = null,
                 onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(it)
-                    } else {
-                        // KMK <--
-                        navigator.push(MangaScreen(it.id, true))
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            navigator.push(MangaScreen(manga.id, true))
+                        }
                     }
                 },
-                onMangaLongClick = { manga ->
+                onMangaLongClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        navigator.push(MangaScreen(manga.id, true))
-                    } else {
-                        // KMK <--
-                        scope.launchIO {
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            navigator.push(MangaScreen(manga.id, true))
+                        } else {
+                            // KMK <--
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(
@@ -150,7 +162,6 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }

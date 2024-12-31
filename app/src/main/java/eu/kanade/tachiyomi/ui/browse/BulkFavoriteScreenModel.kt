@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastDistinctBy
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -113,7 +114,9 @@ class BulkFavoriteScreenModel(
         mutableState.update { state ->
             val newSelection = mangas.filterNot { manga ->
                 state.selection.contains(manga)
-            }.toPersistentList()
+            }
+                .fastDistinctBy { it.id }
+                .toPersistentList()
             state.copy(
                 selection = newSelection,
                 selectionMode = newSelection.isNotEmpty(),
