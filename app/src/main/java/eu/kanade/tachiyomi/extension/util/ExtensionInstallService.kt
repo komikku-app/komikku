@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.IBinder
+import androidx.core.content.ContextCompat
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -26,6 +27,7 @@ class ExtensionInstallService : Service() {
     override fun onCreate() {
         val notification = notificationBuilder(Notifications.CHANNEL_EXTENSIONS_UPDATE) {
             setSmallIcon(R.drawable.ic_komikku)
+            setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
             setAutoCancel(false)
             setOngoing(true)
             setShowWhen(false)
