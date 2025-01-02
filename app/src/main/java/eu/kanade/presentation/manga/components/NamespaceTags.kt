@@ -31,8 +31,8 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
-import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.source.isEhBasedSource
 import exh.util.SourceTagsUtil
 import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
@@ -64,7 +64,7 @@ value class SearchMetadataChips(
                                 } else {
                                     SourceTagsUtil.getWrappedTag(source.id, fullTag = it.name)
                                 } ?: it.name,
-                                border = if (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) {
+                                border = if (source.isEhBasedSource()) {
                                     when (it.type) {
                                         EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 2
                                         EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1
