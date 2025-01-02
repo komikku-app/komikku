@@ -142,8 +142,7 @@ fun feedTab(
                     FeedOrderScreen(
                         state = state,
                         onClickDelete = screenModel::openDeleteDialog,
-                        onClickMoveUp = screenModel::moveUp,
-                        onClickMoveDown = screenModel::moveDown,
+                        changeOrder = screenModel::changeOrder,
                     )
                 } else {
                     // KMK <--
@@ -249,12 +248,8 @@ fun feedTab(
                         FeedActionsDialog(
                             feed = dialog.feedItem.feed,
                             title = dialog.feedItem.title,
-                            canMoveUp = dialog.canMoveUp,
-                            canMoveDown = dialog.canMoveDown,
                             onDismissRequest = onDismissRequest,
                             onClickDelete = { screenModel.openDeleteDialog(it) },
-                            onMoveUp = { screenModel.moveUp(it) },
-                            onMoveDown = { screenModel.moveDown(it) },
                         )
                     }
                     is FeedScreenModel.Dialog.SortAlphabetically -> {

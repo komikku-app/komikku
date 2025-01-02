@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -159,16 +158,12 @@ open class FeedScreenModel(
     // KMK -->
     fun openActionsDialog(
         feed: FeedItemUI,
-        canMoveUp: Boolean,
-        canMoveDown: Boolean,
     ) {
         screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
                     dialog = Dialog.FeedActions(
                         feedItem = feed,
-                        canMoveUp = canMoveUp,
-                        canMoveDown = canMoveDown,
                     ),
                 )
             }
@@ -219,15 +214,9 @@ open class FeedScreenModel(
     }
 
     // KMK -->
-    fun moveUp(feed: FeedSavedSearch) {
+    fun changeOrder(feed: FeedSavedSearch, newOrder: Int) {
         screenModelScope.launch {
-            reorderFeed.moveUp(feed)
-        }
-    }
-
-    fun moveDown(feed: FeedSavedSearch) {
-        screenModelScope.launch {
-            reorderFeed.moveDown(feed)
+            reorderFeed.changeOrder(feed, newOrder)
         }
     }
 
@@ -390,8 +379,6 @@ open class FeedScreenModel(
         // KMK -->
         data class FeedActions(
             val feedItem: FeedItemUI,
-            val canMoveUp: Boolean,
-            val canMoveDown: Boolean,
         ) : Dialog()
 
         data object SortAlphabetically : Dialog()
