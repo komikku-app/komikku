@@ -6,6 +6,18 @@ UPDATE mangas
 SET source = :newId
 WHERE source = :oldId;
 
+-- KMK -->
+migrateSourceSavedSearch:
+UPDATE saved_search
+SET source = :newId
+WHERE source = :oldId;
+
+migrateSourceFeed:
+UPDATE feed_saved_search
+SET source = :newId
+WHERE source = :oldId;
+-- KMK <--
+
 getChaptersByMangaIds:
 SELECT * FROM chapters WHERE manga_id IN :mangaIds;
 
