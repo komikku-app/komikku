@@ -186,7 +186,8 @@ internal class ExtensionApi {
         isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
         // KMK <--
     ): Boolean {
-        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled &&
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&
+            blacklistEnabled &&
             // KMK -->
             isHentaiEnabled
         // KMK <--

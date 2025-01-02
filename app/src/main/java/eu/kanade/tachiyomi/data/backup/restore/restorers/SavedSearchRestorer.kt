@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
+import exh.EXHMigrations
 import exh.util.nullIfBlank
 import tachiyomi.data.DatabaseHandler
 import uy.kohesive.injekt.Injekt
@@ -22,7 +23,11 @@ class SavedSearchRestorer(
                 // KMK <--
             }
 
-            backupSavedSearches.filter { backupSavedSearch ->
+            backupSavedSearches.map {
+                // KMK -->
+                EXHMigrations.migrateBackupSavedSearch(it)
+                // KMK <--
+            }.filter { backupSavedSearch ->
                 currentSavedSearches.none { currentSavedSearch ->
                     currentSavedSearch.source == backupSavedSearch.source &&
                         currentSavedSearch.name == backupSavedSearch.name &&
