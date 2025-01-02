@@ -2,7 +2,7 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -94,7 +94,7 @@ fun SourceFeedScreen(
     onClickSavedSearch: (SavedSearch) -> Unit,
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
-    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
@@ -200,7 +200,7 @@ fun SourceFeedList(
     onClickSavedSearch: (SavedSearch) -> Unit,
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
-    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
@@ -212,10 +212,10 @@ fun SourceFeedList(
         contentPadding = paddingValues + topSmallPaddingValues,
     ) {
         // KMK -->
-        itemsIndexed(
+        items(
             items,
-            key = { _, it -> "source-feed-${it.id}" },
-        ) { index, item ->
+            key = { "source-feed-${it.id}" },
+        ) { item ->
             // KMK <--
             GlobalSearchResultItem(
                 modifier = Modifier.animateItem(),
@@ -231,11 +231,7 @@ fun SourceFeedList(
                 onLongClick = if (item is SourceFeedUI.SourceSavedSearch) {
                     {
                         // KMK -->
-                        onLongClickFeed(
-                            item,
-                            index != items.size - items.filterIsInstance<SourceFeedUI.SourceSavedSearch>().size,
-                            index != items.lastIndex,
-                        )
+                        onLongClickFeed(item)
                         // KMK <--
                     }
                 } else {

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -75,7 +75,7 @@ fun FeedScreen(
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     // KMK -->
-    onLongClickFeed: (FeedItemUI, Boolean, Boolean) -> Unit,
+    onLongClickFeed: (FeedItemUI) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
@@ -113,21 +113,17 @@ fun FeedScreen(
                 ) {
                     // KMK -->
                     val feeds = state.items.orEmpty()
-                    itemsIndexed(
+                    items(
                         items = feeds,
-                        key = { _, it -> "feed-${it.feed.id}" },
-                    ) { index, item ->
+                        key = { it.feed.key },
+                    ) { item ->
                         // KMK <--
                         GlobalSearchResultItem(
                             title = item.title,
                             subtitle = item.subtitle,
                             onLongClick = {
                                 // KMK -->
-                                onLongClickFeed(
-                                    item,
-                                    index != 0,
-                                    index != feeds.lastIndex,
-                                )
+                                onLongClickFeed(item)
                                 // KMK <--
                             },
                             onClick = {

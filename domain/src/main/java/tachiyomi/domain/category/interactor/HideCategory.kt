@@ -27,7 +27,7 @@ class HideCategory(
     }
 
     sealed class Result {
-        object Success : Result()
+        data object Success : Result()
         data class InternalError(val error: Throwable) : Result()
     }
 }
