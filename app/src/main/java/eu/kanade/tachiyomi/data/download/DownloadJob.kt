@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.download
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.asFlow
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -41,6 +42,7 @@ class DownloadJob(context: Context, workerParams: WorkerParameters) : CoroutineW
         val notification = applicationContext.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_PROGRESS) {
             setContentTitle(applicationContext.getString(R.string.download_notifier_downloader_title))
             setSmallIcon(android.R.drawable.stat_sys_download)
+            setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
         }.build()
         return ForegroundInfo(
             Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS,
