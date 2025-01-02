@@ -630,7 +630,8 @@ class Downloader(
         val encrypt = CbzCrypto.getPasswordProtectDlPref() && CbzCrypto.isPasswordSet()
         // SY <--
 
-        val zip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")!!
+        val zip = mangaDir.createFile("$dirname.cbz$TMP_DIR_SUFFIX")
+        if (zip?.isFile != true) throw Exception("Failed to create CBZ file for downloaded chapter")
         ZipWriter(context, zip, /* SY --> */ encrypt /* SY <-- */).use { writer ->
             tmpDir.listFiles()?.forEach { file ->
                 writer.write(file)
