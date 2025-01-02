@@ -44,7 +44,6 @@ fun ReorderableCollectionItemScope.CategoryListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onRename() }
-                .padding(vertical = MaterialTheme.padding.small)
                 .padding(
                     start = MaterialTheme.padding.small,
                     end = MaterialTheme.padding.medium,
