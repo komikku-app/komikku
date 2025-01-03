@@ -113,7 +113,7 @@ class MyAnimeListApi(
                             summary = it.synopsis
                             total_chapters = it.numChapters
                             score = it.mean
-                            cover_url = it.covers.large
+                            cover_url = (it.covers?.large ?: it.covers?.medium).orEmpty()
                             tracking_url = "https://myanimelist.net/manga/$remote_id"
                             publishing_status = it.status.replace("_", " ")
                             publishing_type = it.mediaType.replace("_", " ")
@@ -195,7 +195,7 @@ class MyAnimeListApi(
         }
     }
 
-    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
             val url = "$BASE_API_URL/manga".toUri().buildUpon()
                 .appendPath(track.remoteId.toString())
@@ -212,7 +212,7 @@ class MyAnimeListApi(
                         TrackMangaMetadata(
                             remoteId = it.id,
                             title = it.title,
-                            thumbnailUrl = it.covers.large.ifEmpty { null } ?: it.covers.medium,
+                            thumbnailUrl = it.covers.large?.ifEmpty { null } ?: it.covers.medium,
                             description = it.synopsis,
                             authors = it.authors
                                 .filter { it.role == "Story" || it.role == "Story & Art" }
