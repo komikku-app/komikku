@@ -175,7 +175,7 @@ class InterceptActivity : BaseActivity() {
 
     private val galleryAdder = GalleryAdder()
 
-    suspend fun loadGallery(gallery: String) {
+    private suspend fun loadGallery(gallery: String) {
         // Do not load gallery if already loading
         if (status.value is InterceptResult.Idle) {
             status.value = InterceptResult.Loading
@@ -199,7 +199,14 @@ class InterceptActivity : BaseActivity() {
     }
 
     private suspend fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
-        val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
+        val result = galleryAdder.addGallery(
+            this@InterceptActivity,
+            gallery,
+            // KMK -->
+            fav = true,
+            // KMK <--
+            forceSource = source,
+        )
 
         status.value = when (result) {
             is GalleryAddEvent.Success -> InterceptResult.Success(result.manga.id, result.manga, result.chapter)
