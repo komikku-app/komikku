@@ -73,7 +73,12 @@ class GlobalSearchScreen(
                     is SearchItemResult.Success -> {
                         val manga = result.result.singleOrNull()
                         if (manga != null) {
-                            navigator.replace(MangaScreen(manga.id, true))
+                            // KMK -->
+                            scope.launchIO {
+                                val localManga = screenModel.networkToLocalManga.getLocal(manga)
+                                // KMK <--
+                                navigator.replace(MangaScreen(localManga.id, true))
+                            }
                         } else {
                             // Backoff to result screen
                             showSingleLoadingScreen = false
