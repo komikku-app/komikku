@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -62,6 +63,7 @@ class SaveImageNotifier(private val context: Context) {
     fun onError(error: String?) {
         // Create notification
         with(notificationBuilder) {
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setContentTitle(context.stringResource(MR.strings.download_notifier_title_error))
             setContentText(error ?: context.stringResource(MR.strings.unknown_error))
             setSmallIcon(android.R.drawable.ic_menu_report_image)
