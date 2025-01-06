@@ -97,7 +97,7 @@ fun ScreenTransition(
         if (isPreviewBuildType) {
             logcat(LogPriority.ERROR) { "ScreenTransition: ${screen.key}" }
         }
-        navigator.saveableState("screen-transition", screen) {
+        navigator.saveableState("screen-transition-${screen.key}", screen) {
             content(screen)
         }
     }
