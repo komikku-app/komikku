@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.updater
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -23,6 +24,7 @@ internal class AppUpdateNotifier(private val context: Context) {
 
     private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE) {
         setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
     }
 
     /**

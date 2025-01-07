@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.extension.util
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.IBinder
 import androidx.core.content.ContextCompat
@@ -28,6 +29,7 @@ class ExtensionInstallService : Service() {
         val notification = notificationBuilder(Notifications.CHANNEL_EXTENSIONS_UPDATE) {
             setSmallIcon(R.drawable.ic_komikku)
             setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.komikku))
             setAutoCancel(false)
             setOngoing(true)
             setShowWhen(false)

@@ -98,6 +98,7 @@ class EHentaiUpdateNotifier(private val context: Context) {
             setContentText(context.stringResource(MR.strings.action_show_errors))
             setSmallIcon(R.drawable.ic_komikku)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(notificationBitmap)
 
             setContentIntent(NotificationReceiver.openErrorLogPendingActivity(context, uri))
         }
