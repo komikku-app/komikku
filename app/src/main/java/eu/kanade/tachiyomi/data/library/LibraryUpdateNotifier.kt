@@ -12,8 +12,6 @@ import androidx.core.content.ContextCompat
 import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.ImageRequest
-import coil3.request.transformations
-import coil3.transform.CircleCropTransformation
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -242,13 +240,23 @@ class LibraryUpdateNotifier(
 
             val description = getNewChaptersDescription(chapters)
             setContentText(description)
-            setStyle(NotificationCompat.BigTextStyle().bigText(description))
 
             setSmallIcon(R.drawable.ic_komikku)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
 
             if (icon != null) {
                 setLargeIcon(icon)
+                // KMK -->
+                setStyle(
+                    NotificationCompat.BigPictureStyle()
+                        .bigPicture(icon)
+                        .bigLargeIcon(notificationBitmap)
+                        .setBigContentTitle(manga.title)
+                        .setSummaryText(description),
+                )
+                // KMK <--
+            } else {
+                setStyle(NotificationCompat.BigTextStyle().bigText(description))
             }
 
             setGroup(Notifications.GROUP_NEW_CHAPTERS)
@@ -307,8 +315,10 @@ class LibraryUpdateNotifier(
     private suspend fun getMangaIcon(manga: Manga): Bitmap? {
         val request = ImageRequest.Builder(context)
             .data(manga)
-            .transformations(CircleCropTransformation())
-            .size(NOTIF_ICON_SIZE)
+            // KMK -->
+            // .transformations(CircleCropTransformation())
+            // .size(NOTIF_ICON_SIZE)
+            // KMK <--
             .build()
         val drawable = context.imageLoader.execute(request).image?.asDrawable(context.resources)
         return drawable?.getBitmapOrNull()
