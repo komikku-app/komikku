@@ -86,7 +86,7 @@ enum class TrackStatus(val int: Int, val res: StringResource) {
                         Bangumi.ON_HOLD -> PAUSED
                         Bangumi.PLAN_TO_READ -> PLAN_TO_READ
                         Bangumi.DROPPED -> DROPPED
-                        else -> null
+                        else -> READING
                     }
                 }
                 trackerManager.komga.id -> {
