@@ -15,8 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.automirrored.outlined.Launch
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -57,7 +56,6 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -70,10 +68,6 @@ fun ExtensionDetailsScreen(
     navigateUp: () -> Unit,
     state: ExtensionDetailsScreenModel.State,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
-    // KMK -->
-    onClickWhatsNew: () -> Unit,
-    onClickReadme: () -> Unit,
-    // KMK <--
     onClickEnableAll: () -> Unit,
     onClickDisableAll: () -> Unit,
     onClickClearCookies: () -> Unit,
@@ -100,26 +94,11 @@ fun ExtensionDetailsScreen(
                     AppBarActions(
                         actions = persistentListOf<AppBar.AppBarAction>().builder()
                             .apply {
-                                // KMK -->
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.whats_new),
-                                        icon = Icons.Outlined.History,
-                                        onClick = onClickWhatsNew,
-                                    ),
-                                )
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(KMR.strings.action_faq_and_guides),
-                                        icon = Icons.AutoMirrored.Outlined.HelpOutline,
-                                        onClick = onClickReadme,
-                                    ),
-                                )
-                                // KMK <--
                                 if (url != null) {
                                     add(
-                                        AppBar.OverflowAction(
+                                        AppBar.Action(
                                             title = stringResource(MR.strings.action_open_repo),
+                                            icon = Icons.AutoMirrored.Outlined.Launch,
                                             onClick = {
                                                 uriHandler.openUri(url)
                                             },
