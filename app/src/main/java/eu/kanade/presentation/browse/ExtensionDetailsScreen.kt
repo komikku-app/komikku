@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Launch
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -68,6 +69,9 @@ fun ExtensionDetailsScreen(
     navigateUp: () -> Unit,
     state: ExtensionDetailsScreenModel.State,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
+    // KMK -->
+    onOpenWebView: (() -> Unit)?,
+    // KMK <--
     onClickEnableAll: () -> Unit,
     onClickDisableAll: () -> Unit,
     onClickClearCookies: () -> Unit,
@@ -94,6 +98,15 @@ fun ExtensionDetailsScreen(
                     AppBarActions(
                         actions = persistentListOf<AppBar.AppBarAction>().builder()
                             .apply {
+                                if (onOpenWebView != null) {
+                                    add(
+                                        AppBar.Action(
+                                            title = stringResource(MR.strings.action_open_in_web_view),
+                                            icon = Icons.Outlined.Public,
+                                            onClick = onOpenWebView,
+                                        ),
+                                    )
+                                }
                                 if (url != null) {
                                     add(
                                         AppBar.Action(
