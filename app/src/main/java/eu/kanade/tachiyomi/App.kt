@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Looper
 import android.webkit.WebView
@@ -156,6 +157,8 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                         setContentTitle(stringResource(MR.strings.pref_incognito_mode))
                         setContentText(stringResource(MR.strings.notification_incognito_text))
                         setSmallIcon(R.drawable.ic_glasses_24dp)
+                        setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
+                        setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.komikku))
                         setOngoing(true)
 
                         val pendingIntent = PendingIntent.getBroadcast(

@@ -31,6 +31,7 @@ import uy.kohesive.injekt.api.get
 import java.time.ZonedDateTime
 import java.util.Date
 import kotlin.math.max
+import kotlin.math.min
 
 class MangaRestorer(
     private var isSync: Boolean = false,
@@ -206,20 +207,28 @@ class MangaRestorer(
                 read = chapter.read,
                 lastPageRead = chapter.lastPageRead,
                 sourceOrder = chapter.sourceOrder,
+                // KMK -->
+                dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
+                // KMK <--
             )
         } else {
-            chapter.copyFrom(dbChapter).let {
-                when {
-                    dbChapter.read && !it.read -> it.copy(read = true, lastPageRead = dbChapter.lastPageRead)
-                    it.lastPageRead == 0L && dbChapter.lastPageRead != 0L -> it.copy(
-                        lastPageRead = dbChapter.lastPageRead,
-                    )
-                    else -> it
-                }
-            }
+            chapter.copyFrom(dbChapter)
                 // KMK -->
-                .copy(id = dbChapter.id)
-            // KMK <--
+                .copy(
+                    id = dbChapter.id,
+                    bookmark = chapter.bookmark || dbChapter.bookmark,
+                    dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
+                )
+                // KMK <--
+                .let {
+                    when {
+                        dbChapter.read && !it.read -> it.copy(read = true, lastPageRead = dbChapter.lastPageRead)
+                        it.lastPageRead == 0L && dbChapter.lastPageRead != 0L -> it.copy(
+                            lastPageRead = dbChapter.lastPageRead,
+                        )
+                        else -> it
+                    }
+                }
         }
     }
 

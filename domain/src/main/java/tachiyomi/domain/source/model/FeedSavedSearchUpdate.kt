@@ -12,5 +12,7 @@ data class FeedSavedSearchUpdate(
 
     // If the feed is a global (FeedScreen) or source specific feed (SourceFeedScreen)
     val global: Boolean? = null,
+
+    // Local index in global feed if it's a global one or in source feed if it's a source one
     val feedOrder: Long? = null,
 )
