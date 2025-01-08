@@ -38,9 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
-
       - name: Dependency Review
         uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4.5.0
 
@@ -57,8 +54,14 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
 
-      - name: Build app and run unit tests
-        run: ./gradlew spotlessCheck assembleDevDebug testDevDebugUnitTest testDebugUnitTest --stacktrace
+      - name: Check code format
+        run: ./gradlew spotlessCheck
+
+      - name: Build app
+        run: ./gradlew assembleDevDebug
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest testDevDebugUnitTest
 
       - name: Rename apk
         id: current_commit
