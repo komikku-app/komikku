@@ -2,7 +2,9 @@ package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.graphics.BitmapFactory
 import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.asFlow
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -32,7 +34,7 @@ import uy.kohesive.injekt.api.get
  * This worker is used to manage the downloader. The system can decide to stop the worker, in
  * which case the downloader is also stopped. It's also stopped while there's no network available.
  */
-class DownloadJob(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+class DownloadJob(private val context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
     private val downloadManager: DownloadManager = Injekt.get()
     private val downloadPreferences: DownloadPreferences = Injekt.get()
@@ -41,6 +43,8 @@ class DownloadJob(context: Context, workerParams: WorkerParameters) : CoroutineW
         val notification = applicationContext.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_PROGRESS) {
             setContentTitle(applicationContext.getString(R.string.download_notifier_downloader_title))
             setSmallIcon(android.R.drawable.stat_sys_download)
+            setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
         }.build()
         return ForegroundInfo(
             Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS,
