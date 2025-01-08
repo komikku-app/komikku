@@ -122,25 +122,28 @@ object MangaCoverMetadata {
             ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
             ?: coverCache.getCoverFile(mangaCover.url)
 
+        if (bufferedSource == null && (file == null || !file.exists())) return
         val bitmap = when {
-            bufferedSource != null -> BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options)
-            // if the file exists and the there was still an error then the file is corrupted
-            file?.exists() == true -> BitmapFactory.decodeFile(file.path, options)
-            else -> {
-                return
+            bufferedSource != null -> with(bufferedSource) {
+                BitmapFactory.decodeStream(
+                    inputStream(),
+                    null,
+                    options,
+                )
             }
+            else -> BitmapFactory.decodeFile(file!!.path, options)
         }
 
-        if (bitmap != null) {
-            Palette.from(bitmap).generate {
-                if (it == null) return@generate
+        bitmap?.let {
+            Palette.from(it).generate { palette ->
+                if (palette == null) return@generate
                 if (mangaCover.isMangaFavorite) {
-                    it.dominantSwatch?.let { swatch ->
+                    palette.dominantSwatch?.let { swatch ->
                         mangaCover.dominantCoverColors = swatch.rgb to swatch.titleTextColor
                     }
                 }
-                val color = it.getBestColor() ?: return@generate
-                mangaCover.vibrantCoverColor = color
+                val vibrantCoverColor = palette.getBestColor() ?: return@generate
+                mangaCover.vibrantCoverColor = vibrantCoverColor
             }
         }
         if (mangaCover.isMangaFavorite && options.outWidth != -1 && options.outHeight != -1) {
