@@ -13,8 +13,6 @@ sealed class Extension {
     abstract val libVersion: Double
     abstract val lang: String?
     abstract val isNsfw: Boolean
-    abstract val hasReadme: Boolean
-    abstract val hasChangelog: Boolean
 
     // KMK -->
     abstract val signatureHash: String
@@ -29,8 +27,6 @@ sealed class Extension {
         override val libVersion: Double,
         override val lang: String,
         override val isNsfw: Boolean,
-        override val hasReadme: Boolean,
-        override val hasChangelog: Boolean,
         // KMK -->
         override val signatureHash: String,
         /** Guessing repo name from built-in signatures preset */
@@ -56,8 +52,6 @@ sealed class Extension {
         override val libVersion: Double,
         override val lang: String,
         override val isNsfw: Boolean,
-        override val hasReadme: Boolean,
-        override val hasChangelog: Boolean,
         // KMK -->
         override val signatureHash: String,
         override val repoName: String,
@@ -97,7 +91,5 @@ sealed class Extension {
         // KMK <--
         override val lang: String? = null,
         override val isNsfw: Boolean = false,
-        override val hasReadme: Boolean = false,
-        override val hasChangelog: Boolean = false,
     ) : Extension()
 }
