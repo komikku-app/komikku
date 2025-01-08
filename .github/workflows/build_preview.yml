@@ -44,9 +44,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
-
       - name: Get previous release
         id: last_release
         uses: InsonusK/get-latest-release@7a9ff16c8c6b7ead5d71c0f1cc61f2703170eade # v1.1.0
@@ -151,8 +148,14 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
 
-      - name: Build Preview app and run unit tests
-        run: ./gradlew spotlessCheck assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
+      - name: Check code format
+        run: ./gradlew spotlessCheck
+
+      - name: Build app
+        run: ./gradlew assembleStandardPreview
+
+      - name: Run unit tests
+        run: ./gradlew testReleaseUnitTest testStandardPreviewUnitTest
 
       - name: Upload artifacts
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0

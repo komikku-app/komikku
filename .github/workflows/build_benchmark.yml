@@ -33,9 +33,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
-
       - name: Prepare env
         id: prepare_env
         run: |
@@ -82,8 +79,14 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
 
-      - name: Build Benchmark app and run unit tests
-        run: ./gradlew spotlessCheck assembleDevBenchmark testDevBenchmarkUnitTest testReleaseUnitTest -Pandroid.signingConfig=debug --stacktrace
+      - name: Check code format
+        run: ./gradlew spotlessCheck
+
+      - name: Build app
+        run: ./gradlew assembleDevBenchmark -Pandroid.signingConfig=debug
+
+      - name: Run unit tests
+        run: ./gradlew testReleaseUnitTest testDevBenchmarkUnitTest
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
