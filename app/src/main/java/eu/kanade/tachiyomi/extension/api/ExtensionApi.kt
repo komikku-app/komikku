@@ -23,6 +23,9 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
@@ -179,8 +182,15 @@ internal class ExtensionApi {
     // SY -->
     private fun Extension.isBlacklisted(
         blacklistEnabled: Boolean = sourcePreferences.enableSourceBlacklist().get(),
+        // KMK -->
+        isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
+        // KMK <--
     ): Boolean {
-        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&
+            blacklistEnabled &&
+            // KMK -->
+            isHentaiEnabled
+        // KMK <--
     }
     // SY <--
 }
