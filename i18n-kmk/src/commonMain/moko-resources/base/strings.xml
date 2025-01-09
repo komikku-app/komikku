@@ -168,4 +168,5 @@
 
     <!-- Misc -->
     <string name="label_to_be_updated">To be updated</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>
