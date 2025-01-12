@@ -15,10 +15,10 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
-import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
@@ -93,7 +93,6 @@ open class BrowseSourceScreenModel(
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
-    basePreferences: BasePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getRemoteManga: GetRemoteManga = Injekt.get(),
@@ -105,6 +104,7 @@ open class BrowseSourceScreenModel(
     val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    private val getIncognitoState: GetIncognitoState = Injekt.get(),
 
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
@@ -161,7 +161,7 @@ open class BrowseSourceScreenModel(
                 }
             }.join()
 
-            if (!basePreferences.incognitoMode().get()) {
+            if (!getIncognitoState.await(source.id)) {
                 sourcePreferences.lastUsedSource().set(source.id)
             }
 

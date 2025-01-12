@@ -83,7 +83,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data class BrowseSourceScreen(
-    private val sourceId: Long,
+    val sourceId: Long,
     private val listingQuery: String?,
     // SY -->
     private val filtersJson: String? = null,

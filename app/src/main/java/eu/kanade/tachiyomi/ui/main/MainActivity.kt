@@ -52,6 +52,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
@@ -142,6 +143,8 @@ class MainActivity : BaseActivity() {
     private val downloadCache: DownloadCache by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
 
+    private val getIncognitoState: GetIncognitoState by injectLazy()
+
     // To be checked by splash screen. If true then splash screen will be removed.
     var ready = false
 
@@ -200,7 +203,7 @@ class MainActivity : BaseActivity() {
         setComposeContent {
             val context = LocalContext.current
 
-            val incognito by preferences.incognitoMode().collectAsState()
+            var incognito by remember { mutableStateOf(getIncognitoState.await(null)) }
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
             // KMK -->
@@ -268,6 +271,11 @@ class MainActivity : BaseActivity() {
                         }
                         // SY <--
                     }
+                }
+                LaunchedEffect(navigator.lastItem) {
+                    (navigator.lastItem as? BrowseSourceScreen)?.sourceId
+                        .let(getIncognitoState::subscribe)
+                        .collectLatest { incognito = it }
                 }
 
                 val scaffoldInsets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)

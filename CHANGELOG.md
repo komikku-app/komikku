@@ -13,6 +13,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 ## [Unreleased]
 ### Added
 - Add option to always decode long strip images with SSIV
+- Added option to enable incognito per extension ([@sdaqo](https://github.com/sdaqo), [@AntsyLich](https://github.com/AntsyLich)) ([#157](https://github.com/mihonapp/mihon/pull/157))
 
 ## [v0.17.1] - 2024-12-06
 ### Changed
