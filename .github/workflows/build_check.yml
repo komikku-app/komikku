@@ -96,7 +96,7 @@ jobs:
           mv app/build/outputs/apk/standard/release/app-standard-universal-release-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
