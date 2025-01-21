@@ -1,5 +1,5 @@
 [versions]
-koin = "4.0.0"
+koin = "4.0.2"
 
 [libraries]
 similarity = "info.debatty:java-string-similarity:2.0.0"
