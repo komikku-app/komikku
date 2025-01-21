@@ -122,7 +122,10 @@ android {
         // Signed, dev build with Android Studio if it's not a debug build
         create("dev") {
             // Include pseudolocales: https://developer.android.com/guide/topics/resources/pseudolocales
-            resourceConfigurations.addAll(listOf("en", "en_XA", "ar_XB", "xxhdpi"))
+            androidResources {
+                @Suppress("UnstableApiUsage")
+                localeFilters += listOf("en", "en_XA", "ar_XB", "xxhdpi")
+            }
             dimension = "default"
             // Default signing for dev flavor, would be overridden by buildTypes config
             signingConfig = signingConfigs.getByName("preview")

@@ -764,8 +764,10 @@ class ReaderActivity : BaseActivity() {
             },
             if (isNightMode()) 230 else 242, // 90% dark 95% light
         )
+        @Suppress("DEPRECATION")
         window.statusBarColor = toolbarColor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            @Suppress("DEPRECATION")
             window.navigationBarColor = toolbarColor
         }
 
