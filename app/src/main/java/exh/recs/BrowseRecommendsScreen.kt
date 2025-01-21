@@ -1,4 +1,4 @@
-package exh.md.similar
+package exh.recs
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -24,16 +25,23 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import exh.ui.ifSourcesLoaded
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
+class BrowseRecommendsScreen(
+    private val mangaId: Long,
+    private val sourceId: Long,
+    private val recommendationSourceName: String,
+    private val isExternalSource: Boolean,
+) : Screen() {
 
     @Composable
     override fun Content() {
@@ -42,8 +50,12 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
             return
         }
 
-        val screenModel = rememberScreenModel { MangaDexSimilarScreenModel(mangaId, sourceId) }
+        val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+
+        val screenModel = rememberScreenModel {
+            BrowseRecommendsScreenModel(mangaId, sourceId, recommendationSourceName)
+        }
 
         // KMK -->
         val scope = rememberCoroutineScope()
@@ -57,15 +69,28 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         }
         // KMK <--
 
-        val onMangaClick: (Manga) -> Unit = {
-            navigator.push(MangaScreen(it.id, true))
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        val onClickItem = { manga: Manga ->
+            navigator.push(
+                when (isExternalSource) {
+                    true -> SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle))
+                    false -> MangaScreen(manga.id, true)
+                },
+            )
         }
 
-        val snackbarHostState = remember { SnackbarHostState() }
+        val onLongClickItem = { manga: Manga ->
+            when (isExternalSource) {
+                true -> WebViewActivity.newIntent(context, manga.url, title = manga.title).let(context::startActivity)
+                false -> onClickItem(manga)
+            }
+        }
 
         // KMK -->
         val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
         // KMK <--
+
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
@@ -91,9 +116,11 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                     )
                 } else {
                     // KMK <--
+                    val recSource = remember { screenModel.recommendationSource }
+
                     BrowseSourceSimpleToolbar(
                         navigateUp = navigator::pop,
-                        title = stringResource(SYMR.strings.similar, screenModel.manga.title),
+                        title = "${recSource.name} (${stringResource(recSource.category)})",
                         displayMode = screenModel.displayMode,
                         onDisplayModeChange = { screenModel.displayMode = it },
                         scrollBehavior = scrollBehavior,
@@ -127,7 +154,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                             bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
                             // KMK <--
-                            onMangaClick(manga)
+                            onClickItem(manga)
                         }
                     }
                 },
@@ -139,7 +166,7 @@ class MangaDexSimilarScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                             bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                         } else {
                             // KMK <--
-                            onMangaClick(manga)
+                            onLongClickItem(manga)
                         }
                     }
                 },

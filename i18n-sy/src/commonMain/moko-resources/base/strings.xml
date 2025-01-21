@@ -680,8 +680,8 @@
     <string name="random">Random</string>
     <string name="mangadex_push_favorites_to_mangadex">Sync library entries to MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked entries to MangaDex as reading.</string>
-    <string name="mangadex_similar">MangaDex similar</string>
     <string name="community_recommendations">Community recommendations</string>
+    <string name="similar_titles">Similar titles</string>
     <string name="alt_titles">Alternative Titles</string>
 
     <!-- Scanlator filters -->

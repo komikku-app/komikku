@@ -58,7 +58,6 @@ import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -84,13 +83,12 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
-import exh.md.similar.MangaDexSimilarScreen
 import exh.pagepreview.PagePreviewScreen
-import exh.pref.DelegateSourcePreferences
 import exh.recs.RecommendsScreen
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isMdBasedSource
+import exh.ui.ifSourcesLoaded
 import exh.ui.metadata.MetadataViewScreen
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.CancellationException
@@ -342,7 +340,7 @@ class MangaScreen(
             },
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = {
-                openRecommends(context, navigator, screenModel.source?.getMainSource(), successState.manga)
+                openRecommends(navigator, screenModel.source?.getMainSource(), successState.manga)
             },
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
@@ -832,28 +830,9 @@ class MangaScreen(
     // EXH <--
 
     // AZ -->
-    private fun openRecommends(context: Context, navigator: Navigator, source: Source?, manga: Manga) {
+    private fun openRecommends(navigator: Navigator, source: Source?, manga: Manga) {
         source ?: return
-        if (source.isMdBasedSource() && Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
-            MaterialAlertDialogBuilder(context)
-                .setTitle(SYMR.strings.az_recommends.getString(context))
-                .setSingleChoiceItems(
-                    arrayOf(
-                        context.stringResource(SYMR.strings.mangadex_similar),
-                        context.stringResource(SYMR.strings.community_recommendations),
-                    ),
-                    -1,
-                ) { dialog, index ->
-                    dialog.dismiss()
-                    when (index) {
-                        0 -> navigator.push(MangaDexSimilarScreen(manga.id, source.id))
-                        1 -> navigator.push(RecommendsScreen(manga.id, source.id))
-                    }
-                }
-                .show()
-        } else if (source is CatalogueSource) {
-            navigator.push(RecommendsScreen(manga.id, source.id))
-        }
+        navigator.push(RecommendsScreen(manga.id, source.id))
     }
     // AZ <--
 }

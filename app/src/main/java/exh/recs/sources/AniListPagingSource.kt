@@ -1,17 +1,11 @@
-package exh.recs
+package exh.recs.sources
 
-import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.NetworkHelper
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.util.MangaType
-import exh.util.mangaType
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -21,84 +15,24 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import logcat.LogPriority
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.data.source.NoResultsException
-import tachiyomi.data.source.SourcePagingSource
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.track.interactor.GetTracks
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
+import tachiyomi.i18n.sy.SYMR
 
-abstract class API(val endpoint: String) {
-    val client by lazy {
-        Injekt.get<NetworkHelper>().client
-    }
-    val json by injectLazy<Json>()
+class AniListPagingSource(manga: Manga, source: CatalogueSource) : TrackerRecommendationPagingSource(
+    "https://graphql.anilist.co/", source, manga,
+) {
+    override val name: String
+        get() = "AniList"
 
-    abstract suspend fun getRecsBySearch(search: String): List<SManga>
+    override val category: StringResource
+        get() = SYMR.strings.community_recommendations
 
-    abstract suspend fun getRecsById(id: String): List<SManga>
-}
+    override val associatedTrackerId: Long
+        get() = trackerManager.aniList.id
 
-class MyAnimeList : API("https://api.jikan.moe/v4/") {
-    override suspend fun getRecsById(id: String): List<SManga> {
-        val apiUrl = endpoint.toHttpUrl()
-            .newBuilder()
-            .addPathSegment("manga")
-            .addPathSegment(id)
-            .addPathSegment("recommendations")
-            .build()
-
-        val data = with(json) { client.newCall(GET(apiUrl)).awaitSuccess().parseAs<JsonObject>() }
-        return data["data"]!!.jsonArray
-            .map { it.jsonObject["entry"]!!.jsonObject }
-            .map { rec ->
-                logcat { "MYANIMELIST > RECOMMENDATION: " + rec["title"]!!.jsonPrimitive.content }
-                SManga(
-                    title = rec["title"]!!.jsonPrimitive.content,
-                    url = rec["url"]!!.jsonPrimitive.content,
-                    thumbnail_url = rec["images"]
-                        ?.let(JsonElement::jsonObject)
-                        ?.let(::getImage),
-                    initialized = true,
-                )
-            }
-    }
-
-    fun getImage(imageObject: JsonObject): String? {
-        return imageObject["webp"]
-            ?.jsonObject
-            ?.get("image_url")
-            ?.jsonPrimitive
-            ?.contentOrNull
-            ?: imageObject["jpg"]
-                ?.jsonObject
-                ?.get("image_url")
-                ?.jsonPrimitive
-                ?.contentOrNull
-    }
-
-    override suspend fun getRecsBySearch(search: String): List<SManga> {
-        val url = endpoint.toHttpUrl()
-            .newBuilder()
-            .addPathSegment("manga")
-            .addQueryParameter("q", search)
-            .build()
-
-        val data = with(json) {
-            client.newCall(GET(url)).awaitSuccess()
-                .parseAs<JsonObject>()
-        }
-        return getRecsById(data["data"]!!.jsonArray.first().jsonObject["mal_id"]!!.jsonPrimitive.content)
-    }
-}
-
-class Anilist : API("https://graphql.anilist.co/") {
     private fun countOccurrence(arr: JsonArray, search: String): Int {
         return arr.count {
             val synonym = it.jsonPrimitive.content
@@ -259,54 +193,5 @@ class Anilist : API("https://graphql.anilist.co/") {
                 }
             },
         )
-    }
-}
-
-open class RecommendsPagingSource(
-    source: CatalogueSource,
-    private val manga: Manga,
-    private val smart: Boolean = true,
-    private var preferredApi: API = API.MYANIMELIST,
-) : SourcePagingSource(source) {
-    val trackerManager: TrackerManager by injectLazy()
-    val getTracks: GetTracks by injectLazy()
-
-    override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
-
-        val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
-
-        val tracks = getTracks.await(manga.id)
-
-        val recs = apiList.firstNotNullOfOrNull { (key, api) ->
-            try {
-                val id = when (key) {
-                    API.MYANIMELIST -> tracks.find { it.trackerId == trackerManager.myAnimeList.id }?.remoteId
-                    API.ANILIST -> tracks.find { it.trackerId == trackerManager.aniList.id }?.remoteId
-                }
-
-                val recs = if (id != null) {
-                    api.getRecsById(id.toString())
-                } else {
-                    api.getRecsBySearch(manga.ogTitle)
-                }
-                logcat { key.toString() + " > Results: " + recs.size }
-                recs.ifEmpty { null }
-            } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e) { key.toString() }
-                null
-            }
-        } ?: throw NoResultsException()
-
-        return MangasPage(recs, false)
-    }
-
-    companion object {
-        val API_MAP = mapOf(
-            API.MYANIMELIST to MyAnimeList(),
-            API.ANILIST to Anilist(),
-        )
-
-        enum class API { MYANIMELIST, ANILIST }
     }
 }
