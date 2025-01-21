@@ -96,9 +96,9 @@ class ApiMangaParser(
                     originalLanguage = mangaAttributesDto.originalLanguage,
                 ).orEmpty()
 
-                description = MdUtil.cleanDescription(
-                    if (altTitlesInDesc) MdUtil.addAltTitleToDesc(rawDesc, altTitles) else rawDesc,
-                )
+                val cleanDesc = MdUtil.cleanDescription(rawDesc)
+
+                description = if (altTitlesInDesc) MdUtil.addAltTitleToDesc(cleanDesc, altTitles) else cleanDesc
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)

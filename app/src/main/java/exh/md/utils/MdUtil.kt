@@ -89,7 +89,7 @@ class MdUtil {
 
         fun cleanDescription(string: String): String {
             return Parser.unescapeEntities(string, false)
-                .substringBefore("---")
+                .substringBefore("\n---")
                 .replace(markdownLinksRegex, "$1")
                 .replace(markdownItalicBoldRegex, "$1")
                 .replace(markdownItalicRegex, "$1")
@@ -265,7 +265,7 @@ class MdUtil {
             } else {
                 val altTitlesDesc = altTitles
                     .joinToString("\n", "${Injekt.get<Application>().getString(R.string.alt_titles)}:\n") { "• $it" }
-                description + (if (description.isBlank()) "" else "\n\n") + altTitlesDesc
+                description + (if (description.isBlank()) "" else "\n\n") + Parser.unescapeEntities(altTitlesDesc, false)
             }
         }
     }
