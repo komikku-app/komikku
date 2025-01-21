@@ -72,7 +72,7 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         }
 
         RecommendsScreen(
-            manga = screenModel.manga,
+            manga = state.manga,
             state = state,
             navigateUp = navigator::pop,
             getManga = @Composable { manga: Manga -> screenModel.getManga(manga) },
