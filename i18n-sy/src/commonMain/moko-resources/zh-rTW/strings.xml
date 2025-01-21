@@ -429,7 +429,7 @@
     <!-- Library Actions -->
     <string name="no_valid_entry">未選擇有效的作品</string>
     <!-- Library Sheet -->
-    <string name="lewd">色情</string>
+    <string name="lewd">色情來源</string>
     <!-- Library Grouping -->
     <string name="tracking_status">追蹤狀態</string>
     <string name="ungrouped">未歸類</string>
@@ -604,7 +604,6 @@
     <string name="random">隨機</string>
     <string name="mangadex_push_favorites_to_mangadex">同步書櫃中的作品到 MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">將未在 MdList 上追蹤的作品同步到 MangaDex 並標記為閱讀中。</string>
-    <string name="mangadex_similar">MangaDex 相似</string>
     <string name="community_recommendations">社群推薦</string>
     <!-- Scanlator filters -->
     <string name="select_scanlators">掃譯組展示</string>
@@ -660,4 +659,8 @@
     <string name="add_tags">新增標籤</string>
     <string name="multi_tags_comma_separated">輸入標籤，可用逗號分隔</string>
     <string name="alt_titles">替代標題</string>
+    <string name="select_tracker">選擇一個歷程平臺</string>
+    <string name="entry_not_tracked">條目還未登錄歷程</string>
+    <string name="fill_from_tracker">從歷程平臺獲取資訊</string>
+    <string name="favorites_sync_unable_to_add_to_remote">無法將圖庫新增到遠端伺服器：「%1$s」 (GID：%2$s)！</string>
 </resources>

@@ -592,7 +592,6 @@
     <string name="hide_not_found_entries">Ocultar resultados não encontrados</string>
     <string name="more_previews">Mais prévias</string>
     <string name="dedupe_highest_chapter">Mostrar fonte com maior número de capítulo</string>
-    <string name="mangadex_similar">MangaDex semelhante</string>
     <string name="relation_shared_universe">Universo compartilhado</string>
     <string name="relation_alternate_version">Versão alternativa</string>
     <string name="merge_unknown_entry">ID de entrada desconhecida: %1$d</string>

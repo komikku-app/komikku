@@ -623,7 +623,6 @@
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку (MangaDex)</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex</string>
-    <string name="mangadex_similar">MangaDex похожее</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
     <!-- Scanlator filters -->
     <string name="select_scanlators">Группы переводчиков</string>
@@ -670,4 +669,8 @@
     <string name="add_tags">Добавить тэги</string>
     <string name="multi_tags_comma_separated">Введите тэг(и), разделёнными запятыми.</string>
     <string name="alt_titles">Альт. названия</string>
+    <string name="select_tracker">Выбрать сервис отслеживания</string>
+    <string name="fill_from_tracker">Заполнить из сервиса</string>
+    <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания</string>
+    <string name="favorites_sync_unable_to_add_to_remote">Невозможно добавить галерею на удалённый сервер: \'%1$s\' (GID: %2$s)!</string>
 </resources>

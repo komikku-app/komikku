@@ -601,7 +601,6 @@
     <string name="random">যিকোনো</string>
     <string name="mangadex_push_favorites_to_mangadex">লাইব্ৰেৰীৰ প্ৰৱেশবোৰ মাঙ্গাডেক্সলৈ চিঞৰাওক</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">যিকোনো MdList ট্ৰেক কৰা প্ৰৱেশবোৰ মাঙ্গাডেক্সত পঢ়া হিচাপে চিঞৰাই দিব।</string>
-    <string name="mangadex_similar">মাঙ্গাডেক্স সাদৃশ</string>
     <string name="community_recommendations">সম্প্ৰদায়ৰ পৰামৰ্শ</string>
     <string name="select_scanlators">স্কেনলেটৰ গোটসমূহ দেখুৱাওক</string>
     <string name="similar">%1$sৰ সৈতে সাদৃশ</string>
@@ -627,4 +626,8 @@
     <string name="add_tags">টেগ যোগ কৰক</string>
     <string name="multi_tags_comma_separated">টেগ(সমূহ), ক\'মা ব্যৱহাৰ কৰি প্ৰৱেশ কৰক।</string>
     <string name="alt_titles">বিকল্প শিৰোনামসমূহ</string>
+    <string name="fill_from_tracker">ট্ৰেকাৰৰ পৰা পূৰণ কৰক</string>
+    <string name="select_tracker">এটা ট্ৰেকাৰ নিৰ্ব্বাচন কৰক</string>
+    <string name="favorites_sync_unable_to_add_to_remote">গ্যালাৰীটো ৰিম\'ট ছাৰ্ভাৰত যোগ কৰিব পৰা নগ\'ল: \'%1$s\' (GID: %2$s)!</string>
+    <string name="entry_not_tracked">প্ৰৱেশটো অনুসৰণ কৰা হোৱা নাই।</string>
 </resources>

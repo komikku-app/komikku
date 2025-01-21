@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">தூய்மைப்படுத்தும். அகற்றப்பட்டது %d கோப்புறை</item>
+        <item quantity="other">தூய்மைப்படுத்தும். அகற்றப்பட்டது %d கோப்புறைகள்</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d பூட்டு நேரம்</item>
+        <item quantity="other">%d பூட்டு நேரங்கள்</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">%1$d தோல்வியுற்ற பக்கத்தை மீண்டும் முயற்சிப்பது…</item>
+        <item quantity="other">%1$d தோல்வியுற்ற பக்கங்களை மீண்டும் முயற்சிப்பது…</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">%1$d %2$s நுழைவு?</item>
+        <item quantity="other">%1$d %2$s உள்ளீடுகளை இடம்பெயர்வு?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">%1$d %2$s நுழைவு?</item>
+        <item quantity="other">%1$d %2$s உள்ளீடுகளை நகலெடுக்கவா?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d நுழைவு இடம்பெயர்ந்தது</item>
+        <item quantity="other">%d உள்ளீடுகள் இடம்பெயர்ந்தன</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">வரிசையாக்க பட்டியலில் %1$d குறிச்சொல். இது முன்னுரிமை அடிப்படையிலான குறிச்சொல் பட்டியலால் வரிசைப்படுத்த நூலகத்தில் ஒரு விருப்பத்தை சேர்க்கிறது, அதாவது நீங்கள் விரும்பும் குறிச்சொற்களுடன் முன்னுரிமை அளிக்க உள்ளீடுகள் வரிசைப்படுத்தப்படும்</item>
+        <item quantity="other">வரிசையாக்க பட்டியலில் %1$d குறிச்சொற்கள். இது முன்னுரிமை அடிப்படையிலான குறிச்சொல் பட்டியலால் வரிசைப்படுத்த நூலகத்தில் ஒரு விருப்பத்தை சேர்க்கிறது, அதாவது நீங்கள் விரும்பும் குறிச்சொற்களுடன் முன்னுரிமை அளிக்க உள்ளீடுகள் வரிசைப்படுத்தப்படும்</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d பக்கம்</item>
+        <item quantity="other">%1$d பக்கங்கள்</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d பக்கம்</item>
+        <item quantity="other">%2$s, %1$d பக்கங்கள்</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d ஆண்டுக்கு முன்பு</item>
+        <item quantity="other">%1$d ஆண்டுகளுக்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d மாதத்திற்கு முன்பு</item>
+        <item quantity="other">%1$d மாதங்களுக்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d வாரத்திற்கு முன்பு</item>
+        <item quantity="other">%1$d வாரங்களுக்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d நாள் முன்பு</item>
+        <item quantity="other">%1$d சில நாட்களுக்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d மணி நேரத்திற்கு முன்பு</item>
+        <item quantity="other">%1$d மணி நேரத்திற்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d மணித்துளி முன்பு</item>
+        <item quantity="other">%1$d நிமிடங்களுக்கு முன்பு</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d நொடிக்கு முன்பு</item>
+        <item quantity="other">%1$d வினாடிகள் முன்பு</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d வரிசை</item>
+        <item quantity="other">%d வரிசைகள்</item>
+    </plurals>
+</resources>

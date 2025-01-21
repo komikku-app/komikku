@@ -25,7 +25,7 @@
   <string name="update_check_notification_preview_available">¡Próximas actualizaciones!</string>
   <string name="changelogs">Cambiar registros</string>
   <string name="related_mangas_more">Más así...</string>
-  <string name="too_many_in_feed">Demasiadas fuentes en su feed, no puede añadir más de 20</string>
+  <string name="too_many_in_feed">Demasiadas fuentes en tu feed, no se pueden agregar más de 20</string>
   <string name="current_">Actual: %1$s</string>
   <string name="pref_theme_cover_based">Tema basado en portada</string>
   <string name="pref_theme_cover_based_style_tonalspot">Spot Tonal</string>

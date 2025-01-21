@@ -622,7 +622,6 @@
     <string name="random">ランダム</string>
     <string name="mangadex_push_favorites_to_mangadex">ライブラリエントリをMangaDexに同期</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">MdList以外の項目をMangaDexに同期します。</string>
-    <string name="mangadex_similar">MangaDexに類義</string>
     <string name="community_recommendations">コミュニティのおすすめ</string>
     <!-- Scanlator filters -->
     <string name="select_scanlators">スキャン対象のグループを表示</string>
@@ -651,4 +650,11 @@
     <string name="ignore_non_library_entries">ライブラリ以外の作品を無視</string>
     <!-- Humanize time -->
     <string name="humanize_fallback">少し前</string>
+    <string name="action_copy_first_page">最初のページをコピーする</string>
+    <string name="action_copy_second_page">2ページ目をコピー</string>
+    <string name="action_copy_combined_page">コピー結合ページ</string>
+    <string name="add_tags">タグを追加</string>
+    <string name="multi_tags_comma_separated">タグをコンマで区切って入力してください。</string>
+    <string name="alt_titles">代替タイトル</string>
+    <string name="select_tracker">トラッカーを選択</string>
 </resources>

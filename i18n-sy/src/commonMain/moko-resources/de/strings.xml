@@ -318,7 +318,6 @@
     <string name="deduplication_entry_info">Eintragsinfo:</string>
     <string name="no_dedupe">Keine Deduplizerung</string>
     <string name="md_follows_unfollowed">Nicht gefolgt</string>
-    <string name="mangadex_similar">MangaDex ähnlich</string>
     <string name="relation_similar">Ähnlich</string>
     <string name="community_recommendations">Empfehlungen der Community</string>
     <string name="relation_based_on">Basierend auf</string>
@@ -439,4 +438,8 @@
     <string name="select_scanlators">Anzuzeigende Scanlator-Gruppen</string>
     <string name="ignore_non_library_entries">Einträge nicht in der Bibliothek ignorieren</string>
     <string name="include_all_read_entries">Alle gelesenen Einträge einbeziehen</string>
+    <string name="use_hentai_at_home_option_2">Nur Standardport-Clients</string>
+    <string name="watched_tags_summary">Öffnet eine Webansicht zu Ihrer E/ExHentai angesehenen Tags-Seite</string>
+    <string name="tag_filtering_threshhold_error">Muss zwischen -9999 und 0 liegen!</string>
+    <string name="use_hentai_at_home_summary">Möchten Sie Bilder über das Hentai@Home-Netzwerk laden, falls verfügbar? Das Deaktivieren dieser Option reduziert die Anzahl der Seiten, die Sie ansehen können.\nOptionen:\n- Jeder Client (Empfohlen)\n- Nur Standardport-Clients (Kann langsamer sein. Aktivieren, wenn hinter einer Firewall/Proxy, die ausgehende nicht-standardisierte Ports blockiert.)</string>
 </resources>

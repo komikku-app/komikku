@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="too_many_in_feed">আপোনাৰ ফিডত বেছি সংখ্যক উৎস আছে, ২০ টাৰ পৰা অধিক যোগ কৰিব নোৱাৰিব</string>
+  <string name="too_many_in_feed">আপোনাৰ ফিডত বেছি সংখ্যক উৎস আছে, ২০ টাতকৈ অধিক যোগ কৰিব নোৱাৰিব</string>
 </resources>

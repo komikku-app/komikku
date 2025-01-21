@@ -31,8 +31,8 @@
     <string name="use_hentai_at_home_option_1">任何客户端（推荐）</string>
     <string name="use_hentai_at_home_option_2">仅使用默认端口的客户端</string>
     <string name="show_japanese_titles">在搜索结果中显示日文标题</string>
-    <string name="show_japanese_titles_option_1">目前在搜索结果中显示日文标题。更改后请到高级设置清除章节缓存。</string>
-    <string name="show_japanese_titles_option_2">目前在搜索结果中显示英文/罗马化的标题。更改后请到高级设置清除章节缓存。</string>
+    <string name="show_japanese_titles_option_1">目前在搜索结果中显示日文标题。更改后请到高级设置清除章节缓存</string>
+    <string name="show_japanese_titles_option_2">目前在搜索结果中显示英文/罗马化的标题。更改后请到高级设置清除章节缓存</string>
     <string name="use_original_images">使用原图</string>
     <string name="use_original_images_on">目前使用的是原图</string>
     <string name="use_original_images_off">目前使用的是重采样图像</string>
@@ -55,7 +55,7 @@
     <string name="eh_image_quality">图像质量</string>
     <string name="eh_image_quality_auto">自动</string>
     <string name="pref_enhanced_e_hentai_view">增强的 E/ExHentai 浏览</string>
-    <string name="pref_enhanced_e_hentai_view_summary">启用或禁用为 E/ExHentai 制作的增强型浏览菜单。</string>
+    <string name="pref_enhanced_e_hentai_view_summary">启用或禁用为 E/ExHentai 制作的增强型浏览菜单</string>
     <string name="favorites_sync">E-Hentai 收藏同步</string>
     <string name="disable_favorites_uploading">禁用收藏上传</string>
     <string name="disable_favorites_uploading_summary">仅从 ExHentai 下载收藏夹。应用中对收藏夹的任何变更都不会被上传。防止 ExHentai 上的收藏夹意外丢失。请注意，删除的变更仍会被应用（如果您在 ExHentai 上删除了一个收藏夹，它也会在本应用中删除）。</string>
@@ -168,7 +168,7 @@
     <!-- Browse settings -->
     <string name="pref_hide_feed">隐藏订阅标签</string>
     <string name="pref_feed_position">订阅标签位置</string>
-    <string name="pref_feed_position_summery">你想让订阅标签成为浏览中的第一个标签吗？这将使它成为打开浏览时的默认标签，如果你使用的是数据或计费网络，则不建议使用。</string>
+    <string name="pref_feed_position_summery">你想让订阅标签成为浏览中的第一个标签吗？这将使它成为打开浏览时的默认标签，如果你使用的是数据或计费网络，则不建议使用</string>
     <string name="pref_source_source_filtering">在目录中过滤图源</string>
     <string name="pref_source_source_filtering_summery">筛选属于类别的图源，使属于某个类别的图源不会被放在语言下</string>
     <string name="pref_source_navigation">替换最新按钮</string>
@@ -186,7 +186,7 @@
     <string name="biometric_lock_start_time">输入开始时间</string>
     <string name="biometric_lock_end_time">输入结束时间</string>
     <string name="delete_time_range">删除时间表</string>
-    <string name="delete_time_range_confirmation">你确定要删除此时间表吗？\n%s</string>
+    <string name="delete_time_range_confirmation">你确定要删除时间表%s吗？</string>
     <string name="biometric_lock_days">生物识别锁周期</string>
     <string name="biometric_lock_days_summary">需要锁定应用的周期</string>
     <string name="sunday">周日</string>
@@ -226,9 +226,9 @@
     <string name="reader_preload_amount_14_pages">14 页</string>
     <string name="reader_preload_amount_16_pages">16 页</string>
     <string name="reader_preload_amount_20_pages">20 页</string>
-    <string name="reader_preload_amount_summary">要预读的的页面数量。更高的值将带来更流畅的阅读体验，但代价是更高的缓存使用量，建议在使用更大的值时增加你分配的缓存量。</string>
+    <string name="reader_preload_amount_summary">要预读的的页面数量。更高的值将带来更流畅的阅读体验，但代价是更高的缓存使用量，建议在使用更大的值时增加你分配的缓存量</string>
     <string name="reader_cache_size">阅读器缓存大小</string>
-    <string name="reader_cache_size_summary">阅读时保存在设备上的图像量。更高的值将带来更流畅的阅读体验，但代价是更高的存储空间使用率。</string>
+    <string name="reader_cache_size_summary">阅读时保存在设备上的图像量。更高的值将带来更流畅的阅读体验，但代价是更高的存储空间使用率</string>
     <string name="preserve_reading_position">保留已阅读作品的阅读位置</string>
     <string name="auto_webtoon_mode">自动进入条漫模式</string>
     <string name="auto_webtoon_mode_summary">检测到可能为长条形格式的作品时自动使用条漫模式</string>
@@ -242,7 +242,7 @@
     <string name="pref_left_handed_vertical_seekbar">将垂直进度条放在左侧</string>
     <string name="pref_left_handed_vertical_seekbar_summary">更改进度条的方位</string>
     <string name="pref_force_horz_seekbar">强制使用水平进度条</string>
-    <string name="pref_force_horz_seekbar_summary">完全移除垂直进度条，使用水平进度条。</string>
+    <string name="pref_force_horz_seekbar_summary">完全移除垂直进度条，使用水平进度条</string>
     <string name="pref_smooth_scroll">平滑自动翻页</string>
     <!-- Reader -->
     <!-- Reader Actions -->
@@ -253,7 +253,7 @@
     <string name="eh_autoscroll_help_message">在指定的时间间隔内自动翻到下一页。间隔的单位是秒。</string>
     <string name="eh_autoscroll_freq_invalid">无效频次</string>
     <string name="eh_retry_all_help">重试所有说明</string>
-    <string name="eh_retry_all_help_message">重新添加失败的页面到下载队列</string>
+    <string name="eh_retry_all_help_message">重新添加失败的页面到下载队列。</string>
     <string name="eh_boost_page_help">加速页面说明</string>
     <string name="eh_boost_page_help_message">通常情况下，下载器在同一时间只能下载特定数量的页面。这意味着你在等待页面下载时不会立即开始下载，直到有一个空闲的下载线程。激活“加速页面”将迫使下载器立即开始下载，而不管是否有可用的线程。</string>
     <string name="eh_boost_page_invalid">此页面无法加速（无效页面）！</string>
@@ -530,7 +530,7 @@
     <string name="merge_settings">合并设置</string>
     <string name="fetch_chapter_updates">获取章节更新</string>
     <string name="delete_merged_entry">你确定吗？</string>
-    <string name="delete_merged_entry_desc">这将从合并中删除此作品，使用这个选项会丢失任何应用于合并后的作品的未保存的变更。</string>
+    <string name="delete_merged_entry_desc">这将从合并中删除此作品，使用这个选项会丢失任何应用于合并后的作品的未保存的变更</string>
     <string name="chapter_updates_merged_entry">变更章节更新</string>
     <string name="chapter_updates_merged_entry_desc">更改此项将禁用或启用此已合并的漫画的章节更新</string>
     <string name="download_merged_entry">变更新章节下载</string>
@@ -548,15 +548,14 @@
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">取消收藏</string>
     <string name="mangadex_sync_follows_to_library">同步 MangaDex 中的作品到书架</string>
-    <string name="mangadex_sync_follows_to_library_summary">从 MangaDex 拉取未添加的作品到你的书架</string>
+    <string name="mangadex_sync_follows_to_library_summary">从 MangaDex 拉取未添加的作品到你的书架。</string>
     <string name="mangadex_preffered_source">首选 MangaDex 图源</string>
-    <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 图源，这将用于收藏和应用中一系列其他功能。</string>
+    <string name="mangadex_preffered_source_summary">设置你所选择的 MangaDex 图源，这将用于收藏和应用中一系列其他功能</string>
     <string name="mangadex_add_to_follows">添加到 MangaDex 收藏</string>
     <string name="mangadex_follows">MangaDex 收藏</string>
     <string name="random">随机</string>
     <string name="mangadex_push_favorites_to_mangadex">同步书架中的作品到 MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">将未在 MdList 上跟踪的作品同步到 MangaDex 并标记为阅读中。</string>
-    <string name="mangadex_similar">MangaDex 相似</string>
     <string name="community_recommendations">社区建议</string>
     <!-- Scanlator filters -->
     <string name="select_scanlators">扫译组展示</string>
@@ -629,8 +628,8 @@
     <string name="sync_library">同步书架</string>
     <string name="parodies">戏仿</string>
     <string name="non_h">非色情</string>
-    <string name="batch_add_ok">成功：</string>
-    <string name="batch_add_error">错误：</string>
+    <string name="batch_add_ok">[确认]</string>
+    <string name="batch_add_error">[错误]</string>
     <string name="action_copy_first_page">复制第一页</string>
     <string name="eh_image_quality_1600">1600x</string>
     <string name="pref_category_eh">E-Hentai</string>
@@ -658,4 +657,8 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="id">Id</string>
     <string name="token">Token</string>
+    <string name="fill_from_tracker">从历程平台获取信息</string>
+    <string name="entry_not_tracked">条目还未登录历程。</string>
+    <string name="select_tracker">选择一个历程平台</string>
+    <string name="favorites_sync_unable_to_add_to_remote">无法将图库新增到远程服务器：“%1$s”（GID: %2$s）！</string>
 </resources>
