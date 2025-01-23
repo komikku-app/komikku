@@ -110,8 +110,4 @@ class AndroidDatabaseHandler(
         val context = getCurrentDatabaseContext()
         return withContext(context) { block(db) }
     }
-
-    // SY -->
-    fun getLibraryQuery(condition: String = "M.favorite = 1") = LibraryQuery(driver, condition)
-    // SY <--
 }
