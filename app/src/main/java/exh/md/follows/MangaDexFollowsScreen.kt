@@ -59,7 +59,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
-            bulkFavoriteScreenModel.toggleSelectionMode()
+            bulkFavoriteScreenModel.backHandler()
         }
         // KMK <--
 

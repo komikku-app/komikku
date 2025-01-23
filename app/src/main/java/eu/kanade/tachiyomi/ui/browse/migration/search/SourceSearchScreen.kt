@@ -75,7 +75,7 @@ data class SourceSearchScreen(
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
-            bulkFavoriteScreenModel.toggleSelectionMode()
+            bulkFavoriteScreenModel.backHandler()
         }
 
         val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()

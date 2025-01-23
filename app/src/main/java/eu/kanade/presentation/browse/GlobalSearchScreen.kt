@@ -57,13 +57,10 @@ fun GlobalSearchScreen(
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         state.filteredItems.forEach { (_, result) ->
-                            when (result) {
-                                is SearchItemResult.Success -> {
-                                    result.result.forEach { manga ->
-                                        bulkFavoriteScreenModel.select(manga)
-                                    }
+                            if (result is SearchItemResult.Success) {
+                                result.result.forEach { manga ->
+                                    bulkFavoriteScreenModel.select(manga)
                                 }
-                                else -> {}
                             }
                         }
                     },

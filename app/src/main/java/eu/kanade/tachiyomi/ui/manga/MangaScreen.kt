@@ -87,8 +87,6 @@ import exh.pagepreview.PagePreviewScreen
 import exh.recs.RecommendsScreen
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
-import exh.source.isMdBasedSource
-import exh.ui.ifSourcesLoaded
 import exh.ui.metadata.MetadataViewScreen
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.CancellationException
@@ -160,7 +158,7 @@ class MangaScreen(
 
         BackHandler(enabled = bulkFavoriteState.selectionMode || showingRelatedMangasScreen.value) {
             when {
-                bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.toggleSelectionMode()
+                bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.backHandler()
                 showingRelatedMangasScreen.value -> showingRelatedMangasScreen.value = false
             }
         }

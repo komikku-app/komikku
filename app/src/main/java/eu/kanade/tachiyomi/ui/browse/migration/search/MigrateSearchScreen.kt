@@ -35,7 +35,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
-            bulkFavoriteScreenModel.toggleSelectionMode()
+            bulkFavoriteScreenModel.backHandler()
         }
         // KMK <--
 
