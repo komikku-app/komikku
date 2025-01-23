@@ -161,7 +161,7 @@ internal class AppUpdateNotifier(private val context: Context) {
             setContentIntent(
                 NotificationHandler.openUrl(
                     context,
-                    "https://mihon.app/docs/faq/general#how-do-i-update-from-the-f-droid-builds",
+                    "https://komikku-app.github.io/docs/faq/general#how-do-i-update-from-the-f-droid-builds",
                 ),
             )
         }

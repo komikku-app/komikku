@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -246,7 +248,7 @@ object AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.privacy_policy),
-                        onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
+                        onPreferenceClick = { uriHandler.openUri("https://komikku-app.github.io/privacy/") },
                     )
                 }
 
@@ -257,11 +259,11 @@ object AboutScreen : Screen() {
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        // LinkIcon(
-                        //     label = stringResource(MR.strings.website),
-                        //     icon = Icons.Outlined.Public,
-                        //     url = "https://mihon.app",
-                        // )
+                        LinkIcon(
+                            label = stringResource(MR.strings.website),
+                            icon = Icons.Outlined.Public,
+                            url = "https://komikku-app.github.io",
+                        )
                         LinkIcon(
                             label = "Discord",
                             icon = CustomIcons.Discord,
