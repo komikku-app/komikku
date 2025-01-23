@@ -56,18 +56,37 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         // KMK <--
 
         val onClickItem = { manga: Manga ->
-            navigator.push(
-                when (manga.source) {
-                    -1L -> SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle))
-                    else -> MangaScreen(manga.id, true)
-                },
-            )
+            when (manga.source) {
+                -1L -> navigator.push(
+                    SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle)),
+                )
+                else -> {
+                    // KMK -->
+                    scope.launchIO {
+                        val localManga = screenModel.networkToLocalManga.getLocal(manga)
+                        navigator.push(
+                            // KMK <--
+                            MangaScreen(localManga.id, true),
+                        )
+                    }
+                }
+            }
         }
 
         val onLongClickItem = { manga: Manga ->
             when (manga.source) {
                 -1L -> WebViewActivity.newIntent(context, manga.url, title = manga.title).let(context::startActivity)
-                else -> onClickItem(manga)
+                else -> {
+                    // KMK -->
+                    scope.launchIO {
+                        val localManga = screenModel.networkToLocalManga.getLocal(manga)
+                        bulkFavoriteScreenModel.addRemoveManga(
+                            localManga,
+                            haptic,
+                        )
+                    }
+                    // KMK <--
+                }
             }
         }
 
@@ -87,33 +106,8 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                     ),
                 )
             },
-            onClickItem = {
-                // KMK -->
-                scope.launchIO {
-                    val manga = screenModel.networkToLocalManga.getLocal(it)
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
-                        // KMK <--
-                        onClickItem(manga)
-                    }
-                }
-            },
-            onLongClickItem = {
-                // KMK -->
-                scope.launchIO {
-                    val manga = screenModel.networkToLocalManga.getLocal(it)
-                    if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        // KMK <--
-                        onLongClickItem(manga)
-                    }
-                }
-            },
-            // KMK -->
-            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
-            // KMK <--
+            onClickItem = { onClickItem(it) },
+            onLongClickItem = { onLongClickItem(it) },
         )
 
         // KMK -->
