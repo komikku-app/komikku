@@ -31,7 +31,6 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
-import exh.source.mangaDexSourceIds
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -125,8 +124,6 @@ open class BrowseSourceScreenModel(
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
 
     private val filterSerializer = FilterSerializer()
-
-    val sourceIsMangaDex = sourceId in mangaDexSourceIds
     // SY <--
 
     init {

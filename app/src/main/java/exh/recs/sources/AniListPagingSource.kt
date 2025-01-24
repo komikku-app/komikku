@@ -21,7 +21,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 
-class AniListPagingSource(manga: Manga, source: CatalogueSource) : TrackerRecommendationPagingSource(
+class AniListPagingSource(manga: Manga, source: CatalogueSource?) : TrackerRecommendationPagingSource(
     "https://graphql.anilist.co/", source, manga,
 ) {
     override val name: String

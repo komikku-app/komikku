@@ -23,7 +23,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 
-abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource) : TrackerRecommendationPagingSource(
+abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource?) : TrackerRecommendationPagingSource(
     "https://api.mangaupdates.com/v1/", source, manga,
 ) {
     override val name: String
@@ -98,14 +98,14 @@ abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource) :
     }
 }
 
-class MangaUpdatesCommunityPagingSource(manga: Manga, source: CatalogueSource) : MangaUpdatesPagingSource(manga, source) {
+class MangaUpdatesCommunityPagingSource(manga: Manga, source: CatalogueSource?) : MangaUpdatesPagingSource(manga, source) {
     override val category: StringResource
         get() = SYMR.strings.community_recommendations
     override val recommendationJsonObjectName: String
         get() = "recommendations"
 }
 
-class MangaUpdatesSimilarPagingSource(manga: Manga, source: CatalogueSource) : MangaUpdatesPagingSource(manga, source) {
+class MangaUpdatesSimilarPagingSource(manga: Manga, source: CatalogueSource?) : MangaUpdatesPagingSource(manga, source) {
     override val category: StringResource
         get() = SYMR.strings.similar_titles
     override val recommendationJsonObjectName: String

@@ -37,7 +37,10 @@ open class RecommendsScreenModel(
     internal val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
 ) : StateScreenModel<RecommendsScreenModel.State>(State()) {
 
-    val source = sourceManager.getOrStub(sourceId) as CatalogueSource
+    val source = sourceManager.get(sourceId)
+        // KMK -->
+        ?.let { it as CatalogueSource }
+    // KMK <--
 
     private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
 

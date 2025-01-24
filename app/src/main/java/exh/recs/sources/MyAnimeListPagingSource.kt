@@ -17,7 +17,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 
-class MyAnimeListPagingSource(manga: Manga, source: CatalogueSource) : TrackerRecommendationPagingSource(
+class MyAnimeListPagingSource(manga: Manga, source: CatalogueSource?) : TrackerRecommendationPagingSource(
     "https://api.jikan.moe/v4/", source, manga,
 ) {
     override val name: String

@@ -26,7 +26,7 @@ import uy.kohesive.injekt.injectLazy
  * General class for recommendation sources.
  */
 abstract class RecommendationPagingSource(
-    source: CatalogueSource,
+    source: CatalogueSource?,
     protected val manga: Manga,
 ) : SourcePagingSource(source) {
     // Display name
@@ -44,7 +44,7 @@ abstract class RecommendationPagingSource(
     open val associatedSourceId: Long? = null
 
     companion object {
-        fun createSources(manga: Manga, source: CatalogueSource): List<RecommendationPagingSource> {
+        fun createSources(manga: Manga, source: CatalogueSource?): List<RecommendationPagingSource> {
             return buildList {
                 add(AniListPagingSource(manga, source))
                 add(MangaUpdatesCommunityPagingSource(manga, source))
@@ -52,12 +52,23 @@ abstract class RecommendationPagingSource(
                 add(MyAnimeListPagingSource(manga, source))
 
                 // Only include MangaDex if the delegate sources are enabled and the source is MD-based
-                if (source.isMdBasedSource() && Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
+                if (
+                    // KMK -->
+                    source != null &&
+                    // KMK <--
+                    source.isMdBasedSource() &&
+                    Injekt.get<DelegateSourcePreferences>().delegateSources().get()
+                ) {
                     add(MangaDexSimilarPagingSource(manga, source.getMainSource() as MangaDex))
                 }
 
                 // Only include Comick if the source manga is from there
-                if (source.isComickSource()) {
+                if (
+                    // KMK -->
+                    source != null &&
+                    // KMK <--
+                    source.isComickSource()
+                ) {
                     add(ComickPagingSource(manga, source))
                 }
             }.sortedWith(compareBy({ it.name }, { it.category.resourceId }))
@@ -70,7 +81,7 @@ abstract class RecommendationPagingSource(
  */
 abstract class TrackerRecommendationPagingSource(
     protected val endpoint: String,
-    source: CatalogueSource,
+    source: CatalogueSource?,
     manga: Manga,
 ) : RecommendationPagingSource(source, manga) {
     private val getTracks: GetTracks by injectLazy()
