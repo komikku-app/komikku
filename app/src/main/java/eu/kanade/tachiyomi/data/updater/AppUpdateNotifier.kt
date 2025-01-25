@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.data.updater
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
@@ -20,7 +22,10 @@ import tachiyomi.i18n.kmk.KMR
 
 internal class AppUpdateNotifier(private val context: Context) {
 
-    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE)
+    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE) {
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
+    }
 
     /**
      * Call to show notification.

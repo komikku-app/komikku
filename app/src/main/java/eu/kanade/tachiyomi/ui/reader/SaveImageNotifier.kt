@@ -2,8 +2,10 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.CachePolicy
@@ -24,7 +26,9 @@ import tachiyomi.i18n.MR
  */
 class SaveImageNotifier(private val context: Context) {
 
-    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_COMMON)
+    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_COMMON) {
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+    }
     private val notificationId: Int = Notifications.ID_DOWNLOAD_IMAGE
 
     /**
@@ -52,6 +56,15 @@ class SaveImageNotifier(private val context: Context) {
         context.cancelNotification(notificationId)
     }
 
+    // KMK -->
+    /**
+     * Bitmap of the app for notifications.
+     */
+    private val notificationBitmap by lazy {
+        BitmapFactory.decodeResource(context.resources, R.drawable.komikku)
+    }
+    // KMK <--
+
     /**
      * Called on error while downloading image.
      * @param error string containing error information.
@@ -59,6 +72,9 @@ class SaveImageNotifier(private val context: Context) {
     fun onError(error: String?) {
         // Create notification
         with(notificationBuilder) {
+            // KMK -->
+            setLargeIcon(notificationBitmap)
+            // KMK <--
             setContentTitle(context.stringResource(MR.strings.download_notifier_title_error))
             setContentText(error ?: context.stringResource(MR.strings.unknown_error))
             setSmallIcon(android.R.drawable.ic_menu_report_image)
@@ -70,8 +86,17 @@ class SaveImageNotifier(private val context: Context) {
         with(notificationBuilder) {
             setContentTitle(context.stringResource(MR.strings.picture_saved))
             setSmallIcon(R.drawable.ic_photo_24dp)
-            image?.let { setStyle(NotificationCompat.BigPictureStyle().bigPicture(it)) }
-            setLargeIcon(image)
+            image?.let {
+                setStyle(
+                    NotificationCompat.BigPictureStyle()
+                        // KMK -->
+                        .bigLargeIcon(notificationBitmap)
+                        .setBigContentTitle(context.stringResource(MR.strings.picture_saved))
+                        // KMK <--
+                        .bigPicture(it),
+                )
+                setLargeIcon(image)
+            }
             setAutoCancel(true)
 
             // Clear old actions if they exist

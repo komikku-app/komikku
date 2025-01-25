@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -32,7 +33,7 @@ class EHentaiUpdateNotifier(private val context: Context) {
      * Bitmap of the app for notifications.
      */
     private val notificationBitmap by lazy {
-        BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+        BitmapFactory.decodeResource(context.resources, R.drawable.komikku)
     }
 
     /**
@@ -42,6 +43,7 @@ class EHentaiUpdateNotifier(private val context: Context) {
         context.notificationBuilder(Notifications.CHANNEL_LIBRARY_EHENTAI) {
             setContentTitle(context.stringResource(MR.strings.app_name))
             setSmallIcon(R.drawable.ic_refresh_24dp)
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setLargeIcon(notificationBitmap)
             setOngoing(true)
             setOnlyAlertOnce(true)
@@ -95,6 +97,8 @@ class EHentaiUpdateNotifier(private val context: Context) {
             setContentTitle(context.stringResource(MR.strings.notification_update_error, failed))
             setContentText(context.stringResource(MR.strings.action_show_errors))
             setSmallIcon(R.drawable.ic_komikku)
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(notificationBitmap)
 
             setContentIntent(NotificationReceiver.openErrorLogPendingActivity(context, uri))
         }
