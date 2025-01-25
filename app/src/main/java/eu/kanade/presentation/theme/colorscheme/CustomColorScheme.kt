@@ -2,9 +2,16 @@ package eu.kanade.presentation.theme.colorscheme
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Build
+import androidx.annotation.ColorInt
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
@@ -50,4 +57,180 @@ private class CustomCompatColorScheme(
             Contrast.Default.value
         },
     )
+}
+
+class AndroidViewColorScheme(
+    colorScheme: ColorScheme,
+) {
+    @ColorInt val primary: Int = colorScheme.primary.toArgb()
+
+    @ColorInt val onPrimary: Int = colorScheme.onPrimary.toArgb()
+
+    @ColorInt val primaryContainer: Int = colorScheme.primaryContainer.toArgb()
+
+    @ColorInt val onPrimaryContainer: Int = colorScheme.onPrimaryContainer.toArgb()
+
+    @ColorInt val inversePrimary: Int = colorScheme.inversePrimary.toArgb()
+
+    @ColorInt val secondary: Int = colorScheme.secondary.toArgb()
+
+    @ColorInt val onSecondary: Int = colorScheme.onSecondary.toArgb()
+
+    @ColorInt val secondaryContainer: Int = colorScheme.secondaryContainer.toArgb()
+
+    @ColorInt val onSecondaryContainer: Int = colorScheme.onSecondaryContainer.toArgb()
+
+    @ColorInt val tertiary: Int = colorScheme.tertiary.toArgb()
+
+    @ColorInt val onTertiary: Int = colorScheme.onTertiary.toArgb()
+
+    @ColorInt val tertiaryContainer: Int = colorScheme.tertiaryContainer.toArgb()
+
+    @ColorInt val onTertiaryContainer: Int = colorScheme.onTertiaryContainer.toArgb()
+
+    @ColorInt val background: Int = colorScheme.background.toArgb()
+
+    @ColorInt val onBackground: Int = colorScheme.onBackground.toArgb()
+
+    @ColorInt val surface: Int = colorScheme.surface.toArgb()
+
+    @ColorInt val onSurface: Int = colorScheme.onSurface.toArgb()
+
+    @ColorInt val surfaceVariant: Int = colorScheme.surfaceVariant.toArgb()
+
+    @ColorInt val onSurfaceVariant: Int = colorScheme.onSurfaceVariant.toArgb()
+
+    @ColorInt val surfaceTint: Int = colorScheme.surfaceTint.toArgb()
+
+    @ColorInt val inverseSurface: Int = colorScheme.inverseSurface.toArgb()
+
+    @ColorInt val inverseOnSurface: Int = colorScheme.inverseOnSurface.toArgb()
+
+    @ColorInt val error: Int = colorScheme.error.toArgb()
+
+    @ColorInt val onError: Int = colorScheme.onError.toArgb()
+
+    @ColorInt val errorContainer: Int = colorScheme.errorContainer.toArgb()
+
+    @ColorInt val onErrorContainer: Int = colorScheme.onErrorContainer.toArgb()
+
+    @ColorInt val outline: Int = colorScheme.outline.toArgb()
+
+    @ColorInt val outlineVariant: Int = colorScheme.outlineVariant.toArgb()
+
+    @ColorInt val scrim: Int = colorScheme.scrim.toArgb()
+
+    @ColorInt val surfaceBright: Int = colorScheme.surfaceBright.toArgb()
+
+    @ColorInt val surfaceDim: Int = colorScheme.surfaceDim.toArgb()
+
+    @ColorInt val surfaceContainer: Int = colorScheme.surfaceContainer.toArgb()
+
+    @ColorInt val surfaceContainerHigh: Int = colorScheme.surfaceContainerHigh.toArgb()
+
+    @ColorInt val surfaceContainerHighest: Int = colorScheme.surfaceContainerHighest.toArgb()
+
+    @ColorInt val surfaceContainerLow: Int = colorScheme.surfaceContainerLow.toArgb()
+
+    @ColorInt val surfaceContainerLowest: Int = colorScheme.surfaceContainerLowest.toArgb()
+
+    @ColorInt
+    val textColor: Int = onSurfaceVariant
+
+    @ColorInt
+    val textHighlightColor: Int = inversePrimary
+
+    @ColorInt
+    val iconColor: Int = primary
+
+    @ColorInt
+    val tagColor: Int = outlineVariant
+
+    @ColorInt
+    val tagTextColor: Int = onSurfaceVariant
+
+    @ColorInt
+    val btnTextColor: Int = onPrimary
+
+    @ColorInt
+    val btnBgColor: Int = surfaceTint
+
+    @ColorInt
+    val dropdownBgColor: Int = surfaceContainerHighest
+
+    @ColorInt
+    val dialogBgColor: Int = surfaceContainerHigh
+
+    @ColorInt
+    val surfaceElevation = colorScheme.surfaceColorAtElevation(4.dp).toArgb()
+
+    @ColorInt
+    val ratingBarColor = primary
+
+    @ColorInt
+    val ratingBarSecondaryColor = outlineVariant
+
+    /* MaterialSwitch */
+    val trackTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            primary,
+            surface,
+        ),
+    )
+    val thumbTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            onPrimary,
+            onSurface,
+        ),
+    )
+
+    val checkboxTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            primary,
+            onSurface,
+        ),
+    )
+
+    val editTextBackgroundTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_focused),
+            intArrayOf(-android.R.attr.state_focused),
+        ),
+        intArrayOf(
+            primary,
+            onSurface,
+        ),
+    )
+
+    val imageButtonTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_pressed), // Pressed state
+            intArrayOf(android.R.attr.state_focused), // Focused state
+            intArrayOf(), // Default state
+        ),
+        intArrayOf(
+            primary, // Pressed color
+            primary, // Focused color
+            primary, // Default color
+        ),
+    )
+
+    companion object {
+        fun LinearProgressIndicator.setColors(colorScheme: AndroidViewColorScheme) {
+            trackColor = colorScheme.secondaryContainer
+            setIndicatorColor(colorScheme.primary)
+        }
+    }
 }

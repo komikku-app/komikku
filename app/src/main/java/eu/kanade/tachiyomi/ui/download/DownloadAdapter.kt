@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.download
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 
 /**
  * Adapter storing a list of downloads.
@@ -12,8 +13,7 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 class DownloadAdapter(
     val downloadItemListener: DownloadItemListener,
     // KMK -->
-    val progressIndicatorColor: Int,
-    val progressTrackColor: Int,
+    val colorScheme: AndroidViewColorScheme,
     // KMK <--
 ) : FlexibleAdapter<AbstractFlexibleItem<*>>(
     null,

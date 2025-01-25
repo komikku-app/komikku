@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -51,6 +50,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.NestedMenuItem
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.databinding.DownloadListBinding
 import kotlinx.collections.immutable.persistentListOf
@@ -260,8 +260,7 @@ object DownloadQueueScreen : Screen() {
             val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
 
             // KMK -->
-            val progressIndicatorColor = MaterialTheme.colorScheme.primary.toArgb()
-            val progressTrackColor = MaterialTheme.colorScheme.secondaryContainer.toArgb()
+            val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
             // KMK <--
 
             Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
@@ -272,8 +271,7 @@ object DownloadQueueScreen : Screen() {
                         screenModel.adapter = DownloadAdapter(
                             screenModel.listener,
                             // KMK -->
-                            progressIndicatorColor = progressIndicatorColor,
-                            progressTrackColor = progressTrackColor,
+                            colorScheme,
                             // KMK <--
                         )
                         screenModel.controllerBinding.root.adapter = screenModel.adapter
