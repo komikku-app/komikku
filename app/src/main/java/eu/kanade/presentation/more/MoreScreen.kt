@@ -87,7 +87,7 @@ fun MoreScreen(
                         textRes = MR.strings.fdroid_warning,
                         modifier = Modifier.clickable {
                             uriHandler.openUri(
-                                "https://mihon.app/docs/faq/general#how-do-i-update-from-the-f-droid-builds",
+                                "https://komikku-app.github.io/docs/faq/general#how-do-i-update-from-the-f-droid-builds",
                             )
                         },
                     )

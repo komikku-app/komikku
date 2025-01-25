@@ -32,7 +32,7 @@ fun Screen.migrateSourceTab(): TabContent {
                 title = stringResource(MR.strings.migration_help_guide),
                 icon = Icons.AutoMirrored.Outlined.HelpOutline,
                 onClick = {
-                    uriHandler.openUri("https://mihon.app/docs/guides/source-migration")
+                    uriHandler.openUri("https://komikku-app.github.io/docs/guides/source-migration")
                 },
             ),
         ),
