@@ -1,11 +1,15 @@
 package eu.kanade.tachiyomi.ui.manga.merged
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import eu.kanade.presentation.components.SpinnerAdapter
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import exh.log.xLogD
 import tachiyomi.core.common.i18n.stringResource
@@ -14,7 +18,13 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 
-class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState, adapter: EditMergedMangaAdapter) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {
+class EditMergedSettingsHeaderAdapter(
+    private val state: EditMergedSettingsState,
+    adapter: EditMergedMangaAdapter,
+    // KMK -->
+    private val colorScheme: AndroidViewColorScheme,
+    // KMK <--
+) : RecyclerView.Adapter<EditMergedSettingsHeaderAdapter.HeaderViewHolder>() {
 
     private val sourceManager: SourceManager by injectLazy()
 
@@ -37,19 +47,24 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
         holder.bind()
     }
 
-    inner class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class HeaderViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
-            val dedupeAdapter: ArrayAdapter<String> = ArrayAdapter(
-                itemView.context,
-                android.R.layout.simple_spinner_item,
+            // KMK -->
+            // val dedupeAdapter: ArrayAdapter<String> = ArrayAdapter(
+            val dedupeAdapter = SpinnerAdapter(
+                view.context,
+                android.R.layout.simple_spinner_dropdown_item,
+                // KMK <--
                 listOfNotNull(
                     itemView.context.stringResource(SYMR.strings.no_dedupe),
                     itemView.context.stringResource(SYMR.strings.dedupe_priority),
                     itemView.context.stringResource(SYMR.strings.dedupe_most_chapters),
                     itemView.context.stringResource(SYMR.strings.dedupe_highest_chapter),
                 ),
+                // KMK -->
+                colorScheme,
+                // KMK <--
             )
-            dedupeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.dedupeModeSpinner.adapter = dedupeAdapter
             state.mergeReference?.let {
                 binding.dedupeModeSpinner.setSelection(
@@ -62,6 +77,7 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                     },
                 )
             }
+
             binding.dedupeModeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
@@ -80,6 +96,9 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                     )
                     xLogD(state.mergeReference?.chapterSortMode)
                     editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
+
+                    // Set Spinner's selected item's background color to transparent
+                    if (view != null) (view as TextView).setBackgroundColor(Color.TRANSPARENT)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -91,14 +110,19 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
 
             val mergedMangas = state.mergedMangas
 
-            val mangaInfoAdapter: ArrayAdapter<String> = ArrayAdapter(
-                itemView.context,
-                android.R.layout.simple_spinner_item,
+            // KMK -->
+            // val mangaInfoAdapter: ArrayAdapter<String> = ArrayAdapter(
+            val mangaInfoAdapter = SpinnerAdapter(
+                view.context,
+                android.R.layout.simple_spinner_dropdown_item,
+                // KMK <--
                 mergedMangas.map {
                     sourceManager.getOrStub(it.second.mangaSourceId).toString() + " " + it.first?.title
                 },
+                // KMK -->
+                colorScheme,
+                // KMK <--
             )
-            mangaInfoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.mangaInfoSpinner.adapter = mangaInfoAdapter
 
             mergedMangas.indexOfFirst { it.second.isInfoManga }.let {
@@ -121,6 +145,9 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                             isInfoManga = reference.id == mergedMangas.getOrNull(position)?.second?.id,
                         )
                     }
+
+                    // Set Spinner's selected item's background color to transparent
+                    if (view != null) (view as TextView).setBackgroundColor(Color.TRANSPARENT)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -158,6 +185,19 @@ class EditMergedSettingsHeaderAdapter(private val state: EditMergedSettingsState
                 true -> 1F
                 false -> 0.5F
             }
+
+            // KMK -->
+            binding.dedupeSwitchLabel.setTextColor(colorScheme.textColor)
+            binding.dedupeModeLabel.setTextColor(colorScheme.primary)
+            binding.mangaInfoLabel.setTextColor(colorScheme.primary)
+
+            binding.dedupeSwitch.trackTintList = colorScheme.trackTintList
+            binding.dedupeSwitch.thumbTintList = colorScheme.thumbTintList
+
+            // Set Spinner's dropdown caret color
+            binding.dedupeModeSpinner.backgroundTintList = ColorStateList.valueOf(colorScheme.iconColor)
+            binding.mangaInfoSpinner.backgroundTintList = ColorStateList.valueOf(colorScheme.iconColor)
+            // KMK <--
         }
     }
 
