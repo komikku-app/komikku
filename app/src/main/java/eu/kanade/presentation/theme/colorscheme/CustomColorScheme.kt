@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
@@ -104,6 +105,9 @@ class AndroidViewColorScheme(
     val secondary = colorScheme.secondary.toArgb()
 
     @ColorInt
+    val secondaryContainer = colorScheme.secondaryContainer.toArgb()
+
+    @ColorInt
     val surfaceElevation = colorScheme.surfaceColorAtElevation(4.dp).toArgb()
 
     /* MaterialSwitch */
@@ -162,4 +166,11 @@ class AndroidViewColorScheme(
             primary, // Default color
         ),
     )
+
+    companion object {
+        fun LinearProgressIndicator.setColors(colorScheme: AndroidViewColorScheme) {
+            trackColor = colorScheme.secondaryContainer
+            setIndicatorColor(colorScheme.primary)
+        }
+    }
 }
