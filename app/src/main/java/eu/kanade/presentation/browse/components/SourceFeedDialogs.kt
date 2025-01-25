@@ -11,11 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -99,12 +96,8 @@ private val TitlePadding = PaddingValues(bottom = 16.dp, top = 8.dp)
 fun FeedActionsDialog(
     feed: FeedSavedSearch,
     title: String,
-    canMoveUp: Boolean,
-    canMoveDown: Boolean,
     onDismissRequest: () -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
-    onMoveUp: (FeedSavedSearch) -> Unit,
-    onMoveDown: (FeedSavedSearch) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val minHeight = LocalPreferenceMinHeight.current
@@ -128,32 +121,6 @@ fun FeedActionsDialog(
             )
 
             Spacer(Modifier.height(PaddingSize))
-
-            if (canMoveUp) {
-                TextPreferenceWidget(
-                    title = stringResource(KMR.strings.action_move_up),
-                    icon = Icons.Outlined.ArrowUpward,
-                    onPreferenceClick = {
-                        onDismissRequest()
-                        onMoveUp(feed)
-                    },
-                )
-
-                HorizontalDivider()
-            }
-
-            if (canMoveDown) {
-                TextPreferenceWidget(
-                    title = stringResource(KMR.strings.action_move_down),
-                    icon = Icons.Outlined.ArrowDownward,
-                    onPreferenceClick = {
-                        onDismissRequest()
-                        onMoveDown(feed)
-                    },
-                )
-
-                HorizontalDivider()
-            }
 
             TextPreferenceWidget(
                 title = stringResource(MR.strings.action_delete),
@@ -200,12 +167,8 @@ private fun FeedActionsDialogPreview() {
             feedOrder = 0,
         ),
         title = "Feed 1",
-        canMoveUp = true,
-        canMoveDown = true,
         onDismissRequest = { },
         onClickDelete = { },
-        onMoveUp = { },
-        onMoveDown = { },
     )
 }
 

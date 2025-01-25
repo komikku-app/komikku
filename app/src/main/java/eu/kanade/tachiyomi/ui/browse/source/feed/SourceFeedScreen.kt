@@ -105,8 +105,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 SourceFeedOrderScreen(
                     state = state,
                     onClickDelete = screenModel::openDeleteFeed,
-                    onClickMoveUp = screenModel::moveUp,
-                    onClickMoveDown = screenModel::moveDown,
+                    changeOrder = screenModel::changeOrder,
                     onClickSortAlphabetically = {
                         screenModel.showDialog(SourceFeedScreenModel.Dialog.SortAlphabetically)
                     },
@@ -221,12 +220,8 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 FeedActionsDialog(
                     feed = dialog.feedItem.feed,
                     title = dialog.feedItem.title,
-                    canMoveUp = dialog.canMoveUp,
-                    canMoveDown = dialog.canMoveDown,
                     onDismissRequest = screenModel::dismissDialog,
                     onClickDelete = { screenModel.openDeleteFeed(it) },
-                    onMoveUp = { screenModel.moveUp(it) },
-                    onMoveDown = { screenModel.moveDown(it) },
                 )
             }
             is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
