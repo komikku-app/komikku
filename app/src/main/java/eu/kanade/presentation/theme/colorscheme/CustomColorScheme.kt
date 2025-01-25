@@ -2,8 +2,12 @@ package eu.kanade.presentation.theme.colorscheme
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Build
+import androidx.annotation.ColorInt
+import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.getSystemService
 import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
@@ -50,4 +54,35 @@ private class CustomCompatColorScheme(
             Contrast.Default.value
         },
     )
+}
+
+class AndroidViewColorScheme(
+    colorScheme: ColorScheme,
+) {
+    @ColorInt
+    val textColor: Int = colorScheme.onSurfaceVariant.toArgb()
+
+    @ColorInt
+    val textHighlightColor: Int = colorScheme.inversePrimary.toArgb()
+
+    @ColorInt
+    val iconColor: Int = colorScheme.primary.toArgb()
+
+    @ColorInt
+    val tagColor: Int = colorScheme.outlineVariant.toArgb()
+
+    @ColorInt
+    val tagTextColor: Int = colorScheme.onSurfaceVariant.toArgb()
+
+    @ColorInt
+    val btnTextColor: Int = colorScheme.onPrimary.toArgb()
+
+    @ColorInt
+    val btnBgColor: Int = colorScheme.surfaceTint.toArgb()
+
+    @ColorInt
+    val dropdownBgColor: Int = colorScheme.surfaceContainerHighest.toArgb()
+
+    @ColorInt
+    val dialogBgColor: Int = colorScheme.surfaceContainerHigh.toArgb()
 }
