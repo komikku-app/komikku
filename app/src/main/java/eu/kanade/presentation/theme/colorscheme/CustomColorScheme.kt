@@ -85,4 +85,60 @@ class AndroidViewColorScheme(
 
     @ColorInt
     val dialogBgColor: Int = colorScheme.surfaceContainerHigh.toArgb()
+
+    @ColorInt
+    val primary = colorScheme.primary.toArgb()
+
+    @ColorInt
+    val onPrimary = colorScheme.onPrimary.toArgb()
+
+    @ColorInt
+    val surface = colorScheme.surface.toArgb()
+
+    @ColorInt
+    val onSurface = colorScheme.onSurface.toArgb()
+
+    /* MaterialSwitch */
+    val trackTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            primary,
+            surface,
+        ),
+    )
+    val thumbTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            onPrimary,
+            onSurface,
+        ),
+    )
+
+    val checkboxTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+        ),
+        intArrayOf(
+            primary,
+            onSurface,
+        ),
+    )
+
+    val editTextBackgroundTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_focused),
+            intArrayOf(-android.R.attr.state_focused),
+        ),
+        intArrayOf(
+            primary,
+            onSurface,
+        ),
+    )
 }

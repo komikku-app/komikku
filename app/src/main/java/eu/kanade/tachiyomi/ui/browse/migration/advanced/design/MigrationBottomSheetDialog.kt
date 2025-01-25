@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
-import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.LayoutInflater
@@ -15,10 +14,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
 import eu.kanade.presentation.components.AdaptiveSheet
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
@@ -49,10 +48,7 @@ fun MigrationBottomSheetDialog(
     }
 
     // KMK -->
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    val onSurface = MaterialTheme.colorScheme.onSurface.toArgb()
-    val surface = MaterialTheme.colorScheme.surface.toArgb()
-    val textHighlightColor = MaterialTheme.colorScheme.inversePrimary.toArgb()
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
     // KMK <--
 
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
@@ -61,75 +57,48 @@ fun MigrationBottomSheetDialog(
                 val binding = MigrationBottomSheetBinding.inflate(LayoutInflater.from(factoryContext))
                 state.initPreferences(binding)
                 // KMK -->
-                binding.migrateBtn.setBackgroundColor(primaryColor)
-                binding.dataLabel.setTextColor(primaryColor)
-                binding.optionsLabel.setTextColor(primaryColor)
+                binding.migrateBtn.setBackgroundColor(colorScheme.primary)
+                binding.dataLabel.setTextColor(colorScheme.primary)
+                binding.optionsLabel.setTextColor(colorScheme.primary)
 
-                val buttonTintList = ColorStateList(
-                    arrayOf(
-                        intArrayOf(android.R.attr.state_checked),
-                        intArrayOf(-android.R.attr.state_checked),
-                    ),
-                    intArrayOf(
-                        primaryColor,
-                        onSurface,
-                    ),
-                )
+                binding.migChapters.buttonTintList = colorScheme.checkboxTintList
+                binding.migCategories.buttonTintList = colorScheme.checkboxTintList
+                binding.migTracking.buttonTintList = colorScheme.checkboxTintList
+                binding.migCustomCover.buttonTintList = colorScheme.checkboxTintList
+                binding.migExtra.buttonTintList = colorScheme.checkboxTintList
+                binding.migDeleteDownloaded.buttonTintList = colorScheme.checkboxTintList
 
-                binding.migChapters.buttonTintList = buttonTintList
-                binding.migCategories.buttonTintList = buttonTintList
-                binding.migTracking.buttonTintList = buttonTintList
-                binding.migCustomCover.buttonTintList = buttonTintList
-                binding.migExtra.buttonTintList = buttonTintList
-                binding.migDeleteDownloaded.buttonTintList = buttonTintList
+                binding.radioButton.buttonTintList = colorScheme.checkboxTintList
+                binding.radioButton2.buttonTintList = colorScheme.checkboxTintList
 
-                binding.radioButton.buttonTintList = buttonTintList
-                binding.radioButton2.buttonTintList = buttonTintList
+                binding.useSmartSearch.trackTintList = colorScheme.trackTintList
+                binding.extraSearchParam.trackTintList = colorScheme.trackTintList
+                binding.skipStep.trackTintList = colorScheme.trackTintList
+                binding.HideNotFoundManga.trackTintList = colorScheme.trackTintList
+                binding.OnlyShowUpdates.trackTintList = colorScheme.trackTintList
 
-                val trackTintList = ColorStateList(
-                    arrayOf(
-                        intArrayOf(android.R.attr.state_checked),
-                        intArrayOf(-android.R.attr.state_checked),
-                    ),
-                    intArrayOf(
-                        primaryColor,
-                        surface,
-                    ),
-                )
-
-                binding.useSmartSearch.trackTintList = trackTintList
-                binding.extraSearchParam.trackTintList = trackTintList
-                binding.skipStep.trackTintList = trackTintList
-                binding.HideNotFoundManga.trackTintList = trackTintList
-                binding.OnlyShowUpdates.trackTintList = trackTintList
-
-                val editTextBackgroundTintList = ColorStateList(
-                    arrayOf(
-                        intArrayOf(android.R.attr.state_focused),
-                        intArrayOf(-android.R.attr.state_focused),
-                    ),
-                    intArrayOf(
-                        primaryColor,
-                        onSurface,
-                    ),
-                )
+                binding.useSmartSearch.thumbTintList = colorScheme.thumbTintList
+                binding.extraSearchParam.thumbTintList = colorScheme.thumbTintList
+                binding.skipStep.thumbTintList = colorScheme.thumbTintList
+                binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
+                binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
 
                 with(binding.extraSearchParamText) {
-                    highlightColor = textHighlightColor
-                    backgroundTintList = editTextBackgroundTintList
+                    highlightColor = colorScheme.textHighlightColor
+                    backgroundTintList = colorScheme.editTextBackgroundTintList
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        textCursorDrawable = ColorDrawable(primaryColor)
+                        textCursorDrawable = ColorDrawable(colorScheme.primary)
                         textSelectHandle?.let { drawable ->
-                            drawable.setTint(primaryColor)
+                            drawable.setTint(colorScheme.primary)
                             setTextSelectHandle(drawable)
                         }
                         textSelectHandleLeft?.let { drawable ->
-                            drawable.setTint(primaryColor)
+                            drawable.setTint(colorScheme.primary)
                             setTextSelectHandleLeft(drawable)
                         }
                         textSelectHandleRight?.let { drawable ->
-                            drawable.setTint(primaryColor)
+                            drawable.setTint(colorScheme.primary)
                             setTextSelectHandleRight(drawable)
                         }
                     }
