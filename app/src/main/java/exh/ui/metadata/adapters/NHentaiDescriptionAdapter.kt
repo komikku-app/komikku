@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterNhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
@@ -30,7 +31,8 @@ import java.time.ZonedDateTime
 fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
+    val iconColor = colorScheme.iconColor
     val textColor = LocalContentColor.current.toArgb()
     // KMK <--
     AndroidView(

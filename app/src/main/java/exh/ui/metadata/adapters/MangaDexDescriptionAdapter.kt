@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
@@ -27,9 +28,11 @@ import kotlin.math.round
 fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
     val context = LocalContext.current
     // KMK -->
-    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
+    val iconColor = colorScheme.iconColor
+    val ratingBarColor = colorScheme.ratingBarColor
+    val ratingBarSecondaryColor = colorScheme.ratingBarSecondaryColor
     val textColor = LocalContentColor.current.toArgb()
-    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
@@ -50,7 +53,7 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.rating.isVisible = ratingFloat != null
             binding.ratingBar.isVisible = ratingFloat != null
             // KMK -->
-            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(ratingBarColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 

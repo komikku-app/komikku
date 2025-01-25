@@ -62,53 +62,113 @@ private class CustomCompatColorScheme(
 class AndroidViewColorScheme(
     colorScheme: ColorScheme,
 ) {
-    @ColorInt
-    val textColor: Int = colorScheme.onSurfaceVariant.toArgb()
+    @ColorInt val primary: Int = colorScheme.primary.toArgb()
+
+    @ColorInt val onPrimary: Int = colorScheme.onPrimary.toArgb()
+
+    @ColorInt val primaryContainer: Int = colorScheme.primaryContainer.toArgb()
+
+    @ColorInt val onPrimaryContainer: Int = colorScheme.onPrimaryContainer.toArgb()
+
+    @ColorInt val inversePrimary: Int = colorScheme.inversePrimary.toArgb()
+
+    @ColorInt val secondary: Int = colorScheme.secondary.toArgb()
+
+    @ColorInt val onSecondary: Int = colorScheme.onSecondary.toArgb()
+
+    @ColorInt val secondaryContainer: Int = colorScheme.secondaryContainer.toArgb()
+
+    @ColorInt val onSecondaryContainer: Int = colorScheme.onSecondaryContainer.toArgb()
+
+    @ColorInt val tertiary: Int = colorScheme.tertiary.toArgb()
+
+    @ColorInt val onTertiary: Int = colorScheme.onTertiary.toArgb()
+
+    @ColorInt val tertiaryContainer: Int = colorScheme.tertiaryContainer.toArgb()
+
+    @ColorInt val onTertiaryContainer: Int = colorScheme.onTertiaryContainer.toArgb()
+
+    @ColorInt val background: Int = colorScheme.background.toArgb()
+
+    @ColorInt val onBackground: Int = colorScheme.onBackground.toArgb()
+
+    @ColorInt val surface: Int = colorScheme.surface.toArgb()
+
+    @ColorInt val onSurface: Int = colorScheme.onSurface.toArgb()
+
+    @ColorInt val surfaceVariant: Int = colorScheme.surfaceVariant.toArgb()
+
+    @ColorInt val onSurfaceVariant: Int = colorScheme.onSurfaceVariant.toArgb()
+
+    @ColorInt val surfaceTint: Int = colorScheme.surfaceTint.toArgb()
+
+    @ColorInt val inverseSurface: Int = colorScheme.inverseSurface.toArgb()
+
+    @ColorInt val inverseOnSurface: Int = colorScheme.inverseOnSurface.toArgb()
+
+    @ColorInt val error: Int = colorScheme.error.toArgb()
+
+    @ColorInt val onError: Int = colorScheme.onError.toArgb()
+
+    @ColorInt val errorContainer: Int = colorScheme.errorContainer.toArgb()
+
+    @ColorInt val onErrorContainer: Int = colorScheme.onErrorContainer.toArgb()
+
+    @ColorInt val outline: Int = colorScheme.outline.toArgb()
+
+    @ColorInt val outlineVariant: Int = colorScheme.outlineVariant.toArgb()
+
+    @ColorInt val scrim: Int = colorScheme.scrim.toArgb()
+
+    @ColorInt val surfaceBright: Int = colorScheme.surfaceBright.toArgb()
+
+    @ColorInt val surfaceDim: Int = colorScheme.surfaceDim.toArgb()
+
+    @ColorInt val surfaceContainer: Int = colorScheme.surfaceContainer.toArgb()
+
+    @ColorInt val surfaceContainerHigh: Int = colorScheme.surfaceContainerHigh.toArgb()
+
+    @ColorInt val surfaceContainerHighest: Int = colorScheme.surfaceContainerHighest.toArgb()
+
+    @ColorInt val surfaceContainerLow: Int = colorScheme.surfaceContainerLow.toArgb()
+
+    @ColorInt val surfaceContainerLowest: Int = colorScheme.surfaceContainerLowest.toArgb()
 
     @ColorInt
-    val textHighlightColor: Int = colorScheme.inversePrimary.toArgb()
+    val textColor: Int = onSurfaceVariant
 
     @ColorInt
-    val iconColor: Int = colorScheme.primary.toArgb()
+    val textHighlightColor: Int = inversePrimary
 
     @ColorInt
-    val tagColor: Int = colorScheme.outlineVariant.toArgb()
+    val iconColor: Int = primary
 
     @ColorInt
-    val tagTextColor: Int = colorScheme.onSurfaceVariant.toArgb()
+    val tagColor: Int = outlineVariant
 
     @ColorInt
-    val btnTextColor: Int = colorScheme.onPrimary.toArgb()
+    val tagTextColor: Int = onSurfaceVariant
 
     @ColorInt
-    val btnBgColor: Int = colorScheme.surfaceTint.toArgb()
+    val btnTextColor: Int = onPrimary
 
     @ColorInt
-    val dropdownBgColor: Int = colorScheme.surfaceContainerHighest.toArgb()
+    val btnBgColor: Int = surfaceTint
 
     @ColorInt
-    val dialogBgColor: Int = colorScheme.surfaceContainerHigh.toArgb()
+    val dropdownBgColor: Int = surfaceContainerHighest
 
     @ColorInt
-    val primary = colorScheme.primary.toArgb()
-
-    @ColorInt
-    val onPrimary = colorScheme.onPrimary.toArgb()
-
-    @ColorInt
-    val surface = colorScheme.surface.toArgb()
-
-    @ColorInt
-    val onSurface = colorScheme.onSurface.toArgb()
-
-    @ColorInt
-    val secondary = colorScheme.secondary.toArgb()
-
-    @ColorInt
-    val secondaryContainer = colorScheme.secondaryContainer.toArgb()
+    val dialogBgColor: Int = surfaceContainerHigh
 
     @ColorInt
     val surfaceElevation = colorScheme.surfaceColorAtElevation(4.dp).toArgb()
+
+    @ColorInt
+    val ratingBarColor = primary
+
+    @ColorInt
+    val ratingBarSecondaryColor = outlineVariant
 
     /* MaterialSwitch */
     val trackTintList = ColorStateList(
