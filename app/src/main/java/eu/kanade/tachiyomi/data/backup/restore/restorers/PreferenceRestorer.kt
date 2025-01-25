@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import android.content.Context
+import eu.kanade.domain.source.service.pinnedSourcesPrefKey
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.data.backup.models.StringPreferenceValue
 import eu.kanade.tachiyomi.data.backup.models.StringSetPreferenceValue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.source.sourcePreferences
+import exh.EXHMigrations
 import tachiyomi.core.common.preference.AndroidPreferenceStore
 import tachiyomi.core.common.preference.PreferenceStore
 import uy.kohesive.injekt.Injekt
@@ -70,7 +72,15 @@ class PreferenceRestorer(
                 }
                 is StringSetPreferenceValue -> {
                     if (prefs[key] is Set<*>?) {
-                        preferenceStore.getStringSet(key).set(value.value)
+                        preferenceStore.getStringSet(key).set(
+                            // KMK -->
+                            if (key == pinnedSourcesPrefKey) {
+                                EXHMigrations.migratePinnedSources(value.value)
+                            } else {
+                                // KMK <--
+                                value.value
+                            },
+                        )
                     }
                 }
             }

@@ -72,9 +72,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
-import exh.source.BlacklistedSources
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
 import exh.util.toAnnotatedString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -740,15 +737,16 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.toggle_hentai_features),
                     subtitle = stringResource(SYMR.strings.toggle_hentai_features_summary),
                     onValueChanged = {
-                        if (it) {
-                            BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
-                            BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
-                        } else {
-                            BlacklistedSources.HIDDEN_SOURCES -= EH_SOURCE_ID
-                            BlacklistedSources.HIDDEN_SOURCES -= EXH_SOURCE_ID
-                        }
                         true
                     },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = sourcePreferences.enableSourceBlacklist(),
+                    title = stringResource(SYMR.strings.enable_source_blacklist),
+                    subtitle = stringResource(
+                        SYMR.strings.enable_source_blacklist_summary,
+                        stringResource(MR.strings.app_name),
+                    ),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = delegateSourcePreferences.delegateSources(),
@@ -769,14 +767,6 @@ object SettingsAdvancedScreen : SearchableSettings {
                             context.stringResource(ehLogLevel.description)
                         })"
                     }.toMap().toImmutableMap(),
-                ),
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = sourcePreferences.enableSourceBlacklist(),
-                    title = stringResource(SYMR.strings.enable_source_blacklist),
-                    subtitle = stringResource(
-                        SYMR.strings.enable_source_blacklist_summary,
-                        stringResource(MR.strings.app_name),
-                    ),
                 ),
                 kotlin.run {
                     var enableEncryptDatabase by rememberSaveable { mutableStateOf(false) }

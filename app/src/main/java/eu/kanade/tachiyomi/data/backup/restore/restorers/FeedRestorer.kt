@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
+import exh.EXHMigrations
 import exh.util.nullIfBlank
 import tachiyomi.data.DatabaseHandler
 import uy.kohesive.injekt.Injekt
@@ -20,7 +21,11 @@ class FeedRestorer(
                 saved_searchQueries.selectAll()
             }
 
-            backupFeeds.filter { backupFeed ->
+            backupFeeds.map {
+                // KMK -->
+                EXHMigrations.migrateBackupFeed(it)
+                // KMK <--
+            }.filter { backupFeed ->
                 // Filter out source's global Popular/Latest feed already existed
                 backupFeed.savedSearch == null &&
                     currentFeeds.none { currentFeed ->

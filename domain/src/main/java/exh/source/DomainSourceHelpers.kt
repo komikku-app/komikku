@@ -1,6 +1,7 @@
 package exh.source
 
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.all.EhBasedSource
 import tachiyomi.domain.manga.model.Manga
 
 // Used to speed up isLewdSource
@@ -18,13 +19,21 @@ var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
 
 // This method MUST be fast!
 fun isMetadataSource(source: Long) = source in 6900..6999 ||
+    // KMK -->
+    source == EH_SOURCE_ID ||
+    source == EXH_SOURCE_ID ||
+    // KMK <--
     metadataDelegatedSourceIds.binarySearch(source) >= 0
 
-fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
+// KMK -->
+fun Source.isEhBasedSource() = this is EhBasedSource && id in EHENTAI_EXT_SOURCES || id in EXHENTAI_EXT_SOURCES
+// KMK <--
 
 fun Source.isMdBasedSource() = id in mangaDexSourceIds
 
-fun Manga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
+// KMK -->
+fun Manga.isEhBasedManga() = source in EHENTAI_EXT_SOURCES || source in EXHENTAI_EXT_SOURCES
+// KMK <--
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
     this.source()
