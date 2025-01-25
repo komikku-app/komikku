@@ -5,10 +5,8 @@ import coil3.load
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
 import eu.davidea.viewholders.FlexibleViewHolder
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
 import eu.kanade.tachiyomi.util.system.dpToPx
-import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
 import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -50,6 +48,11 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
         binding.subtitle.text = item.mergedManga?.title
         updateDownloadChaptersIcon(item.mergedMangaReference.downloadChapters)
         updateChapterUpdatesIcon(item.mergedMangaReference.getChapterUpdates)
+
+        // KMK -->
+        binding.holder.setCardBackgroundColor(adapter.colorScheme.surfaceElevation)
+        binding.remove.imageTintList = adapter.colorScheme.imageButtonTintList
+        // KMK <--
     }
 
     fun setHandelAlpha(isPriorityOrder: Boolean) {
@@ -61,9 +64,11 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
 
     fun updateDownloadChaptersIcon(setTint: Boolean) {
         val color = if (setTint) {
-            itemView.context.getResourceColor(R.attr.colorAccent)
+            // KMK -->
+            adapter.colorScheme.secondary
         } else {
-            itemView.context.getResourceColor(R.attr.colorOnSurface)
+            adapter.colorScheme.onSurface
+            // KMK <--
         }
 
         binding.download.drawable.setTint(color)
@@ -71,9 +76,11 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
 
     fun updateChapterUpdatesIcon(setTint: Boolean) {
         val color = if (setTint) {
-            itemView.context.getResourceColor(R.attr.colorAccent)
+            // KMK -->
+            adapter.colorScheme.secondary
         } else {
-            itemView.context.getResourceColor(R.attr.colorOnSurface)
+            adapter.colorScheme.onSurface
+            // KMK <--
         }
 
         binding.getChapterUpdates.drawable.setTint(color)

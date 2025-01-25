@@ -6,8 +6,10 @@ import android.content.res.ColorStateList
 import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
@@ -98,6 +100,12 @@ class AndroidViewColorScheme(
     @ColorInt
     val onSurface = colorScheme.onSurface.toArgb()
 
+    @ColorInt
+    val secondary = colorScheme.secondary.toArgb()
+
+    @ColorInt
+    val surfaceElevation = colorScheme.surfaceColorAtElevation(4.dp).toArgb()
+
     /* MaterialSwitch */
     val trackTintList = ColorStateList(
         arrayOf(
@@ -139,6 +147,19 @@ class AndroidViewColorScheme(
         intArrayOf(
             primary,
             onSurface,
+        ),
+    )
+
+    val imageButtonTintList = ColorStateList(
+        arrayOf(
+            intArrayOf(android.R.attr.state_pressed), // Pressed state
+            intArrayOf(android.R.attr.state_focused), // Focused state
+            intArrayOf(), // Default state
+        ),
+        intArrayOf(
+            primary, // Pressed color
+            primary, // Focused color
+            primary, // Default color
         ),
     )
 }

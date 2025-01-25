@@ -1,14 +1,21 @@
 package eu.kanade.tachiyomi.ui.manga.merged
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 
 /**
  * Adapter storing a list of merged manga.
  *
- * @param controller the context of the fragment containing this adapter.
+ * @param listener the context of the fragment containing this adapter.
  * @param isPriorityOrder if deduplication mode is based on priority
  */
-class EditMergedMangaAdapter(listener: EditMergedSettingsState, var isPriorityOrder: Boolean) :
+class EditMergedMangaAdapter(
+    listener: EditMergedSettingsState,
+    var isPriorityOrder: Boolean,
+    // KMK -->
+    val colorScheme: AndroidViewColorScheme,
+    // KMK <--
+) :
     FlexibleAdapter<EditMergedMangaItem>(null, listener, true),
     EditMergedSettingsHeaderAdapter.SortingListener {
 

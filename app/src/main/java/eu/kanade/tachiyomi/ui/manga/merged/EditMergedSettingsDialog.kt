@@ -67,7 +67,13 @@ class EditMergedSettingsState(
         val isPriorityOrder =
             mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
 
-        mergedMangaAdapter = EditMergedMangaAdapter(this, isPriorityOrder)
+        mergedMangaAdapter = EditMergedMangaAdapter(
+            this,
+            isPriorityOrder,
+            // KMK -->
+            colorScheme,
+            // KMK <--
+        )
         mergedMangaHeaderAdapter = EditMergedSettingsHeaderAdapter(
             this,
             mergedMangaAdapter!!,
