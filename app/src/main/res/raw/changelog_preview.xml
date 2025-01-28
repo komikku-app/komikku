@@ -9,7 +9,7 @@
         <changelogtext>[b]New:[/b] feat: add global search shortcut to SmartSearch</changelogtext>
         <changelogtext>[b]Improve:[/b] update website link</changelogtext>
         <changelogtext>[b]Improve:[/b] add webview to Extension detail screen</changelogtext>
-        <changelogtext>[b]Improve:[/b] Restore chapter's bookmark &amp; oldest  dateUpload from backup</changelogtext>
+        <changelogtext>[b]Improve:[/b] Restore chapter's bookmark &amp; oldest dateUpload from backup</changelogtext>
         <changelogtext>[b]Improve:[/b] Update Bangumi</changelogtext>
         <changelogtext>[b]Fix:[/b] custom theme color in various AndroidView</changelogtext>
         <changelogtext>[b]Fix:[/b] Mangadex fix alt title being removed by cleanDescription</changelogtext>
