@@ -108,11 +108,11 @@ class AndroidSourceManager(
                                     put(id, EHentai(id, true, context, lang))
                                 }
                             }
-                            // SY -->
-                            put(MERGED_SOURCE_ID, MergedSource())
-                            // SY <--
                         }
                         // KMK <--
+                        // SY -->
+                        put(MERGED_SOURCE_ID, MergedSource())
+                        // SY <--
                     }
                     extensions.forEach { extension ->
                         extension.sources.mapNotNull { it.toInternalSource(/* KMK --> */isHentaiEnabled/* KMK <-- */) }.forEach {
