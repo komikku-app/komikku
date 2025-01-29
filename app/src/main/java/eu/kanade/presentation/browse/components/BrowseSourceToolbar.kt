@@ -41,6 +41,7 @@ fun BrowseSourceToolbar(
     // KMK -->
     onSettingsClick: (() -> Unit)?,
     // KMK <--
+    onBlockruleClick: () -> Unit,
     onSearch: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     // KMK -->
@@ -128,6 +129,12 @@ fun BrowseSourceToolbar(
                                 ),
                             )
                         }
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(KMR.strings.block_rule_manage),
+                                onClick = onBlockruleClick,
+                            ),
+                        )
                     }
                     .build(),
             )

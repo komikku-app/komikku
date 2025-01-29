@@ -6,6 +6,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -31,7 +32,10 @@ import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.getMainSource
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -56,6 +60,8 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.domain.blockrule.interactor.GetBlockrules
+import tachiyomi.domain.blockrule.model.Blockrule
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -79,6 +85,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.time.Instant
+import java.util.regex.PatternSyntaxException
 import eu.kanade.tachiyomi.source.model.Filter as SourceModelFilter
 
 open class BrowseSourceScreenModel(
@@ -110,6 +117,7 @@ open class BrowseSourceScreenModel(
     private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
+    getBlockrules: GetBlockrules = Injekt.get(),
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
@@ -196,6 +204,12 @@ open class BrowseSourceScreenModel(
      * Flow of Pager flow tied to [State.listing]
      */
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
+    private val blockrulesFlow = getBlockrules.subscribeEnable(true)
+        .stateIn(
+            scope = ioCoroutineScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList(),
+        )
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
@@ -213,10 +227,40 @@ open class BrowseSourceScreenModel(
                         .stateIn(ioCoroutineScope)
                 }
                     .filter { !hideInLibraryItems || !it.value.first.favorite }
-            }
-                .cachedIn(ioCoroutineScope)
+                    .filter { mangaState ->
+                        val listBlock = blockrulesFlow.value
+                        val m = mangaState.value.first
+                        !listBlock.fastAny { b ->
+                            when (b.type) {
+                                Blockrule.Type.AUTHOR_EQUALS -> b.rule == m.author
+                                Blockrule.Type.AUTHOR_CONTAINS -> m.author?.contains(b.rule)
+                                Blockrule.Type.TITLE_REGEX -> b.rule.toRegexOrNull()?.matches(m.title)
+                                Blockrule.Type.TITLE_CONTAINS -> m.title.contains(b.rule)
+                                Blockrule.Type.TITLE_STARTS_WITH -> m.title.startsWith(b.rule)
+                                Blockrule.Type.TITLE_ENDS_WITH -> m.title.endsWith(b.rule)
+                                Blockrule.Type.TITLE_EQUALS -> m.title == b.rule
+                                Blockrule.Type.DESCRIPTION_REGEX -> m.description?.let {
+                                    b.rule.toRegexOrNull()?.matches(it)
+                                }
+                                Blockrule.Type.DESCRIPTION_CONTAINS -> m.description?.contains(b.rule)
+                            }?.also { boolean ->
+                                if (boolean) {
+                                    val newMap =
+                                        state.value.blockList.mutate { it[m] = b }
+                                    mutableState.update { it.copy(blockList = newMap) }
+                                }
+                            } ?: false
+                        }
+                    }
+            }.cachedIn(ioCoroutineScope)
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
+
+    private fun String.toRegexOrNull() = try {
+        toRegex()
+    } catch (e: PatternSyntaxException) {
+        null
+    }
 
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -512,6 +556,7 @@ open class BrowseSourceScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
+        val blockList: PersistentMap<Manga, Blockrule> = persistentMapOf(),
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
