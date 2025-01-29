@@ -1,3 +1,4 @@
+-- NOTE: must update MERGED_SOURCE_ID (6969) here
 CREATE VIEW libraryView AS
 SELECT
     M.*,
