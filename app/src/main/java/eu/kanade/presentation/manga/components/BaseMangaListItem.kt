@@ -51,8 +51,13 @@ fun BaseMangaListItem(
                 },
                 // KMK <--
             )
-            .height(56.dp)
-            .padding(horizontal = MaterialTheme.padding.medium),
+            .height(76.dp)
+            .padding(
+                horizontal = MaterialTheme.padding.medium,
+                // KMK -->
+                vertical = 3.dp,
+                // KMK <--
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         cover()
@@ -62,9 +67,11 @@ fun BaseMangaListItem(
 }
 
 private val defaultCover: @Composable RowScope.(Manga, () -> Unit) -> Unit = { manga, onClick ->
-    MangaCover.Square(
+    MangaCover.Book(
         modifier = Modifier
-            .padding(vertical = MaterialTheme.padding.small)
+            // KMK -->
+            // .padding(vertical = MaterialTheme.padding.small)
+            // KMK <--
             .fillMaxHeight(),
         data = manga,
         onClick = onClick,
@@ -81,7 +88,9 @@ private val defaultContent: @Composable RowScope.(Manga) -> Unit = {
             modifier = Modifier
                 .padding(start = MaterialTheme.padding.medium),
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
+            // KMK -->
+            // maxLines = 1,
+            // KMK <--
             style = MaterialTheme.typography.bodyMedium,
         )
     }

@@ -14,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
@@ -41,8 +43,17 @@ fun LibraryPager(
     onLongClickManga: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
 ) {
+    // KMK -->
+    var containerHeight by remember { mutableIntStateOf(0) }
+    // KMK <--
     HorizontalPager(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            // KMK -->
+            .onGloballyPositioned { layoutCoordinates ->
+                containerHeight = layoutCoordinates.size.height
+            },
+        // KMK <--
         state = state,
         verticalAlignment = Alignment.Top,
     ) { page ->
@@ -63,19 +74,24 @@ fun LibraryPager(
         }
 
         val displayMode by getDisplayMode(page)
-        val columns by if (displayMode != LibraryDisplayMode.List) {
-            val configuration = LocalConfiguration.current
-            val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
+        val configuration = LocalConfiguration.current
+        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val columns by // KMK --> if (displayMode != LibraryDisplayMode.List) { // KMK <--
             remember(isLandscape) { getColumnsForOrientation(isLandscape) }
-        } else {
-            remember { mutableIntStateOf(0) }
-        }
+        // KMK -->
+        // } else {
+        //     remember { mutableIntStateOf(0) }
+        // }
+        // KMK <--
 
         when (displayMode) {
             LibraryDisplayMode.List -> {
                 LibraryList(
                     items = library,
+                    // KMK -->
+                    entries = columns,
+                    containerHeight = containerHeight,
+                    // KMK <--
                     contentPadding = contentPadding,
                     selection = selectedManga,
                     onClick = onClickManga,

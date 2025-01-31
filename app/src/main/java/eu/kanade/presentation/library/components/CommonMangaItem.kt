@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -438,6 +439,8 @@ fun MangaListItem(
     coverAlpha: Float = 1f,
     onClickContinueReading: (() -> Unit)? = null,
     // KMK -->
+    entries: Int = 0,
+    containerHeight: Int = 0,
     libraryColored: Boolean = true,
     // KMK <--
 ) {
@@ -448,17 +451,27 @@ fun MangaListItem(
     Row(
         modifier = Modifier
             .selectedBackground(isSelected)
-            .height(56.dp)
+            .height(
+                // KMK -->
+                when (entries) {
+                    0 -> 76.dp
+                    else -> {
+                        val density = LocalDensity.current
+                        with(density) { (containerHeight / entries).toDp() } - (3 / entries).dp
+                    }
+                },
+                // KMK <--
+            )
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // KMK -->
         if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
-            MangaCoverHide.Square(
+            MangaCoverHide.Book(
                 modifier = Modifier
                     .fillMaxHeight(),
                 bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
@@ -466,7 +479,7 @@ fun MangaListItem(
             )
         } else {
             // KMK <--
-            MangaCover.Square(
+            MangaCover.Book(
                 modifier = Modifier
                     // KMK -->
                     // .alpha(coverAlpha)
@@ -486,7 +499,9 @@ fun MangaListItem(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .weight(1f),
-            maxLines = 2,
+            // KMK -->
+            // maxLines = 2,
+            // KMK <--
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
         )
