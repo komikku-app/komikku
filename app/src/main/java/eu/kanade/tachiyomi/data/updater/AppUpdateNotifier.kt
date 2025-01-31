@@ -216,13 +216,19 @@ internal class AppUpdateNotifier(private val context: Context) {
     }
 
     // KMK -->
-    fun onInstalling() {
+    fun onInstalling(uri: Uri) {
+        val installIntent = NotificationHandler.installApkPendingActivity(context, uri)
         with(notificationBuilder) {
             setContentText(context.stringResource(MR.strings.ext_installing))
             setSmallIcon(android.R.drawable.stat_sys_download)
             setProgress(0, 0, true)
             setOnlyAlertOnce(true)
             clearActions()
+            addAction(
+                R.drawable.ic_system_update_alt_white_24dp,
+                context.stringResource(KMR.strings.action_manual_install),
+                installIntent,
+            )
             show(Notifications.ID_APP_INSTALL)
         }
     }

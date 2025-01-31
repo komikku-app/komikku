@@ -138,6 +138,7 @@
 
     <!-- About -->
     <string name="changelogs">Change Logs</string>
+    <string name="action_manual_install">Manual install</string>
     <string name="manual_download">Manual download</string>
 
     <!-- Browse settings -->
