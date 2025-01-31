@@ -46,7 +46,6 @@ val migrations: List<Migration>
         MoveEncryptionSettingsToAppStateMigration(),
         TrustExtensionRepositoryMigration(),
         // KMK -->
-        OfficialExtensionRepositoryMigration(),
         IntegratedHentaiMigration(),
         SetupAppUpdateMigration(),
         // KMK <--

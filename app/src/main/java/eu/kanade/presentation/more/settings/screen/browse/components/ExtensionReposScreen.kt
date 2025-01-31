@@ -24,7 +24,9 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.screen.browse.RepoScreenState
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.collections.immutable.persistentSetOf
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_WEBSITE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_SIGNATURE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KOMIKKU_SIGNATURE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.REPO_HELP
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -79,7 +81,7 @@ fun ExtensionReposScreen(
                 // KMK -->
                 help = {
                     TextButton(
-                        onClick = { context.openInBrowser(OFFICIAL_REPO_WEBSITE) },
+                        onClick = { context.openInBrowser(REPO_HELP) },
                         modifier = Modifier.padding(top = MaterialTheme.padding.small),
                     ) {
                         Icon(imageVector = Icons.AutoMirrored.Outlined.Help, contentDescription = null)
@@ -114,8 +116,8 @@ fun ExtensionReposScreen(
 private fun ExtensionReposScreenPreview() {
     val state = RepoScreenState.Success(
         repos = persistentSetOf(
-            ExtensionRepo("https://raw.githubusercontent.com/komikku-app/extensions/repo", "Komikku", "", "", "key1"),
-            ExtensionRepo("https://raw.githubusercontent.com/keiyoushi/extensions/repo", "Keiyoushi", "", "", "key2"),
+            ExtensionRepo("https://repo", "Komikku", "", "", KOMIKKU_SIGNATURE),
+            ExtensionRepo("https://repo", "Keiyoushi", "", "", KEIYOUSHI_SIGNATURE),
             ExtensionRepo("https://repo", "Other", "", "", "key2"),
         ),
         disabledRepos = setOf("https://repo"),

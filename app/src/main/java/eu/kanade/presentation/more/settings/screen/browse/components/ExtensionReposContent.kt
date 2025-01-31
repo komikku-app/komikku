@@ -36,6 +36,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_SIGNATURE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KOMIKKU_SIGNATURE
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
@@ -101,7 +103,7 @@ private fun ExtensionRepoListItem(
             modifier = Modifier
                 .padding(start = MaterialTheme.padding.medium),
         ) {
-            val resId = repoResId(repo.baseUrl)
+            val resId = repoResId(repo.signingKeyFingerprint)
             Image(
                 bitmap = ImageBitmap.imageResource(id = resId),
                 contentDescription = null,
@@ -179,9 +181,9 @@ private fun ExtensionRepoListItem(
 }
 
 // KMK -->
-fun repoResId(baseUrl: String) = when (baseUrl) {
-    "https://raw.githubusercontent.com/komikku-app/extensions/repo" -> R.mipmap.komikku
-    "https://raw.githubusercontent.com/keiyoushi/extensions/repo" -> R.mipmap.keiyoushi
+fun repoResId(signKey: String) = when (signKey) {
+    KOMIKKU_SIGNATURE -> R.mipmap.komikku
+    KEIYOUSHI_SIGNATURE -> R.mipmap.keiyoushi
     else -> R.mipmap.extension
 }
 
@@ -189,8 +191,8 @@ fun repoResId(baseUrl: String) = when (baseUrl) {
 @Composable
 fun ExtensionReposContentPreview() {
     val repos = persistentSetOf(
-        ExtensionRepo("https://raw.githubusercontent.com/komikku-app/extensions/repo", "Komikku", "", "", "key1"),
-        ExtensionRepo("https://raw.githubusercontent.com/keiyoushi/extensions/repo", "Keiyoushi", "", "", "key2"),
+        ExtensionRepo("https://repo", "Komikku", "", "", KOMIKKU_SIGNATURE),
+        ExtensionRepo("https://repo", "Keiyoushi", "", "", KEIYOUSHI_SIGNATURE),
         ExtensionRepo("https://repo", "Other", "", "", "key2"),
     )
     ExtensionReposContent(
