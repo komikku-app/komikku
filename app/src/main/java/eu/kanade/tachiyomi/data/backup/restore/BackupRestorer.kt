@@ -184,11 +184,14 @@ class BackupRestorer(
                     backupManga to restoredManga
                 }
             }
+            .also { backup2restored ->
+                mangaRestorer.restoreCategoriesBulk(backup2restored, backupCategories)
+            }
             .forEach { (backupManga, restoredManga) ->
                 ensureActive()
 
                 try {
-                    mangaRestorer.restore(backupManga, restoredManga, backupCategories)
+                    mangaRestorer.restore(backupManga, restoredManga)
                 } catch (e: Exception) {
                     val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
                     errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")

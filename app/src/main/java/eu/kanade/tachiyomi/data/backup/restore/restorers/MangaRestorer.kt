@@ -113,15 +113,12 @@ class MangaRestorer(
     suspend fun restore(
         backupManga: BackupManga,
         restoredManga: Manga,
-        backupCategories: List<BackupCategory>,
     ) {
         handler.await(inTransaction = true) {
 
             restoreMangaDetails(
                 manga = restoredManga,
                 chapters = backupManga.chapters,
-                categories = backupManga.categories,
-                backupCategories = backupCategories,
                 history = backupManga.history,
                 tracks = backupManga.tracking,
                 excludedScanlators = backupManga.excludedScanlators,
@@ -370,8 +367,6 @@ class MangaRestorer(
     private suspend fun restoreMangaDetails(
         manga: Manga,
         chapters: List<BackupChapter>,
-        categories: List<Long>,
-        backupCategories: List<BackupCategory>,
         history: List<BackupHistory>,
         tracks: List<BackupTracking>,
         excludedScanlators: List<String>,
@@ -381,7 +376,6 @@ class MangaRestorer(
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreCategories(manga, categories, backupCategories)
         restoreChapters(manga, chapters)
         restoreTracking(manga, tracks)
         restoreHistory(manga, history)
@@ -402,9 +396,8 @@ class MangaRestorer(
      * @param manga the manga whose categories have to be restored.
      * @param categories the categories to restore.
      */
-    private suspend fun restoreCategories(
-        manga: Manga,
-        categories: List<Long>,
+    suspend fun restoreCategoriesBulk(
+        backup2restored: List<Pair<BackupManga, Manga>>,
         backupCategories: List<BackupCategory>,
     ) {
         val dbCategories = getCategories.await()
@@ -412,19 +405,23 @@ class MangaRestorer(
 
         val backupCategoriesByOrder = backupCategories.associateBy { it.order }
 
-        val mangaCategoriesToUpdate = categories.mapNotNull { backupCategoryOrder ->
-            backupCategoriesByOrder[backupCategoryOrder]?.let { backupCategory ->
-                dbCategoriesByName[backupCategory.name]?.let { dbCategory ->
-                    Pair(manga.id, dbCategory.id)
-                }
-            }
-        }
+        handler.await(true) {
+            backup2restored.forEach { (backupManga, manga) ->
+                val categories = backupManga.categories
 
-        if (mangaCategoriesToUpdate.isNotEmpty()) {
-            handler.await(true) {
-                mangas_categoriesQueries.deleteMangaCategoryByMangaId(manga.id)
-                mangaCategoriesToUpdate.forEach { (mangaId, categoryId) ->
-                    mangas_categoriesQueries.insert(mangaId, categoryId)
+                val mangaCategoriesToUpdate = categories.mapNotNull { backupCategoryOrder ->
+                    backupCategoriesByOrder[backupCategoryOrder]?.let { backupCategory ->
+                        dbCategoriesByName[backupCategory.name]?.let { dbCategory ->
+                            Pair(manga.id, dbCategory.id)
+                        }
+                    }
+                }
+
+                if (mangaCategoriesToUpdate.isNotEmpty()) {
+                    mangas_categoriesQueries.deleteMangaCategoryByMangaId(manga.id)
+                    mangaCategoriesToUpdate.forEach { (mangaId, categoryId) ->
+                        mangas_categoriesQueries.insert(mangaId, categoryId)
+                    }
                 }
             }
         }
