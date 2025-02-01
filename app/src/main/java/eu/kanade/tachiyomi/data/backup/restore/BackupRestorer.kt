@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
-import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -175,18 +174,28 @@ class BackupRestorer(
         backupCategories: List<BackupCategory>,
     ) = launch {
         mangaRestorer.sortByNew(backupMangas)
-            .forEach {
+            .let { backupMangas ->
+                val restoredMangas = mangaRestorer.restoreMangas(backupMangas)
+                backupMangas.mapNotNull { backupManga ->
+                    val restoredManga = restoredMangas.find { restoredManga ->
+                        restoredManga.url == backupManga.url && restoredManga.source == backupManga.source
+                    }
+                    if (restoredManga == null) return@mapNotNull null
+                    backupManga to restoredManga
+                }
+            }
+            .forEach { (backupManga, restoredManga) ->
                 ensureActive()
 
                 try {
-                    mangaRestorer.restore(it, backupCategories)
+                    mangaRestorer.restore(backupManga, restoredManga, backupCategories)
                 } catch (e: Exception) {
-                    val sourceName = sourceMapping[it.source] ?: it.source.toString()
-                    errors.add(Date() to "${it.title} [$sourceName]: ${e.message}")
+                    val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
+                    errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")
                 }
 
                 restoreProgress += 1
-                notifier.showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
+                notifier.showRestoreProgress(backupManga.title, restoreProgress, restoreAmount, isSync)
             }
     }
 

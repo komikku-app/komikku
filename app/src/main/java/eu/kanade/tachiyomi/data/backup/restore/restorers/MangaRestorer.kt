@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.EXHMigrations
+import exh.source.MERGED_SOURCE_ID
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
@@ -17,6 +18,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.FetchInterval
+import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetMangaByUrlAndSourceId
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
@@ -49,6 +51,7 @@ class MangaRestorer(
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     // SY <--
+    private val getAllManga: GetAllManga = Injekt.get(),
 ) {
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
@@ -73,23 +76,46 @@ class MangaRestorer(
     }
 
     /**
+     * Restore a list of mangas
+     */
+    suspend fun restoreMangas(
+        backupMangas: List<BackupManga>,
+    ): List<Manga> {
+        return handler.await(inTransaction = true) {
+            val bkMangas = backupMangas.map {
+                EXHMigrations.migrateBackupEntry(it.getMangaImpl())
+            }
+            val dbMangas = getAllManga.await()
+                .groupBy { it.source }
+                .toList()
+                .associate { it.first to it.second.associateBy { manga -> manga.url } }
+
+            val (existingMangas, newMangas) = bkMangas.map { backupManga ->
+                val dbManga = dbMangas[backupManga.source]?.get(backupManga.url)
+                if (dbManga == null) {
+                    backupManga
+                } else {
+                    if (backupManga.version > dbManga.version) {
+                        dbManga.copyFrom(backupManga)
+                    } else {
+                        backupManga.copyFrom(dbManga).copy(id = dbManga.id)
+                    }
+                }
+            }.partition { it.id > 0 }
+
+            insertMangasBulk(newMangas) + updateMangas(existingMangas)
+        }
+    }
+
+    /**
      * Restore a single manga
      */
     suspend fun restore(
         backupManga: BackupManga,
+        restoredManga: Manga,
         backupCategories: List<BackupCategory>,
     ) {
         handler.await(inTransaction = true) {
-            val dbManga = findExistingManga(backupManga)
-            var manga = backupManga.getMangaImpl()
-            // SY -->
-            manga = EXHMigrations.migrateBackupEntry(manga)
-            // SY <--
-            val restoredManga = if (dbManga == null) {
-                restoreNewManga(manga)
-            } else {
-                restoreExistingManga(manga, dbManga)
-            }
 
             restoreMangaDetails(
                 manga = restoredManga,
@@ -110,18 +136,6 @@ class MangaRestorer(
                 mangasQueries.resetIsSyncing()
                 chaptersQueries.resetIsSyncing()
             }
-        }
-    }
-
-    private suspend fun findExistingManga(backupManga: BackupManga): Manga? {
-        return getMangaByUrlAndSourceId.await(backupManga.url, backupManga.source)
-    }
-
-    private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
-        return if (manga.version > dbManga.version) {
-            updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
-        } else {
-            updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
         }
     }
 
@@ -171,14 +185,36 @@ class MangaRestorer(
         return manga
     }
 
-    private suspend fun restoreNewManga(
-        manga: Manga,
-    ): Manga {
-        return manga.copy(
-            initialized = manga.description != null,
-            id = insertManga(manga),
-            version = manga.version,
-        )
+    suspend fun updateMangas(mangas: List<Manga>): List<Manga> {
+        handler.await(true) {
+            mangas.forEach { manga ->
+                mangasQueries.update(
+                    source = manga.source,
+                    url = manga.url,
+                    artist = manga.artist,
+                    author = manga.author,
+                    description = manga.description,
+                    genre = manga.genre?.joinToString(separator = ", "),
+                    title = manga.title,
+                    status = manga.status,
+                    thumbnailUrl = manga.thumbnailUrl,
+                    favorite = manga.favorite,
+                    lastUpdate = manga.lastUpdate,
+                    nextUpdate = null,
+                    calculateInterval = null,
+                    initialized = manga.initialized,
+                    viewer = manga.viewerFlags,
+                    chapterFlags = manga.chapterFlags,
+                    coverLastModified = manga.coverLastModified,
+                    dateAdded = manga.dateAdded,
+                    mangaId = manga.id,
+                    updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
+                    version = manga.version,
+                    isSyncing = 1,
+                )
+            }
+        }
+        return mangas
     }
 
     private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
@@ -299,31 +335,35 @@ class MangaRestorer(
      *
      * @return id of [Manga], null if not found
      */
-    private suspend fun insertManga(manga: Manga): Long {
-        return handler.awaitOneExecutable(true) {
-            mangasQueries.insert(
-                source = manga.source,
-                url = manga.url,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre,
-                title = manga.title,
-                status = manga.status,
-                thumbnailUrl = manga.thumbnailUrl,
-                favorite = manga.favorite,
-                lastUpdate = manga.lastUpdate,
-                nextUpdate = 0L,
-                calculateInterval = 0L,
-                initialized = manga.initialized,
-                viewerFlags = manga.viewerFlags,
-                chapterFlags = manga.chapterFlags,
-                coverLastModified = manga.coverLastModified,
-                dateAdded = manga.dateAdded,
-                updateStrategy = manga.updateStrategy,
-                version = manga.version,
-            )
-            mangasQueries.selectLastInsertedRowId()
+    suspend fun insertMangasBulk(mangas: List<Manga>): List<Manga> {
+        return handler.await(inTransaction = true) {
+            mangas.map { manga ->
+                mangasQueries.insert(
+                    source = manga.source,
+                    url = manga.url,
+                    artist = manga.artist,
+                    author = manga.author,
+                    description = manga.description,
+                    genre = manga.genre,
+                    title = manga.title,
+                    status = manga.status,
+                    thumbnailUrl = manga.thumbnailUrl,
+                    favorite = manga.favorite,
+                    lastUpdate = manga.lastUpdate,
+                    nextUpdate = manga.nextUpdate,
+                    calculateInterval = manga.fetchInterval.toLong(),
+                    initialized = manga.initialized,
+                    viewerFlags = manga.viewerFlags,
+                    chapterFlags = manga.chapterFlags,
+                    coverLastModified = manga.coverLastModified,
+                    dateAdded = manga.dateAdded,
+                    updateStrategy = manga.updateStrategy,
+                    version = manga.version,
+                )
+
+                val lastInsertId = mangasQueries.selectLastInsertedRowId().executeAsOne()
+                manga.copy(id = lastInsertId)
+            }
         }
     }
 
