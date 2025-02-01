@@ -175,7 +175,6 @@ class BackupRestorer(
         backupCategories: List<BackupCategory>,
     ) = launch {
         mangaRestorer.sortByNew(backupMangas)
-            /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */
             .forEach {
                 ensureActive()
 
