@@ -285,6 +285,7 @@ class MangaScreen(
             onAddToLibraryClicked = {
                 screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                if (!successState.manga.favorite) screenModel.showTrackDialog()
             },
             // SY -->
             onWebViewClicked = {
