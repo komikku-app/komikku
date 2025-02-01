@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.13.0" changeDate="January 29, 2025">
+    <changelogversion versionName="1.13.0" changeDate="February 01, 2025">
         <changelogtext>[b]New:[/b] feat: unify recommendation screens and add more sources</changelogtext>
         <changelogtext>[b]New:[/b] built-in EH compatible with extension</changelogtext>
         <changelogtext>[b]New:[/b] Notification rich info</changelogtext>
@@ -18,7 +18,11 @@
         <changelogtext>[b]Fix:[/b] (myanimelist): Fix nullability and fallback to medium cover if large cover is null</changelogtext>
         <changelogtext>[b]Fix:[/b] (download): Making sure archive tmp file is created properly</changelogtext>
     </changelogversion>
-    <changelogversion versionName="1.12.3" changeDate="December 31, 2024">
+    <changelogversion versionName="1.12.4" changeDate="February 01, 2025">
+        <changelogtext>[b]New:[/b] Remove extensions repo</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow manual install app update</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.12.3" changeDate="January 29, 2025">
         <changelogtext>[b]New:[/b] Group update entries together</changelogtext>
         <changelogtext>[b]New:[/b] Drag &amp; Drop to reorder category quickly in Settings/Category screen</changelogtext>
         <changelogtext>[b]Improve:[/b] Fast browsing</changelogtext>

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r" changeDate="February 01, 2025">
+        <changelogtext>[b]New:[/b] Remove extensions repo</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow manual install app update</changelogtext>
+        <changelogtext>[b]Fix:[/b] loading Merged source should be independent of integrated-H switch</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9715" changeDate="January 29, 2025">
         <changelogtext>[b]New:[/b] feat: unify recommendation screens and add more sources</changelogtext>
         <changelogtext>[b]New:[/b] built-in EH compatible with extension</changelogtext>

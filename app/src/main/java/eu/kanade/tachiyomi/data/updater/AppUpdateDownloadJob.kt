@@ -206,9 +206,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             val installParams = PackageInstaller.SessionParams(
                 PackageInstaller.SessionParams.MODE_FULL_INSTALL,
             )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                installParams.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
-            }
+            installParams.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
             val sessionId = packageInstaller.createSession(installParams)
             val session = packageInstaller.openSession(sessionId)
             session.openWrite("package", 0, -1).use { packageInSession ->
@@ -228,7 +226,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             )
             val statusReceiver = pendingIntent.intentSender
             session.commit(statusReceiver)
-            notifier.onInstalling()
+            notifier.onInstalling(file.getUriCompat(context))
             withContext(Dispatchers.IO) {
                 data.close()
             }

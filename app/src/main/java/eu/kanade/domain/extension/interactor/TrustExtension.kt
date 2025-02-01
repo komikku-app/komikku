@@ -14,7 +14,7 @@ class TrustExtension(
 
     suspend fun isTrusted(pkgInfo: PackageInfo, fingerprints: List<String>): Boolean {
         // KMK -->
-        if (fingerprints.contains(CreateExtensionRepo.OFFICIAL_REPO_SIGNATURE)) return true
+        if (fingerprints.contains(CreateExtensionRepo.KOMIKKU_SIGNATURE)) return true
         // KMK <--
         val trustedFingerprints = extensionRepoRepository.getAll().map { it.signingKeyFingerprint }.toHashSet()
         val key = "${pkgInfo.packageName}:${PackageInfoCompat.getLongVersionCode(pkgInfo)}:${fingerprints.last()}"

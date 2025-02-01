@@ -1,9 +1,6 @@
 package eu.kanade.presentation.more.settings.screen.browse.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -15,16 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.delay
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_BASE_URL
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -44,37 +37,19 @@ fun ExtensionRepoCreateDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            // KMK -->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween, // Distribute space between items
-                verticalAlignment = Alignment.CenterVertically, // Align items vertically
+            TextButton(
+                enabled = name.isNotEmpty() && !nameAlreadyExists,
+                onClick = {
+                    onCreate(name)
+                    onDismissRequest()
+                },
             ) {
-                TextButton(
-                    onClick = {
-                        name = "$OFFICIAL_REPO_BASE_URL/index.min.json"
-                    },
-                ) {
-                    Text(text = stringResource(MR.strings.label_default))
-                }
-                Row(
-                    // Group the right-aligned elements
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = onDismissRequest) {
-                        Text(text = stringResource(MR.strings.action_cancel))
-                    }
-                    // KMK <--
-                    TextButton(
-                        enabled = name.isNotEmpty() && !nameAlreadyExists,
-                        onClick = {
-                            onCreate(name)
-                            onDismissRequest()
-                        },
-                    ) {
-                        Text(text = stringResource(MR.strings.action_add))
-                    }
-                }
+                Text(text = stringResource(MR.strings.action_add))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
             }
         },
         title = {
@@ -114,14 +89,6 @@ fun ExtensionRepoCreateDialog(
         focusRequester.requestFocus()
     }
 }
-
-// KMK -->
-@Preview(showBackground = true)
-@Composable
-fun ExtensionRepoCreateDialogPreview() {
-    ExtensionRepoCreateDialog({ }, { }, persistentSetOf())
-}
-// KMK <--
 
 @Composable
 fun ExtensionRepoDeleteDialog(
