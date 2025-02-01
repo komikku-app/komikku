@@ -6,7 +6,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
@@ -32,10 +36,21 @@ fun BrowseSourceList(
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
+    entries: Int,
+    topBarHeight: Int,
     // KMK <--
 ) {
+    // KMK -->
+    var containerHeight by remember { mutableIntStateOf(0) }
+    // KMK <--
     LazyColumn(
         contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
+        // KMK -->
+        modifier = Modifier
+            .onGloballyPositioned { layoutCoordinates ->
+                containerHeight = layoutCoordinates.size.height - topBarHeight
+            },
+        // KMK <--
     ) {
         item {
             if (mangaList.loadState.prepend is LoadState.Loading) {
@@ -59,6 +74,8 @@ fun BrowseSourceList(
                 onLongClick = { onMangaLongClick(manga) },
                 // KMK -->
                 isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                entries = entries,
+                containerHeight = containerHeight,
                 // KMK <--
             )
         }
@@ -81,6 +98,8 @@ internal fun BrowseSourceListItem(
     onLongClick: () -> Unit = onClick,
     // KMK -->
     isSelected: Boolean = false,
+    entries: Int,
+    containerHeight: Int,
     // KMK <--
 ) {
     MangaListItem(
@@ -128,5 +147,9 @@ internal fun BrowseSourceListItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
+        // KMK -->
+        entries = entries,
+        containerHeight = containerHeight,
+        // KMK <--
     )
 }

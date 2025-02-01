@@ -251,6 +251,18 @@ open class BrowseSourceScreenModel(
     }
     // SY <--
 
+    // KMK -->
+    // returns the number from the size slider
+    fun getColumnsPreferenceForCurrentOrientation(orientation: Int): Int {
+        val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
+        return if (isLandscape) {
+            libraryPreferences.landscapeColumns()
+        } else {
+            libraryPreferences.portraitColumns()
+        }.get()
+    }
+    // KMK <--
+
     fun resetFilters() {
         // KMK -->
         val source = source

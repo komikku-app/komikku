@@ -60,6 +60,8 @@ fun BrowseSourceContent(
     onMangaLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
+    entries: Int = 0,
+    topBarHeight: Int = 0,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -189,6 +191,8 @@ fun BrowseSourceContent(
                 onMangaLongClick = onMangaLongClick,
                 // KMK -->
                 selection = selection,
+                entries = entries,
+                topBarHeight = topBarHeight,
                 // KMK <--
             )
         }
