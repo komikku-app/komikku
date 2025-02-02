@@ -17,4 +17,14 @@ class GetChaptersByMangaId(
             emptyList()
         }
     }
+
+    suspend fun await(mangaIds: List<Long>): Map<Long, List<Chapter>> {
+        return try {
+            chapterRepository.getAllChaptersForMangaIds(mangaIds)
+                .groupBy { it.mangaId }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            emptyMap()
+        }
+    }
 }

@@ -86,6 +86,12 @@ class ChapterRepositoryImpl(
         }
     }
 
+    override suspend fun getAllChaptersForMangaIds(mangaIds: List<Long>): List<Chapter> {
+        return handler.awaitList {
+            chaptersQueries.getAllChaptersForMangaIds(mangaIds, ChapterMapper::mapChapter)
+        }
+    }
+
     override suspend fun getScanlatorsByMangaId(mangaId: Long): List<String> {
         return handler.awaitList {
             chaptersQueries.getScanlatorsByMangaId(mangaId) { it.orEmpty() }

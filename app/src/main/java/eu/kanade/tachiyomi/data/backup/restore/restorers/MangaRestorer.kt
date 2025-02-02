@@ -118,7 +118,6 @@ class MangaRestorer(
 
             restoreMangaDetails(
                 manga = restoredManga,
-                chapters = backupManga.chapters,
                 history = backupManga.history,
                 tracks = backupManga.tracking,
                 excludedScanlators = backupManga.excludedScanlators,
@@ -214,21 +213,29 @@ class MangaRestorer(
         return mangas
     }
 
-    private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
-        val dbChaptersByUrl = getChaptersByMangaId.await(manga.id)
-            .associateBy { it.url }
+    suspend fun restoreChaptersBulk(
+        backups: List<Pair<Manga, List<BackupChapter>>>,
+    ) {
+        val mangaIds = backups.map { it.first.id }
+        val dbChaptersByIdUrl = getChaptersByMangaId.await(mangaIds).toList()
+            .associate {
+                it.first to it.second.associateBy { chapter -> chapter.url }
+            }
 
-        val (existingChapters, newChapters) = backupChapters
-            .mapNotNull { backupChapter ->
-                val chapter = backupChapter.toChapterImpl().copy(mangaId = manga.id)
-                val dbChapter = dbChaptersByUrl[chapter.url]
+        val (existingChapters, newChapters) = backups
+            .map { (manga, backupChapters) ->
+                backupChapters.mapNotNull { backupChapter ->
+                    val chapter = backupChapter.toChapterImpl().copy(mangaId = manga.id)
+                    val dbChapter = dbChaptersByIdUrl[manga.id]?.get(chapter.url)
 
-                when {
-                    dbChapter == null -> chapter // New chapter
-                    chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
-                    else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
+                    when {
+                        dbChapter == null -> chapter // New chapter
+                        chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
+                        else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
+                    }
                 }
             }
+            .flatten()
             .partition { it.id > 0 }
 
         insertNewChapters(newChapters)
@@ -366,7 +373,6 @@ class MangaRestorer(
 
     private suspend fun restoreMangaDetails(
         manga: Manga,
-        chapters: List<BackupChapter>,
         history: List<BackupHistory>,
         tracks: List<BackupTracking>,
         excludedScanlators: List<String>,
@@ -376,7 +382,6 @@ class MangaRestorer(
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreChapters(manga, chapters)
         restoreTracking(manga, tracks)
         restoreHistory(manga, history)
         restoreExcludedScanlators(manga, excludedScanlators)
