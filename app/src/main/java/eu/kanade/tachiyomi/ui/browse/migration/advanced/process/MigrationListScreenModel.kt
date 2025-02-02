@@ -196,12 +196,12 @@ class MigrationListScreenModel(
                                 if (localManga != null) {
                                     val source = sourceManager.get(localManga.source) as? CatalogueSource
                                     if (source != null) {
-                                        val chapters = if (source is EHentai) {
-                                            source.getChapterList(localManga.toSManga(), throttleManager::throttle)
-                                        } else {
-                                            source.getChapterList(localManga.toSManga())
-                                        }
                                         try {
+                                            val chapters = if (source is EHentai) {
+                                                source.getChapterList(localManga.toSManga(), throttleManager::throttle)
+                                            } else {
+                                                source.getChapterList(localManga.toSManga())
+                                            }
                                             syncChaptersWithSource.await(chapters, localManga, source)
                                         } catch (_: Exception) {
                                         }
