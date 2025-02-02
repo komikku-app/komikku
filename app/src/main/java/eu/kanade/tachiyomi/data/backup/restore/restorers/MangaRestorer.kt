@@ -119,7 +119,6 @@ class MangaRestorer(
             restoreMangaDetails(
                 manga = restoredManga,
                 history = backupManga.history,
-                tracks = backupManga.tracking,
                 excludedScanlators = backupManga.excludedScanlators,
                 // SY -->
                 mergedMangaReferences = backupManga.mergedMangaReferences,
@@ -218,9 +217,7 @@ class MangaRestorer(
     ) {
         val mangaIds = backups.map { it.first.id }
         val dbChaptersByIdUrl = getChaptersByMangaId.await(mangaIds).toList()
-            .associate {
-                it.first to it.second.associateBy { chapter -> chapter.url }
-            }
+            .associate { it.first to it.second.associateBy { chapter -> chapter.url } }
 
         val (existingChapters, newChapters) = backups
             .map { (manga, backupChapters) ->
@@ -374,7 +371,6 @@ class MangaRestorer(
     private suspend fun restoreMangaDetails(
         manga: Manga,
         history: List<BackupHistory>,
-        tracks: List<BackupTracking>,
         excludedScanlators: List<String>,
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
@@ -382,7 +378,6 @@ class MangaRestorer(
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreTracking(manga, tracks)
         restoreHistory(manga, history)
         restoreExcludedScanlators(manga, excludedScanlators)
         updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
@@ -473,31 +468,36 @@ class MangaRestorer(
         }
     }
 
-    private suspend fun restoreTracking(manga: Manga, backupTracks: List<BackupTracking>) {
-        val dbTrackByTrackerId = getTracks.await(manga.id).associateBy { it.trackerId }
+    suspend fun restoreTrackingBulk(backups: List<Pair<Manga, List<BackupTracking>>>) {
+        val mangaIds = backups.map { it.first.id }
+        val dbTrackByTrackerIds = getTracks.await(mangaIds).toList()
+            .associate { it.first to it.second.associateBy { track -> track.trackerId } }
 
-        val (existingTracks, newTracks) = backupTracks
-            .mapNotNull {
-                val track = it.getTrackImpl()
-                val dbTrack = dbTrackByTrackerId[track.trackerId]
-                    ?: // New track
-                    return@mapNotNull track.copy(
-                        id = 0, // Let DB assign new ID
-                        mangaId = manga.id,
+        val (existingTracks, newTracks) = backups
+            .map { (manga, backupTracks) ->
+                backupTracks.mapNotNull { backupTrack ->
+                    val track = backupTrack.getTrackImpl()
+                    val dbTrack = dbTrackByTrackerIds[manga.id]?.get(track.trackerId)
+                        ?: // New track
+                        return@mapNotNull track.copy(
+                            id = 0, // Let DB assign new ID
+                            mangaId = manga.id,
+                        )
+
+                    if (track.forComparison() == dbTrack.forComparison()) {
+                        // Same state; skip
+                        return@mapNotNull null
+                    }
+
+                    // Update to an existing track
+                    dbTrack.copy(
+                        remoteId = track.remoteId,
+                        libraryId = track.libraryId,
+                        lastChapterRead = max(dbTrack.lastChapterRead, track.lastChapterRead),
                     )
-
-                if (track.forComparison() == dbTrack.forComparison()) {
-                    // Same state; skip
-                    return@mapNotNull null
                 }
-
-                // Update to an existing track
-                dbTrack.copy(
-                    remoteId = track.remoteId,
-                    libraryId = track.libraryId,
-                    lastChapterRead = max(dbTrack.lastChapterRead, track.lastChapterRead),
-                )
             }
+            .flatten()
             .partition { it.id > 0 }
 
         if (newTracks.isNotEmpty()) {
