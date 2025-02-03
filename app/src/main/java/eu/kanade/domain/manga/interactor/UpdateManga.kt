@@ -96,6 +96,18 @@ class UpdateManga(
         )
     }
 
+    suspend fun awaitUpdateFetchInterval(
+        mangas: List<Manga>,
+        dateTime: ZonedDateTime = ZonedDateTime.now(),
+        window: Pair<Long, Long> = fetchInterval.getWindow(dateTime),
+    ): Boolean {
+        return mangaRepository.updateAll(
+            mangas.map { manga ->
+                fetchInterval.toMangaUpdate(manga, dateTime, window)
+            }
+        )
+    }
+
     suspend fun awaitUpdateLastUpdate(mangaId: Long): Boolean {
         return mangaRepository.update(MangaUpdate(id = mangaId, lastUpdate = Instant.now().toEpochMilli()))
     }

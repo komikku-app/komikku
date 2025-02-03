@@ -371,6 +371,10 @@ class MangaRestorer(
         }
     }
 
+    suspend fun updateFetchInterval(mangas: List<Manga>) {
+        updateManga.awaitUpdateFetchInterval(mangas, now, currentFetchWindow)
+    }
+
     private suspend fun restoreMangaDetails(
         manga: Manga,
         // SY -->
@@ -379,7 +383,6 @@ class MangaRestorer(
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         // SY -->
         restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
         flatMetadata?.let { restoreFlatMetadata(manga.id, it) }
