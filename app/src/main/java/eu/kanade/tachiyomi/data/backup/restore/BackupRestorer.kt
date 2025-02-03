@@ -194,6 +194,10 @@ class BackupRestorer(
                 backup2restored.map { (backupManga, restoredManga) ->
                     restoredManga to backupManga.tracking
                 }.also { mangaRestorer.restoreTrackingBulk(it) }
+
+                backup2restored.map { (backupManga, restoredManga) ->
+                    restoredManga to backupManga.history
+                }.also { mangaRestorer.restoreHistoryBulk(it) }
             }
             .forEach { (backupManga, restoredManga) ->
                 ensureActive()

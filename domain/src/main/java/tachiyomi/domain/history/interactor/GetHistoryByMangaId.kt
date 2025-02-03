@@ -10,4 +10,8 @@ class GetHistoryByMangaId(
     suspend fun await(mangaId: Long): List<History> {
         return repository.getByMangaId(mangaId)
     }
+
+    suspend fun await(mangaIds: List<Long>): Map<Long, List<History>> {
+        return repository.getByMangaIds(mangaIds)
+    }
 }

@@ -93,5 +93,20 @@ class HistoryRepositoryImpl(
     override suspend fun getByMangaId(mangaId: Long): List<History> {
         return handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, HistoryMapper::mapHistory) }
     }
+
+    override suspend fun getByMangaIds(mangaIds: List<Long>): Map<Long, List<History>> {
+        return handler.awaitList { historyQueries.getHistoryByMangaIds(mangaIds) }
+            .groupBy { it.manga_id }.toList()
+            .associate {
+                it.first to it.second.map { history ->
+                    HistoryMapper.mapHistory(
+                        id = history._id,
+                        chapterId = history.chapter_id,
+                        readAt = history.last_read,
+                        readDuration = history.time_read,
+                    )
+                }
+            }
+    }
     // SY <--
 }
