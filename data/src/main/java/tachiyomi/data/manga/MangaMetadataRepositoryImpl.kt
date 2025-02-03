@@ -19,6 +19,11 @@ class MangaMetadataRepositoryImpl(
         return handler.awaitOneOrNull { search_metadataQueries.selectByMangaId(id, ::searchMetadataMapper) }
     }
 
+    override suspend fun getMetadataByIds(ids: List<Long>): Map<Long, SearchMetadata> {
+        return handler.awaitList { search_metadataQueries.selectByMangaIds(ids, ::searchMetadataMapper) }
+            .associateBy { it.mangaId }
+    }
+
     override fun subscribeMetadataById(id: Long): Flow<SearchMetadata?> {
         return handler.subscribeToOneOrNull { search_metadataQueries.selectByMangaId(id, ::searchMetadataMapper) }
     }
@@ -27,12 +32,22 @@ class MangaMetadataRepositoryImpl(
         return handler.awaitList { search_tagsQueries.selectByMangaId(id, ::searchTagMapper) }
     }
 
+    override suspend fun getTagsByIds(ids: List<Long>): Map<Long, List<SearchTag>> {
+        return handler.awaitList { search_tagsQueries.selectByMangaIds(ids, ::searchTagMapper) }
+            .groupBy { it.mangaId }
+    }
+
     override fun subscribeTagsById(id: Long): Flow<List<SearchTag>> {
         return handler.subscribeToList { search_tagsQueries.selectByMangaId(id, ::searchTagMapper) }
     }
 
     override suspend fun getTitlesById(id: Long): List<SearchTitle> {
         return handler.awaitList { search_titlesQueries.selectByMangaId(id, ::searchTitleMapper) }
+    }
+
+    override suspend fun getTitlesByIds(ids: List<Long>): Map<Long, List<SearchTitle>> {
+        return handler.awaitList { search_titlesQueries.selectByMangaIds(ids, ::searchTitleMapper) }
+            .groupBy { it.mangaId }
     }
 
     override fun subscribeTitlesById(id: Long): Flow<List<SearchTitle>> {
@@ -54,6 +69,29 @@ class MangaMetadataRepositoryImpl(
             flatMetadata.titles.forEach {
                 search_titlesQueries.insert(it.mangaId, it.title, it.type.toLong())
             }
+        }
+    }
+
+    override suspend fun insertFlatMetadatas(flatMetadatas: List<FlatMetadata>) {
+        handler.await(true) {
+            flatMetadatas.filter { it.metadata.mangaId != -1L }
+                .forEach { flatMetadata ->
+                    search_metadataQueries.upsert(
+                        flatMetadata.metadata.mangaId,
+                        flatMetadata.metadata.uploader,
+                        flatMetadata.metadata.extra,
+                        flatMetadata.metadata.indexedExtra,
+                        flatMetadata.metadata.extraVersion.toLong(),
+                    )
+                    search_tagsQueries.deleteByManga(flatMetadata.metadata.mangaId)
+                    flatMetadata.tags.forEach {
+                        search_tagsQueries.insert(it.mangaId, it.namespace, it.name, it.type.toLong())
+                    }
+                    search_titlesQueries.deleteByManga(flatMetadata.metadata.mangaId)
+                    flatMetadata.titles.forEach {
+                        search_titlesQueries.insert(it.mangaId, it.title, it.type.toLong())
+                    }
+                }
         }
     }
 

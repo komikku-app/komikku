@@ -125,7 +125,6 @@ class MangaRestorer(
                 manga = restoredManga,
                 // SY -->
                 mergedMangaReferences = backupManga.mergedMangaReferences,
-                flatMetadata = backupManga.flatMetadata,
                 customManga = backupManga.getCustomMangaInfo(),
                 // SY <--
             )
@@ -379,13 +378,11 @@ class MangaRestorer(
         manga: Manga,
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?,
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
         // SY -->
         restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
-        flatMetadata?.let { restoreFlatMetadata(manga.id, it) }
         restoreEditedInfo(customManga?.copy(id = manga.id))
         // SY <--
 
@@ -589,10 +586,15 @@ class MangaRestorer(
         }
     }
 
-    private suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {
-        if (getFlatMetadataById.await(mangaId) == null) {
-            insertFlatMetadata.await(backupFlatMetadata.getFlatMetadata(mangaId))
-        }
+    suspend fun restoreFlatMetadataBulk(
+        backups: List<Pair<Long, BackupFlatMetadata?>>,
+    ) {
+        val mangaIds = backups.mapNotNull { (mangaId, backupFlatMetadata) -> backupFlatMetadata?.let { mangaId } }
+        val searchMetadataIds = getFlatMetadataById.awaitSearchMetadata(mangaIds).keys
+        backups
+            .filter { (mangaId, _) -> mangaId !in searchMetadataIds }
+            .mapNotNull { (mangaId, backupFlatMetadata) -> backupFlatMetadata?.getFlatMetadata(mangaId) }
+            .let { insertFlatMetadata.await(it) }
     }
 
     private fun restoreEditedInfo(mangaJson: CustomMangaInfo?) {

@@ -19,6 +19,14 @@ class InsertFlatMetadata(
         }
     }
 
+    suspend fun await(flatMetadatas: List<FlatMetadata>) {
+        try {
+            mangaMetadataRepository.insertFlatMetadatas(flatMetadatas)
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+        }
+    }
+
     override suspend fun await(metadata: RaisedSearchMetadata) {
         try {
             mangaMetadataRepository.insertMetadata(metadata)

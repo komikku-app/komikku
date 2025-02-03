@@ -1,5 +1,3 @@
-import kotlin.Int;
-
 CREATE TABLE search_metadata (
     manga_id INTEGER NOT NULL PRIMARY KEY,
     uploader TEXT,
@@ -18,6 +16,9 @@ SELECT * FROM search_metadata;
 
 selectByMangaId:
 SELECT * FROM search_metadata WHERE manga_id = ?;
+
+selectByMangaIds:
+SELECT * FROM search_metadata WHERE manga_id IN ?;
 
 selectByIndexedExtra:
 SELECT * FROM search_metadata WHERE indexed_extra = ?;

@@ -1,5 +1,3 @@
-import kotlin.Int;
-
 CREATE TABLE search_tags (
     _id INTEGER NOT NULL PRIMARY KEY,
     manga_id INTEGER NOT NULL,
@@ -17,6 +15,10 @@ CREATE INDEX search_tags_namespace_name_index ON search_tags(namespace, name);
 selectByMangaId:
 SELECT * FROM search_tags
 WHERE manga_id = ?;
+
+selectByMangaIds:
+SELECT * FROM search_tags
+WHERE manga_id IN ?;
 
 deleteByManga:
 DELETE FROM search_tags WHERE manga_id = ?;

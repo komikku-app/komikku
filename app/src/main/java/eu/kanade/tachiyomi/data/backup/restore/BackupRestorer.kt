@@ -205,6 +205,10 @@ class BackupRestorer(
 
                 backup2restored.map { (_, restoredManga) -> restoredManga }
                     .also { mangaRestorer.updateFetchInterval(it) }
+
+                backup2restored.map { (backupManga, restoredManga) ->
+                    restoredManga.id to backupManga.flatMetadata
+                }.also { mangaRestorer.restoreFlatMetadataBulk(it) }
             }
             .forEach { (backupManga, restoredManga) ->
                 ensureActive()

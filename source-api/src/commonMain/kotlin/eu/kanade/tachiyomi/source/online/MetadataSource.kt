@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
+import exh.metadata.sql.models.SearchMetadata
 import rx.Completable
 import rx.Single
 import tachiyomi.core.common.util.lang.awaitSingle
@@ -24,6 +25,8 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     }
     interface GetFlatMetadataById {
         suspend fun await(id: Long): FlatMetadata?
+        suspend fun await(ids: List<Long>): Map<Long, FlatMetadata>
+        suspend fun awaitSearchMetadata(ids: List<Long>): Map<Long, SearchMetadata>
     }
     val getMangaId: GetMangaId get() = Injekt.get()
     val insertFlatMetadata: InsertFlatMetadata get() = Injekt.get()
