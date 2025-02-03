@@ -215,18 +215,17 @@ class BackupRestorer(
                 }.also { mangaRestorer.restoreFlatMetadataBulk(it) }
 
                 mangaRestorer.restoreEditedInfoBulk(backup2restored)
-            }
-            .forEach { (backupManga, restoredManga) ->
                 ensureActive()
 
+                val backupManga = backup2restored.first().first
                 try {
-                    mangaRestorer.restore(backupManga, restoredManga)
+                    mangaRestorer.resetIsSyncing()
                 } catch (e: Exception) {
                     val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
                     errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")
                 }
 
-                restoreProgress += 1
+                restoreProgress += backup2restored.size
                 notifier.showRestoreProgress(backupManga.title, restoreProgress, restoreAmount, isSync)
             }
     }

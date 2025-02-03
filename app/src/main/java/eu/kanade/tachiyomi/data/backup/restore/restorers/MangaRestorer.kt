@@ -112,10 +112,7 @@ class MangaRestorer(
     /**
      * Restore a single manga
      */
-    suspend fun restore(
-        backupManga: BackupManga,
-        restoredManga: Manga,
-    ) {
+    suspend fun resetIsSyncing() {
         handler.await(inTransaction = true) {
             if (isSync) {
                 mangasQueries.resetIsSyncing()
