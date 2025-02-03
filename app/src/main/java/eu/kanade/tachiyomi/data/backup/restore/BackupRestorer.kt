@@ -198,6 +198,10 @@ class BackupRestorer(
                 backup2restored.map { (backupManga, restoredManga) ->
                     restoredManga to backupManga.history
                 }.also { mangaRestorer.restoreHistoryBulk(it) }
+
+                backup2restored.map { (backupManga, restoredManga) ->
+                    restoredManga to backupManga.excludedScanlators
+                }.also { mangaRestorer.restoreExcludedScanlatorsBulk(it) }
             }
             .forEach { (backupManga, restoredManga) ->
                 ensureActive()

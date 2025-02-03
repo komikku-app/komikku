@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
+import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
@@ -10,6 +11,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
+import exh.util.nullIfEmpty
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
@@ -54,6 +56,7 @@ class MangaRestorer(
     // SY <--
     private val getAllManga: GetAllManga = Injekt.get(),
     private val getHistoryByMangaId: GetHistoryByMangaId = Injekt.get(),
+    private val getExcludedScanlators: GetExcludedScanlators = Injekt.get(),
 ) {
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
@@ -120,7 +123,6 @@ class MangaRestorer(
 
             restoreMangaDetails(
                 manga = restoredManga,
-                excludedScanlators = backupManga.excludedScanlators,
                 // SY -->
                 mergedMangaReferences = backupManga.mergedMangaReferences,
                 flatMetadata = backupManga.flatMetadata,
@@ -371,14 +373,12 @@ class MangaRestorer(
 
     private suspend fun restoreMangaDetails(
         manga: Manga,
-        excludedScanlators: List<String>,
         // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
         flatMetadata: BackupFlatMetadata?,
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreExcludedScanlators(manga, excludedScanlators)
         updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         // SY -->
         restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
@@ -629,16 +629,24 @@ class MangaRestorer(
      * @param manga the manga whose excluded scanlators have to be restored.
      * @param excludedScanlators the excluded scanlators to restore.
      */
-    private suspend fun restoreExcludedScanlators(manga: Manga, excludedScanlators: List<String>) {
-        if (excludedScanlators.isEmpty()) return
-        val existingExcludedScanlators = handler.awaitList {
-            excluded_scanlatorsQueries.getExcludedScanlatorsByMangaId(manga.id)
-        }
-        val toInsert = excludedScanlators.filter { it !in existingExcludedScanlators }
+    suspend fun restoreExcludedScanlatorsBulk(
+        backups: List<Pair<Manga, List<String>>>,
+    ) {
+        val mangaIds = backups.map { it.first.id }
+        val existingExcludedScanlators = getExcludedScanlators.await(mangaIds)
+        val toInsert = backups
+            .mapNotNull { (manga, excludedScanlators) ->
+                val existingExcludedScanlator = existingExcludedScanlators[manga.id] ?: return@mapNotNull null
+                val toInsert = excludedScanlators.filter { it !in existingExcludedScanlator }
+                    .nullIfEmpty() ?: return@mapNotNull null
+                manga.id to toInsert
+            }
         if (toInsert.isNotEmpty()) {
-            handler.await {
-                toInsert.forEach {
-                    excluded_scanlatorsQueries.insert(manga.id, it)
+            handler.await(true) {
+                toInsert.forEach { (mangaId, excludedScanlators) ->
+                    excludedScanlators.forEach {
+                        excluded_scanlatorsQueries.insert(mangaId, it)
+                    }
                 }
             }
         }
