@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,10 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -124,7 +128,30 @@ object HomeScreen : Screen() {
                                 enter = expandVertically(),
                                 exit = shrinkVertically(),
                             ) {
-                                NavigationBar {
+                                var flickOffsetX by remember { mutableFloatStateOf(0f) }
+
+                                NavigationBar(
+                                    modifier = Modifier.pointerInput(Unit) {
+                                        detectDragGestures(
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                flickOffsetX += dragAmount.x
+                                            },
+                                            onDragEnd = {
+                                                val currentIndex = TABS.indexOf(tabNavigator.current)
+                                                val newIndex = when {
+                                                    (flickOffsetX < 0F) -> currentIndex - 1
+                                                    (flickOffsetX > 0F) -> currentIndex + 1
+                                                    else -> currentIndex
+                                                }
+
+                                                flickOffsetX = 0F
+
+                                                tabNavigator.current = TABS.getOrNull(newIndex) ?: tabNavigator.current
+                                            }
+                                        )
+                                    }
+                                ) {
                                     TABS
                                         // SY -->
                                         .fastFilter { it.isEnabled() }
