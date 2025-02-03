@@ -12,7 +12,7 @@ import cafe.adriel.voyager.core.model.ScreenModelStore
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.core.screen.uniqueScreenKey
-import cafe.adriel.voyager.core.stack.StackEvent
+import cafe.adriel.voyager.core.stack.StackEvent.Push
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.ScreenTransitionContent
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
@@ -25,6 +25,7 @@ import kotlinx.coroutines.plus
 import logcat.LogPriority
 import logcat.logcat
 import soup.compose.material.motion.animation.materialSharedAxisX
+import soup.compose.material.motion.animation.materialSharedAxisZ
 import soup.compose.material.motion.animation.rememberSlideDistance
 
 /**
@@ -72,10 +73,10 @@ fun DefaultNavigatorScreenTransition(
     ScreenTransition(
         navigator = navigator,
         transition = {
-            materialSharedAxisX(
-                forward = navigator.lastEvent != StackEvent.Pop,
-                slideDistance = slideDistance,
-            )
+            if (navigator.level >= 1)
+                materialSharedAxisX(navigator.lastEvent == Push, slideDistance)
+            else
+                materialSharedAxisZ(navigator.lastEvent == Push)
         },
         modifier = modifier,
     )
