@@ -7,4 +7,6 @@ interface CustomMangaRepository {
     fun get(mangaId: Long): CustomMangaInfo?
 
     fun set(mangaInfo: CustomMangaInfo)
+
+    fun set(mangaInfos: List<CustomMangaInfo>)
 }

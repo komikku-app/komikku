@@ -209,6 +209,8 @@ class BackupRestorer(
                 backup2restored.map { (backupManga, restoredManga) ->
                     restoredManga.id to backupManga.flatMetadata
                 }.also { mangaRestorer.restoreFlatMetadataBulk(it) }
+
+                mangaRestorer.restoreEditedInfoBulk(backup2restored)
             }
             .forEach { (backupManga, restoredManga) ->
                 ensureActive()

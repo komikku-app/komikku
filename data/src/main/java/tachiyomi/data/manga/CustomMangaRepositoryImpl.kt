@@ -2,8 +2,6 @@ package tachiyomi.data.manga
 
 import android.content.Context
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.repository.CustomMangaRepository
@@ -50,6 +48,25 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             customMangaMap.remove(mangaInfo.id)
         } else {
             customMangaMap[mangaInfo.id] = mangaInfo
+        }
+        saveCustomInfo()
+    }
+
+    override fun set(mangaInfos: List<CustomMangaInfo>) {
+        mangaInfos.forEach { mangaInfo ->
+            if (
+                mangaInfo.title == null &&
+                mangaInfo.author == null &&
+                mangaInfo.artist == null &&
+                mangaInfo.thumbnailUrl == null &&
+                mangaInfo.description == null &&
+                mangaInfo.genre == null &&
+                mangaInfo.status == null
+            ) {
+                customMangaMap.remove(mangaInfo.id)
+            } else {
+                customMangaMap[mangaInfo.id] = mangaInfo
+            }
         }
         saveCustomInfo()
     }
