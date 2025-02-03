@@ -207,6 +207,10 @@ class BackupRestorer(
                     .also { mangaRestorer.updateFetchInterval(it) }
 
                 backup2restored.map { (backupManga, restoredManga) ->
+                    restoredManga.id to backupManga.mergedMangaReferences
+                }.also { mangaRestorer.restoreMergedMangaReferencesForMangaBulk(it) }
+
+                backup2restored.map { (backupManga, restoredManga) ->
                     restoredManga.id to backupManga.flatMetadata
                 }.also { mangaRestorer.restoreFlatMetadataBulk(it) }
 
