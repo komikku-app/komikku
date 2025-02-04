@@ -17,21 +17,70 @@ LEFT JOIN(
         coalesce(max(chapters.date_upload), 0) AS latestUpload,
         coalesce(max(history.last_read), 0) AS lastRead,
         coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
-        sum(chapters.bookmark) AS bookmarkCount
+        sum(chapters.bookmark) AS bookmarkCount,
+        excluded_scanlators.scanlator AS ex_scanlator
     FROM chapters
     LEFT JOIN excluded_scanlators
     ON chapters.manga_id = excluded_scanlators.manga_id
     AND chapters.scanlator = excluded_scanlators.scanlator
     LEFT JOIN history
     ON chapters._id = history.chapter_id
-    WHERE excluded_scanlators.scanlator IS NULL
+    WHERE ex_scanlator IS NULL
     GROUP BY chapters.manga_id
 ) AS C
 ON M._id = C.manga_id
 LEFT JOIN mangas_categories AS MC
 ON MC.manga_id = M._id
-WHERE M.favorite = 1;
+WHERE M.source <> 6969
+UNION
+SELECT
+    M.*,
+    coalesce(C.total, 0) AS totalCount,
+    coalesce(C.readCount, 0) AS readCount,
+    coalesce(C.latestUpload, 0) AS latestUpload,
+    coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
+    coalesce(C.lastRead, 0) AS lastRead,
+    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+    coalesce(MC.category_id, 0) AS category
+FROM mangas M
+LEFT JOIN (
+    SELECT merged.manga_id,merged.merge_id
+    FROM merged
+    GROUP BY merged.merge_id
+) AS ME
+ON ME.merge_id = M._id
+LEFT JOIN(
+    SELECT
+        ME.merge_id,
+        count(*) AS total,
+        sum(read) AS readCount,
+        coalesce(max(chapters.date_upload), 0) AS latestUpload,
+        coalesce(max(history.last_read), 0) AS lastRead,
+        coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
+        sum(chapters.bookmark) AS bookmarkCount,
+        excluded_scanlators.scanlator AS ex_scanlator
+    FROM chapters
+    LEFT JOIN excluded_scanlators
+    ON chapters.manga_id = excluded_scanlators.manga_id
+    AND chapters.scanlator = excluded_scanlators.scanlator
+    LEFT JOIN history
+    ON chapters._id = history.chapter_id
+    LEFT JOIN merged ME
+    ON ME.manga_id = chapters.manga_id
+    WHERE ex_scanlator IS NULL
+    GROUP BY ME.merge_id
+) AS C
+ON M._id = C.merge_id  -- ON ME.merge_id = C.merge_id
+LEFT JOIN mangas_categories AS MC
+ON MC.manga_id = M._id
+WHERE M.source = 6969;
 
 library:
 SELECT *
-FROM libraryView;
+FROM libraryView
+WHERE libraryView.favorite = 1;
+
+readMangaNonLibrary:
+SELECT *
+FROM libraryView
+WHERE libraryView.favorite = 0 AND libraryView.readCount != 0;
