@@ -63,6 +63,31 @@ class MangaRestorer(
         currentFetchWindow = fetchInterval.getWindow(now)
     }
 
+    suspend fun groupBySource(backupMangas: List<BackupManga>): List<Pair<Long, List<BackupManga>>> {
+        val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
+            .groupBy({ it.source }, { it.url })
+
+        return backupMangas
+            .sortedWith(
+                compareBy<BackupManga> { it.url in urlsBySource[it.source].orEmpty() }
+                    .then(compareByDescending { it.lastModifiedAt }),
+            )
+            .groupBy { it.source }
+            .toList()
+            .sortedWith(
+                compareBy { it.first == MERGED_SOURCE_ID }
+            )
+    }
+
+    suspend fun groupByExisted(backupMangas: List<BackupManga>): Pair<List<BackupManga>, List<BackupManga>> {
+        val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
+            .groupBy({ it.source }, { it.url })
+
+        return backupMangas
+            .sortedByDescending { it.lastModifiedAt }
+            .partition { it.url !in urlsBySource[it.source].orEmpty() }
+    }
+
     suspend fun sortByNew(backupMangas: List<BackupManga>): List<BackupManga> {
         val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
             .groupBy({ it.source }, { it.url })
@@ -70,9 +95,12 @@ class MangaRestorer(
         return backupMangas
             .sortedWith(
                 // KMK -->
+                // Merged-source last
                 compareBy<BackupManga> { it.source == MERGED_SOURCE_ID }
                     // KMK <--
+                    // then existed manga last
                     .then(compareBy { it.url in urlsBySource[it.source].orEmpty() })
+                    // then new manga first
                     .then(compareByDescending { it.lastModifiedAt }),
             )
     }

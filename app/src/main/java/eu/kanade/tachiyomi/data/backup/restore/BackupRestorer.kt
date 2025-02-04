@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
+import exh.util.nullIfBlank
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -173,61 +175,98 @@ class BackupRestorer(
         backupMangas: List<BackupManga>,
         backupCategories: List<BackupCategory>,
     ) = launch {
-        mangaRestorer.sortByNew(backupMangas)
-            .let { backupMangas ->
-                val restoredMangas = mangaRestorer.restoreMangas(backupMangas)
-                backupMangas.mapNotNull { backupManga ->
-                    val restoredManga = restoredMangas.find { restoredManga ->
-                        restoredManga.url == backupManga.url && restoredManga.source == backupManga.source
-                    }
-                    if (restoredManga == null) return@mapNotNull null
-                    backupManga to restoredManga
+        val startTime = System.currentTimeMillis()
+        mangaRestorer.groupBySource(backupMangas)
+            .forEach { (sourceId, backupMangasPerSource) ->
+                val (backupNewMangas, backupExistedMangas) = mangaRestorer.groupByExisted(backupMangasPerSource)
+                listOf(
+                    backupNewMangas,
+                    backupExistedMangas,
+                ).forEach { backupMangas ->
+                    val sourceName = sourceMapping[sourceId]?.nullIfBlank() ?: sourceId.toString()
+                    // TODO need to map to current sources too
+
+                    ensureActive()
+                    val restoredMangas = mangaRestorer.restoreMangas(backupMangas)
+
+                    backupMangas
+                        .mapNotNull { backupManga ->
+                            val restoredManga = restoredMangas.find { restoredManga ->
+                                restoredManga.url == backupManga.url && restoredManga.source == backupManga.source
+                            }
+                            if (restoredManga == null) return@mapNotNull null
+                            backupManga to restoredManga
+                        }
+                        .also { backup2restored ->
+                            ensureActive()
+                            mangaRestorer.restoreCategoriesBulk(backup2restored, backupCategories)
+
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga to backupManga.chapters
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreChaptersBulk(it)
+                            }
+
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga to backupManga.tracking
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreTrackingBulk(it)
+                            }
+
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga to backupManga.history
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreHistoryBulk(it)
+                            }
+
+                            // TODO: using mapvalue here
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga to backupManga.excludedScanlators
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreExcludedScanlatorsBulk(it)
+                            }
+
+                            backup2restored.map { (_, restoredManga) -> restoredManga }
+                                .also {
+                                    ensureActive()
+                                    mangaRestorer.updateFetchInterval(it)
+                                }
+
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga.id to backupManga.mergedMangaReferences
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreMergedMangaReferencesForMangaBulk(it)
+                            }
+
+                            backup2restored.map { (backupManga, restoredManga) ->
+                                restoredManga.id to backupManga.flatMetadata
+                            }.also {
+                                ensureActive()
+                                mangaRestorer.restoreFlatMetadataBulk(it)
+                            }
+
+                            ensureActive()
+                            mangaRestorer.restoreEditedInfoBulk(backup2restored)
+
+                            try {
+                                ensureActive()
+                                mangaRestorer.resetIsSyncing()
+                            } catch (e: Exception) {
+                                errors.add(Date() to "Source: $sourceName - ${e.message}")
+                            }
+
+                            restoreProgress += backup2restored.size
+                            notifier.showRestoreProgress("Source: $sourceName", restoreProgress, restoreAmount, isSync)
+                        }
                 }
             }
-            .also { backup2restored ->
-                mangaRestorer.restoreCategoriesBulk(backup2restored, backupCategories)
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga to backupManga.chapters
-                }.also { mangaRestorer.restoreChaptersBulk(it) }
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga to backupManga.tracking
-                }.also { mangaRestorer.restoreTrackingBulk(it) }
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga to backupManga.history
-                }.also { mangaRestorer.restoreHistoryBulk(it) }
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga to backupManga.excludedScanlators
-                }.also { mangaRestorer.restoreExcludedScanlatorsBulk(it) }
-
-                backup2restored.map { (_, restoredManga) -> restoredManga }
-                    .also { mangaRestorer.updateFetchInterval(it) }
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga.id to backupManga.mergedMangaReferences
-                }.also { mangaRestorer.restoreMergedMangaReferencesForMangaBulk(it) }
-
-                backup2restored.map { (backupManga, restoredManga) ->
-                    restoredManga.id to backupManga.flatMetadata
-                }.also { mangaRestorer.restoreFlatMetadataBulk(it) }
-
-                mangaRestorer.restoreEditedInfoBulk(backup2restored)
-                ensureActive()
-
-                val backupManga = backup2restored.first().first
-                try {
-                    mangaRestorer.resetIsSyncing()
-                } catch (e: Exception) {
-                    val sourceName = sourceMapping[backupManga.source] ?: backupManga.source.toString()
-                    errors.add(Date() to "${backupManga.title} [$sourceName]: ${e.message}")
-                }
-
-                restoreProgress += backup2restored.size
-                notifier.showRestoreProgress(backupManga.title, restoreProgress, restoreAmount, isSync)
-            }
+        val endTime = System.currentTimeMillis()
+        Timber.tag("MangaRestorer").e("Elapsed time for restoreManga: ${endTime - startTime} ms")
     }
 
     private fun CoroutineScope.restoreAppPreferences(preferences: List<BackupPreference>) = launch {
