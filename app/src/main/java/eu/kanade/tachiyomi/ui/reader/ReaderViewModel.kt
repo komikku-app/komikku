@@ -270,7 +270,7 @@ class ReaderViewModel @JvmOverloads constructor(
             .map(::ReaderChapter)
     }
 
-    private val incognitoMode: Boolean by lazy { getIncognitoState.await(manga?.source) }
+    private val incognitoMode: Boolean by lazy { getIncognitoState.await(manga?.source, /* KMK --> */ manga?.id /* KMK <-- */) }
     private val downloadAheadAmount = downloadPreferences.autoDownloadWhileReading().get()
 
     init {

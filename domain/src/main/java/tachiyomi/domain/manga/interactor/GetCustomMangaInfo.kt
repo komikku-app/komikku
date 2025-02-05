@@ -7,4 +7,8 @@ class GetCustomMangaInfo(
 ) {
 
     fun get(mangaId: Long) = customMangaRepository.get(mangaId)
+
+    // KMK -->
+    fun getIncognitoMode(mangaId: Long) = customMangaRepository.get(mangaId)?.incognitoMode ?: false
+    // KMK <--
 }

@@ -141,6 +141,9 @@ import kotlin.math.roundToInt
 @Composable
 fun MangaScreen(
     state: MangaScreenModel.State.Success,
+    // KMK -->
+    mangaIncognitoState: Boolean?,
+    // KMK <--
     snackbarHostState: SnackbarHostState,
     nextUpdate: Instant?,
     isTabletUi: Boolean,
@@ -157,6 +160,9 @@ fun MangaScreen(
     // For tags menu
     onTagSearch: (String) -> Unit,
 
+    // KMK -->
+    onMangaIncognitoToggled: () -> Unit,
+    // KMK <--
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
@@ -222,6 +228,9 @@ fun MangaScreen(
     if (!isTabletUi) {
         MangaScreenSmallImpl(
             state = state,
+            // KMK -->
+            mangaIncognitoState = mangaIncognitoState,
+            // KMK <--
             snackbarHostState = snackbarHostState,
             nextUpdate = nextUpdate,
             chapterSwipeStartAction = chapterSwipeStartAction,
@@ -235,6 +244,9 @@ fun MangaScreen(
             onTrackingClicked = onTrackingClicked,
             onTagSearch = onTagSearch,
             onCopyTagToClipboard = onCopyTagToClipboard,
+            // KMK -->
+            onMangaIncognitoToggled = onMangaIncognitoToggled,
+            // KMK <--
             onFilterClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
@@ -282,6 +294,9 @@ fun MangaScreen(
     } else {
         MangaScreenLargeImpl(
             state = state,
+            // KMK -->
+            mangaIncognitoState = mangaIncognitoState,
+            // KMK <--
             snackbarHostState = snackbarHostState,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
@@ -295,6 +310,9 @@ fun MangaScreen(
             onTrackingClicked = onTrackingClicked,
             onTagSearch = onTagSearch,
             onCopyTagToClipboard = onCopyTagToClipboard,
+            // KMK -->
+            onMangaIncognitoToggled = onMangaIncognitoToggled,
+            // KMK <--
             onFilterButtonClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
@@ -345,6 +363,9 @@ fun MangaScreen(
 @Composable
 private fun MangaScreenSmallImpl(
     state: MangaScreenModel.State.Success,
+    // KMK -->
+    mangaIncognitoState: Boolean?,
+    // KMK <--
     snackbarHostState: SnackbarHostState,
     nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -361,6 +382,9 @@ private fun MangaScreenSmallImpl(
     onTagSearch: (String) -> Unit,
     onCopyTagToClipboard: (tag: String) -> Unit,
 
+    // KMK -->
+    onMangaIncognitoToggled: () -> Unit,
+    // KMK <--
     onFilterClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
@@ -474,8 +498,14 @@ private fun MangaScreenSmallImpl(
             )
             MangaToolbar(
                 title = state.manga.title,
+                // KMK -->
+                incognitoMode = mangaIncognitoState,
+                // KMK <--
                 hasFilters = state.filterActive,
                 navigateUp = navigateUp,
+                // KMK -->
+                onToggleMangaIncognito = onMangaIncognitoToggled,
+                // KMK <--
                 onClickFilter = onFilterClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
@@ -810,6 +840,9 @@ private fun MangaScreenSmallImpl(
 @Composable
 private fun MangaScreenLargeImpl(
     state: MangaScreenModel.State.Success,
+    // KMK -->
+    mangaIncognitoState: Boolean?,
+    // KMK <--
     snackbarHostState: SnackbarHostState,
     nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -826,6 +859,9 @@ private fun MangaScreenLargeImpl(
     onTagSearch: (String) -> Unit,
     onCopyTagToClipboard: (tag: String) -> Unit,
 
+    // KMK -->
+    onMangaIncognitoToggled: () -> Unit,
+    // KMK <--
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
@@ -930,8 +966,14 @@ private fun MangaScreenLargeImpl(
             MangaToolbar(
                 modifier = Modifier.onSizeChanged { topBarHeight = it.height },
                 title = state.manga.title,
+                // KMK -->
+                incognitoMode = mangaIncognitoState,
+                // KMK <--
                 hasFilters = state.filterActive,
                 navigateUp = navigateUp,
+                // KMK -->
+                onToggleMangaIncognito = onMangaIncognitoToggled,
+                // KMK <--
                 onClickFilter = onFilterButtonClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,

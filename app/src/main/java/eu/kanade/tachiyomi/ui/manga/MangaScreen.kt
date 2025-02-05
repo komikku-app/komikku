@@ -269,6 +269,9 @@ class MangaScreen(
 
         MangaScreen(
             state = successState,
+            // KMK -->
+            mangaIncognitoState = screenModel.mangaIncognitoMode.value,
+            // KMK <--
             snackbarHostState = screenModel.snackbarHostState,
             nextUpdate = successState.manga.expectedNextUpdate,
             isTabletUi = isTabletUi(),
@@ -313,6 +316,9 @@ class MangaScreen(
                 }
             },
             onTagSearch = { scope.launch { performGenreSearch(navigator, it, screenModel.source!!) } },
+            // KMK -->
+            onMangaIncognitoToggled = screenModel::toggleMangaIncognitoMode,
+            // KMK <--
             onFilterButtonClicked = screenModel::showSettingsDialog,
             onRefresh = screenModel::fetchAllFromSource,
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
