@@ -178,6 +178,7 @@ object SettingsReaderScreen : SearchableSettings {
                     value = flashMillis / ReaderPreferences.MILLI_CONVERSION,
                     min = 1,
                     max = 15,
+                    steps = 13,
                     title = stringResource(MR.strings.pref_flash_duration),
                     subtitle = stringResource(MR.strings.pref_flash_duration_summary, flashMillis),
                     onValueChanged = {
@@ -190,6 +191,7 @@ object SettingsReaderScreen : SearchableSettings {
                     value = flashInterval,
                     min = 1,
                     max = 10,
+                    steps = 8,
                     title = stringResource(MR.strings.pref_flash_page_interval),
                     subtitle = pluralStringResource(MR.plurals.pref_pages, flashInterval, flashInterval),
                     onValueChanged = {

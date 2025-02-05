@@ -2,6 +2,7 @@ package eu.kanade.presentation.reader.settings
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -200,6 +201,7 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         onChange = {
             screenModel.preferences.webtoonSidePadding().set(it)
         },
+        pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
     )
 
     CheckboxItem(
