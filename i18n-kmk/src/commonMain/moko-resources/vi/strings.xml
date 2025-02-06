@@ -65,7 +65,6 @@
   <string name="theme_custom">Chủ đề tủy chỉnh</string>
   <string name="extensions_page_need_refresh">Làm mới danh sách tiện ích mở rộng để cập nhật.</string>
   <string name="extensions_page_more">Thêm tiện ích mở rộng...</string>
-  <string name="action_remove_merged">Xóa các mục đã gộp?</string>
   <string name="pref_expand_related_mangas">Mở rộng phần Gợi ý</string>
   <string name="pref_expand_related_mangas_summary">Nếu tắt, mục Gợi ý sẽ không tự động tải &amp; hiển thị</string>
   <string name="put_related_mangas_in_overflow">Đặt Gợi ý trong trình đơn mở rộng</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Sao chép trang thứ hai vào clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Sao chép trang đã kết hợp vào clipboard</string>
   <string name="auto_update_app_disable_auto_download">Không tự động tải xuống bản cập nhật</string>
+  <string name="action_remove_merged">Xóa các truyện gốc ra khỏi thư viện?</string>
+  <string name="batch_add_description">Hỗ trợ: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

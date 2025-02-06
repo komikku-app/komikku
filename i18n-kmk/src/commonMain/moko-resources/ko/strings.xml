@@ -65,7 +65,6 @@
   <string name="theme_custom">Custom Theme</string>
   <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
   <string name="extensions_page_more">More extensions...</string>
-  <string name="action_remove_merged">Remove merged entries?</string>
   <string name="pref_expand_related_mangas">Expand Suggestions</string>
   <string name="pref_expand_related_mangas_summary">If turned off, Suggestions won\'t automatically load &amp; show expanded</string>
   <string name="put_related_mangas_in_overflow">Suggestions in overflow</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
   <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
+  <string name="action_remove_merged">Remove original entries from library?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

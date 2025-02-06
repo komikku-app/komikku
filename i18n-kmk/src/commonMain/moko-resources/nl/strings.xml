@@ -65,7 +65,6 @@
   <string name="theme_custom">Aangepast Thema</string>
   <string name="extensions_page_need_refresh">Vernieuw de extensie pagina om de lijst bij te werken.</string>
   <string name="extensions_page_more">Meer extensies...</string>
-  <string name="action_remove_merged">Samengevoegde items verwijderen?</string>
   <string name="pref_expand_related_mangas">Suggesties uitbreiden</string>
   <string name="pref_expand_related_mangas_summary">Suggesties zullen niet automatisch laden &amp; weergeven als ze zijn uitgeschakeld</string>
   <string name="put_related_mangas_in_overflow">Suggesties in overflow</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Tweede pagina naar klembord kopiëren</string>
   <string name="action_copy_to_clipboard_combined_page">Kopieer gecombineerde pagina naar klembord</string>
   <string name="auto_update_app_disable_auto_download">Update niet automatisch downloaden</string>
+  <string name="action_remove_merged">Originele invoergegevens uit bibliotheek verwijderen?</string>
+  <string name="batch_add_description">Ondersteuning: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

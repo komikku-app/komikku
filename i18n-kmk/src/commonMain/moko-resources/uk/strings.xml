@@ -65,7 +65,6 @@
   <string name="theme_custom">Задана тема</string>
   <string name="extensions_page_need_refresh">Оновити сторінку розширення для оновлення списку.</string>
   <string name="extensions_page_more">Більше розширень...</string>
-  <string name="action_remove_merged">Видалити об\'єднані записи?</string>
   <string name="pref_expand_related_mangas">Розгорнути пропозиції</string>
   <string name="pref_expand_related_mangas_summary">Якщо вимкнено, пропозиції не будуть автоматично завантажувати &amp; показати розширене</string>
   <string name="put_related_mangas_in_overflow">Пропозиції в перевищенні</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Скопіювати другу сторінку в буфер обміну</string>
   <string name="action_copy_to_clipboard_combined_page">Скопіювати комбіновану сторінку в буфер обміну</string>
   <string name="auto_update_app_disable_auto_download">Не завантажувати автоматично оновлення</string>
+  <string name="action_remove_merged">Видалити оригінальні записи з бібліотеки?</string>
+  <string name="batch_add_description">Підтримка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

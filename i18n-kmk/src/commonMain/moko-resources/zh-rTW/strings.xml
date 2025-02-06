@@ -65,7 +65,6 @@
   <string name="theme_custom">自訂主題</string>
   <string name="extensions_page_need_refresh">刷新擴充套件頁面以更新列表</string>
   <string name="extensions_page_more">更多擴充套件...</string>
-  <string name="action_remove_merged">刪除合併的條目？</string>
   <string name="pref_expand_related_mangas">展開建議</string>
   <string name="pref_expand_related_mangas_summary">如果關閉，建議將不會自動加載 &amp; 展開顯示</string>
   <string name="put_related_mangas_in_overflow">在選單顯示建議</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">將第二頁複製到剪貼簿</string>
   <string name="action_copy_to_clipboard_combined_page">將雙頁複製到剪貼簿</string>
   <string name="auto_update_app_disable_auto_download">不自動下載更新</string>
+  <string name="action_remove_merged">要從書櫃移除原始條目嗎？</string>
+  <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses、Tsumino</string>
 </resources>

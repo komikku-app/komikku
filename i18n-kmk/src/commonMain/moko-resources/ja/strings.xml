@@ -65,7 +65,6 @@
   <string name="theme_custom">カスタムテーマ</string>
   <string name="extensions_page_need_refresh">リストを更新するにはエクステンションページを更新してください。</string>
   <string name="extensions_page_more">その他のエクステンション...</string>
-  <string name="action_remove_merged">マージされたエントリを削除しますか？</string>
   <string name="pref_expand_related_mangas">提案を展開</string>
   <string name="pref_expand_related_mangas_summary">オフにすると、提案は自動的に読み込まれず、展開されて表示されません</string>
   <string name="put_related_mangas_in_overflow">オーバーフローの提案</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">2ページ目をクリップボードにコピー</string>
   <string name="action_copy_to_clipboard_combined_page">結合ページをクリップボードにコピー</string>
   <string name="auto_update_app_disable_auto_download">更新プログラムを自動的にダウンロードしない</string>
+  <string name="action_remove_merged">ライブラリから元のエントリを削除しますか？</string>
+  <string name="batch_add_description">サポート: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

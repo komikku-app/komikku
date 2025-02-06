@@ -65,7 +65,6 @@
   <string name="theme_custom">Temă personalizată</string>
   <string name="extensions_page_need_refresh">Reîmprospătează pagina extensiei pentru a actualiza lista.</string>
   <string name="extensions_page_more">Mai multe extensii...</string>
-  <string name="action_remove_merged">Eliminați intrările fuzionate?</string>
   <string name="pref_expand_related_mangas">Extinde sugestii</string>
   <string name="pref_expand_related_mangas_summary">Dacă este dezactivat, sugestiile nu vor încărca automat &amp; Arată extins</string>
   <string name="put_related_mangas_in_overflow">Sugestii privind excesul de flux</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Copiază a doua pagină în clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Copiază pagina combinată în clipboard</string>
   <string name="auto_update_app_disable_auto_download">Nu descărca automat</string>
+  <string name="action_remove_merged">Eliminaţi intrările originale din bibliotecă?</string>
+  <string name="batch_add_description">Suport: MangaDex, E-H, ExH, nH, 8Muse, Tsumino</string>
 </resources>

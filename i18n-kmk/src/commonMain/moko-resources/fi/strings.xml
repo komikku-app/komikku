@@ -65,7 +65,6 @@
   <string name="theme_custom">Muokattu Teema</string>
   <string name="extensions_page_need_refresh">Päivitä lisäosa sivu päivitettäväksi.</string>
   <string name="extensions_page_more">Lisää laajennuksia...</string>
-  <string name="action_remove_merged">Poista yhdistetyt merkinnät?</string>
   <string name="pref_expand_related_mangas">Laajenna Ehdotukset</string>
   <string name="pref_expand_related_mangas_summary">Jos pois päältä, Ehdotukset eivät lataa automaattisesti &amp; näytä laajennettu</string>
   <string name="put_related_mangas_in_overflow">Ehdotukset ylivuoto</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Kopioi toinen sivu leikepöydälle</string>
   <string name="action_copy_to_clipboard_combined_page">Kopioi yhdistetty sivu leikepöydälle</string>
   <string name="auto_update_app_disable_auto_download">Älä lataa automaattisesti päivitystä</string>
+  <string name="action_remove_merged">Poistetaanko alkuperäiset merkinnät kirjastosta?</string>
+  <string name="batch_add_description">Tuki: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

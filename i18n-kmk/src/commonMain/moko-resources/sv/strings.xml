@@ -65,7 +65,6 @@
   <string name="theme_custom">Anpassat tema</string>
   <string name="extensions_page_need_refresh">Uppdatera tilläggssidan för att uppdatera listan.</string>
   <string name="extensions_page_more">Fler tillägg...</string>
-  <string name="action_remove_merged">Ta bort sammanslagna poster?</string>
   <string name="pref_expand_related_mangas">Expandera förslag</string>
   <string name="pref_expand_related_mangas_summary">Om inaktiverad, kommer förslagen inte automatiskt att ladda &amp; visa utökad</string>
   <string name="put_related_mangas_in_overflow">Förslag på överflöd</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Kopiera andra sidan till urklipp</string>
   <string name="action_copy_to_clipboard_combined_page">Kopiera kombinerad sida till urklipp</string>
   <string name="auto_update_app_disable_auto_download">Uppdatera inte automatisk nedladdning</string>
+  <string name="action_remove_merged">Ta bort ursprungliga poster från biblioteket?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

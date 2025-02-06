@@ -65,7 +65,6 @@
   <string name="theme_custom">Brugerdefineret Tema</string>
   <string name="extensions_page_need_refresh">Opdater udvidelsessiden for at opdatere listen.</string>
   <string name="extensions_page_more">Flere udvidelser...</string>
-  <string name="action_remove_merged">Fjern sammenlagte indgange?</string>
   <string name="pref_expand_related_mangas">Udvid Forslag</string>
   <string name="pref_expand_related_mangas_summary">Hvis slået fra, vil forslag ikke automatisk indlæse &amp; Vis udvidet</string>
   <string name="put_related_mangas_in_overflow">Forslag i overløb</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Kopier anden side til udklipsholder</string>
   <string name="action_copy_to_clipboard_combined_page">Kopier kombineret side til udklipsholder</string>
   <string name="auto_update_app_disable_auto_download">Download ikke automatisk opdatering</string>
+  <string name="action_remove_merged">Fjern originale indgange fra biblioteket?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

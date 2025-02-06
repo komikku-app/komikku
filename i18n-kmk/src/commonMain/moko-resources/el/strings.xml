@@ -65,7 +65,6 @@
   <string name="theme_custom">Προσαρμοσμένο Θέμα</string>
   <string name="extensions_page_need_refresh">Ανανέωση επέκτασης σελίδας για ενημέρωση λίστας.</string>
   <string name="extensions_page_more">Περισσότερες επεκτάσεις...</string>
-  <string name="action_remove_merged">Αφαίρεση συγχωνευμένων καταχωρήσεων?</string>
   <string name="pref_expand_related_mangas">Επέκταση Προτάσεων</string>
   <string name="pref_expand_related_mangas_summary">Αν απενεργοποιηθεί, οι προτάσεις δεν θα φορτώσουν αυτόματα το &amp; show επεκτάθηκε</string>
   <string name="put_related_mangas_in_overflow">Προτάσεις υπερχείλισης</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Αντιγραφή δεύτερης σελίδας στο πρόχειρο</string>
   <string name="action_copy_to_clipboard_combined_page">Αντιγραφή συνδυασμένης σελίδας στο πρόχειρο</string>
   <string name="auto_update_app_disable_auto_download">Να μην γίνεται αυτόματη λήψη ενημέρωσης</string>
+  <string name="action_remove_merged">Αφαιρέστε τις αρχικές καταχωρήσεις από τη βιβλιοθήκη?</string>
+  <string name="batch_add_description">Υποστήριξη: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

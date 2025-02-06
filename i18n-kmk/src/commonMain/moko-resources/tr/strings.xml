@@ -65,7 +65,6 @@
   <string name="theme_custom">Özel tema</string>
   <string name="extensions_page_need_refresh">Listeyi güncellemek için eklenti sayfasını yenileyin.</string>
   <string name="extensions_page_more">Daha çok eklenti...</string>
-  <string name="action_remove_merged">Birleştirilmiş girişleri kaldırın?</string>
   <string name="pref_expand_related_mangas">Önerileri Genişlet</string>
   <string name="pref_expand_related_mangas_summary">Kapatılırsa, Öneriler otomatik olarak yüklenmez &amp; genişletilmiş göster</string>
   <string name="put_related_mangas_in_overflow">Taşma içindeki öneriler</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
   <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
+  <string name="action_remove_merged">Remove original entries from library?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

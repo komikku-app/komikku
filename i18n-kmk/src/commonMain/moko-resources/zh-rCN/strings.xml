@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="action_source_search">在源上搜索</string>
-  <string name="action_toggle_nsfw_only">切换仅 NSFW</string>
+  <string name="action_toggle_nsfw_only">切换至仅 NSFW</string>
   <string name="action_bulk_select">批量选择模式</string>
   <string name="action_faq_and_guides">常见问题和指南</string>
   <string name="download_cache_renew_interval">下载缓存更新间隔</string>
@@ -65,7 +65,6 @@
   <string name="theme_custom">自定义主题</string>
   <string name="extensions_page_need_refresh">刷新扩展页面以更新列表。</string>
   <string name="extensions_page_more">更多扩展...</string>
-  <string name="action_remove_merged">删除合并条目？</string>
   <string name="pref_expand_related_mangas">展开建议</string>
   <string name="pref_expand_related_mangas_summary">如果关闭，将不会自动加载建议 &amp; 显示扩展</string>
   <string name="put_related_mangas_in_overflow">建议溢出</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">复制第二页到剪贴板</string>
   <string name="action_copy_to_clipboard_combined_page">复制合并页面到剪贴板</string>
   <string name="auto_update_app_disable_auto_download">不自动下载更新</string>
+  <string name="action_remove_merged">Remove original entries from library?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

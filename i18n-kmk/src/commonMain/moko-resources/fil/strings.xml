@@ -65,7 +65,6 @@
   <string name="theme_custom">Custom na Tema</string>
   <string name="extensions_page_need_refresh">I-refresh ang pahina ang extension para ma-update ang listahan.</string>
   <string name="extensions_page_more">Marami pang extension...</string>
-  <string name="action_remove_merged">Alisin ang pinagsamang mga entry?</string>
   <string name="pref_expand_related_mangas">Palawakin ang Mga Suhestiyon</string>
   <string name="pref_expand_related_mangas_summary">Kung naka-off, ang mga suhestiyon ay hindi awtomatikong maglo-load at ipakita kung pinalawak</string>
   <string name="put_related_mangas_in_overflow">Mga suhestiyon sa overflow</string>
@@ -122,5 +121,7 @@
   <string name="action_copy_to_clipboard_first_page">Kopyahin ang unang pahina sa clipboard</string>
   <string name="action_copy_to_clipboard_second_page">Kopyahin ang ikalawang pahina sa clipboard</string>
   <string name="action_copy_to_clipboard_combined_page">Kopyahin ang pinagsamang pahina sa clipboard</string>
-  <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
+  <string name="auto_update_app_disable_auto_download">Huwag awtomatikong i-download ang update</string>
+  <string name="action_remove_merged">Remove original entries from library?</string>
+  <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>

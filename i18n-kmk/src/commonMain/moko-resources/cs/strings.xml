@@ -65,7 +65,6 @@
   <string name="theme_custom">Vlastní šablona</string>
   <string name="extensions_page_need_refresh">Aktualizovat rozšířenou stránku pro aktualizaci seznamu.</string>
   <string name="extensions_page_more">Další rozšíření...</string>
-  <string name="action_remove_merged">Odstranit sloučené položky?</string>
   <string name="pref_expand_related_mangas">Rozšířit návrhy</string>
   <string name="pref_expand_related_mangas_summary">Pokud je vypnuto, návrhy se automaticky nenačtou &amp; zobrazit rozšířené</string>
   <string name="put_related_mangas_in_overflow">Návrhy v přetečení</string>
@@ -123,4 +122,6 @@
   <string name="action_copy_to_clipboard_second_page">Zkopírovat druhou stránku do schránky</string>
   <string name="action_copy_to_clipboard_combined_page">Kopírovat kombinovanou stránku do schránky</string>
   <string name="auto_update_app_disable_auto_download">Automaticky nestahovat aktualizaci</string>
+  <string name="action_remove_merged">Odstranit původní položky z knihovny?</string>
+  <string name="batch_add_description">Podpora: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>
