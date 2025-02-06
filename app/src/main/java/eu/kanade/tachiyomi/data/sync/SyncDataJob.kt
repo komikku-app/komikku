@@ -61,7 +61,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             notifier.showSyncError(e.message)
             Result.success() // try again next time
         } finally {
-            context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+            context.cancelNotification(Notifications.ID_SYNC_PROGRESS)
             // KMK -->
             syncStatus.stop()
             // KMK <--
@@ -70,7 +70,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return ForegroundInfo(
-            Notifications.ID_RESTORE_PROGRESS,
+            Notifications.ID_SYNC_PROGRESS,
             notifier.showSyncProgress().build(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
