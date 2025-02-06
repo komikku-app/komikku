@@ -90,7 +90,7 @@ open class BrowseSourceScreenModel(
     private val savedSearch: Long? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
-    sourcePreferences: SourcePreferences = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getRemoteManga: GetRemoteManga = Injekt.get(),
@@ -149,13 +149,15 @@ open class BrowseSourceScreenModel(
                         listing = Listing.Search(query, source.getFilterList())
                     }
 
-                    it.copy(
-                        listing = listing,
-                        filters = source.getFilterList(),
-                        toolbarQuery = query,
-                    )
-                }
-            }.join()
+                it.copy(
+                    listing = listing,
+                    filters = source.getFilterList(),
+                    toolbarQuery = query,
+                    hideEntriesInLibraryState = sourcePreferences.hideInLibraryItems().get()
+                )
+            }
+        }.join()
+            // TODO: Why join() here
 
             if (!getIncognitoState.await(source.id)) {
                 sourcePreferences.lastUsedSource().set(source.id)
@@ -197,7 +199,6 @@ open class BrowseSourceScreenModel(
     /**
      * Flow of Pager flow tied to [State.listing]
      */
-    private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
@@ -219,7 +220,7 @@ open class BrowseSourceScreenModel(
                         // SY <--
                         .stateIn(ioCoroutineScope)
                 }
-                    .filter { !hideInLibraryItems || !it.value.first.favorite }
+                    .filter { !(state.value.hideEntriesInLibraryState?:false) || !it.value.first.favorite }
             }
                 .cachedIn(ioCoroutineScope)
         }
@@ -257,8 +258,13 @@ open class BrowseSourceScreenModel(
         // KMK <--
         if (source !is CatalogueSource) return
 
+        mutableState.update { it.copy(
+            filters = source.getFilterList(),
+            hideEntriesInLibraryState = sourcePreferences.hideInLibraryItems().get()
+        ) }
         // KMK -->
-        setFilters(source.getFilterList())
+        // TODO: Fix duplicate setting filter here
+        // setFilters(source.getFilterList())
 
         reloadSavedSearches()
         // KMK <--
@@ -515,6 +521,7 @@ open class BrowseSourceScreenModel(
         val filters: FilterList = FilterList(),
         val toolbarQuery: String? = null,
         val dialog: Dialog? = null,
+        val hideEntriesInLibraryState: Boolean? = null,
         // SY -->
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
@@ -638,6 +645,10 @@ open class BrowseSourceScreenModel(
                 ?: return@launchIO
             onRandomFound(random)
         }
+    }
+
+    fun onHideEntriesInLibraryChange(value: Boolean) {
+        mutableState.update { it.copy(hideEntriesInLibraryState = value) }
     }
     // EXH <--
 }

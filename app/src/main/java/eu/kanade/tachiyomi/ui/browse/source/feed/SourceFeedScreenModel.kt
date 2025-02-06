@@ -11,6 +11,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
@@ -64,6 +64,7 @@ open class SourceFeedScreenModel(
     val sourceId: Long,
     uiPreferences: UiPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
@@ -108,6 +109,7 @@ open class SourceFeedScreenModel(
                     mutableState.update { state ->
                         state.copy(
                             items = items,
+                            hideEntriesInLibraryState = sourcePreferences.hideInLibraryItems().get(),
                         )
                     }
                     getFeed(items)
@@ -370,6 +372,10 @@ open class SourceFeedScreenModel(
         }
     }
 
+    fun onHideEntriesInLibraryChange(state: Boolean) {
+        mutableState.update { it.copy(hideEntriesInLibraryState = state) }
+    }
+
     fun search(query: String?) {
         mutableState.update { it.copy(searchQuery = query) }
     }
@@ -441,6 +447,7 @@ data class SourceFeedState(
     val filters: FilterList = FilterList(),
     val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
     val dialog: SourceFeedScreenModel.Dialog? = null,
+    val hideEntriesInLibraryState: Boolean? = null,
 ) {
     val isLoading
         get() = items.isEmpty()
