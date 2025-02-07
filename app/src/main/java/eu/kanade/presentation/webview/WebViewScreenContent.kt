@@ -4,6 +4,9 @@ import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +16,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,10 +48,14 @@ import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import java.time.Duration
+import kotlin.math.max
 
 @Composable
 fun WebViewScreenContent(
@@ -63,6 +75,8 @@ fun WebViewScreenContent(
 
     var currentUrl by remember { mutableStateOf(url) }
     var showCloudflareHelp by remember { mutableStateOf(false) }
+    var showScrollButtons by remember { mutableIntStateOf(0) }
+    val webViewRef = remember { mutableStateOf<WebView?>(null) }
 
     val webClient = remember {
         object : AccompanistWebViewClient() {
@@ -204,27 +218,96 @@ fun WebViewScreenContent(
             }
         },
     ) { contentPadding ->
-        WebView(
-            state = state,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
-            navigator = navigator,
-            onCreated = { webView ->
-                webView.setDefaultSettings()
+        Box(Modifier.fillMaxSize()) {
+            WebView(
+                state = state,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                navigator = navigator,
+                onCreated = { webView ->
+                    webViewRef.value = webView
+                    webView.setDefaultSettings()
 
-                // Debug mode (chrome://inspect/#devices)
-                if (isDebugBuildType &&
-                    0 != webView.context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+                    // Debug mode (chrome://inspect/#devices)
+                    if (isDebugBuildType &&
+                        0 != webView.context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+                    ) {
+                        WebView.setWebContentsDebuggingEnabled(true)
+                    }
+
+                    headers["user-agent"]?.let {
+                        webView.settings.userAgentString = it
+                    }
+
+                    // Declare a Job to cancel/reset the button visibility after 300 ms
+                    var scrollResetJob: Job? = null
+
+                    webView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+                        // Calculate scroll delta
+                        val delta = scrollY - oldScrollY
+                        // Calculate total content height in pixels.
+                        val contentHeightPx = (webView.contentHeight * webView.scaleY).toInt()
+
+                        // Only show the button if scrolling is applicable.
+                        if (contentHeightPx <= webView.height) return@setOnScrollChangeListener
+
+                        if (delta > 0 && scrollY > 0) {
+                            showScrollButtons = 1
+                        } else if (delta < 0 && scrollY < contentHeightPx - webView.height) {
+                            showScrollButtons = 2
+                        }
+
+                        // Cancel any existing reset and hide the button after 300ms of inactivity.
+                        scrollResetJob?.cancel()
+                        scrollResetJob = scope.launch {
+                            delay(Duration.ofMillis(300))
+                            showScrollButtons = 0
+                        }
+                    }
+                },
+                client = webClient,
+            )
+
+            // Scroll-to-top/bottom button
+            AnimatedVisibility(
+                visible = showScrollButtons > 0,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        webViewRef.value?.let { webView ->
+                            val contentHeightPx = (webView.contentHeight * webView.scaleY).toInt()
+                            when (showScrollButtons) {
+                                1 -> { // ArrowDownward: scroll to bottom.
+                                    val bottomY = max(0, contentHeightPx - webView.height)
+                                    webView.scrollTo(0, bottomY)
+                                }
+                                2 -> { // ArrowUpward: scroll to top.
+                                    webView.scrollTo(0, 0)
+                                }
+                            }
+                            // Hide the button immediately after clicking.
+                            showScrollButtons = 0
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.5f),
                 ) {
-                    WebView.setWebContentsDebuggingEnabled(true)
+                    Icon(
+                        imageVector = if (showScrollButtons == 1) {
+                            Icons.Filled.ArrowDownward
+                        } else {
+                            Icons.Filled.ArrowUpward
+                        },
+                        contentDescription = null,
+                    )
                 }
-
-                headers["user-agent"]?.let {
-                    webView.settings.userAgentString = it
-                }
-            },
-            client = webClient,
-        )
+            }
+        }
     }
 }
