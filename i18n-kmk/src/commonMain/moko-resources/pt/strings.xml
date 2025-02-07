@@ -41,7 +41,7 @@
     <string name="action_library_search">Pesquisar na biblioteca</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Algodão Doce</string>
-    <string name="theme_doom">Doom</string>
+    <string name="theme_doom"></string>
     <string name="theme_matrix">Matrix</string>
     <string name="theme_mocha">Café</string>
     <string name="theme_sapphire">Safira</string>
@@ -80,9 +80,9 @@
     <string name="pref_custom_theme_style">Estilo do tema personalizado</string>
     <string name="pref_theme_cover_based_style">Estilo do tema baseado em capa</string>
     <string name="custom_color_description">Escolha uma cor de semente para o tema personalizado</string>
-    <string name="custom_theme_palette_casual">Casual</string>
+    <string name="custom_theme_palette_casual"></string>
     <string name="custom_theme_palette_sunset">Ensolarado</string>
-    <string name="custom_theme_palette_outrun">Outrun</string>
+    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Framboesa</string>
     <string name="custom_theme_palette_pop">Estrume</string>
     <string name="custom_theme_palette_cathode">Catode</string>
@@ -90,7 +90,7 @@
     <string name="custom_theme_palette_night_at_the_beach">Noite na praia</string>
     <string name="custom_theme_palette_spectral">Espectro</string>
     <string name="custom_theme_palette_patagonia">Patagônia</string>
-    <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Mostrar categorias ocultas</string>
