@@ -118,4 +118,11 @@
     <string name="auto_update_app_disable_auto_download">Update nicht automatisch herunterladen</string>
     <string name="action_remove_merged">Originaleinträge aus der Bibliothek entfernen?</string>
     <string name="batch_add_description">Unterstützung: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="pref_panorama_cover_flow">Panorama-Cover Flow</string>
+    <string name="theme_doom">Untergang</string>
+    <string name="pref_custom_color">Paletten-Personalisierer</string>
+    <string name="custom_theme_palette_outrun">Überholt</string>
+    <string name="custom_theme_palette_pop">Pop</string>
+    <string name="custom_theme_palette_springfield">Frühlingsfeld</string>
+    <string name="action_manual_install">Manuelle Installation</string>
 </resources>
