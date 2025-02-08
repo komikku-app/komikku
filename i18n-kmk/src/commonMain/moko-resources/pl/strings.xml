@@ -116,4 +116,10 @@
     <string name="auto_update_app_disable_auto_download">Nie pobieraj automatycznie aktualizacji</string>
     <string name="action_remove_merged">Usunąć oryginalne wpisy z biblioteki?</string>
     <string name="batch_add_description">Wsparcie: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="theme_doom">Fatum</string>
+    <string name="action_manual_install">Ręczna instalacja</string>
+    <string name="theme_mocha">Mokka</string>
+    <string name="theme_sapphire">Szafir</string>
+    <string name="custom_theme_palette_patagonia">Patagonia</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
 </resources>
