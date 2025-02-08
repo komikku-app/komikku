@@ -41,9 +41,7 @@
     <string name="action_library_search">Pesquisar na biblioteca</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Algodão Doce</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matriz</string>
-    <string name="theme_mocha"></string>
     <string name="theme_sapphire">Safira</string>
     <string name="pref_show_updating_progress_banner">Mostrar atualização de progresso de banner</string>
     <string name="pref_show_restoring_progress_banner">Mostrar banner de restauração</string>
@@ -80,9 +78,7 @@
     <string name="pref_custom_theme_style">Estilo do tema personalizado</string>
     <string name="pref_theme_cover_based_style">Estilo do tema baseado em capa</string>
     <string name="custom_color_description">Escolha uma cor de semente para o tema personalizado</string>
-    <string name="custom_theme_palette_casual"></string>
     <string name="custom_theme_palette_sunset">Ensolarado</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Framboesa</string>
     <string name="custom_theme_palette_pop">Estrume</string>
     <string name="custom_theme_palette_cathode">Catode</string>

@@ -28,7 +28,6 @@
     <string name="too_many_in_feed">Πάρα πολλές πηγές στη ροή σας, δεν μπορούν να προσθέσουν περισσότερα από περιορισμένα (20)</string>
     <string name="current_">Τρέχον: %1$s</string>
     <string name="pref_theme_cover_based">Θέμα βασισμένο στο εξώφυλλο</string>
-    <string name="pref_theme_cover_based_style_tonalspot"></string>
     <string name="pref_theme_cover_based_style_neutral">Ουδέτερο</string>
     <string name="pref_theme_cover_based_style_vibrant">Ζωντανή</string>
     <string name="pref_theme_cover_based_style_expressive">Εκφραστικό</string>
@@ -44,7 +43,6 @@
     <string name="theme_doom">Έκρηξη</string>
     <string name="theme_matrix">Πίνακας</string>
     <string name="theme_mocha">Μόχα</string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">Εμφάνιση banner προόδου ενημέρωσης</string>
     <string name="pref_show_restoring_progress_banner">Εμφάνιση του banner προόδου</string>
     <string name="pref_show_syncing_progress_banner">Εμφάνιση banner προόδου συγχρονισμού</string>
@@ -82,15 +80,12 @@
     <string name="custom_color_description">Διαλέξτε ένα χρώμα σπόρων για το προσαρμοσμένο θέμα</string>
     <string name="custom_theme_palette_casual">Περιστασιακό</string>
     <string name="custom_theme_palette_sunset">Ήλιος</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Βατόμουρο</string>
     <string name="custom_theme_palette_pop">Ποπ</string>
-    <string name="custom_theme_palette_cathode"></string>
     <string name="custom_theme_palette_bubblegum">Τσιχλόφουσκα</string>
     <string name="custom_theme_palette_night_at_the_beach">Νύχτα στην παραλία</string>
     <string name="custom_theme_palette_spectral">Φασματικό</string>
     <string name="custom_theme_palette_patagonia">Παταγονία</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Εμφάνιση κρυφών κατηγοριών</string>
@@ -99,7 +94,6 @@
     <string name="pref_panorama_cover">Κάλυψη Πανοράματος</string>
     <string name="pref_panorama_cover_summary">Εμφάνιση εξωφύλλου σε λειτουργία τοπίου αν είναι μια ευρεία εικόνα</string>
     <string name="pref_panorama_cover_flow">Ροή Κάλυψης Πανοράματος</string>
-    <string name="pref_panorama_cover_flow_summary"></string>
     <string name="pref_auto_sync_progress_from_trackers">Πρόοδος αυτόματου συγχρονισμού από Trackers</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Πρόοδος συγχρονισμού από Trackers μέχρι το κεφάλαιο %d</string>
     <string name="option_label_library_update_errors">Σφάλματα ενημέρωσης βιβλιοθήκης</string>

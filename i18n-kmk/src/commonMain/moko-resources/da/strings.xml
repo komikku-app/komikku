@@ -28,7 +28,6 @@
     <string name="too_many_in_feed">For mange kilder i dit feed, kan ikke tilføje mere end begrænset (20)</string>
     <string name="current_">Nuværende: %1$s</string>
     <string name="pref_theme_cover_based">Tema baseret på omslag</string>
-    <string name="pref_theme_cover_based_style_tonalspot"></string>
     <string name="pref_theme_cover_based_style_neutral">Neutral</string>
     <string name="pref_theme_cover_based_style_vibrant">Levende</string>
     <string name="pref_theme_cover_based_style_expressive">Udtryksfuldt</string>
@@ -43,8 +42,6 @@
     <string name="theme_cottoncandy">Bomuld Slik</string>
     <string name="theme_doom">Dom</string>
     <string name="theme_matrix">Matrix</string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">Vis statusbanner for opdatering</string>
     <string name="pref_show_restoring_progress_banner">Vis genoprettelse af fremdriftsbanner</string>
     <string name="pref_show_syncing_progress_banner">Vis synkronisering af fremdriftsbanner</string>
@@ -82,15 +79,11 @@
     <string name="custom_color_description">Vælg en hovedfarve for det brugerdefinerede tema</string>
     <string name="custom_theme_palette_casual">Uforpligtende</string>
     <string name="custom_theme_palette_sunset">Solnedgang</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Hindbær</string>
-    <string name="custom_theme_palette_pop"></string>
     <string name="custom_theme_palette_cathode">Katode</string>
-    <string name="custom_theme_palette_bubblegum"></string>
     <string name="custom_theme_palette_night_at_the_beach">Nat på stranden</string>
     <string name="custom_theme_palette_spectral">Spektral</string>
     <string name="custom_theme_palette_patagonia">Patagonien</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Vis skjulte kategorier</string>

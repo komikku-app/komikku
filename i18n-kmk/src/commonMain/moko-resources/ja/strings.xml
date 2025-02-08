@@ -32,7 +32,6 @@
     <string name="pref_theme_cover_based_style_neutral">ニュートラル</string>
     <string name="pref_theme_cover_based_style_vibrant">バイブ</string>
     <string name="pref_theme_cover_based_style_expressive">表現的</string>
-    <string name="pref_theme_cover_based_style_rainbow"></string>
     <string name="pref_theme_cover_based_style_fruitsalad">フルーツサラダ</string>
     <string name="pref_theme_cover_based_style_monochrome">モノクローム</string>
     <string name="pref_theme_cover_based_style_fidelity">忠実度</string>
@@ -43,8 +42,6 @@
     <string name="theme_cottoncandy">わたあめ</string>
     <string name="theme_doom">ドゥーム</string>
     <string name="theme_matrix">マトリクス</string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">更新中のバナーを表示</string>
     <string name="pref_show_restoring_progress_banner">復元中のバナーを表示</string>
     <string name="pref_show_syncing_progress_banner">同期中の進捗バナーを表示</string>
@@ -82,15 +79,12 @@
     <string name="custom_color_description">カスタムテーマのシードカラーを選択</string>
     <string name="custom_theme_palette_casual">カジュアルな</string>
     <string name="custom_theme_palette_sunset">日没</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">ラズベリー</string>
     <string name="custom_theme_palette_pop">ポップス</string>
     <string name="custom_theme_palette_cathode">カソード</string>
     <string name="custom_theme_palette_bubblegum">バブルガム</string>
     <string name="custom_theme_palette_night_at_the_beach">ビーチでの夜</string>
-    <string name="custom_theme_palette_spectral"></string>
     <string name="custom_theme_palette_patagonia">パタゴニア</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">非表示のカテゴリを表示</string>

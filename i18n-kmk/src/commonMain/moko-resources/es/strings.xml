@@ -41,7 +41,6 @@
     <string name="action_library_search">Búsqueda de biblioteca</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Algodón de Azúcar</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matriz</string>
     <string name="theme_mocha">Moca</string>
     <string name="theme_sapphire">Zafiro</string>
@@ -80,17 +79,12 @@
     <string name="pref_custom_theme_style">Tema personalizado</string>
     <string name="pref_theme_cover_based_style">Tema basado en la portada</string>
     <string name="custom_color_description">Elige un color de semilla para el tema personalizado</string>
-    <string name="custom_theme_palette_casual"></string>
     <string name="custom_theme_palette_sunset">Aislamiento</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Frambuesa</string>
-    <string name="custom_theme_palette_pop"></string>
     <string name="custom_theme_palette_cathode">Catódica</string>
     <string name="custom_theme_palette_bubblegum">Chicle</string>
     <string name="custom_theme_palette_night_at_the_beach">Noche en la playa</string>
     <string name="custom_theme_palette_spectral">Espectral</string>
-    <string name="custom_theme_palette_patagonia"></string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Mostrar categorías ocultas</string>
