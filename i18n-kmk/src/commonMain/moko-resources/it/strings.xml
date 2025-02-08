@@ -41,7 +41,6 @@
     <string name="action_library_search">Ricerca libreria</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Zucchero filato</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matrice</string>
     <string name="theme_mocha">Mocaccino</string>
     <string name="theme_sapphire">Zaffiro</string>
@@ -82,15 +81,10 @@
     <string name="custom_color_description">Scegli un colore del seme per il tema personalizzato</string>
     <string name="custom_theme_palette_casual">Casuale</string>
     <string name="custom_theme_palette_sunset">Tramonto</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Lampone</string>
-    <string name="custom_theme_palette_pop"></string>
     <string name="custom_theme_palette_cathode">Catodo</string>
-    <string name="custom_theme_palette_bubblegum"></string>
     <string name="custom_theme_palette_night_at_the_beach">Notte in spiaggia</string>
     <string name="custom_theme_palette_spectral">Spettro</string>
-    <string name="custom_theme_palette_patagonia"></string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Mostra categorie nascoste</string>

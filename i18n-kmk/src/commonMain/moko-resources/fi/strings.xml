@@ -41,10 +41,7 @@
     <string name="action_library_search">Kirjaston haku</string>
     <string name="theme_cloudflare">Pilvikampela</string>
     <string name="theme_cottoncandy">Puuvilla Candy</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matriisi</string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">Näytä edistymismainospalkin päivitys</string>
     <string name="pref_show_restoring_progress_banner">Näytä palautus edistymisbanneri</string>
     <string name="pref_show_syncing_progress_banner">Näytä edistymisbannerin synkronointi</string>
@@ -82,15 +79,10 @@
     <string name="custom_color_description">Valitse mukautetun teeman seed color</string>
     <string name="custom_theme_palette_casual">Rento</string>
     <string name="custom_theme_palette_sunset">Auringonlasku</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Vadelma</string>
     <string name="custom_theme_palette_pop">Poppi</string>
     <string name="custom_theme_palette_cathode">Kaappi</string>
-    <string name="custom_theme_palette_bubblegum"></string>
     <string name="custom_theme_palette_night_at_the_beach">Yö rannalla</string>
-    <string name="custom_theme_palette_spectral"></string>
-    <string name="custom_theme_palette_patagonia"></string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Näytä piilotetut kategoriat</string>

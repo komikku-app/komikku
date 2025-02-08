@@ -41,7 +41,6 @@
     <string name="action_library_search">Пошук у бібліотеці</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Цукрова Вата</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Матриця</string>
     <string name="theme_mocha">Мокко</string>
     <string name="theme_sapphire">Сапфір</string>
@@ -82,7 +81,6 @@
     <string name="custom_color_description">Вибрати колір зерна для власної теми</string>
     <string name="custom_theme_palette_casual">Довільний</string>
     <string name="custom_theme_palette_sunset">Захід Сонця</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Малина</string>
     <string name="custom_theme_palette_pop">Поп</string>
     <string name="custom_theme_palette_cathode">Катод</string>
@@ -90,7 +88,6 @@
     <string name="custom_theme_palette_night_at_the_beach">Ніч на пляжі</string>
     <string name="custom_theme_palette_spectral">Спектрально</string>
     <string name="custom_theme_palette_patagonia">Патагонія</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">Піко-8</string>
     <string name="action_show_hidden_categories">Показати приховані категорії</string>
@@ -103,7 +100,6 @@
     <string name="pref_auto_sync_progress_from_trackers">Автоматична синхронізація з трекерами</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Синхронізація з трекерами до розділу %d</string>
     <string name="option_label_library_update_errors">Помилки оновлення бібліотеки</string>
-    <string name="label_library_update_errors"></string>
     <string name="info_empty_library_update_errors">У вас немає помилок оновлення бібліотеки.</string>
     <string name="action_scroll_to_top">Прокрутити вгору</string>
     <string name="action_scroll_to_bottom">Прокрутити до кінця</string>

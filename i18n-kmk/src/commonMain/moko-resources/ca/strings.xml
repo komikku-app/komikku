@@ -6,9 +6,7 @@
     <string name="download_cache_renew_interval_12hour">12 hores</string>
     <string name="download_cache_renew_interval_24hour">1 dia</string>
     <string name="theme_cottoncandy">Caramel de cotó</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matriu</string>
-    <string name="theme_mocha"></string>
     <string name="theme_sapphire">Safir</string>
     <string name="action_hide">Amagar</string>
     <string name="custom_theme_palette_sunset">Posta de sol</string>

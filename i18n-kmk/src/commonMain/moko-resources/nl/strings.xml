@@ -43,8 +43,6 @@
     <string name="theme_cottoncandy">Katoen Snoep</string>
     <string name="theme_doom">Domme</string>
     <string name="theme_matrix">Matrix</string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">Update voortgangs banner tonen</string>
     <string name="pref_show_restoring_progress_banner">Toon terugzetten van voortgang banner</string>
     <string name="pref_show_syncing_progress_banner">Synchroniseer voortgangs banner weergeven</string>
@@ -82,15 +80,11 @@
     <string name="custom_color_description">Kies een seed kleur voor het aangepaste thema</string>
     <string name="custom_theme_palette_casual">Vrijblijvend</string>
     <string name="custom_theme_palette_sunset">Zonsondergang</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Framboos</string>
-    <string name="custom_theme_palette_pop"></string>
     <string name="custom_theme_palette_cathode">Katholiek</string>
-    <string name="custom_theme_palette_bubblegum"></string>
     <string name="custom_theme_palette_night_at_the_beach">Nacht op het strand</string>
     <string name="custom_theme_palette_spectral">Spectraal</string>
     <string name="custom_theme_palette_patagonia">Patagonië</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Toon verborgen categorieën</string>
@@ -113,7 +107,6 @@
     <string name="label_to_be_updated">Te updaten</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Handmatige download</string>
-    <string name="auto_update_app"></string>
     <string name="update_completed">Update voltooid</string>
     <string name="open">Open</string>
     <string name="release_page">Pagina vrijgeven</string>

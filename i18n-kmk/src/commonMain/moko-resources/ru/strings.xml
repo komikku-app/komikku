@@ -41,7 +41,6 @@
     <string name="action_library_search">Поиск по библиотеке</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Сахарная вата</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Матрица</string>
     <string name="theme_mocha">Моча</string>
     <string name="theme_sapphire">Сапфир</string>
@@ -82,7 +81,6 @@
     <string name="custom_color_description">Выберите цвет ключа для пользовательской темы</string>
     <string name="custom_theme_palette_casual">Обычный</string>
     <string name="custom_theme_palette_sunset">Закат</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Малина</string>
     <string name="custom_theme_palette_pop">Поп</string>
     <string name="custom_theme_palette_cathode">Катоде</string>
@@ -90,7 +88,6 @@
     <string name="custom_theme_palette_night_at_the_beach">Ночь на пляже</string>
     <string name="custom_theme_palette_spectral">Спектр</string>
     <string name="custom_theme_palette_patagonia">Патагония</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Показать скрытые категории</string>

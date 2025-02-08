@@ -41,10 +41,7 @@
     <string name="action_library_search">Vyhledávání knihovny</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Bavlníkový Candy</string>
-    <string name="theme_doom"></string>
     <string name="theme_matrix">Matice</string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
     <string name="pref_show_updating_progress_banner">Zobrazit banner průběhu aktualizace</string>
     <string name="pref_show_restoring_progress_banner">Zobrazit banner při obnovování</string>
     <string name="pref_show_syncing_progress_banner">Zobrazit postup synchronizace banneru</string>
@@ -82,15 +79,11 @@
     <string name="custom_color_description">Vyberte barvu seedu pro vlastní šablonu</string>
     <string name="custom_theme_palette_casual">Neformální</string>
     <string name="custom_theme_palette_sunset">Západ slunce</string>
-    <string name="custom_theme_palette_outrun"></string>
     <string name="custom_theme_palette_raspberry">Maliny</string>
-    <string name="custom_theme_palette_pop"></string>
     <string name="custom_theme_palette_cathode">Katoda</string>
-    <string name="custom_theme_palette_bubblegum"></string>
     <string name="custom_theme_palette_night_at_the_beach">Noc na pláži</string>
     <string name="custom_theme_palette_spectral">Spektrální</string>
     <string name="custom_theme_palette_patagonia">Patagonie</string>
-    <string name="custom_theme_palette_springfield"></string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Zobrazit skryté kategorie</string>

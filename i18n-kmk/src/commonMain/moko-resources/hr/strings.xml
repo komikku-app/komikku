@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="theme_cloudflare">Cloudflare</string>
-    <string name="theme_cottoncandy"></string>
-    <string name="theme_doom"></string>
-    <string name="theme_matrix"></string>
-    <string name="theme_mocha"></string>
-    <string name="theme_sapphire"></string>
 </resources>
