@@ -359,6 +359,7 @@ class MangaRestorer(
 
     /**
      * Restores the categories a manga is in.
+     * Only if [backupCategories] is provided and user chooses to restore it.
      *
      * @param manga the manga whose categories have to be restored.
      * @param categories the categories to restore.
@@ -507,46 +508,50 @@ class MangaRestorer(
         }
 
         // Iterate over them
-        backupMergedMangaReferences.forEach { backupMergedMangaReference ->
-            // If the backupMergedMangaReference isn't in the db,
-            // remove the id and insert a new backupMergedMangaReference
-            // Store the inserted id in the backupMergedMangaReference
-            if (dbMergedMangaReferences.none {
-                    backupMergedMangaReference.mergeUrl == it.mergeUrl &&
-                        backupMergedMangaReference.mangaUrl == it.mangaUrl
-                }
-            ) {
-                // Let the db assign the id
-                // KMK -->
-                val mergedManga = handler.awaitList {
-                    // KMK <--
-                    mangasQueries.getMangaByUrlAndSource(
-                        backupMergedMangaReference.mangaUrl,
-                        backupMergedMangaReference.mangaSourceId,
-                        MangaMapper::mapManga,
-                    )
+        backupMergedMangaReferences
+            // KMK -->
+            .map { EXHMigrations.migrateBackupMergedMangaReference(it) }
+            // KMK <--
+            .forEach { backupMergedMangaReference ->
+                // If the backupMergedMangaReference isn't in the db,
+                // remove the id and insert a new backupMergedMangaReference
+                // Store the inserted id in the backupMergedMangaReference
+                if (dbMergedMangaReferences.none {
+                        backupMergedMangaReference.mergeUrl == it.mergeUrl &&
+                            backupMergedMangaReference.mangaUrl == it.mangaUrl
+                    }
+                ) {
+                    // Let the db assign the id
                     // KMK -->
-                }.firstOrNull()
-                    // KMK <--
-                    ?: return@forEach
-                backupMergedMangaReference.getMergedMangaReference().run {
-                    handler.await {
-                        mergedQueries.insert(
-                            infoManga = isInfoManga,
-                            getChapterUpdates = getChapterUpdates,
-                            chapterSortMode = chapterSortMode.toLong(),
-                            chapterPriority = chapterPriority.toLong(),
-                            downloadChapters = downloadChapters,
-                            mergeId = mergeMangaId,
-                            mergeUrl = mergeUrl,
-                            mangaId = mergedManga.id,
-                            mangaUrl = mangaUrl,
-                            mangaSource = mangaSourceId,
+                    val mergedManga = handler.awaitList {
+                        // KMK <--
+                        mangasQueries.getMangaByUrlAndSource(
+                            backupMergedMangaReference.mangaUrl,
+                            backupMergedMangaReference.mangaSourceId,
+                            MangaMapper::mapManga,
                         )
+                        // KMK -->
+                    }.firstOrNull()
+                        // KMK <--
+                        ?: return@forEach
+                    backupMergedMangaReference.getMergedMangaReference().run {
+                        handler.await {
+                            mergedQueries.insert(
+                                infoManga = isInfoManga,
+                                getChapterUpdates = getChapterUpdates,
+                                chapterSortMode = chapterSortMode.toLong(),
+                                chapterPriority = chapterPriority.toLong(),
+                                downloadChapters = downloadChapters,
+                                mergeId = mergeMangaId,
+                                mergeUrl = mergeUrl,
+                                mangaId = mergedManga.id,
+                                mangaUrl = mangaUrl,
+                                mangaSource = mangaSourceId,
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 
     private suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {

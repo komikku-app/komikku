@@ -7,6 +7,11 @@ SET source = :newId
 WHERE source = :oldId;
 
 -- KMK -->
+migrateMergedSource:
+UPDATE merged
+SET manga_source = :newId
+WHERE manga_source = :oldId;
+
 migrateSourceSavedSearch:
 UPDATE saved_search
 SET source = :newId
