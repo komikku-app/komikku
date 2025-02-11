@@ -10,7 +10,7 @@ data class MergedMangaReference(
     // If false the manga will not grab chapter updates
     val getChapterUpdates: Boolean,
 
-    // The mode in which the chapters are handeled, only set in the main merge reference
+    // The mode in which the chapters are handled, only set in the main merge reference
     val chapterSortMode: Int,
 
     // chapter priority the deduplication uses

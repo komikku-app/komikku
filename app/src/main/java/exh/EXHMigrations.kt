@@ -1,6 +1,7 @@
 package exh
 
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
+import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import exh.source.EH_OLD_ID
 import exh.source.EH_SOURCE_ID
@@ -64,6 +65,30 @@ object EXHMigrations {
     }
 
     // KMK -->
+    /**
+     * Migrate old source ID of delegated sources in old backup
+     */
+    fun migrateBackupMergedMangaReference(mergeReference: BackupMergedMangaReference): BackupMergedMangaReference {
+        return when (mergeReference.mangaSourceId) {
+            NHENTAI_OLD_ID -> mergeReference.copy(
+                mangaSourceId = NHENTAI_SOURCE_ID,
+            )
+            TSUMINO_OLD_ID -> mergeReference.copy(
+                mangaSourceId = TSUMINO_SOURCE_ID,
+            )
+            HBROWSE_OLD_ID -> mergeReference.copy(
+                mangaSourceId = HBROWSE_SOURCE_ID,
+            )
+            EH_OLD_ID -> mergeReference.copy(
+                mangaSourceId = EH_SOURCE_ID,
+            )
+            EXH_OLD_ID -> mergeReference.copy(
+                mangaSourceId = EXH_SOURCE_ID,
+            )
+            else -> mergeReference
+        }
+    }
+
     /**
      * Migrate old source ID of delegated sources in old backup
      */
