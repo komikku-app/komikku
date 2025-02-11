@@ -567,6 +567,11 @@ class MangaScreen(
                     onDismissRequest = screenModel::dismissDialog,
                     onDeleteClick = screenModel::deleteMerge,
                     onPositiveClick = screenModel::updateMergeSettings,
+                    // KMK -->
+                    onOpenEntryClick = { merge ->
+                        merge.mangaId?.let { navigator.push(MangaScreen(it)) }
+                    },
+                    // KMK <--
                 )
             }
             // SY <--
