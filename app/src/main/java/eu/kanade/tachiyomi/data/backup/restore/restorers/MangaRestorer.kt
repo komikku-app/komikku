@@ -393,7 +393,10 @@ class MangaRestorer(
 
     private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
         val toUpdate = backupHistory.mapNotNull { history ->
-            val dbHistory = handler.awaitOneOrNull { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
+            // KMK -->
+            val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
+                .firstOrNull()
+            // KMK <--
             val item = history.getHistoryImpl()
 
             if (dbHistory == null) {
@@ -514,13 +517,18 @@ class MangaRestorer(
                 }
             ) {
                 // Let the db assign the id
-                val mergedManga = handler.awaitOneOrNull {
+                // KMK -->
+                val mergedManga = handler.awaitList {
+                    // KMK <--
                     mangasQueries.getMangaByUrlAndSource(
                         backupMergedMangaReference.mangaUrl,
                         backupMergedMangaReference.mangaSourceId,
                         MangaMapper::mapManga,
                     )
-                } ?: return@forEach
+                    // KMK -->
+                }.firstOrNull()
+                    // KMK <--
+                    ?: return@forEach
                 backupMergedMangaReference.getMergedMangaReference().run {
                     handler.await {
                         mergedQueries.insert(
