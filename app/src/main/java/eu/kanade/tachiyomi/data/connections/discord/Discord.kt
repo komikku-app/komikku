@@ -21,7 +21,7 @@ class Discord(id: Long) : ConnectionsService(id) {
 
     override fun logout() {
         super.logout()
-        connectionPreferences.connectionsToken(this).delete()
+        connectionsPreferences.connectionsToken(this).delete()
     }
 
     override suspend fun login(username: String, password: String) {

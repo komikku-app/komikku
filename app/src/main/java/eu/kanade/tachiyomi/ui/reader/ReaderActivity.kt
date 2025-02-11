@@ -66,7 +66,7 @@ import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.connection.service.ConnectionPreferences
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
@@ -181,7 +181,7 @@ class ReaderActivity : BaseActivity() {
     // KMK <--
 
     // AM (CONNECTIONS) -->
-    private val connectionPreferences: ConnectionPreferences = Injekt.get()
+    private val connectionsPreferences: ConnectionsPreferences = Injekt.get()
     // <-- AM (CONNECTIONS)
 
     lateinit var binding: ReaderActivityBinding
@@ -1549,7 +1549,7 @@ class ReaderActivity : BaseActivity() {
      * If false, the Discord RPC status is set to the current reader activity, displaying details such as the manga title, chapter number, and chapter title.
      */
     private fun updateDiscordRPC(exitingReader: Boolean) {
-        if (connectionPreferences.enableDiscordRPC().get()) {
+        if (connectionsPreferences.enableDiscordRPC().get()) {
             viewModel.viewModelScope.launchIO {
                 if (!exitingReader) {
                     val currentChapter = viewModel.state.value.currentChapter?.chapter
@@ -1560,7 +1560,7 @@ class ReaderActivity : BaseActivity() {
                             mangaId = viewModel.currentManga.value?.id ?: -1,
                             mangaTitle = viewModel.currentManga.value?.ogTitle ?: "",
                             thumbnailUrl = viewModel.currentManga.value?.thumbnailUrl ?: ""
-                            chapterNumber = if (connectionPreferences.useChapterTitles().get()) {
+                            chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
                                 viewModel.currentChapter.value?.name.toString()
                             } else {
                                 viewModel.currentChapter.value?.chapter_number.toString()

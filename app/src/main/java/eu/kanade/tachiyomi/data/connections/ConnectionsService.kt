@@ -5,14 +5,14 @@ import androidx.annotation.CallSuper
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import eu.kanade.domain.connection.service.ConnectionPreferences
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.tachiyomi.network.NetworkHelper
 import okhttp3.OkHttpClient
 import uy.kohesive.injekt.injectLazy
 
 abstract class ConnectionsService(val id: Long) {
 
-    val connectionPreferences: ConnectionPreferences by injectLazy()
+    val connectionsPreferences: ConnectionsPreferences by injectLazy()
     private val networkService: NetworkHelper by injectLazy()
 
     open val client: OkHttpClient
@@ -30,18 +30,18 @@ abstract class ConnectionsService(val id: Long) {
 
     @CallSuper
     open fun logout() {
-        connectionPreferences.setConnectionsCredentials(this, "", "")
-        connectionPreferences.connectionsToken(this).set("")
+        connectionsPreferences.setConnectionsCredentials(this, "", "")
+        connectionsPreferences.connectionsToken(this).set("")
     }
 
     abstract suspend fun login(username: String, password: String)
 
-    fun getUsername() = connectionPreferences.connectionUsername(this).get()
+    fun getUsername() = connectionsPreferences.connectionsUsername(this).get()
 
-    fun getPassword() = connectionPreferences.connectionPassword(this).get()
+    fun getPassword() = connectionsPreferences.connectionsPassword(this).get()
 
     fun saveCredentials(username: String, password: String) {
-        connectionPreferences.setConnectionsCredentials(this, username, password)
+        connectionsPreferences.setConnectionsCredentials(this, username, password)
     }
 
     open val isLogged: Boolean
