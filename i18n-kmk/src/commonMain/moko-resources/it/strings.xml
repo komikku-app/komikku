@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Cerca la sorgente</string>
+    <string name="action_source_search">Cerca nella sorgente</string>
     <string name="action_toggle_nsfw_only">Attiva/disattiva solo NSFW</string>
     <string name="action_bulk_select">Modalità selezione Bulk</string>
     <string name="action_faq_and_guides">FAQ e guide</string>
@@ -118,4 +118,11 @@
     <string name="auto_update_app_disable_auto_download">Non scaricare automaticamente l\'aggiornamento</string>
     <string name="action_remove_merged">Rimuovere le voci originali dalla libreria?</string>
     <string name="batch_add_description">Supporto: MangaDex, E-H, ExH, nH, 8Muse, Tsumino</string>
+    <string name="custom_theme_palette_patagonia">Patagonia</string>
+    <string name="custom_theme_palette_pop">Pop</string>
+    <string name="custom_theme_palette_outrun">Superare</string>
+    <string name="custom_theme_palette_bubblegum">Gomma da masticare</string>
+    <string name="theme_doom">Doom</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="action_manual_install">installazione manuale</string>
 </resources>
