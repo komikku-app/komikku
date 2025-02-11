@@ -29,6 +29,12 @@ open /* SY <-- */ class MangasPage(open val mangas: List<SManga>, open val hasNe
     override fun toString(): String {
         return "MangasPage(mangas=$mangas, hasNextPage=$hasNextPage)"
     }
+
+    // KMK -->
+    // Additional methods to mimic data class behavior
+    operator fun component1() = mangas
+    operator fun component2() = hasNextPage
+    // KMK <--
 }
 
 // SY -->
