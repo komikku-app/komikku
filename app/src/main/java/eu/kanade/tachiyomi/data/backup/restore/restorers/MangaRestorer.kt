@@ -210,8 +210,8 @@ class MangaRestorer(
                 bookmark = chapter.bookmark || dbChapter.bookmark,
                 read = chapter.read,
                 lastPageRead = chapter.lastPageRead,
-                sourceOrder = chapter.sourceOrder,
                 // KMK -->
+                sourceOrder = max(chapter.sourceOrder, dbChapter.sourceOrder),
                 dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
                 // KMK <--
             )
@@ -221,6 +221,7 @@ class MangaRestorer(
                 .copy(
                     id = dbChapter.id,
                     bookmark = chapter.bookmark || dbChapter.bookmark,
+                    sourceOrder = max(chapter.sourceOrder, dbChapter.sourceOrder),
                     dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
                 )
                 // KMK <--
@@ -243,7 +244,7 @@ class MangaRestorer(
             dateFetch = 0L,
             // KMK -->
             // dateUpload = 0L, some time source loses dateUpload so we overwrite with backup
-            sourceOrder = 0L, // ignore sourceOrder since it will be updated on refresh
+            // sourceOrder = 0L, although sourceOrder will be updated on refresh, we want to avoid order mixed up anyway
             // KMK <--
             lastModifiedAt = 0L,
             version = 0L,
@@ -282,9 +283,9 @@ class MangaRestorer(
                     bookmark = chapter.bookmark,
                     lastPageRead = chapter.lastPageRead,
                     chapterNumber = null,
-                    sourceOrder = if (isSync) chapter.sourceOrder else null,
                     dateFetch = null,
                     // KMK -->
+                    sourceOrder = chapter.sourceOrder,
                     dateUpload = chapter.dateUpload,
                     // KMK <--
                     chapterId = chapter.id,
