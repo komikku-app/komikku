@@ -133,7 +133,8 @@ class BackupRestorer(
         }
     }
 
-    private fun CoroutineScope.restoreCategories(backupCategories: List<BackupCategory>) = launch {
+    context(CoroutineScope)
+    private /* KMK --> */suspend /* KMK <-- */ fun restoreCategories(backupCategories: List<BackupCategory>) {
         ensureActive()
         categoriesRestorer(backupCategories)
 
