@@ -40,6 +40,9 @@ class EditMergedSettingsState(
     private val onDeleteClick: (MergedMangaReference) -> Unit,
     private val onDismissRequest: () -> Unit,
     private val onPositiveClick: (List<MergedMangaReference>) -> Unit,
+    // KMK -->
+    private val onOpenEntryClick: (MergedMangaReference) -> Unit,
+    // KMK <--
 ) : EditMergedMangaAdapter.EditMergedMangaItemListener {
     var mergedMangas: List<Pair<Manga?, MergedMangaReference>> by mutableStateOf(emptyList())
     var mergeReference: MergedMangaReference? by mutableStateOf(null)
@@ -104,6 +107,14 @@ class EditMergedSettingsState(
             )
         }
     }
+
+    // KMK -->
+    override fun onOpenEntryClick(position: Int) {
+        val mergedMangaAdapter = mergedMangaAdapter ?: return
+        val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
+        onOpenEntryClick(mergeMangaReference)
+    }
+    // KMK <--
 
     override fun onDeleteClick(position: Int) {
         val mergedMangaAdapter = mergedMangaAdapter ?: return
@@ -192,6 +203,9 @@ fun EditMergedSettingsDialog(
     mergedData: MergedMangaData,
     onDeleteClick: (MergedMangaReference) -> Unit,
     onPositiveClick: (List<MergedMangaReference>) -> Unit,
+    // KMK -->
+    onOpenEntryClick: (MergedMangaReference) -> Unit,
+    // KMK <--
 ) {
     // KMK -->
     val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
@@ -199,7 +213,15 @@ fun EditMergedSettingsDialog(
 
     val context = LocalContext.current
     val state = remember {
-        EditMergedSettingsState(context, onDeleteClick, onDismissRequest, onPositiveClick)
+        EditMergedSettingsState(
+            context,
+            onDeleteClick,
+            onDismissRequest,
+            onPositiveClick,
+            // KMK -->
+            onOpenEntryClick,
+            // KMK <--
+        )
     }
     AlertDialog(
         onDismissRequest = onDismissRequest,

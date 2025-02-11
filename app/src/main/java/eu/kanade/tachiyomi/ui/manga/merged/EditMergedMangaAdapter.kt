@@ -29,6 +29,10 @@ class EditMergedMangaAdapter(
         fun onDeleteClick(position: Int)
         fun onToggleChapterUpdatesClicked(position: Int)
         fun onToggleChapterDownloadsClicked(position: Int)
+
+        // KMK -->
+        fun onOpenEntryClick(position: Int)
+        // KMK <--
     }
 
     override fun onSetPrioritySort(isPriorityOrder: Boolean) {

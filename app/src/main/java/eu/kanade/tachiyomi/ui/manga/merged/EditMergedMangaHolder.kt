@@ -19,6 +19,11 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
 
     init {
         setDragHandleView(binding.reorder)
+        // KMK -->
+        binding.cover.setOnClickListener {
+            adapter.editMergedMangaItemListener.onOpenEntryClick(bindingAdapterPosition)
+        }
+        // KMK <--
         binding.remove.setOnClickListener {
             adapter.editMergedMangaItemListener.onDeleteClick(bindingAdapterPosition)
         }
