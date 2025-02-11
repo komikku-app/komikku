@@ -25,7 +25,12 @@ class SourcePreferences(
 
     fun incognitoExtensions() = preferenceStore.getStringSet("incognito_extensions", emptySet())
 
-    fun pinnedSources() = preferenceStore.getStringSet(pinnedSourcesPrefKey, emptySet())
+    fun pinnedSources() = preferenceStore.getStringSet(
+        // KMK -->
+        PINNED_SOURCES_PREF_KEY,
+        // KMK <--
+        emptySet(),
+    )
 
     fun lastUsedSource() = preferenceStore.getLong(
         Preference.appStateKey("last_catalogue_source"),
@@ -107,7 +112,9 @@ class SourcePreferences(
 
     // KMK -->
     fun relatedMangas() = preferenceStore.getBoolean("related_mangas", true)
+
+    companion object {
+        const val PINNED_SOURCES_PREF_KEY = "pinned_catalogues"
+    }
     // KMK <--
 }
-
-const val pinnedSourcesPrefKey = "pinned_catalogues"
