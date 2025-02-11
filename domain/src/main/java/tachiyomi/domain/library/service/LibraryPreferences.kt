@@ -144,7 +144,12 @@ class LibraryPreferences(
 
     // region Category
 
-    fun defaultCategory() = preferenceStore.getInt("default_category", -1)
+    fun defaultCategory() = preferenceStore.getInt(
+        // KMK -->
+        DEFAULT_CATEGORY_PREF_KEY,
+        // KMK <--
+        -1,
+    )
 
     fun lastUsedCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_category"), 0)
 
@@ -158,10 +163,17 @@ class LibraryPreferences(
     fun showHiddenCategories() = preferenceStore.getBoolean("hide_hidden_categories", false)
     // KMK <--
 
-    fun updateCategories() = preferenceStore.getStringSet("library_update_categories", emptySet())
+    fun updateCategories() = preferenceStore.getStringSet(
+        // KMK -->
+        LIBRARY_UPDATE_CATEGORIES_PREF_KEY,
+        // KMK <--
+        emptySet(),
+    )
 
     fun updateCategoriesExclude() = preferenceStore.getStringSet(
-        "library_update_categories_exclude",
+        // KMK -->
+        LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY,
+        // KMK <--
         emptySet(),
     )
 
@@ -255,5 +267,11 @@ class LibraryPreferences(
         const val MANGA_HAS_UNREAD = "manga_fully_read"
         const val MANGA_NON_READ = "manga_started"
         const val MANGA_OUTSIDE_RELEASE_PERIOD = "manga_outside_release_period"
+
+        // KMK -->
+        const val DEFAULT_CATEGORY_PREF_KEY = "default_category"
+        const val LIBRARY_UPDATE_CATEGORIES_PREF_KEY = "library_update_categories"
+        const val LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY = "library_update_categories_exclude"
+        // KMK <--
     }
 }
