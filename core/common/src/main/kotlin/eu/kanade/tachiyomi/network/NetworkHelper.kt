@@ -29,6 +29,8 @@ open /* SY <-- */ class NetworkHelper(
     // SY <--
 ) {
 
+    val cacheDir = File(context.cacheDir, "network_cache")
+
     /* SY --> */
     open /* SY <-- */val cookieJar = AndroidCookieJar()
 
@@ -55,7 +57,7 @@ open /* SY <-- */ class NetworkHelper(
             // KMK <--
             .cache(
                 Cache(
-                    directory = File(context.cacheDir, "network_cache"),
+                    directory = cacheDir,
                     maxSize = 5L * 1024 * 1024, // 5 MiB
                 ),
             )

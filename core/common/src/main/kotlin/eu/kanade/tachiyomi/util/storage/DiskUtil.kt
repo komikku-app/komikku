@@ -5,6 +5,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.os.StatFs
+import android.text.format.Formatter
 import androidx.core.content.ContextCompat
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.Hash
@@ -136,6 +137,18 @@ object DiskUtil {
             else -> true
         }
     }
+
+    // KMK -->
+    /** Returns real size of directory in human readable format. */
+    fun readableDiskSize(context: Context, file: File): String {
+        return Formatter.formatFileSize(context, getDirectorySize(file))
+    }
+
+    /** Returns real size of directory in human readable format. */
+    fun readableDiskSize(context: Context, bytes: Long): String {
+        return Formatter.formatFileSize(context, bytes)
+    }
+    // KMK <--
 
     const val NOMEDIA_FILE = ".nomedia"
 

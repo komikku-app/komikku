@@ -51,11 +51,14 @@ import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
+import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -64,6 +67,7 @@ import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.displayablePath
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
@@ -77,6 +81,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.File
 
 object SettingsDataScreen : SearchableSettings {
     private fun readResolve(): Any = SettingsDataScreen
@@ -297,12 +302,30 @@ object SettingsDataScreen : SearchableSettings {
         val chapterCache = remember { Injekt.get<ChapterCache>() }
         var cacheReadableSizeSema by remember { mutableIntStateOf(0) }
         val cacheReadableSize = remember(cacheReadableSizeSema) { chapterCache.readableSize }
+        // KMK -->
+        val coverCache = remember { Injekt.get<CoverCache>() }
+        val networkHelper = remember { Injekt.get<NetworkHelper>() }
+        // KMK <--
 
         // SY -->
         val pagePreviewCache = remember { Injekt.get<PagePreviewCache>() }
         var pagePreviewReadableSizeSema by remember { mutableIntStateOf(0) }
         val pagePreviewReadableSize = remember(pagePreviewReadableSizeSema) { pagePreviewCache.readableSize }
         // SY <--
+
+        // KMK -->
+        val tmpFiles =
+            File(context.cacheDir, "")
+                .listFiles()!!
+                .mapNotNull {
+                    if (it.isFile && (it.name.endsWith(".tmp"))) {
+                        DiskUtil.getDirectorySize(it)
+                    } else {
+                        null
+                    }
+                }
+                .sum()
+        // KMK <--
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_storage_usage),
@@ -318,7 +341,23 @@ object SettingsDataScreen : SearchableSettings {
                         },
                     )
                 },
-
+                // KMK -->
+                Preference.PreferenceItem.TextPreference(
+                    title = "Total cache usage",//stringResource(MR.strings.pref_clear_chapter_cache),
+                    subtitle =
+                    """
+                      Parent cache folder: ${DiskUtil.readableDiskSize(context, File(context.cacheDir, ""))}
+                      Chapter disk cache: ${DiskUtil.readableDiskSize(context, chapterCache.cacheDir)}
+                      Cover cache: ${coverCache.getCoverCacheSize()}
+                      Online cover cache: ${coverCache.getOnlineCoverCacheSize()}
+                      Network cache: ${DiskUtil.readableDiskSize(context, networkHelper.cacheDir)}
+                      Temp file cache: ${DiskUtil.readableDiskSize(context, tmpFiles)}
+                    """
+//                      Image cache: ${DiskUtil.readableDiskSize(context, CoilDiskCache.get(context).size)}
+                        .trimIndent(),
+                    onClick = {},
+                ),
+                // KMK <--
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_chapter_cache),
                     subtitle = stringResource(MR.strings.used_cache, cacheReadableSize),
@@ -337,6 +376,93 @@ object SettingsDataScreen : SearchableSettings {
                         }
                     },
                 ),
+                // KMK -->
+                Preference.PreferenceItem.TextPreference(
+                    title = "Clean up cached cover",
+                    subtitle = coverCache.getCoverCacheSize(),
+                    onClick = {
+                        scope.launchNonCancellable {
+                            try {
+                                coverCache.deleteOldCovers()
+                                val deletedFiles = pagePreviewCache.clear()
+                                withUIContext {
+                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                    pagePreviewReadableSizeSema++
+                                }
+                            } catch (e: Throwable) {
+                                logcat(LogPriority.ERROR, e)
+                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                            }
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = "Clear cached cover not in library",
+                    subtitle = coverCache.getOnlineCoverCacheSize(),
+                    onClick = {
+                        scope.launchNonCancellable {
+                            try {
+                                coverCache.deleteAllCachedCovers()
+                                val deletedFiles = pagePreviewCache.clear()
+                                withUIContext {
+                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                    pagePreviewReadableSizeSema++
+                                }
+                            } catch (e: Throwable) {
+                                logcat(LogPriority.ERROR, e)
+                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                            }
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = "Clear temp cache file",
+                    subtitle = coverCache.getOnlineCoverCacheSize(),
+                    onClick = {
+                        scope.launchNonCancellable {
+                            try {
+                                File(context.cacheDir, "").listFiles()!!.forEach {
+                                    launchIO { it.delete() }
+                                }
+
+
+
+                                val deletedFiles = pagePreviewCache.clear()
+                                withUIContext {
+                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                    pagePreviewReadableSizeSema++
+                                }
+                            } catch (e: Throwable) {
+                                logcat(LogPriority.ERROR, e)
+                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                            }
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = "Clean downloaded chapters",
+                    subtitle = coverCache.getOnlineCoverCacheSize(),
+                    onClick = {
+                        scope.launchNonCancellable {
+                            try {
+//                                val ctrl = CleanupDownloadsDialogController()
+//                                ctrl.targetController = this@SettingsAdvancedController
+//                                ctrl.showDialog(router)
+
+
+                                val deletedFiles = pagePreviewCache.clear()
+                                withUIContext {
+                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                    pagePreviewReadableSizeSema++
+                                }
+                            } catch (e: Throwable) {
+                                logcat(LogPriority.ERROR, e)
+                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                            }
+                        }
+                    },
+                ),
+                // KMK <--
                 // SY -->
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.pref_clear_page_preview_cache),

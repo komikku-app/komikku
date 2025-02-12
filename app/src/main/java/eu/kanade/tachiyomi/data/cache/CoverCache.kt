@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.cache
 
 import android.content.Context
+import android.text.format.Formatter
+import coil3.imageLoader
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import tachiyomi.domain.manga.model.Manga
 import java.io.File
@@ -20,6 +22,7 @@ class CoverCache(private val context: Context) {
     companion object {
         private const val COVERS_DIR = "covers"
         private const val CUSTOM_COVERS_DIR = "covers/custom"
+        private const val ONLINE_COVERS_DIR = "online_covers"
     }
 
     /**
@@ -27,7 +30,101 @@ class CoverCache(private val context: Context) {
      */
     private val cacheDir = getCacheDir(COVERS_DIR)
 
+    /** Cache directory used for custom cover cache management. */
     private val customCoverCacheDir = getCacheDir(CUSTOM_COVERS_DIR)
+
+    /** Cache directory used for covers not in library management. */
+    private val onlineCoverDirectory =
+        File(context.cacheDir, ONLINE_COVERS_DIR).also { it.mkdirs() }
+
+    private val maxOnlineCacheSize = 50L * 1024L * 1024L // 50 MB
+
+    private var lastClean = 0L
+
+    fun getCoverCacheSize(): String {
+        return Formatter.formatFileSize(context, DiskUtil.getDirectorySize(cacheDir))
+    }
+
+    fun getOnlineCoverCacheSize(): String {
+        return Formatter.formatFileSize(context, DiskUtil.getDirectorySize(onlineCoverDirectory))
+    }
+
+    suspend fun deleteOldCovers() {
+//        val db = Injekt.get<DatabaseHelper>()
+//        var deletedSize = 0L
+//        val urls =
+//            db.getFavoriteMangaList().executeOnIO().mapNotNull {
+//                it.thumbnail_url?.let { url ->
+//                    return@mapNotNull DiskUtil.hashKeyForDisk(url)
+//                }
+//                null
+//            }
+//        val files = cacheDir.listFiles()?.iterator() ?: return
+//        while (files.hasNext()) {
+//            val file = files.next()
+//            if (file.isFile && file.name !in urls) {
+//                deletedSize += file.length()
+//                file.delete()
+//            }
+//        }
+//
+//        withUIContext {
+//            context.toast(
+//                context.getString(R.string.deleted_, Formatter.formatFileSize(context, deletedSize))
+//            )
+//        }
+    }
+
+    /** Clear out online covers */
+    suspend fun deleteAllCachedCovers() {
+        val directory = onlineCoverDirectory
+        var deletedSize = 0L
+        val files = directory.listFiles()?.sortedBy { it.lastModified() }?.iterator() ?: return
+        while (files.hasNext()) {
+            val file = files.next()
+            deletedSize += file.length()
+            file.delete()
+        }
+//        withContext(Dispatchers.Main) {
+//            context.toast(
+//                context.getString(R.string.deleted_, Formatter.formatFileSize(context, deletedSize))
+//            )
+//        }
+        context.imageLoader.memoryCache?.clear()
+        // CoilDiskCache.get(context).clear()
+
+        lastClean = System.currentTimeMillis()
+    }
+
+//    /** Clear out online covers until its under a certain size */
+//    suspend fun deleteCachedCovers() {
+//        withIOContext {
+//            if (lastClean + renewInterval < System.currentTimeMillis()) {
+//                try {
+//                    val directory = onlineCoverDirectory
+//                    val size = DiskUtil.getDirectorySize(directory)
+//                    if (size <= maxOnlineCacheSize) {
+//                        return@withIOContext
+//                    }
+//                    var deletedSize = 0L
+//                    val files =
+//                        directory.listFiles()?.sortedBy { it.lastModified() }?.iterator()
+//                            ?: return@withIOContext
+//                    while (files.hasNext()) {
+//                        val file = files.next()
+//                        deletedSize += file.length()
+//                        file.delete()
+//                        if (size - deletedSize <= maxOnlineCacheSize) {
+//                            break
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    TimberKt.e(e)
+//                }
+//                lastClean = System.currentTimeMillis()
+//            }
+//        }
+//    }
 
     /**
      * Returns the cover from cache.

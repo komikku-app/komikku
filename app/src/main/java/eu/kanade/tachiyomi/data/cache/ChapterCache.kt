@@ -62,7 +62,7 @@ class ChapterCache(
     /**
      * Returns directory of cache.
      */
-    private val cacheDir: File = diskCache.directory
+    internal val cacheDir: File = diskCache.directory
 
     /**
      * Returns real size of directory.
