@@ -68,6 +68,11 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
+import tachiyomi.domain.error.interactor.DeleteLibraryUpdateErrors
+import tachiyomi.domain.error.interactor.InsertLibraryUpdateErrorMessages
+import tachiyomi.domain.error.interactor.InsertLibraryUpdateErrors
+import tachiyomi.domain.error.model.LibraryUpdateError
+import tachiyomi.domain.error.model.LibraryUpdateErrorMessage
 import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
@@ -79,11 +84,6 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
-import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
-import tachiyomi.domain.libraryUpdateError.interactor.InsertLibraryUpdateErrors
-import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateError
-import tachiyomi.domain.libraryUpdateErrorMessage.interactor.InsertLibraryUpdateErrorMessages
-import tachiyomi.domain.libraryUpdateErrorMessage.model.LibraryUpdateErrorMessage
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetLibraryManga
