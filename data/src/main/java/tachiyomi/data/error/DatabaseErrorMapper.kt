@@ -15,8 +15,7 @@ fun databaseErrorMapper(
     errorType: DatabaseErrorType,
 ): DatabaseError =
     DatabaseError(
-        errorId = mangaId,
-        ErrorManga(
+        manga = ErrorManga(
             mangaId = mangaId,
             mangaTitle = mangaTitle,
             mangaSource = mangaSource,
@@ -28,5 +27,6 @@ fun databaseErrorMapper(
                 lastModified = coverLastModified,
             ),
         ),
+        errorId = mangaId,
         errorType = errorType,
     )

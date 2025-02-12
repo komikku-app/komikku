@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
-import eu.kanade.presentation.errors.components.LibraryUpdateErrorUiModel
+import eu.kanade.presentation.errors.components.ErrorUiModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
@@ -40,9 +40,9 @@ class LibraryUpdateErrorScreenModel(
         }
     }
 
-    private fun toLibraryUpdateErrorItems(errors: List<LibraryUpdateErrorWithRelations>): List<LibraryUpdateErrorItem> {
+    private fun toLibraryUpdateErrorItems(errors: List<LibraryUpdateErrorWithRelations>): List<ErrorItem> {
         return errors.map { error ->
-            LibraryUpdateErrorItem(
+            ErrorItem(
                 error = error,
                 selected = error.errorId in selectedErrorIds,
             )
@@ -50,7 +50,7 @@ class LibraryUpdateErrorScreenModel(
     }
 
     fun toggleSelection(
-        item: LibraryUpdateErrorItem,
+        item: ErrorItem,
         selected: Boolean,
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
@@ -142,32 +142,26 @@ class LibraryUpdateErrorScreenModel(
 @Immutable
 data class LibraryUpdateErrorScreenState(
     val isLoading: Boolean = true,
-    val items: List<LibraryUpdateErrorItem> = emptyList(),
+    val items: List<ErrorItem> = emptyList(),
     val messages: List<LibraryUpdateErrorMessage> = emptyList(),
 ) {
 
     val selected = items.filter { it.selected }
     val selectionMode = selected.isNotEmpty()
 
-    fun getUiModel(): List<LibraryUpdateErrorUiModel> {
-        val uiModels = mutableListOf<LibraryUpdateErrorUiModel>()
-        val errorMap = items.groupBy { it.error.messageId }
+    fun getUiModel(): List<ErrorUiModel> {
+        val uiModels = mutableListOf<ErrorUiModel>()
+        val errorMap = items.groupBy { (it.error as LibraryUpdateErrorWithRelations).messageId }
         errorMap.forEach { (messageId, errors) ->
             val message = messages.find { it.id == messageId }
-            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message))
-            uiModels.addAll(errors.map { LibraryUpdateErrorUiModel.Item(it) })
+            uiModels.add(ErrorUiModel.Header(message!!.message))
+            uiModels.addAll(errors.map { ErrorUiModel.Item(it) })
         }
         return uiModels
     }
 
     fun getHeaderIndexes(): List<Int> = getUiModel()
         .withIndex()
-        .filter { it.value is LibraryUpdateErrorUiModel.Header }
+        .filter { it.value is ErrorUiModel.Header }
         .map { it.index }
 }
-
-@Immutable
-data class LibraryUpdateErrorItem(
-    val error: LibraryUpdateErrorWithRelations,
-    val selected: Boolean,
-)

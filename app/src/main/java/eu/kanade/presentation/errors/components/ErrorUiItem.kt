@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
-import eu.kanade.tachiyomi.ui.errors.LibraryUpdateErrorItem
+import eu.kanade.tachiyomi.ui.errors.ErrorItem
 import tachiyomi.domain.error.model.ErrorManga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.ListGroupHeader
@@ -29,15 +29,15 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 internal fun LazyListScope.errorUiItems(
-    uiModels: List<LibraryUpdateErrorUiModel>,
+    uiModels: List<ErrorUiModel>,
     selectionMode: Boolean,
-    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
-    onClick: (LibraryUpdateErrorItem) -> Unit,
-    onClickCover: (LibraryUpdateErrorItem) -> Unit,
+    onErrorSelected: (ErrorItem, Boolean, Boolean, Boolean) -> Unit,
+    onClick: (ErrorItem) -> Unit,
+    onClickCover: (ErrorItem) -> Unit,
 ) {
     uiModels.forEach {
         when (it) {
-            is LibraryUpdateErrorUiModel.Header -> {
+            is ErrorUiModel.Header -> {
                 stickyHeader(
                     key = "$STICKY_HEADER_KEY_PREFIX-errorHeader-${it.hashCode()}",
                     contentType = "header",
@@ -48,7 +48,7 @@ internal fun LazyListScope.errorUiItems(
                     )
                 }
             }
-            is LibraryUpdateErrorUiModel.Item -> {
+            is ErrorUiModel.Item -> {
                 item(
                     key = "error-${it.item.error.errorId}-${it.item.error.manga.mangaId}",
                     contentType = "item",
@@ -144,9 +144,9 @@ private fun LibraryUpdateErrorUiItem(
     }
 }
 
-sealed class LibraryUpdateErrorUiModel {
+sealed class ErrorUiModel {
 
-    data class Header(val errorMessage: String) : LibraryUpdateErrorUiModel()
+    data class Header(val errorMessage: String) : ErrorUiModel()
 
-    data class Item(val item: LibraryUpdateErrorItem) : LibraryUpdateErrorUiModel()
+    data class Item(val item: ErrorItem) : ErrorUiModel()
 }

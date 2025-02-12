@@ -8,7 +8,7 @@ val libraryUpdateErrorWithRelationsMapper:
     (Long, String, Long, Boolean, String?, Long, Long, Long) -> LibraryUpdateErrorWithRelations =
     { mangaId, mangaTitle, mangaSource, favorite, mangaThumbnail, coverLastModified, errorId, messageId ->
         LibraryUpdateErrorWithRelations(
-            ErrorManga(
+            manga = ErrorManga(
                 mangaId = mangaId,
                 mangaTitle = mangaTitle,
                 mangaSource = mangaSource,

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
+import eu.kanade.presentation.errors.components.ErrorUiModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
@@ -11,9 +12,7 @@ import tachiyomi.data.error.databaseErrorMapper
 import tachiyomi.domain.error.interactor.GetDatabaseError
 import tachiyomi.domain.error.model.DatabaseError
 import tachiyomi.domain.error.model.DatabaseErrorType
-import tachiyomi.domain.error.model.ErrorManga
 import tachiyomi.domain.manga.interactor.GetMangaBySource
-import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -61,9 +60,9 @@ class DatabaseErrorScreenModel(
         }
     }
 
-    private fun toDatabaseErrorItems(errors: List<DatabaseError>): List<DatabaseErrorItem> {
+    private fun toDatabaseErrorItems(errors: List<DatabaseError>): List<ErrorItem> {
         return errors.map { error ->
-            DatabaseErrorItem(
+            ErrorItem(
                 error = error,
                 selected = error.errorId in selectedErrorIds,
             )
@@ -71,7 +70,7 @@ class DatabaseErrorScreenModel(
     }
 
     fun toggleSelection(
-        item: DatabaseErrorItem,
+        item: ErrorItem,
         selected: Boolean,
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
@@ -163,32 +162,26 @@ class DatabaseErrorScreenModel(
 @Immutable
 data class DatabaseErrorScreenState(
     val isLoading: Boolean = true,
-    val items: List<DatabaseErrorItem> = emptyList(),
+    val items: List<ErrorItem> = emptyList(),
     val messages: List<String> = emptyList(),
 ) {
 
     val selected = items.filter { it.selected }
     val selectionMode = selected.isNotEmpty()
 
-    fun getUiModel(): List<DatabaseErrorUiModel> {
-        val uiModels = mutableListOf<LibraryUpdateErrorUiModel>()
-        val errorMap = items.groupBy { it.error.messageId }
-        errorMap.forEach { (messageId, errors) ->
-            val message = messages.find { it.id == messageId }
-            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message))
-            uiModels.addAll(errors.map { LibraryUpdateErrorUiModel.Item(it) })
+    fun getUiModel(): List<ErrorUiModel> {
+        val uiModels = mutableListOf<ErrorUiModel>()
+        val errorMap = items.groupBy { (it.error as DatabaseError).errorType }
+        errorMap.forEach { (errorType, errors) ->
+            val message = errorType.message
+            uiModels.add(ErrorUiModel.Header(message))
+            uiModels.addAll(errors.map { ErrorUiModel.Item(it) })
         }
         return uiModels
     }
 
     fun getHeaderIndexes(): List<Int> = getUiModel()
         .withIndex()
-        .filter { it.value is LibraryUpdateErrorUiModel.Header }
+        .filter { it.value is ErrorUiModel.Header }
         .map { it.index }
 }
-
-@Immutable
-data class DatabaseErrorItem(
-    val error: DatabaseError,
-    val selected: Boolean,
-)

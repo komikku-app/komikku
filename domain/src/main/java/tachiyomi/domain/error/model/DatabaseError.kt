@@ -1,10 +1,10 @@
 package tachiyomi.domain.error.model
 
 data class DatabaseError(
-    val errorId: Long,
-    val manga: ErrorManga,
+    override val manga: ErrorManga,
+    override val errorId: Long,
     val errorType: DatabaseErrorType,
-)
+) : Error
 
 data class DatabaseErrorCount(
     val url: String,

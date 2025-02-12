@@ -39,7 +39,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.errors.components.errorUiItems
 import eu.kanade.presentation.manga.components.Button
-import eu.kanade.tachiyomi.ui.errors.LibraryUpdateErrorItem
+import eu.kanade.tachiyomi.ui.errors.ErrorItem
 import eu.kanade.tachiyomi.ui.errors.LibraryUpdateErrorScreenState
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
@@ -58,12 +58,12 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun LibraryUpdateErrorScreen(
     state: LibraryUpdateErrorScreenState,
-    onClick: (LibraryUpdateErrorItem) -> Unit,
-    onClickCover: (LibraryUpdateErrorItem) -> Unit,
+    onClick: (ErrorItem) -> Unit,
+    onClickCover: (ErrorItem) -> Unit,
     onMultiMigrateClicked: (() -> Unit),
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
-    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
+    onErrorSelected: (ErrorItem, Boolean, Boolean, Boolean) -> Unit,
     navigateUp: () -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
@@ -183,7 +183,7 @@ fun LibraryUpdateErrorScreen(
 @Composable
 private fun LibraryUpdateErrorBottomBar(
     modifier: Modifier = Modifier,
-    selected: List<LibraryUpdateErrorItem>,
+    selected: List<ErrorItem>,
     onMultiMigrateClicked: (() -> Unit),
     enableScrollToTop: Boolean,
     enableScrollToBottom: Boolean,

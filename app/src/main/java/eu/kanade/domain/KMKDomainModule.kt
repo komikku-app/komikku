@@ -1,15 +1,18 @@
 package eu.kanade.domain
 
+import tachiyomi.data.error.DatabaseErrorRepositoryImpl
 import tachiyomi.data.error.LibraryUpdateErrorMessageRepositoryImpl
 import tachiyomi.data.error.LibraryUpdateErrorRepositoryImpl
 import tachiyomi.data.error.LibraryUpdateErrorWithRelationsRepositoryImpl
 import tachiyomi.domain.error.interactor.DeleteLibraryUpdateErrorMessages
 import tachiyomi.domain.error.interactor.DeleteLibraryUpdateErrors
+import tachiyomi.domain.error.interactor.GetDatabaseError
 import tachiyomi.domain.error.interactor.GetLibraryUpdateErrorMessages
 import tachiyomi.domain.error.interactor.GetLibraryUpdateErrorWithRelations
 import tachiyomi.domain.error.interactor.GetLibraryUpdateErrors
 import tachiyomi.domain.error.interactor.InsertLibraryUpdateErrorMessages
 import tachiyomi.domain.error.interactor.InsertLibraryUpdateErrors
+import tachiyomi.domain.error.repository.DatabaseErrorRepository
 import tachiyomi.domain.error.repository.LibraryUpdateErrorMessageRepository
 import tachiyomi.domain.error.repository.LibraryUpdateErrorRepository
 import tachiyomi.domain.error.repository.LibraryUpdateErrorWithRelationsRepository
@@ -36,5 +39,11 @@ class KMKDomainModule : InjektModule {
         addFactory { GetLibraryUpdateErrors(get()) }
         addFactory { DeleteLibraryUpdateErrors(get()) }
         addFactory { InsertLibraryUpdateErrors(get()) }
+
+        addSingletonFactory<DatabaseErrorRepository> {
+            DatabaseErrorRepositoryImpl(get())
+        }
+        addFactory { GetDatabaseError(get()) }
+        addSingletonFactory<DatabaseErrorRepository> { DatabaseErrorRepositoryImpl(get()) }
     }
 }

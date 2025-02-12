@@ -59,7 +59,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import eu.kanade.tachiyomi.source.AndroidSourceManager
-import eu.kanade.tachiyomi.ui.errors.LibraryUpdateErrorScreen
+import eu.kanade.tachiyomi.ui.errors.DatabaseErrorScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil
@@ -252,7 +252,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.option_label_library_update_errors),
                     subtitle = stringResource(KMR.strings.option_label_library_update_errors),
-                    onClick = { navigator.push(LibraryUpdateErrorScreen()) },
+                    onClick = { navigator.push(DatabaseErrorScreen()) },
                 ),
                 // KMK <--
             ),
