@@ -18,6 +18,10 @@ interface Track : Serializable {
 
     var title: String
 
+    var last_volume_read: Double
+
+    var total_volumes: Long
+
     var last_chapter_read: Double
 
     var total_chapters: Long
@@ -33,6 +37,8 @@ interface Track : Serializable {
     var tracking_url: String
 
     fun copyPersonalFrom(other: Track) {
+        last_volume_read = other.last_volume_read
+        total_volumes = other.total_volumes
         last_chapter_read = other.last_chapter_read
         score = other.score
         status = other.status

@@ -90,6 +90,11 @@ abstract class BaseTracker(
         updateRemote(track)
     }
 
+    override suspend fun setRemoteLastVolumeRead(track: Track, volumeNumber: Int) {
+        track.last_volume_read = volumeNumber.toDouble()
+        updateRemote(track)
+    }
+
     override suspend fun setRemoteLastChapterRead(track: Track, chapterNumber: Int) {
         if (
             track.last_chapter_read == 0.0 &&

@@ -62,6 +62,7 @@ fun TrackInfoDialogHome(
     trackItems: List<TrackItem>,
     dateFormat: DateTimeFormatter,
     onStatusClick: (TrackItem) -> Unit,
+    onVolumeClick: (TrackItem) -> Unit,
     onChapterClick: (TrackItem) -> Unit,
     onScoreClick: (TrackItem) -> Unit,
     onStartDateEdit: (TrackItem) -> Unit,
@@ -89,6 +90,15 @@ fun TrackInfoDialogHome(
                     tracker = item.tracker,
                     status = item.tracker.getStatus(item.track.status),
                     onStatusClick = { onStatusClick(item) },
+                    volumes = "${item.track.lastVolumeRead.toInt()}".let {
+                        val totalVolumes = item.track.totalVolumes
+                        if (totalVolumes > 0) {
+                            // Add known total volume count
+                            "$it / $totalVolumes"
+                        } else {
+                            it
+                        }
+                    },
                     chapters = "${item.track.lastChapterRead.toInt()}".let {
                         val totalChapters = item.track.totalChapters
                         if (totalChapters > 0) {
@@ -98,6 +108,8 @@ fun TrackInfoDialogHome(
                             it
                         }
                     },
+                    onVolumesClick = { onVolumeClick(item) }
+                        .takeIf { item.track.lastVolumeRead != -1.0 },
                     onChaptersClick = { onChapterClick(item) },
                     score = item.tracker.displayScore(item.track)
                         .takeIf { supportsScoring && item.track.score != 0.0 },
@@ -132,7 +144,9 @@ private fun TrackInfoItem(
     tracker: Tracker,
     status: StringResource?,
     onStatusClick: () -> Unit,
+    volumes: String,
     chapters: String,
+    onVolumesClick: (() -> Unit)?,
     onChaptersClick: () -> Unit,
     score: String?,
     onScoreClick: (() -> Unit)?,
@@ -199,6 +213,14 @@ private fun TrackInfoItem(
                         text = status?.let { stringResource(it) } ?: "",
                         onClick = onStatusClick,
                     )
+                    if (onVolumesClick != null) {
+                        VerticalDivider()
+                        TrackDetailsItem(
+                            modifier = Modifier.weight(1f),
+                            text = volumes,
+                            onClick = onVolumesClick,
+                        )
+                    }
                     VerticalDivider()
                     TrackDetailsItem(
                         modifier = Modifier.weight(1f),

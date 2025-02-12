@@ -13,7 +13,6 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -158,6 +157,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         if (track.status != COMPLETED) {
             if (didReadChapter) {
                 if (track.last_chapter_read.toLong() == track.total_chapters && track.total_chapters > 0) {
+                    track.last_volume_read = track.total_volumes.toDouble()
                     track.status = COMPLETED
                     track.finished_reading_date = System.currentTimeMillis()
                 } else if (track.status != REREADING) {
@@ -209,6 +209,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         val remoteTrack = api.getLibManga(track, getUsername().toInt())
         track.copyPersonalFrom(remoteTrack)
         track.title = remoteTrack.title
+        track.total_volumes = remoteTrack.total_volumes
         track.total_chapters = remoteTrack.total_chapters
         return track
     }

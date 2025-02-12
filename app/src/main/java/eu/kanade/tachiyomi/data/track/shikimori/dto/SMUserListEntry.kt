@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SMUserListEntry(
     val id: Long,
+    val volumes: Double,
     val chapters: Double,
     val score: Int,
     val status: String,
@@ -18,6 +19,7 @@ data class SMUserListEntry(
             remote_id = this@SMUserListEntry.id
             total_chapters = manga.chapters
             library_id = this@SMUserListEntry.id
+            last_volume_read = this@SMUserListEntry.volumes
             last_chapter_read = this@SMUserListEntry.chapters
             score = this@SMUserListEntry.score.toDouble()
             status = toTrackStatus(this@SMUserListEntry.status)

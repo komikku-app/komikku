@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.data.database.models.Track as DbTrack
 
 fun Track.copyPersonalFrom(other: Track): Track {
     return this.copy(
+        lastVolumeRead = other.lastVolumeRead,
         lastChapterRead = other.lastChapterRead,
         score = other.score,
         status = other.status,
@@ -19,6 +20,8 @@ fun Track.toDbTrack(): DbTrack = DbTrack.create(trackerId).also {
     it.remote_id = remoteId
     it.library_id = libraryId
     it.title = title
+    it.last_volume_read = lastVolumeRead
+    it.total_volumes = totalVolumes
     it.last_chapter_read = lastChapterRead
     it.total_chapters = totalChapters
     it.status = status
@@ -37,6 +40,8 @@ fun DbTrack.toDomainTrack(idRequired: Boolean = true): Track? {
         remoteId = remote_id,
         libraryId = library_id,
         title = title,
+        lastVolumeRead = last_volume_read,
+        totalVolumes = total_volumes,
         lastChapterRead = last_chapter_read,
         totalChapters = total_chapters,
         status = status,

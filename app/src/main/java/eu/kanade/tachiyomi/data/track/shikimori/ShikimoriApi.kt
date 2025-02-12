@@ -46,6 +46,7 @@ class ShikimoriApi(
                         put("user_id", userId)
                         put("target_id", track.remote_id)
                         put("target_type", "Manga")
+                        put("volumes", track.last_volume_read.toInt())
                         put("chapters", track.last_chapter_read.toInt())
                         put("score", track.score.toInt())
                         put("status", track.toShikimoriStatus())

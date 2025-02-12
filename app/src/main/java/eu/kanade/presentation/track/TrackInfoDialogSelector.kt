@@ -93,6 +93,29 @@ fun TrackStatusSelector(
 }
 
 @Composable
+fun TrackVolumeSelector(
+    selection: Int,
+    onSelectionChange: (Int) -> Unit,
+    range: Iterable<Int>,
+    onConfirm: () -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    BaseSelector(
+        title = stringResource(MR.strings.volumes),
+        content = {
+            WheelNumberPicker(
+                items = range.toImmutableList(),
+                modifier = Modifier.align(Alignment.Center),
+                startIndex = selection,
+                onSelectionChanged = { onSelectionChange(it) },
+            )
+        },
+        onConfirm = onConfirm,
+        onDismissRequest = onDismissRequest,
+    )
+}
+
+@Composable
 fun TrackChapterSelector(
     selection: Int,
     onSelectionChange: (Int) -> Unit,

@@ -9,6 +9,8 @@ data class Track(
     val remoteId: Long,
     val libraryId: Long?,
     val title: String,
+    val lastVolumeRead: Double,
+    val totalVolumes: Long,
     val lastChapterRead: Double,
     val totalChapters: Long,
     val status: Long,

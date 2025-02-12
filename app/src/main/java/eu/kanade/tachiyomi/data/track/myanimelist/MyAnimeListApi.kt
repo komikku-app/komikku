@@ -99,7 +99,7 @@ class MyAnimeListApi(
                 .appendPath(id.toString())
                 .appendQueryParameter(
                     "fields",
-                    "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date",
+                    "id,title,synopsis,num_volumes,num_chapters,mean,main_picture,status,media_type,start_date",
                 )
                 .build()
             with(json) {
@@ -111,6 +111,7 @@ class MyAnimeListApi(
                             remote_id = it.id
                             title = it.title
                             summary = it.synopsis
+                            total_volumes = it.numVolumes
                             total_chapters = it.numChapters
                             score = it.mean
                             cover_url = (it.covers?.large ?: it.covers?.medium).orEmpty()
@@ -130,6 +131,7 @@ class MyAnimeListApi(
                 .add("status", track.toMyAnimeListStatus() ?: "reading")
                 .add("is_rereading", (track.status == MyAnimeList.REREADING).toString())
                 .add("score", track.score.toString())
+                .add("num_volumes_read", track.last_volume_read.toInt().toString())
                 .add("num_chapters_read", track.last_chapter_read.toInt().toString())
             convertToIsoDate(track.started_reading_date)?.let {
                 formBodyBuilder.add("start_date", it)
@@ -163,13 +165,14 @@ class MyAnimeListApi(
         return withIOContext {
             val uri = "$BASE_API_URL/manga".toUri().buildUpon()
                 .appendPath(track.remote_id.toString())
-                .appendQueryParameter("fields", "num_chapters,my_list_status{start_date,finish_date}")
+                .appendQueryParameter("fields", "num_volumes,num_chapters,my_list_status{start_date,finish_date}")
                 .build()
             with(json) {
                 authClient.newCall(GET(uri.toString()))
                     .awaitSuccess()
                     .parseAs<MALListItem>()
                     .let { item ->
+                        track.total_volumes = item.numVolumes
                         track.total_chapters = item.numChapters
                         item.myListStatus?.let { parseMangaItem(it, track) }
                     }
@@ -255,6 +258,7 @@ class MyAnimeListApi(
         return track.apply {
             val isRereading = listStatus.isRereading
             status = if (isRereading) MyAnimeList.REREADING else getStatus(listStatus.status)
+            last_volume_read = listStatus.numVolumesRead
             last_chapter_read = listStatus.numChaptersRead
             score = listStatus.score.toDouble()
             listStatus.startDate?.let { started_reading_date = parseDate(it) }

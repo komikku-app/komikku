@@ -5,6 +5,8 @@ CREATE TABLE manga_sync(
     remote_id INTEGER NOT NULL,
     library_id INTEGER,
     title TEXT NOT NULL,
+    last_volume_read REAL NOT NULL,
+    total_volumes INTEGER NOT NULL,
     last_chapter_read REAL NOT NULL,
     total_chapters INTEGER NOT NULL,
     status INTEGER NOT NULL,
@@ -39,8 +41,8 @@ FROM manga_sync
 WHERE manga_id = :mangaId;
 
 insert:
-INSERT INTO manga_sync(manga_id,sync_id,remote_id,library_id,title,last_chapter_read,total_chapters,status,score,remote_url,start_date,finish_date)
-VALUES (:mangaId,:syncId,:remoteId,:libraryId,:title,:lastChapterRead,:totalChapters,:status,:score,:remoteUrl,:startDate,:finishDate);
+INSERT INTO manga_sync(manga_id,sync_id,remote_id,library_id,title,last_volume_read,total_volumes,last_chapter_read,total_chapters,status,score,remote_url,start_date,finish_date)
+VALUES (:mangaId,:syncId,:remoteId,:libraryId,:title,:last_volume_read,:total_volumes,:lastChapterRead,:totalChapters,:status,:score,:remoteUrl,:startDate,:finishDate);
 
 update:
 UPDATE manga_sync
@@ -50,6 +52,8 @@ SET
     remote_id = coalesce(:mediaId, remote_id),
     library_id = coalesce(:libraryId, library_id),
     title = coalesce(:title, title),
+    last_volume_read = coalesce(:lastVolumeRead, last_volume_read),
+    total_volumes = coalesce(:totalVolumes, total_volumes),
     last_chapter_read = coalesce(:lastChapterRead, last_chapter_read),
     total_chapters = coalesce(:totalChapter, total_chapters),
     status = coalesce(:status, status),

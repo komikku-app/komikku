@@ -14,6 +14,7 @@
     <string name="name">Name</string>
     <string name="categories">Categories</string>
     <string name="manga">Library entries</string>
+    <string name="volumes">Volumes</string>
     <string name="chapters">Chapters</string>
     <string name="track">Tracking</string>
     <string name="delete_downloaded">Delete downloaded</string>

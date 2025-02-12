@@ -11,6 +11,7 @@ data class ALSearchItem(
     val format: String,
     val status: String?,
     val startDate: ALFuzzyDate,
+    val volumes: Long?,
     val chapters: Long?,
     val averageScore: Int?,
 ) {
@@ -22,6 +23,7 @@ data class ALSearchItem(
         format = format.replace("_", "-"),
         publishingStatus = status ?: "",
         startDateFuzzy = startDate.toEpochMilli(),
+        totalVolumes = volumes ?: 0,
         totalChapters = chapters ?: 0,
         averageScore = averageScore ?: -1,
     )

@@ -45,8 +45,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
     suspend fun addLibManga(track: Track): Track {
         return withIOContext {
             val query = """
-            |mutation AddManga(${'$'}mangaId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus) {
-                |SaveMediaListEntry (mediaId: ${'$'}mangaId, progress: ${'$'}progress, status: ${'$'}status) {
+            |mutation AddManga(${'$'}mangaId: Int, ${'$'}progressVolumes: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus) {
+                |SaveMediaListEntry (mediaId: ${'$'}mangaId, progressVolumes: ${'$'}progressVolumes, progress: ${'$'}progress, status: ${'$'}status) {
                 |   id
                 |   status
                 |}
@@ -57,6 +57,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 put("query", query)
                 putJsonObject("variables") {
                     put("mangaId", track.remote_id)
+                    put("progressVolumes", track.last_volume_read.toInt())
                     put("progress", track.last_chapter_read.toInt())
                     put("status", track.toApiStatus())
                 }
@@ -78,15 +79,15 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         }
     }
 
-    suspend fun updateLibManga(track: Track): Track {
+suspend fun updateLibManga(track: Track): Track {
         return withIOContext {
             val query = """
             |mutation UpdateManga(
-                |${'$'}listId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus,
+                |${'$'}listId: Int, ${'$'}progressVolumes: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus,
                 |${'$'}score: Int, ${'$'}startedAt: FuzzyDateInput, ${'$'}completedAt: FuzzyDateInput
             |) {
                 |SaveMediaListEntry(
-                    |id: ${'$'}listId, progress: ${'$'}progress, status: ${'$'}status,
+                    |id: ${'$'}listId, progressVolumes: ${'$'}progressVolumes, progress: ${'$'}progress, status: ${'$'}status,
                     |scoreRaw: ${'$'}score, startedAt: ${'$'}startedAt, completedAt: ${'$'}completedAt
                 |) {
                     |id
@@ -100,6 +101,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 put("query", query)
                 putJsonObject("variables") {
                     put("listId", track.library_id)
+                    put("progressVolumes", track.last_volume_read.toInt())
                     put("progress", track.last_chapter_read.toInt())
                     put("status", track.toApiStatus())
                     put("score", track.score.toInt())
@@ -112,7 +114,6 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             track
         }
     }
-
     suspend fun deleteLibManga(track: DomainTrack) {
         withIOContext {
             val query = """
@@ -192,6 +193,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         |id
                         |status
                         |scoreRaw: score(format: POINT_100)
+                        |progressVolumes
                         |progress
                         |startedAt {
                             |year
@@ -213,6 +215,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             |}
                             |format
                             |status
+                            |volumes
                             |chapters
                             |description
                             |startDate {
@@ -241,6 +244,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .let { response -> println(response); response}
                     .parseAs<ALUserListMangaQueryResult>()
                     .data.page.mediaList
                     .map { it.toALUserManga() }

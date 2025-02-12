@@ -71,6 +71,8 @@ class TrackRepositoryImpl(
                     remoteId = mangaTrack.remoteId,
                     libraryId = mangaTrack.libraryId,
                     title = mangaTrack.title,
+                    last_volume_read = mangaTrack.lastVolumeRead,
+                    total_volumes = mangaTrack.totalVolumes,
                     lastChapterRead = mangaTrack.lastChapterRead,
                     totalChapters = mangaTrack.totalChapters,
                     status = mangaTrack.status,

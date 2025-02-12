@@ -17,12 +17,14 @@ data class ALManga(
     val format: String,
     val publishingStatus: String,
     val startDateFuzzy: Long,
+    val totalVolumes: Long,
     val totalChapters: Long,
     val averageScore: Int,
 ) {
     fun toTrack() = TrackSearch.create(TrackerManager.ANILIST).apply {
         remote_id = remoteId
         title = this@ALManga.title
+        total_volumes = totalVolumes
         total_chapters = totalChapters
         cover_url = imageUrl
         summary = description?.htmlDecode() ?: ""
@@ -45,6 +47,7 @@ data class ALUserManga(
     val libraryId: Long,
     val listStatus: String,
     val scoreRaw: Int,
+    val volumesRead: Int,
     val chaptersRead: Int,
     val startDateFuzzy: Long,
     val completedDateFuzzy: Long,
@@ -57,8 +60,10 @@ data class ALUserManga(
         score = scoreRaw.toDouble()
         started_reading_date = startDateFuzzy
         finished_reading_date = completedDateFuzzy
+        last_volume_read = volumesRead.toDouble()
         last_chapter_read = chaptersRead.toDouble()
         library_id = libraryId
+        total_volumes = manga.totalVolumes
         total_chapters = manga.totalChapters
     }
 

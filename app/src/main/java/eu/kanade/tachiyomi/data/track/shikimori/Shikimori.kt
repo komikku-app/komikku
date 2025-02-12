@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMOAuth
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -52,6 +51,7 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
         if (track.status != COMPLETED) {
             if (didReadChapter) {
                 if (track.last_chapter_read.toLong() == track.total_chapters && track.total_chapters > 0) {
+                    track.last_volume_read = track.total_volumes.toDouble()
                     track.status = COMPLETED
                 } else if (track.status != REREADING) {
                     track.status = READING
@@ -81,6 +81,7 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
         } else {
             // Set default fields if it's not found in the list
             track.status = if (hasReadChapters) READING else PLAN_TO_READ
+            track.last_volume_read = 0.0
             track.score = 0.0
             add(track)
         }
@@ -94,6 +95,7 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
         api.findLibManga(track, getUsername())?.let { remoteTrack ->
             track.library_id = remoteTrack.library_id
             track.copyPersonalFrom(remoteTrack)
+            track.total_volumes = remoteTrack.total_volumes
             track.total_chapters = remoteTrack.total_chapters
         } ?: throw Exception("Could not find manga")
         return track

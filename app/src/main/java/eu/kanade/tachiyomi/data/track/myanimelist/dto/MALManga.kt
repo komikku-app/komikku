@@ -8,6 +8,8 @@ data class MALManga(
     val id: Long,
     val title: String,
     val synopsis: String = "",
+    @SerialName("num_volumes")
+    val numVolumes: Long,
     @SerialName("num_chapters")
     val numChapters: Long,
     val mean: Double = -1.0,

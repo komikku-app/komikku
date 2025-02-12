@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 data class SMManga(
     val id: Long,
     val name: String,
+    val volumes: Long,
     val chapters: Long,
     val image: SUMangaCover,
     val score: Double,
@@ -22,6 +23,7 @@ data class SMManga(
         return TrackSearch.create(trackId).apply {
             remote_id = this@SMManga.id
             title = name
+            total_volumes = volumes
             total_chapters = chapters
             cover_url = ShikimoriApi.BASE_URL + image.preview
             summary = ""

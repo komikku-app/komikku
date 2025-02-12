@@ -76,6 +76,8 @@ interface Tracker {
 
     suspend fun setRemoteStatus(track: Track, status: Long)
 
+    suspend fun setRemoteLastVolumeRead(track: Track, volumeNumber: Int)
+
     suspend fun setRemoteLastChapterRead(track: Track, chapterNumber: Int)
 
     suspend fun setRemoteScore(track: Track, scoreString: String)

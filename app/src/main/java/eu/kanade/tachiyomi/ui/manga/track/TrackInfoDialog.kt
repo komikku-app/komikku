@@ -46,6 +46,7 @@ import eu.kanade.presentation.track.TrackDateSelector
 import eu.kanade.presentation.track.TrackInfoDialogHome
 import eu.kanade.presentation.track.TrackScoreSelector
 import eu.kanade.presentation.track.TrackStatusSelector
+import eu.kanade.presentation.track.TrackVolumeSelector
 import eu.kanade.presentation.track.TrackerSearch
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.track.DeletableTracker
@@ -108,6 +109,14 @@ data class TrackInfoDialogHomeScreen(
             onStatusClick = {
                 navigator.push(
                     TrackStatusSelectorScreen(
+                        track = it.track!!,
+                        serviceId = it.tracker.id,
+                    ),
+                )
+            },
+            onVolumeClick = {
+                navigator.push(
+                    TrackVolumeSelectorScreen(
                         track = it.track!!,
                         serviceId = it.tracker.id,
                     ),
@@ -313,6 +322,65 @@ private data class TrackStatusSelectorScreen(
         @Immutable
         data class State(
             val selection: Long,
+        )
+    }
+}
+
+private data class TrackVolumeSelectorScreen(
+    private val track: Track,
+    private val serviceId: Long,
+) : Screen() {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val screenModel = rememberScreenModel {
+            Model(
+                track = track,
+                tracker = Injekt.get<TrackerManager>().get(serviceId)!!,
+            )
+        }
+        val state by screenModel.state.collectAsState()
+
+        TrackVolumeSelector(
+            selection = state.selection,
+            onSelectionChange = screenModel::setSelection,
+            range = remember { screenModel.getRange() },
+            onConfirm = {
+                screenModel.setVolume()
+                navigator.pop()
+            },
+            onDismissRequest = navigator::pop,
+        )
+    }
+
+    private class Model(
+        private val track: Track,
+        private val tracker: Tracker,
+    ) : StateScreenModel<Model.State>(State(track.lastVolumeRead.toInt())) {
+
+        fun getRange(): Iterable<Int> {
+            val endRange = if (track.totalVolumes > 0) {
+                track.totalVolumes
+            } else {
+                10000
+            }
+            return 0..endRange.toInt()
+        }
+
+        fun setSelection(selection: Int) {
+            mutableState.update { it.copy(selection = selection) }
+        }
+
+        fun setVolume() {
+            screenModelScope.launchNonCancellable {
+                tracker.setRemoteLastVolumeRead(track.toDbTrack(), state.value.selection)
+            }
+        }
+
+        @Immutable
+        data class State(
+            val selection: Int,
         )
     }
 }
