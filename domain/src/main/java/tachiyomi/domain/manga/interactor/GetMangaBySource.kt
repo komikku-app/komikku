@@ -10,4 +10,8 @@ class GetMangaBySource(
     suspend fun await(sourceId: Long): List<Manga> {
         return mangaRepository.getMangaBySourceId(sourceId)
     }
+
+    suspend fun await(sourceIds: List<Long>): Map<Long, List<Manga>> {
+        return mangaRepository.getMangaBySourceIds(sourceIds)
+    }
 }

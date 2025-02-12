@@ -208,6 +208,11 @@ WHERE mangas.favorite = 1;
 getBySource:
 SELECT * FROM mangas WHERE source = :sourceId;
 
+-- KMK -->
+getBySources:
+SELECT * FROM mangas WHERE source IN :sourceIds;
+-- KMK <--
+
 getAll:
 SELECT * FROM mangas;
 
@@ -223,3 +228,11 @@ getIdByUrlAndSource:
 SELECT _id
 FROM mangas
 WHERE url = :url AND source = :source;
+
+-- KMK -->
+countDuplicateLibraryMangaBySourceAndUrl:
+SELECT url, source, COUNT(*) AS count
+FROM mangas
+GROUP BY url, source
+HAVING COUNT(*) > 1;
+-- KMK <--

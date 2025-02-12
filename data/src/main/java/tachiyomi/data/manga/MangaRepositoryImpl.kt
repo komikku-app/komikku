@@ -194,6 +194,13 @@ class MangaRepositoryImpl(
         return handler.awaitList { mangasQueries.getBySource(sourceId, MangaMapper::mapManga) }
     }
 
+    // KMK -->
+    override suspend fun getMangaBySourceIds(sourceIds: List<Long>): Map<Long, List<Manga>> {
+        return handler.awaitList { mangasQueries.getBySources(sourceIds, MangaMapper::mapManga) }
+            .groupBy { it.source }
+    }
+    // KMK <--
+
     override suspend fun getAll(): List<Manga> {
         return handler.awaitList { mangasQueries.getAll(MangaMapper::mapManga) }
     }

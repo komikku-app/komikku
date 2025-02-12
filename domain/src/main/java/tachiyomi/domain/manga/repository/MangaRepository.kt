@@ -42,6 +42,10 @@ interface MangaRepository {
     // SY -->
     suspend fun getMangaBySourceId(sourceId: Long): List<Manga>
 
+    // KMK -->
+    suspend fun getMangaBySourceIds(sourceIds: List<Long>): Map<Long, List<Manga>>
+    // KMK <--
+
     suspend fun getAll(): List<Manga>
 
     suspend fun deleteManga(mangaId: Long)
