@@ -18,6 +18,9 @@
         <changelogtext>[b]Fix:[/b] (myanimelist): Fix nullability and fallback to medium cover if large cover is null</changelogtext>
         <changelogtext>[b]Fix:[/b] (download): Making sure archive tmp file is created properly</changelogtext>
     </changelogversion>
+    <changelogversion versionName="1.12.6" changeDate="February 14, 2025">
+        <changelogtext>[b]Fix:[/b] crash due to extensions destructuring MangasPage</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.12.4" changeDate="February 01, 2025">
         <changelogtext>[b]New:[/b] Remove extensions repo</changelogtext>
         <changelogtext>[b]Improve:[/b] Allow manual install app update</changelogtext>
@@ -100,7 +103,7 @@
         <changelogtext>[b]New:[/b] Use language flags</changelogtext>
         <changelogtext>[b]New:[/b] Bulk-merging multiple library entries</changelogtext>
         <changelogtext>[b]New:[/b] Ability to enable/disable repo</changelogtext>
-        <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
+        <changelogtext>[b]New:[/b] Show repo icon for Repo</changelogtext>
         <changelogtext>[b]New:[/b] Custom themes</changelogtext>
         <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
         <changelogtext>[b]New:[/b] Add 'show entry' action to download notifications</changelogtext>

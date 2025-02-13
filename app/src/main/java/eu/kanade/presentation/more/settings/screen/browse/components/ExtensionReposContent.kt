@@ -36,8 +36,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KOMIKKU_SIGNATURE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.REPO_SIGNATURE
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
@@ -183,7 +183,7 @@ private fun ExtensionRepoListItem(
 // KMK -->
 fun repoResId(signKey: String) = when (signKey) {
     KOMIKKU_SIGNATURE -> R.mipmap.komikku
-    KEIYOUSHI_SIGNATURE -> R.mipmap.keiyoushi
+    REPO_SIGNATURE -> R.mipmap.repo
     else -> R.mipmap.extension
 }
 
@@ -192,7 +192,7 @@ fun repoResId(signKey: String) = when (signKey) {
 fun ExtensionReposContentPreview() {
     val repos = persistentSetOf(
         ExtensionRepo("https://repo", "Komikku", "", "", KOMIKKU_SIGNATURE),
-        ExtensionRepo("https://repo", "Keiyoushi", "", "", KEIYOUSHI_SIGNATURE),
+        ExtensionRepo("https://repo", "Repo", "", "", REPO_SIGNATURE),
         ExtensionRepo("https://repo", "Other", "", "", "key2"),
     )
     ExtensionReposContent(
