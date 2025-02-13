@@ -24,9 +24,9 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.screen.browse.RepoScreenState
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.collections.immutable.persistentSetOf
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KOMIKKU_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.REPO_HELP
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.REPO_SIGNATURE
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -117,7 +117,7 @@ private fun ExtensionReposScreenPreview() {
     val state = RepoScreenState.Success(
         repos = persistentSetOf(
             ExtensionRepo("https://repo", "Komikku", "", "", KOMIKKU_SIGNATURE),
-            ExtensionRepo("https://repo", "Keiyoushi", "", "", KEIYOUSHI_SIGNATURE),
+            ExtensionRepo("https://repo", "Repo", "", "", REPO_SIGNATURE),
             ExtensionRepo("https://repo", "Other", "", "", "key2"),
         ),
         disabledRepos = setOf("https://repo"),

@@ -20,7 +20,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KOMIKKU_SIGNATURE
 import mihon.domain.extensionrepo.interactor.GetExtensionRepo
 import mihon.domain.extensionrepo.model.ExtensionRepo
@@ -292,7 +291,6 @@ internal object ExtensionLoader {
                 // KMK -->
                 repoName = when {
                     isOfficiallySigned(signatures) -> "Komikku"
-                    isKeiyoushiSigned(signatures) -> "Keiyoushi"
                     else -> repos.firstOrNull { repo ->
                         signatures.all { it == repo.signingKeyFingerprint }
                     }?.name
@@ -364,7 +362,6 @@ internal object ExtensionLoader {
             signatureHash = signatures.last(),
             repoName = when {
                 isOfficiallySigned(signatures) -> "Komikku"
-                isKeiyoushiSigned(signatures) -> "Keiyoushi"
                 else -> repos.firstOrNull { repo ->
                     signatures.all { it == repo.signingKeyFingerprint }
                 }?.name
@@ -429,10 +426,6 @@ internal object ExtensionLoader {
 
     private fun isOfficiallySigned(signatures: List<String>): Boolean {
         return signatures.all { it == KOMIKKU_SIGNATURE }
-    }
-
-    private fun isKeiyoushiSigned(signatures: List<String>): Boolean {
-        return signatures.all { it == KEIYOUSHI_SIGNATURE }
     }
 
     /**
