@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.12.5" changeDate="February 13, 2025">
+    <changelogversion versionName="1.12.6" changeDate="February 14, 2025">
         <changelogtext>[b]Fix:[/b] crash due to extensions destructuring MangasPage</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.12.4" changeDate="February 01, 2025">
