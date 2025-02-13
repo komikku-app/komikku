@@ -383,7 +383,7 @@ class Downloader(
             // Start downloading images, consider we can have downloaded images already
             // Concurrently do 2 pages at a time
             pageList.asFlow()
-                .flatMapMerge(concurrency = 2) { page ->
+                .flatMapMerge(concurrency = 16) { page ->
                     flow {
                         // Fetch image URL if necessary
                         if (page.imageUrl.isNullOrEmpty()) {
