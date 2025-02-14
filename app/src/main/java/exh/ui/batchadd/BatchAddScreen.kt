@@ -32,6 +32,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -86,7 +87,6 @@ class BatchAddScreen : Screen() {
                             },
                             keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
                             textStyle = MaterialTheme.typography.bodyLarge,
-
                         )
                         Spacer(Modifier.height(8.dp))
                         Button(
@@ -95,6 +95,12 @@ class BatchAddScreen : Screen() {
                         ) {
                             Text(text = stringResource(SYMR.strings.eh_batch_add_button))
                         }
+                        // KMK -->
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(KMR.strings.batch_add_description),
+                        )
+                        // KMK <--
                     }
                 }
                 BatchAddScreenModel.State.PROGRESS -> {
