@@ -97,7 +97,11 @@ SELECT
     chapters.date_fetch AS datefetch
 FROM mangas JOIN chapters
 ON mangas._id = chapters.manga_id
+LEFT JOIN excluded_scanlators
+ON mangas._id = excluded_scanlators.manga_id
+AND chapters.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source <> 6969
+AND excluded_scanlators.scanlator IS NULL
 AND date_fetch > date_added
 UNION
 SELECT
@@ -124,6 +128,10 @@ LEFT JOIN (
 ON ME.merge_id = mangas._id
 JOIN chapters
 ON ME.manga_id = chapters.manga_id
+LEFT JOIN excluded_scanlators
+ON mangas._id = excluded_scanlators.manga_id
+AND chapters.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source = 6969
+AND excluded_scanlators.scanlator IS NULL
 AND date_fetch > date_added
 ORDER BY datefetch DESC;
