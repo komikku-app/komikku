@@ -1,10 +1,8 @@
 package tachiyomi.data.manga
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
@@ -56,17 +54,11 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
-        return handler.awaitListExecutable {
-            (handler as AndroidDatabaseHandler).getLibraryQuery()
-        }.map(MangaMapper::mapLibraryView)
-        // return handler.awaitList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
+        return handler.awaitList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
     }
 
     override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
         return handler.subscribeToList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
-            // SY -->
-            .map { getLibraryManga() }
-        // SY <--
     }
 
     override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {
@@ -203,9 +195,7 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getReadMangaNotInLibraryView(): List<LibraryManga> {
-        return handler.awaitListExecutable {
-            (handler as AndroidDatabaseHandler).getLibraryQuery("M.favorite = 0 AND C.readCount != 0")
-        }.map(MangaMapper::mapLibraryView)
+        return handler.awaitList { libraryViewQueries.readMangaNonLibrary(MangaMapper::mapLibraryManga) }
     }
     // SY <--
 }
