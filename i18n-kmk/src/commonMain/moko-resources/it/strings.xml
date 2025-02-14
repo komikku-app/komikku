@@ -122,7 +122,6 @@
     <string name="custom_theme_palette_pop">Pop</string>
     <string name="custom_theme_palette_outrun">Superare</string>
     <string name="custom_theme_palette_bubblegum">Gomma da masticare</string>
-    <string name="theme_doom"></string>
     <string name="custom_theme_palette_springfield">Springfield</string>
     <string name="action_manual_install">installazione manuale</string>
 </resources>
