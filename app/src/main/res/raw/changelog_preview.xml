@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="r" changeDate="February 01, 2025">
-        <changelogtext>[b]New:[/b] Remove extensions repo</changelogtext>
-        <changelogtext>[b]Improve:[/b] Allow manual install app update</changelogtext>
+    <changelogversion versionName="r9766" changeDate="February 14, 2025">
+        <changelogtext>[b]Improve:[/b] (EditMergedSettings): Allow open merge children manga</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add manual install button to App installing notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] Rework slider UI</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add Infinix system app to list of invalid browsers</changelogtext>
+        <changelogtext>[b]Improve:[/b] Translations update from Hosted Weblate</changelogtext>
+        <changelogtext>[b]Fix:[/b] crash when extensions trying to destructuring MangasPage</changelogtext>
+        <changelogtext>[b]Fix:[/b] (PreferenceRestorer): correctly backup/restore preferences related to category</changelogtext>
+        <changelogtext>[b]Fix:[/b] (MangaRestorer): avoid chapter's order mixed up when backup restore/sync</changelogtext>
+        <changelogtext>[b]Fix:[/b] (BackupRestorer): avoid issue of late restoring categories</changelogtext>
+        <changelogtext>[b]Fix:[/b] (EXH): Migrate old source to new source for merge references</changelogtext>
+        <changelogtext>[b]Fix:[/b] (MangaRestorer): avoid exception caused by duplicate entries</changelogtext>
+        <changelogtext>[b]Fix:[/b] MAL tracker losing track of login expiration</changelogtext>
+        <changelogtext>[b]Fix:[/b] Bangumi tracker losing track of login expiration</changelogtext>
         <changelogtext>[b]Fix:[/b] loading Merged source should be independent of integrated-H switch</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9715" changeDate="January 29, 2025">
