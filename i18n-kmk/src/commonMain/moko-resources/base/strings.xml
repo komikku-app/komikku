@@ -2,7 +2,7 @@
 <resources>
     <!-- Actions -->
     <string name="action_search_for_source">Search for sources</string>
-    <string name="action_source_search">Search on source</string>
+    <string name="action_source_search">Search in source</string>
     <string name="action_library_search">Library search</string>
     <string name="action_toggle_nsfw_only">Toggle NSFW only</string>
     <string name="action_bulk_select">Bulk selection mode</string>
@@ -14,14 +14,11 @@
     <string name="action_hide">Hide</string>
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
-
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
     <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
     <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
-
-
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
@@ -54,7 +51,6 @@
     <string name="theme_matrix">Matrix</string>
     <string name="theme_mocha">Mocha</string>
     <string name="theme_sapphire">Sapphire</string>
-
     <!-- Custom Color Picker -->
     <string name="pref_custom_color">Palette Personalizer</string>
     <string name="custom_color_description">Pick a seed color for the custom Theme</string>
@@ -72,16 +68,13 @@
     <string name="custom_theme_palette_springfield">Springfield</string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
-
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
     <string name="action_display_source_badge">Source icon</string>
     <string name="action_display_language_icon">Use language icon</string>
-
-      <!-- Extension section -->
+    <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
-
     <!-- Extension repos -->
       <!-- Downloads section -->
     <string name="download_cache_renew_interval">Download cache renew interval</string>
@@ -92,15 +85,12 @@
     <string name="download_cache_renew_interval_12hour">12 hours</string>
     <string name="download_cache_renew_interval_24hour">1 day</string>
     <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
-
     <!-- Tracking section -->
     <string name="pref_auto_sync_progress_from_trackers">Auto sync progress from Trackers</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
-
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
-
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
@@ -110,37 +100,30 @@
     <string name="preload_library_cover_color">Preload library's cover color</string>
     <string name="auto_update_app">Auto-update app</string>
     <string name="auto_update_app_disable_auto_download">Don't auto download update</string>
-
-      <!-- Onboarding section -->
+    <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
     <string name="onboarding_permission_external_storage_description">Allow using custom covers in entry's Edit Info</string>
     <string name="onboarding_permission_writing_external_storage_description">Allow saving covers &amp; using custom covers in entry's Edit Info</string>
     <string name="permission_writing_external_storage_succeed">Permission granted. Try action again.</string>
-
-      <!-- About section -->
+    <!-- About section -->
     <string name="whats_coming">What\'s coming (soon)</string>
-
     <!-- Manga info -->
     <string name="action_allow_duplicate_manga">Allow it</string>
     <string name="action_skip_duplicate_manga">Skip it</string>
     <string name="action_allow_all_duplicate_manga">Allow all</string>
     <string name="action_skip_all_duplicate_manga">Skip all</string>
-
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
     <string name="update_completed">Update completed</string>
     <string name="open">Open</string>
     <string name="release_page">Release page</string>
     <string name="could_not_install_update">Could not install update</string>
-
     <!--UpdateCheck Notifications-->
     <string name="update_check_notification_preview_available">Coming (soon) updates!</string>
-
     <!-- About -->
     <string name="changelogs">Change Logs</string>
     <string name="action_manual_install">Manual install</string>
     <string name="manual_download">Manual download</string>
-
     <!-- Browse settings -->
     <string name="pref_source_related_mangas">Suggestions</string>
     <string name="pref_source_related_mangas_summary">Show source-website's Suggestions while viewing entry</string>
@@ -148,7 +131,6 @@
     <string name="related_mangas_more">More like these...</string>
     <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
     <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>
-
     <!-- Error Screen -->
     <string name="option_label_library_update_errors">Library update errors</string>
     <string name="label_library_update_errors">Library update errors (%d)</string>
@@ -157,16 +139,13 @@
     <string name="action_scroll_to_bottom">Scroll to bottom</string>
     <string name="action_scroll_to_previous">Scroll to previous</string>
     <string name="action_scroll_to_next">Scroll to next</string>
-
     <!-- Feed Tab -->
     <string name="too_many_in_feed">Too many sources in your feed, cannot add more than 20</string>
     <string name="action_sort_feed">Sort feeds</string>
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
-
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
     <string name="migrating_all_entries">Migrating all entries from source</string>
-
     <!-- Misc -->
     <string name="label_to_be_updated">To be updated</string>
 </resources>
