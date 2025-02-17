@@ -344,13 +344,13 @@ data class BrowseSourceScreen(
                             // KMK <--
                             navigator.push(
                                 MangaScreen(
-                                    manga.id,
+                                    mangaId = manga.id,
                                     // KMK -->
                                     // Finding the entry to be merged to, so we don't want to expand description
                                     // so that user can see the `Merge to another` button
-                                    smartSearchConfig != null,
+                                    fromSource = smartSearchConfig == null,
                                     // KMK <--
-                                    smartSearchConfig,
+                                    smartSearchConfig = smartSearchConfig,
                                 ),
                             )
                         }

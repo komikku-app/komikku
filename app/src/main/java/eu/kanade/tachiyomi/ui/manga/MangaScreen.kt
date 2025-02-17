@@ -117,7 +117,11 @@ import uy.kohesive.injekt.api.get
 
 class MangaScreen(
     private val mangaId: Long,
-    /** If it is opened from Source then it will auto expand the manga description */
+    /**
+     * If it is opened from Source then it will auto expand the manga description.
+     * - `true`: Expand description if it's not favorited
+     * - `false`: Don't expand description
+     */
     val fromSource: Boolean = false,
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
 ) : Screen(), AssistContentScreen {
@@ -138,7 +142,13 @@ class MangaScreen(
         val scope = rememberCoroutineScope()
         val lifecycleOwner = LocalLifecycleOwner.current
         val screenModel = rememberScreenModel {
-            MangaScreenModel(context, lifecycleOwner.lifecycle, mangaId, fromSource, smartSearchConfig != null)
+            MangaScreenModel(
+                context = context,
+                lifecycle = lifecycleOwner.lifecycle,
+                mangaId = mangaId,
+                isFromSource = fromSource,
+                smartSearched = smartSearchConfig != null,
+            )
         }
 
         val state by screenModel.state.collectAsStateWithLifecycle()
