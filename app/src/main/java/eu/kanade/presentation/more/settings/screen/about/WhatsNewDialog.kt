@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.presentation.more.settings.screen.about
 
 import androidx.compose.foundation.layout.Arrangement

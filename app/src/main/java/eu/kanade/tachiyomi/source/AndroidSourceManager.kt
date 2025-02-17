@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.tachiyomi.source
 
 import android.content.Context

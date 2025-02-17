@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package exh.md.utils
 
 object MdApi {

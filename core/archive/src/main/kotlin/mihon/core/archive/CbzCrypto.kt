@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package mihon.core.archive
 
 import android.security.keystore.KeyGenParameterSpec
