@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.compose.runtime.Composable
