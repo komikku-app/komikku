@@ -26,3 +26,16 @@ ktlint_standard_class-signature = disabled
 ktlint_standard_discouraged-comment-location = disabled
 ktlint_standard_function-expression-body = disabled
 ktlint_standard_function-signature = disabled
+
+# ktlint_standard_filename = disabled
+# ktlint_standard_argument-list-wrapping = disabled
+# ktlint_standard_function-naming = disabled
+# ktlint_standard_property-naming = disabled
+# ktlint_standard_multiline-expression-wrapping = disabled
+# ktlint_standard_string-template-indent = disabled
+# ktlint_standard_comment-wrapping = disabled
+
+# ktlint_standard_max-line-length = disabled
+# ktlint_standard_type-argument-comment = disabled
+# ktlint_standard_value-argument-comment = disabled
+# ktlint_standard_value-parameter-comment = disabled
