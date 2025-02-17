@@ -126,7 +126,7 @@ fun MangaCoverDialog(
                                 ),
                             ),
                         )
-                        if (onEditClick != null) {
+                        if (onEditClick != null && manga.favorite) {
                             Box {
                                 var expanded by remember { mutableStateOf(false) }
                                 IconButton(

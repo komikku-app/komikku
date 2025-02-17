@@ -143,7 +143,7 @@ fun ReaderAppBars(
                 animationSpec = animationSpec,
             ),
             modifier = modifierWithInsetsPadding
-                .padding(bottom = 48.dp, top = 120.dp)
+                .padding(bottom = 64.dp, top = 112.dp)
                 .align(Alignment.TopStart),
         ) {
             ChapterNavigator(
@@ -171,7 +171,7 @@ fun ReaderAppBars(
                 animationSpec = animationSpec,
             ),
             modifier = modifierWithInsetsPadding
-                .padding(bottom = 48.dp, top = 120.dp)
+                .padding(bottom = 64.dp, top = 112.dp)
                 .align(Alignment.TopEnd),
         ) {
             ChapterNavigator(
