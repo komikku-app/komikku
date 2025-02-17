@@ -29,7 +29,7 @@ ktlint_standard_function-signature = disabled
 
 # Avoid ktlint reformat messy code from SY
 ktlint_standard_max-line-length = disabled
-ktlint_standard_argument-list-wrapping = disabled
+# ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_comment-wrapping = disabled
 ktlint_standard_type-argument-comment = disabled
 ktlint_standard_value-argument-comment = disabled
