@@ -42,7 +42,8 @@ fun SyncFavoritesProgressDialog(
                 text = context.stringResource(
                     SYMR.strings.favorites_sync_bad_library_state,
                     context.stringResource(
-                        SYMR.strings.favorites_sync_gallery_in_multiple_categories, status.mangaTitle,
+                        SYMR.strings.favorites_sync_gallery_in_multiple_categories,
+                        status.mangaTitle,
                         status.categories.joinToString(),
                     ),
                 ),
@@ -62,14 +63,10 @@ fun SyncFavoritesProgressDialog(
                         when (it) {
                             is FavoritesSyncStatus.SyncError.GallerySyncError.GalleryAddFail ->
                                 context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local) +
-                                    context.stringResource(
-                                        SYMR.strings.favorites_sync_failed_to_add_to_local_error, it.title, it.reason,
-                                    )
+                                    context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local_error, it.title, it.reason)
                             is FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail ->
                                 context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local) +
-                                    context.stringResource(
-                                        SYMR.strings.favorites_sync_failed_to_add_to_local_unknown_type, it.title, it.url,
-                                    )
+                                    context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local_unknown_type, it.title, it.url)
                             is FavoritesSyncStatus.SyncError.GallerySyncError.UnableToAddGalleryToRemote ->
                                 context.stringResource(SYMR.strings.favorites_sync_unable_to_add_to_remote, it.title, it.gid)
                             FavoritesSyncStatus.SyncError.GallerySyncError.UnableToDeleteFromRemote ->
@@ -100,14 +97,10 @@ fun SyncFavoritesProgressDialog(
                             context.stringResource(SYMR.strings.favorites_sync_unknown_error, status.message)
                         is FavoritesSyncStatus.SyncError.GallerySyncError.GalleryAddFail ->
                             context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local) +
-                                context.stringResource(
-                                    SYMR.strings.favorites_sync_failed_to_add_to_local_error, status.title, status.reason,
-                                )
+                                context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local_error, status.title, status.reason)
                         is FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail ->
                             context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local) +
-                                context.stringResource(
-                                    SYMR.strings.favorites_sync_failed_to_add_to_local_unknown_type, status.title, status.url,
-                                )
+                                context.stringResource(SYMR.strings.favorites_sync_failed_to_add_to_local_unknown_type, status.title, status.url)
                         is FavoritesSyncStatus.SyncError.GallerySyncError.UnableToAddGalleryToRemote ->
                             context.stringResource(SYMR.strings.favorites_sync_unable_to_add_to_remote, status.title, status.gid)
                         FavoritesSyncStatus.SyncError.GallerySyncError.UnableToDeleteFromRemote ->

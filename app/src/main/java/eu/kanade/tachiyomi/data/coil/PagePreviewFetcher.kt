@@ -124,7 +124,8 @@ class PagePreviewFetcher(
 
     private suspend fun executeNetworkRequest(): Response {
         val response = sourceLazy.value?.fetchPreviewImage(
-            page.getPagePreviewInfo(), getCacheControl(),
+            page.getPagePreviewInfo(),
+            getCacheControl(),
         ) ?: callFactoryLazy.value.newCall(newRequest()).await()
         if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
             response.close()

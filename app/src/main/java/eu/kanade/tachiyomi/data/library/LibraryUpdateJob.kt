@@ -628,7 +628,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 count++
                 notifier.showProgressNotification(
-                    listOf(Manga.create().copy(ogTitle = networkManga.title)), count, size,
+                    listOf(Manga.create().copy(ogTitle = networkManga.title)),
+                    count,
+                    size,
                 )
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
