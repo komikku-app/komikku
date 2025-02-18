@@ -182,7 +182,8 @@ import kotlin.random.Random
      */
     @Deprecated("The regular client handles Cloudflare by default", ReplaceWith("client"))
     @Suppress("UNUSED")
-    /* SY --> */ open /* SY <-- */val cloudflareClient: OkHttpClient
+    /* SY --> */
+    open /* SY <-- */val cloudflareClient: OkHttpClient
         get() = client
 
     fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
