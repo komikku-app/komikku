@@ -27,9 +27,9 @@ ktlint_standard_discouraged-comment-location = disabled
 ktlint_standard_function-expression-body = disabled
 ktlint_standard_function-signature = disabled
 
-# Avoid ktlint reformat messy code from SY
+# Avoid ktlint format messy code from SY
 ktlint_standard_max-line-length = disabled
 ktlint_standard_comment-wrapping = disabled
 ktlint_standard_type-argument-comment = disabled
-# ktlint_standard_value-argument-comment = disabled
+ktlint_standard_value-argument-comment = disabled
 # ktlint_standard_value-parameter-comment = disabled
