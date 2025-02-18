@@ -11,8 +11,7 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import exh.assets.EhAssets
 
-@Suppress("UnusedReceiverParameter")
-val EhAssets.MangadexLogo: ImageVector
+public val EhAssets.MangadexLogo: ImageVector
     get() {
         if (_mangadexLogo != null) {
             return _mangadexLogo!!

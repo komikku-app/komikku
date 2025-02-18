@@ -1,22 +1,24 @@
-package exh.assets
+package exh.assets.ehassets
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import exh.assets.ehassets.AllAssets
-import exh.assets.ehassets.EhLogo
-import exh.assets.ehassets.Exh
-import exh.assets.ehassets.MangadexLogo
+import exh.assets.EhAssets
+import exh.assets.ehassets.exh.AllAssets
+import exh.assets.ehassets.exh.Assets
 import kotlin.collections.List as ____KtList
 
-public object EhAssets
+public object ExhGroup
+
+public val EhAssets.Exh: ExhGroup
+    get() = ExhGroup
 
 @Suppress("ObjectPropertyName")
 private var __AllAssets: ____KtList<ImageVector>? = null
 
-public val EhAssets.AllAssets: ____KtList<ImageVector>
+public val ExhGroup.AllAssets: ____KtList<ImageVector>
     get() {
         if (__AllAssets != null) {
             return __AllAssets!!
         }
-        __AllAssets = Exh.AllAssets + listOf(EhLogo, MangadexLogo)
+        __AllAssets = Assets.AllAssets + listOf()
         return __AllAssets!!
     }
