@@ -167,7 +167,9 @@ class DownloadManager(
         val chapterDir = provider.findChapterDir(
             chapter.name,
             chapter.scanlator,
-            /* SY --> */ manga.ogTitle /* SY <-- */,
+            // SY -->
+            manga.ogTitle,
+            // SY <--
             source,
         )
         val files = chapterDir?.listFiles().orEmpty()

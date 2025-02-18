@@ -20,8 +20,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 import kotlin.random.Random
 
-/* SY --> */
-open /* SY <-- */ class NetworkHelper(
+/* SY --> */ open /* SY <-- */ class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
     // SY -->
@@ -29,11 +28,9 @@ open /* SY <-- */ class NetworkHelper(
     // SY <--
 ) {
 
-    /* SY --> */
-    open /* SY <-- */val cookieJar = AndroidCookieJar()
+    /* SY --> */ open /* SY <-- */val cookieJar = AndroidCookieJar()
 
-    /* SY --> */
-    open /* SY <-- */val client: OkHttpClient =
+    /* SY --> */ open /* SY <-- */val client: OkHttpClient =
         // KMK -->
         clientWithTimeOut()
 
@@ -185,8 +182,7 @@ open /* SY <-- */ class NetworkHelper(
      */
     @Deprecated("The regular client handles Cloudflare by default", ReplaceWith("client"))
     @Suppress("UNUSED")
-    /* SY --> */
-    open /* SY <-- */val cloudflareClient: OkHttpClient
+    /* SY --> */ open /* SY <-- */val cloudflareClient: OkHttpClient
         get() = client
 
     fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
