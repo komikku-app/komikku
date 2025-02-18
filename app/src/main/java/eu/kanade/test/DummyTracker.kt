@@ -4,6 +4,7 @@ import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.Tracker
+import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -121,10 +122,8 @@ data class DummyTracker(
     ) = Unit
 
     override suspend fun getMangaMetadata(
-        track: tachiyomi.domain.track.model.Track,
-    ): eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata = eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata(
-        0, "test", "test", "test", "test", "test",
-    )
+        track: Track,
+    ): TrackMangaMetadata = TrackMangaMetadata(0, "test", "test", "test", "test", "test")
 
     // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == 2L

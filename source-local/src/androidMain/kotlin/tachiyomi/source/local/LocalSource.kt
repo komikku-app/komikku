@@ -95,10 +95,12 @@ actual class LocalSource(
             // Filter out files that are hidden and is not a folder
             .filter {
                 it.isDirectory &&
-                    /* SY --> */ (
+                    // SY -->
+                    (
                         !it.name.orEmpty().startsWith('.') ||
                             allowLocalSourceHiddenFolders
-                        ) /* SY <-- */
+                        )
+                // SY <--
             }
             .distinctBy { it.name }
             .filter {

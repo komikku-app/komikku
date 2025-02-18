@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package eu.kanade.presentation.manga.components
 
 import androidx.compose.foundation.clickable

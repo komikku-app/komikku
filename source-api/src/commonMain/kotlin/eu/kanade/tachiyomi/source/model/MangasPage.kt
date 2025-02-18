@@ -2,8 +2,7 @@ package eu.kanade.tachiyomi.source.model
 
 import exh.metadata.metadata.RaisedSearchMetadata
 
-/* SY --> */
-open /* SY <-- */ class MangasPage(open val mangas: List<SManga>, open val hasNextPage: Boolean) {
+/* SY --> */ open /* SY <-- */ class MangasPage(open val mangas: List<SManga>, open val hasNextPage: Boolean) {
     // SY -->
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

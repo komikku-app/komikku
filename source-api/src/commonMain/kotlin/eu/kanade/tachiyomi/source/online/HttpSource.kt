@@ -95,8 +95,7 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Headers used for requests.
      */
-    /* SY --> */
-    open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
+    /* SY --> */ open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
 
     /**
      * Default network client for doing requests.

@@ -27,7 +27,9 @@ class CategoriesRestorer(
                     val order = nextOrder++
                     handler.awaitOneExecutable {
                         categoriesQueries.insert(
-                            it.name, order, it.flags,
+                            it.name,
+                            order,
+                            it.flags,
                             // KMK -->
                             hidden = if (it.hidden) 1L else 0L,
                             // KMK <--
