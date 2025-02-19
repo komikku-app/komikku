@@ -39,7 +39,9 @@ fun BrowseSourceToolbar(
     navigateUp: () -> Unit,
     onWebViewClick: () -> Unit,
     onHelpClick: () -> Unit,
-    onSettingsClick: () -> Unit,
+    // KMK -->
+    onSettingsClick: (() -> Unit)?,
+    // KMK <--
     onSearch: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     // KMK -->
@@ -117,7 +119,9 @@ fun BrowseSourceToolbar(
                             }
                         }
                         // SY <--
-                        if (isConfigurableSource) {
+                        // KMK -->
+                        onSettingsClick?.let {
+                            // KMK <--
                             add(
                                 AppBar.OverflowAction(
                                     title = stringResource(MR.strings.action_settings),

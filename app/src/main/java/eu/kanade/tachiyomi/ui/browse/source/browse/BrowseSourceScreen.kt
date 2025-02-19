@@ -46,9 +46,11 @@ import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
+import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
@@ -62,6 +64,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.anyIs
 import exh.source.isEhBasedSource
 import exh.source.isMdBasedSource
 import exh.ui.smartsearch.SmartSearchScreen
@@ -174,7 +177,12 @@ data class BrowseSourceScreen(
 
         // KMK -->
         val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+
+        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
+            screenModel.source.isEhBasedSource() && isHentaiEnabled
         // KMK <--
+
         Scaffold(
             topBar = {
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -215,7 +223,17 @@ data class BrowseSourceScreen(
                             navigateUp = navigateUp,
                             onWebViewClick = onWebViewClick,
                             onHelpClick = onHelpClick,
-                            onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
+                            // KMK -->
+                            onSettingsClick = {
+                                when {
+                                    screenModel.source.isEhBasedSource() && isHentaiEnabled ->
+                                        navigator.push(SettingsEhScreen)
+                                    screenModel.source.anyIs<ConfigurableSource>() ->
+                                        navigator.push(SourcePreferencesScreen(sourceId))
+                                    else -> {}
+                                }
+                            }.takeIf { isConfigurableSource },
+                            // KMK <--
                             onSearch = screenModel::search,
                             // KMK -->
                             toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
