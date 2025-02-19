@@ -408,15 +408,21 @@ class UpdatesScreenModel(
             // KMK -->
             var lastMangaId = -1L
             // KMK <--
-            return items.groupBy { it.update.dateFetch.toLocalDate() }
+            return items
+                // KMK -->
+                .groupBy { it.update.dateFetch.toLocalDate() }
                 .flatMap { groupDate ->
                     groupDate.value.groupBy { it.update.mangaId }
-                        .flatMap { groupManga ->
-                            val list = groupManga.value
-                            list.sortedBy { it.update.dateFetch }
-                                .map { UpdatesUiModel.Item(it, list.size > 1) }
+                        .flatMap { mangaChapters ->
+                            val list = mangaChapters.value
+                            list.sortedWith(
+                                compareBy<UpdatesItem> { it.update.read }
+                                    // This seems sort chapters in ascending order
+                                    .then(compareBy { it.update.dateFetch }),
+                            ).map { UpdatesUiModel.Item(it, list.size > 1) }
                         }
                 }
+                // KMK <--
                 .insertSeparators { before, after ->
                     val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
                     val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
