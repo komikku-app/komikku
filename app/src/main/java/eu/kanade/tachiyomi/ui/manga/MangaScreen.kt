@@ -59,7 +59,7 @@ import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
-import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -70,7 +70,7 @@ import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
-import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
+import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -89,6 +89,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.pagepreview.PagePreviewScreen
 import exh.recs.RecommendsScreen
 import exh.source.MERGED_SOURCE_ID
+import exh.source.anyIs
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
 import exh.ui.metadata.MetadataViewScreen
@@ -274,6 +275,11 @@ class MangaScreen(
         val coverRatio = remember { mutableFloatStateOf(1f) }
         val hazeState = remember { HazeState() }
         val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
+
+        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isConfigurableSource = successState.source.anyIs<ConfigurableSource>() ||
+            successState.source.isEhBasedSource() &&
+            isHentaiEnabled
         // KMK <--
 
         MangaScreen(
@@ -376,14 +382,13 @@ class MangaScreen(
             getMangaState = { screenModel.getManga(initialManga = it) },
             onClickSourceSettingsClicked = {
                 when {
-                    successState.source.isEhBasedSource() -> navigator.push(SettingsEhScreen)
-                    else -> {
-                        val extensionManager = Injekt.get<ExtensionManager>()
-                        val pkgName = extensionManager.getExtensionPackage(successState.manga.source)
-                        pkgName?.let { navigator.push(ExtensionDetailsScreen(it)) }
-                    }
+                    successState.source.isEhBasedSource() && isHentaiEnabled ->
+                        navigator.push(SettingsEhScreen)
+                    successState.source.anyIs<ConfigurableSource>() ->
+                        navigator.push(SourcePreferencesScreen(successState.source.id))
+                    else -> {}
                 }
-            },
+            }.takeIf { isConfigurableSource },
             onRelatedMangasScreenClick = {
                 if (successState.isRelatedMangasFetched == null) {
                     scope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
