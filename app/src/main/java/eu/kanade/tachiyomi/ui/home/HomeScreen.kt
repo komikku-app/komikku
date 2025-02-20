@@ -3,10 +3,7 @@ package eu.kanade.tachiyomi.ui.home
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -61,6 +58,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import soup.compose.material.motion.animation.materialFadeThroughIn
+import soup.compose.material.motion.animation.materialFadeThroughOut
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.NavigationBar
@@ -77,7 +76,7 @@ object HomeScreen : Screen() {
     private val openTabEvent = Channel<Tab>()
     private val showBottomNavEvent = Channel<Boolean>()
 
-    private const val TAB_FADE_DURATION = 600
+    private const val TAB_FADE_DURATION = 200
     private const val TAB_NAVIGATOR_KEY = "HomeTabs"
 
     private val TABS = listOf(
@@ -175,8 +174,11 @@ object HomeScreen : Screen() {
                         AnimatedContent(
                             targetState = tabNavigator.current,
                             transitionSpec = {
-                                fadeIn(animationSpec = tween(durationMillis = TAB_FADE_DURATION)) togetherWith
-                                fadeOut(animationSpec = tween(durationMillis = TAB_FADE_DURATION))
+                                materialFadeThroughIn(
+                                    initialScale = 1f,
+                                    durationMillis = TAB_FADE_DURATION,
+                                ) togetherWith
+                                    materialFadeThroughOut(durationMillis = TAB_FADE_DURATION)
                             },
                             label = "tabContent",
                             contentKey = { it.key },
