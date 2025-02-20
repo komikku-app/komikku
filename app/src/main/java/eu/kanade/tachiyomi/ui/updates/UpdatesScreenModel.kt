@@ -415,11 +415,12 @@ class UpdatesScreenModel(
                     groupDate.value.groupBy { it.update.mangaId }
                         .flatMap { mangaChapters ->
                             val list = mangaChapters.value
-                            list.sortedWith(
-                                compareBy<UpdatesItem> { it.update.read }
-                                    // This seems sort chapters in ascending order
-                                    .then(compareBy { it.update.dateFetch }),
-                            ).map { UpdatesUiModel.Item(it, list.size > 1) }
+                            val (read, unread) = list.partition { it.update.read }
+                            (
+                                unread.sortedBy { it.update.dateFetch } +
+                                    read.sortedByDescending { it.update.dateFetch }
+                                )
+                                .map { UpdatesUiModel.Item(it, list.size > 1) }
                         }
                 }
                 // KMK <--

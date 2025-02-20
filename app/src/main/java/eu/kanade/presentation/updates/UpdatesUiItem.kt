@@ -364,6 +364,6 @@ fun CollapseButton(
 
 private val IndicatorSize = 24.dp
 
-private val UpdateItemPanoramaWidth = 126.dp    // Book cover
+private val UpdateItemPanoramaWidth = 126.dp // Book cover
 private val UpdateItemWidth = 56.dp
 // KMK <--
