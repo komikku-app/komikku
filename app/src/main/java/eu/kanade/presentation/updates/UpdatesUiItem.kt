@@ -233,7 +233,7 @@ private fun UpdatesUiItem(
                 )
             } else {
                 // KMK <--
-                MangaCover.Square(
+                MangaCover.Book(
                     modifier = Modifier
                         // KMK -->
                         .padding(top = MaterialTheme.padding.small)
@@ -364,7 +364,6 @@ fun CollapseButton(
 
 private val IndicatorSize = 24.dp
 
-// private val UpdateItemPanoramaWidth = 126.dp    // Book cover
-private val UpdateItemPanoramaWidth = 96.dp // Square cover
+private val UpdateItemPanoramaWidth = 126.dp    // Book cover
 private val UpdateItemWidth = 56.dp
 // KMK <--
