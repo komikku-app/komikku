@@ -348,10 +348,13 @@ fun CollapseButton(
 ) {
     Box(
         modifier = modifier
-            .size(IndicatorSize),
-        contentAlignment = Alignment.Center,
+            .size(IndicatorSize + MaterialTheme.padding.extraSmall),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        IconButton(onClick = { collapseToggle() }) {
+        IconButton(
+            onClick = { collapseToggle() },
+            modifier = Modifier.size(IndicatorSize),
+        ) {
             val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_caret_down)
             Icon(
                 painter = rememberAnimatedVectorPainter(image, !expanded),
@@ -362,7 +365,7 @@ fun CollapseButton(
     }
 }
 
-private val IndicatorSize = 24.dp
+private val IndicatorSize = MaterialTheme.padding.large
 
 private val UpdateItemPanoramaWidth = 126.dp // Book cover
 private val UpdateItemWidth = 56.dp
