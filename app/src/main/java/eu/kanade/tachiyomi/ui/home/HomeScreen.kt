@@ -128,7 +128,11 @@ object HomeScreen : Screen() {
                                 enter = expandVertically(),
                                 exit = shrinkVertically(),
                             ) {
-                                val filteredTabs = TABS.fastFilter { it.isEnabled() }
+                                // KMK -->
+                                val filteredTabs = TABS
+                                    // SY -->
+                                    .fastFilter { it.isEnabled() }
+                                // SY <--
                                 var flickOffsetX by remember { mutableFloatStateOf(0f) }
 
                                 NavigationBar(
@@ -149,14 +153,12 @@ object HomeScreen : Screen() {
                                                 flickOffsetX = 0F
 
                                                 tabNavigator.current = filteredTabs.getOrNull(newIndex) ?: tabNavigator.current
-                                            }
+                                            },
                                         )
-                                    }
+                                    },
                                 ) {
-                                    TABS
-                                        // SY -->
-                                        .fastFilter { it.isEnabled() }
-                                        // SY <--
+                                    filteredTabs
+                                        // KMK <--
                                         .fastForEach {
                                             NavigationBarItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
                                         }
