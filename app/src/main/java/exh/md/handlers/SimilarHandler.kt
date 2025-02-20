@@ -34,7 +34,8 @@ class SimilarHandler(
         }
 
         return MetadataMangasPage(
-            mangaList, false,
+            mangaList,
+            false,
             List(mangaList.size) {
                 MangaDexSearchMetadata().also { it.relation = MangaDexRelation.SIMILAR }
             },

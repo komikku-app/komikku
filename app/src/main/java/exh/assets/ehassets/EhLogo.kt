@@ -12,7 +12,8 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import exh.assets.EhAssets
 
-public val EhAssets.EhLogo: ImageVector
+@Suppress("UnusedReceiverParameter")
+val EhAssets.EhLogo: ImageVector
     get() {
         if (_ehLogo != null) {
             return _ehLogo!!

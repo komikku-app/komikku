@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package exh.source
 
 import eu.kanade.tachiyomi.source.Source

@@ -94,8 +94,10 @@ class ChapterLoader(
         val dbChapter = chapter.chapter
         val isDownloaded = downloadManager.isChapterDownloaded(
             chapterName = dbChapter.name,
-            chapterScanlator = dbChapter.scanlator, /* SY --> */
-            mangaTitle = manga.ogTitle /* SY <-- */,
+            chapterScanlator = dbChapter.scanlator,
+            // SY -->
+            mangaTitle = manga.ogTitle,
+            // SY <--
             sourceId = manga.source,
             skipCache = true,
         )

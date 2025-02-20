@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package exh.source
 
 object BlacklistedSources {

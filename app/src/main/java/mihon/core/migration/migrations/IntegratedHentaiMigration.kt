@@ -9,8 +9,11 @@ class IntegratedHentaiMigration : Migration {
     override val version: Float = 71f
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
-        val unsortedPreferences = migrationContext.get<UnsortedPreferences>() ?: return@withIOContext false
-        unsortedPreferences.isHentaiEnabled().set(true)
+        val isHentaiEnabled = migrationContext.get<UnsortedPreferences>()?.isHentaiEnabled()
+            ?: return@withIOContext false
+        if (!isHentaiEnabled.isSet() || isHentaiEnabled.get()) {
+            isHentaiEnabled.set(true)
+        }
         return@withIOContext true
     }
 }

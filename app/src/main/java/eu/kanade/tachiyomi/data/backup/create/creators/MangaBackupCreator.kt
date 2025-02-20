@@ -48,7 +48,8 @@ class MangaBackupCreator(
                 getCustomMangaInfo.get(manga.id)
             } else {
                 null
-            }, /* SY <-- */
+            },
+            // SY <--
         )
 
         // SY -->

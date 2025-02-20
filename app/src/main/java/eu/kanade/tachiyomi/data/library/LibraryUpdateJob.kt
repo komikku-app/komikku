@@ -339,7 +339,21 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     else -> true
                 }
             }
-            .sortedBy { it.manga.title }
+            .sortedWith(
+                compareByDescending<LibraryManga> {
+                    // Prefer manga updating today
+                    it.manga.nextUpdate <= fetchWindowUpperBound
+                }.thenByDescending {
+                    // Prefer manga the user has started
+                    it.lastRead > 0L
+                }.thenByDescending {
+                    // Prefer manga that the user has most recently read
+                    it.lastRead
+                }.thenByDescending {
+                    // Default sorting
+                    it.manga.title
+                },
+            )
 
         notifier.showQueueSizeWarningNotificationIfNeeded(mangaToUpdate)
 
@@ -628,7 +642,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 count++
                 notifier.showProgressNotification(
-                    listOf(Manga.create().copy(ogTitle = networkManga.title)), count, size,
+                    listOf(Manga.create().copy(ogTitle = networkManga.title)),
+                    count,
+                    size,
                 )
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
