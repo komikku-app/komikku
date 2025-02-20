@@ -408,15 +408,22 @@ class UpdatesScreenModel(
             // KMK -->
             var lastMangaId = -1L
             // KMK <--
-            return items.groupBy { it.update.dateFetch.toLocalDate() }
+            return items
+                // KMK -->
+                .groupBy { it.update.dateFetch.toLocalDate() }
                 .flatMap { groupDate ->
                     groupDate.value.groupBy { it.update.mangaId }
-                        .flatMap { groupManga ->
-                            val list = groupManga.value
-                            list.sortedBy { it.update.dateFetch }
+                        .flatMap { mangaChapters ->
+                            val list = mangaChapters.value
+                            val (read, unread) = list.partition { it.update.read }
+                            (
+                                unread.sortedBy { it.update.dateFetch } +
+                                    read.sortedByDescending { it.update.dateFetch }
+                                )
                                 .map { UpdatesUiModel.Item(it, list.size > 1) }
                         }
                 }
+                // KMK <--
                 .insertSeparators { before, after ->
                     val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
                     val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
@@ -469,5 +476,6 @@ data class UpdatesItem(
 }
 
 // KMK -->
+/** String to identify which manga's update on which day it is collapsing */
 fun UpdatesWithRelations.groupByDateAndManga() = "${dateFetch.toLocalDate().toEpochDay()}-$mangaId"
 // KMK <--

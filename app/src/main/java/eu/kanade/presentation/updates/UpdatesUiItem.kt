@@ -1,5 +1,8 @@
 package eu.kanade.presentation.updates
 
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -46,6 +47,7 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
@@ -200,7 +202,7 @@ private fun UpdatesUiItem(
             )
             .padding(
                 // KMK -->
-                vertical = MaterialTheme.padding.extraSmall,
+                vertical = if (isLeader) MaterialTheme.padding.extraSmall else 0.dp,
                 // KMK <--
                 horizontal = MaterialTheme.padding.medium,
             ),
@@ -262,13 +264,17 @@ private fun UpdatesUiItem(
                 .padding(horizontal = MaterialTheme.padding.medium)
                 .weight(1f),
         ) {
-            Text(
-                text = update.mangaTitle,
-                maxLines = 1,
-                style = MaterialTheme.typography.bodyMedium,
-                color = LocalContentColor.current.copy(alpha = textAlpha),
-                overflow = TextOverflow.Ellipsis,
-            )
+            // KMK -->
+            if (isLeader) {
+                // KMK <--
+                Text(
+                    text = update.mangaTitle,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = LocalContentColor.current.copy(alpha = textAlpha),
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 var textHeight by remember { mutableIntStateOf(0) }
@@ -342,12 +348,16 @@ fun CollapseButton(
 ) {
     Box(
         modifier = modifier
-            .size(IndicatorSize),
-        contentAlignment = Alignment.Center,
+            .size(IndicatorSize + MaterialTheme.padding.extraSmall),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        IconButton(onClick = { collapseToggle() }) {
+        IconButton(
+            onClick = { collapseToggle() },
+            modifier = Modifier.size(IndicatorSize),
+        ) {
+            val image = AnimatedImageVector.animatedVectorResource(R.drawable.anim_caret_down)
             Icon(
-                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                painter = rememberAnimatedVectorPainter(image, !expanded),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
             )
@@ -355,7 +365,8 @@ fun CollapseButton(
     }
 }
 
-private val IndicatorSize = 18.dp
-private val UpdateItemPanoramaWidth = 126.dp
+private val IndicatorSize = MaterialTheme.padding.large
+
+private val UpdateItemPanoramaWidth = 126.dp // Book cover
 private val UpdateItemWidth = 56.dp
 // KMK <--
