@@ -257,8 +257,7 @@ object SettingsDataScreen : SearchableSettings {
 
                 // Automatic backups
                 Preference.PreferenceItem.ListPreference(
-                    pref = backupPreferences.backupInterval(),
-                    title = stringResource(MR.strings.pref_backup_interval),
+                    preference = backupPreferences.backupInterval(),
                     entries = persistentMapOf(
                         0 to stringResource(MR.strings.off),
                         1 to stringResource(MR.strings.update_1hour),
@@ -269,6 +268,7 @@ object SettingsDataScreen : SearchableSettings {
                         48 to stringResource(MR.strings.update_48hour),
                         168 to stringResource(MR.strings.update_weekly),
                     ),
+                    title = stringResource(MR.strings.pref_backup_interval),
                     onValueChanged = {
                         BackupCreateJob.setupTask(context, it)
                         true
@@ -280,7 +280,7 @@ object SettingsDataScreen : SearchableSettings {
                 ),
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = backupPreferences.showRestoringProgressBanner(),
+                    preference = backupPreferences.showRestoringProgressBanner(),
                     title = stringResource(KMR.strings.pref_show_restoring_progress_banner),
                 ),
                 // KMK <--
@@ -358,7 +358,7 @@ object SettingsDataScreen : SearchableSettings {
                 ),
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.autoClearChapterCache(),
+                    preference = libraryPreferences.autoClearChapterCache(),
                     title = stringResource(MR.strings.pref_auto_clear_chapter_cache),
                 ),
             ),
@@ -372,13 +372,13 @@ object SettingsDataScreen : SearchableSettings {
                 title = stringResource(SYMR.strings.pref_sync_service_category),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.ListPreference(
-                        pref = syncPreferences.syncService(),
-                        title = stringResource(SYMR.strings.pref_sync_service),
+                        preference = syncPreferences.syncService(),
                         entries = persistentMapOf(
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                         ),
+                        title = stringResource(SYMR.strings.pref_sync_service),
                         onValueChanged = { true },
                     ),
                 ),
@@ -430,7 +430,7 @@ object SettingsDataScreen : SearchableSettings {
             getAutomaticSyncGroup(syncPreferences),
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(
-                pref = syncPreferences.showSyncingProgressBanner(),
+                preference = syncPreferences.showSyncingProgressBanner(),
                 title = stringResource(KMR.strings.pref_show_syncing_progress_banner),
             ),
             // KMK <--
@@ -523,9 +523,9 @@ object SettingsDataScreen : SearchableSettings {
         val scope = rememberCoroutineScope()
         return listOf(
             Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.clientHost(),
                 title = stringResource(SYMR.strings.pref_sync_host),
                 subtitle = stringResource(SYMR.strings.pref_sync_host_summ),
-                pref = syncPreferences.clientHost(),
                 onValueChanged = { newValue ->
                     scope.launch {
                         // Trim spaces at the beginning and end, then remove trailing slash if present
@@ -537,9 +537,9 @@ object SettingsDataScreen : SearchableSettings {
                 },
             ),
             Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.clientAPIKey(),
                 title = stringResource(SYMR.strings.pref_sync_api_key),
                 subtitle = stringResource(SYMR.strings.pref_sync_api_key_summ),
-                pref = syncPreferences.clientAPIKey(),
             ),
         )
     }
@@ -586,8 +586,7 @@ object SettingsDataScreen : SearchableSettings {
             title = stringResource(SYMR.strings.pref_sync_automatic_category),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
-                    pref = syncIntervalPref,
-                    title = stringResource(SYMR.strings.pref_sync_interval),
+                    preference = syncIntervalPref,
                     entries = persistentMapOf(
                         0 to stringResource(MR.strings.off),
                         30 to stringResource(SYMR.strings.update_30min),
@@ -599,6 +598,7 @@ object SettingsDataScreen : SearchableSettings {
                         2880 to stringResource(MR.strings.update_48hour),
                         10080 to stringResource(MR.strings.update_weekly),
                     ),
+                    title = stringResource(SYMR.strings.pref_sync_interval),
                     onValueChanged = {
                         SyncDataJob.setupTask(context, it)
                         true
