@@ -1,5 +1,5 @@
 name: Benchmark Builder
-# Manually build a dev benchmark on a tag
+# Manually build a benchmark on a tag
 
 on:
   # Dispatch or Manual triggers
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       VERSION_TAG: ${{ steps.get_tag.outputs.VERSION_TAG }}
-      ARTIFACTS_PREFIX: dev/benchmark/app-dev
+      ARTIFACTS_PREFIX: benchmark/app
       TAG_NAME: benchmark-${{ steps.tag_name.outputs.TAG_NAME }}
     steps:
       - name: Get tag name (${{ github.ref }})
@@ -83,15 +83,15 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assembleDevBenchmark -Pandroid.signingConfig=debug
+        run: ./gradlew assembleBenchmark
 
       - name: Run unit tests
-        run: ./gradlew testReleaseUnitTest testDevBenchmarkUnitTest
+        run: ./gradlew testReleaseUnitTest
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
         with:
-          releaseDirectory: app/build/outputs/apk/dev/benchmark
+          releaseDirectory: app/build/outputs/apk/benchmark
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
