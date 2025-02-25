@@ -84,7 +84,7 @@ interface Tracker {
 
     suspend fun setRemoteFinishDate(track: Track, epochMillis: Long)
 
-    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata?
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
 
     // KMK -->
     fun hasNotStartedReading(status: Long): Boolean
