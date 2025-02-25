@@ -110,11 +110,11 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
     suspend fun login(code: String) {
         try {
             val oauth = api.accessToken(code)
+            interceptor.newAuth(oauth)
             // Users can set a 'username' (not nickname) once which effectively
             // replaces the string field ID in certain queries.
             // If no username is set, the API returns the user ID as a strings
             val username = api.getUsername()
-            interceptor.newAuth(oauth)
             saveCredentials(username, oauth.accessToken)
         } catch (_: Throwable) {
             logout()
