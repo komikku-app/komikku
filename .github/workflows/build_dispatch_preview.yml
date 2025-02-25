@@ -1,5 +1,5 @@
 name: Remote Dispatch Preview Build
-# Manually send a dispatch to build standard preview (master) or dev preview (other refs)
+# Manually send a dispatch to build preview
 
 on:
   # Dispatch or Manual triggers
