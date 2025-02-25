@@ -72,7 +72,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
         return api.search(query)
     }
 
-    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return api.getMangaMetadata(track)
     }
 
