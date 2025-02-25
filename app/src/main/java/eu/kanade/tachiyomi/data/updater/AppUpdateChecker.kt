@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.data.updater
 import android.content.Context
 import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
@@ -35,7 +34,6 @@ class AppUpdateChecker(
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
                     isPreview = BuildConfig.PREVIEW || peekIntoPreview,
-                    isThirdParty = context.isInstalledFromFDroid(),
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
                     repository = getGithubRepo(peekIntoPreview),
@@ -53,10 +51,6 @@ class AppUpdateChecker(
                         // KMK <--
                         AppUpdateNotifier(context).promptUpdate(result.release)
                     }
-
-                    is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
-                        context,
-                    ).promptFdroidUpdate()
 
                     else -> {}
                 }
@@ -85,7 +79,6 @@ class AppUpdateChecker(
             getApplicationRelease.awaitReleaseNotes(
                 GetApplicationRelease.Arguments(
                     isPreview = BuildConfig.PREVIEW || peekIntoPreview,
-                    isThirdParty = context.isInstalledFromFDroid(),
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
                     repository = getGithubRepo(peekIntoPreview),
