@@ -18,6 +18,7 @@ data class DummyTracker(
     override val id: Long,
     override val name: String,
     override val supportsReadingDates: Boolean = false,
+    override val supportsPrivateTracking: Boolean = false,
     override val isLoggedIn: Boolean = false,
     override val isLoggedInFlow: Flow<Boolean> = flowOf(false),
     val valLogoColor: Int = Color.rgb(18, 25, 35),
@@ -121,9 +122,16 @@ data class DummyTracker(
         epochMillis: Long,
     ) = Unit
 
+    override suspend fun setRemotePrivate(
+        track: eu.kanade.tachiyomi.data.database.models.Track,
+        private: Boolean,
+    ) = Unit
+
+    // SY -->
     override suspend fun getMangaMetadata(
         track: Track,
     ): TrackMangaMetadata = TrackMangaMetadata(0, "test", "test", "test", "test", "test")
+    // SY <--
 
     // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == 2L
