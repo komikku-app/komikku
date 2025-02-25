@@ -23,6 +23,8 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
 
     private val api by lazy { BangumiApi(id, client, interceptor) }
 
+    override val supportsPrivateTracking: Boolean = true
+
     override fun getScoreList(): ImmutableList<String> = SCORE_LIST
 
     override fun displayScore(track: DomainTrack): String {
@@ -50,7 +52,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
     override suspend fun bind(track: Track, hasReadChapters: Boolean): Track {
         val statusTrack = api.statusLibManga(track, getUsername())
         return if (statusTrack != null) {
-            track.copyPersonalFrom(statusTrack)
+            track.copyPersonalFrom(statusTrack, copyRemotePrivate = false)
             track.library_id = statusTrack.library_id
             track.score = statusTrack.score
             track.last_chapter_read = statusTrack.last_chapter_read

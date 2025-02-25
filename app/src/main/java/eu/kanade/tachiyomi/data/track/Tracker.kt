@@ -23,6 +23,8 @@ interface Tracker {
     // Application and remote support for reading dates
     val supportsReadingDates: Boolean
 
+    val supportsPrivateTracking: Boolean
+
     @ColorInt
     fun getLogoColor(): Int
 
@@ -84,7 +86,11 @@ interface Tracker {
 
     suspend fun setRemoteFinishDate(track: Track, epochMillis: Long)
 
+    suspend fun setRemotePrivate(track: Track, private: Boolean)
+
+    // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
+    // SY <--
 
     // KMK -->
     fun hasNotStartedReading(status: Long): Boolean
