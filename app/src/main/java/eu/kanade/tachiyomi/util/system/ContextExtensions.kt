@@ -5,12 +5,16 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.browser.customtabs.CustomTabsService.ACTION_CUSTOM_TABS_CONNECTION
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import com.hippo.unifile.UniFile
@@ -21,6 +25,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.delegate.ThemingDelegate
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.lang.truncateCenter
+import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
 import logcat.LogPriority
 import rikka.sui.Sui
 import tachiyomi.core.common.i18n.stringResource
@@ -63,17 +68,69 @@ fun Context.openInBrowser(url: String, forceDefaultBrowser: Boolean = false) {
 
 fun Context.openInBrowser(uri: Uri, forceDefaultBrowser: Boolean = false) {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-            // Force default browser so that verified extensions don't re-open Tachiyomi
-            if (forceDefaultBrowser) {
-                defaultBrowserPackageName()?.let { setPackage(it) }
+        val intent = CustomTabsIntent.Builder()
+            .setDefaultColorSchemeParams(
+                CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(getResourceColor(R.attr.colorPrimaryVariant))
+                    .build(),
+            )
+            .build()
+        if (forceDefaultBrowser) {
+            val packages = getCustomTabsPackages().maxByOrNull { it.preferredOrder }
+            val processName = packages?.activityInfo?.processName
+            if (processName == null) {
+                intent.intent.`package` = processName
             }
         }
-        startActivity(intent)
+        intent.launchUrl(this, uri)
+//        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+//            // Force default browser so that verified extensions don't re-open Tachiyomi
+//            if (forceDefaultBrowser) {
+//                defaultBrowserPackageName()?.let { setPackage(it) }
+//            }
+//        }
+//        startActivity(intent)
     } catch (e: Exception) {
         toast(e.message)
     }
 }
+
+/**
+ * Returns a list of packages that support Custom Tabs.
+ */
+fun Context.getCustomTabsPackages(): ArrayList<ResolveInfo> {
+    // Get default VIEW intent handler.
+    val activityIntent = Intent(Intent.ACTION_VIEW, "https://www.example.com".toUri())
+    // Get all apps that can handle VIEW intents.
+    val resolvedActivityList = packageManager.queryIntentActivitiesCompat(activityIntent, 0)
+    val packagesSupportingCustomTabs = ArrayList<ResolveInfo>()
+    for (info in resolvedActivityList) {
+        val serviceIntent = Intent()
+        serviceIntent.action = ACTION_CUSTOM_TABS_CONNECTION
+        serviceIntent.setPackage(info.activityInfo.packageName)
+        // Check if this package also resolves the Custom Tabs service.
+        if (packageManager.resolveServiceCompat(serviceIntent, 0) != null) {
+            packagesSupportingCustomTabs.add(info)
+        }
+    }
+    return packagesSupportingCustomTabs
+}
+
+fun PackageManager.resolveServiceCompat(intent: Intent, flags: Int): ResolveInfo? =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        resolveService(intent, PackageManager.ResolveInfoFlags.of(flags.toLong()))
+    } else {
+        @Suppress("DEPRECATION")
+        resolveService(intent, flags)
+    }
+
+fun PackageManager.queryIntentActivitiesCompat(intent: Intent, flags: Int): List<ResolveInfo> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(flags.toLong()))
+    } else {
+        @Suppress("DEPRECATION")
+        queryIntentActivities(intent, flags)
+    }
 
 private fun Context.defaultBrowserPackageName(): String? {
     val browserIntent = Intent(Intent.ACTION_VIEW, "http://".toUri())

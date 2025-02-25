@@ -11,6 +11,7 @@ voyager = "1.0.1"
 spotless = "7.0.2"
 ktlint-core = "1.5.0"
 firebase-bom = "33.9.0"
+browser-version = "1.8.0"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.4"
@@ -104,6 +105,7 @@ voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", vers
 
 spotless-gradle = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 ktlint-core = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint-core" }
+browser = { group = "androidx.browser", name = "browser", version.ref = "browser-version" }
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
