@@ -1,10 +1,6 @@
-@file:Suppress("ChromeOsAbiSupport")
-
 import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
-import java.io.FileInputStream
-import java.util.Properties
 
 plugins {
     id("mihon.android.application")
@@ -15,14 +11,15 @@ plugins {
     id("com.github.ben-manes.versions")
 }
 
-if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
+val includeAnalytics = project.hasProperty("with-analytics")
+val includeUpdater = project.hasProperty("with-updater")
+
+if (includeAnalytics) {
     pluginManager.apply {
         apply(libs.plugins.google.services.get().pluginId)
         apply(libs.plugins.firebase.crashlytics.get().pluginId)
     }
 }
-
-val supportedAbis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 android {
     namespace = "eu.kanade.tachiyomi"
@@ -36,110 +33,110 @@ android {
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
-        buildConfigField("boolean", "INCLUDE_UPDATER", "false")
+        buildConfigField("boolean", "INCLUDE_ANALYTICS", "$includeAnalytics")
+        buildConfigField("boolean", "INCLUDE_UPDATER", "$includeUpdater")
         buildConfigField("boolean", "PREVIEW", "false")
 
-        ndk {
-            abiFilters += supportedAbis
-        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        val debug by getting {
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-${getCommitCount()}"
+            isPseudoLocalesEnabled = true
+        }
+        val release by getting {
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+        }
+        create("releaseTest") {
+            initWith(release)
+
+            applicationIdSuffix = ".rt"
+            isMinifyEnabled = false
+            isShrinkResources = false
+
+            matchingFallbacks.add(release.name)
+        }
+        create("foss") {
+            initWith(release)
+
+            applicationIdSuffix = ".t-foss"
+
+            matchingFallbacks.add(release.name)
+        }
+        create("preview") {
+            initWith(release)
+
+            applicationIdSuffix = ".beta"
+
+            versionNameSuffix = debug.versionNameSuffix
+            signingConfig = debug.signingConfig
+
+            matchingFallbacks.add(release.name)
+
+            buildConfigField("boolean", "PREVIEW", "true")
+        }
+        create("benchmark") {
+            initWith(release)
+
+            isDebuggable = false
+            isProfileable = true
+            versionNameSuffix = "${debug.versionNameSuffix}-benchmark"
+            applicationIdSuffix = ".benchmark"
+
+            signingConfig = debug.signingConfig
+
+            matchingFallbacks.add(release.name)
+        }
+    }
+
+    sourceSets {
+        val analyticsDir = if (includeAnalytics) "analytics-firebase" else "analytics-firebase-noop"
+        getByName("main").kotlin.srcDirs("src/$analyticsDir/kotlin")
+        getByName("preview").res.srcDirs("src/beta/res")
+        getByName("benchmark").res.srcDirs("src/debug/res")
     }
 
     splits {
         abi {
             isEnable = true
-            reset()
-            include(*supportedAbis.toTypedArray())
             isUniversalApk = true
-        }
-    }
-
-    signingConfigs {
-        create("preview") {
-            storeFile = rootProject.file(readPropertyFromLocalProperties("keystore") ?: "keystore.jks")
-            storePassword = readPropertyFromLocalProperties("storePassword")
-            keyAlias = readPropertyFromLocalProperties("keyAlias")
-            keyPassword = readPropertyFromLocalProperties("keyPassword")
-        }
-    }
-
-    buildTypes {
-        named("debug") {
-            versionNameSuffix = "-${getCommitCount()}"
-            applicationIdSuffix = ".debug"
-            isPseudoLocalesEnabled = true
-        }
-        create("releaseTest") {
-            applicationIdSuffix = ".rt"
-            // isMinifyEnabled = true
-            // isShrinkResources = true
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
-            matchingFallbacks.add("release")
-        }
-        named("release") {
-            isShrinkResources = true
-            isMinifyEnabled = true
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
-        }
-        create("preview") {
-            initWith(getByName("release"))
-            buildConfigField("boolean", "PREVIEW", "true")
-
-            matchingFallbacks.add("release")
-            versionNameSuffix = "-${getCommitCount()}"
-            applicationIdSuffix = ".beta"
-        }
-        // Profilers build, overwrite dev's signing configuration by 'debug' key then re-sign with GitHub's workflow
-        create("benchmark") {
-            initWith(getByName("release"))
-
-            signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks.add("release")
-            isDebuggable = false
-            isProfileable = true
-            versionNameSuffix = "-${getCommitCount()}-benchmark"
-            applicationIdSuffix = ".benchmark"
-        }
-    }
-
-    sourceSets {
-        getByName("preview").res.srcDirs("src/beta/res")
-        getByName("benchmark").res.srcDirs("src/debug/res")
-    }
-
-    flavorDimensions.add("default")
-
-    productFlavors {
-        // Include Google service & build unsigned, for GitHub workflow build
-        create("standard") {
-            buildConfigField("boolean", "INCLUDE_UPDATER", "true")
-            dimension = "default"
-        }
-        create("fdroid") {
-            dimension = "default"
-        }
-        // Signed, dev build with Android Studio if it's not a debug build
-        create("dev") {
-            dimension = "default"
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
 
     packaging {
-        resources.excludes.addAll(
-            listOf(
+        jniLibs {
+            keepDebugSymbols += listOf(
+                "libandroidx.graphics.path",
+                "libarchive-jni",
+                "libconscrypt_jni",
+                "libimagedecoder",
+                "libquickjs",
+                "libsqlite3x",
+            )
+                .map { "**/$it.so" }
+        }
+        resources {
+            excludes += setOf(
                 "kotlin-tooling-metadata.json",
-                "META-INF/DEPENDENCIES",
                 "LICENSE.txt",
-                "META-INF/LICENSE",
+                "META-INF/**/*.properties",
                 "META-INF/**/LICENSE.txt",
                 "META-INF/*.properties",
-                "META-INF/**/*.properties",
-                "META-INF/README.md",
-                "META-INF/NOTICE",
-                "META-INF/INDEX.LIST",
                 "META-INF/*.version",
-            ),
-        )
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+                "META-INF/README.md",
+            )
+        }
     }
 
     dependenciesInfo {
@@ -303,9 +300,11 @@ dependencies {
     implementation(libs.logcat)
 
     // Crash reports/analytics
-    "standardImplementation"(platform(libs.firebase.bom))
-    "standardImplementation"(libs.firebase.analytics)
-    "standardImplementation"(libs.firebase.crashlytics)
+    if (includeAnalytics) {
+        implementation(platform(libs.firebase.bom))
+        implementation(libs.firebase.analytics)
+        implementation(libs.firebase.crashlytics)
+    }
 
     // Shizuku
     implementation(libs.bundles.shizuku)
@@ -354,17 +353,4 @@ buildscript {
     dependencies {
         classpath(kotlinx.gradle)
     }
-}
-
-// Config local store's signing key
-fun readPropertyFromLocalProperties(propertyName: String): String? {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        val properties = Properties()
-        FileInputStream(localPropertiesFile).use { inputStream ->
-            properties.load(inputStream)
-        }
-        return properties.getProperty(propertyName)
-    }
-    return null // Property not found
 }
