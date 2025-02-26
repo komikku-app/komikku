@@ -15,7 +15,7 @@ class ReorderFeed(
 
     private val mutex = Mutex()
 
-    suspend fun changeOrder(feed: FeedSavedSearch, newOrder: Int, global: Boolean = true) = withNonCancellableContext {
+    suspend fun changeOrder(feed: FeedSavedSearch, newIndex: Int, global: Boolean = true) = withNonCancellableContext {
         mutex.withLock {
             val feeds = if (global) {
                 feedSavedSearchRepository.getGlobal()
@@ -30,10 +30,8 @@ class ReorderFeed(
                 return@withNonCancellableContext Result.Unchanged
             }
 
-            val newPosition = currentIndex + newOrder
-
             try {
-                feeds.add(newPosition, feeds.removeAt(currentIndex))
+                feeds.add(newIndex, feeds.removeAt(currentIndex))
 
                 val updates = feeds.mapIndexed { index, feed ->
                     FeedSavedSearchUpdate(

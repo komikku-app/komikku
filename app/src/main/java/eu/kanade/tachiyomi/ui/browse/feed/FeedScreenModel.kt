@@ -218,9 +218,9 @@ open class FeedScreenModel(
     }
 
     // KMK -->
-    fun changeOrder(feed: FeedSavedSearch, newOrder: Int) {
+    fun changeOrder(feed: FeedSavedSearch, newIndex: Int) {
         screenModelScope.launch {
-            reorderFeed.changeOrder(feed, newOrder)
+            reorderFeed.changeOrder(feed, newIndex)
         }
     }
 

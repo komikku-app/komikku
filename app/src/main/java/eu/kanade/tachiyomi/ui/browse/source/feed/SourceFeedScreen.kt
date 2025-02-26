@@ -105,7 +105,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 SourceFeedOrderScreen(
                     state = state,
                     onClickDelete = screenModel::openDeleteFeed,
-                    changeOrder = screenModel::changeOrder,
+                    onChangeOrder = screenModel::changeOrder,
                     onClickSortAlphabetically = {
                         screenModel.showDialog(SourceFeedScreenModel.Dialog.SortAlphabetically)
                     },
