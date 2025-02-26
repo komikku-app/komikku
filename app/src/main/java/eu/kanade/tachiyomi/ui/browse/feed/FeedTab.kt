@@ -142,7 +142,7 @@ fun feedTab(
                     FeedOrderScreen(
                         state = state,
                         onClickDelete = screenModel::openDeleteDialog,
-                        changeOrder = screenModel::changeOrder,
+                        onChangeOrder = screenModel::changeOrder,
                     )
                 } else {
                     // KMK <--
