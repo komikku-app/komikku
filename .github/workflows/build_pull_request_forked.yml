@@ -77,7 +77,7 @@ jobs:
           mv app/build/outputs/apk/dev/debug/app-dev-universal-debug.apk Komikku-$version_tag-d$commit_count.apk
 
       - name: Upload APK
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
