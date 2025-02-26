@@ -220,6 +220,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         initializeMigrator()
     }
 
+
     private fun initializeMigrator() {
         val preferenceStore = Injekt.get<PreferenceStore>()
         // SY -->
