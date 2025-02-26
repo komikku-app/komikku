@@ -30,7 +30,6 @@ jobs:
   build:
     name: Build app
     runs-on: ubuntu-latest
-    if: github.repository == github.event.pull_request.head.repo.full_name
 
     steps:
       - name: Clone repo
