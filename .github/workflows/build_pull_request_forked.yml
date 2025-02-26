@@ -58,10 +58,10 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assembleDevDebug
+        run: ./gradlew assembleRelease
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest testDevDebugUnitTest
+        run: ./gradlew testReleaseUnitTest
 
       - name: Rename apk
         id: current_commit
@@ -74,7 +74,7 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/dev/debug/app-dev-universal-debug.apk Komikku-$version_tag-d$commit_count.apk
+          mv app/build/outputs/apk/release/app-universal-release-unsigned.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
