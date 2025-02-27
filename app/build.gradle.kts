@@ -68,7 +68,6 @@ android {
             versionNameSuffix = "-${getCommitCount()}"
             applicationIdSuffix = ".debug"
             isPseudoLocalesEnabled = true
-            buildConfigField("boolean", "INCLUDE_UPDATER", "true")
         }
         create("releaseTest") {
             applicationIdSuffix = ".rt"
