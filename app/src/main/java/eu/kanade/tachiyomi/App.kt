@@ -58,6 +58,7 @@ import eu.kanade.tachiyomi.di.SYPreferenceModule
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
+import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
@@ -359,19 +360,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         )
 
         xLogD("Application booting...")
-        xLogD(
-            """
-                App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
-                Build version: ${BuildConfig.COMMIT_COUNT}
-                Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
-                Android build ID: ${Build.DISPLAY}
-                Device brand: ${Build.BRAND}
-                Device manufacturer: ${Build.MANUFACTURER}
-                Device name: ${Build.DEVICE}
-                Device model: ${Build.MODEL}
-                Device product name: ${Build.PRODUCT}
-            """.trimIndent(),
-        )
+        xLogD(CrashLogUtil(applicationContext).getDebugInfo())
     }
 
     private inner class DisableIncognitoReceiver : BroadcastReceiver() {
