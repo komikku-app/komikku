@@ -11,7 +11,7 @@ enum class DebugToggles(val default: Boolean) {
     ENABLE_EXH_ROOT_REDIRECT(true),
 
     // Enable debug overlay (only available in debug builds)
-    ENABLE_DEBUG_OVERLAY(true),
+    ENABLE_DEBUG_OVERLAY(false),
 
     // Convert non-root galleries into root galleries when loading them
     PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS(true),
