@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   prepare-build:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
     outputs:
       VERSION_TAG: ${{ steps.get_tag.outputs.VERSION_TAG }}
       CURRENT_SHA: ${{ steps.current_commit.outputs.CURRENT_SHA }}
@@ -85,7 +85,7 @@ jobs:
 
   build-app:
     name: Build release app
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
     needs: prepare-build
     if: startsWith(github.ref, 'refs/tags/v') && github.repository == 'komikku-app/komikku'
     steps:
@@ -143,7 +143,7 @@ jobs:
           path: app/build/outputs/mapping/release
 
   release-app:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
     needs:
       - prepare-build
       - build-app
@@ -158,13 +158,15 @@ jobs:
           ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
 
       - name: Sign APK
-        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
+        uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
           releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '35.0.1'
 
       - name: Get SHA & clean up build artifacts
         id: get_sha

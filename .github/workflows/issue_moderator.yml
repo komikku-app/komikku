@@ -8,7 +8,7 @@ on:
 
 jobs:
   moderate:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
     steps:
       - name: Moderate issues
         uses: tachiyomiorg/issue-moderator-action@32a31ab12ad6e68ebf4c65408f47bef132d4fd3c # v2.6.1
