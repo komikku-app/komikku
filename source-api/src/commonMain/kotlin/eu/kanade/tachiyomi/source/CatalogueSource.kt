@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.source
 
-import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
@@ -8,8 +7,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import logcat.LogPriority
-import tachiyomi.core.common.util.system.logcat
 
 /**
  * A basic interface for creating a source. It could be an online source, a local source, etc.
@@ -125,15 +122,9 @@ interface CatalogueSource : Source {
         runCatching { fetchRelatedMangaList(manga) }
             .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
             .onFailure { e ->
-                @Suppress("KotlinConstantConditions")
-                if (BuildConfig.BUILD_TYPE == "release") {
-                    logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
-                } else {
-                    throw UnsupportedOperationException(
-                        "Extension doesn't support site's related entries," +
-                            " please report an issue to Komikku.",
-                    )
-                }
+                throw Exception(
+                    "Extension '$name' - getRelatedMangaListByExtension.\n$e",
+                )
             }
     }
 
@@ -200,7 +191,9 @@ interface CatalogueSource : Source {
                     }
                         .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
                         .onFailure { e ->
-                            logcat(LogPriority.ERROR, e) { "## getRelatedMangaListBySearch: $e" }
+                            throw Exception(
+                                "Extension '$name' - getRelatedMangaListBySearch.\n$e",
+                            )
                         }
                 }
             }
