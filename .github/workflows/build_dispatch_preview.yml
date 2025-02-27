@@ -23,7 +23,7 @@ concurrency:
 jobs:
   trigger_preview_build:
     name: Trigger preview build
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
 
     steps:
       - name: Clone repo
