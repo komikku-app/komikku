@@ -4,7 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,7 +24,6 @@ import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedOrderScreen
 import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.browse.components.FeedActionsDialog
-import eu.kanade.presentation.browse.components.FeedSortAlphabeticallyDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
@@ -99,14 +98,9 @@ fun feedTab(
             persistentListOf(
                 AppBar.Action(
                     title = stringResource(KMR.strings.action_sort_feed),
-                    icon = Icons.Outlined.SwapVert,
+                    icon = Icons.Outlined.Close,
                     iconTint = MaterialTheme.colorScheme.primary,
                     onClick = { showingFeedOrderScreen.value = false },
-                ),
-                AppBar.Action(
-                    title = stringResource(MR.strings.action_sort),
-                    icon = Icons.Outlined.SortByAlpha,
-                    onClick = { screenModel.showDialog(FeedScreenModel.Dialog.SortAlphabetically) },
                 ),
             )
         } else {
@@ -250,12 +244,6 @@ fun feedTab(
                             title = dialog.feedItem.title,
                             onDismissRequest = onDismissRequest,
                             onClickDelete = { screenModel.openDeleteDialog(it) },
-                        )
-                    }
-                    is FeedScreenModel.Dialog.SortAlphabetically -> {
-                        FeedSortAlphabeticallyDialog(
-                            onDismissRequest = onDismissRequest,
-                            onSort = { screenModel.sortAlphabetically() },
                         )
                     }
                     // KMK <--

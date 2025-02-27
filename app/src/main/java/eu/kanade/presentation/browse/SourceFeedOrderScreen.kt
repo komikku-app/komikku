@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +15,6 @@ import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
-import kotlinx.collections.immutable.persistentListOf
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -36,7 +33,6 @@ fun SourceFeedOrderScreen(
     state: SourceFeedState,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onChangeOrder: (FeedSavedSearch, Int) -> Unit,
-    onClickSortAlphabetically: () -> Unit,
     navigateUp: (() -> Unit)? = null,
 ) {
     Scaffold(
@@ -46,15 +42,6 @@ fun SourceFeedOrderScreen(
                     AppBarTitle(stringResource(KMR.strings.action_sort_feed))
                 },
                 navigateUp = navigateUp,
-                actions = {
-                    persistentListOf(
-                        AppBar.Action(
-                            title = stringResource(MR.strings.action_sort),
-                            icon = Icons.Outlined.SortByAlpha,
-                            onClick = onClickSortAlphabetically,
-                        ),
-                    )
-                },
                 isActionMode = false,
                 scrollBehavior = scrollBehavior,
             )

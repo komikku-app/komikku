@@ -49,19 +49,6 @@ class ReorderFeed(
         }
     }
 
-    suspend fun sortAlphabetically(updates: List<FeedSavedSearchUpdate>?) = withNonCancellableContext {
-        if (updates == null) return@withNonCancellableContext
-        mutex.withLock {
-            try {
-                feedSavedSearchRepository.updatePartial(updates)
-                Result.Success
-            } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e)
-                Result.InternalError(e)
-            }
-        }
-    }
-
     sealed interface Result {
         data object Success : Result
         data object Unchanged : Result
