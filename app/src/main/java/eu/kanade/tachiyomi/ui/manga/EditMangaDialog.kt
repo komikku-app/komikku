@@ -435,11 +435,11 @@ private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: 
     try {
         val trackerMangaMetadata = tracker.getMangaMetadata(track)
 
-        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata?.title)
-        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata?.authors)
-        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata?.artists)
-        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata?.thumbnailUrl)
-        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata?.description)
+        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata.title)
+        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata.authors)
+        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata.artists)
+        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata.thumbnailUrl)
+        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata.description)
     } catch (e: Throwable) {
         tracker.logcat(LogPriority.ERROR, e)
         binding.root.context.toast(
