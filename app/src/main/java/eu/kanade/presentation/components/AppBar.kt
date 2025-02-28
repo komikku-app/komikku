@@ -4,6 +4,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
@@ -128,6 +130,10 @@ fun AppBar(
     isActionMode: Boolean = false,
     onCancelActionMode: () -> Unit = {},
 
+    // KMK -->
+    goHome: (() -> Boolean?)? = null,
+    // KMK <--
+
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     Column(
@@ -143,10 +149,21 @@ fun AppBar(
                         )
                     }
                 } else {
-                    navigateUp?.let {
-                        IconButton(onClick = it) {
-                            UpIcon(navigationIcon = navigationIcon)
+                    // KMK -->
+                    Row {
+                        // KMK <--
+                        navigateUp?.let {
+                            IconButton(onClick = it) {
+                                UpIcon(navigationIcon = navigationIcon)
+                            }
                         }
+                        // KMK -->
+                        goHome?.let {
+                            IconButton(onClick = { it.invoke() }) {
+                                UpIcon(navigationIcon = Icons.Filled.Home)
+                            }
+                        }
+                        // KMK <--
                     }
                 }
             },

@@ -78,6 +78,7 @@ class TrackRepositoryImpl(
                     remoteUrl = mangaTrack.remoteUrl,
                     startDate = mangaTrack.startDate,
                     finishDate = mangaTrack.finishDate,
+                    private = mangaTrack.private,
                 )
             }
         }

@@ -2,24 +2,19 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
-import kotlinx.collections.immutable.persistentListOf
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -37,8 +32,7 @@ import tachiyomi.presentation.core.util.plus
 fun SourceFeedOrderScreen(
     state: SourceFeedState,
     onClickDelete: (FeedSavedSearch) -> Unit,
-    changeOrder: (FeedSavedSearch, Int) -> Unit,
-    onClickSortAlphabetically: () -> Unit,
+    onChangeOrder: (FeedSavedSearch, Int) -> Unit,
     navigateUp: (() -> Unit)? = null,
 ) {
     Scaffold(
@@ -48,15 +42,6 @@ fun SourceFeedOrderScreen(
                     AppBarTitle(stringResource(KMR.strings.action_sort_feed))
                 },
                 navigateUp = navigateUp,
-                actions = {
-                    persistentListOf(
-                        AppBar.Action(
-                            title = stringResource(MR.strings.action_sort),
-                            icon = Icons.Outlined.SortByAlpha,
-                            onClick = onClickSortAlphabetically,
-                        ),
-                    )
-                },
                 isActionMode = false,
                 scrollBehavior = scrollBehavior,
             )
@@ -75,31 +60,33 @@ fun SourceFeedOrderScreen(
                 val feeds = state.items
                     .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
 
-                var reorderableList by remember { mutableStateOf(feeds) }
-                val reorderableLazyColumnState = rememberReorderableLazyListState(lazyListState) { from, to ->
-                    reorderableList = reorderableList.toMutableList().apply {
-                        changeOrder(reorderableList[from.index].feed, to.index - from.index)
-                        add(to.index, removeAt(from.index))
-                    }
+                val feedsState = remember { feeds.toMutableList() }
+                val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
+                    val item = feedsState.removeAt(from.index)
+                    feedsState.add(to.index, item)
+                    onChangeOrder(item.feed, to.index)
                 }
 
                 LaunchedEffect(feeds) {
-                    if (!reorderableLazyColumnState.isAnyItemDragging) {
-                        reorderableList = feeds
+                    if (!reorderableState.isAnyItemDragging) {
+                        feedsState.clear()
+                        feedsState.addAll(feeds)
                     }
                 }
 
                 LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
                     state = lazyListState,
-                    contentPadding = paddingValues + topSmallPaddingValues +
+                    contentPadding = paddingValues +
+                        topSmallPaddingValues +
                         PaddingValues(horizontal = MaterialTheme.padding.medium),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
                     items(
-                        items = reorderableList,
+                        items = feedsState,
                         key = { it.feed.key },
                     ) { feed ->
-                        ReorderableItem(reorderableLazyColumnState, feed.feed.key) {
+                        ReorderableItem(reorderableState, feed.feed.key) {
                             FeedOrderListItem(
                                 modifier = Modifier.animateItem(),
                                 title = feed.title,

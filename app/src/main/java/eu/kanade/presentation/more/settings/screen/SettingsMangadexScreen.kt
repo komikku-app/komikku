@@ -179,12 +179,12 @@ object SettingsMangadexScreen : SearchableSettings {
         sourcePreferences: SourcePreferences,
     ): Preference.PreferenceItem.ListPreference<String> {
         return Preference.PreferenceItem.ListPreference(
-            pref = unsortedPreferences.preferredMangaDexId(),
-            title = stringResource(SYMR.strings.mangadex_preffered_source),
-            subtitle = stringResource(SYMR.strings.mangadex_preffered_source_summary),
+            preference = unsortedPreferences.preferredMangaDexId(),
             entries = MdUtil.getEnabledMangaDexs(sourcePreferences)
                 .associate { it.id.toString() to it.toString() }
                 .toImmutableMap(),
+            title = stringResource(SYMR.strings.mangadex_preffered_source),
+            subtitle = stringResource(SYMR.strings.mangadex_preffered_source_summary),
         )
     }
 

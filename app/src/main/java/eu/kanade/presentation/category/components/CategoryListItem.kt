@@ -37,13 +37,12 @@ fun ReorderableCollectionItemScope.CategoryListItem(
     // KMK <--
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(
-        modifier = modifier,
-    ) {
+    ElevatedCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onRename() }
+                .clickable(onClick = onRename)
+                .padding(vertical = MaterialTheme.padding.small)
                 .padding(
                     start = MaterialTheme.padding.small,
                     end = MaterialTheme.padding.medium,
@@ -63,8 +62,7 @@ fun ReorderableCollectionItemScope.CategoryListItem(
                 color = LocalContentColor.current.let { if (category.hidden) it.copy(alpha = 0.6f) else it },
                 textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
                 // KMK <--
-                modifier = Modifier
-                    .weight(1f),
+                modifier = Modifier.weight(1f),
             )
             IconButton(onClick = onRename) {
                 Icon(
@@ -88,7 +86,10 @@ fun ReorderableCollectionItemScope.CategoryListItem(
             )
             // KMK <--
             IconButton(onClick = onDelete) {
-                Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(MR.strings.action_delete))
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = stringResource(MR.strings.action_delete),
+                )
             }
         }
     }

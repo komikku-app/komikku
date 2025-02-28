@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
@@ -49,7 +48,6 @@ import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
-import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.kmk.KMR
@@ -156,25 +154,9 @@ open class SourceFeedScreenModel(
     }
 
     // KMK -->
-    fun changeOrder(feed: FeedSavedSearch, newOrder: Int) {
+    fun changeOrder(feed: FeedSavedSearch, newIndex: Int) {
         screenModelScope.launch {
-            reorderFeed.changeOrder(feed, newOrder, false)
-        }
-    }
-
-    fun sortAlphabetically() {
-        screenModelScope.launchNonCancellable {
-            reorderFeed.sortAlphabetically(
-                state.value.items
-                    .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
-                    .sortedBy { feed -> feed.title }
-                    .mapIndexed { index, feed ->
-                        FeedSavedSearchUpdate(
-                            id = feed.feed.id,
-                            feedOrder = index.toLong(),
-                        )
-                    },
-            )
+            reorderFeed.changeOrder(feed, newIndex, false)
         }
     }
     // KMK <--
@@ -423,8 +405,6 @@ open class SourceFeedScreenModel(
         data class FeedActions(
             val feedItem: SourceFeedUI.SourceSavedSearch,
         ) : Dialog()
-
-        data object SortAlphabetically : Dialog()
         // KMK <--
     }
 

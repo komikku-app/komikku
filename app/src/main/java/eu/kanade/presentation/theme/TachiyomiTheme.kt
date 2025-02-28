@@ -26,6 +26,7 @@ import eu.kanade.presentation.theme.colorscheme.MatrixColorScheme
 import eu.kanade.presentation.theme.colorscheme.MidnightDuskColorScheme
 import eu.kanade.presentation.theme.colorscheme.MochaColorScheme
 import eu.kanade.presentation.theme.colorscheme.MonetColorScheme
+import eu.kanade.presentation.theme.colorscheme.MonochromeColorScheme
 import eu.kanade.presentation.theme.colorscheme.NordColorScheme
 import eu.kanade.presentation.theme.colorscheme.SapphireColorScheme
 import eu.kanade.presentation.theme.colorscheme.StrawberryColorScheme
@@ -141,6 +142,7 @@ private val colorSchemes: Map<AppTheme, BaseColorScheme> = mapOf(
     AppTheme.GREEN_APPLE to GreenAppleColorScheme,
     AppTheme.LAVENDER to LavenderColorScheme,
     AppTheme.MIDNIGHT_DUSK to MidnightDuskColorScheme,
+    AppTheme.MONOCHROME to MonochromeColorScheme,
     AppTheme.NORD to NordColorScheme,
     AppTheme.STRAWBERRY_DAIQUIRI to StrawberryColorScheme,
     AppTheme.TAKO to TakoColorScheme,

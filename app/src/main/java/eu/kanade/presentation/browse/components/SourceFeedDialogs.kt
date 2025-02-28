@@ -29,7 +29,6 @@ import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -169,35 +168,6 @@ private fun FeedActionsDialogPreview() {
         title = "Feed 1",
         onDismissRequest = { },
         onClickDelete = { },
-    )
-}
-
-@Composable
-fun FeedSortAlphabeticallyDialog(
-    onDismissRequest: () -> Unit,
-    onSort: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = {
-                onSort()
-                onDismissRequest()
-            }) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(KMR.strings.action_sort_feed))
-        },
-        text = {
-            Text(text = stringResource(KMR.strings.sort_feed_confirmation))
-        },
     )
 }
 // KMK <--

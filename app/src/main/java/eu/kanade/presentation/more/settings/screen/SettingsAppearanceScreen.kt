@@ -101,14 +101,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                 // KMK -->
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.pref_custom_color),
-                    enabled = appTheme == AppTheme.CUSTOM,
                     subtitle = stringResource(KMR.strings.custom_color_description),
+                    enabled = appTheme == AppTheme.CUSTOM,
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = uiPreferences.customThemeStyle(),
-                    title = stringResource(KMR.strings.pref_custom_theme_style),
-                    enabled = appTheme == AppTheme.CUSTOM,
+                    preference = uiPreferences.customThemeStyle(),
                     entries = PaletteStyle.entries
                         .associateWith {
                             when (it) {
@@ -134,6 +132,8 @@ object SettingsAppearanceScreen : SearchableSettings {
                             }
                         }
                         .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_custom_theme_style),
+                    enabled = appTheme == AppTheme.CUSTOM,
                     onValueChanged = {
                         (context as? Activity)?.let { ActivityCompat.recreate(it) }
                         true
@@ -141,7 +141,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = amoledPref,
+                    preference = amoledPref,
                     title = stringResource(MR.strings.pref_dark_theme_pure_black),
                     enabled = themeMode != ThemeMode.LIGHT,
                     onValueChanged = {
@@ -166,13 +166,11 @@ object SettingsAppearanceScreen : SearchableSettings {
             title = stringResource(KMR.strings.pref_manga_info),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.themeCoverBased(),
+                    preference = uiPreferences.themeCoverBased(),
                     title = stringResource(KMR.strings.pref_theme_cover_based),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = uiPreferences.themeCoverBasedStyle(),
-                    title = stringResource(KMR.strings.pref_theme_cover_based_style),
-                    enabled = mangaInfoThemeCoverBased,
+                    preference = uiPreferences.themeCoverBasedStyle(),
                     entries = PaletteStyle.entries
                         .associateWith {
                             when (it) {
@@ -198,9 +196,11 @@ object SettingsAppearanceScreen : SearchableSettings {
                             }
                         }
                         .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_theme_cover_based_style),
+                    enabled = mangaInfoThemeCoverBased,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.usePanoramaCoverMangaInfo(),
+                    preference = uiPreferences.usePanoramaCoverMangaInfo(),
                     title = stringResource(KMR.strings.pref_panorama_cover),
                     subtitle = stringResource(KMR.strings.pref_panorama_cover_summary),
                 ),
@@ -231,28 +231,28 @@ object SettingsAppearanceScreen : SearchableSettings {
                     onClick = { navigator.push(AppLanguageScreen()) },
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = uiPreferences.tabletUiMode(),
-                    title = stringResource(MR.strings.pref_tablet_ui_mode),
+                    preference = uiPreferences.tabletUiMode(),
                     entries = TabletUiMode.entries
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
+                    title = stringResource(MR.strings.pref_tablet_ui_mode),
                     onValueChanged = {
                         context.toast(MR.strings.requires_app_restart)
                         true
                     },
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = uiPreferences.dateFormat(),
-                    title = stringResource(MR.strings.pref_date_format),
+                    preference = uiPreferences.dateFormat(),
                     entries = DateFormats
                         .associateWith {
                             val formattedDate = UiPreferences.dateFormat(it).format(now)
                             "${it.ifEmpty { stringResource(MR.strings.label_default) }} ($formattedDate)"
                         }
                         .toImmutableMap(),
+                    title = stringResource(MR.strings.pref_date_format),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.relativeTime(),
+                    preference = uiPreferences.relativeTime(),
                     title = stringResource(MR.strings.pref_relative_format),
                     subtitle = stringResource(
                         MR.strings.pref_relative_format_summary,
@@ -274,22 +274,22 @@ object SettingsAppearanceScreen : SearchableSettings {
             preferenceItems = persistentListOf(
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.usePanoramaCoverFlow(),
+                    preference = uiPreferences.usePanoramaCoverFlow(),
                     title = stringResource(KMR.strings.pref_panorama_cover_flow),
                     subtitle = stringResource(KMR.strings.pref_panorama_cover_flow_summary),
                 ),
                 // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.expandFilters(),
+                    preference = uiPreferences.expandFilters(),
                     title = stringResource(SYMR.strings.toggle_expand_search_filters),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.recommendsInOverflow(),
+                    preference = uiPreferences.recommendsInOverflow(),
                     title = stringResource(SYMR.strings.put_recommends_in_overflow),
                     subtitle = stringResource(SYMR.strings.put_recommends_in_overflow_summary),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.mergeInOverflow(),
+                    preference = uiPreferences.mergeInOverflow(),
                     title = stringResource(SYMR.strings.put_merge_in_overflow),
                     subtitle = stringResource(SYMR.strings.put_merge_in_overflow_summary),
                 ),
@@ -322,15 +322,15 @@ object SettingsAppearanceScreen : SearchableSettings {
             stringResource(SYMR.strings.pref_category_navbar),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.showNavUpdates(),
+                    preference = uiPreferences.showNavUpdates(),
                     title = stringResource(SYMR.strings.pref_hide_updates_button),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.showNavHistory(),
+                    preference = uiPreferences.showNavHistory(),
                     title = stringResource(SYMR.strings.pref_hide_history_button),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.bottomBarLabels(),
+                    preference = uiPreferences.bottomBarLabels(),
                     title = stringResource(SYMR.strings.pref_show_bottom_bar_labels),
                 ),
             ),

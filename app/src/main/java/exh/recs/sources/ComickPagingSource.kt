@@ -86,7 +86,7 @@ internal class ComickPagingSource(
                         thumbnail_url = thumbnailBaseUrl + rec["md_covers"]!!
                             .jsonArray
                             .map { it.jsonObject["b2key"]!!.jsonPrimitive.content }
-                            .first(),
+                            .firstOrNull(),
                         // Mark as uninitialized to force fetching missing metadata
                         initialized = false,
                     )
