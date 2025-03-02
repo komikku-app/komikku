@@ -409,8 +409,8 @@ private fun onViewCreated(
 }
 
 private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>) {
-    tracks.value = getTracks.await(manga.id).map { track ->
-        track to trackerManager.get(track.trackerId)!!
+    tracks.value = getTracks.await(manga.id).mapNotNull { track ->
+        track to (trackerManager.get(track.trackerId) ?: return@mapNotNull null)
     }
         .filterNot { (_, tracker) -> tracker is EnhancedTracker }
 
