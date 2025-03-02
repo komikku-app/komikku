@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import eu.kanade.presentation.util.ioCoroutineScope
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.StaticResultPagingSource
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentMapOf
@@ -29,15 +30,10 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 open class RecommendsScreenModel(
-    val mangaId: Long,
-    val sourceId: Long,
+    private val args: RecommendsScreen.Args,
     private val getManga: GetManga = Injekt.get(),
     protected val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
 ) : StateScreenModel<RecommendsScreenModel.State>(State()) {
-
-    // KMK -->
-    private val sourceCatalogue = SourceCatalogue(sourceId)
-    // KMK <--
 
     private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
 
@@ -51,14 +47,22 @@ open class RecommendsScreenModel(
 
     init {
         ioCoroutineScope.launch {
-            val manga = getManga.await(mangaId)!!
-            mutableState.update { it.copy(manga = manga) }
-            val recommendationSources = RecommendationPagingSource.createSources(
-                manga,
-                // KMK -->
-                sourceCatalogue,
-                // KMK <--
-            )
+            val recommendationSources = when (args) {
+                is RecommendsScreen.Args.SingleSourceManga -> {
+                    val manga = getManga.await(args.mangaId)!!
+                    mutableState.update { it.copy(title = manga.title) }
+
+                    RecommendationPagingSource.createSources(
+                        manga,
+                        // KMK -->
+                        SourceCatalogue(args.sourceId),
+                        // KMK <--
+                    )
+                }
+                is RecommendsScreen.Args.MergedSourceMangas -> {
+                    args.mergedResults.map(::StaticResultPagingSource)
+                }
+            }
 
             updateItems(
                 recommendationSources
@@ -131,7 +135,7 @@ open class RecommendsScreenModel(
 
     @Immutable
     data class State(
-        val manga: Manga? = null,
+        val title: String? = null,
         val items: PersistentMap<RecommendationPagingSource, RecommendationItemResult> = persistentMapOf(),
     ) {
         val progress: Int = items.count { it.value !is RecommendationItemResult.Loading }

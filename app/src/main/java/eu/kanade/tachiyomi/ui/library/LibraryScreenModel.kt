@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.library
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -40,10 +39,12 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.favorites.FavoritesSyncHelper
+import exh.log.xLogE
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
+import exh.recs.batch.RecommendationSearchHelper
 import exh.search.Namespace
 import exh.search.QueryComponent
 import exh.search.SearchEngine
@@ -66,6 +67,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -160,7 +162,7 @@ class LibraryScreenModel(
     private val searchEngine: SearchEngine = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
-    private val syncPreferences: SyncPreferences = Injekt.get(),
+    syncPreferences: SyncPreferences = Injekt.get(),
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
@@ -172,6 +174,9 @@ class LibraryScreenModel(
 
     // SY -->
     val favoritesSync = FavoritesSyncHelper(preferences.context)
+    val recommendationSearch = RecommendationSearchHelper(preferences.context)
+
+    private var recommendationSearchJob: Job? = null
     // SY <--
 
     init {
@@ -1033,6 +1038,11 @@ class LibraryScreenModel(
     }
 
     // SY -->
+    fun showRecommendationSearchDialog() {
+        val mangaList = state.value.selection.map { it.manga }
+        mutableState.update { it.copy(dialog = Dialog.RecommendationSearchSheet(mangaList)) }
+    }
+
     fun getCategoryName(
         context: Context,
         category: Category?,
@@ -1359,8 +1369,12 @@ class LibraryScreenModel(
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
         data class DeleteManga(val manga: List<Manga>) : Dialog
+
+        // SY -->
         data object SyncFavoritesWarning : Dialog
         data object SyncFavoritesConfirm : Dialog
+        data class RecommendationSearchSheet(val manga: List<Manga>) : Dialog
+        // SY <--
     }
 
     // SY -->
@@ -1460,6 +1474,16 @@ class LibraryScreenModel(
                 }
             }
         }.toSortedMap(compareBy { it.order })
+    }
+
+    fun runRecommendationSearch(selection: List<Manga>) {
+        recommendationSearch.runSearch(screenModelScope, selection)?.let {
+            recommendationSearchJob = it
+        }
+    }
+
+    fun cancelRecommendationSearch() {
+        recommendationSearchJob?.cancel()
     }
 
     fun runSync() {
@@ -1647,7 +1671,7 @@ class LibraryScreenModel(
                 }
             } catch (e: Exception) {
                 // Log the error and return an empty set if the file cannot be read.
-                Log.e("LibraryScreenModel", "Error loading MangaDex DMCA UUIDs", e)
+                xLogE("Error loading MangaDex DMCA UUIDs", e)
                 hashSetOf()
             }
         }

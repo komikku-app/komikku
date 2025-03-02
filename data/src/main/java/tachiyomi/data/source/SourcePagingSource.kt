@@ -21,33 +21,24 @@ class SourceSearchPagingSource(
     private val filters: FilterList,
 ) : BaseSourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source?.getSearchManga(currentPage, query.sanitize(), filters)
-            // KMK -->
-            ?: MangasPage(emptyList(), false)
-        // KMK <--
+        return source!!.getSearchManga(currentPage, query.sanitize(), filters)
     }
 }
 
 class SourcePopularPagingSource(source: CatalogueSource) : BaseSourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source?.getPopularManga(currentPage)
-            // KMK -->
-            ?: MangasPage(emptyList(), false)
-        // KMK <--
+        return source!!.getPopularManga(currentPage)
     }
 }
 
 class SourceLatestPagingSource(source: CatalogueSource) : BaseSourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source?.getLatestUpdates(currentPage)
-            // KMK -->
-            ?: MangasPage(emptyList(), false)
-        // KMK <--
+        return source!!.getLatestUpdates(currentPage)
     }
 }
 
 abstract class BaseSourcePagingSource(
-    protected open val source: CatalogueSource?,
+    protected val source: CatalogueSource?,
     protected val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
 ) : SourcePagingSource() {
 

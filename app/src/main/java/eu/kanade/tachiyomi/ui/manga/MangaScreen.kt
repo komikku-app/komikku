@@ -838,7 +838,9 @@ class MangaScreen(
     // AZ -->
     private fun openRecommends(navigator: Navigator, source: Source?, manga: Manga) {
         source ?: return
-        navigator.push(RecommendsScreen(manga.id, source.id))
+        RecommendsScreen.Args.SingleSourceManga(manga.id, source.id)
+            .let(::RecommendsScreen)
+            .let(navigator::push)
     }
     // AZ <--
 }

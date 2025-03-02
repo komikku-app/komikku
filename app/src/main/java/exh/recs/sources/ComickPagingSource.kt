@@ -31,10 +31,10 @@ internal class ComickPagingSource(
     private val sourceCatalogue: SourceCatalogue,
     // KMK <--
 ) : RecommendationPagingSource(
+    manga,
     // KMK -->
     sourceCatalogue.source,
     // KMK <--
-    manga,
 ) {
 
     override val name: String

@@ -480,6 +480,21 @@
     <string name="action_stop">Stop</string>
     <string name="skipping_">(skipping %1$d)</string>
 
+    <!-- Bulk recommendation search -->
+    <string name="rec_search">Find common recommendations</string>
+    <string name="rec_hide_library_entries">Hide results already in your library</string>
+    <string name="rec_services_to_search">Recommendation services to search</string>
+    <string name="rec_group_source">Source recommendations</string>
+    <string name="rec_group_tracker">Tracker recommendations</string>
+    <string name="rec_common_recommendations">Common recommendations</string>
+    <string name="rec_search_short">Find recommendations</string>
+    <string name="rec_no_results">No recommendations found</string>
+    <string name="rec_error_title">Search failed</string>
+    <string name="rec_error_string">An error occurred during the search process: %1$s</string>
+    <string name="rec_processing_state">Processing entry %1$d of %2$d</string>
+    <string name="rec_collecting">Collecting recommendations</string>
+    <string name="rec_initializing">Initializing</string>
+
     <!-- Library -->
     <!-- Library Actions -->
     <string name="no_valid_entry">No valid entry selected</string>

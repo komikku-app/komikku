@@ -90,7 +90,8 @@ import java.time.Instant
 import eu.kanade.tachiyomi.source.model.Filter as SourceModelFilter
 
 open class BrowseSourceScreenModel(
-    private val sourceId: Long,
+    /* KMK --> */
+    protected /* KMK <-- */ val sourceId: Long,
     listingQuery: String?,
     // SY -->
     private val filtersJson: String? = null,

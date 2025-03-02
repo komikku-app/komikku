@@ -2,24 +2,23 @@ package exh.favorites
 
 import android.content.Context
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.PowerManager
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLog
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
+import exh.util.ThrottleManager
+import exh.util.createPartialWakeLock
+import exh.util.createWifiLock
 import exh.util.ignore
-import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,7 +68,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val galleryAdder by lazy { GalleryAdder() }
 
-    private val throttleManager by lazy { EHentaiThrottleManager() }
+    private val throttleManager by lazy { ThrottleManager() }
 
     private var wifiLock: WifiManager.WifiLock? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -130,27 +129,9 @@ class FavoritesSyncHelper(val context: Context) {
         try {
             // Take wake + wifi locks
             ignore { wakeLock?.release() }
-            wakeLock = ignore {
-                context.powerManager.newWakeLock(
-                    PowerManager.PARTIAL_WAKE_LOCK,
-                    "teh:ExhFavoritesSyncWakelock",
-                )
-            }
+            wakeLock = ignore { context.createPartialWakeLock("teh:ExhFavoritesSyncWakelock") }
             ignore { wifiLock?.release() }
-            wifiLock = ignore {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    context.wifiManager.createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
-                        "teh:ExhFavoritesSyncWifi",
-                    )
-                } else {
-                    @Suppress("DEPRECATION")
-                    context.wifiManager.createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                        "teh:ExhFavoritesSyncWifi",
-                    )
-                }
-            }
+            wifiLock = ignore { context.createWifiLock("teh:ExhFavoritesSyncWifi") }
 
             // Do not update galleries while syncing favorites
             EHentaiUpdateWorker.cancelBackground(context)

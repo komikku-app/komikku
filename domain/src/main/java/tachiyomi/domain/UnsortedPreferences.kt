@@ -34,6 +34,8 @@ class UnsortedPreferences(
 
     fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
 
+    fun recommendationSearchFlags() = preferenceStore.getInt("rec_search_flags", Int.MAX_VALUE)
+
     fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", false)
 
     // KMK -->

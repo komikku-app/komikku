@@ -9,13 +9,13 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.util.system.workManager
-import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.NHENTAI_SOURCE_ID
 import exh.source.nHentaiSourceIds
+import exh.util.ThrottleManager
 import exh.util.jobScheduler
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
@@ -76,7 +76,7 @@ object DebugFunctions {
             }
         }
     }
-    private val throttleManager = EHentaiThrottleManager()
+    private val throttleManager = ThrottleManager()
 
     fun getDelegatedSourceList(): String = AndroidSourceManager.currentDelegatedSources.map {
         it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory

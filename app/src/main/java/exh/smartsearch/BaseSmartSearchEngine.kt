@@ -1,23 +1,23 @@
 package exh.smartsearch
 
-import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.SManga
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
-import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.util.QuerySanitizer.sanitize
-import tachiyomi.domain.manga.model.Manga
 import java.util.Locale
 
-class SmartSearchEngine(
+typealias SearchAction<T> = suspend (String) -> List<T>
+
+abstract class BaseSmartSearchEngine<T>(
     private val extraSearchParams: String? = null,
+    private val eligibleThreshold: Double = MIN_ELIGIBLE_THRESHOLD,
 ) {
     private val normalizedLevenshtein = NormalizedLevenshtein()
 
-    suspend fun smartSearch(source: CatalogueSource, title: String): Manga? {
+    protected abstract fun getTitle(result: T): String
+
+    protected suspend fun smartSearch(searchAction: SearchAction<T>, title: String): T? {
         val cleanedTitle = cleanSmartSearchTitle(title)
 
         val queries = getSmartSearchQueries(cleanedTitle)
@@ -31,71 +31,42 @@ class SmartSearchEngine(
                         query
                     }
 
-                    val searchResults = source.getSearchManga(1, builtQuery.sanitize(), FilterList())
-
-                    searchResults.mangas.map {
-                        val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
+                    searchAction(builtQuery.sanitize()).map {
+                        val cleanedMangaTitle = cleanSmartSearchTitle(getTitle(it))
                         val normalizedDistance = normalizedLevenshtein.similarity(cleanedTitle, cleanedMangaTitle)
                         SearchEntry(it, normalizedDistance)
                     }.filter { (_, normalizedDistance) ->
-                        normalizedDistance >= MIN_SMART_ELIGIBLE_THRESHOLD
+                        normalizedDistance >= eligibleThreshold
                     }
                 }
             }.flatMap { it.await() }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga?.toDomainManga(source.id)
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
-    suspend fun normalSearch(source: CatalogueSource, title: String): Manga? {
+    protected suspend fun normalSearch(searchAction: SearchAction<T>, title: String): T? {
         val eligibleManga = supervisorScope {
             val searchQuery = if (extraSearchParams != null) {
                 "$title ${extraSearchParams.trim()}"
             } else {
                 title
             }
-            val searchResults = source.getSearchManga(1, searchQuery.sanitize(), FilterList())
+            val searchResults = searchAction(searchQuery.sanitize())
 
-            if (searchResults.mangas.size == 1) {
-                return@supervisorScope listOf(SearchEntry(searchResults.mangas.first(), 0.0))
+            if (searchResults.size == 1) {
+                return@supervisorScope listOf(SearchEntry(searchResults.first(), 0.0))
             }
 
-            searchResults.mangas.map {
-                val normalizedDistance = normalizedLevenshtein.similarity(title, it.originalTitle)
+            searchResults.map {
+                val normalizedDistance = normalizedLevenshtein.similarity(title, getTitle(it))
                 SearchEntry(it, normalizedDistance)
             }.filter { (_, normalizedDistance) ->
-                normalizedDistance >= MIN_NORMAL_ELIGIBLE_THRESHOLD
+                normalizedDistance >= eligibleThreshold
             }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga?.toDomainManga(source.id)
-    }
-
-    private fun getSmartSearchQueries(cleanedTitle: String): List<String> {
-        val splitCleanedTitle = cleanedTitle.split(" ")
-        val splitSortedByLargest = splitCleanedTitle.sortedByDescending { it.length }
-
-        if (splitCleanedTitle.isEmpty()) {
-            return emptyList()
-        }
-
-        // Search cleaned title
-        // Search two largest words
-        // Search largest word
-        // Search first two words
-        // Search first word
-
-        val searchQueries = listOf(
-            listOf(cleanedTitle),
-            splitSortedByLargest.take(2),
-            splitSortedByLargest.take(1),
-            splitCleanedTitle.take(2),
-            splitCleanedTitle.take(1),
-        )
-
-        return searchQueries.map {
-            it.joinToString(" ").trim()
-        }.distinct()
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
     private fun cleanSmartSearchTitle(title: String): String {
@@ -114,10 +85,10 @@ class SmartSearchEngine(
         val cleanedTitleEng = cleanedTitle.replace(titleRegex, " ")
 
         // Do not strip foreign language letters if cleanedTitle is too short
-        if (cleanedTitleEng.length <= 5) {
-            cleanedTitle = cleanedTitle.replace(titleCyrillicRegex, " ")
+        cleanedTitle = if (cleanedTitleEng.length <= 5) {
+            cleanedTitle.replace(titleCyrillicRegex, " ")
         } else {
-            cleanedTitle = cleanedTitleEng
+            cleanedTitleEng
         }
 
         // Strip splitters and consecutive spaces
@@ -171,9 +142,35 @@ class SmartSearchEngine(
         return result.toString()
     }
 
+    private fun getSmartSearchQueries(cleanedTitle: String): List<String> {
+        val splitCleanedTitle = cleanedTitle.split(" ")
+        val splitSortedByLargest = splitCleanedTitle.sortedByDescending { it.length }
+
+        if (splitCleanedTitle.isEmpty()) {
+            return emptyList()
+        }
+
+        // Search cleaned title
+        // Search two largest words
+        // Search largest word
+        // Search first two words
+        // Search first word
+
+        val searchQueries = listOf(
+            listOf(cleanedTitle),
+            splitSortedByLargest.take(2),
+            splitSortedByLargest.take(1),
+            splitCleanedTitle.take(2),
+            splitCleanedTitle.take(1),
+        )
+
+        return searchQueries.map {
+            it.joinToString(" ").trim()
+        }.distinct()
+    }
+
     companion object {
-        const val MIN_SMART_ELIGIBLE_THRESHOLD = 0.4
-        const val MIN_NORMAL_ELIGIBLE_THRESHOLD = 0.4
+        const val MIN_ELIGIBLE_THRESHOLD = 0.4
 
         private val titleRegex = Regex("[^a-zA-Z0-9- ]")
         private val titleCyrillicRegex = Regex("[^\\p{L}0-9- ]")
@@ -182,4 +179,4 @@ class SmartSearchEngine(
     }
 }
 
-data class SearchEntry(val manga: SManga, val dist: Double)
+data class SearchEntry<T>(val manga: T, val dist: Double)
