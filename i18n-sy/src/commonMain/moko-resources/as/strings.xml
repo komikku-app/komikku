@@ -51,7 +51,7 @@
     <string name="action_search_manually">হাতৰে অনুসন্ধান কৰক</string>
     <string name="action_migrate_now">এতিয়াই মাইগ্ৰেট কৰক</string>
     <string name="action_copy_now">এতিয়াই কপি কৰক</string>
-    <string name="action_clean_titles">শিৰোনামা পৰিষ্কাৰ কৰক</string>
+    <string name="action_clean_titles">শিৰোনাম পৰিষ্কাৰ কৰক</string>
     <string name="action_start_reading">পঢ়া আৰম্ভ কৰক</string>
     <string name="action_edit_info">তথ্য সম্পাদনা কৰক</string>
     <string name="entry_type_manga">মাঙ্গা</string>
@@ -74,11 +74,11 @@
 \n- ডিফল্ট প\'ৰ্ট ক্লায়েন্টবোৰ মাত্ৰ (বিলম্বিত হ\'ব পাৰে। ফায়াৰৱাল/প্ৰক্সি থকা অৱস্থাত সক্ৰিয় কৰক যি উত্তৰণ বিৰোধী প\'ৰ্টৰ ব্লক কৰে।)</string>
     <string name="enable_exhentai">এক্সহেণ্টাই সক্ৰিয় কৰক</string>
     <string name="requires_login">লগইন প্ৰয়োজন</string>
-    <string name="show_japanese_titles">অনুসন্ধান ফলাফলত জাপানী শিৰোনামাসমূহ দেখুৱাওক</string>
-    <string name="show_japanese_titles_option_1">বৰ্তমান জাপানী শিৰোনামাসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
+    <string name="show_japanese_titles">অনুসন্ধান ফলাফলত জাপানী শিৰোনামসমূহ দেখুৱাওক</string>
+    <string name="show_japanese_titles_option_1">বৰ্তমান জাপানী শিৰোনামসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
     <string name="use_hentai_at_home_option_1">যিকোনো ক্লায়েন্ট (সুপৰিশৃত)</string>
     <string name="use_hentai_at_home_option_2">ডিফল্ট প\'ৰ্ট ক্লায়েন্টবোৰ মাত্ৰ</string>
-    <string name="show_japanese_titles_option_2">বৰ্তমান ইংৰাজী/ৰোমানীকৃত শিৰোনামাসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
+    <string name="show_japanese_titles_option_2">বৰ্তমান ইংৰাজী/ৰোমানীকৃত শিৰোনামসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
     <string name="use_original_images">মূল চিত্ৰসমূহ ব্যৱহাৰ কৰক</string>
     <string name="use_original_images_on">বৰ্তমান মূল চিত্ৰসমূহ ব্যৱহাৰ কৰা হৈছে</string>
     <string name="use_original_images_off">বৰ্তমান পুনঃনমিত চিত্ৰসমূহ ব্যৱহাৰ কৰা হৈছে</string>
@@ -630,4 +630,5 @@
     <string name="select_tracker">এটা ট্ৰেকাৰ নিৰ্ব্বাচন কৰক</string>
     <string name="favorites_sync_unable_to_add_to_remote">গ্যালাৰীটো ৰিম\'ট ছাৰ্ভাৰত যোগ কৰিব পৰা নগ\'ল: \'%1$s\' (GID: %2$s)!</string>
     <string name="entry_not_tracked">প্ৰৱেশটো অনুসৰণ কৰা হোৱা নাই।</string>
+    <string name="similar_titles">একেধৰণৰ শিৰোনামসমূহ</string>
 </resources>

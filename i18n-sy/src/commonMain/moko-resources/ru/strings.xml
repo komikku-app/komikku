@@ -673,4 +673,5 @@
     <string name="fill_from_tracker">Заполнить из сервиса</string>
     <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания</string>
     <string name="favorites_sync_unable_to_add_to_remote">Невозможно добавить галерею на удалённый сервер: \'%1$s\' (GID: %2$s)!</string>
+    <string name="similar_titles">Похожие имена</string>
 </resources>

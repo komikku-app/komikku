@@ -552,7 +552,7 @@
     <string name="average_rating">分數</string>
     <string name="last_update_check">最近一次更新檢查</string>
     <string name="path">路徑</string>
-    <string name="artist">藝術家</string>
+    <string name="artist">畫家</string>
     <string name="characters">角色</string>
     <string name="group">分組</string>
     <string name="media_id">媒體 id</string>
@@ -663,4 +663,5 @@
     <string name="entry_not_tracked">條目還未登錄歷程</string>
     <string name="fill_from_tracker">從歷程平臺獲取資訊</string>
     <string name="favorites_sync_unable_to_add_to_remote">無法將圖庫新增到遠端伺服器：「%1$s」 (GID：%2$s)！</string>
+    <string name="similar_titles">相近標題</string>
 </resources>

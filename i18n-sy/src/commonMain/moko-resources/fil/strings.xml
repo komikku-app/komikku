@@ -14,8 +14,8 @@
     <string name="use_hentai_at_home">Gamitin ang Hentai@Home Network</string>
     <string name="use_hentai_at_home_option_1">Anumang Client (Inirerekomenda)</string>
     <string name="use_hentai_at_home_option_2">Default na port ng client lamang</string>
-    <string name="show_japanese_titles">Ipakita ang mga title na Japanese sa resulta ng paghahanap</string>
-    <string name="show_japanese_titles_option_1">Kasalukuyang nagpapakita ng mga Japanese na title sa mga resulta ng paghahanap. I-clear ang cache ng kabanata pagkatapos baguhin ito (sa Karagdagan na seksyion)</string>
+    <string name="show_japanese_titles">Ipakita ang mga pamagat na Japanese sa resulta ng paghahanap</string>
+    <string name="show_japanese_titles_option_1">Kasalukuyang nagpapakita ng mga Japanese na pamagat sa mga resulta ng paghahanap. I-clear ang cache ng kabanata pagkatapos baguhin ito (sa Karagdagan na seksyion)</string>
     <string name="use_original_images">Gamitin ang orihinal na imahe</string>
     <string name="use_original_images_on">Kasalukuyang gumagamit ng orihinal na imahe</string>
     <string name="use_original_images_off">Kasalukuyang gumagamit ng na-resample na imahe</string>
@@ -76,7 +76,7 @@
 \nMga Opsiyon:
 \n- Anumang Client (Inirerekomenda)
 \n- Default na port ng client lamang (Maaaring mas mabagal. Paganahin lamang ito kung nasa likod ng firewall/proxy na nagba-block ng palabas sa non-standard na port.)</string>
-    <string name="show_japanese_titles_option_2">Kasalukuyang nagpapakita ng mga English/Romanized na title sa mga resulta ng paghahanap. I-clear ang cache ng kabanata pagkatapos baguhin ito (sa Karagdagan na seksyion)</string>
+    <string name="show_japanese_titles_option_2">Kasalukuyang nagpapakita ng mga English/Romanized na pamagat sa mga resulta ng paghahanap. I-clear ang cache ng kabanata pagkatapos baguhin ito (sa Karagdagan na seksyion)</string>
     <string name="tag_filtering_threshhold_summary">Maaari kang gumamit ng soft filter ng mga tag sa pamamagitan ng pagdaragdag ng mga ito sa My Tags ng E/ExHentai page na may negatibong weight. Kung ang isang gallery ay may mga tag na nagdaragdag ng hanggang sa weight sa ilalim ng halagang ito, ito ay hindi makikita. Ang threshold na ito sa pagitan ng -9999 at 0. Kasalukuyan: %1$d</string>
     <string name="language_filtering">Pag-filter ng Wika</string>
     <string name="fromt_page_categories_summary">Anong mga kategorya ang nais mong ipakita sa default sa front page at sa mga paghahanap? Maaari pa rin silang paganahin gamit ng kanilang filter</string>
@@ -103,16 +103,7 @@
     <string name="eh_settings_uploading_to_server">Nag-a-upload ng mga setting sa server</string>
     <string name="alternative_login_page">Alternatibong login page</string>
     <string name="enable_source_blacklist">Paganahin ang pag-blacklist ng source</string>
-    <string name="gallery_updater_stats_time">"
-\nMga gallery na sinuri sa huling:
-\n- oras: %1$d
-\n- 6 na oras: %2$d
-\n- 12 oras: %3$d
-\n- araw: %4$d
-\n- 2 araw: %5$d
-\n- linggo: %6$d
-\n- buwan: %7$d
-\n- taon: %8$d"</string>
+    <string name="gallery_updater_stats_time">\nMga gallery na sinuri sa huling:\n- oras: %1$d\n- 6 na oras: %2$d\n- 12 oras: %3$d\n- araw: %4$d\n- 2 araw: %5$d\n- linggo: %6$d\n- buwan: %7$d\n- taon: %8$d</string>
     <string name="eh_settings_uploading_to_server_message">Mangyaring maghintay, maaaring tumagal ito ng ilang oras…</string>
     <string name="eh_settings_out_of_slots_error">Naubusan ng slot na profile sa %1$s, mangyaring tanggalin ang isang profile!</string>
     <string name="recheck_login_status">Suriin muli ang status sa pag-log in</string>
@@ -283,7 +274,7 @@
     <string name="pref_smooth_scroll">Smooth na pag Awto Scroll</string>
     <string name="pref_crop_borders_pager">I-crop ang border ng Pahina</string>
     <string name="pref_crop_borders_continuous_vertical">I-crop ang border sa Tuloy-tuloy na pa-Vertical</string>
-    <string name="action_clean_titles">Linsin ang mga title</string>
+    <string name="action_clean_titles">Linsin ang mga pamagat</string>
     <string name="frong_page_categories">Kategorya ng Front Page</string>
     <string name="action_set_first_page_cover">I-set ang unang pahina bilang cover</string>
     <string name="action_copy_first_page">Kopyahin ang unang pahina</string>
@@ -387,7 +378,7 @@
     <string name="select_sources">Pumili ng mga source</string>
     <string name="skip_pre_migration">Laktawan bago maglipat</string>
     <string name="pre_migration_skip_toast">Para makita itong screen na ito, pumunta sa Mga Setting -&gt; Aklatan.</string>
-    <string name="use_intelligent_search">Maghanap ng title + mga keyword ng title</string>
+    <string name="use_intelligent_search">Maghanap ng pamagat + mga keyword ng pamagat</string>
     <string name="include_extra_search_parameter">Isama ang karagdagang parameter sa paghahanap</string>
     <string name="use_first_source">Gamitin ang unang source na may alternatibo</string>
     <string name="hide_not_found_entries">Itago ang mga di-hanap na mga entry</string>
@@ -457,7 +448,7 @@
     <string name="pref_clear_page_preview_cache">Linisin ang cache ng pag preview</string>
     <string name="page_preview_page_go_to">Pumunta sa</string>
     <string name="no_rating">Walang rating</string>
-    <string name="more_info">Maraming impo</string>
+    <string name="more_info">Dagdag Impormasyon</string>
     <string name="is_exhentai_gallery">ay Exhentai na gallery</string>
     <string name="thumbnail_url">URL ng thumbnail</string>
     <string name="date_posted">Petsang nai-post</string>
@@ -467,14 +458,14 @@
     <string name="total_favorites">Bilang ng paborito</string>
     <string name="total_ratings">Bilang ng rating</string>
     <string name="characters">Mga Karakter</string>
-    <string name="japanese_title">Japanese na Title</string>
-    <string name="english_title">Ingles na Title</string>
-    <string name="short_title">Maikling Title</string>
+    <string name="japanese_title">Japanese na Pamagat</string>
+    <string name="english_title">Ingles na Pamagat</string>
+    <string name="short_title">Maikling Pamagat</string>
     <string name="cover_image_file_type">Uri ng file type ng imahe ng cover</string>
     <string name="thumbnail_image_file_type">Uri ng file type ng imahe ng thumbnail</string>
     <string name="collection">Koleksyon</string>
     <string name="parodies">Mga parody</string>
-    <string name="author">May akda</string>
+    <string name="author">May-akda</string>
     <string name="last_chapter_number">Huling numero ng kabanata</string>
     <string name="follow_status">Sundan ang status</string>
     <string name="anilist_id">ID ng Anilist</string>
@@ -501,10 +492,7 @@
     <string name="humanize_fallback">ilang sandali ang nakalipas</string>
     <string name="favorites_sync_notes_message"><![CDATA[1. Ang mga pagbabago sa pangalan ng kategorya sa app ay <b>HINDI</b> nai-sync! Mangyaring <i>palitan ang pangalan ng kategorya sa ExHentai sa halip</i>. Ang mga pangalan ng kategorya ay kokopyahin mula sa ExHentai servers sa bawat pag-sync.<br><br>2. Ang mga paboritong kategorya sa ExHentai ay tumutukoy sa <b>unang 10 kategorya sa app</b> (hindi kasama ang 'Default' na kategorya). <i>Ang mga gallery sa ibang mga kategorya ay <b>HINDI</b> nai-sync!</i><br><br>3. <font color='red'><b>PANATALIHING MAY MALAKAS NA KONEKSYON NG INTERNET KAPAG NAGPRPROSESO NG PAG-SYNC!</b></font> Kung mawawalan ng koneksyon sa internet habang nag-sync ang app, ang iyong mga paborito ay maaaring maiwan sa isang <i>bahagyang nai-sync na estado</i>.<br><br>4. Panatilihing bukas ang app habang nag-sync ang mga paborito. Ang Android ay minsang nagsasara ng mga app na nasa background at maaaring hindi maganda kung mangyari ito habang nag-sisync ang app.<br><br>5. <b>Huwag ilagay ang mga paborito sa maraming kategorya</b> (suportado ito ng app). Maaari malilito ang algorithm ng pag-sync dahil pinapayagan lang ng ExH na ang bawat paborito ay nasa isang kategorya.<br><br> Ang dialog na ito ay lilitaw lamang ng isang beses. Maaari mong basahin muli ang mga tala na ito sa pamamagitan ng pagpunta sa 'Mga Setting > E-Hentai > Ipakita ang sync note ng mga paborito'.]]></string>
     <string name="batch_add_unknown_type_log_message">Di-kilalang uri ng entry para sa gallery: %1$s</string>
-    <string name="batch_add_summary">"
-\nBuod:
-\nIdinagdag: %1$d (na) gallery
-\nNabigo: %2$d (na) gallery"</string>
+    <string name="batch_add_summary">\nBuod:\nIdinagdag: %1$d (na) gallery\nNabigo: %2$d (na) gallery</string>
     <string name="batch_add_success_log_message">Idinagdag na gallery: %1$s</string>
     <string name="gallery_adder_source_uri_must_match">Error sa pagsusuri ng pagtutugma ng source URI!</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) ay di-balidong gallery!</string>
@@ -542,7 +530,7 @@
     <string name="relation_alternate_version">Alternatibong bersyon</string>
     <string name="entry_type_comic">Komik</string>
     <string name="watched_tags">Binabantayang mga Tag</string>
-    <string name="alt_title">Alternatibong Title</string>
+    <string name="alt_title">Alternatibong Pamagat</string>
     <string name="entry_type_manga">Manga</string>
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
@@ -554,7 +542,7 @@
     <string name="eh_image_quality_1280">1280x</string>
     <string name="eh_image_quality_980">980x</string>
     <string name="eh_image_quality_780">780x</string>
-    <string name="data_saver">Data Saver</string>
+    <string name="data_saver">Taga-save ng datos</string>
     <string name="syncyomi">SyncYomi</string>
     <string name="google_drive">Google Drive</string>
     <string name="aes_256">AES 256</string>
@@ -576,11 +564,11 @@
     <string name="average_rating">Average na rating</string>
     <string name="rating2">Masakit</string>
     <string name="wsrv">wsrv.nl</string>
-    <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
+    <string name="bandwidth_data_saver_server">Proxy Server ng Bandwidth Hero</string>
     <string name="log_extreme_desc">Mode ng inspeksyon ng network</string>
     <string name="pref_sync_service_category">Sync</string>
     <string name="aes_128">AES 128</string>
-    <string name="pref_archive_reader_mode">Archive reader mode</string>
+    <string name="pref_archive_reader_mode">Mode ng pagbasa ng naka-archive</string>
     <string name="rating10">Obra maestra</string>
     <string name="rating8">Mahusay</string>
     <string name="rating6">Ayos</string>
@@ -588,8 +576,8 @@
     <string name="rating4">Masama</string>
     <string name="rating3">Kakila-kilabot</string>
     <string name="doujinshi">Doujinshi</string>
-    <string name="artist_cg">Artist CG</string>
-    <string name="game_cg">Game CG</string>
+    <string name="artist_cg">CG ng Taga-guhit</string>
+    <string name="game_cg">CG ng Laro</string>
     <string name="non_h">Hindi-H</string>
     <string name="image_set">Set ng Imahe</string>
     <string name="asian_porn">Asyano Porno</string>
@@ -604,9 +592,9 @@
     <string name="multi_tags_comma_separated">Maglagay ng (mga) tag, na pinaghihiwalay ng mga kuwit (,).</string>
     <string name="settings_profile_note">Profile note na mga setting</string>
     <string name="pref_sync_api_key">API key</string>
-    <string name="alt_titles">Alternatibong mga Title</string>
+    <string name="alt_titles">Alternatibong mga Pamagat</string>
     <string name="pref_sync_host">Host</string>
-    <string name="video">Video</string>
+    <string name="video">Bidyo</string>
     <string name="url">Url</string>
     <string name="uploader">Uploader</string>
     <string name="cosplay">Cosplay</string>
@@ -615,4 +603,32 @@
     <string name="fill_from_tracker">Punan mula sa tracker</string>
     <string name="entry_not_tracked">Ang entry ay hindi nai-track.</string>
     <string name="select_tracker">Pumili ng tracker</string>
+    <string name="artbook">Artbook</string>
+    <string name="is_visible">Visible: %1$s</string>
+    <string name="eh_batch_add">Idagdag ng Sabay-sabay</string>
+    <string name="batch_add">Idagdag ng Sabay-sabay</string>
+    <string name="random">Random</string>
+    <string name="similar_titles">Magkatulad na mga pamagat</string>
+    <string name="relation_serialization">Serialisasyon</string>
+    <string name="pref_category_navbar">Bar ng Pag-navigate</string>
+    <string name="label_sync">I-sync</string>
+    <string name="artist_hint">Tagaguhit: %1$s</string>
+    <string name="feed">Feed</string>
+    <string name="title_hint">Pamagat: %1$s</string>
+    <string name="batch_add_ok">[OK]</string>
+    <string name="error_with_reason">Error: %1$s</string>
+    <string name="western">Kanluranin</string>
+    <string name="token">Token</string>
+    <string name="genre">Genre</string>
+    <string name="parent">Parent</string>
+    <string name="relation_spin_off">Spin off</string>
+    <string name="language_translated">%1$s TR</string>
+    <string name="relation_monochrome">Iisang kulay</string>
+    <string name="batch_add_error">[ERROR]</string>
+    <string name="media_id">ID ng media</string>
+    <string name="path">Path</string>
+    <string name="artist">Artista</string>
+    <string name="visible">Visible</string>
+    <string name="aged">Aged</string>
+    <string name="rating_string">Rating string</string>
 </resources>

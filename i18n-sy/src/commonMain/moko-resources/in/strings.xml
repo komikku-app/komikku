@@ -20,15 +20,15 @@
     <string name="pref_category_fork">Pengaturan Fork</string>
     <string name="pref_category_mangadex">MangaDex</string>
     <!-- EH Settings -->
-    <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
-    <string name="enable_exhentai">Enable ExHentai</string>
-    <string name="requires_login">Requires login</string>
-    <string name="use_hentai_at_home">Use Hentai@Home Network</string>
+    <string name="ehentai_prefs_account_settings">Pengaturan Akun Situs E-Hentai</string>
+    <string name="enable_exhentai">Aktifkan ExHentai</string>
+    <string name="requires_login">Login diperlukan</string>
+    <string name="use_hentai_at_home">Gunakan jaringan Hentai@Home</string>
     <string name="use_hentai_at_home_summary">Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n- Any client (Recommended)\n- Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)</string>
-    <string name="use_hentai_at_home_option_1">Any client (Recommended)</string>
-    <string name="use_hentai_at_home_option_2">Default port clients only</string>
-    <string name="show_japanese_titles">Show Japanese titles in search results</string>
-    <string name="show_japanese_titles_option_1">Currently showing Japanese titles in search results. Clear the chapter cache after changing this (in the Advanced section)</string>
+    <string name="use_hentai_at_home_option_1">Klien manapun (Direkomendasikan)</string>
+    <string name="use_hentai_at_home_option_2">Hanya klien port default</string>
+    <string name="show_japanese_titles">Tampilkan judul berbahasa Jepang di hasil pencarian</string>
+    <string name="show_japanese_titles_option_1">Saat ini menampilkan judul berbahasa Jepang di hasil pencarian. Bersihkan cache bab setelah mengubah ini (di bagian Lanjutan)</string>
     <string name="show_japanese_titles_option_2">Currently showing English/Romanized titles in search results. Clear the chapter cache after changing this (in the Advanced section)</string>
     <string name="use_original_images">Use original images</string>
     <string name="use_original_images_on">Currently using original images</string>
@@ -649,4 +649,5 @@
     <string name="relation_preserialization">Pra-serialisasi</string>
     <string name="select_tracker">Pilih pelacak</string>
     <string name="fill_from_tracker">Isi melalui pelacak</string>
+    <string name="similar_titles">Judul serupa</string>
 </resources>
