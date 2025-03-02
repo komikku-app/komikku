@@ -238,6 +238,12 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         return api.getMangaMetadata(track)
     }
 
+    // SY -->
+    override suspend fun searchById(id: String): TrackSearch {
+        return api.searchById(id)
+    }
+    // SY <--
+
     fun saveOAuth(alOAuth: ALOAuth?) {
         trackPreferences.trackToken(this).set(json.encodeToString(alOAuth))
     }

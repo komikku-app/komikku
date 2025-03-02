@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.network.DELETE
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.PUT
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import kotlinx.serialization.json.Json
@@ -25,6 +26,7 @@ import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -190,13 +192,34 @@ class MangaUpdatesApi(
         }
     }
 
-    suspend fun getSeries(track: DomainTrack): MURecord {
+    suspend fun getSeries(track: DomainTrack): MURecord =
+        getSeries(track.remoteId)
+
+    // SY -->
+    suspend fun getSeries(remoteId: Long): MURecord {
         return with(json) {
-            client.newCall(GET("$BASE_URL/v1/series/${track.remoteId}"))
+            client.newCall(GET("$BASE_URL/v1/series/$remoteId"))
                 .awaitSuccess()
                 .parseAs<MURecord>()
         }
     }
+
+    suspend fun convertToNewId(legacyId: Int): String? =
+        client.newBuilder()
+            .followRedirects(false)
+            .build()
+            .newCall(GET("https://www.mangaupdates.com/series.html?id=$legacyId"))
+            .await()
+            .takeIf(Response::isRedirect)
+            ?.header("Location")
+            ?.let {
+                // Extract the new id from the redirected URL
+                Regex("""/series/(\w+)(/([\w-]+)?)?/?${'$'}""")
+                    .find(it)
+                    ?.groups?.get(1)
+                    ?.value
+            }
+    // SY <--
 
     companion object {
         private const val BASE_URL = "https://api.mangaupdates.com"

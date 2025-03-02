@@ -131,6 +131,8 @@ data class DummyTracker(
     override suspend fun getMangaMetadata(
         track: Track,
     ): TrackMangaMetadata = TrackMangaMetadata(0, "test", "test", "test", "test", "test")
+
+    override suspend fun searchById(id: String) = null
     // SY <--
 
     // KMK -->

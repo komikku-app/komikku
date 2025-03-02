@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALAddMangaResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
+import eu.kanade.tachiyomi.data.track.anilist.dto.ALIdSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALMangaMetadata
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALSearchResult
@@ -387,6 +388,56 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
         }
     }
+
+    // SY -->
+    suspend fun searchById(id: String): TrackSearch {
+        return withIOContext {
+            val query = """
+            |query (${'$'}mangaId: Int!) {
+                |Media (id: ${'$'}mangaId) {
+                    |id
+                    |title {
+                        |userPreferred
+                    |}
+                    |coverImage {
+                        |large
+                    |}
+                    |format
+                    |status
+                    |chapters
+                    |description
+                    |startDate {
+                        |year
+                        |month
+                        |day
+                    |}
+                    |averageScore
+                |}
+            |}
+            |
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") {
+                    put("mangaId", id)
+                }
+            }
+            with(json) {
+                authClient.newCall(
+                    POST(
+                        API_URL,
+                        body = payload.toString().toRequestBody(jsonMime),
+                    ),
+                )
+                    .awaitSuccess()
+                    .parseAs<ALIdSearchResult>()
+                    .data.media
+                    .toALManga()
+                    .toTrack()
+            }
+        }
+    }
+    // SY <--
 
     private fun createDate(dateValue: Long): JsonObject {
         if (dateValue == 0L) {

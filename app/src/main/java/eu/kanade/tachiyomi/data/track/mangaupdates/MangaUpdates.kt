@@ -135,6 +135,29 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
         }
     }
 
+    // SY -->
+    override suspend fun searchById(id: String): TrackSearch? {
+        /*
+         * MangaUpdates uses newer base36 IDs (in URLs displayed as an encoded string, internally as a long)
+         * as well as older sequential numeric IDs, which were phased out to prevent heavy load caused by
+         * database scraping. Unfortunately, sites like MD sometimes still provides links with the old IDs,
+         * so we need to convert them.
+         * Because the API only accepts the newer IDs, we are forced to access the legacy non-API website
+         * (ex. https://www.mangaupdates.com/series.html?id=15), which is a permanent redirect (HTTP 308) to the new one.
+         */
+
+        val base36Id = if (id.matches(Regex("""^\d+$"""))) {
+            api.convertToNewId(id.toInt()) ?: return null
+        } else {
+            id
+        }
+
+        return base36Id.toLong(36).let { longId ->
+            api.getSeries(longId).toTrackSearch(this.id)
+        }
+    }
+    // SY <--
+
     fun restoreSession(): String? {
         return trackPreferences.trackPassword(this).get().ifBlank { null }
     }

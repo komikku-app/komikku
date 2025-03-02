@@ -160,6 +160,12 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
         return api.getMangaMetadata(track)
     }
 
+    // SY -->
+    override suspend fun searchById(id: String): TrackSearch {
+        return api.getMangaDetails(id.toInt())
+    }
+    // SY <--
+
     fun getIfAuthExpired(): Boolean {
         return trackPreferences.trackAuthExpired(this).get()
     }

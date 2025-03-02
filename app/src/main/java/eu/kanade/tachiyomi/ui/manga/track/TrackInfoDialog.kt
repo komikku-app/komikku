@@ -2,17 +2,20 @@ package eu.kanade.tachiyomi.ui.manga.track
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -40,6 +45,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.track.TrackChapterSelector
 import eu.kanade.presentation.track.TrackDateSelector
@@ -53,10 +59,13 @@ import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.lang.convertEpochMillisZone
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
+import exh.metadata.metadata.base.TrackerIdMetadata
+import exh.source.getMainSource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -71,6 +80,7 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
@@ -103,78 +113,95 @@ data class TrackInfoDialogHomeScreen(
         val dateFormat = remember { UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()) }
         val state by screenModel.state.collectAsState()
 
-        TrackInfoDialogHome(
-            trackItems = state.trackItems,
-            dateFormat = dateFormat,
-            onStatusClick = {
-                navigator.push(
-                    TrackStatusSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
-            },
-            onChapterClick = {
-                navigator.push(
-                    TrackChapterSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
-            },
-            onScoreClick = {
-                navigator.push(
-                    TrackScoreSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
-            },
-            onStartDateEdit = {
-                navigator.push(
-                    TrackDateSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                        start = true,
-                    ),
-                )
-            },
-            onEndDateEdit = {
-                navigator.push(
-                    TrackDateSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                        start = false,
-                    ),
-                )
-            },
-            onNewSearch = {
-                if (it.tracker is EnhancedTracker) {
-                    screenModel.registerEnhancedTracking(it)
-                } else {
-                    navigator.push(
-                        TrackerSearchScreen(
-                            mangaId = mangaId,
-                            initialQuery = it.track?.title ?: mangaTitle,
-                            currentUrl = it.track?.remoteUrl,
-                            serviceId = it.tracker.id,
-                        ),
+        // SY -->
+        Column(modifier = Modifier.animateContentSize()) {
+            if (state.isLoading) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp)
+                        .windowInsetsPadding(WindowInsets.systemBars),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        stringResource(MR.strings.loading),
+                        fontSize = 14.sp,
                     )
                 }
-            },
-            onOpenInBrowser = { openTrackerInBrowser(context, it) },
-            onRemoved = {
-                navigator.push(
-                    TrackerRemoveScreen(
-                        mangaId = mangaId,
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
+            }
+            // SY <--
+            else {
+                TrackInfoDialogHome(
+                    trackItems = state.trackItems,
+                    dateFormat = dateFormat,
+                    onStatusClick = {
+                        navigator.push(
+                            TrackStatusSelectorScreen(
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                            ),
+                        )
+                    },
+                    onChapterClick = {
+                        navigator.push(
+                            TrackChapterSelectorScreen(
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                            ),
+                        )
+                    },
+                    onScoreClick = {
+                        navigator.push(
+                            TrackScoreSelectorScreen(
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                            ),
+                        )
+                    },
+                    onStartDateEdit = {
+                        navigator.push(
+                            TrackDateSelectorScreen(
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                                start = true,
+                            ),
+                        )
+                    },
+                    onEndDateEdit = {
+                        navigator.push(
+                            TrackDateSelectorScreen(
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                                start = false,
+                            ),
+                        )
+                    },
+                    onNewSearch = {
+                        if (it.tracker is EnhancedTracker) {
+                            screenModel.registerEnhancedTracking(it)
+                        } else {
+                            // SY -->
+                            screenModel.newSearch(navigator, it, mangaTitle)
+                            // SY <--
+                        }
+                    },
+                    onOpenInBrowser = { openTrackerInBrowser(context, it) },
+                    onRemoved = {
+                        navigator.push(
+                            TrackerRemoveScreen(
+                                mangaId = mangaId,
+                                track = it.track!!,
+                                serviceId = it.tracker.id,
+                            ),
+                        )
+                    },
+                    onCopyLink = { context.copyTrackerLink(it) },
+                    onTogglePrivate = screenModel::togglePrivate,
                 )
-            },
-            onCopyLink = { context.copyTrackerLink(it) },
-            onTogglePrivate = screenModel::togglePrivate,
-        )
+            }
+        }
     }
 
     /**
@@ -198,6 +225,10 @@ data class TrackInfoDialogHomeScreen(
         private val mangaId: Long,
         private val sourceId: Long,
         private val getTracks: GetTracks = Injekt.get(),
+        /* SY --> */
+        private val trackerManager: TrackerManager = Injekt.get(),
+        private val trackPreferences: TrackPreferences = Injekt.get(),
+        /* SY <-- */
     ) : StateScreenModel<Model.State>(State()) {
 
         init {
@@ -226,6 +257,79 @@ data class TrackInfoDialogHomeScreen(
                 }
             }
         }
+
+        // SY -->
+        fun newSearch(navigator: Navigator, item: TrackItem, mangaTitle: String) {
+            screenModelScope.launchNonCancellable {
+                if (trackPreferences.resolveUsingSourceMetadata().get()) {
+                    // Check if the tracker id is contained in the metadata
+                    val result = getTrackerIdFromMetadata(item.tracker.id)
+                    if (result != null) {
+                        mutableState.update { it.copy(isLoading = true) }
+
+                        // Try to register tracking by id
+                        val success = registerTrackingById(item.tracker.id, result)
+
+                        mutableState.update { it.copy(isLoading = false) }
+
+                        if (success) {
+                            // Return on success
+                            return@launchNonCancellable
+                        }
+                    }
+                }
+
+                // Open search screen
+                navigator.push(
+                    TrackerSearchScreen(
+                        mangaId = mangaId,
+                        initialQuery = item.track?.title ?: mangaTitle,
+                        currentUrl = item.track?.remoteUrl,
+                        serviceId = item.tracker.id,
+                    ),
+                )
+            }
+        }
+
+        suspend fun getTrackerIdFromMetadata(trackerId: Long): String? {
+            try {
+                val sourceManager = Injekt.get<SourceManager>()
+                val getFlatMetadataById = Injekt.get<GetFlatMetadataById>()
+
+                val metadataSource = sourceManager.get(sourceId)
+                    ?.getMainSource<MetadataSource<*, *>>() ?: return null
+
+                return getFlatMetadataById.await(mangaId)?.run {
+                    raise(metadataSource.metaClass) as? TrackerIdMetadata
+                }?.let { metadata ->
+                    when (trackerId) {
+                        trackerManager.aniList.id -> metadata.anilistId
+                        trackerManager.kitsu.id -> metadata.kitsuId
+                        trackerManager.myAnimeList.id -> metadata.myAnimeListId
+                        trackerManager.mangaUpdates.id -> metadata.mangaUpdatesId
+                        else -> null
+                    }
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e) { "Failed to search manga on tracker by id" }
+                return null
+            }
+        }
+
+        suspend fun registerTrackingById(trackerId: Long, remoteId: String): Boolean {
+            trackerManager.get(trackerId)?.let { tracker ->
+                try {
+                    tracker.searchById(remoteId)?.let { track ->
+                        tracker.register(track, mangaId)
+                        return true
+                    }
+                } catch (e: Throwable) {
+                    logcat(LogPriority.ERROR, e) { "Failed to register tracking by id" }
+                }
+            }
+            return false
+        }
+        // SY <--
 
         private suspend fun refreshTrackers() {
             val refreshTracks = Injekt.get<RefreshTracks>()
@@ -268,6 +372,9 @@ data class TrackInfoDialogHomeScreen(
         @Immutable
         data class State(
             val trackItems: List<TrackItem> = emptyList(),
+            // SY -->
+            val isLoading: Boolean = false,
+            // SY <--
         )
     }
 }
