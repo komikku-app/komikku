@@ -36,7 +36,7 @@ class SyncNotifier(private val context: Context) {
     }
 
     private val completeNotificationBuilder = context.notificationBuilder(
-        Notifications.CHANNEL_BACKUP_RESTORE_PROGRESS,
+        Notifications.CHANNEL_BACKUP_RESTORE_COMPLETE,
     ) {
         setSmallIcon(R.drawable.ic_komikku)
         setColor(ContextCompat.getColor(context, R.color.ic_launcher))
