@@ -30,19 +30,16 @@ import kotlin.random.Random
 
     /* SY --> */ open /* SY <-- */val cookieJar = AndroidCookieJar()
 
-    /* SY --> */ open /* SY <-- */val client: OkHttpClient =
-        // KMK -->
-        clientWithTimeOut()
-
     /**
      * Timeout in unit of seconds.
      */
-    fun clientWithTimeOut(
+    private /* KMK --> */ fun /* KMK <-- */ clientBuilder(
+        // KMK -->
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
         callTimeout: Long = 120,
         // KMK <--
-    ): OkHttpClient = run {
+    ): OkHttpClient.Builder = run {
         val builder = OkHttpClient.Builder()
             .cookieJar(cookieJar)
             // KMK -->
@@ -68,10 +65,6 @@ import kotlin.random.Random
             builder.addNetworkInterceptor(httpLoggingInterceptor)
         }
 
-        builder.addInterceptor(
-            CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
-        )
-
         when (preferences.dohProvider().get()) {
             PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
             PREF_DOH_GOOGLE -> builder.dohGoogle()
@@ -85,12 +78,34 @@ import kotlin.random.Random
             PREF_DOH_CONTROLD -> builder.dohControlD()
             PREF_DOH_NJALLA -> builder.dohNajalla()
             PREF_DOH_SHECAN -> builder.dohShecan()
+            else -> builder
         }
+    }
 
-        builder.build()
+    val nonCloudflareClient /* KMK --> */ by lazy /* KMK <-- */ { clientBuilder().build() }
+
+    /* SY --> */ open /* SY <-- */ val client /* KMK --> */ by lazy /* KMK <-- */ {
+        clientBuilder()
+            .addInterceptor(
+                CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
+            )
+            .build()
     }
 
     // KMK -->
+    /**
+     * Timeout in unit of seconds.
+     */
+    private fun clientWithTimeOut(
+        connectTimeout: Long = 30,
+        readTimeout: Long = 30,
+        callTimeout: Long = 120,
+    ) = clientBuilder(connectTimeout, readTimeout, callTimeout)
+        .addInterceptor(
+            CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
+        )
+        .build()
+
     /**
      * Allow to download a big file with retry & resume capability because
      * normally it would get a Timeout exception.
