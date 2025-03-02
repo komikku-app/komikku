@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -20,12 +19,12 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.data.source.NoResultsException
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 
-abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource?) : TrackerRecommendationPagingSource(
+abstract class MangaUpdatesPagingSource(manga: Manga) : TrackerRecommendationPagingSource(
     "https://api.mangaupdates.com/v1/",
-    source,
     manga,
 ) {
     override val name: String
@@ -91,7 +90,7 @@ abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource?) 
         return getRecsById(
             data["results"]!!
                 .jsonArray
-                .ifEmpty { throw Exception("'$search' not found") }
+                .ifEmpty { throw NoResultsException() }
                 .first()
                 .jsonObject["record"]!!
                 .jsonObject["series_id"]!!
@@ -100,14 +99,14 @@ abstract class MangaUpdatesPagingSource(manga: Manga, source: CatalogueSource?) 
     }
 }
 
-class MangaUpdatesCommunityPagingSource(manga: Manga, source: CatalogueSource?) : MangaUpdatesPagingSource(manga, source) {
+class MangaUpdatesCommunityPagingSource(manga: Manga) : MangaUpdatesPagingSource(manga) {
     override val category: StringResource
         get() = SYMR.strings.community_recommendations
     override val recommendationJsonObjectName: String
         get() = "recommendations"
 }
 
-class MangaUpdatesSimilarPagingSource(manga: Manga, source: CatalogueSource?) : MangaUpdatesPagingSource(manga, source) {
+class MangaUpdatesSimilarPagingSource(manga: Manga) : MangaUpdatesPagingSource(manga) {
     override val category: StringResource
         get() = SYMR.strings.similar_titles
     override val recommendationJsonObjectName: String

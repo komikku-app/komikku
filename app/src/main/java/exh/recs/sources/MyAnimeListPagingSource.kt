@@ -4,7 +4,6 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -17,9 +16,8 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
 
-class MyAnimeListPagingSource(manga: Manga, source: CatalogueSource?) : TrackerRecommendationPagingSource(
+class MyAnimeListPagingSource(manga: Manga) : TrackerRecommendationPagingSource(
     "https://api.jikan.moe/v4/",
-    source,
     manga,
 ) {
     override val name: String

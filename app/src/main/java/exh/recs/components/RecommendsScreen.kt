@@ -17,13 +17,12 @@ import exh.recs.sources.RecommendationPagingSource
 import kotlinx.collections.immutable.ImmutableMap
 import nl.adaptivity.xmlutil.core.impl.multiplatform.name
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun RecommendsScreen(
-    manga: Manga?,
+    title: String,
     state: RecommendsScreenModel.State,
     navigateUp: () -> Unit,
     getManga: @Composable (Manga) -> State<Manga>,
@@ -34,7 +33,7 @@ fun RecommendsScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             AppBar(
-                title = stringResource(SYMR.strings.similar, manga?.title.orEmpty()),
+                title = title,
                 scrollBehavior = scrollBehavior,
                 navigateUp = navigateUp,
             )
@@ -64,7 +63,7 @@ internal fun RecommendsContent(
         contentPadding = contentPadding,
     ) {
         items.forEach { (source, recResult) ->
-            item(key = source::class.name) {
+            item(key = "${source::class.name}-${source.name}-${source.category.resourceId}") {
                 GlobalSearchResultItem(
                     title = source.name,
                     subtitle = stringResource(source.category),

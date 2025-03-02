@@ -10,7 +10,7 @@ import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.domain.manga.model.Manga
 
 abstract class EHentaiPagingSource(
-    override val source: CatalogueSource,
+    source: CatalogueSource,
 ) : BaseSourcePagingSource(source) {
 
     override suspend fun getPageLoadResult(
@@ -21,7 +21,7 @@ abstract class EHentaiPagingSource(
         val metadata = mangasPage.mangasMetadata
 
         val manga = mangasPage.mangas
-            .mapIndexed { index, sManga -> sManga.toDomainManga(source.id) to metadata.getOrNull(index) }
+            .mapIndexed { index, sManga -> sManga.toDomainManga(source!!.id) to metadata.getOrNull(index) }
             .filter { seenManga.add(it.first.url) }
             // KMK -->
             .let { pairs -> networkToLocalManga(pairs.map { it.first }).zip(pairs.map { it.second }) }
@@ -41,18 +41,18 @@ class EHentaiSearchPagingSource(
     val filters: FilterList,
 ) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source.getSearchManga(currentPage, query.sanitize(), filters)
+        return source!!.getSearchManga(currentPage, query.sanitize(), filters)
     }
 }
 
 class EHentaiPopularPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source.getPopularManga(currentPage)
+        return source!!.getPopularManga(currentPage)
     }
 }
 
 class EHentaiLatestPagingSource(source: CatalogueSource) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source.getLatestUpdates(currentPage)
+        return source!!.getLatestUpdates(currentPage)
     }
 }

@@ -24,7 +24,7 @@ class SourcesScreen(private val smartSearchConfig: SmartSearchConfig?) : Screen(
     }
 
     /**
-     * initialized when invoking [MangaScreen.openSmartSearch] or [RecommendsScreen.openSmartSearch]
+     * initialized when invoking [MangaScreen.openSmartSearch] or [RecommendsScreen]
      */
     data class SmartSearchConfig(val origTitle: String, val origMangaId: Long? = null) : Serializable
 }
