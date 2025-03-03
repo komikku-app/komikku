@@ -1,4 +1,7 @@
 -- NOTE: must update MERGED_SOURCE_ID (6969) here
+DROP VIEW IF EXISTS libraryView;
+DROP VIEW IF EXISTS updatesView;
+
 CREATE VIEW libraryView AS
 SELECT
     M.*,
@@ -76,12 +79,51 @@ LEFT JOIN mangas_categories AS MC
 ON MC.manga_id = M._id
 WHERE M.source = 6969;
 
-library:
-SELECT *
-FROM libraryView
-WHERE libraryView.favorite = 1;
-
-readMangaNonLibrary:
-SELECT *
-FROM libraryView
-WHERE libraryView.favorite = 0 AND libraryView.readCount != 0;
+CREATE VIEW updatesView AS
+SELECT
+    mangas._id AS mangaId,
+    mangas.title AS mangaTitle,
+    chapters._id AS chapterId,
+    chapters.name AS chapterName,
+    chapters.scanlator,
+    chapters.read,
+    chapters.bookmark,
+    chapters.last_page_read,
+    mangas.source,
+    mangas.favorite,
+    mangas.thumbnail_url AS thumbnailUrl,
+    mangas.cover_last_modified AS coverLastModified,
+    chapters.date_upload AS dateUpload,
+    chapters.date_fetch AS datefetch
+FROM mangas JOIN chapters
+ON mangas._id = chapters.manga_id
+WHERE favorite = 1 AND source <> 6969
+AND date_fetch > date_added
+UNION
+SELECT
+    mangas._id AS mangaId,
+    mangas.title AS mangaTitle,
+    chapters._id AS chapterId,
+    chapters.name AS chapterName,
+    chapters.scanlator,
+    chapters.read,
+    chapters.bookmark,
+    chapters.last_page_read,
+    mangas.source,
+    mangas.favorite,
+    mangas.thumbnail_url AS thumbnailUrl,
+    mangas.cover_last_modified AS coverLastModified,
+    chapters.date_upload AS dateUpload,
+    chapters.date_fetch AS datefetch
+FROM mangas
+LEFT JOIN (
+    SELECT merged.manga_id,merged.merge_id
+    FROM merged
+    GROUP BY merged.merge_id
+) AS ME
+ON ME.merge_id = mangas._id
+JOIN chapters
+ON ME.manga_id = chapters.manga_id
+WHERE favorite = 1 AND source = 6969
+AND date_fetch > date_added
+ORDER BY datefetch DESC;
