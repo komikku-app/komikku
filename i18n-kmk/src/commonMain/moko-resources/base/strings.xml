@@ -10,7 +10,7 @@
     <string name="action_move_up">Move up</string>
     <string name="action_move_down">Move down</string>
     <string name="action_confirm_color">Confirm Color</string>
-    <string name="action_remove_merged">Remove merged entries?</string>
+    <string name="action_remove_merged">Remove original entries from library?</string>
     <string name="action_hide">Hide</string>
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
@@ -148,4 +148,5 @@
     <string name="migrating_all_entries">Migrating all entries from source</string>
     <!-- Misc -->
     <string name="label_to_be_updated">To be updated</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>
