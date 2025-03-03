@@ -231,13 +231,10 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = libraryPreferences.newShowUpdatesCount(),
                     title = stringResource(MR.strings.pref_library_update_show_tab_badge),
                 ),
-                // SY -->
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.libraryReadDuplicateChapters(),
-                    title = stringResource(SYMR.strings.pref_library_mark_duplicate_chapters),
-                    subtitle = stringResource(SYMR.strings.pref_library_mark_duplicate_chapters_summary),
+                    preference = libraryPreferences.markDuplicateChapterRead(),
+                    title = stringResource(MR.strings.pref_mark_duplicate_chapter_read),
                 ),
-                // SY <--
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.showUpdatingProgressBanner(),

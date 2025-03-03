@@ -16,7 +16,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
-import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.SourceFeedOrderScreen
 import eu.kanade.presentation.browse.SourceFeedScreen
@@ -24,9 +23,10 @@ import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.presentation.browse.components.FeedActionsDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
+import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
@@ -34,16 +34,18 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
-import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
+import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.anyIs
 import exh.source.isEhBasedSource
 import exh.util.nullIfBlank
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
@@ -51,7 +53,8 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.domain.source.model.Source as ModelSource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {
 
@@ -87,6 +90,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
         val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
+
+        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
+            screenModel.source.isEhBasedSource() && isHentaiEnabled
 
         val haptic = LocalHapticFeedback.current
 
@@ -151,23 +158,14 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                         )
                     }.takeIf { screenModel.source is HttpSource },
                     onSourceSettingClick = {
-                        val dummy = ModelSource(
-                            sourceId,
-                            "",
-                            "",
-                            supportsLatest = false,
-                            isStub = false,
-                        )
-                        dummy.installedExtension?.let {
-                            navigator.push(ExtensionDetailsScreen(it.pkgName))
+                        when {
+                            screenModel.source.isEhBasedSource() && isHentaiEnabled ->
+                                navigator.push(SettingsEhScreen)
+                            screenModel.source.anyIs<ConfigurableSource>() ->
+                                navigator.push(SourcePreferencesScreen(screenModel.source.id))
+                            else -> {}
                         }
-                    }.takeIf {
-                        !screenModel.source.isLocalOrStub() &&
-                            !screenModel.source.isEhBasedSource() &&
-                            screenModel.state.value.items
-                                .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
-                                .isNotEmpty()
-                    },
+                    }.takeIf { isConfigurableSource },
                     onSortFeedClick = { showingFeedOrderScreen.value = true }
                         .takeIf {
                             screenModel.state.value.items
