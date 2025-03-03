@@ -35,8 +35,8 @@
 
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s, %1$d página</item>
-        <item quantity="other">%2$s, %1$d páginas</item>
+        <item quantity="one">%2$s %1$d página</item>
+        <item quantity="other">%2$s %1$d páginas</item>
     </plurals>
 
     <!-- Humanize time -->
