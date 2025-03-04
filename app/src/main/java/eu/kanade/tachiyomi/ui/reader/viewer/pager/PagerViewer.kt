@@ -384,17 +384,27 @@ abstract class PagerViewer(
     }
 
     /**
-     * Moves to the page at the top (or previous).
+     * Pans to the top of the page or if already on the top moves to the previous page.
      */
     protected open fun moveUp() {
-        moveToPrevious()
+        val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
+        if (holder != null && holder.canPanUp()) {
+            holder.panUp()
+        } else {
+            moveToPrevious()
+        }
     }
 
     /**
-     * Moves to the page at the bottom (or next).
+     * Pans to the bottom of the page or if already on the bottom moves to the next page.
      */
     protected open fun moveDown() {
-        moveToNext()
+        val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
+        if (holder != null && holder.canPanDown()) {
+            holder.panDown()
+        } else {
+            moveToNext()
+        }
     }
 
     /**
