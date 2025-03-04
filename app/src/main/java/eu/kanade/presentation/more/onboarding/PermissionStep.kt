@@ -37,6 +37,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
+import eu.kanade.tachiyomi.util.system.analyticsIncluded
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -176,6 +177,8 @@ internal class PermissionStep : OnboardingStep {
                 )
             }
             // KMK <--
+
+            if (!analyticsIncluded) return@Column
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
