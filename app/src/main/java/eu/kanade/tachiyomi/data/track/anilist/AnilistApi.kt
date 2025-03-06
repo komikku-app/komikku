@@ -143,6 +143,19 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 |Page (perPage: 50) {
                     |media(search: ${'$'}query, type: MANGA, format_not_in: [NOVEL]) {
                         |id
+                        |staff {
+                            |edges {
+                                |role
+                                |id
+                                |node {
+                                    |name {
+                                        |full
+                                        |userPreferred
+                                        |native
+                                    |}
+                                |}
+                            |}
+                        |}
                         |title {
                             |userPreferred
                         |}
@@ -222,6 +235,19 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                                 |year
                                 |month
                                 |day
+                            |}
+                            |staff {
+                                |edges {
+                                    |role
+                                    |id
+                                    |node {
+                                        |name {
+                                            |full
+                                            |userPreferred
+                                            |native
+                                        |}
+                                    |}
+                                |}
                             |}
                         |}
                     |}
@@ -310,9 +336,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     |staff {
                         |edges {
                             |role
+                            |id
                             |node {
                                 |name {
+                                    |full
                                     |userPreferred
+                                    |native
                                 |}
                             |}
                         |}
@@ -345,15 +374,13 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             description = media.description?.htmlDecode()?.ifEmpty { null },
                             authors = media.staff.edges
                                 .filter { it.role == "Story" || it.role == "Story & Art" }
-                                // KMK -->
-                                .joinToString(", ") { it.node.name.userPreferred }
-                                // KMK <--
+                                .mapNotNull { it.node.name.userPreferred }
+                                .joinToString(", ")
                                 .ifEmpty { null },
                             artists = media.staff.edges
                                 .filter { it.role == "Art" || it.role == "Story & Art" }
-                                // KMK -->
-                                .joinToString(", ") { it.node.name.userPreferred }
-                                // KMK <--
+                                .mapNotNull { it.node.name.userPreferred }
+                                .joinToString(", ")
                                 .ifEmpty { null },
                         )
                     }
