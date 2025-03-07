@@ -187,6 +187,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
      */
     fun canPanRight(): Boolean = canPan { it.right }
 
+    // KMK -->
     /**
      * Check if the image can be panned up
      */
@@ -196,6 +197,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
      * Check if the image can be panned down
      */
     fun canPanDown(): Boolean = canPan { it.bottom }
+    // KMK <--
 
     /**
      * Check whether the image can be panned.
@@ -225,6 +227,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
         pan { center, view -> center.also { it.x += view.width / view.scale } }
     }
 
+    // KMK -->
     /**
      * Pans the image down by a screen's height worth.
      */
@@ -238,6 +241,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
     fun panUp() {
         pan { center, view -> center.also { it.y -= view.height / view.scale } }
     }
+    // KMK <--
 
     /**
      * Pans the image.
