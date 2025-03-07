@@ -72,6 +72,7 @@
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
     <string name="action_display_source_badge">Source icon</string>
     <string name="action_display_language_icon">Use language icon</string>
+    <string name="update_8hour">Every 8 hours</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
