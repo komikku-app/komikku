@@ -62,15 +62,6 @@ jobs:
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest testDevReleaseUnitTest
 
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
-        with:
-          releaseDirectory: app/build/outputs/apk/dev/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
       - name: Rename apk
         id: current_commit
         run: |
