@@ -373,12 +373,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             thumbnailUrl = media.coverImage.large,
                             description = media.description?.htmlDecode()?.ifEmpty { null },
                             authors = media.staff.edges
-                                .filter { it.role == "Story" || it.role == "Story & Art" }
+                                .filter { "Story" in it.role }
                                 .mapNotNull { it.node.name.userPreferred }
                                 .joinToString(", ")
                                 .ifEmpty { null },
                             artists = media.staff.edges
-                                .filter { it.role == "Art" || it.role == "Story & Art" }
+                                .filter { "Art" in it.role }
                                 .mapNotNull { it.node.name.userPreferred }
                                 .joinToString(", ")
                                 .ifEmpty { null },

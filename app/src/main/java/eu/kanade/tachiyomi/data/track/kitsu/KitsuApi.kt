@@ -298,14 +298,12 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                             thumbnailUrl = manga.posterImage.original.url,
                             description = manga.description.en?.htmlDecode()?.ifEmpty { null },
                             authors = manga.staff.nodes
-                                .filter { it.role == "Story" || it.role == "Story & Art" }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { "Story" in it.role }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                             artists = manga.staff.nodes
-                                .filter { it.role == "Art" || it.role == "Story & Art" }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { "Art" in it.role }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                         )
                     }

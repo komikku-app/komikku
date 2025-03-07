@@ -153,17 +153,13 @@ class BangumiApi(
                             thumbnailUrl = it.images?.common,
                             description = it.summary,
                             authors = it.infobox
-                                .filter { it.key == "作者" }
+                                .filter { "作者" in it.key }
                                 .filterIsInstance<Infobox.SingleValue>()
-                                // KMK -->
                                 .joinToString(", ") { it.value },
-                            // KMK <--
                             artists = it.infobox
-                                .filter { it.key == "插图" }
+                                .filter { "插图" in it.key }
                                 .filterIsInstance<Infobox.SingleValue>()
-                                // KMK -->
                                 .joinToString(", ") { it.value },
-                            // KMK <--
                         )
                     }
             }
