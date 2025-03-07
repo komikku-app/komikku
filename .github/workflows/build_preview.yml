@@ -152,7 +152,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assemblePreview
+        run: ./gradlew assemblePreview -Pinclude-analytics -Penable-updater
 
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest

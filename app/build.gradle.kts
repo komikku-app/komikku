@@ -11,10 +11,17 @@ plugins {
     id("com.github.ben-manes.versions")
 }
 
-val includeAnalytics = project.hasProperty("with-analytics")
-val includeUpdater = project.hasProperty("with-updater")
+class ConfigClass {
+    val includeAnalytics: Boolean = project.hasProperty("include-analytics")
+    val enableUpdater: Boolean = project.hasProperty("enable-updater")
+    val enableCodeShrink: Boolean = !project.hasProperty("disable-code-shrink")
+    val includeDependencyInfo: Boolean = project.hasProperty("include-dependency-info")
+}
 
-if (includeAnalytics) {
+@Suppress("PropertyName")
+val Config = ConfigClass()
+
+if (Config.includeAnalytics) {
     pluginManager.apply {
         apply(libs.plugins.google.services.get().pluginId)
         apply(libs.plugins.firebase.crashlytics.get().pluginId)
@@ -33,9 +40,8 @@ android {
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
-        buildConfigField("boolean", "INCLUDE_ANALYTICS", "$includeAnalytics")
-        buildConfigField("boolean", "INCLUDE_UPDATER", "$includeUpdater")
-        buildConfigField("boolean", "PREVIEW", "false")
+        buildConfigField("boolean", "ANALYTICS_INCLUDED", "${Config.includeAnalytics}")
+        buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,11 +53,14 @@ android {
             isPseudoLocalesEnabled = true
         }
         val release by getting {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = Config.enableCodeShrink
+            isShrinkResources = Config.enableCodeShrink
 
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
         }
+
+        val commonMatchingFallbacks = listOf(release.name)
+
         create("releaseTest") {
             initWith(release)
 
@@ -59,14 +68,14 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
 
-            matchingFallbacks.add(release.name)
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
         create("foss") {
             initWith(release)
 
-            applicationIdSuffix = ".t-foss"
+            applicationIdSuffix = ".foss"
 
-            matchingFallbacks.add(release.name)
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
         create("preview") {
             initWith(release)
@@ -76,9 +85,7 @@ android {
             versionNameSuffix = debug.versionNameSuffix
             signingConfig = debug.signingConfig
 
-            matchingFallbacks.add(release.name)
-
-            buildConfigField("boolean", "PREVIEW", "true")
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
         create("benchmark") {
             initWith(release)
@@ -90,12 +97,12 @@ android {
 
             signingConfig = debug.signingConfig
 
-            matchingFallbacks.add(release.name)
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
     }
 
     sourceSets {
-        val analyticsDir = if (includeAnalytics) "analytics-firebase" else "analytics-firebase-noop"
+        val analyticsDir = if (Config.includeAnalytics) "analytics-firebase" else "analytics-firebase-noop"
         getByName("main").kotlin.srcDirs("src/$analyticsDir/kotlin")
         getByName("preview").res.srcDirs("src/beta/res")
         getByName("benchmark").res.srcDirs("src/debug/res")
@@ -140,7 +147,8 @@ android {
     }
 
     dependenciesInfo {
-        includeInApk = false
+        includeInApk = Config.includeDependencyInfo
+        includeInBundle = Config.includeDependencyInfo
     }
 
     buildFeatures {
@@ -300,7 +308,7 @@ dependencies {
     implementation(libs.logcat)
 
     // Crash reports/analytics
-    if (includeAnalytics) {
+    if (Config.includeAnalytics) {
         implementation(platform(libs.firebase.bom))
         implementation(libs.firebase.analytics)
         implementation(libs.firebase.crashlytics)
