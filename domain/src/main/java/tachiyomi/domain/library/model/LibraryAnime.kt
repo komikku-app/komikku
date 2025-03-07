@@ -17,7 +17,7 @@ data class LibraryAnime(
 ) {
     val id: Long = anime.id
 
-    val unreadCount
+    val unseenCount
         get() = totalEpisodes - seenCount
 
     val hasBookmarks

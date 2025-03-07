@@ -12,12 +12,12 @@ class SetAnimeDefaultEpisodeFlags(
     private val getFavorites: GetFavorites,
 ) {
 
-    suspend fun await(manga: Anime) {
+    suspend fun await(anime: Anime) {
         withNonCancellableContext {
             with(libraryPreferences) {
                 setAnimeEpisodeFlags.awaitSetAllFlags(
-                    mangaId = manga.id,
-                    unreadFilter = filterChapterByRead().get(),
+                    animeId = anime.id,
+                    unseenFilter = filterChapterByRead().get(),
                     downloadedFilter = filterChapterByDownloaded().get(),
                     bookmarkedFilter = filterChapterByBookmarked().get(),
                     sortingMode = sortChapterBySourceOrNumber().get(),

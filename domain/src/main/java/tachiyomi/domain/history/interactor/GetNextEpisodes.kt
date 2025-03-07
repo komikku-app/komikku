@@ -62,11 +62,11 @@ class GetNextEpisodes(
 
     suspend fun await(
         animeId: Long,
-        fromEpisoeId: Long,
+        fromEpisodeId: Long,
         onlyUnseen: Boolean = true,
     ): List<Episode> {
         val episodes = await(animeId, onlyUnseen)
-        val currEpisodeIndex = episodes.indexOfFirst { it.id == fromEpisoeId }
+        val currEpisodeIndex = episodes.indexOfFirst { it.id == fromEpisodeId }
         val nextEpisodes = episodes.subList(max(0, currEpisodeIndex), episodes.size)
 
         if (onlyUnseen) {

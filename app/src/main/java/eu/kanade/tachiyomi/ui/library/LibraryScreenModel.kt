@@ -327,7 +327,7 @@ class LibraryScreenModel(
         }
 
         val filterFnUnread: (LibraryItem) -> Boolean = {
-            applyFilter(filterUnread) { it.libraryAnime.unreadCount > 0 }
+            applyFilter(filterUnread) { it.libraryAnime.unseenCount > 0 }
         }
 
         val filterFnStarted: (LibraryItem) -> Boolean = {
@@ -444,10 +444,10 @@ class LibraryScreenModel(
                 }
                 LibrarySort.Type.UnseenCount -> when {
                     // Ensure unread content comes first
-                    i1.libraryAnime.unreadCount == i2.libraryAnime.unreadCount -> 0
-                    i1.libraryAnime.unreadCount == 0L -> if (sort.isAscending) 1 else -1
-                    i2.libraryAnime.unreadCount == 0L -> if (sort.isAscending) -1 else 1
-                    else -> i1.libraryAnime.unreadCount.compareTo(i2.libraryAnime.unreadCount)
+                    i1.libraryAnime.unseenCount == i2.libraryAnime.unseenCount -> 0
+                    i1.libraryAnime.unseenCount == 0L -> if (sort.isAscending) 1 else -1
+                    i2.libraryAnime.unseenCount == 0L -> if (sort.isAscending) -1 else 1
+                    else -> i1.libraryAnime.unseenCount.compareTo(i2.libraryAnime.unseenCount)
                 }
                 LibrarySort.Type.TotalEpisodes -> {
                     i1.libraryAnime.totalEpisodes.compareTo(i2.libraryAnime.totalEpisodes)
@@ -573,7 +573,7 @@ class LibraryScreenModel(
                         } else {
                             0
                         },
-                        unseenCount = libraryManga.unreadCount,
+                        unseenCount = libraryManga.unseenCount,
                         isLocal = if (prefs.localBadge) libraryManga.anime.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             source.lang

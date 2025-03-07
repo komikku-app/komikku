@@ -34,9 +34,9 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_UNSEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -221,8 +221,8 @@ object SettingsLibraryScreen : SearchableSettings {
                     pref = libraryPreferences.autoUpdateAnimeRestrictions(),
                     title = stringResource(MR.strings.pref_library_update_smart_update),
                     entries = persistentMapOf(
-                        MANGA_HAS_UNREAD to stringResource(MR.strings.pref_update_only_completely_read),
-                        MANGA_NON_READ to stringResource(MR.strings.pref_update_only_started),
+                        ANIME_HAS_UNSEEN to stringResource(MR.strings.pref_update_only_completely_read),
+                        ANIME_NON_SEEN to stringResource(MR.strings.pref_update_only_started),
                         ANIME_NON_COMPLETED to stringResource(MR.strings.pref_update_only_non_completed),
                         ANIME_OUTSIDE_RELEASE_PERIOD to stringResource(MR.strings.pref_update_only_in_release_period),
                     ),

@@ -64,9 +64,9 @@ class LibraryPreferences(
     fun autoUpdateAnimeRestrictions() = preferenceStore.getStringSet(
         "library_update_manga_restriction",
         setOf(
-            MANGA_HAS_UNREAD,
+            ANIME_HAS_UNSEEN,
             ANIME_NON_COMPLETED,
-            MANGA_NON_READ,
+            ANIME_NON_SEEN,
             ANIME_OUTSIDE_RELEASE_PERIOD,
         ),
     )
@@ -252,8 +252,8 @@ class LibraryPreferences(
         const val DEVICE_CHARGING = "ac"
 
         const val ANIME_NON_COMPLETED = "manga_ongoing"
-        const val MANGA_HAS_UNREAD = "manga_fully_read"
-        const val MANGA_NON_READ = "manga_started"
+        const val ANIME_HAS_UNSEEN = "manga_fully_read"
+        const val ANIME_NON_SEEN = "manga_started"
         const val ANIME_OUTSIDE_RELEASE_PERIOD = "manga_outside_release_period"
     }
 }

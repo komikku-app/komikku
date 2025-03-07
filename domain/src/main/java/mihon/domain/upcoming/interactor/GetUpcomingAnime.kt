@@ -7,9 +7,9 @@ import tachiyomi.domain.anime.interactor.GetLibraryAnime
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.anime.repository.AnimeRepository
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_UNSEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_OUTSIDE_RELEASE_PERIOD
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -65,9 +65,9 @@ class GetUpcomingAnime(
 
                     ANIME_NON_COMPLETED in restrictions && it.anime.status.toInt() == SAnime.COMPLETED -> false
 
-                    MANGA_HAS_UNREAD in restrictions && it.unreadCount != 0L -> false
+                    ANIME_HAS_UNSEEN in restrictions && it.unseenCount != 0L -> false
 
-                    MANGA_NON_READ in restrictions && it.totalEpisodes > 0L && !it.hasStarted -> false
+                    ANIME_NON_SEEN in restrictions && it.totalEpisodes > 0L && !it.hasStarted -> false
 
                     ANIME_OUTSIDE_RELEASE_PERIOD in restrictions && it.anime.nextUpdate < today -> false
 

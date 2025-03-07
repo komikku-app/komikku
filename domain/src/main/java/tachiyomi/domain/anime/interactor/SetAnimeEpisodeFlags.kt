@@ -1,7 +1,7 @@
 package tachiyomi.domain.anime.interactor
 
-import tachiyomi.domain.anime.model.AnimeUpdate
 import tachiyomi.domain.anime.model.Anime
+import tachiyomi.domain.anime.model.AnimeUpdate
 import tachiyomi.domain.anime.repository.AnimeRepository
 
 class SetAnimeEpisodeFlags(
@@ -70,8 +70,8 @@ class SetAnimeEpisodeFlags(
     }
 
     suspend fun awaitSetAllFlags(
-        mangaId: Long,
-        unreadFilter: Long,
+        animeId: Long,
+        unseenFilter: Long,
         downloadedFilter: Long,
         bookmarkedFilter: Long,
         sortingMode: Long,
@@ -80,8 +80,8 @@ class SetAnimeEpisodeFlags(
     ): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = mangaId,
-                episodeFlags = 0L.setFlag(unreadFilter, Anime.EPISODE_UNSEEN_MASK)
+                id = animeId,
+                episodeFlags = 0L.setFlag(unseenFilter, Anime.EPISODE_UNSEEN_MASK)
                     .setFlag(downloadedFilter, Anime.EPISODE_DOWNLOADED_MASK)
                     .setFlag(bookmarkedFilter, Anime.EPISODE_BOOKMARKED_MASK)
                     .setFlag(sortingMode, Anime.EPISODE_SORTING_MASK)

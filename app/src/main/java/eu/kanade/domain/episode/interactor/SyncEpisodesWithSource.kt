@@ -5,19 +5,19 @@ import eu.kanade.domain.anime.interactor.UpdateAnime
 import eu.kanade.domain.anime.model.toSAnime
 import eu.kanade.domain.episode.model.copyFromSEpisode
 import eu.kanade.domain.episode.model.toSEpisode
-import eu.kanade.tachiyomi.source.model.SEpisode
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.SEpisode
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.source.isEhBasedAnime
 import tachiyomi.data.episode.EpisodeSanitizer
+import tachiyomi.data.source.NoResultsException
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.episode.interactor.GetEpisodesByAnimeId
 import tachiyomi.domain.episode.interactor.ShouldUpdateDbEpisode
 import tachiyomi.domain.episode.interactor.UpdateEpisode
 import tachiyomi.domain.episode.model.Episode
-import tachiyomi.domain.episode.model.NoEpisodesException
 import tachiyomi.domain.episode.model.toEpisodeUpdate
 import tachiyomi.domain.episode.repository.EpisodeRepository
 import tachiyomi.domain.episode.service.EpisodeRecognition
@@ -53,7 +53,7 @@ class SyncEpisodesWithSource(
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
     ): List<Episode> {
         if (rawSourceEpisodes.isEmpty() && !source.isLocal()) {
-            throw NoEpisodesException()
+            throw NoResultsException()
         }
 
         val now = ZonedDateTime.now()

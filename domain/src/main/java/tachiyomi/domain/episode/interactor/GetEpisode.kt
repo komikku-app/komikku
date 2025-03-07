@@ -18,9 +18,9 @@ class GetEpisode(
         }
     }
 
-    suspend fun await(url: String, mangaId: Long): Episode? {
+    suspend fun await(url: String, animeId: Long): Episode? {
         return try {
-            episodeRepository.getEpisodeByUrlAndAnimeId(url, mangaId)
+            episodeRepository.getEpisodeByUrlAndAnimeId(url, animeId)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             null

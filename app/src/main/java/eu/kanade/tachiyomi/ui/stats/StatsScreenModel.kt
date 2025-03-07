@@ -22,9 +22,9 @@ import tachiyomi.domain.anime.interactor.GetSeenAnimeNotInLibraryView
 import tachiyomi.domain.history.interactor.GetTotalWatchDuration
 import tachiyomi.domain.library.model.LibraryAnime
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_UNSEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.source.local.isLocal
@@ -71,7 +71,7 @@ class StatsScreenModel(
             val overviewStatData = StatsData.Overview(
                 libraryMangaCount = distinctLibraryManga.size,
                 completedMangaCount = distinctLibraryManga.count {
-                    it.anime.status.toInt() == SAnime.COMPLETED && it.unreadCount == 0L
+                    it.anime.status.toInt() == SAnime.COMPLETED && it.unseenCount == 0L
                 },
                 totalReadDuration = getTotalWatchDuration.await(),
             )
@@ -130,8 +130,8 @@ class StatsScreenModel(
             .fastDistinctBy { it.anime.id }
             .fastCountNot {
                 (ANIME_NON_COMPLETED in updateRestrictions && it.anime.status.toInt() == SAnime.COMPLETED) ||
-                    (MANGA_HAS_UNREAD in updateRestrictions && it.unreadCount != 0L) ||
-                    (MANGA_NON_READ in updateRestrictions && it.totalEpisodes > 0 && !it.hasStarted)
+                    (ANIME_HAS_UNSEEN in updateRestrictions && it.unseenCount != 0L) ||
+                    (ANIME_NON_SEEN in updateRestrictions && it.totalEpisodes > 0 && !it.hasStarted)
             }
     }
 
