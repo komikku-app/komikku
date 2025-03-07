@@ -62,8 +62,10 @@ import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
+import eu.kanade.tachiyomi.util.system.analyticsIncluded
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import exh.log.CrashlyticsPrinter
 import exh.log.EHLogLevel
@@ -110,7 +112,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         FirebaseConfig.init(applicationContext)
 
         // KMK -->
-        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        if (isDebugBuildType) Timber.plant(Timber.DebugTree())
         // KMK <--
 
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
@@ -313,7 +315,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         val logLevel = when {
             EHLogLevel.shouldLog(EHLogLevel.EXTREME) -> LogLevel.ALL
-            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || BuildConfig.DEBUG -> LogLevel.DEBUG
+            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || isDebugBuildType -> LogLevel.DEBUG
             else -> LogLevel.WARN
         }
 
@@ -348,7 +350,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         }
 
         // Install Crashlytics in prod
-        if (!BuildConfig.DEBUG) {
+        if (analyticsIncluded) {
             printers += CrashlyticsPrinter(LogLevel.ERROR)
         }
 
