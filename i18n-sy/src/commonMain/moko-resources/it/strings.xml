@@ -142,4 +142,5 @@
     <string name="open_debug_menu">Apri il menù di debug</string>
     <string name="update_3hour">Ogni 3 ore</string>
     <string name="all_read_entries">Tutte le voci lette</string>
+    <string name="sync_state_reset">Reset dello stato di sincronizzazione</string>
 </resources>

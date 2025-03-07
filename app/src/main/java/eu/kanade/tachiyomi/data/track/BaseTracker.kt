@@ -38,6 +38,8 @@ abstract class BaseTracker(
     // Application and remote support for reading dates
     override val supportsReadingDates: Boolean = false
 
+    override val supportsPrivateTracking: Boolean = false
+
     // TODO: Store all scores as 10 point in the future maybe?
     override fun get10PointScore(track: DomainTrack): Double {
         return track.score
@@ -121,7 +123,12 @@ abstract class BaseTracker(
         updateRemote(track)
     }
 
-    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    override suspend fun setRemotePrivate(track: Track, private: Boolean) {
+        track.private = private
+        updateRemote(track)
+    }
+
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         throw NotImplementedError("Not implemented.")
     }
 

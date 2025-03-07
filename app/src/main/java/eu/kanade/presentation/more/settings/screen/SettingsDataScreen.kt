@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
@@ -24,6 +27,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -52,6 +57,8 @@ import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
+import eu.kanade.tachiyomi.data.export.LibraryExporter
+import eu.kanade.tachiyomi.data.export.LibraryExporter.ExportOptions
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
@@ -60,6 +67,7 @@ import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
@@ -69,6 +77,8 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetFavorites
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -113,7 +123,11 @@ object SettingsDataScreen : SearchableSettings {
 
             getBackupAndRestoreGroup(backupPreferences = backupPreferences),
             getDataGroup(),
-        ) + getSyncPreferences(syncPreferences = syncPreferences, syncService = syncService)
+            getExportGroup(),
+        ) +
+            // SY -->
+            getSyncPreferences(syncPreferences = syncPreferences, syncService = syncService)
+        // SY <--
     }
 
     @Composable
@@ -257,8 +271,7 @@ object SettingsDataScreen : SearchableSettings {
 
                 // Automatic backups
                 Preference.PreferenceItem.ListPreference(
-                    pref = backupPreferences.backupInterval(),
-                    title = stringResource(MR.strings.pref_backup_interval),
+                    preference = backupPreferences.backupInterval(),
                     entries = persistentMapOf(
                         0 to stringResource(MR.strings.off),
                         1 to stringResource(MR.strings.update_1hour),
@@ -269,6 +282,7 @@ object SettingsDataScreen : SearchableSettings {
                         48 to stringResource(MR.strings.update_48hour),
                         168 to stringResource(MR.strings.update_weekly),
                     ),
+                    title = stringResource(MR.strings.pref_backup_interval),
                     onValueChanged = {
                         BackupCreateJob.setupTask(context, it)
                         true
@@ -280,7 +294,7 @@ object SettingsDataScreen : SearchableSettings {
                 ),
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = backupPreferences.showRestoringProgressBanner(),
+                    preference = backupPreferences.showRestoringProgressBanner(),
                     title = stringResource(KMR.strings.pref_show_restoring_progress_banner),
                 ),
                 // KMK <--
@@ -358,7 +372,7 @@ object SettingsDataScreen : SearchableSettings {
                 ),
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.autoClearChapterCache(),
+                    preference = libraryPreferences.autoClearChapterCache(),
                     title = stringResource(MR.strings.pref_auto_clear_chapter_cache),
                 ),
             ),
@@ -366,19 +380,157 @@ object SettingsDataScreen : SearchableSettings {
     }
 
     @Composable
+    private fun getExportGroup(): Preference.PreferenceGroup {
+        var showDialog by remember { mutableStateOf(false) }
+        var exportOptions by remember {
+            mutableStateOf(
+                ExportOptions(
+                    includeTitle = true,
+                    includeAuthor = true,
+                    includeArtist = true,
+                ),
+            )
+        }
+
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val getFavorites = remember { Injekt.get<GetFavorites>() }
+        var favorites by remember { mutableStateOf<List<Manga>>(emptyList()) }
+        LaunchedEffect(Unit) {
+            favorites = getFavorites.await()
+        }
+
+        val saveFileLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("text/csv"),
+        ) { uri ->
+            uri?.let {
+                scope.launch {
+                    LibraryExporter.exportToCsv(
+                        context = context,
+                        uri = it,
+                        favorites = favorites,
+                        options = exportOptions,
+                        onExportComplete = {
+                            scope.launch(Dispatchers.Main) {
+                                context.toast(MR.strings.library_exported)
+                            }
+                        },
+                    )
+                }
+            }
+        }
+
+        if (showDialog) {
+            ColumnSelectionDialog(
+                options = exportOptions,
+                onConfirm = { options ->
+                    exportOptions = options
+                    saveFileLauncher.launch("komikku_library.csv")
+                },
+                onDismissRequest = { showDialog = false },
+            )
+        }
+
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.export),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.library_list),
+                    onClick = { showDialog = true },
+                ),
+            ),
+        )
+    }
+
+    @Composable
+    private fun ColumnSelectionDialog(
+        options: ExportOptions,
+        onConfirm: (ExportOptions) -> Unit,
+        onDismissRequest: () -> Unit,
+    ) {
+        var titleSelected by remember { mutableStateOf(options.includeTitle) }
+        var authorSelected by remember { mutableStateOf(options.includeAuthor) }
+        var artistSelected by remember { mutableStateOf(options.includeArtist) }
+
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = {
+                Text(text = stringResource(MR.strings.migration_dialog_what_to_include))
+            },
+            text = {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = titleSelected,
+                            onCheckedChange = { checked ->
+                                titleSelected = checked
+                                if (!checked) {
+                                    authorSelected = false
+                                    artistSelected = false
+                                }
+                            },
+                        )
+                        Text(text = stringResource(MR.strings.title))
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = authorSelected,
+                            onCheckedChange = { authorSelected = it },
+                            enabled = titleSelected,
+                        )
+                        Text(text = stringResource(MR.strings.author))
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = artistSelected,
+                            onCheckedChange = { artistSelected = it },
+                            enabled = titleSelected,
+                        )
+                        Text(text = stringResource(MR.strings.artist))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onConfirm(
+                            ExportOptions(
+                                includeTitle = titleSelected,
+                                includeAuthor = authorSelected,
+                                includeArtist = artistSelected,
+                            ),
+                        )
+                        onDismissRequest()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissRequest) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+            },
+        )
+    }
+
+    // SY -->
+    @Composable
     private fun getSyncPreferences(syncPreferences: SyncPreferences, syncService: Int): List<Preference> {
         return listOf(
             Preference.PreferenceGroup(
                 title = stringResource(SYMR.strings.pref_sync_service_category),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.ListPreference(
-                        pref = syncPreferences.syncService(),
-                        title = stringResource(SYMR.strings.pref_sync_service),
+                        preference = syncPreferences.syncService(),
                         entries = persistentMapOf(
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                         ),
+                        title = stringResource(SYMR.strings.pref_sync_service),
                         onValueChanged = { true },
                     ),
                 ),
@@ -430,7 +582,7 @@ object SettingsDataScreen : SearchableSettings {
             getAutomaticSyncGroup(syncPreferences),
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(
-                pref = syncPreferences.showSyncingProgressBanner(),
+                preference = syncPreferences.showSyncingProgressBanner(),
                 title = stringResource(KMR.strings.pref_show_syncing_progress_banner),
             ),
             // KMK <--
@@ -523,9 +675,9 @@ object SettingsDataScreen : SearchableSettings {
         val scope = rememberCoroutineScope()
         return listOf(
             Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.clientHost(),
                 title = stringResource(SYMR.strings.pref_sync_host),
                 subtitle = stringResource(SYMR.strings.pref_sync_host_summ),
-                pref = syncPreferences.clientHost(),
                 onValueChanged = { newValue ->
                     scope.launch {
                         // Trim spaces at the beginning and end, then remove trailing slash if present
@@ -537,9 +689,9 @@ object SettingsDataScreen : SearchableSettings {
                 },
             ),
             Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.clientAPIKey(),
                 title = stringResource(SYMR.strings.pref_sync_api_key),
                 subtitle = stringResource(SYMR.strings.pref_sync_api_key_summ),
-                pref = syncPreferences.clientAPIKey(),
             ),
         )
     }
@@ -586,8 +738,7 @@ object SettingsDataScreen : SearchableSettings {
             title = stringResource(SYMR.strings.pref_sync_automatic_category),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
-                    pref = syncIntervalPref,
-                    title = stringResource(SYMR.strings.pref_sync_interval),
+                    preference = syncIntervalPref,
                     entries = persistentMapOf(
                         0 to stringResource(MR.strings.off),
                         30 to stringResource(SYMR.strings.update_30min),
@@ -599,6 +750,7 @@ object SettingsDataScreen : SearchableSettings {
                         2880 to stringResource(MR.strings.update_48hour),
                         10080 to stringResource(MR.strings.update_weekly),
                     ),
+                    title = stringResource(SYMR.strings.pref_sync_interval),
                     onValueChanged = {
                         SyncDataJob.setupTask(context, it)
                         true
@@ -610,4 +762,5 @@ object SettingsDataScreen : SearchableSettings {
             ),
         )
     }
+    // SY <--
 }

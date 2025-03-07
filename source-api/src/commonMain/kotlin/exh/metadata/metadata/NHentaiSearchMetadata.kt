@@ -50,6 +50,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
         val cover = if (mediaId != null) {
             // AZ -->
+            // Default media server for cover is always 1 (see in page header)
             val server = mediaServer ?: 1
             // AZ <--
             typeToExtension(coverImageType)?.let {

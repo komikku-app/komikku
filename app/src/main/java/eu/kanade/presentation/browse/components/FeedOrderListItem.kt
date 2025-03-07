@@ -25,12 +25,11 @@ fun ReorderableCollectionItemScope.FeedOrderListItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(
-        modifier = modifier,
-    ) {
+    ElevatedCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = MaterialTheme.padding.small)
                 .padding(
                     start = MaterialTheme.padding.small,
                     end = MaterialTheme.padding.medium,
@@ -46,11 +45,13 @@ fun ReorderableCollectionItemScope.FeedOrderListItem(
             )
             Text(
                 text = title,
-                modifier = Modifier
-                    .weight(1f),
+                modifier = Modifier.weight(1f),
             )
             IconButton(onClick = onDelete) {
-                Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(MR.strings.action_delete))
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = stringResource(MR.strings.action_delete),
+                )
             }
         }
     }

@@ -215,14 +215,12 @@ class MyAnimeListApi(
                             thumbnailUrl = it.covers.large?.ifEmpty { null } ?: it.covers.medium,
                             description = it.synopsis,
                             authors = it.authors
-                                .filter { it.role == "Story" || it.role == "Story & Art" }
-                                .map { "${it.node.firstName} ${it.node.lastName}".trim() }
-                                .joinToString(separator = ", ")
+                                .filter { "Story" in it.role }
+                                .joinToString(separator = ", ") { "${it.node.firstName} ${it.node.lastName}".trim() }
                                 .ifEmpty { null },
                             artists = it.authors
-                                .filter { it.role == "Art" || it.role == "Story & Art" }
-                                .map { "${it.node.firstName} ${it.node.lastName}".trim() }
-                                .joinToString(separator = ", ")
+                                .filter { "Art" in it.role }
+                                .joinToString(separator = ", ") { "${it.node.firstName} ${it.node.lastName}".trim() }
                                 .ifEmpty { null },
                         )
                     }

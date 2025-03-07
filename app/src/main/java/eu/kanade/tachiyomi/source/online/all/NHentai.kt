@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
@@ -29,6 +30,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.Response
+import org.jsoup.nodes.Document
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -101,7 +103,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
             preferredTitle = this@NHentai.preferredTitle
 
             jsonResponse.images?.let { images ->
-                coverImageType = images.cover?.type
+                coverImageType = input.asJsoup(strdata).parseCoverType()
+                    ?: images.cover?.type
                 images.pages.mapNotNull {
                     it.type
                 }.let {
@@ -128,6 +131,18 @@ class NHentai(delegate: HttpSource, val context: Context) :
             }
         }
     }
+
+    // KMK -->
+    /**
+     * Site JSON is saying cover of type `w` but instead it's using cover like `cover.jpg.webp`
+     */
+    private fun Document.parseCoverType(): String? {
+        return selectFirst("#cover > a > img")?.attr("data-src")
+            ?.substringAfterLast('/')
+            ?.substringAfter('.')
+            ?.first()?.toString()
+    }
+    // KMK <--
 
     @Serializable
     data class JsonResponse(

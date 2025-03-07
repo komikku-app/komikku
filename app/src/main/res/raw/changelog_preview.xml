@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9817" changeDate="February 28, 2025">
+        <changelogtext>[b]New:[/b] Add button to favorite manga from history screen</changelogtext>
+        <changelogtext>[b]New:[/b] Support for private tracking with AniList, Bangumi, Kitsu</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to export minimal library information to a CSV file</changelogtext>
+        <changelogtext>[b]New:[/b] Add "Monochrome" theme</changelogtext>
+        <changelogtext>[b]Improve:[/b] Apply "Downloaded only" filter to all entries regardless of favourite status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove alphabetical category/feed sort option</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve support for drag-and-drop category/feed reordering</changelogtext>
+        <changelogtext>[b]Improve:[/b] Migrate to Bangumi's newer v0 API</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore hidden files/folders for Local Source chapter list</changelogtext>
+        <changelogtext>[b]Improve:[/b] priority manga update list</changelogtext>
+        <changelogtext>[b]Fix:[/b] App's preferences referencing deleted categories</changelogtext>
+        <changelogtext>[b]Fix:[/b] Bangumi login regression</changelogtext>
+        <changelogtext>[b]Fix:[/b] Xiaomi webview</changelogtext>
+        <changelogtext>[b]Fix:[/b] Comick recommendations failed due to empty cover list</changelogtext>
+        <changelogtext>[b]Fix:[/b] Migrate filter Obsolete was showing E-H/ExH source</changelogtext>
+        <changelogtext>[b]Fix:[/b] don't expand manga description if it's favorited</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9766" changeDate="February 14, 2025">
         <changelogtext>[b]Improve:[/b] (EditMergedSettings): Allow open merge children manga</changelogtext>
         <changelogtext>[b]Improve:[/b] Add manual install button to App installing notification</changelogtext>

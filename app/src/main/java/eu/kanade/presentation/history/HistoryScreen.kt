@@ -44,6 +44,7 @@ fun HistoryScreen(
     onSearchQueryChange: (String?) -> Unit,
     onClickCover: (mangaId: Long) -> Unit,
     onClickResume: (mangaId: Long, chapterId: Long) -> Unit,
+    onClickFavorite: (mangaId: Long) -> Unit,
     onDialogChange: (HistoryScreenModel.Dialog?) -> Unit,
 ) {
     // KMK -->
@@ -113,6 +114,7 @@ fun HistoryScreen(
                     onClickCover = { history -> onClickCover(history.mangaId) },
                     onClickResume = { history -> onClickResume(history.mangaId, history.chapterId) },
                     onClickDelete = { item -> onDialogChange(HistoryScreenModel.Dialog.Delete(item)) },
+                    onClickFavorite = { history -> onClickFavorite(history.mangaId) },
                     // KMK -->
                     usePanoramaCover = usePanoramaCover.value,
                     // KMK <--
@@ -129,6 +131,7 @@ private fun HistoryScreenContent(
     onClickCover: (HistoryWithRelations) -> Unit,
     onClickResume: (HistoryWithRelations) -> Unit,
     onClickDelete: (HistoryWithRelations) -> Unit,
+    onClickFavorite: (HistoryWithRelations) -> Unit,
     // KMK -->
     usePanoramaCover: Boolean,
     // KMK <--
@@ -161,6 +164,7 @@ private fun HistoryScreenContent(
                         onClickCover = { onClickCover(value) },
                         onClickResume = { onClickResume(value) },
                         onClickDelete = { onClickDelete(value) },
+                        onClickFavorite = { onClickFavorite(value) },
                         // KMK -->
                         usePanoramaCover = usePanoramaCover,
                         // KMK <--
@@ -190,6 +194,7 @@ internal fun HistoryScreenPreviews(
             onClickCover = {},
             onClickResume = { _, _ -> run {} },
             onDialogChange = {},
+            onClickFavorite = {},
         )
     }
 }

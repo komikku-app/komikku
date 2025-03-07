@@ -16,7 +16,7 @@ local.properties
 # macOS specific files
 .DS_Store
 
-/app/src/main/assets/client_secrets.json
+/app/client_secrets.json
 /app/google-services.json
 *.jks
 app/standard/preview/*

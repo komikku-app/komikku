@@ -99,7 +99,7 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
         return track
     }
 
-    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return api.getMangaMetadata(track)
     }
 

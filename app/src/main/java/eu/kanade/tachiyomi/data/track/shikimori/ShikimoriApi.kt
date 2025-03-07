@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.track.shikimori
 
 import android.net.Uri
+import androidx.compose.ui.util.fastAny
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
@@ -178,14 +179,12 @@ class ShikimoriApi(
                             thumbnailUrl = manga.poster.originalUrl,
                             description = manga.description,
                             authors = manga.personRoles
-                                .filter { it.rolesEn.contains("Story") || it.rolesEn.contains("Story & Art") }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { it.rolesEn.fastAny { "Story" in it } }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                             artists = manga.personRoles
-                                .filter { it.rolesEn.contains("Art") || it.rolesEn.contains("Story & Art") }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { it.rolesEn.fastAny { "Art" in it } }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                         )
                     }

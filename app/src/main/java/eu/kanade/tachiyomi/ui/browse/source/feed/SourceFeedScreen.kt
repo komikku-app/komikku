@@ -22,7 +22,6 @@ import eu.kanade.presentation.browse.SourceFeedOrderScreen
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.presentation.browse.components.FeedActionsDialog
-import eu.kanade.presentation.browse.components.FeedSortAlphabeticallyDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
@@ -105,10 +104,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 SourceFeedOrderScreen(
                     state = state,
                     onClickDelete = screenModel::openDeleteFeed,
-                    changeOrder = screenModel::changeOrder,
-                    onClickSortAlphabetically = {
-                        screenModel.showDialog(SourceFeedScreenModel.Dialog.SortAlphabetically)
-                    },
+                    onChangeOrder = screenModel::changeOrder,
                     navigateUp = { showingFeedOrderScreen.value = false },
                 )
             } else {
@@ -222,12 +218,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     title = dialog.feedItem.title,
                     onDismissRequest = screenModel::dismissDialog,
                     onClickDelete = { screenModel.openDeleteFeed(it) },
-                )
-            }
-            is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
-                FeedSortAlphabeticallyDialog(
-                    onDismissRequest = screenModel::dismissDialog,
-                    onSort = { screenModel.sortAlphabetically() },
                 )
             }
             // KMK <--

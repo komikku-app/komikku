@@ -40,7 +40,7 @@ import com.materialkolor.ktx.blend
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
@@ -279,7 +279,7 @@ class MangaScreen(
             isTabletUi = isTabletUi(),
             chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
-            onBackClicked = navigator::pop,
+            navigateUp = navigator::pop,
             onChapterClicked = { openChapter(context, it) },
             onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
@@ -535,7 +535,7 @@ class MangaScreen(
                         onDismissRequest = onDismissRequest,
                         // KMK -->
                         modifier = Modifier
-                            .hazeChild(
+                            .hazeEffect(
                                 state = hazeState,
                                 style = HazeStyle(
                                     backgroundColor = Color.Transparent,

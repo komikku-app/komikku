@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
     <changelogversion versionName="1.13.0" changeDate="February 14, 2025">
-        <changelogtext>[b]New:[/b] feat: unify recommendation screens and add more sources</changelogtext>
-        <changelogtext>[b]New:[/b] built-in EH compatible with extension</changelogtext>
+        <changelogtext>[b]New:[/b] feat: unify recommendation screens combine MAL, AniList, MangaUpdates, MangaDex, Comick</changelogtext>
+        <changelogtext>[b]New:[/b] Built-in EH compatible with extension</changelogtext>
         <changelogtext>[b]New:[/b] Notification rich info</changelogtext>
         <changelogtext>[b]New:[/b] Drag to reorder feeds</changelogtext>
         <changelogtext>[b]New:[/b] Add option to enable incognito mode per extension</changelogtext>
-        <changelogtext>[b]New:[/b] feat: add global search shortcut to SmartSearch</changelogtext>
+        <changelogtext>[b]New:[/b] Add button to favorite manga from history screen</changelogtext>
+        <changelogtext>[b]New:[/b] Support for private tracking with AniList, Bangumi, Kitsu</changelogtext>
+        <changelogtext>[b]New:[/b] Add global search shortcut to SmartSearch</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to export minimal library information to a CSV file</changelogtext>
+        <changelogtext>[b]New:[/b] Add "Monochrome" theme</changelogtext>
         <changelogtext>[b]Improve:[/b] (EditMergedSettings): Allow open merge children manga</changelogtext>
-        <changelogtext>[b]Improve:[/b] Rework slider UI</changelogtext>
-        <changelogtext>[b]Improve:[/b] update website link</changelogtext>
-        <changelogtext>[b]Improve:[/b] add webview to Extension detail screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Apply "Downloaded only" filter to all entries regardless of favourite status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove alphabetical category/feed sort option</changelogtext>
         <changelogtext>[b]Improve:[/b] Restore chapter's bookmark &amp; oldest dateUpload from backup</changelogtext>
-        <changelogtext>[b]Improve:[/b] Update Bangumi</changelogtext>
-        <changelogtext>[b]Improve:[/b] Add Infinix system app to list of invalid browsers</changelogtext>
+        <changelogtext>[b]Improve:[/b] Migrate to Bangumi's newer v0 API</changelogtext>
+        <changelogtext>[b]Improve:[/b] Priority manga update list</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore hidden files/folders for Local Source chapter list</changelogtext>
+        <changelogtext>[b]Improve:[/b] add webview to Extension detail screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Rework slider UI</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve support for drag-and-drop category reordering</changelogtext>
         <changelogtext>[b]Improve:[/b] Translations update from Hosted Weblate</changelogtext>
+        <changelogtext>[b]Improve:[/b] update website link</changelogtext>
+        <changelogtext>[b]Fix:[/b] Infinix, Xiaomi webview</changelogtext>
+        <changelogtext>[b]Fix:[/b] App's preferences referencing deleted categories</changelogtext>
+        <changelogtext>[b]Fix:[/b] Bangumi login regression</changelogtext>
+        <changelogtext>[b]Fix:[/b] Migrate filter Obsolete was showing E-H/ExH source</changelogtext>
+        <changelogtext>[b]Fix:[/b] don't expand manga description if it's favorited</changelogtext>
         <changelogtext>[b]Fix:[/b] custom theme color in various AndroidView</changelogtext>
         <changelogtext>[b]Fix:[/b] Mangadex fix alt title being removed by cleanDescription</changelogtext>
         <changelogtext>[b]Fix:[/b] was not showing entry after importing entry with deep-link</changelogtext>

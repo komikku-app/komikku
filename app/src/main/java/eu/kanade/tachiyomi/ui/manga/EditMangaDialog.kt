@@ -409,8 +409,8 @@ private fun onViewCreated(
 }
 
 private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>) {
-    tracks.value = getTracks.await(manga.id).map { track ->
-        track to trackerManager.get(track.trackerId)!!
+    tracks.value = getTracks.await(manga.id).mapNotNull { track ->
+        track to (trackerManager.get(track.trackerId) ?: return@mapNotNull null)
     }
         .filterNot { (_, tracker) -> tracker is EnhancedTracker }
 
@@ -435,11 +435,11 @@ private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: 
     try {
         val trackerMangaMetadata = tracker.getMangaMetadata(track)
 
-        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata?.title)
-        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata?.authors)
-        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata?.artists)
-        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata?.thumbnailUrl)
-        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata?.description)
+        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata.title)
+        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata.authors)
+        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata.artists)
+        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata.thumbnailUrl)
+        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata.description)
     } catch (e: Throwable) {
         tracker.logcat(LogPriority.ERROR, e)
         binding.root.context.toast(

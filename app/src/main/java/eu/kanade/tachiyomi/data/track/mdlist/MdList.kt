@@ -172,7 +172,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         trackPreferences.trackToken(this).delete()
     }
 
-    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
             val manga = mdex.getMangaMetadata(track.toDbTrack())

@@ -49,6 +49,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                     putJsonObject("attributes") {
                         put("status", track.toApiStatus())
                         put("progress", track.last_chapter_read.toInt())
+                        put("private", track.private)
                     }
                     putJsonObject("relationships") {
                         putJsonObject("user") {
@@ -97,6 +98,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                         put("ratingTwenty", track.toApiScore())
                         put("startedAt", KitsuDateHelper.convert(track.started_reading_date))
                         put("finishedAt", KitsuDateHelper.convert(track.finished_reading_date))
+                        put("private", track.private)
                     }
                 }
             }
@@ -296,14 +298,12 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                             thumbnailUrl = manga.posterImage.original.url,
                             description = manga.description.en?.htmlDecode()?.ifEmpty { null },
                             authors = manga.staff.nodes
-                                .filter { it.role == "Story" || it.role == "Story & Art" }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { "Story" in it.role }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                             artists = manga.staff.nodes
-                                .filter { it.role == "Art" || it.role == "Story & Art" }
-                                .map { it.person.name }
-                                .joinToString(", ")
+                                .filter { "Art" in it.role }
+                                .joinToString(", ") { it.person.name }
                                 .ifEmpty { null },
                         )
                     }

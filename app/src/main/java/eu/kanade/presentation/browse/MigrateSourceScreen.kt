@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,7 +38,10 @@ import eu.kanade.presentation.components.AnimatedFloatingSearchBox
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import exh.source.EHENTAI_EXT_SOURCES
+import exh.source.EXHENTAI_EXT_SOURCES
 import kotlinx.collections.immutable.ImmutableList
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -52,6 +56,8 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun MigrateSourceScreen(
@@ -113,6 +119,7 @@ private fun MigrateSourceList(
     // KMK -->
     val lazyListState = rememberLazyListState()
     var filterObsoleteSource by rememberSaveable { mutableStateOf(false) }
+    val isHentaiEnabled = remember { Injekt.get<UnsortedPreferences>().isHentaiEnabled().get() }
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
         onChangeSearchQuery("")
@@ -152,6 +159,7 @@ private fun MigrateSourceList(
                         style = MaterialTheme.typography.header,
                     )
 
+                    // KMK -->
                     IconButton(onClick = { filterObsoleteSource = !filterObsoleteSource }) {
                         Icon(
                             Icons.Outlined.NewReleases,
@@ -160,13 +168,13 @@ private fun MigrateSourceList(
                                 .takeIf { filterObsoleteSource } ?: LocalContentColor.current,
                         )
                     }
+                    // KMK <--
                     IconButton(onClick = onToggleSortingMode) {
                         when (sortingMode) {
                             SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
                                 Icons.Outlined.SortByAlpha,
                                 contentDescription = stringResource(MR.strings.action_sort_alpha),
                             )
-
                             SetMigrateSorting.Mode.TOTAL -> Icon(
                                 Icons.Outlined.Numbers,
                                 contentDescription = stringResource(MR.strings.action_sort_count),
@@ -179,7 +187,6 @@ private fun MigrateSourceList(
                                 Icons.Outlined.ArrowUpward,
                                 contentDescription = stringResource(MR.strings.action_asc),
                             )
-
                             SetMigrateSorting.Direction.DESCENDING -> Icon(
                                 Icons.Outlined.ArrowDownward,
                                 contentDescription = stringResource(MR.strings.action_desc),
@@ -190,7 +197,16 @@ private fun MigrateSourceList(
             }
 
             items(
-                items = list.filter { !filterObsoleteSource || it.first.installedExtension?.isObsolete != false },
+                items = list
+                    // KMK -->
+                    .filter {
+                        !filterObsoleteSource ||
+                            (
+                                it.first.installedExtension?.isObsolete != false &&
+                                    (!isHentaiEnabled || it.first.id !in (EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys))
+                                )
+                    },
+                // KMK <--
                 key = { (source, _) -> "migrate-${source.id}" },
             ) { (source, count) ->
                 MigrateSourceItem(

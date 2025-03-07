@@ -1,20 +1,12 @@
 package eu.kanade.presentation.manga.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,14 +14,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DownloadDropdownMenu
-import eu.kanade.presentation.components.UpIcon
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -47,9 +39,8 @@ import uy.kohesive.injekt.api.get
 @Composable
 fun MangaToolbar(
     title: String,
-    titleAlphaProvider: () -> Float,
     hasFilters: Boolean,
-    onBackClicked: () -> Unit,
+    navigateUp: () -> Unit,
     onClickFilter: () -> Unit,
     onClickShare: (() -> Unit)?,
     onClickDownload: ((DownloadAction) -> Unit)?,
@@ -68,14 +59,16 @@ fun MangaToolbar(
 
     // For action mode
     actionModeCounter: Int,
+    onCancelActionMode: () -> Unit,
     onSelectAll: () -> Unit,
     onInvertSelection: () -> Unit,
 
-    modifier: Modifier = Modifier,
-    backgroundAlphaProvider: () -> Float = titleAlphaProvider,
+    titleAlphaProvider: () -> Float,
+    backgroundAlphaProvider: () -> Float,
     // KMK -->
     onPaletteScreenClick: () -> Unit,
     // KMK <--
+    modifier: Modifier = Modifier,
 ) {
     // KMK -->
     val navigator = LocalNavigator.current
@@ -84,180 +77,169 @@ fun MangaToolbar(
     }
     val isHomeEnabled = Injekt.get<UiPreferences>().showHomeOnRelatedMangas().get()
     // KMK <--
-    Column(
+
+    val isActionMode = actionModeCounter > 0
+    AppBar(
+        titleContent = {
+            if (isActionMode) {
+                AppBarTitle(actionModeCounter.toString())
+            } else {
+                AppBarTitle(title, modifier = Modifier.alpha(titleAlphaProvider()))
+            }
+        },
         modifier = modifier,
-    ) {
-        val isActionMode = actionModeCounter > 0
-        TopAppBar(
-            title = {
-                Text(
-                    text = if (isActionMode) actionModeCounter.toString() else title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = LocalContentColor.current.copy(alpha = if (isActionMode) 1f else titleAlphaProvider()),
+        backgroundColor = MaterialTheme.colorScheme
+            .surfaceColorAtElevation(3.dp)
+            .copy(alpha = if (isActionMode) 1f else backgroundAlphaProvider()),
+        // KMK -->
+        goHome = { onHomeClicked() }.takeIf {
+            isHomeEnabled &&
+                navigator != null &&
+                (
+                    navigator.size >= 2 &&
+                        navigator.items[navigator.size - 2] is MangaScreen ||
+                        navigator.size >= 5
+                    )
+        },
+        // KMK <--
+        navigateUp = navigateUp,
+        actions = {
+            var downloadExpanded by remember { mutableStateOf(false) }
+            if (onClickDownload != null) {
+                val onDismissRequest = { downloadExpanded = false }
+                DownloadDropdownMenu(
+                    expanded = downloadExpanded,
+                    onDismissRequest = onDismissRequest,
+                    onDownloadClicked = onClickDownload,
                 )
-            },
-            navigationIcon = {
-                Row {
-                    IconButton(onClick = onBackClicked) {
-                        UpIcon(navigationIcon = Icons.Outlined.Close.takeIf { isActionMode })
-                    }
-                    // KMK -->
-                    if (isHomeEnabled && navigator != null) {
-                        if (navigator.size >= 2 &&
-                            navigator.items[navigator.size - 2] is MangaScreen ||
-                            navigator.size >= 5
-                        ) {
-                            IconButton(onClick = { onHomeClicked() }) {
-                                UpIcon(navigationIcon = Icons.Filled.Home)
-                            }
-                        }
-                    }
-                    // KMK <--
-                }
-            },
-            actions = {
-                if (isActionMode) {
-                    AppBarActions(
-                        persistentListOf(
+            }
+
+            val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
+            AppBarActions(
+                actions = persistentListOf<AppBar.AppBarAction>().builder().apply {
+                    if (isActionMode) {
+                        add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.action_select_all),
                                 icon = Icons.Outlined.SelectAll,
                                 onClick = onSelectAll,
                             ),
+                        )
+                        add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.action_select_inverse),
                                 icon = Icons.Outlined.FlipToBack,
                                 onClick = onInvertSelection,
                             ),
-                        ),
-                    )
-                } else {
-                    var downloadExpanded by remember { mutableStateOf(false) }
+                        )
+                        return@apply
+                    }
                     if (onClickDownload != null) {
-                        val onDismissRequest = { downloadExpanded = false }
-                        DownloadDropdownMenu(
-                            expanded = downloadExpanded,
-                            onDismissRequest = onDismissRequest,
-                            onDownloadClicked = onClickDownload,
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.manga_download),
+                                icon = Icons.Outlined.Download,
+                                onClick = { downloadExpanded = !downloadExpanded },
+                            ),
                         )
                     }
-
-                    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
-                    AppBarActions(
-                        actions = persistentListOf<AppBar.AppBarAction>().builder()
-                            .apply {
-                                if (onClickDownload != null) {
-                                    add(
-                                        AppBar.Action(
-                                            title = stringResource(MR.strings.manga_download),
-                                            icon = Icons.Outlined.Download,
-                                            onClick = { downloadExpanded = !downloadExpanded },
-                                        ),
-                                    )
-                                }
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.action_filter),
-                                        icon = Icons.Outlined.FilterList,
-                                        iconTint = filterTint,
-                                        onClick = onClickFilter,
-                                    ),
-                                )
-                                add(
-                                    AppBar.OverflowAction(
-                                        title = stringResource(MR.strings.action_webview_refresh),
-                                        onClick = onClickRefresh,
-                                    ),
-                                )
-                                if (onClickEditCategory != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(MR.strings.action_edit_categories),
-                                            onClick = onClickEditCategory,
-                                        ),
-                                    )
-                                }
-                                if (onClickMigrate != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(MR.strings.action_migrate),
-                                            onClick = onClickMigrate,
-                                        ),
-                                    )
-                                }
-                                if (onClickShare != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(MR.strings.action_share),
-                                            onClick = onClickShare,
-                                        ),
-                                    )
-                                }
-                                // SY -->
-                                if (onClickMerge != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(SYMR.strings.merge),
-                                            onClick = onClickMerge,
-                                        ),
-                                    )
-                                }
-                                if (onClickEditInfo != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(SYMR.strings.action_edit_info),
-                                            onClick = onClickEditInfo,
-                                        ),
-                                    )
-                                }
-                                // KMK -->
-                                if (onClickRelatedMangas != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(KMR.strings.pref_source_related_mangas),
-                                            onClick = onClickRelatedMangas,
-                                        ),
-                                    )
-                                }
-                                // KMK <--
-                                if (onClickRecommend != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(SYMR.strings.az_recommends),
-                                            onClick = onClickRecommend,
-                                        ),
-                                    )
-                                }
-                                if (onClickMergedSettings != null) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = stringResource(SYMR.strings.merge_settings),
-                                            onClick = onClickMergedSettings,
-                                        ),
-                                    )
-                                }
-                                // SY <--
-                                // KMK -->
-                                if (isDevFlavor) {
-                                    add(
-                                        AppBar.OverflowAction(
-                                            title = "Colors Palette",
-                                            onClick = onPaletteScreenClick,
-                                        ),
-                                    )
-                                }
-                                // KMK <--
-                            }
-                            .build(),
+                    add(
+                        AppBar.Action(
+                            title = stringResource(MR.strings.action_filter),
+                            icon = Icons.Outlined.FilterList,
+                            iconTint = filterTint,
+                            onClick = onClickFilter,
+                        ),
                     )
+                    add(
+                        AppBar.OverflowAction(
+                            title = stringResource(MR.strings.action_webview_refresh),
+                            onClick = onClickRefresh,
+                        ),
+                    )
+                    if (onClickEditCategory != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.action_edit_categories),
+                                onClick = onClickEditCategory,
+                            ),
+                        )
+                    }
+                    if (onClickMigrate != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.action_migrate),
+                                onClick = onClickMigrate,
+                            ),
+                        )
+                    }
+                    if (onClickShare != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.action_share),
+                                onClick = onClickShare,
+                            ),
+                        )
+                    }
+                    // SY -->
+                    if (onClickMerge != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(SYMR.strings.merge),
+                                onClick = onClickMerge,
+                            ),
+                        )
+                    }
+                    if (onClickEditInfo != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(SYMR.strings.action_edit_info),
+                                onClick = onClickEditInfo,
+                            ),
+                        )
+                    }
+                    // KMK -->
+                    if (onClickRelatedMangas != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(KMR.strings.pref_source_related_mangas),
+                                onClick = onClickRelatedMangas,
+                            ),
+                        )
+                    }
+                    // KMK <--
+                    if (onClickRecommend != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(SYMR.strings.az_recommends),
+                                onClick = onClickRecommend,
+                            ),
+                        )
+                    }
+                    if (onClickMergedSettings != null) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(SYMR.strings.merge_settings),
+                                onClick = onClickMergedSettings,
+                            ),
+                        )
+                    }
+                    // SY <--
+                    // KMK -->
+                    if (isDevFlavor) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = "Colors Palette",
+                                onClick = onPaletteScreenClick,
+                            ),
+                        )
+                    }
+                    // KMK <--
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme
-                    .surfaceColorAtElevation(3.dp)
-                    .copy(alpha = if (isActionMode) 1f else backgroundAlphaProvider()),
-            ),
-        )
-    }
+                    .build(),
+            )
+        },
+        isActionMode = isActionMode,
+        onCancelActionMode = onCancelActionMode,
+    )
 }

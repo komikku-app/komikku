@@ -12,10 +12,9 @@ import tachiyomi.domain.category.repository.CategoryRepository
 class ReorderCategory(
     private val categoryRepository: CategoryRepository,
 ) {
-
     private val mutex = Mutex()
 
-    suspend fun changeOrder(category: Category, newOrder: Int) = withNonCancellableContext {
+    suspend fun await(category: Category, newIndex: Int) = withNonCancellableContext {
         mutex.withLock {
             val categories = categoryRepository.getAll()
                 .filterNot(Category::isSystemCategory)
@@ -26,10 +25,8 @@ class ReorderCategory(
                 return@withNonCancellableContext Result.Unchanged
             }
 
-            val newPosition = currentIndex + newOrder
-
             try {
-                categories.add(newPosition, categories.removeAt(currentIndex))
+                categories.add(newIndex, categories.removeAt(currentIndex))
 
                 val updates = categories.mapIndexed { index, category ->
                     CategoryUpdate(
@@ -38,27 +35,6 @@ class ReorderCategory(
                     )
                 }
 
-                categoryRepository.updatePartial(updates)
-                Result.Success
-            } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e)
-                Result.InternalError(e)
-            }
-        }
-    }
-
-    suspend fun sortAlphabetically() = withNonCancellableContext {
-        mutex.withLock {
-            val updates = categoryRepository.getAll()
-                .sortedBy { category -> category.name }
-                .mapIndexed { index, category ->
-                    CategoryUpdate(
-                        id = category.id,
-                        order = index.toLong(),
-                    )
-                }
-
-            try {
                 categoryRepository.updatePartial(updates)
                 Result.Success
             } catch (e: Exception) {

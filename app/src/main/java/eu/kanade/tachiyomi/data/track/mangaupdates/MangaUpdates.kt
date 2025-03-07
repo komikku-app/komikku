@@ -114,21 +114,23 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
     }
 
     override suspend fun login(username: String, password: String) {
-        val authenticated = api.authenticate(username, password) ?: throw Throwable("Unable to login")
+        val authenticated = api.authenticate(username, password)
         saveCredentials(authenticated.uid.toString(), authenticated.sessionToken)
         interceptor.newAuth(authenticated.sessionToken)
     }
 
-    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata? {
+    override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         val series = api.getSeries(track)
-        return series?.let {
+        return series.let {
             TrackMangaMetadata(
                 it.seriesId,
                 it.title?.htmlDecode(),
                 it.image?.url?.original,
                 it.description?.htmlDecode(),
-                it.authors?.filter { it.type == "Author" }?.joinToString(separator = ", ") { it.name ?: "" },
-                it.authors?.filter { it.type == "Artist" }?.joinToString(separator = ", ") { it.name ?: "" },
+                it.authors?.filter { it.type != null && "Author" in it.type }
+                    ?.joinToString(separator = ", ") { it.name ?: "" },
+                it.authors?.filter { it.type != null && "Artist" in it.type }
+                    ?.joinToString(separator = ", ") { it.name ?: "" },
             )
         }
     }

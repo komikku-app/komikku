@@ -45,7 +45,6 @@ import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.FeedSavedSearch
-import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -218,24 +217,9 @@ open class FeedScreenModel(
     }
 
     // KMK -->
-    fun changeOrder(feed: FeedSavedSearch, newOrder: Int) {
+    fun changeOrder(feed: FeedSavedSearch, newIndex: Int) {
         screenModelScope.launch {
-            reorderFeed.changeOrder(feed, newOrder)
-        }
-    }
-
-    fun sortAlphabetically() {
-        screenModelScope.launch {
-            reorderFeed.sortAlphabetically(
-                state.value.items
-                    ?.sortedBy { feed -> feed.title }
-                    ?.mapIndexed { index, feed ->
-                        FeedSavedSearchUpdate(
-                            id = feed.feed.id,
-                            feedOrder = index.toLong(),
-                        )
-                    },
-            )
+            reorderFeed.changeOrder(feed, newIndex)
         }
     }
     // KMK <--
@@ -384,8 +368,6 @@ open class FeedScreenModel(
         data class FeedActions(
             val feedItem: FeedItemUI,
         ) : Dialog()
-
-        data object SortAlphabetically : Dialog()
         // KMK <--
     }
 
