@@ -6,12 +6,12 @@
     <string name="action_faq_and_guides">FAQ at mga Guide</string>
     <string name="download_cache_renew_interval">Tagal ng pagbago ng download cache</string>
     <string name="download_cache_renew_interval_manual">Mano-mano</string>
-    <string name="download_cache_renew_interval_1hour">1 oras</string>
-    <string name="download_cache_renew_interval_2hour">2 oras</string>
-    <string name="download_cache_renew_interval_6hour">6 oras</string>
-    <string name="download_cache_renew_interval_12hour">12 oras</string>
-    <string name="download_cache_renew_interval_24hour">1 araw</string>
-    <string name="download_cache_renew_interval_info">Kung nakatakda sa \"mano-mano\", maaaring i-refresh ang bawat manga o gamitin ang aksyon na \"Ipawalang-bisa ang indese ng mga download\" sa \"Karagdagan\"</string>
+    <string name="download_cache_renew_interval_1hour">Isang oras</string>
+    <string name="download_cache_renew_interval_2hour">Dalawang Oras</string>
+    <string name="download_cache_renew_interval_6hour">Anim na oras</string>
+    <string name="download_cache_renew_interval_12hour">Labindalawang oras</string>
+    <string name="download_cache_renew_interval_24hour">Isang Araw</string>
+    <string name="download_cache_renew_interval_info">Kung nakatakda sa \'Manwal\', maaaring i-refresh ang bawat manga o gumamit ng aksyong \'Invalidate downloads index\' sa Advanced</string>
     <string name="pref_clean_invalid_downloads">Linisin ang mga di-balidong mga download</string>
     <string name="pref_clean_invalid_downloads_summary">Hanapin at tanggalin ang mga download, file, folder na di naka-save sa iyong akalatan</string>
     <string name="invalid_downloads_cleaned">Nalinis ang mga di-balidong mga download</string>
@@ -37,7 +37,7 @@
     <string name="theme_matrix">Matrix</string>
     <string name="theme_sapphire">Sapiro</string>
     <string name="pref_show_updating_progress_banner">Ipakita ng progress ng pag-update na banner</string>
-    <string name="pref_show_restoring_progress_banner">Ipakita ng progress ng pag-restore na banner</string>
+    <string name="pref_show_restoring_progress_banner">Ipakita ang banner ng progress ng pag-restore</string>
     <string name="pref_show_syncing_progress_banner">Ipakita ng progress ng pag-sync na banner</string>
     <string name="saved_searches_feeds">Mga na-save na Search at mga Feed</string>
     <string name="onboarding_permission_external_storage">Pahintulot sa pag-access ng mga media file</string>
@@ -76,7 +76,7 @@
     <string name="pref_panorama_cover_summary">Ipakita ang cover sa landscape mode kung ito ay isang malawak na imahe</string>
     <string name="pref_panorama_cover_flow_summary">Ipakita ang paranorma cover sa Pangkalahatang Paghanap at Mga Suhestiyon</string>
     <string name="pref_auto_sync_progress_from_trackers">Awtomatikong I-sync ang progress mula sa Mga Tracker</string>
-    <string name="sync_progress_from_trackers_up_to_chapter">Progress ng pag-sync mula sa Mga Tracker hanggang sa kabanatang %d</string>
+    <string name="sync_progress_from_trackers_up_to_chapter">I-sync ang progress mula sa mga tracker hanggang sa Kabanata %d</string>
     <string name="option_label_library_update_errors">Mga error sa pag-update sa aklatan</string>
     <string name="label_library_update_errors">Mga error sa pag-update ng aklatan (%d)</string>
     <string name="info_empty_library_update_errors">Wala kang mga error sa pag-update ng aklatan.</string>
@@ -97,6 +97,12 @@
     <string name="action_copy_to_clipboard_second_page">Kopyahin ang ikalawang pahina sa clipboard</string>
     <string name="action_copy_to_clipboard_combined_page">Kopyahin ang pinagsamang pahina sa clipboard</string>
     <string name="auto_update_app_disable_auto_download">Huwag awtomatikong i-download ang update</string>
-    <string name="action_remove_merged">Remove original entries from library?</string>
+    <string name="action_remove_merged">Tanggalin ang orihinal na mga tala galing sa aklatan?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="pref_theme_cover_based_style_fruitsalad">Fruit Salad</string>
+    <string name="pref_theme_cover_based_style_vibrant">Makulay</string>
+    <string name="pref_theme_cover_based_style_expressive">Masining</string>
+    <string name="action_hide">Itago</string>
+    <string name="action_panorama_cover">Pabalat ng panorama</string>
+    <string name="pref_theme_cover_based_style_rainbow">Bahaghari</string>
 </resources>
