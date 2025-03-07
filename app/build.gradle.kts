@@ -121,8 +121,6 @@ android {
         // Signed, dev build with Android Studio if it's not a debug build
         create("dev") {
             dimension = "default"
-            // Default signing for dev flavor, would be overridden by buildTypes config
-            signingConfig = signingConfigs.getByName("preview")
         }
     }
 
