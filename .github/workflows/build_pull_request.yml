@@ -73,7 +73,7 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/dev/release/app-dev-universal-release-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/dev/release/app-dev-universal-release-unsigned.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
