@@ -3,8 +3,6 @@ package tachiyomi.domain.updates.interactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
@@ -18,13 +16,7 @@ class GetUpdates(
 ) {
 
     suspend fun await(read: Boolean, after: Long): List<UpdatesWithRelations> {
-        // SY -->
-        return flow {
-            emit(repository.awaitWithRead(read, after, limit = 500))
-        }
-            .catchNPE()
-            .first()
-        // SY <--
+        return repository.awaitWithRead(read, after, limit = 500)
     }
 
     fun subscribe(instant: Instant): Flow<List<UpdatesWithRelations>> {
