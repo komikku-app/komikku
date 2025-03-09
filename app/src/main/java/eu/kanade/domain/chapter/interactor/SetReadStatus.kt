@@ -38,6 +38,7 @@ class SetReadStatus(
 
     /**
      * Mark chapters as read/unread, also delete downloaded chapters if 'After manually marked as read' is set.
+     * set `manually = false` if this is not called from an user-aware action.
      *
      * Called from:
      *  - [LibraryScreenModel]: Manually select mangas & mark as read

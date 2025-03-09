@@ -236,12 +236,13 @@ object SettingsReaderScreen : SearchableSettings {
                 ),
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.alwaysShowChapterTransition(),
-                    title = stringResource(MR.strings.pref_always_show_chapter_transition),
-                ),
-                Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.markDuplicateReadChapterAsRead(),
                     title = stringResource(MR.strings.pref_mark_duplicate_read_chapter_read),
+                    subtitle = stringResource(SYMR.strings.pref_library_mark_duplicate_chapters_summary),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.alwaysShowChapterTransition(),
+                    title = stringResource(MR.strings.pref_always_show_chapter_transition),
                 ),
             ),
         )

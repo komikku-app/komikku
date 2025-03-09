@@ -9,7 +9,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.model.readerOrientation
@@ -136,7 +135,6 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
-    private val setReadStatus: SetReadStatus = Injekt.get(),
     // SY <--
 ) : ViewModel() {
 
@@ -709,28 +707,6 @@ class ReaderViewModel @JvmOverloads constructor(
             ) {
                 // SY <--
                 readerChapter.chapter.read = true
-                // SY -->
-                if (readerChapter.chapter.chapter_number >= 0 && readerPreferences.markReadDupe().get()) {
-                    getChaptersByMangaId.await(manga!!.id).sortedByDescending { it.sourceOrder }
-                        .filter {
-                            it.id != readerChapter.chapter.id &&
-                                !it.read &&
-                                it.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
-                        }
-                        .ifEmpty { null }
-                        ?.also {
-                            setReadStatus.await(
-                                true,
-                                *it.toTypedArray(),
-                                // KMK -->
-                                manually = false,
-                                // KMK <--
-                            )
-                            it.forEach { chapter ->
-                                deleteChapterIfNeeded(ReaderChapter(chapter))
-                            }
-                        }
-                }
                 if (manga?.isEhBasedManga() == true) {
                     viewModelScope.launchNonCancellable {
                         val chapterUpdates = chapterList
@@ -748,20 +724,22 @@ class ReaderViewModel @JvmOverloads constructor(
                 updateTrackChapterRead(readerChapter)
                 deleteChapterIfNeeded(readerChapter)
 
-                val duplicateUnreadChapters = chapterList
-                    .mapNotNull {
-                        val chapter = it.chapter
-                        if (
-                            !chapter.read &&
-                            chapter.isRecognizedNumber &&
-                            chapter.chapter_number == readerChapter.chapter.chapter_number
-                        ) {
-                            ChapterUpdate(id = chapter.id!!, read = true)
-                        } else {
-                            null
+                if (readerPreferences.markReadDupe().get()) {
+                    val duplicateUnreadChapters = chapterList
+                        .mapNotNull {
+                            val chapter = it.chapter
+                            if (
+                                !chapter.read &&
+                                chapter.isRecognizedNumber &&
+                                chapter.chapter_number == readerChapter.chapter.chapter_number
+                            ) {
+                                ChapterUpdate(id = chapter.id!!, read = true)
+                            } else {
+                                null
+                            }
                         }
-                    }
-                updateChapter.awaitAll(duplicateUnreadChapters)
+                    updateChapter.awaitAll(duplicateUnreadChapters)
+                }
 
                 // Check if syncing is enabled for chapter read:
                 if (isSyncEnabled && syncTriggerOpt.syncOnChapterRead) {
