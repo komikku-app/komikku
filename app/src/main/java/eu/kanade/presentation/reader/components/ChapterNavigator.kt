@@ -337,5 +337,19 @@ private fun ChapterNavigatorPreview() {
             isVerticalSlider = false,
             // SY <--
         )
+        // KMK -->
+        ChapterNavigator(
+            isRtl = false,
+            onNextChapter = {},
+            enabledNext = true,
+            onPreviousChapter = {},
+            enabledPrevious = true,
+            currentPage = currentPage,
+            totalPages = 10,
+            onPageIndexChange = { currentPage = (it + 1) },
+            currentPageText = "1",
+            isVerticalSlider = true,
+        )
+        // KMK <--
     }
 }

@@ -320,6 +320,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = previewsRowCount,
+                    valueRange = 0..10,
                     title = stringResource(SYMR.strings.pref_previews_row_count),
                     subtitle = if (previewsRowCount > 0) {
                         pluralStringResource(
@@ -330,8 +331,6 @@ object SettingsAppearanceScreen : SearchableSettings {
                     } else {
                         stringResource(MR.strings.disabled)
                     },
-                    min = 0,
-                    max = 10,
                     onValueChanged = {
                         uiPreferences.previewsRowCount().set(it)
                         true
