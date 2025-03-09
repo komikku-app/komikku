@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterNhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
@@ -84,7 +85,7 @@ fun NHentaiDescription(state: State.Success, openMetadataViewer: () -> Unit) {
                 meta.pageImageTypes.size,
             )
             // KMK -->
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor, 4.dpToPx)
             binding.pages.setTextColor(textColor)
             // KMK <--
 
