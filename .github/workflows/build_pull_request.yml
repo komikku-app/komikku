@@ -50,14 +50,14 @@ jobs:
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
-          contents: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          contents: "${{ secrets.GOOGLE_SERVICES_JSON }}"
           write-mode: overwrite
 
       - name: Write client_secrets.json
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
-          contents: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
+          contents: "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}"
           write-mode: overwrite
 
       - name: Set up gradle
@@ -73,6 +73,7 @@ jobs:
         run: ./gradlew testReleaseUnitTest
 
       - name: Sign APK
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
           releaseDirectory: app/build/outputs/apk/release
@@ -82,6 +83,13 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: '35.0.1'
+
+      - name: Signed File name
+        id: signed_filename
+        if: github.repository == github.event.pull_request.head.repo.full_name
+        run: |
+          set -x
+          echo "SIGNED_TRAIL=-signed" >> $GITHUB_OUTPUT
 
       - name: Rename apk
         id: current_commit
@@ -94,7 +102,7 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/release/app-universal-release-unsigned${{ steps.signed_filename.outputs.SIGNED_TRAIL }}.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
