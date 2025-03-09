@@ -19,6 +19,7 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.interactor.TrackChapter
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.tachiyomi.data.database.models.isRecognizedNumber
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
@@ -746,6 +747,21 @@ class ReaderViewModel @JvmOverloads constructor(
                 // SY <--
                 updateTrackChapterRead(readerChapter)
                 deleteChapterIfNeeded(readerChapter)
+
+                val duplicateUnreadChapters = chapterList
+                    .mapNotNull {
+                        val chapter = it.chapter
+                        if (
+                            !chapter.read &&
+                            chapter.isRecognizedNumber &&
+                            chapter.chapter_number == readerChapter.chapter.chapter_number
+                        ) {
+                            ChapterUpdate(id = chapter.id!!, read = true)
+                        } else {
+                            null
+                        }
+                    }
+                updateChapter.awaitAll(duplicateUnreadChapters)
 
                 // Check if syncing is enabled for chapter read:
                 if (isSyncEnabled && syncTriggerOpt.syncOnChapterRead) {
