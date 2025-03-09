@@ -38,10 +38,10 @@ import com.kevinnzou.web.rememberWebViewState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.getHtml
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -258,7 +258,7 @@ fun WebViewScreenContent(
                 webView.setDefaultSettings()
 
                 // Debug mode (chrome://inspect/#devices)
-                if (BuildConfig.DEBUG &&
+                if (isDebugBuildType &&
                     0 != webView.context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
                 ) {
                     WebView.setWebContentsDebuggingEnabled(true)
