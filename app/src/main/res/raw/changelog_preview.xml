@@ -5,7 +5,7 @@
         <changelogtext>[b]New:[/b] Use COMPLETE category when sync finishes</changelogtext>
         <changelogtext>[b]New:[/b] Display staff information on Anilist tracker search results</changelogtext>
         <changelogtext>[b]New:[/b] Implement vertical page panning in paged reader mode when using hardware keys</changelogtext>
-        <changelogtext>[b]Improve:[/b] Update view's UI &amps; order (always show latest unread chapter first)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update view's UI &amp; order (always show latest unread chapter first)</changelogtext>
         <changelogtext>[b]Improve:[/b] Change label of setting to always use SSIV in long strip reader</changelogtext>
         <changelogtext>[b]Improve:[/b] Bump default user agent</changelogtext>
         <changelogtext>[b]Improve:[/b] Description showing which sources support batch-add</changelogtext>
