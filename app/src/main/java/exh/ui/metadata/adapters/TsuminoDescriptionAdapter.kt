@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterTsBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import exh.util.SourceTagsUtil.genreTextColor
@@ -74,7 +75,7 @@ fun TsuminoDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.pages.text =
                 context.pluralStringResource(SYMR.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
             // KMK -->
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor, 4.dpToPx)
             binding.pages.setTextColor(textColor)
             // KMK <--
 
