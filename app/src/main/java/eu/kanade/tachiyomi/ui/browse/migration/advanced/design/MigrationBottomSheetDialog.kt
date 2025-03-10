@@ -130,7 +130,7 @@ class MigrationBottomSheetDialogState(
         binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
         binding.migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
         binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
-        binding.migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteChapters(flags)
+        binding.migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteDownloaded(flags)
 
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
@@ -190,7 +190,7 @@ class MigrationBottomSheetDialogState(
         if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
         if (binding.migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
         if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
-        if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_CHAPTERS
+        if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_DOWNLOADED
         preferences.migrateFlags().set(flags)
     }
 
