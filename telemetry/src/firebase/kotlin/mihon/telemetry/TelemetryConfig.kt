@@ -1,4 +1,4 @@
-package mihon.core.firebase
+package mihon.telemetry
 
 import android.content.Context
 import com.google.firebase.FirebaseApp
@@ -7,7 +7,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 
-object FirebaseConfig {
+object TelemetryConfig {
     private lateinit var analytics: FirebaseAnalytics
     private lateinit var crashlytics: FirebaseCrashlytics
 

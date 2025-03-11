@@ -36,9 +36,11 @@ import eu.kanade.tachiyomi.ui.more.WhatsNewScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.isDevFlavor
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.updaterEnabled
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withIOContext
@@ -108,7 +110,7 @@ object AboutScreen : Screen() {
                     )
                 }
 
-                if (BuildConfig.INCLUDE_UPDATER) {
+                if (updaterEnabled) {
                     item {
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.check_for_updates),
@@ -185,7 +187,7 @@ object AboutScreen : Screen() {
                     )
                 }
 
-                if (isReleaseBuildType || isDevFlavor) {
+                if (isReleaseBuildType || isDebugBuildType) {
                     item {
                         TextPreferenceWidget(
                             title = stringResource(KMR.strings.whats_coming),
@@ -368,7 +370,7 @@ object AboutScreen : Screen() {
 
     fun getVersionName(withBuildDate: Boolean): String {
         return when {
-            BuildConfig.DEBUG -> {
+            isDebugBuildType -> {
                 "Debug ${BuildConfig.COMMIT_SHA}".let {
                     if (withBuildDate) {
                         "$it (${getFormattedBuildTime()})"
@@ -377,7 +379,7 @@ object AboutScreen : Screen() {
                     }
                 }
             }
-            BuildConfig.PREVIEW -> {
+            isPreviewBuildType -> {
                 "Beta r${BuildConfig.COMMIT_COUNT}".let {
                     if (withBuildDate) {
                         "$it (${BuildConfig.COMMIT_SHA}, ${getFormattedBuildTime()})"

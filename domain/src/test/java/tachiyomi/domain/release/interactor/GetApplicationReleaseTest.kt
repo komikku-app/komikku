@@ -31,35 +31,6 @@ class GetApplicationReleaseTest {
     }
 
     @Test
-    fun `When has update but is third party expect third party installation`() = runTest {
-        every { preference.get() } returns 0
-        every { preference.set(any()) }.answers { }
-
-        val releases = listOf(
-            Release(
-                "v2.0.0",
-                "info",
-                "http://example.com/release_link",
-                listOf("http://example.com/assets"),
-            ),
-        )
-
-        coEvery { releaseService.releaseNotes(any()) } returns releases
-
-        val result = getApplicationRelease.await(
-            GetApplicationRelease.Arguments(
-                isPreview = false,
-                isThirdParty = true,
-                commitCount = 0,
-                versionName = "v1.0.0",
-                repository = "test",
-            ),
-        )
-
-        result shouldBe GetApplicationRelease.Result.ThirdPartyInstallation
-    }
-
-    @Test
     fun `When has update but is preview expect new update`() = runTest {
         every { preference.get() } returns 0
         every { preference.set(any()) }.answers { }
@@ -78,7 +49,6 @@ class GetApplicationReleaseTest {
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
                 isPreview = true,
-                isThirdParty = false,
                 commitCount = 1000,
                 versionName = "",
                 repository = "test",
@@ -109,7 +79,6 @@ class GetApplicationReleaseTest {
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
                 isPreview = false,
-                isThirdParty = false,
                 commitCount = 0,
                 versionName = "v1.0.0",
                 repository = "test",
@@ -139,7 +108,6 @@ class GetApplicationReleaseTest {
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
                 isPreview = false,
-                isThirdParty = false,
                 commitCount = 0,
                 versionName = "v2.0.0",
                 repository = "test",
@@ -168,7 +136,6 @@ class GetApplicationReleaseTest {
         val result = getApplicationRelease.await(
             GetApplicationRelease.Arguments(
                 isPreview = false,
-                isThirdParty = false,
                 commitCount = 0,
                 versionName = "v1.0.0",
                 repository = "test",

@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.data.updater
 import android.content.Context
 import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
@@ -34,8 +34,7 @@ class AppUpdateChecker(
         return withIOContext {
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
-                    isPreview = BuildConfig.PREVIEW || peekIntoPreview,
-                    isThirdParty = context.isInstalledFromFDroid(),
+                    isPreview = isPreviewBuildType || peekIntoPreview,
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
                     repository = getGithubRepo(peekIntoPreview),
@@ -53,10 +52,6 @@ class AppUpdateChecker(
                         // KMK <--
                         AppUpdateNotifier(context).promptUpdate(result.release)
                     }
-
-                    is GetApplicationRelease.Result.ThirdPartyInstallation -> AppUpdateNotifier(
-                        context,
-                    ).promptFdroidUpdate()
 
                     else -> {}
                 }
@@ -84,8 +79,7 @@ class AppUpdateChecker(
         return withIOContext {
             getApplicationRelease.awaitReleaseNotes(
                 GetApplicationRelease.Arguments(
-                    isPreview = BuildConfig.PREVIEW || peekIntoPreview,
-                    isThirdParty = context.isInstalledFromFDroid(),
+                    isPreview = isPreviewBuildType || peekIntoPreview,
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
                     repository = getGithubRepo(peekIntoPreview),
@@ -99,7 +93,7 @@ class AppUpdateChecker(
 val GITHUB_REPO: String by lazy { getGithubRepo() }
 
 fun getGithubRepo(peekIntoPreview: Boolean = false): String =
-    if (BuildConfig.PREVIEW || peekIntoPreview) {
+    if (isPreviewBuildType || peekIntoPreview) {
         "komikku-app/komikku-preview"
     } else {
         "komikku-app/komikku"
@@ -108,7 +102,7 @@ fun getGithubRepo(peekIntoPreview: Boolean = false): String =
 val RELEASE_TAG: String by lazy { getReleaseTag() }
 
 fun getReleaseTag(peekIntoPreview: Boolean = false): String =
-    if (BuildConfig.PREVIEW || peekIntoPreview) {
+    if (isPreviewBuildType || peekIntoPreview) {
         "r${BuildConfig.COMMIT_COUNT}"
     } else {
         "v${BuildConfig.VERSION_NAME}"
