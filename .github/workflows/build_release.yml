@@ -228,13 +228,4 @@ jobs:
             Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
           draft: true
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update website on release
-        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
-        with:
-          workflow: deploy
-          repo: komikku-app/komikku-app.github.io
-          ref: "refs/heads/main"
-          token: "${{ secrets.BOT_PAT }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
