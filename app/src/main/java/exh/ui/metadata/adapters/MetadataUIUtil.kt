@@ -66,6 +66,7 @@ object MetadataUIUtil {
         @DrawableRes drawable: Int,
         // KMK -->
         @ColorInt color: Int = context.getResourceColor(R.attr.colorAccent),
+        drawablePadding: Int = 0.dpToPx,
         // KMK <--
     ) {
         ContextCompat.getDrawable(context, drawable)?.apply {
@@ -74,6 +75,9 @@ object MetadataUIUtil {
             // KMK <--
             setBounds(0, 0, 20.dpToPx, 20.dpToPx)
             setCompoundDrawables(this, null, null, null)
+            // KMK -->
+            setCompoundDrawablePadding(drawablePadding)
+            // KMK <--
         }
     }
 
