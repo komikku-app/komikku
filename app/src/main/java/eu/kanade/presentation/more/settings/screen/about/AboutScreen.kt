@@ -134,7 +134,7 @@ object AboutScreen : Screen() {
                                                     versionName = result.release.version,
                                                     changelogInfo = result.release.info,
                                                     releaseLink = result.release.releaseLink,
-                                                    downloadLink = result.release.getDownloadLink(),
+                                                    downloadLink = result.release.downloadLink,
                                                 )
                                                 navigator.push(updateScreen)
                                             },
@@ -211,7 +211,7 @@ object AboutScreen : Screen() {
                                                     versionName = result.release.version,
                                                     changelogInfo = result.release.info,
                                                     releaseLink = result.release.releaseLink,
-                                                    downloadLink = result.release.getDownloadLink(),
+                                                    downloadLink = result.release.downloadLink,
                                                 )
                                                 navigator.push(updateScreen)
                                             },
@@ -352,7 +352,7 @@ object AboutScreen : Screen() {
         val updateChecker = AppUpdateChecker()
         withUIContext {
             try {
-                when (val result = withIOContext { updateChecker.getReleaseNotes(context) }) {
+                when (val result = withIOContext { updateChecker.getReleaseNotes() }) {
                     is GetApplicationRelease.Result.NewUpdate -> {
                         onAvailableUpdate(result)
                     }

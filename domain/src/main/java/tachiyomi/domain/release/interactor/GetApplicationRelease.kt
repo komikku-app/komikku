@@ -26,7 +26,7 @@ class GetApplicationRelease(
         }
 
         // KMK -->
-        val releases = service.releaseNotes(arguments.repository)
+        val releases = service.releaseNotes(arguments)
             .filter {
                 !it.preRelease &&
                     isNewVersion(
@@ -57,7 +57,7 @@ class GetApplicationRelease(
 
     // KMK -->
     suspend fun awaitReleaseNotes(arguments: Arguments): Result {
-        val releases = service.releaseNotes(arguments.repository)
+        val releases = service.releaseNotes(arguments)
             .filter { !it.preRelease }
         val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
 
@@ -114,6 +114,7 @@ class GetApplicationRelease(
     }
 
     data class Arguments(
+        val isFoss: Boolean,
         /** If current version is Preview (beta) build */
         val isPreview: Boolean,
         /** Commit count of current version */
