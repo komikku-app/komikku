@@ -474,7 +474,7 @@ class DownloadManager(
             // KMK -->
             // if manually deleting single chapter then will allow deleting bookmark chapter
             (chapters.size > 1 || !ignoreCategoryExclusion)
-        // KMK <--
+            // KMK <--
         ) {
             filteredCategoryManga.filterNot { it.bookmark }
         } else {
