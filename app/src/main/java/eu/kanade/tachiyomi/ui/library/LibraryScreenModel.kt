@@ -523,7 +523,7 @@ class LibraryScreenModel(
             libraryPreferences.filterUnread().changes(),
             libraryPreferences.filterStarted().changes(),
             libraryPreferences.filterBookmarked().changes(),
-            libraryPreferences.filterBookmarked().changes(),
+            libraryPreferences.filterFillermarked().changes(),
             libraryPreferences.filterCompleted().changes(),
             libraryPreferences.filterIntervalCustom().changes(),
             // SY -->
