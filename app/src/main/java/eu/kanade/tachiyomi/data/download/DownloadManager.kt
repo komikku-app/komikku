@@ -136,7 +136,8 @@ class DownloadManager(
      * @param autoStart whether to start the downloader after enqueing the chapters.
      */
     fun downloadChapters(manga: Manga, chapters: List<Chapter>, autoStart: Boolean = true) {
-        downloader.queueChapters(manga, chapters, autoStart)
+        val filteredChapters = getChaptersToDownload(chapters)
+        downloader.queueChapters(manga, chapters, filteredChapters, autoStart)
     }
 
     /**
@@ -476,6 +477,14 @@ class DownloadManager(
             filteredCategoryManga.filterNot { it.bookmark }
         } else {
             filteredCategoryManga
+        }
+    }
+
+    private fun getChaptersToDownload(chapters: List<Chapter>): List<Chapter> {
+        return if (!downloadPreferences.notDownloadFillermarkedItems().get()) {
+            chapters.filterNot { it.fillermark }
+        } else {
+            chapters
         }
     }
 

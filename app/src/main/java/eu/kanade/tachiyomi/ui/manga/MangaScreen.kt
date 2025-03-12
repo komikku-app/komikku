@@ -371,6 +371,7 @@ class MangaScreen(
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
             onMultiBookmarkClicked = screenModel::bookmarkChapters,
+            onMultiFillermarkClicked = screenModel::fillermarkEpisodes,
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
@@ -492,6 +493,7 @@ class MangaScreen(
                 onDownloadFilterChanged = screenModel::setDownloadedFilter,
                 onUnreadFilterChanged = screenModel::setUnreadFilter,
                 onBookmarkedFilterChanged = screenModel::setBookmarkedFilter,
+                onFillermarkedFilterChanged = screenModel::setFillermarkedFilter,
                 onSortModeChanged = screenModel::setSorting,
                 onDisplayModeChanged = screenModel::setDisplayMode,
                 onSetAsDefault = screenModel::setCurrentSettingsAsDefault,

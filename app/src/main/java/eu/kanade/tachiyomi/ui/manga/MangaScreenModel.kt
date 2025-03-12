@@ -1205,6 +1205,9 @@ class MangaScreenModel(
             LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> {
                 bookmarkChapters(listOf(chapter), !chapter.bookmark)
             }
+            LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> {
+                fillermarkChapters(listOf(chapter), !chapter.fillermark)
+            }
             LibraryPreferences.ChapterSwipeAction.Download -> {
                 val downloadAction: ChapterDownloadAction = when (chapterItem.downloadState) {
                     Download.State.ERROR,
@@ -1433,6 +1436,16 @@ class MangaScreenModel(
         toggleAllSelection(false)
     }
 
+    fun fillermarkChapters(episodes: List<Chapter>, fillermarked: Boolean) {
+        screenModelScope.launchIO {
+            episodes
+                .filterNot { it.fillermark == fillermarked }
+                .map { ChapterUpdate(id = it.id, fillermark = fillermarked) }
+                .let { updateChapter.awaitAll(it) }
+        }
+        toggleAllSelection(false)
+    }
+
     /**
      * Deletes the given list of chapter.
      *
@@ -1518,6 +1531,20 @@ class MangaScreenModel(
 
         screenModelScope.launchNonCancellable {
             setMangaChapterFlags.awaitSetBookmarkFilter(manga, flag)
+        }
+    }
+
+    fun setFillermarkedFilter(state: TriState) {
+        val anime = successState?.manga ?: return
+
+        val flag = when (state) {
+            TriState.DISABLED -> Manga.SHOW_ALL
+            TriState.ENABLED_IS -> Manga.CHAPTER_SHOW_FILLERMARKED
+            TriState.ENABLED_NOT -> Manga.CHAPTER_SHOW_NOT_FILLERMARKED
+        }
+
+        screenModelScope.launchNonCancellable {
+            setMangaChapterFlags.awaitSetFillermarkFilter(manga, flag)
         }
     }
 
@@ -1923,9 +1950,11 @@ class MangaScreenModel(
                 val unreadFilter = manga.unreadFilter
                 val downloadedFilter = manga.downloadedFilter
                 val bookmarkedFilter = manga.bookmarkedFilter
+                val fillermarkedFilter = manga.fillermarkedFilter
                 return asSequence()
                     .filter { (chapter) -> applyFilter(unreadFilter) { !chapter.read } }
                     .filter { (chapter) -> applyFilter(bookmarkedFilter) { chapter.bookmark } }
+                    .filter { (chapter) -> applyFilter(fillermarkedFilter) { chapter.fillermark } }
                     .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
                     .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }
             }

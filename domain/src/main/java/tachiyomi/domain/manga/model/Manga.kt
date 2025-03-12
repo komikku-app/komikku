@@ -89,6 +89,9 @@ data class Manga(
     val bookmarkedFilterRaw: Long
         get() = chapterFlags and CHAPTER_BOOKMARKED_MASK
 
+    val fillermarkedFilterRaw: Long
+        get() = chapterFlags and CHAPTER_FILLERMARKED_MASK
+
     val unreadFilter: TriState
         get() = when (unreadFilterRaw) {
             CHAPTER_SHOW_UNREAD -> TriState.ENABLED_IS
@@ -100,6 +103,13 @@ data class Manga(
         get() = when (bookmarkedFilterRaw) {
             CHAPTER_SHOW_BOOKMARKED -> TriState.ENABLED_IS
             CHAPTER_SHOW_NOT_BOOKMARKED -> TriState.ENABLED_NOT
+            else -> TriState.DISABLED
+        }
+
+    val fillermarkedFilter: TriState
+        get() = when (fillermarkedFilterRaw) {
+            CHAPTER_SHOW_FILLERMARKED -> TriState.ENABLED_IS
+            CHAPTER_SHOW_NOT_FILLERMARKED -> TriState.ENABLED_NOT
             else -> TriState.DISABLED
         }
 
@@ -127,11 +137,15 @@ data class Manga(
         const val CHAPTER_SHOW_NOT_BOOKMARKED = 0x00000040L
         const val CHAPTER_BOOKMARKED_MASK = 0x00000060L
 
+        const val EPISODE_SHOW_FILLERMARKED = 0x00000080L
+        const val EPISODE_SHOW_NOT_FILLERMARKED = 0x00000100L
+        const val EPISODE_FILLERMARKED_MASK = 0x00000180L
+
         const val CHAPTER_SORTING_SOURCE = 0x00000000L
-        const val CHAPTER_SORTING_NUMBER = 0x00000100L
-        const val CHAPTER_SORTING_UPLOAD_DATE = 0x00000200L
-        const val CHAPTER_SORTING_ALPHABET = 0x00000300L
-        const val CHAPTER_SORTING_MASK = 0x00000300L
+        const val EPISODE_SORTING_NUMBER = 0x00000200L
+        const val EPISODE_SORTING_UPLOAD_DATE = 0x00000400L
+        const val EPISODE_SORTING_ALPHABET = 0x00000600L
+        const val EPISODE_SORTING_MASK = 0x00000600L
 
         const val CHAPTER_DISPLAY_NAME = 0x00000000L
         const val CHAPTER_DISPLAY_NUMBER = 0x00100000L

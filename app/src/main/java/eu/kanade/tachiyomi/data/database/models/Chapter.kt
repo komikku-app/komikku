@@ -16,6 +16,8 @@ interface Chapter : SChapter, Serializable {
 
     var bookmark: Boolean
 
+    var fillermark: Boolean
+
     var last_page_read: Int
 
     var date_fetch: Long
@@ -37,6 +39,7 @@ fun Chapter.toDomainChapter(): DomainChapter? {
         mangaId = manga_id!!,
         read = read,
         bookmark = bookmark,
+        fillermark = fillermark,
         lastPageRead = last_page_read.toLong(),
         dateFetch = date_fetch,
         sourceOrder = source_order.toLong(),

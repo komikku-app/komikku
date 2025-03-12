@@ -24,6 +24,7 @@ class ChapterRepositoryImpl(
                         chapter.scanlator,
                         chapter.read,
                         chapter.bookmark,
+                        chapter.fillermark,
                         chapter.lastPageRead,
                         chapter.chapterNumber,
                         chapter.sourceOrder,
@@ -59,6 +60,7 @@ class ChapterRepositoryImpl(
                     scanlator = chapterUpdate.scanlator,
                     read = chapterUpdate.read,
                     bookmark = chapterUpdate.bookmark,
+                    fillermark = chapterUpdate.fillermark,
                     lastPageRead = chapterUpdate.lastPageRead,
                     chapterNumber = chapterUpdate.chapterNumber,
                     sourceOrder = chapterUpdate.sourceOrder,
@@ -101,6 +103,15 @@ class ChapterRepositoryImpl(
     override suspend fun getBookmarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getBookmarkedChaptersByMangaId(
+                mangaId,
+                ChapterMapper::mapChapter,
+            )
+        }
+    }
+
+    override suspend fun getFillermarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
+        return handler.awaitList {
+            chaptersQueries.getFillermarkedChaptersByMangaId(
                 mangaId,
                 ChapterMapper::mapChapter,
             )
