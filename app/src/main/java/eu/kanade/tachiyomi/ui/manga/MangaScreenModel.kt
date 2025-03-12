@@ -1535,7 +1535,7 @@ class MangaScreenModel(
     }
 
     fun setFillermarkedFilter(state: TriState) {
-        val anime = successState?.manga ?: return
+        val manga = successState?.manga ?: return
 
         val flag = when (state) {
             TriState.DISABLED -> Manga.SHOW_ALL
