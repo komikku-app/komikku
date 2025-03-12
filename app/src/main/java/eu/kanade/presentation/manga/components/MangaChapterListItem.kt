@@ -240,19 +240,21 @@ private fun getSwipeAction(
             background = background,
             isUndo = bookmark,
             onSwipe = onSwipe,
-
+        )
         LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> {
             val icon = if (!fillermark) {
                 ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp)
             } else {
                 ImageVector.vectorResource(id = R.drawable.ic_fillermark_border_24dp)
+            }
+            swipeAction(
+                icon = icon,
+                background = background,
+                isUndo = bookmark,
+                onSwipe = onSwipe,
+            )
         }
-        swipeAction(
-            icon = icon,
-            background = background,
-            isUndo = bookmark,
-            onSwipe = onSwipe,
-        )
+        // <-- AM (FILLERMARK)
         LibraryPreferences.ChapterSwipeAction.Download -> swipeAction(
             icon = when (downloadState) {
                 Download.State.NOT_DOWNLOADED, Download.State.ERROR -> Icons.Outlined.Download
