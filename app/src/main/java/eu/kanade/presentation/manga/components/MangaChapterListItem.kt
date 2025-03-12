@@ -136,6 +136,7 @@ fun MangaChapterListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
+                    }
                     if (fillermark) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp),
@@ -143,9 +144,8 @@ fun MangaChapterListItem(
                             modifier = Modifier
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.tertiary,
-                            )
-                            Spacer(modifier = Modifier.width(2.dp))
-                        }
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
                     }
                     Text(
                         text = title,
