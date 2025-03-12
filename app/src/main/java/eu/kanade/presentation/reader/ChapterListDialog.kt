@@ -105,6 +105,7 @@ fun ChapterListDialog(
                     sourceName = null,
                     read = chapterItem.chapter.read,
                     bookmark = chapterItem.chapter.bookmark,
+                    fillermark = chapterItem.chapter.fillermark,
                     selected = false,
                     downloadIndicatorEnabled = false,
                     downloadStateProvider = { downloadState },
