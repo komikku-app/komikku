@@ -1436,9 +1436,9 @@ class MangaScreenModel(
         toggleAllSelection(false)
     }
 
-    fun fillermarkChapters(episodes: List<Chapter>, fillermarked: Boolean) {
+    fun fillermarkChapters(chapters: List<Chapter>, fillermarked: Boolean) {
         screenModelScope.launchIO {
-            episodes
+            chapters
                 .filterNot { it.fillermark == fillermarked }
                 .map { ChapterUpdate(id = it.id, fillermark = fillermarked) }
                 .let { updateChapter.awaitAll(it) }

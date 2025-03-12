@@ -257,7 +257,7 @@ object SettingsLibraryScreen : SearchableSettings {
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
                             stringResource(MR.strings.action_bookmark),
                         LibraryPreferences.ChapterSwipeAction.ToggleFillermark to
-                            stringResource(MR.strings.action_fillermark_episode),
+                            stringResource(KMR.strings.action_fillermark_chapter),
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to
                             stringResource(MR.strings.action_mark_as_read),
                         LibraryPreferences.ChapterSwipeAction.Download to
@@ -273,7 +273,7 @@ object SettingsLibraryScreen : SearchableSettings {
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
                             stringResource(MR.strings.action_bookmark),
                         LibraryPreferences.ChapterSwipeAction.ToggleFillermark to
-                            stringResource(MR.strings.action_fillermark_episode),
+                            stringResource(KMR.strings.action_fillermark_chapter),
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to
                             stringResource(MR.strings.action_mark_as_read),
                         LibraryPreferences.ChapterSwipeAction.Download to

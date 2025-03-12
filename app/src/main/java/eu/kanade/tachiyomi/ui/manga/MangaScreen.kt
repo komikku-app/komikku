@@ -371,7 +371,7 @@ class MangaScreen(
             onMorePreviewsClicked = { openMorePagePreviews(navigator, successState.manga) },
             // SY <--
             onMultiBookmarkClicked = screenModel::bookmarkChapters,
-            onMultiFillermarkClicked = screenModel::fillermarkEpisodes,
+            onMultiFillermarkClicked = screenModel::fillermarkChapters,
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,

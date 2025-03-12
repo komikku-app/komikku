@@ -42,6 +42,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
@@ -133,148 +134,153 @@ fun MangaChapterListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                    if (fillermark) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp),
-                            contentDescription = stringResource(MR.strings.action_filter_fillermarked),
-                            modifier = Modifier
-                                .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
-                            tint = MaterialTheme.colorScheme.primary,
+                        if (fillermark) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp),
+                                contentDescription = stringResource(KMR.strings.action_filter_fillermarked),
+                                modifier = Modifier
+                                    .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                        }
+
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { textHeight = it.size.height },
+                            color = LocalContentColor.current.copy(alpha = if (read) DISABLED_ALPHA else 1f),
                         )
-                        Spacer(modifier = Modifier.width(2.dp))
                     }
 
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = { textHeight = it.size.height },
-                        color = LocalContentColor.current.copy(alpha = if (read) DISABLED_ALPHA else 1f),
-                    )
-                }
-
-                Row {
-                    val subtitleStyle = MaterialTheme.typography.bodySmall
-                        .merge(
-                            color = LocalContentColor.current
-                                .copy(alpha = if (read) DISABLED_ALPHA else SECONDARY_ALPHA),
-                        )
-                    ProvideTextStyle(value = subtitleStyle) {
-                        if (date != null) {
-                            Text(
-                                text = date,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                    Row {
+                        val subtitleStyle = MaterialTheme.typography.bodySmall
+                            .merge(
+                                color = LocalContentColor.current
+                                    .copy(alpha = if (read) DISABLED_ALPHA else SECONDARY_ALPHA),
                             )
-                            if (readProgress != null ||
-                                scanlator != null/* SY --> */ ||
-                                sourceName != null/* SY <-- */
-                            ) {
-                                DotSeparatorText()
+                        ProvideTextStyle(value = subtitleStyle) {
+                            if (date != null) {
+                                Text(
+                                    text = date,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                if (readProgress != null ||
+                                    scanlator != null/* SY --> */ ||
+                                    sourceName != null/* SY <-- */
+                                ) {
+                                    DotSeparatorText()
+                                }
+                            }
+                            if (readProgress != null) {
+                                Text(
+                                    text = readProgress,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA),
+                                )
+                                if (scanlator != null/* SY --> */ || sourceName != null/* SY <-- */) DotSeparatorText()
+                            }
+                            // SY -->
+                            if (sourceName != null) {
+                                Text(
+                                    text = sourceName,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                if (scanlator != null) DotSeparatorText()
+                            }
+                            // SY <--
+                            if (scanlator != null) {
+                                Text(
+                                    text = scanlator,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                         }
-                        if (readProgress != null) {
-                            Text(
-                                text = readProgress,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA),
-                            )
-                            if (scanlator != null/* SY --> */ || sourceName != null/* SY <-- */) DotSeparatorText()
-                        }
-                        // SY -->
-                        if (sourceName != null) {
-                            Text(
-                                text = sourceName,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (scanlator != null) DotSeparatorText()
-                        }
-                        // SY <--
-                        if (scanlator != null) {
-                            Text(
-                                text = scanlator,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
                     }
                 }
-            }
 
-            ChapterDownloadIndicator(
-                enabled = downloadIndicatorEnabled,
-                modifier = Modifier.padding(start = 4.dp),
-                downloadStateProvider = downloadStateProvider,
-                downloadProgressProvider = downloadProgressProvider,
-                onClick = { onDownloadClick?.invoke(it) },
-            )
+                ChapterDownloadIndicator(
+                    enabled = downloadIndicatorEnabled,
+                    modifier = Modifier.padding(start = 4.dp),
+                    downloadStateProvider = downloadStateProvider,
+                    downloadProgressProvider = downloadProgressProvider,
+                    onClick = { onDownloadClick?.invoke(it) },
+                )
+            }
         }
     }
-}
 
-private fun getSwipeAction(
-    action: LibraryPreferences.ChapterSwipeAction,
-    read: Boolean,
-    bookmark: Boolean,
-    fillermark: Boolean,
-    downloadState: Download.State,
-    background: Color,
-    onSwipe: () -> Unit,
-): me.saket.swipe.SwipeAction? {
-    return when (action) {
-        LibraryPreferences.ChapterSwipeAction.ToggleRead -> swipeAction(
-            icon = if (!read) Icons.Outlined.Done else Icons.Outlined.RemoveDone,
-            background = background,
-            isUndo = read,
-            onSwipe = onSwipe,
-        )
-        LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> swipeAction(
-            icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove,
-            background = background,
-            isUndo = bookmark,
-            onSwipe = onSwipe,
-        )
-        LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> swipeAction(
-            icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove, //figure out icon
-            background = background,
-            isUndo = bookmark,
-            onSwipe = onSwipe,
-        )
-        LibraryPreferences.ChapterSwipeAction.Download -> swipeAction(
-            icon = when (downloadState) {
-                Download.State.NOT_DOWNLOADED, Download.State.ERROR -> Icons.Outlined.Download
-                Download.State.QUEUE, Download.State.DOWNLOADING -> Icons.Outlined.FileDownloadOff
-                Download.State.DOWNLOADED -> Icons.Outlined.Delete
+    private fun getSwipeAction(
+        action: LibraryPreferences.ChapterSwipeAction,
+        read: Boolean,
+        bookmark: Boolean,
+        fillermark: Boolean,
+        downloadState: Download.State,
+        background: Color,
+        onSwipe: () -> Unit,
+    ): me.saket.swipe.SwipeAction? {
+        return when (action) {
+            LibraryPreferences.ChapterSwipeAction.ToggleRead -> swipeAction(
+                icon = if (!read) Icons.Outlined.Done else Icons.Outlined.RemoveDone,
+                background = background,
+                isUndo = read,
+                onSwipe = onSwipe,
+            )
+
+            LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> swipeAction(
+                icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove,
+                background = background,
+                isUndo = bookmark,
+                onSwipe = onSwipe,
+            )
+
+            LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> swipeAction(
+                icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove, //figure out icon
+                background = background,
+                isUndo = bookmark,
+                onSwipe = onSwipe,
+            )
+
+            LibraryPreferences.ChapterSwipeAction.Download -> swipeAction(
+                icon = when (downloadState) {
+                    Download.State.NOT_DOWNLOADED, Download.State.ERROR -> Icons.Outlined.Download
+                    Download.State.QUEUE, Download.State.DOWNLOADING -> Icons.Outlined.FileDownloadOff
+                    Download.State.DOWNLOADED -> Icons.Outlined.Delete
+                },
+                background = background,
+                onSwipe = onSwipe,
+            )
+
+            LibraryPreferences.ChapterSwipeAction.Disabled -> null
+        }
+    }
+
+    private fun swipeAction(
+        onSwipe: () -> Unit,
+        icon: ImageVector,
+        background: Color,
+        isUndo: Boolean = false,
+    ): me.saket.swipe.SwipeAction {
+        return me.saket.swipe.SwipeAction(
+            icon = {
+                Icon(
+                    modifier = Modifier.padding(16.dp),
+                    imageVector = icon,
+                    tint = contentColorFor(background),
+                    contentDescription = null,
+                )
             },
             background = background,
             onSwipe = onSwipe,
+            isUndo = isUndo,
         )
-        LibraryPreferences.ChapterSwipeAction.Disabled -> null
     }
-}
 
-private fun swipeAction(
-    onSwipe: () -> Unit,
-    icon: ImageVector,
-    background: Color,
-    isUndo: Boolean = false,
-): me.saket.swipe.SwipeAction {
-    return me.saket.swipe.SwipeAction(
-        icon = {
-            Icon(
-                modifier = Modifier.padding(16.dp),
-                imageVector = icon,
-                tint = contentColorFor(background),
-                contentDescription = null,
-            )
-        },
-        background = background,
-        onSwipe = onSwipe,
-        isUndo = isUndo,
-    )
+    private val swipeActionThreshold = 56.dp
 }
-
-private val swipeActionThreshold = 56.dp
