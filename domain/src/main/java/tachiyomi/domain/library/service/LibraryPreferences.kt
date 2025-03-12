@@ -103,7 +103,7 @@ class LibraryPreferences(
         "pref_filter_library_fillermarked_v2",
         TriState.DISABLED,
     )
-    
+
     fun filterCompleted() = preferenceStore.getEnum(
         "pref_filter_library_completed_v2",
         TriState.DISABLED,
