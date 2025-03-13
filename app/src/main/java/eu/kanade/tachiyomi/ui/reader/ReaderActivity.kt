@@ -688,6 +688,16 @@ class ReaderActivity : BaseActivity() {
                                 }
                             }.toImmutableList()
                         },
+                        onFillermark = { chapter ->
+                            viewModel.toggleFillermark(chapter.id, !chapter.fillermark)
+                            chapters = chapters.map {
+                                if (it.chapter.id == chapter.id) {
+                                    it.copy(chapter = chapter.copy(fillermark = !chapter.fillermark))
+                                } else {
+                                    it
+                                }
+                            }.toImmutableList()
+                        },
                         state.dateRelativeTime,
                     )
                 }

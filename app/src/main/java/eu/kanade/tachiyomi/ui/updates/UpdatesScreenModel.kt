@@ -234,6 +234,16 @@ class UpdatesScreenModel(
         toggleAllSelection(false)
     }
 
+    fun fillermarkUpdates(updates: List<UpdatesItem>, fillermark: Boolean) {
+        screenModelScope.launchIO {
+            updates
+                .filterNot { it.update.fillermark == fillermark }
+                .map { ChapterUpdate(id = it.update.chapterId, fillermark = fillermark) }
+                .let { updateChapter.awaitAll(it) }
+        }
+        toggleAllSelection(false)
+    }
+
     /**
      * Downloads the given list of chapters with the manager.
      * @param updatesItem the list of chapters to download.
