@@ -981,7 +981,7 @@ class LibraryScreenModel(
         }
     }
 
-    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
+    private suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
@@ -997,6 +997,10 @@ class LibraryScreenModel(
                 .associateBy { it.id }
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
+                if (query.startsWith("id:", true)) {
+                    val id = query.substringAfter("id:").toLongOrNull()
+                    return@filter mangaId == id
+                }
                 val sourceId = item.libraryManga.manga.source
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
