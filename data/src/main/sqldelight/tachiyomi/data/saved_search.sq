@@ -3,7 +3,8 @@ CREATE TABLE saved_search(
     source INTEGER NOT NULL,
     name TEXT NOT NULL,
     query TEXT,
-    filters_json TEXT
+    filters_json TEXT,
+    UNIQUE(source, name)
 );
 
 selectBySource:
