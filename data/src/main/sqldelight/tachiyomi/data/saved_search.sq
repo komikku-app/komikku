@@ -27,7 +27,7 @@ SELECT source, name
 FROM saved_search;
 
 insert:
-INSERT INTO saved_search (source, name, query, filters_json)
+INSERT OR REPLACE INTO saved_search (source, name, query, filters_json)
 VALUES (:source, :name, :query, :filtersJson);
 
 deleteById:
