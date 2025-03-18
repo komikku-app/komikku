@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.updater
 import android.content.Context
 import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.util.system.isFossBuildType
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
@@ -34,6 +35,7 @@ class AppUpdateChecker(
         return withIOContext {
             val result = getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
+                    isFoss = isFossBuildType,
                     isPreview = isPreviewBuildType || peekIntoPreview,
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
@@ -61,7 +63,7 @@ class AppUpdateChecker(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         AppUpdateDownloadJob.start(
                             context = context,
-                            url = result.release.getDownloadLink(),
+                            url = result.release.downloadLink,
                             title = result.release.version,
                             scheduled = true,
                         )
@@ -75,10 +77,11 @@ class AppUpdateChecker(
     }
 
     // KMK -->
-    suspend fun getReleaseNotes(context: Context): GetApplicationRelease.Result {
+    suspend fun getReleaseNotes(): GetApplicationRelease.Result {
         return withIOContext {
             getApplicationRelease.awaitReleaseNotes(
                 GetApplicationRelease.Arguments(
+                    isFoss = isFossBuildType,
                     isPreview = isPreviewBuildType || peekIntoPreview,
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
