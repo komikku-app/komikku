@@ -40,4 +40,6 @@
     <string name="watched_tags_exh">ExHentai मा हेरिएको ट्यागहरू</string>
     <string name="tag_filtering_threshold">ट्याग फिल्टरिङ थ्रेसहोल्ड</string>
     <string name="tag_filtering_threshhold_error">-9999 र 0 को बीचमा हुनुपर्छ!</string>
+    <string name="artist">कलाकार</string>
+    <string name="author">लेखक</string>
 </resources>

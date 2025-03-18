@@ -455,7 +455,7 @@
     <string name="aged">Aged</string>
     <string name="last_update_check">Last update check</string>
     <string name="path">Path</string>
-    <string name="artist">Artist</string>
+    <string name="artist">Seniman</string>
     <string name="characters">Characters</string>
     <string name="group">Group</string>
     <string name="media_id">Media id</string>
@@ -470,7 +470,7 @@
     <string name="rating_string">Rating string</string>
     <string name="collection">Collection</string>
     <string name="parodies">Parodies</string>
-    <string name="author">Author</string>
+    <string name="author">Penulis</string>
     <string name="last_chapter_number">Last chapter number</string>
     <string name="follow_status">Follow status</string>
     <string name="anilist_id">Anilist id</string>
@@ -650,4 +650,19 @@
     <string name="select_tracker">Pilih pelacak</string>
     <string name="fill_from_tracker">Isi melalui pelacak</string>
     <string name="similar_titles">Judul serupa</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Pilih entri dengan sumber metadata</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Secara otomatis memilih judul yang cocok bila sumber menyediakan tautan ke trackers. Saat ini didukung oleh MangaDex</string>
+    <string name="rec_search">Temukan rekomendasi umum</string>
+    <string name="rec_hide_library_entries">Sembunyikan hasil yang terdapat di pustaka</string>
+    <string name="rec_services_to_search">Layanan rekomendasi untuk dicari</string>
+    <string name="rec_group_source">Layanan rekomendasi</string>
+    <string name="rec_group_tracker">Rekomendasi pelacak</string>
+    <string name="rec_common_recommendations">Rekomendasi umum</string>
+    <string name="rec_search_short">Temukan rekomendasi</string>
+    <string name="rec_no_results">Rekomendasi tidak ditemukan</string>
+    <string name="rec_error_title">Pencarian gagal</string>
+    <string name="rec_error_string">Terjadi sebuah error saat melakukan pencarian: %1$s</string>
+    <string name="rec_processing_state">Memproses entri %1$d dari %2$d</string>
+    <string name="rec_collecting">Mengumpulkan rekomendasi</string>
+    <string name="rec_initializing">Inisialisasi</string>
 </resources>

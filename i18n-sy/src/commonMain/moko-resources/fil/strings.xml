@@ -631,4 +631,19 @@
     <string name="visible">Visible</string>
     <string name="aged">Aged</string>
     <string name="rating_string">Rating string</string>
+    <string name="rec_error_title">Bigong nakahanap</string>
+    <string name="rec_common_recommendations">Mga karaniwang rekomendasyon</string>
+    <string name="rec_search_short">Maghanap ng mga rekomendasyon</string>
+    <string name="rec_error_string">Nagkaroon ng error sa proseso ng paghahanap: %1$s</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Awtomatikong pinipili ang katugmang pamagat kung ang pinagmulan ay nagbibigay ng mga link sa mga tracker. Kasalukuyang sinusuportahan ng MangaDex</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Napiling mga entry gamit ang source metadata</string>
+    <string name="rec_search">Maghanap ng mga karaniwang rekomendasyon</string>
+    <string name="rec_hide_library_entries">Itago ang mga resulta na mayroon sa iyong aklatan</string>
+    <string name="rec_services_to_search">Mga serbisyo ng rekomendasyon sa paghahanap</string>
+    <string name="rec_group_source">Mga rekomendasyon ng Source</string>
+    <string name="rec_group_tracker">Mga rekomendasyon ng Tracker</string>
+    <string name="rec_no_results">Walang nahanap na mga rekomendasyon</string>
+    <string name="rec_processing_state">Pinoprosesong entry %1$d ng %2$d</string>
+    <string name="rec_collecting">Nangongolekta ng mga rekomendasyon</string>
+    <string name="rec_initializing">Sinisimulan</string>
 </resources>

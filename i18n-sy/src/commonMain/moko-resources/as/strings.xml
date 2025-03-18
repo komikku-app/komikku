@@ -631,4 +631,18 @@
     <string name="favorites_sync_unable_to_add_to_remote">গ্যালাৰীটো ৰিম\'ট ছাৰ্ভাৰত যোগ কৰিব পৰা নগ\'ল: \'%1$s\' (GID: %2$s)!</string>
     <string name="entry_not_tracked">প্ৰৱেশটো অনুসৰণ কৰা হোৱা নাই।</string>
     <string name="similar_titles">একেধৰণৰ শিৰোনামসমূহ</string>
+    <string name="rec_collecting">পৰামৰ্শ সংগ্ৰহ কৰা</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">স্বয়ংক্ৰিয়ভাৱে মিল থকা শিৰোনাম নিৰ্ব্বাচন কৰে যদি উৎসই ট্ৰেকাৰসমূহলে সংযোগসমূহ প্ৰদান কৰে। বৰ্তমান MangaDex দ্বাৰা সমৰ্থিত</string>
+    <string name="pref_tracker_resolve_using_source_metadata">উৎস মেটাডাটা ব্যৱহাৰ কৰি প্ৰৱেশসমূহ নিৰ্ব্বাচন কৰক</string>
+    <string name="rec_search">সাধাৰণ পৰামৰ্শ বিচাৰি উলিয়াওক</string>
+    <string name="rec_hide_library_entries">আপোনাৰ লাইব্ৰেৰীত ইতিমধ্যে ফলাফল লুকুৱাওক</string>
+    <string name="rec_services_to_search">সন্ধান কৰিবলৈ পৰামৰ্শ সেৱা</string>
+    <string name="rec_group_source">উৎসৰ পৰামৰ্শ</string>
+    <string name="rec_group_tracker">ট্ৰেকাৰৰ পৰামৰ্শ</string>
+    <string name="rec_common_recommendations">সাধাৰণ পৰামৰ্শ</string>
+    <string name="rec_search_short">পৰামৰ্শ বিচাৰি উলিয়াওক</string>
+    <string name="rec_no_results">কোনো পৰামৰ্শ পোৱা নগ\'ল</string>
+    <string name="rec_error_title">সন্ধান বিফল হ\'ল</string>
+    <string name="rec_error_string">সন্ধান প্ৰক্ৰিয়াৰ সময়ত এটা ভুল হৈছে: %1$s</string>
+    <string name="rec_processing_state">%2$d ৰ %1$d প্ৰৱেশ প্ৰক্ৰিয়া কৰা হৈছে</string>
 </resources>
