@@ -81,6 +81,6 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
         private const val TAG_NAMESPACE_ARTIST = "artist"
         const val TAG_NAMESPACE_CATEGORY = "category"
 
-        const val BASE_URL = "https://pururin.io"
+        const val BASE_URL = "https://pururin.me"
     }
 }
