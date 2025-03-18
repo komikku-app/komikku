@@ -41,14 +41,14 @@
     <string name="watched_tags_exh">ExHentai 收藏的標籤</string>
     <string name="tag_filtering_threshold">標籤過濾臨界值</string>
     <string name="tag_filtering_threshhold_error">必須介於 -9999 和 0！</string>
-    <string name="tag_filtering_threshhold_summary">你可以透過在「我的 Tags E/ExHentai」頁面新增負的權重來軟過濾標籤，如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉，這個臨界值可以在 -9999 和 0 之間設定， 目前：%1$d</string>
+    <string name="tag_filtering_threshhold_summary">您可以透過在「我的 Tags E/ExHentai」頁面新增負的權重來軟過濾標籤，如果一個畫廊的標籤加起來的權重低於這個值，它就會被過濾掉，這個臨界值可以在 -9999 和 0 之間設定， 目前：%1$d</string>
     <string name="tag_watching_threshhold">標籤收藏臨界值</string>
     <string name="tag_watching_threshhold_error">必須介於 0 和 9999！</string>
     <string name="tag_watching_threshhold_summary">如果最近上傳的畫廊至少有一個權重為正的已收藏標籤，並且其已收藏標籤的權重之和達到這個值或更高，就會被列入已收藏頁面，這個臨界值可以在 0 到 9999 之間設定，目前：%1$d</string>
     <string name="language_filtering">語言過濾</string>
     <string name="language_filtering_summary">如果您想在畫廊列表和搜尋中隱藏某些語言的畫廊，請在彈出的對話框中選擇它們\n請注意，無論您的搜尋條件為何，匹配的畫廊都不會出現\n勾選 = 排除</string>
     <string name="frong_page_categories">首頁類別</string>
-    <string name="fromt_page_categories_summary">你希望在首頁和搜尋中預設顯示哪些類別？它們仍然可以透過啟用它們的過濾器而被啟用</string>
+    <string name="fromt_page_categories_summary">您希望在首頁和搜尋中預設顯示哪些類別？它們仍然可以透過啟用它們的過濾器而被啟用</string>
     <string name="watched_list_default">監視列表過濾器預設狀態</string>
     <string name="watched_list_state_summary">在瀏覽 ExHentai/E-Hentai 時，是否預設啟用監視列表過濾器</string>
     <string name="eh_image_quality_summary">下載圖片品質</string>
@@ -89,7 +89,7 @@
     <string name="gallery_updater_stats_time">\n上一次檢查的畫廊：\n- 1 小時: %1$d\n- 6 小時: %2$d\n- 12 小時: %3$d\n- 1 天: %4$d\n- 2 天: %5$d\n- 1 周: %6$d\n- 1 個月: %7$d\n- 1 年: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">建立設定檔說明</string>
-    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的效能。請確保您在這兩個網站上擁有的設定檔少於三個\n\n如果你不知道什麼是設定檔，那麼對你無影響，只需點擊「確定」</string>
+    <string name="settings_profile_note_message">本應用程式現在將在 E-Hentai 和 ExHentai 上建立一個新的設定檔，以最佳化應用程式的效能。請確保您在這兩個網站上擁有的設定檔少於三個\n\n如果您不知道什麼是設定檔，那麼對您無影響，只需點擊「確定」</string>
     <string name="eh_settings_successfully_uploaded">設定檔上傳成功！</string>
     <string name="eh_settings_configuration_failed">設定失敗！</string>
     <string name="eh_settings_configuration_failed_message">在設定過程中出現錯誤：%1$s</string>
@@ -113,7 +113,7 @@
     <string name="enable_source_blacklist">啟用來源黑名單</string>
     <string name="enable_source_blacklist_summary">如果與 %1$s 不相容則隱藏擴充套件或來源。變更需要完全重啟應用程式才能生效。</string>
     <string name="open_debug_menu">開啟 Debug 選單</string>
-    <string name="open_debug_menu_summary"><![CDATA[如果你不知道你在幹什麼不要點擊此選單！<font color=\'red\'>這會汙染你的書櫃！</font>]]></string>
+    <string name="open_debug_menu_summary"><![CDATA[如果你不知道你在幹什麼不要點擊此選單！<font color=\'red\'>這會汙染您的書櫃！</font>]]></string>
     <string name="starting_cleanup">開始清理</string>
     <string name="clean_up_downloaded_chapters">清理已下載的章節</string>
     <string name="delete_unused_chapters">刪除不存在、部分下載或已讀章節的資料夾</string>
@@ -226,7 +226,7 @@
     <!-- Security settings -->
     <string name="biometric_lock_times">生物識別鎖定時間表</string>
     <string name="action_edit_biometric_lock_times">編輯鎖定時間表</string>
-    <string name="biometric_lock_times_empty">你未設定生物識別鎖時間表，點擊加號建立一個。</string>
+    <string name="biometric_lock_times_empty">您未設定生物識別鎖時間表，點擊加號建立一個。</string>
     <string name="biometric_lock_time_conflicts">鎖定時間與已經存在的時間衝突!</string>
     <string name="biometric_lock_start_time">輸入開始時間</string>
     <string name="biometric_lock_end_time">輸入結束時間</string>
@@ -243,12 +243,10 @@
     <string name="saturday">週六</string>
     <string name="encrypt_database">加密資料庫</string>
     <string name="encrypt_database_subtitle">變更需要重新啟動應用程式才能生效</string>
-    <string name="encrypt_database_message">
-        <![CDATA[<font color=\'red\'>啟用此選項會建立一個新資料庫。使用以下步驟以保留你的資料<br>1、設定 -> 備份和還原 -> 建立備份<br>2、系統設定 -> 清除應用程式資料<br>3、開啟應用程式然後啟用此選項<br>4、系統設定 -> 強行停止應用程式<br>5、設定 -> 備份和還原 -> 還原備份</font>]]>
-    </string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>啟用此選項會建立一個新資料庫。使用以下步驟以保留您的資料<br>1、設定 -> 備份和還原 -> 建立備份<br>2、系統設定 -> 清除應用程式資料<br>3、開啟應用程式然後啟用此選項<br>4、系統設定 -> 強行停止應用程式<br>5、設定 -> 備份和還原 -> 還原備份</font>]]></string>
     <string name="set_cbz_zip_password">設定 CBZ 檔案密碼</string>
     <string name="password_protect_downloads">使用密碼保護下載的檔案</string>
-    <string name="password_protect_downloads_summary">使用提供的密碼加密 CBZ 檔案。\n警告：如果你忘記密碼，檔案中的資料將會遺失</string>
+    <string name="password_protect_downloads_summary">使用提供的密碼加密 CBZ 檔案。\n警告：如果您忘記密碼，檔案中的資料將會遺失</string>
     <string name="delete_cbz_archive_password">移除 CBZ 檔案密碼</string>
     <string name="cbz_archive_password">CBZ 檔案密碼</string>
     <string name="wrong_cbz_archive_password">CBZ 檔案密碼錯誤</string>
@@ -259,9 +257,9 @@
     <string name="download_threads">下載執行緒</string>
     <string name="download_threads_summary">較高的值可以明顯加快頁面載入速度，同時容易被停權。建議值為 2 或 3。現在的值為：%s</string>
     <string name="aggressively_load_pages">積極地載入頁面</string>
-    <string name="aggressively_load_pages_summary">在閱讀時緩慢地下載整個章節，而不是只載入你正在閱讀的頁面。</string>
+    <string name="aggressively_load_pages_summary">在閱讀時緩慢地下載整個章節，而不是只載入您正在閱讀的頁面。</string>
     <string name="skip_queue_on_retry">重試時跳過佇列</string>
-    <string name="skip_queue_on_retry_summary">通常情況下，在下載失敗時按下重試按鈕，將等待下載器完成最後一頁的下載，然後開始重新下載失敗的頁面。啟用此功能將迫使下載器在你按下重試按鈕後立即開始重新下載失敗的頁面。</string>
+    <string name="skip_queue_on_retry_summary">通常情況下，在下載失敗時按下重試按鈕，將等待下載器完成最後一頁的下載，然後開始重新下載失敗的頁面。啟用此功能將迫使下載器在您按下重試按鈕後立即開始重新下載失敗的頁面。</string>
     <string name="reader_preload_amount">預載入頁面數量</string>
     <string name="reader_preload_amount_4_pages">4 頁</string>
     <string name="reader_preload_amount_6_pages">6 頁</string>
@@ -300,7 +298,7 @@
     <string name="eh_retry_all_help">重試所有說明</string>
     <string name="eh_retry_all_help_message">將所有下載失敗的頁面重新加入下載佇列。</string>
     <string name="eh_boost_page_help">加速頁面說明</string>
-    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表你在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用「加速頁面」將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
+    <string name="eh_boost_page_help_message">通常情況下，下載器在同一時間只能下載特定數量的頁面。這代表您在等待頁面下載時不會立即開始下載，直到有一個空閒的下載執行緒。啟用「加速頁面」將迫使下載器立即開始下載，而不管是否有可用的執行緒。</string>
     <string name="eh_boost_page_invalid">此頁面無法加速（無效頁面）！</string>
     <string name="eh_boost_page_errored">頁面載入失敗，請按重試按鈕！</string>
     <string name="eh_boost_page_downloading">此頁面已經在下載了！</string>
@@ -328,7 +326,7 @@
     <string name="double_pages">雙頁</string>
     <string name="single_page">單頁</string>
     <string name="automatic_orientation">自動（基於方向）</string>
-    <string name="automatic_can_still_switch">在使用自動頁面版面配置時，你仍然可以在閱讀時變更版面配置，而不需要重設這一設定</string>
+    <string name="automatic_can_still_switch">在使用自動頁面版面配置時，您仍然可以在閱讀時變更版面配置，而不需要重設這一設定</string>
     <string name="invert_double_pages">反向雙頁</string>
     <!-- Center margin -->
     <string name="center_margin">中間空白</string>
@@ -379,7 +377,7 @@
     <string name="save_search_failed_to_load">載入已儲存的搜尋失敗!</string>
     <string name="save_search_failed_to_load_message">載入已儲存的搜尋過程中出現問題。</string>
     <string name="save_search_delete">刪除已儲存的搜尋查詢？</string>
-    <string name="save_search_delete_message">你確定要刪除你的搜尋查詢：\'%1$s\'？</string>
+    <string name="save_search_delete_message">您確定要刪除您的搜尋查詢：\'%1$s\'？</string>
     <string name="save_search_invalid">儲存的搜尋無效，過濾器已經改變</string>
     <string name="save_search_invalid_name">無效的搜尋名稱</string>
     <!-- Source Categories -->
@@ -393,12 +391,12 @@
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">標籤排序標籤</string>
     <string name="tag_sorting">標籤排序</string>
-    <string name="action_add_tags_message">看這裡！標籤必須是完整的，不能是部分相符，你不能用類似 netorare 過濾 female:netorare！\n命名空間標籤的樣式是\n“female: sole female”\n不需要引號！\n支援新增同一標籤的多個變體，所以隨意為 NHentai 新增 \"tag: netorare\" 或者為 E-Hentai 新增 \"female: netorare\" ！</string>
+    <string name="action_add_tags_message">看這裡！標籤必須是完整的，不能是部分相符，您不能用類似 netorare 過濾 female:netorare！\n命名空間標籤的樣式是\n“female: sole female”\n不需要引號！\n支援新增同一標籤的多個變體，所以隨意為 NHentai 新增 \"tag: netorare\" 或者為 E-Hentai 新增 \"female: netorare\" ！</string>
     <string name="action_edit_tags">編輯標籤</string>
-    <string name="information_empty_tags">你沒有標籤。點按+按鈕以建立一個標籤用來將書櫃排序</string>
+    <string name="information_empty_tags">您沒有標籤。點按+按鈕以建立一個標籤用來將書櫃排序</string>
     <string name="error_tag_exists">此標籤已存在！</string>
     <string name="delete_tag">刪除標籤</string>
-    <string name="delete_tag_confirmation">你想要刪除標籤 %s 嗎？</string>
+    <string name="delete_tag_confirmation">您想要刪除標籤 %s 嗎？</string>
     <!-- Extension section -->
     <string name="ext_redundant">廢棄</string>
     <string name="redundant_extension_message">此擴充套件已廢棄，將不會在此版本的 Komikku 上執行。</string>
@@ -471,10 +469,10 @@
     <string name="favorites_sync_initializing">初始化同步</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\n同步工作目前正在限速（以避免被ExHentai禁止），可能需要很長時間才能完成。</string>
     <string name="favorites_sync_notes">重要的收藏夾同步注意事項</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. 在應用程式中變更分類名稱是<b>不</b>同步的！請<i>在 ExHentai 上變更名稱</i>。分類名稱會在每次同步時從 ExHentai 伺服器上複製<br><br>2. <b>應用程式中前10個類別與</b> ExHentai 上的最愛類別相對應（除了 \'預設\' 類別）。<i>在其他類別的畫廊將<b>不會</b>被同步！</i><br><br>3. <font color=\'red\'><b>在同步過程中請確保有穩定的網路連線！</b></font>如果在同步過程中網路連線中斷，你的收藏夾可能會停留在<i>部分同步狀態</i>。<br><br>4. 當在同步時應保持應用程式開啟。Android 有時會關閉背景應用程式，如果正在同步這會很糟糕。<br><br>5. <b>不要將收藏夾放到多個類別</b>（本應用程式支援這樣做）。 這可能會導致同步演算法混亂，因為 ExHentai 只允許每個收藏夾在一個類別中。<br><br>此對話框僅會彈出一次。你可以到 \'設定 > E-Hentai > 顯示收藏夾同步注意事項\' 閱讀多次。]]></string>
-    <string name="favorites_sync_reset">你確定嗎？</string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. 在應用程式中變更分類名稱是<b>不</b>同步的！請<i>在 ExHentai 上變更名稱</i>。分類名稱會在每次同步時從 ExHentai 伺服器上複製<br><br>2. <b>應用程式中前10個類別與</b> ExHentai 上的最愛類別相對應（除了 \'預設\' 類別）。<i>在其他類別的畫廊將<b>不會</b>被同步！</i><br><br>3. <font color=\'red\'><b>在同步過程中請確保有穩定的網路連線！</b></font>如果在同步過程中網路連線中斷，您的收藏夾可能會停留在<i>部分同步狀態</i>。<br><br>4. 當在同步時應保持應用程式開啟。Android 有時會關閉背景應用程式，如果正在同步這會很糟糕。<br><br>5. <b>不要將收藏夾放到多個類別</b>（本應用程式支援這樣做）。 這可能會導致同步演算法混亂，因為 ExHentai 只允許每個收藏夾在一個類別中。<br><br>此對話框僅會彈出一次。您可以到 \'設定 > E-Hentai > 顯示收藏夾同步注意事項\' 閱讀多次。]]></string>
+    <string name="favorites_sync_reset">您確定嗎？</string>
     <string name="favorites_sync_reset_message">重設同步狀態會導致下一次同步變得非常慢。</string>
-    <string name="favorites_sync_conformation_message">你確定要與 E-Hentai 同步收藏嗎？</string>
+    <string name="favorites_sync_conformation_message">您確定要與 E-Hentai 同步收藏嗎？</string>
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">批次匯入</string>
@@ -485,7 +483,7 @@
     <string name="eh_batch_add_adding_galleries">新增畫廊中……</string>
     <string name="eh_batch_add_finish">完成</string>
     <string name="batch_add_no_valid_galleries">沒有可新增的畫廊！</string>
-    <string name="batch_add_no_valid_galleries_message">你必須選擇至少一個要新增的畫廊！</string>
+    <string name="batch_add_no_valid_galleries_message">您必須選擇至少一個要新增的畫廊！</string>
     <string name="batch_add">批次匯入</string>
     <string name="batch_add_summary">\n摘要：\n已新增：%1$d 個畫廊\n失敗：%2$d 個畫廊</string>
     <string name="batch_add_success_log_message">已新增畫廊：%1$s</string>
@@ -577,7 +575,7 @@
     <!-- Merged entry -->
     <string name="merge_settings">合併設定</string>
     <string name="fetch_chapter_updates">取得章節更新</string>
-    <string name="delete_merged_entry">你確定嗎？</string>
+    <string name="delete_merged_entry">您確定嗎？</string>
     <string name="delete_merged_entry_desc">這將從合併中移除該項目，使用此功能時也會遺失對合併項目所做的任何未儲存更改</string>
     <string name="chapter_updates_merged_entry">變更章節更新</string>
     <string name="chapter_updates_merged_entry_desc">變更此項將停用或啟用此已合併的漫畫的章節更新</string>
@@ -664,4 +662,19 @@
     <string name="fill_from_tracker">從歷程平臺獲取資訊</string>
     <string name="favorites_sync_unable_to_add_to_remote">無法將圖庫新增到遠端伺服器：「%1$s」 (GID：%2$s)！</string>
     <string name="similar_titles">相近標題</string>
+    <string name="rec_search">尋找共同推薦</string>
+    <string name="pref_tracker_resolve_using_source_metadata">選擇條目時使用來源元資料</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">如果來源提供歷程平臺的連結，則會自動選擇匹配的標題，目前支持 MangaDex</string>
+    <string name="rec_services_to_search">用於搜尋的推薦系統</string>
+    <string name="rec_hide_library_entries">隱藏已在您書櫃中的結果</string>
+    <string name="rec_common_recommendations">常見推薦</string>
+    <string name="rec_search_short">尋找推薦</string>
+    <string name="rec_group_tracker">歷程平臺的推薦</string>
+    <string name="rec_no_results">找不到推薦內容</string>
+    <string name="rec_error_title">搜尋失敗</string>
+    <string name="rec_error_string">搜尋過程中發生錯誤：%1$s</string>
+    <string name="rec_processing_state">正在處理第 %1$d/%2$d 項條目</string>
+    <string name="rec_initializing">初始化中</string>
+    <string name="rec_collecting">正在收集推薦</string>
+    <string name="rec_group_source">來源的推薦</string>
 </resources>

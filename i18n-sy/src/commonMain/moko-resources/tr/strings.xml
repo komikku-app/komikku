@@ -604,4 +604,19 @@
     <string name="relation_serialization">Yayın</string>
     <string name="ignore_non_library_entries">Kitaplıkta olmayan girdileri görmezden gel</string>
     <string name="humanize_fallback">az önce</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Eğer kaynak, izleyiciler için bağlantılar sağlıyorsa eşleşen içeriği otomatik olarak seçer. Şu anda MangaDex tarafından destekleniyor</string>
+    <string name="rec_group_source">Kaynak önerileri</string>
+    <string name="rec_services_to_search">Arama yapılacak öneri hizmetleri</string>
+    <string name="rec_hide_library_entries">Zaten kitaplıkta olan sonuçları gizle</string>
+    <string name="rec_group_tracker">İzleyici önerileri</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Kaynak meta verilerine göre girdileri seç</string>
+    <string name="rec_search">Sık rastlanan önerileri bul</string>
+    <string name="rec_common_recommendations">Sık rastlanan öneriler</string>
+    <string name="rec_search_short">Önerileri bul</string>
+    <string name="rec_no_results">Öneri bulunamadı</string>
+    <string name="rec_error_title">Arama başarsız oldu</string>
+    <string name="rec_error_string">Arama süreci sırasında bir hata oluştu: %1$s</string>
+    <string name="rec_processing_state">%2$d girdiden %1$d. girdi işleniyor</string>
+    <string name="rec_collecting">Öneriler toplanıyor</string>
+    <string name="rec_initializing">Başlatılıyor</string>
 </resources>

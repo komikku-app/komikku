@@ -532,7 +532,7 @@
     <string name="bandwidth_hero">Bandwidth Hero (Requer um servidor proxy Bandwidth Hero)</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="put_merge_in_overflow">Mesclar em transborde</string>
-    <string name="put_merge_in_overflow_summary">Colocar o botão de mesclar no menu de transborde ao invés da pagina inicial</string>
+    <string name="put_merge_in_overflow_summary">Colocar o botão de mesclar no menu flutuante ao invés da pagina inicial</string>
     <string name="pref_feed_position_summery">Você quer que a aba Feed seja a primeira aba em Navegar? Isso irá fazer dela a aba principal ao abrir Navegar, não é recomendado se você estiver usando uma rede medida ou dados móveis</string>
     <string name="label_triggers">Gatilhos</string>
     <string name="pref_sync_now_group_title">Sincronizar Ações</string>
@@ -545,7 +545,7 @@
     <string name="sync_on_chapter_read">Sincronizar após Leitura de Capitulo</string>
     <string name="pref_purge_confirmation_title">Confirmação de Limpeza</string>
     <string name="pref_sync_options">Criar gatilhos de sincronização</string>
-    <string name="sync_on_chapter_open">Sincronizar após Capítulo Aberto</string>
+    <string name="sync_on_chapter_open">Sincronizar após abrir capítulo</string>
     <string name="sync_on_app_start">Sincronizar na Abertura da Aplicação</string>
     <string name="pref_ehentai_summary">E/ExHentai login, sincronizar galeria</string>
     <string name="pref_mangadex_summary">MangaDex login, segue sincronização</string>
