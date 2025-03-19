@@ -397,7 +397,7 @@
     <string name="data_saver_stop_exclude">Veri tasarrufundan hariç tutmayı bırak</string>
     <string name="action_edit_tags">Etiketleri düzenle</string>
     <string name="information_empty_tags">Etiketiniz yok. Kitaplığınızı etiketlere göre sıralamak için artı butonuna basarak bir tane oluşturun</string>
-    <string name="redundant_extension_message">Bu eklenti Tachiyomi\'nin bu versiyonunda kullanılmayacaktır.</string>
+    <string name="redundant_extension_message">Bu eklenti Komikku\'nin bu versiyonunda kullanılmayacaktır.</string>
     <string name="select_sources">Kaynakları seç</string>
     <string name="pre_migration_skip_toast">Bu ekranı yeniden görmek için Ayarlar -&gt; Kitaplık bölümüne gidin.</string>
     <string name="use_intelligent_search">Arama başlığı + başlık için kelimeler</string>

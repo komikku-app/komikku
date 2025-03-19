@@ -357,7 +357,7 @@
     <string name="save_search_failed_to_load_message">Un error ocurrió mientras se cargaban tus búsquedas guardadas.</string>
     <string name="save_search_failed_to_load">¡Error al cargar las búsquedas guardadas!</string>
     <string name="delete_tag">Eliminar etiqueta</string>
-    <string name="redundant_extension_message">Esta extensión es redundante y no será usada dentro de esta versión de Tachiyomi.</string>
+    <string name="redundant_extension_message">Esta extensión es redundante y no será usada dentro de esta versión de Komikku.</string>
     <string name="use_intelligent_search">Título de búsqueda + palabras clave del título</string>
     <string name="only_show_updated_entries">Mostrar solo entradas con nuevos capítulos</string>
     <string name="match_enabled_sources">Coincidir fuentes activadas</string>

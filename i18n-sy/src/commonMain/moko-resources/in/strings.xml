@@ -306,7 +306,7 @@
     <string name="error_tag_exists">Tag ini sudah ada!</string>
     <!-- Extension section -->
     <string name="ext_redundant">Duplikat</string>
-    <string name="redundant_extension_message">Ekstensi ini duplikat dan tak akan digunakan di dalam versi Tachiyomi ini.</string>
+    <string name="redundant_extension_message">Ekstensi ini duplikat dan tak akan digunakan di dalam versi Komikku ini.</string>
     <!-- Migration -->
     <string name="select_sources">Pilih sumber</string>
     <string name="select_none">Tak ada yang dipilih</string>

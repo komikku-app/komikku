@@ -399,7 +399,7 @@
     <string name="delete_tag">টেগ মচি পেলাওক</string>
     <string name="delete_tag_confirmation">আপুনি টেগ %s মচি পেলাবলৈ ইচ্ছা কৰে নেকি?</string>
     <string name="ext_redundant">অপ্রয়োজনীয়</string>
-    <string name="redundant_extension_message">এই এক্সটেনশন অপ্রয়োজনীয় আৰু Tachiyomiৰ এই সংস্কৰণত ব্যৱহৃত নহ\'ব।</string>
+    <string name="redundant_extension_message">এই এক্সটেনশন অপ্রয়োজনীয় আৰু Komikkuৰ এই সংস্কৰণত ব্যৱহৃত নহ\'ব।</string>
     <string name="select_sources">উৎস বাচক</string>
     <string name="select_none">কোনো বাচক নকৰিব</string>
     <string name="migration">মাইগ্ৰেচন</string>
@@ -619,7 +619,7 @@
     <string name="relation_colored">ৰঙিন</string>
     <string name="relation_serialization">ছৰিয়েলাইজেচন</string>
     <string name="relation_alternate_version">বিকল্প সংস্কৰণ</string>
-    <string name="password_protect_downloads_summary">দিয়া পাসৱৰ্ডৰ সৈতে CBZ আর্কাইভ ডাউনলোড এনক্ৰিপ্ট কৰে। 
+    <string name="password_protect_downloads_summary">দিয়া পাসৱৰ্ডৰ সৈতে CBZ আর্কাইভ ডাউনলোড এনক্ৰিপ্ট কৰে।
 \nসতর্কতা: পাসৱৰ্ড ভুলিলে আর্কাইভৰ ভিতৰ ডাটা চিৰদিনৰ বাবে হেৰাই যাব</string>
     <string name="rating5">মধ্যমীয়া</string>
     <string name="relation_sequel">ছিকুৱেল</string>

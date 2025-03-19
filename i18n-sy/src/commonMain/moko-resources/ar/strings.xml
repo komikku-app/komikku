@@ -400,7 +400,7 @@
     <string name="delete_tag">حذف الفئة</string>
     <string name="delete_tag_confirmation">هل ترغب في حذف الفئة %s ؟</string>
     <string name="ext_redundant">متكرر</string>
-    <string name="redundant_extension_message">هذا المصدر زائد عن الحاجة ولن يتم استخدامه داخل هذا الإصدار من Tachiyomi.</string>
+    <string name="redundant_extension_message">هذا المصدر زائد عن الحاجة ولن يتم استخدامه داخل هذا الإصدار من Komikku.</string>
     <string name="select_sources">حدد المصادر</string>
     <string name="select_none">لا تختر شيء</string>
     <string name="migration">النقل</string>

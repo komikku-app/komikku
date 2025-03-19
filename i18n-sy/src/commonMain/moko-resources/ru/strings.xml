@@ -408,7 +408,7 @@
     <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
-    <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
+    <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Komikku.</string>
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
