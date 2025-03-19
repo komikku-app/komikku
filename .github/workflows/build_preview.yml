@@ -151,7 +151,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assemblePreview -Pinclude-analytics -Penable-updater
+        run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
 
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest
@@ -183,7 +183,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: '35.0.1'
-  
+
       - name: Get SHA & clean up build artifacts
         id: get_sha
         run: |
