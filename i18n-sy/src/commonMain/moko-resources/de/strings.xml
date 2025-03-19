@@ -564,7 +564,7 @@
     <string name="gallery_updater_stats_time">\nGalerien, die in den letzten Zeiträumen geprüft wurden:\n- Stunde: %1$d\n- 6 Stunden: %2$d\n- 12 Stunden: %3$d\n- Tag: %4$d\n- 2 Tage: %5$d\n- Woche: %6$d\n- Monat: %7$d\n- Jahr: %8$d</string>
     <string name="gallery_updater_stats_text">Der Updater hat zuletzt %1$s ausgeführt und %2$d der %3$d Galerien geprüft, die zur Prüfung bereit waren.</string>
     <string name="pref_archive_reader_mode_summary">Art und Weise, wie Bilder innerhalb von Archiven wie CBZ oder CBR geladen werden</string>
-    <string name="redundant_extension_message">Diese Erweiterung ist redundant und wird in dieser Version von Tachiyomi nicht verwendet.</string>
+    <string name="redundant_extension_message">Diese Erweiterung ist redundant und wird in dieser Version von Komikku nicht verwendet.</string>
     <string name="delete_tag_confirmation">Möchten Sie den Tag %s löschen?</string>
     <string name="favorites_sync_done_errors_message">Während des Synchronisierungsvorgangs sind Fehler aufgetreten, die ignoriert wurden:\n%1$s</string>
     <string name="favorites_sync_gallery_multiple_categories_error">Galerie %1$d ist in mehreren Kategorien!</string>

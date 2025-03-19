@@ -401,7 +401,7 @@
     <string name="delete_tag_confirmation">你想要刪除標籤 %s 嗎？</string>
     <!-- Extension section -->
     <string name="ext_redundant">廢棄</string>
-    <string name="redundant_extension_message">此擴充套件已廢棄，將不會在此版本的 TachiyomiSY 上執行。</string>
+    <string name="redundant_extension_message">此擴充套件已廢棄，將不會在此版本的 Komikku 上執行。</string>
     <!-- Migration -->
     <string name="select_sources">選擇來源</string>
     <string name="select_none">未選擇</string>
