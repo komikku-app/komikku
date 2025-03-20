@@ -29,6 +29,8 @@ body:
       options:
         - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
           required: true
+        - label: If this is a request regarding an extension, I should be opening an issue in the extension's repository.
+          required: true
         - label: I have written a short but informative title.
           required: true
         - label: I have updated the app to version **[1.12.1](https://github.com/komikku-app/komikku/releases/latest)**.
