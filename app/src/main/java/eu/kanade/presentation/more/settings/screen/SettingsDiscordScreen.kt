@@ -22,7 +22,7 @@ import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connection.ConnectionManager
+import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.runBlocking
@@ -52,7 +52,7 @@ object SettingsDiscordScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val connectionPreferences = remember { Injekt.get<ConnectionPreferences>() }
-        val connectionManager = remember { Injekt.get<ConnectionManager>() }
+        val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
         val enableDRPCPref = connectionPreferences.enableDiscordRPC()
         val useChapterTitlesPref = connectionPreferences.useChapterTitles()
         val discordRPCStatus = connectionPreferences.discordRPCStatus()
@@ -107,7 +107,7 @@ object SettingsDiscordScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(R.string.logout),
-                onClick = { dialog = LogoutConnectionDialog(connectionManager.discord) },
+                onClick = { dialog = LogoutConnectionDialog(connectionsManager.discord) },
             ),
         )
     }

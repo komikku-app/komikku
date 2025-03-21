@@ -14,13 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.data.connection.BaseConnection
+import eu.kanade.tachiyomi.data.connections.ConnectionsService
 import tachiyomi.presentation.core.util.clickableNoIndication
 
 @Composable
 @Suppress("ModifierMissing")
 fun ConnectionLogoIcon(
-    service: BaseConnection,
+    service: ConnectionsService,
     onClick: (() -> Unit)? = null,
 ) {
     val modifier = if (onClick != null) {

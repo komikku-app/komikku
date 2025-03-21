@@ -1,28 +1,28 @@
 // AM (CONNECTIONS) -->
 package eu.kanade.domain.connection.service
 
-import eu.kanade.tachiyomi.data.connection.BaseConnection
+import eu.kanade.tachiyomi.data.connections.ConnectionsService
 import tachiyomi.core.common.preference.PreferenceStore
 
 class ConnectionPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
-    fun connectionUsername(connection: BaseConnection) = preferenceStore.getString(
+    fun connectionUsername(connection: ConnectionsService) = preferenceStore.getString(
         connectionUsername(connection.id),
         "",
     )
 
-    fun connectionPassword(connection: BaseConnection) = preferenceStore.getString(
+    fun connectionPassword(connection: ConnectionsService) = preferenceStore.getString(
         connectionPassword(connection.id),
         "",
     )
 
-    fun setConnectionsCredentials(connection: BaseConnection, username: String, password: String) {
+    fun setConnectionsCredentials(connection: ConnectionsService, username: String, password: String) {
         connectionUsername(connection).set(username)
         connectionPassword(connection).set(password)
     }
 
-    fun connectionsToken(connection: BaseConnection) = preferenceStore.getString(connectionsToken(connection.id), "")
+    fun connectionsToken(connection: ConnectionsService) = preferenceStore.getString(connectionsToken(connection.id), "")
 
     fun enableDiscordRPC() = preferenceStore.getBoolean("pref_enable_discord_rpc", false)
 

@@ -1,9 +1,9 @@
 // AM (CONNECTIONS) -->
-package eu.kanade.tachiyomi.data.connection
+package eu.kanade.tachiyomi.data.connections
 
-import eu.kanade.tachiyomi.data.connection.discord.Discord
+import eu.kanade.tachiyomi.data.connections.discord.Discord
 
-class ConnectionManager {
+class ConnectionsManager {
 
     companion object {
         const val DISCORD = 201L

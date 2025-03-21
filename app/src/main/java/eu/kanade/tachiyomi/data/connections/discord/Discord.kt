@@ -2,14 +2,14 @@
 
 // Taken from Animiru. Thank you Quickdev for permission!
 
-package eu.kanade.tachiyomi.data.connection.discord
+package eu.kanade.tachiyomi.data.connections.discord
 
 import android.graphics.Color
 import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connection.BaseConnection
+import eu.kanade.tachiyomi.data.connections.ConnectionsService
 
-class Discord(id: Long) : BaseConnection(id) {
+class Discord(id: Long) : ConnectionsService(id) {
 
     @StringRes
     override fun nameRes() = R.string.connections_discord

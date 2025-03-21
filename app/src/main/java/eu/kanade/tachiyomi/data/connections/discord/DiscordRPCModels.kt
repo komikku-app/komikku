@@ -4,7 +4,7 @@
 // Original library from https://github.com/dead8309/KizzyRPC (Thank you)
 // Thank you to the 最高 man for the refactored and simplified code
 // https://github.com/saikou-app/saikou
-package eu.kanade.tachiyomi.data.connection.discord
+package eu.kanade.tachiyomi.data.connections.discord
 
 import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.BuildConfig

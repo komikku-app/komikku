@@ -43,8 +43,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connection.BaseConnection
-import eu.kanade.tachiyomi.data.connection.ConnectionManager
+import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.util.system.openDiscordLoginActivity
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -65,7 +65,7 @@ object SettingsConnectionScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val connectionManager = remember { Injekt.get<ConnectionManager>() }
+        val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
 
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
@@ -85,8 +85,8 @@ object SettingsConnectionScreen : SearchableSettings {
                 title = stringResource(R.string.special_services),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.ConnectionPreference(
-                        title = stringResource(connectionManager.discord.nameRes()),
-                        service = connectionManager.discord,
+                        title = stringResource(connectionsManager.discord.nameRes()),
+                        service = connectionsManager.discord,
                         login = {
                             context.openDiscordLoginActivity()
                         },
@@ -106,7 +106,7 @@ object SettingsConnectionScreen : SearchableSettings {
     @Composable
     @Suppress("LongMethod")
     private fun ConnectionsLoginDialog(
-        service: BaseConnection,
+        service: ConnectionsService,
         @StringRes uNameStringRes: Int,
         onDismissRequest: () -> Unit,
     ) {
@@ -214,7 +214,7 @@ object SettingsConnectionScreen : SearchableSettings {
     @Suppress("SwallowedException", "TooGenericExceptionCaught")
     private suspend fun checkLogin(
         context: Context,
-        service: BaseConnection,
+        service: ConnectionsService,
         username: String,
         password: String,
     ): Boolean {
@@ -232,7 +232,7 @@ object SettingsConnectionScreen : SearchableSettings {
 
 @Composable
 internal fun ConnectionsLogoutDialog(
-    service: BaseConnection,
+    service: ConnectionsService,
     onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -276,11 +276,11 @@ internal fun ConnectionsLogoutDialog(
 
 @Suppress("UnusedPrivateClass")
 private data class LoginConnectionDialog(
-    val service: BaseConnection,
+    val service: ConnectionsService,
     @StringRes val uNameStringRes: Int,
 )
 
 internal data class LogoutConnectionDialog(
-    val service: BaseConnection,
+    val service: ConnectionsService,
 )
 // <-- AM (CONNECTIONS)

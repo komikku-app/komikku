@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.connection.components.ConnectionLogoIcon
 import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connection.BaseConnection
+import eu.kanade.tachiyomi.data.connections.ConnectionsService
 
 @Composable
 @Suppress("ModifierNotUsedAtRoot", "MagicNumber")
 fun ConnectionPreferenceWidget(
-    service: BaseConnection,
+    service: ConnectionsService,
     checked: Boolean,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,

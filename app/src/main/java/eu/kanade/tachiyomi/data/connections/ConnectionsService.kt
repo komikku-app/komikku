@@ -1,5 +1,5 @@
 // AM (CONNECTIONS) -->
-package eu.kanade.tachiyomi.data.connection
+package eu.kanade.tachiyomi.data.connections
 
 import androidx.annotation.CallSuper
 import androidx.annotation.ColorInt
@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import okhttp3.OkHttpClient
 import uy.kohesive.injekt.injectLazy
 
-abstract class BaseConnection(val id: Long) {
+abstract class ConnectionsService(val id: Long) {
 
     val connectionPreferences: ConnectionPreferences by injectLazy()
     private val networkService: NetworkHelper by injectLazy()
