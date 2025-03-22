@@ -705,7 +705,7 @@ class ReaderViewModel @JvmOverloads constructor(
             if (readerChapter.pages?.lastIndex == pageIndex ||
                 // SY -->
                 (hasExtraPage && readerChapter.pages?.lastIndex?.minus(1) == page.index)
-            // SY <--
+                // SY <--
             ) {
                 updateChapterProgressOnComplete(readerChapter)
 
