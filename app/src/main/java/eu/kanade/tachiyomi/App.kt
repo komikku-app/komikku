@@ -62,7 +62,7 @@ import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
-import eu.kanade.tachiyomi.util.system.analyticsIncluded
+import eu.kanade.tachiyomi.util.system.telemetryIncluded
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
@@ -350,7 +350,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         }
 
         // Install Crashlytics in prod
-        if (analyticsIncluded) {
+        if (telemetryIncluded) {
             printers += CrashlyticsPrinter(LogLevel.ERROR)
         }
 
