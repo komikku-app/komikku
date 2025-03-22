@@ -1020,39 +1020,18 @@ class LibraryScreenModel(
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
                 val sourceId = item.libraryManga.manga.source
-                if (isMetadataSource(sourceId)) {
-                    if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
-                        // No meta? Filter using title
-                        filterManga(
-                            queries = parsedQuery,
-                            libraryManga = item.libraryManga,
-                            tracks = tracks[mangaId],
-                            source = sources[sourceId],
-                            loggedInTrackServices = loggedInTrackServices,
-                        )
-                    } else {
-                        val tags = getSearchTags.await(mangaId)
-                        val titles = getSearchTitles.await(mangaId)
-                        filterManga(
-                            queries = parsedQuery,
-                            libraryManga = item.libraryManga,
-                            tracks = tracks[mangaId],
-                            source = sources[sourceId],
-                            checkGenre = false,
-                            searchTags = tags,
-                            searchTitles = titles,
-                            loggedInTrackServices = loggedInTrackServices,
-                        )
-                    }
-                } else {
-                    filterManga(
-                        queries = parsedQuery,
-                        libraryManga = item.libraryManga,
-                        tracks = tracks[mangaId],
-                        source = sources[sourceId],
-                        loggedInTrackServices = loggedInTrackServices,
-                    )
-                }
+                // If no meta? => Filter using title
+                val isMeta = isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0
+                filterManga(
+                    queries = parsedQuery,
+                    libraryManga = item.libraryManga,
+                    tracks = tracks[mangaId],
+                    source = sources[sourceId],
+                    checkGenre = !isMeta,
+                    searchTags = if (isMeta) getSearchTags.await(mangaId) else null,
+                    searchTitles = if (isMeta) getSearchTitles.await(mangaId) else null,
+                    loggedInTrackServices = loggedInTrackServices,
+                )
             }.toList()
         } else {
             unfiltered
