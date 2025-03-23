@@ -21,16 +21,12 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.tachiyomi.data.download.DownloadCache
-import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 @Composable
 fun LibraryToolbar(
@@ -52,6 +48,7 @@ fun LibraryToolbar(
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior?,
+    onInvalidateDownloadCache: (Context) -> Unit,
 ) = when {
     selectedCount > 0 -> LibrarySelectionToolbar(
         selectedCount = selectedCount,
@@ -74,6 +71,7 @@ fun LibraryToolbar(
         isSyncEnabled = isSyncEnabled,
         // SY <--
         scrollBehavior = scrollBehavior,
+        onInvalidateDownloadCache = onInvalidateDownloadCache,
     )
 }
 
@@ -93,8 +91,9 @@ private fun LibraryRegularToolbar(
     isSyncEnabled: Boolean,
     // SY <--
     scrollBehavior: TopAppBarScrollBehavior?,
-    context: Context = LocalContext.current
+    onInvalidateDownloadCache: (Context) -> Unit,
 ) {
+    val context = LocalContext.current
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     SearchToolbar(
         titleContent = {
@@ -141,8 +140,7 @@ private fun LibraryRegularToolbar(
                     AppBar.OverflowAction(
                         title = stringResource(MR.strings.pref_invalidate_download_cache),
                         onClick = {
-                            Injekt.get<DownloadCache>().invalidateCache()
-                            context.toast(MR.strings.download_cache_invalidated)
+                            onInvalidateDownloadCache(context)
                         },
                     ),
                 ).builder().apply {
