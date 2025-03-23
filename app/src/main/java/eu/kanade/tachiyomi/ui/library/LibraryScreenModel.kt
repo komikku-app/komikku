@@ -548,12 +548,12 @@ class LibraryScreenModel(
                 filterCompleted = it[10] as TriState,
                 filterIntervalCustom = it[11] as TriState,
                 // SY -->
-                filterLewd = it[12] as TriState,
+                filterLewd = it[13] as TriState,
                 // SY <--
                 // KMK -->
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
-                filterFillermarked = it[15] as TriState,
+                filterFillermarked = it[10] as TriState,
                 // KMK <--
             )
         }
