@@ -513,7 +513,6 @@ class LibraryScreenModel(
     private fun getLibraryItemPreferencesFlow(): Flow<ItemPreferences> {
         return combine(
             libraryPreferences.downloadBadge().changes(),
-            libraryPreferences.unreadBadge().changes(),
             libraryPreferences.localBadge().changes(),
             libraryPreferences.languageBadge().changes(),
             libraryPreferences.autoUpdateMangaRestrictions().changes(),
@@ -536,24 +535,23 @@ class LibraryScreenModel(
         ) {
             ItemPreferences(
                 downloadBadge = it[0] as Boolean,
-                unreadBadge = it[1] as Boolean,
-                localBadge = it[2] as Boolean,
-                languageBadge = it[3] as Boolean,
-                skipOutsideReleasePeriod = LibraryPreferences.MANGA_OUTSIDE_RELEASE_PERIOD in (it[4] as Set<*>),
-                globalFilterDownloaded = it[5] as Boolean,
-                filterDownloaded = it[6] as TriState,
-                filterUnread = it[7] as TriState,
-                filterStarted = it[8] as TriState,
-                filterBookmarked = it[9] as TriState,
-                filterFillermarked = it[10] as TriState,
-                filterCompleted = it[11] as TriState,
-                filterIntervalCustom = it[12] as TriState,
+                localBadge = it[1] as Boolean,
+                languageBadge = it[2] as Boolean,
+                skipOutsideReleasePeriod = LibraryPreferences.MANGA_OUTSIDE_RELEASE_PERIOD in (it[3] as Set<*>),
+                globalFilterDownloaded = it[4] as Boolean,
+                filterDownloaded = it[5] as TriState,
+                filterUnread = it[6] as TriState,
+                filterStarted = it[7] as TriState,
+                filterBookmarked = it[8] as TriState,
+                filterFillermarked = it[9] as TriState,
+                filterCompleted = it[10] as TriState,
+                filterIntervalCustom = it[11] as TriState,
                 // SY -->
-                filterLewd = it[13] as TriState,
+                filterLewd = it[12] as TriState,
                 // SY <--
                 // KMK -->
-                sourceBadge = it[14] as Boolean,
-                useLangIcon = it[15] as Boolean,
+                sourceBadge = it[13] as Boolean,
+                useLangIcon = it[14] as Boolean,
                 // KMK <--
             )
         }
@@ -589,7 +587,7 @@ class LibraryScreenModel(
                         } else {
                             0
                         },
-                        unreadCount = if (prefs.unreadBadge) libraryManga.unreadCount else 0,
+                        unreadCount = libraryManga.unreadCount,
                         isLocal = if (prefs.localBadge) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             source.lang
@@ -992,7 +990,7 @@ class LibraryScreenModel(
         }
     }
 
-    private suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
+    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
@@ -1008,10 +1006,6 @@ class LibraryScreenModel(
                 .associateBy { it.id }
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
-                if (query.startsWith("id:", true)) {
-                    val id = query.substringAfter("id:").toLongOrNull()
-                    return@filter mangaId == id
-                }
                 val sourceId = item.libraryManga.manga.source
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
@@ -1425,7 +1419,6 @@ class LibraryScreenModel(
     @Immutable
     private data class ItemPreferences(
         val downloadBadge: Boolean,
-        val unreadBadge: Boolean,
         val localBadge: Boolean,
         val languageBadge: Boolean,
         // KMK -->
