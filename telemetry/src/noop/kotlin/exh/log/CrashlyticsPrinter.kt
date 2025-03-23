@@ -2,6 +2,7 @@ package exh.log
 
 import com.elvishew.xlog.printer.Printer
 
+@Suppress("UNUSED_PARAMETER", "unused")
 class CrashlyticsPrinter(private val logLevel: Int) : Printer {
     /**
      * Print log in new line.

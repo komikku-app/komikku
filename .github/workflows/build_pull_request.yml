@@ -47,6 +47,7 @@ jobs:
           distribution: temurin
 
       - name: Write google-services.json
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
@@ -54,6 +55,7 @@ jobs:
           write-mode: overwrite
 
       - name: Write client_secrets.json
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
