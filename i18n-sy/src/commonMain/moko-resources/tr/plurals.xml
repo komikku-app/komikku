@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="migrate_entry">
+        <item quantity="one">%1$d%2$s girdi taşınsın mı?</item>
+        <item quantity="other">%1$d%2$s girdi taşınsın mı?</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d ay önce</item>
+        <item quantity="other">%1$d ay önce</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d hafta önce</item>
+        <item quantity="other">%1$d hafta önce</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d gün önce</item>
+        <item quantity="other">%1$d gün önce</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d satır</item>
+        <item quantity="other">%d satır</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d sayfa</item>
+        <item quantity="other">%1$d sayfa</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d saat önce</item>
+        <item quantity="other">%1$d saat önce</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">%1$d başarısız sayfa tekrar deneniyor…</item>
+        <item quantity="other">%1$d başarısız sayfa tekrar deneniyor…</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d sayfa</item>
+        <item quantity="other">%2$s, %1$d sayfa</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Temizleme tamamlandı. %d klasör kaldırıldı</item>
+        <item quantity="other">Temizleme tamamlandı. %d klasör kaldırıldı</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d girdi taşındı</item>
+        <item quantity="other">%d girdi taşındı</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">%1$d%2$s girdi kopyalansın mı?</item>
+        <item quantity="other">%1$d%2$s girdi kopyalansın mı?</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d dakika önce</item>
+        <item quantity="other">%1$d dakika önce</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d kilit zamanı</item>
+        <item quantity="other">%d kilit zamanı</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">Sıralama listesinde %1$d etiket. Bu, kitaplığa önceliğe dayalı bir sıralama seçeneği ekler. Girdiler, istediğiniz etiketlere sahip olma durumuna göre öncelik alacaktır</item>
+        <item quantity="other">Sıralama listesinde %1$d etiket. Bu, kitaplığa önceliğe dayalı bir sıralama seçeneği ekler. Girdiler, istediğiniz etiketlere sahip olma durumuna göre öncelik alacaktır</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d yıl önce</item>
+        <item quantity="other">%1$d yıl önce</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d saniye önce</item>
+        <item quantity="other">%1$d saniye önce</item>
+    </plurals>
+</resources>

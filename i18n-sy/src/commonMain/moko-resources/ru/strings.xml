@@ -408,7 +408,7 @@
     <string name="delete_tag_confirmation">Хотите ли вы удалить тэг %s?</string>
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
-    <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
+    <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Komikku.</string>
     <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
@@ -674,4 +674,19 @@
     <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания</string>
     <string name="favorites_sync_unable_to_add_to_remote">Невозможно добавить галерею на удалённый сервер: \'%1$s\' (GID: %2$s)!</string>
     <string name="similar_titles">Похожие имена</string>
+    <string name="rec_hide_library_entries">Скрыть серии которые находятся в библиотеке</string>
+    <string name="rec_group_tracker">Рекомендации по службам отслеживания</string>
+    <string name="rec_search_short">Найти рекомендации</string>
+    <string name="rec_error_title">Ошибка поиска</string>
+    <string name="rec_error_string">В процессе поиска произошла ошибка: %1$s</string>
+    <string name="rec_collecting">Сбор рекомендаций</string>
+    <string name="rec_processing_state">Обрабатывается серия %1$d из %2$d</string>
+    <string name="rec_services_to_search">Службы по поиску рекомендаций</string>
+    <string name="rec_group_source">Рекомендации по источникам</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Выбрать серии использовав метаданные источника</string>
+    <string name="rec_no_results">Рекомендации не найдены</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Автоматически выбирать соответствующую серию, если источник предоставляет ссылки на сервисы отслеживания. В данный момент поддерживается MangaDex</string>
+    <string name="rec_search">Найти общие рекомендации</string>
+    <string name="rec_initializing">Идёт подготовка</string>
+    <string name="rec_common_recommendations">Общие рекомендации</string>
 </resources>

@@ -30,17 +30,13 @@ permissions:
 jobs:
   build:
     name: Build app
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
 
     steps:
       - name: Clone repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-
-      - name: Setup Android SDK
-        run: |
-          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
 
       - name: Set up JDK
         uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
@@ -69,19 +65,21 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        run: ./gradlew assembleStandardRelease
+        run: ./gradlew assembleRelease -Pinclude-telemetry -Penable-updater
 
       - name: Run unit tests
-        run: ./gradlew testReleaseUnitTest testStandardReleaseUnitTest
+        run: ./gradlew testReleaseUnitTest
 
       - name: Sign APK
-        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
+        uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
-          releaseDirectory: app/build/outputs/apk/standard/release
+          releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '35.0.1'
 
       - name: Rename apk
         id: current_commit
@@ -93,11 +91,16 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/standard/release/app-standard-universal-release-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
-          retention-days: 1
+
+      - name: Upload mapping
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: mapping-${{ github.sha }}
+          path: app/build/outputs/mapping/release

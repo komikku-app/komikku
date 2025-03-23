@@ -349,7 +349,7 @@
                 <data android:scheme="https" />
                 <data android:scheme="http" />
 
-                <data android:host="pururin.io" />
+                <data android:host="pururin.me" />
 
                 <data android:pathPattern="/gallery/..*" />
             </intent-filter>

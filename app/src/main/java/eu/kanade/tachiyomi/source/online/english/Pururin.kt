@@ -126,8 +126,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
     }
 
     override val matchingHosts = listOf(
-        "pururin.io",
-        "www.pururin.io",
+        "pururin.me",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String {

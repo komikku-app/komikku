@@ -229,7 +229,7 @@
     <string name="error_tag_exists">Ce Tag existe !</string>
     <!-- Extension section -->
     <string name="ext_redundant">Redondante</string>
-    <string name="redundant_extension_message">Cette extension est redondante et ne sera pas utilisée dans cette version de Tachiyomi.</string>
+    <string name="redundant_extension_message">Cette extension est redondante et ne sera pas utilisée dans cette version de Komikku.</string>
     <!-- Migration -->
     <string name="select_sources">Sélectionnez les sources</string>
     <string name="select_none">Ne rien sélectionner</string>

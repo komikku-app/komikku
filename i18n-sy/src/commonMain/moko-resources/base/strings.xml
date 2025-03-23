@@ -449,7 +449,7 @@
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
-    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Tachiyomi.</string>
+    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Komikku.</string>
 
     <!-- Migration -->
     <string name="select_sources">Select sources</string>

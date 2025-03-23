@@ -143,8 +143,6 @@ class ReaderPreferences(
 
     fun showNavigationOverlayOnStart() = preferenceStore.getBoolean("reader_navigation_overlay_on_start", false)
 
-    fun markDuplicateReadChapterAsRead() = preferenceStore.getBoolean("mark_duplicate_chapter_read", false)
-
     // endregion
 
     // SY -->
@@ -186,8 +184,6 @@ class ReaderPreferences(
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
 
     fun archiveReaderMode() = preferenceStore.getInt("archive_reader_mode", ArchiveReaderMode.LOAD_FROM_FILE)
-
-    fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
     // SY <--
 
     enum class FlashColor {

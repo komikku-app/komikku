@@ -1,10 +1,7 @@
-@file:Suppress("ChromeOsAbiSupport")
-
+import mihon.buildlogic.Config
 import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
-import java.io.FileInputStream
-import java.util.Properties
 
 plugins {
     id("mihon.android.application")
@@ -15,14 +12,12 @@ plugins {
     id("com.github.ben-manes.versions")
 }
 
-if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
+if (Config.includeTelemetry) {
     pluginManager.apply {
         apply(libs.plugins.google.services.get().pluginId)
         apply(libs.plugins.firebase.crashlytics.get().pluginId)
     }
 }
-
-val supportedAbis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 android {
     namespace = "eu.kanade.tachiyomi"
@@ -35,70 +30,69 @@ android {
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
-        buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
-        buildConfigField("boolean", "INCLUDE_UPDATER", "false")
-        buildConfigField("boolean", "PREVIEW", "false")
+        buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = false)}\"")
+        buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
+        buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
 
-        ndk {
-            abiFilters += supportedAbis
-        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include(*supportedAbis.toTypedArray())
-            isUniversalApk = true
-        }
-    }
-
-    signingConfigs {
-        create("preview") {
-            storeFile = rootProject.file(readPropertyFromLocalProperties("keystore") ?: "keystore.jks")
-            storePassword = readPropertyFromLocalProperties("storePassword")
-            keyAlias = readPropertyFromLocalProperties("keyAlias")
-            keyPassword = readPropertyFromLocalProperties("keyPassword")
-        }
-    }
-
     buildTypes {
-        named("debug") {
+        val debug by getting {
+            applicationIdSuffix = ".dev"
             versionNameSuffix = "-${getCommitCount()}"
-            applicationIdSuffix = ".debug"
             isPseudoLocalesEnabled = true
         }
-        create("releaseTest") {
-            applicationIdSuffix = ".rt"
-            // isMinifyEnabled = true
-            // isShrinkResources = true
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
-            matchingFallbacks.add("release")
+        val release by getting {
+            isMinifyEnabled = Config.enableCodeShrink
+            isShrinkResources = Config.enableCodeShrink
+
+            proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+
+            buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = true)}\"")
         }
-        named("release") {
-            isShrinkResources = true
-            isMinifyEnabled = true
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+
+        val commonMatchingFallbacks = listOf(release.name)
+
+        create("releaseTest") {
+            initWith(release)
+
+            applicationIdSuffix = ".rt"
+            isMinifyEnabled = false
+            isShrinkResources = false
+
+            matchingFallbacks.addAll(commonMatchingFallbacks)
+        }
+        create("foss") {
+            initWith(release)
+
+            applicationIdSuffix = ".foss"
+
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
         create("preview") {
-            initWith(getByName("release"))
-            buildConfigField("boolean", "PREVIEW", "true")
+            initWith(release)
 
-            matchingFallbacks.add("release")
-            versionNameSuffix = "-${getCommitCount()}"
             applicationIdSuffix = ".beta"
-        }
-        // Profilers build, overwrite dev's signing configuration by 'debug' key then re-sign with GitHub's workflow
-        create("benchmark") {
-            initWith(getByName("release"))
 
-            signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks.add("release")
+            versionNameSuffix = debug.versionNameSuffix
+            signingConfig = debug.signingConfig
+
+            matchingFallbacks.addAll(commonMatchingFallbacks)
+
+            buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = false)}\"")
+        }
+        create("benchmark") {
+            initWith(release)
+
             isDebuggable = false
             isProfileable = true
-            versionNameSuffix = "-${getCommitCount()}-benchmark"
+            versionNameSuffix = "${debug.versionNameSuffix}-benchmark"
             applicationIdSuffix = ".benchmark"
+
+            signingConfig = debug.signingConfig
+
+            matchingFallbacks.addAll(commonMatchingFallbacks)
         }
     }
 
@@ -107,43 +101,47 @@ android {
         getByName("benchmark").res.srcDirs("src/debug/res")
     }
 
-    flavorDimensions.add("default")
-
-    productFlavors {
-        // Include Google service & build unsigned, for GitHub workflow build
-        create("standard") {
-            buildConfigField("boolean", "INCLUDE_UPDATER", "true")
-            dimension = "default"
-        }
-        create("fdroid") {
-            dimension = "default"
-        }
-        // Signed, dev build with Android Studio if it's not a debug build
-        create("dev") {
-            dimension = "default"
+    splits {
+        abi {
+            isEnable = true
+            isUniversalApk = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
 
     packaging {
-        resources.excludes.addAll(
-            listOf(
+        jniLibs {
+            keepDebugSymbols += listOf(
+                "libandroidx.graphics.path",
+                "libarchive-jni",
+                "libconscrypt_jni",
+                "libimagedecoder",
+                "libquickjs",
+                "libsqlite3x",
+            )
+                .map { "**/$it.so" }
+        }
+        resources {
+            excludes += setOf(
                 "kotlin-tooling-metadata.json",
-                "META-INF/DEPENDENCIES",
                 "LICENSE.txt",
-                "META-INF/LICENSE",
+                "META-INF/**/*.properties",
                 "META-INF/**/LICENSE.txt",
                 "META-INF/*.properties",
-                "META-INF/**/*.properties",
-                "META-INF/README.md",
-                "META-INF/NOTICE",
-                "META-INF/INDEX.LIST",
                 "META-INF/*.version",
-            ),
-        )
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+                "META-INF/README.md",
+            )
+        }
     }
 
     dependenciesInfo {
-        includeInApk = false
+        includeInApk = Config.includeDependencyInfo
+        includeInBundle = Config.includeDependencyInfo
     }
 
     buildFeatures {
@@ -197,6 +195,7 @@ dependencies {
     implementation(projects.domain)
     implementation(projects.presentationCore)
     implementation(projects.presentationWidget)
+    implementation(projects.telemetry)
 
     // Compose
     implementation(compose.activity)
@@ -302,11 +301,6 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.logcat)
 
-    // Crash reports/analytics
-    "standardImplementation"(platform(libs.firebase.bom))
-    "standardImplementation"(libs.firebase.analytics)
-    "standardImplementation"(libs.firebase.crashlytics)
-
     // Shizuku
     implementation(libs.bundles.shizuku)
 
@@ -354,17 +348,4 @@ buildscript {
     dependencies {
         classpath(kotlinx.gradle)
     }
-}
-
-// Config local store's signing key
-fun readPropertyFromLocalProperties(propertyName: String): String? {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        val properties = Properties()
-        FileInputStream(localPropertiesFile).use { inputStream ->
-            properties.load(inputStream)
-        }
-        return properties.getProperty(propertyName)
-    }
-    return null // Property not found
 }
