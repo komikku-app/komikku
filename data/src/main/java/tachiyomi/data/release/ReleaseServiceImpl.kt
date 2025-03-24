@@ -39,7 +39,7 @@ class ReleaseServiceImpl(
     override suspend fun releaseNotes(arguments: GetApplicationRelease.Arguments): List<Release> {
         return with(json) {
             networkService.client
-                .newCall(GET("https://api.github.com/repos/${arguments.repository}/releases/latest"))
+                .newCall(GET("https://api.github.com/repos/${arguments.repository}/releases"))
                 .awaitSuccess()
                 .parseAs<List<GithubRelease>>()
                 .mapNotNull { release ->
