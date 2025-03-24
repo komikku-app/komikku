@@ -21,8 +21,8 @@
         <item quantity="other">%1$d পৃষ্ঠাসমূহ</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s, %1$d পৃষ্ঠা</item>
-        <item quantity="other">%2$s, %1$d পৃষ্ঠাসমূহ</item>
+        <item quantity="one">%2$s %1$d পৃষ্ঠা</item>
+        <item quantity="other">%2$s %1$d পৃষ্ঠাসমূহ</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="one">%1$d বৰ্ষ পূৰ্বে</item>

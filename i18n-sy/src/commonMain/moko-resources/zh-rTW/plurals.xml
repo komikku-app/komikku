@@ -27,7 +27,7 @@
     </plurals>
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="other">%2$s, %1$d 頁</item>
+        <item quantity="other">%2$s %1$d 頁</item>
     </plurals>
     <!-- Humanize time -->
     <plurals name="humanize_year">
