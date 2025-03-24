@@ -7,7 +7,7 @@ object MigrationFlags {
     const val TRACK = 0b000100
     const val CUSTOM_COVER = 0b001000
     const val EXTRA = 0b010000
-    const val DELETE_CHAPTERS = 0b100000
+    const val DELETE_DOWNLOADED = 0b100000
 
     fun hasChapters(value: Int): Boolean {
         return value and CHAPTERS != 0
@@ -29,7 +29,7 @@ object MigrationFlags {
         return value and EXTRA != 0
     }
 
-    fun hasDeleteChapters(value: Int): Boolean {
-        return value and DELETE_CHAPTERS != 0
+    fun hasDeleteDownloaded(value: Int): Boolean {
+        return value and DELETE_DOWNLOADED != 0
     }
 }
