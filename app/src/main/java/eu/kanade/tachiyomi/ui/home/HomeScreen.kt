@@ -155,7 +155,8 @@ object HomeScreen : Screen() {
 
                                                     dragOffsetX = 0F
 
-                                                    tabNavigator.current = filteredTabs.getOrNull(newIndex) ?: tabNavigator.current
+                                                    tabNavigator.current = filteredTabs[newIndex]
+
                                                 }
                                             },
                                             onDragEnd = {
