@@ -145,11 +145,13 @@ object HomeScreen : Screen() {
                                                 flickOffsetX += dragAmount.x
                                                 if (abs(flickOffsetX) > 50F) {
                                                     val currentIndex = filteredTabs.indexOf(tabNavigator.current)
-                                                    val newIndex = (currentIndex + when {
-                                                        (flickOffsetX < 0F) -> -1
-                                                        (flickOffsetX > 0F) -> 1
-                                                        else -> 0
-                                                    }).coerceIn(0, filteredTabs.size - 1)
+                                                    val newIndex = (
+                                                        currentIndex + when {
+                                                            (flickOffsetX < 0F) -> -1
+                                                            (flickOffsetX > 0F) -> 1
+                                                            else -> 0
+                                                        }
+                                                        ).coerceIn(0, filteredTabs.size - 1)
 
                                                     flickOffsetX = 0F
 
