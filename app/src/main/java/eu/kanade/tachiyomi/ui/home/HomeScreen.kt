@@ -68,6 +68,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.abs
 
 object HomeScreen : Screen() {
     private fun readResolve(): Any = HomeScreen
@@ -129,33 +130,38 @@ object HomeScreen : Screen() {
                                 exit = shrinkVertically(),
                             ) {
                                 // KMK -->
+                                var flickOffsetX by remember { mutableFloatStateOf(0f) }
                                 val filteredTabs = TABS
                                     // SY -->
                                     .fastFilter { it.isEnabled() }
                                 // SY <--
-                                var flickOffsetX by remember { mutableFloatStateOf(0f) }
 
                                 NavigationBar(
+                                    // KMK -->
                                     modifier = Modifier.pointerInput(Unit) {
                                         detectDragGestures(
                                             onDrag = { change, dragAmount ->
                                                 change.consume()
                                                 flickOffsetX += dragAmount.x
+                                                if (abs(flickOffsetX) > 50F) {
+                                                    val currentIndex = filteredTabs.indexOf(tabNavigator.current)
+                                                    val newIndex = (currentIndex + when {
+                                                        (flickOffsetX < 0F) -> -1
+                                                        (flickOffsetX > 0F) -> 1
+                                                        else -> 0
+                                                    }).coerceIn(0, filteredTabs.size - 1)
+
+                                                    flickOffsetX = 0F
+
+                                                    tabNavigator.current = filteredTabs.getOrNull(newIndex) ?: tabNavigator.current
+                                                }
                                             },
                                             onDragEnd = {
-                                                val currentIndex = filteredTabs.indexOf(tabNavigator.current)
-                                                val newIndex = when {
-                                                    (flickOffsetX < 0F) -> currentIndex - 1
-                                                    (flickOffsetX > 0F) -> currentIndex + 1
-                                                    else -> currentIndex
-                                                }
-
                                                 flickOffsetX = 0F
-
-                                                tabNavigator.current = filteredTabs.getOrNull(newIndex) ?: tabNavigator.current
                                             },
                                         )
                                     },
+                                    // KMK <--
                                 ) {
                                     filteredTabs
                                         // KMK <--
