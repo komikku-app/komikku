@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterEhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
@@ -92,7 +93,7 @@ fun EHentaiDescription(
             val length = meta.length ?: 0
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, length, length)
             // KMK -->
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor, 4.dpToPx)
             binding.pages.setTextColor(textColor)
             // KMK <--
 
