@@ -130,7 +130,7 @@ object HomeScreen : Screen() {
                                 exit = shrinkVertically(),
                             ) {
                                 // KMK -->
-                                var flickOffsetX by remember { mutableFloatStateOf(0f) }
+                                var dragOffsetX by remember { mutableFloatStateOf(0f) }
                                 val filteredTabs = TABS
                                     // SY -->
                                     .fastFilter { it.isEnabled() }
@@ -142,24 +142,24 @@ object HomeScreen : Screen() {
                                         detectDragGestures(
                                             onDrag = { change, dragAmount ->
                                                 change.consume()
-                                                flickOffsetX += dragAmount.x
-                                                if (abs(flickOffsetX) > 50F) {
+                                                dragOffsetX += dragAmount.x
+                                                if (abs(dragOffsetX) > 50F) {
                                                     val currentIndex = filteredTabs.indexOf(tabNavigator.current)
                                                     val newIndex = (
                                                         currentIndex + when {
-                                                            (flickOffsetX < 0F) -> -1
-                                                            (flickOffsetX > 0F) -> 1
+                                                            (dragOffsetX < 0F) -> -1
+                                                            (dragOffsetX > 0F) -> 1
                                                             else -> 0
                                                         }
                                                         ).coerceIn(0, filteredTabs.size - 1)
 
-                                                    flickOffsetX = 0F
+                                                    dragOffsetX = 0F
 
                                                     tabNavigator.current = filteredTabs.getOrNull(newIndex) ?: tabNavigator.current
                                                 }
                                             },
                                             onDragEnd = {
-                                                flickOffsetX = 0F
+                                                dragOffsetX = 0F
                                             },
                                         )
                                     },
