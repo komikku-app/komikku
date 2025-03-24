@@ -51,6 +51,7 @@ class ReleaseServiceImpl(
                             "[${mention.value}](https://github.com/${mention.value.substring(1)})"
                         }
                             // KMK -->
+                            .replace(getHubDownloadBadgeRegex, "")
                             .replace(gitHubCommitsCompareRegex) { matchResult ->
                                 val owner = matchResult.groups["owner"]!!.value
                                 val repo = matchResult.groups["repo"]!!.value
@@ -104,6 +105,9 @@ class ReleaseServiceImpl(
             .toRegex(RegexOption.IGNORE_CASE)
 
         // KMK -->
+        private val getHubDownloadBadgeRegex = """\[!\[GitHub downloads]\(.*\)]\(.*\)"""
+            .toRegex(RegexOption.IGNORE_CASE)
+
         /**
          * Convert from: https://github.com/komikku-app/komikku/compare/23d862d17...48fb4a2e6
          * to: [komikku-app/komikku@23d862d17...48fb4a2e6](https://github.com/komikku-app/komikku/compare/23d862d17...48fb4a2e6)

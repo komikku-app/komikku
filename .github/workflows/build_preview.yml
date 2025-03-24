@@ -212,6 +212,7 @@ jobs:
           tag_name: ${{ needs.prepare-build.outputs.TAG_NAME }}
           name: Komikku Preview ${{ needs.prepare-build.outputs.TAG_NAME }} (${{ needs.prepare-build.outputs.VERSION_TAG }})
           body: |
+            [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/${{ needs.prepare-build.outputs.TAG_NAME }}/total?label=Downloaded&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases/${{ needs.prepare-build.outputs.TAG_NAME }})
             #### What's Changed
             ##### New
 
