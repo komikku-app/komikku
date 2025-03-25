@@ -110,14 +110,16 @@ class PreferenceRestorer(
                                 categoriesByName,
                             )
                             if (!restored) {
-                                // KMK -->
-                                when (key) {
-                                    SourcePreferences.PINNED_SOURCES_PREF_KEY ->
-                                        EXHMigrations.migratePinnedSources(value.value)
-                                    else ->
-                                        // KMK <--
-                                        preferenceStore.getStringSet(key).set(value.value)
-                                }
+                                preferenceStore.getStringSet(key).set(
+                                    // KMK -->
+                                    when (key) {
+                                        SourcePreferences.PINNED_SOURCES_PREF_KEY ->
+                                            EXHMigrations.migratePinnedSources(value.value)
+                                        else ->
+                                            // KMK <--
+                                            value.value
+                                    },
+                                )
                             }
                         }
                     }
