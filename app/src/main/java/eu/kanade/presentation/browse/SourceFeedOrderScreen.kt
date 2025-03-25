@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.presentation.components.AppBar
@@ -60,7 +61,7 @@ fun SourceFeedOrderScreen(
                 val feeds = state.items
                     .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
 
-                val feedsState = remember { feeds.toMutableList() }
+                val feedsState = remember { feeds.toMutableStateList() }
                 val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
                     val item = feedsState.removeAt(from.index)
                     feedsState.add(to.index, item)
