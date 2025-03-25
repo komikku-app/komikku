@@ -99,13 +99,13 @@ fun ExtensionIcon(
         is Extension.Installed -> {
             val icon by extension.getIcon(density)
             when (icon) {
-                Result.Loading -> Box(modifier = modifier)
+                is Result.Loading -> Box(modifier = modifier)
                 is Result.Success -> Image(
                     bitmap = (icon as Result.Success<ImageBitmap>).value,
                     contentDescription = null,
                     modifier = modifier,
                 )
-                Result.Error -> Image(
+                is Result.Error -> Image(
                     bitmap = ImageBitmap.imageResource(id = R.mipmap.ic_default_source),
                     contentDescription = null,
                     modifier = modifier,
