@@ -14,7 +14,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
-import kotlinx.collections.immutable.toImmutableList
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -39,7 +38,7 @@ fun FeedOrderScreen(
 
         else -> {
             val lazyListState = rememberLazyListState()
-            val feeds = state.items.toImmutableList()
+            val feeds = state.items
 
             val feedsState = remember { feeds.toMutableStateList() }
             val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->

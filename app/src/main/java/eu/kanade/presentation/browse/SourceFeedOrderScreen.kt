@@ -16,7 +16,6 @@ import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
-import kotlinx.collections.immutable.toImmutableList
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -61,7 +60,6 @@ fun SourceFeedOrderScreen(
                 val lazyListState = rememberLazyListState()
                 val feeds = state.items
                     .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
-                    .toImmutableList()
 
                 val feedsState = remember { feeds.toMutableStateList() }
                 val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
