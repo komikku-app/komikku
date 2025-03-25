@@ -163,7 +163,7 @@ class PreferenceRestorer(
     ) {
         if (value.isEmpty()) return
 
-        val newValue = EXHMigrations.migratePinnedSources(value)
-        preferenceStore.getStringSet(key).set(newValue)
+        val valueToSet = EXHMigrations.migrateSourceIds(value)
+        preferenceStore.getStringSet(key).set(valueToSet)
     }
 }
