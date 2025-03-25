@@ -110,16 +110,18 @@ class PreferenceRestorer(
                                 categoriesByName,
                             )
                             if (!restored) {
-                                preferenceStore.getStringSet(key).set(
-                                    // KMK -->
-                                    when (key) {
-                                        SourcePreferences.PINNED_SOURCES_PREF_KEY ->
-                                            EXHMigrations.migratePinnedSources(value.value)
-                                        else ->
-                                            // KMK <--
-                                            value.value
-                                    },
-                                )
+                                // KMK -->
+                                when (key) {
+                                    SourcePreferences.PINNED_SOURCES_PREF_KEY ->
+                                        restorePinnedSourcesPreference(
+                                            key,
+                                            value.value,
+                                            preferenceStore,
+                                        )
+                                    else ->
+                                        // KMK <--
+                                        preferenceStore.getStringSet(key).set(value.value)
+                                }
                             }
                         }
                     }
@@ -152,5 +154,16 @@ class PreferenceRestorer(
             preferenceStore.getStringSet(key) += ids
         }
         return true
+    }
+
+    private fun restorePinnedSourcesPreference(
+        key: String,
+        value: Set<String>,
+        preferenceStore: PreferenceStore,
+    ) {
+        if (value.isEmpty()) return
+
+        val newValue = EXHMigrations.migratePinnedSources(value)
+        preferenceStore.getStringSet(key).set(newValue)
     }
 }
