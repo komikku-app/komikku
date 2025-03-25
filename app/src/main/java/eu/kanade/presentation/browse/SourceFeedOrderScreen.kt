@@ -10,11 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.browse.components.FeedOrderListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedState
+import kotlinx.collections.immutable.toImmutableList
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.FeedSavedSearch
@@ -59,8 +61,9 @@ fun SourceFeedOrderScreen(
                 val lazyListState = rememberLazyListState()
                 val feeds = state.items
                     .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
+                    .toImmutableList()
 
-                val feedsState = remember { feeds.toMutableList() }
+                val feedsState = remember { feeds.toMutableStateList() }
                 val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
                     val item = feedsState.removeAt(from.index)
                     feedsState.add(to.index, item)
