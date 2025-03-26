@@ -259,7 +259,7 @@ private fun UpdatesBottomBar(
 }
 
 sealed interface UpdatesUiModel {
-    data class Header(val date: LocalDate) : UpdatesUiModel
+    data class Header(val date: LocalDate, val mangaCount: Int) : UpdatesUiModel
     open class Item(open val item: UpdatesItem, open val isExpandable: Boolean = false) : UpdatesUiModel
     // KMK -->
     /** The first [Item] in a group of chapters from same manga */
