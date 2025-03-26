@@ -8,7 +8,6 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
-import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.updates.UpdatesUiModel
@@ -407,33 +406,21 @@ class UpdatesScreenModel(
         fun getUiModel(): List<UpdatesUiModel> {
             // KMK -->
             var lastMangaId = -1L
-            // KMK <--
             return items
-                // KMK -->
                 .groupBy { it.update.dateFetch.toLocalDate() }
-                .flatMap { groupDate ->
-                    groupDate.value.groupBy { it.update.mangaId }
-                        .flatMap { mangaChapters ->
-                            val list = mangaChapters.value
-                            val (read, unread) = list.partition { it.update.read }
-                            (
-                                unread.sortedBy { it.update.dateFetch } +
-                                    read.sortedByDescending { it.update.dateFetch }
-                                )
-                                .map { UpdatesUiModel.Item(it, list.size > 1) }
-                        }
+                .flatMap { (date, mangas) ->
+                    listOf(UpdatesUiModel.Header(date, mangas.size)) +
+                        mangas.groupBy { it.update.mangaId }
+                            .flatMap { mangaChapters ->
+                                val list = mangaChapters.value
+                                val (read, unread) = list.partition { it.update.read }
+                                (
+                                    unread.sortedBy { it.update.dateFetch } +
+                                        read.sortedByDescending { it.update.dateFetch }
+                                    )
+                                    .map { UpdatesUiModel.Item(it, list.size > 1) }
+                            }
                 }
-                // KMK <--
-                .insertSeparators { before, after ->
-                    val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
-                    val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
-                    when {
-                        beforeDate != afterDate && afterDate != null -> UpdatesUiModel.Header(afterDate)
-                        // Return null to avoid adding a separator between two items.
-                        else -> null
-                    }
-                }
-                // KMK -->
                 .map {
                     if (it is UpdatesUiModel.Header) {
                         lastMangaId = -1L
@@ -447,8 +434,8 @@ class UpdatesScreenModel(
                         }
                     }
                 }
-            // KMK <--
         }
+        // KMK <--
     }
 
     sealed interface Dialog {

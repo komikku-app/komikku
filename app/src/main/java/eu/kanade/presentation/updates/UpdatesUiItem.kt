@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
@@ -51,9 +50,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
+import mihon.feature.upcoming.DateHeading
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -109,13 +108,14 @@ internal fun LazyListScope.updatesUiItems(
     ) { item ->
         when (item) {
             is UpdatesUiModel.Header -> {
-                ListGroupHeader(
+                // KMK -->
+                DateHeading(
                     modifier = Modifier.animateItemFastScroll()
-                        // KMK -->
                         .padding(top = MaterialTheme.padding.extraSmall),
-                    // KMK <--
-                    text = relativeDateText(item.date),
+                    date = item.date,
+                    mangaCount = item.mangaCount,
                 )
+                // KMK <--
             }
             is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
@@ -183,9 +183,11 @@ private fun UpdatesUiItem(
     expanded: Boolean,
     collapseToggle: (key: String) -> Unit,
     usePanoramaCover: Boolean,
-    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
     // KMK <--
     modifier: Modifier = Modifier,
+    // KMK -->
+    coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
+    // KMK <--
 ) {
     val haptic = LocalHapticFeedback.current
     val textAlpha = if (update.read) DISABLED_ALPHA else 1f

@@ -176,13 +176,16 @@ private fun UpcomingToolbar(
 }
 
 @Composable
-private fun DateHeading(
+internal fun DateHeading(
     date: LocalDate,
     mangaCount: Int,
+    // KMK -->
+    modifier: Modifier = Modifier,
+    // KMK <--
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Text(
             text = relativeDateText(date),
