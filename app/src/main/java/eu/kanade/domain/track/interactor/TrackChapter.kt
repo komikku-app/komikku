@@ -23,6 +23,11 @@ class TrackChapter(
     private val delayedTrackingStore: DelayedTrackingStore,
 ) {
 
+    /**
+     * Fetches updated tracking data from all logged in trackers.
+     * Then update chapter progress to all trackers.
+     * This does not update local chapters' read status.
+     */
     suspend fun await(context: Context, mangaId: Long, chapterNumber: Double, setupJobOnFailure: Boolean = true) {
         withNonCancellableContext {
             val tracks = getTracks.await(mangaId)
