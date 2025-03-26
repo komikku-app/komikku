@@ -405,37 +405,33 @@ class UpdatesScreenModel(
 
         fun getUiModel(): List<UpdatesUiModel> {
             // KMK -->
-            var lastMangaId = -1L
             return items
                 .groupBy { it.update.dateFetch.toLocalDate() }
                 .flatMap { (date, mangas) ->
-                    listOf(UpdatesUiModel.Header(date, mangas.size)) +
-                        mangas.groupBy { it.update.mangaId }
-                            .flatMap { mangaChapters ->
-                                val list = mangaChapters.value
-                                val (read, unread) = list.partition { it.update.read }
-                                (
-                                    unread.sortedBy { it.update.dateFetch } +
-                                        read.sortedByDescending { it.update.dateFetch }
-                                    )
-                                    .map { UpdatesUiModel.Item(it, list.size > 1) }
+                    val header = UpdatesUiModel.Header(date, mangas.size)
+                    val mangaItems = mangas
+                        .groupBy { it.update.mangaId }
+                        .values
+                        .flatMap { mangaChapters ->
+                            val (unread, read) = mangaChapters.partition { !it.update.read }
+                            val sortedChapters = unread.sortedBy { it.update.dateFetch } +
+                                read.sortedByDescending { it.update.dateFetch }
+                            val isExpandable = mangaChapters.size > 1
+
+                            var lastMangaId = -1L
+                            sortedChapters.map { chapter ->
+                                if (chapter.update.mangaId != lastMangaId) {
+                                    lastMangaId = chapter.update.mangaId
+                                    UpdatesUiModel.Leader(chapter, isExpandable)
+                                } else {
+                                    UpdatesUiModel.Item(chapter, isExpandable)
+                                }
                             }
-                }
-                .map {
-                    if (it is UpdatesUiModel.Header) {
-                        lastMangaId = -1L
-                        it
-                    } else {
-                        if ((it as UpdatesUiModel.Item).item.update.mangaId != lastMangaId) {
-                            lastMangaId = it.item.update.mangaId
-                            UpdatesUiModel.Leader(it.item, it.isExpandable)
-                        } else {
-                            it
                         }
-                    }
+                    listOf(header) + mangaItems
                 }
+            // KMK <--
         }
-        // KMK <--
     }
 
     sealed interface Dialog {
