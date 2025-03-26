@@ -8,18 +8,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.components.material.padding
 
 @Composable
 fun ListGroupHeader(
     text: String,
     modifier: Modifier = Modifier,
+    // KMK -->
+    tonalElevation: Dp = 0.dp,
+    // KMK <--
 ) {
     // KMK -->
     Surface(
         modifier = modifier
             .fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        tonalElevation = tonalElevation,
     ) {
         // KMK <--
         Text(
