@@ -513,6 +513,7 @@ class LibraryScreenModel(
     private fun getLibraryItemPreferencesFlow(): Flow<ItemPreferences> {
         return combine(
             libraryPreferences.downloadBadge().changes(),
+            libraryPreferences.unreadBadge().changes(),
             libraryPreferences.localBadge().changes(),
             libraryPreferences.languageBadge().changes(),
             libraryPreferences.autoUpdateMangaRestrictions().changes(),
@@ -552,7 +553,7 @@ class LibraryScreenModel(
                 // KMK -->
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
-                filterFillermarked = it[10] as TriState,
+                filterFillermarked = it[15] as TriState,
                 // KMK <--
             )
         }
@@ -588,7 +589,7 @@ class LibraryScreenModel(
                         } else {
                             0
                         },
-                        unreadCount = libraryManga.unreadCount,
+                        unreadCount = if (prefs.unreadBadge) libraryManga.unreadCount else 0,
                         isLocal = if (prefs.localBadge) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             source.lang
@@ -991,7 +992,7 @@ class LibraryScreenModel(
         }
     }
 
-    suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
+    private suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
@@ -1007,6 +1008,10 @@ class LibraryScreenModel(
                 .associateBy { it.id }
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
+                if (query.startsWith("id:", true)) {
+                    val id = query.substringAfter("id:").toLongOrNull()
+                    return@filter mangaId == id
+                }
                 val sourceId = item.libraryManga.manga.source
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
@@ -1420,6 +1425,7 @@ class LibraryScreenModel(
     @Immutable
     private data class ItemPreferences(
         val downloadBadge: Boolean,
+        val unreadBadge: Boolean,
         val localBadge: Boolean,
         val languageBadge: Boolean,
         // KMK -->
