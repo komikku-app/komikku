@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
+import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.updates.UpdatesUiModel
@@ -233,6 +234,16 @@ class UpdatesScreenModel(
         toggleAllSelection(false)
     }
 
+    fun fillermarkUpdates(updates: List<UpdatesItem>, fillermark: Boolean) {
+        screenModelScope.launchIO {
+            updates
+                .filterNot { it.update.fillermark == fillermark }
+                .map { ChapterUpdate(id = it.update.chapterId, fillermark = fillermark) }
+                .let { updateChapter.awaitAll(it) }
+        }
+        toggleAllSelection(false)
+    }
+
     /**
      * Downloads the given list of chapters with the manager.
      * @param updatesItem the list of chapters to download.
@@ -405,30 +416,46 @@ class UpdatesScreenModel(
 
         fun getUiModel(): List<UpdatesUiModel> {
             // KMK -->
+            var lastMangaId = -1L
+            // KMK <--
             return items
+                // KMK -->
                 .groupBy { it.update.dateFetch.toLocalDate() }
-                .flatMap { (date, mangas) ->
-                    val header = UpdatesUiModel.Header(date, mangas.size)
-                    val mangaItems = mangas
-                        .groupBy { it.update.mangaId }
-                        .values
+                .flatMap { groupDate ->
+                    groupDate.value.groupBy { it.update.mangaId }
                         .flatMap { mangaChapters ->
-                            val (unread, read) = mangaChapters.partition { !it.update.read }
-                            val sortedChapters = unread.sortedBy { it.update.dateFetch } +
-                                read.sortedByDescending { it.update.dateFetch }
-                            val isExpandable = mangaChapters.size > 1
-
-                            var lastMangaId = -1L
-                            sortedChapters.map { chapter ->
-                                if (chapter.update.mangaId != lastMangaId) {
-                                    lastMangaId = chapter.update.mangaId
-                                    UpdatesUiModel.Leader(chapter, isExpandable)
-                                } else {
-                                    UpdatesUiModel.Item(chapter, isExpandable)
-                                }
-                            }
+                            val list = mangaChapters.value
+                            val (read, unread) = list.partition { it.update.read }
+                            (
+                                unread.sortedBy { it.update.dateFetch } +
+                                    read.sortedByDescending { it.update.dateFetch }
+                                )
+                                .map { UpdatesUiModel.Item(it, list.size > 1) }
                         }
-                    listOf(header) + mangaItems
+                }
+                // KMK <--
+                .insertSeparators { before, after ->
+                    val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
+                    val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
+                    when {
+                        beforeDate != afterDate && afterDate != null -> UpdatesUiModel.Header(afterDate)
+                        // Return null to avoid adding a separator between two items.
+                        else -> null
+                    }
+                }
+                // KMK -->
+                .map {
+                    if (it is UpdatesUiModel.Header) {
+                        lastMangaId = -1L
+                        it
+                    } else {
+                        if ((it as UpdatesUiModel.Item).item.update.mangaId != lastMangaId) {
+                            lastMangaId = it.item.update.mangaId
+                            UpdatesUiModel.Leader(it.item, it.isExpandable)
+                        } else {
+                            it
+                        }
+                    }
                 }
             // KMK <--
         }

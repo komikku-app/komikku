@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import exh.log.xLogE
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.drop
@@ -36,6 +37,7 @@ import uy.kohesive.injekt.api.get
  * and retrieved through dependency injection. You can use this class to queue new chapters or query
  * downloaded chapters.
  */
+@OptIn(DelicateCoroutinesApi::class)
 class DownloadManager(
     private val context: Context,
     private val provider: DownloadProvider = Injekt.get(),
@@ -136,7 +138,8 @@ class DownloadManager(
      * @param autoStart whether to start the downloader after enqueing the chapters.
      */
     fun downloadChapters(manga: Manga, chapters: List<Chapter>, autoStart: Boolean = true) {
-        downloader.queueChapters(manga, chapters, autoStart)
+        val filteredChapters = getChaptersToDownload(chapters)
+        downloader.queueChapters(manga, filteredChapters, autoStart)
     }
 
     /**
@@ -476,6 +479,14 @@ class DownloadManager(
             filteredCategoryManga.filterNot { it.bookmark }
         } else {
             filteredCategoryManga
+        }
+    }
+
+    private fun getChaptersToDownload(chapters: List<Chapter>): List<Chapter> {
+        return if (!downloadPreferences.notDownloadFillermarkedItems().get()) {
+            chapters.filterNot { it.fillermark }
+        } else {
+            chapters
         }
     }
 

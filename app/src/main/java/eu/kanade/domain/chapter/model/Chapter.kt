@@ -34,6 +34,7 @@ fun Chapter.toDbChapter(): DbChapter = ChapterImpl().also {
     it.scanlator = scanlator
     it.read = read
     it.bookmark = bookmark
+    it.fillermark = fillermark
     it.last_page_read = lastPageRead.toInt()
     it.date_fetch = dateFetch
     it.date_upload = dateUpload

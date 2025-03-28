@@ -231,7 +231,9 @@ class ReaderViewModel @JvmOverloads constructor(
                                     ) ||
                                 // SY <--
                                 (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
-                                (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark)
+                                (manga.bookmarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_BOOKMARKED && it.bookmark) ||
+                                (manga.fillermarkedFilterRaw == Manga.CHAPTER_SHOW_FILLERMARKED && !it.fillermark) ||
+                                (manga.fillermarkedFilterRaw == Manga.CHAPTER_SHOW_NOT_FILLERMARKED && it.fillermark)
                         }
                         else -> false
                     }
@@ -865,6 +867,27 @@ class ReaderViewModel @JvmOverloads constructor(
         }
     }
 
+    fun toggleChapterFillermark() {
+        val chapter = getCurrentChapter()?.chapter ?: return
+        val fillermarked = !chapter.fillermark
+        chapter.fillermark = fillermarked
+
+        viewModelScope.launchNonCancellable {
+            updateChapter.await(
+                ChapterUpdate(
+                    id = chapter.id!!.toLong(),
+                    fillermark = fillermarked,
+                ),
+            )
+        }
+
+        mutableState.update {
+            it.copy(
+                fillermarked = fillermarked,
+            )
+        }
+    }
+
     // SY -->
     fun toggleBookmark(chapterId: Long, bookmarked: Boolean) {
         val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
@@ -874,6 +897,19 @@ class ReaderViewModel @JvmOverloads constructor(
                 ChapterUpdate(
                     id = chapterId,
                     bookmark = bookmarked,
+                ),
+            )
+        }
+    }
+
+    fun toggleFillermark(chapterId: Long, fillermarked: Boolean) {
+        val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
+        chapter.fillermark = fillermarked
+        viewModelScope.launchNonCancellable {
+            updateChapter.await(
+                ChapterUpdate(
+                    id = chapterId,
+                    fillermark = fillermarked,
                 ),
             )
         }
@@ -1351,6 +1387,7 @@ class ReaderViewModel @JvmOverloads constructor(
         val manga: Manga? = null,
         val viewerChapters: ViewerChapters? = null,
         val bookmarked: Boolean = false,
+        val fillermarked: Boolean = false,
         val isLoadingAdjacentChapter: Boolean = false,
         val currentPage: Int = -1,
 

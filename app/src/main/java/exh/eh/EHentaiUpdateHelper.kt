@@ -243,6 +243,7 @@ class EHentaiUpdateHelper(context: Context) {
                         name = chapter.name,
                         read = chapter.read,
                         bookmark = chapter.bookmark,
+                        fillermark = chapter.fillermark,
                         lastPageRead = if (newLastPageRead != null && chapter.lastPageRead <= 0) {
                             newLastPageRead
                         } else {

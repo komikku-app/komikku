@@ -8,6 +8,7 @@ data class LibraryManga(
     val totalChapters: Long,
     val readCount: Long,
     val bookmarkCount: Long,
+    val fillermarkCount: Long,
     val latestUpload: Long,
     val chapterFetchedAt: Long,
     val lastRead: Long,
@@ -19,6 +20,9 @@ data class LibraryManga(
 
     val hasBookmarks
         get() = bookmarkCount > 0
+
+    val hasFillermarks
+        get() = fillermarkCount > 0
 
     val hasStarted = readCount > 0
 }

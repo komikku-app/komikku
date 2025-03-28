@@ -93,10 +93,7 @@ open class FeedScreenModel(
                 }
                 mutableState.update { state ->
                     state.copy(
-                        items = items
-                            // KMK -->
-                            .toImmutableList(),
-                        // KMK <--
+                        items = items,
                     )
                 }
                 getFeed(items)
@@ -111,10 +108,7 @@ open class FeedScreenModel(
             val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
             mutableState.update { state ->
                 state.copy(
-                    items = newItems
-                        // KMK -->
-                        .toImmutableList(),
-                    // KMK <--
+                    items = newItems,
                 )
             }
             getFeed(newItems)
@@ -312,10 +306,7 @@ open class FeedScreenModel(
 
                     mutableState.update { state ->
                         state.copy(
-                            items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
-                                // KMK -->
-                                ?.toImmutableList(),
-                            // KMK <--
+                            items = state.items?.map { if (it.feed.id == result.feed.id) result else it },
                         )
                     }
                 }
@@ -388,7 +379,7 @@ open class FeedScreenModel(
 
 data class FeedScreenState(
     val dialog: FeedScreenModel.Dialog? = null,
-    val items: ImmutableList<FeedItemUI>? = null,
+    val items: List<FeedItemUI>? = null,
 ) {
     val isLoading
         get() = items == null

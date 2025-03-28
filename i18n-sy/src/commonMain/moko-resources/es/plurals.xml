@@ -36,9 +36,9 @@
         <item quantity="other">%1$d páginas</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s %1$d página</item>
-        <item quantity="many">%2$s %1$d páginas</item>
-        <item quantity="other">%2$s %1$d páginas</item>
+        <item quantity="one">%2$s, %1$d página</item>
+        <item quantity="many">%2$s, %1$d páginas</item>
+        <item quantity="other">%2$s, %1$d páginas</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="one">hace %1$d año</item>

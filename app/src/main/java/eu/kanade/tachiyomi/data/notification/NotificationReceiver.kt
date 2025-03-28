@@ -599,17 +599,18 @@ class NotificationReceiver : BroadcastReceiver() {
         }
 
         /**
-         * Returns [PendingIntent] that directly launches a share activity for a backup file.
+         * Returns [PendingIntent] that starts a share activity for a backup file.
          *
          * @param context context of application
          * @param uri uri of backup file
          * @return [PendingIntent]
          */
-        internal fun shareBackupPendingActivity(context: Context, uri: Uri): PendingIntent {
-            val intent = uri.toShareIntent(context, "application/x-protobuf+gzip").apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        internal fun shareBackupPendingBroadcast(context: Context, uri: Uri): PendingIntent {
+            val intent = Intent(context, NotificationReceiver::class.java).apply {
+                action = ACTION_SHARE_BACKUP
+                putExtra(EXTRA_URI, uri)
             }
-            return PendingIntent.getActivity(
+            return PendingIntent.getBroadcast(
                 context,
                 0,
                 intent,

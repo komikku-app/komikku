@@ -41,6 +41,7 @@ fun ChapterListDialog(
     chapters: ImmutableList<ReaderChapterItem>,
     onClickChapter: (Chapter) -> Unit,
     onBookmark: (Chapter) -> Unit,
+    onFillermark: (Chapter) -> Unit,
     dateRelativeTime: Boolean,
 ) {
     val manga by screenModel.mangaFlow.collectAsState()
@@ -105,17 +106,23 @@ fun ChapterListDialog(
                     sourceName = null,
                     read = chapterItem.chapter.read,
                     bookmark = chapterItem.chapter.bookmark,
+                    fillermark = chapterItem.chapter.fillermark,
                     selected = false,
                     downloadIndicatorEnabled = false,
                     downloadStateProvider = { downloadState },
                     downloadProgressProvider = { progress },
-                    chapterSwipeStartAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
+                    chapterSwipeStartAction = LibraryPreferences.ChapterSwipeAction.ToggleFillermark,
                     chapterSwipeEndAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
                     onLongClick = { /*TODO*/ },
                     onClick = { onClickChapter(chapterItem.chapter) },
                     onDownloadClick = null,
-                    onChapterSwipe = {
-                        onBookmark(chapterItem.chapter)
+                    onChapterSwipe = { action ->
+                        if (action == LibraryPreferences.ChapterSwipeAction.ToggleBookmark) {
+                            onBookmark(chapterItem.chapter)
+                        }
+                        if (action == LibraryPreferences.ChapterSwipeAction.ToggleFillermark) {
+                            onFillermark(chapterItem.chapter)
+                        }
                     },
                 )
             }
