@@ -2,9 +2,9 @@ package mihon.telemetry
 
 import android.content.Context
 
-@Suppress("UNUSED_PARAMETER", "unused")
+@Suppress("UNUSED_PARAMETER")
 object TelemetryConfig {
-    fun init(context: Context, isPreviewBuildType: Boolean, commitCount: String) = Unit
+    fun init(context: Context) = Unit
 
     fun setAnalyticsEnabled(enabled: Boolean) = Unit
 

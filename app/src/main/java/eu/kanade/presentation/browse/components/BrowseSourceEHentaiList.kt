@@ -127,13 +127,11 @@ fun BrowseSourceEHentaiListItem(
     val context = LocalContext.current
     val languageText by produceState("", metadata) {
         value = withIOContext {
-            // KMK -->
-            val locale = metadata.tags
-                .filter { it.namespace == EHentaiSearchMetadata.EH_LANGUAGE_NAMESPACE }
-                .firstNotNullOfOrNull {
-                    SourceTagsUtil.getLocaleSourceUtil(it.name)
-                }
-            // KMK <--
+            val locale = SourceTagsUtil.getLocaleSourceUtil(
+                metadata.tags
+                    .firstOrNull { it.namespace == EHentaiSearchMetadata.EH_LANGUAGE_NAMESPACE }
+                    ?.name,
+            )
             val pageCount = metadata.length
             if (locale != null && pageCount != null) {
                 context.pluralStringResource(
