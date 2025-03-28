@@ -26,7 +26,7 @@ Before you start, please note that the ability to use following technologies is 
 
 ## Getting help
 
-- Join [the Discord server](https://discord.gg/Nft8MxpR) for online help and to ask questions while developing.
+- Join [the Discord server](https://discord.gg/85jB7V5AJR) for online help and to ask questions while developing.
 
 # Translations
 
