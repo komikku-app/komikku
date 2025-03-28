@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.13.0" changeDate="March 08, 2025">
+    <changelogversion versionName="1.13.0" changeDate="March 28, 2025">
         <changelogtext>[b]New:[/b] feat: unify recommendation screens combine MAL, AniList, MangaUpdates, MangaDex, Comick</changelogtext>
         <changelogtext>[b]New:[/b] Support for private tracking with AniList, Bangumi, Kitsu</changelogtext>
         <changelogtext>[b]New:[/b] Notification rich info</changelogtext>
@@ -15,6 +15,7 @@
         <changelogtext>[b]New:[/b] Add global search shortcut to SmartSearch</changelogtext>
         <changelogtext>[b]New:[/b] Add option to export minimal library information to a CSV file</changelogtext>
         <changelogtext>[b]New:[/b] Add "Monochrome" theme</changelogtext>
+        <changelogtext>[b]New:[/b] Add prefix search to search by internal DB ID</changelogtext>
         <changelogtext>[b]Improve:[/b] (EditMergedSettings): Allow open merge children manga</changelogtext>
         <changelogtext>[b]Improve:[/b] Apply "Downloaded only" filter to all entries regardless of favourite status</changelogtext>
         <changelogtext>[b]Improve:[/b] Remove alphabetical category/feed sort option</changelogtext>
@@ -30,6 +31,9 @@
         <changelogtext>[b]Improve:[/b] Description showing which sources support batch-add</changelogtext>
         <changelogtext>[b]Improve:[/b] Spoof or remove `X-Requested-With` header from webview</changelogtext>
         <changelogtext>[b]Improve:[/b] update website link</changelogtext>
+        <changelogtext>[b]Improve:[/b] Restore original list header's background color</changelogtext>
+        <changelogtext>[b]Improve:[/b] Replace repo icon</changelogtext>
+        <changelogtext>[b]Improve:[/b] Removed 6h auto updates</changelogtext>
         <changelogtext>[b]Fix:[/b] Infinix, Xiaomi webview</changelogtext>
         <changelogtext>[b]Fix:[/b] App's preferences referencing deleted categories</changelogtext>
         <changelogtext>[b]Fix:[/b] Bangumi login regression</changelogtext>
@@ -51,6 +55,8 @@
         <changelogtext>[b]Fix:[/b] Attempt to fix crash when migrating or removing entries from library</changelogtext>
         <changelogtext>[b]Fix:[/b] fill info from trackers only looking for specific 'Art' or 'Story'</changelogtext>
         <changelogtext>[b]Fix:[/b] an issue where tracker reading progress is changed to a lower value</changelogtext>
+        <changelogtext>[b]Fix:[/b] Messed up trackers progress update always auto sync</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update base URL and host for Pururin to pururin.me</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.12.6" changeDate="February 14, 2025">
         <changelogtext>[b]Fix:[/b] crash due to extensions destructuring MangasPage</changelogtext>

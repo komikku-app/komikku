@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9914" changeDate="March 08, 2025">
+        <changelogtext>[b]New:[/b] Open source settings from Browse &amp; Manga screen</changelogtext>
+        <changelogtext>[b]New:[/b] Add badge to UpdateScreen header</changelogtext>
+        <changelogtext>[b]New:[/b] Add prefix search to search by internal DB ID</changelogtext>
+        <changelogtext>[b]Improve:[/b] EH/ExH: better language detection in case actual language tag is not the first one</changelogtext>
+        <changelogtext>[b]Improve:[/b] Restore original list header's background color</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move `Suggestions` settings to same place</changelogtext>
+        <changelogtext>[b]Improve:[/b] Replace repo icon</changelogtext>
+        <changelogtext>[b]Improve:[/b] Removed 6h auto updates</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add back option to hide unread chapter badge in library</changelogtext>
+        <changelogtext>[b]Improve:[/b] Make more sliders discrete and ensure they don't look out of place</changelogtext>
+        <changelogtext>[b]Fix:[/b] Backup sharing from notifications not working when app is in background</changelogtext>
+        <changelogtext>[b]Fix:[/b] Messed up trackers progress update always auto sync</changelogtext>
+        <changelogtext>[b]Fix:[/b] Vertical chapter navigator overlap bottom bar</changelogtext>
+        <changelogtext>[b]Fix:[/b] Reorder feeds</changelogtext>
+        <changelogtext>[b]Fix:[/b] Pinned sources were not restored from backup</changelogtext>
+        <changelogtext>[b]Fix:[/b] Update base URL and host for Pururin to pururin.me</changelogtext>
+        <changelogtext>[b]Fix:[/b] Bangumi search including novels</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9845" changeDate="March 08, 2025">
         <changelogtext>[b]New:[/b] Hide excluded scanlators from Update view</changelogtext>
         <changelogtext>[b]New:[/b] Use COMPLETE category when sync finishes</changelogtext>
