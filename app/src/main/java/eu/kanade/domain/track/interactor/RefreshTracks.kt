@@ -3,6 +3,7 @@ package eu.kanade.domain.track.interactor
 import android.app.Application
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.util.system.toast
@@ -26,10 +27,16 @@ class RefreshTracks(
 
     /**
      * Fetches updated tracking data from all logged in trackers.
+     * Also sync chapter progress with the [EnhancedTracker] or all trackers based on [enhancedTrackersOnly].
      *
      * @return Failed updates.
      */
-    suspend fun await(mangaId: Long): List<Pair<Tracker?, Throwable>> {
+    suspend fun await(
+        mangaId: Long,
+        // KMK -->
+        enhancedTrackersOnly: Boolean = true,
+        // KMK <--
+    ): List<Pair<Tracker?, Throwable>> {
         return supervisorScope {
             return@supervisorScope getTracks.await(mangaId)
                 .map { it to trackerManager.get(it.trackerId) }
@@ -39,7 +46,13 @@ class RefreshTracks(
                         return@async try {
                             val updatedTrack = service!!.refresh(track.toDbTrack()).toDomainTrack()!!
                             insertTrack.await(updatedTrack)
-                            syncChapterProgressWithTrack.await(mangaId, updatedTrack, service)
+                            // KMK -->
+                            if (!enhancedTrackersOnly) {
+                                syncChapterProgressWithTrack.sync(mangaId, updatedTrack, service)
+                            } else {
+                                // KMK <--
+                                syncChapterProgressWithTrack.await(mangaId, updatedTrack, service)
+                            }
                                 // KMK -->
                                 ?.let {
                                     val context = Injekt.get<Application>()

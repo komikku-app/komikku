@@ -53,6 +53,9 @@ object SettingsBrowseScreen : SearchableSettings {
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         // SY <--
+        // KMK -->
+        val relatedMangasInOverflow by uiPreferences.expandRelatedMangas().collectAsState()
+        // KMK <--
         return listOf(
             // SY -->
             Preference.PreferenceGroup(
@@ -63,6 +66,24 @@ object SettingsBrowseScreen : SearchableSettings {
                         preference = sourcePreferences.relatedMangas(),
                         title = stringResource(KMR.strings.pref_source_related_mangas),
                         subtitle = stringResource(KMR.strings.pref_source_related_mangas_summary),
+                    ),
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = uiPreferences.expandRelatedMangas(),
+                        title = stringResource(KMR.strings.pref_expand_related_mangas),
+                        subtitle = stringResource(KMR.strings.pref_expand_related_mangas_summary),
+                        enabled = sourcePreferences.relatedMangas().get(),
+                    ),
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = uiPreferences.relatedMangasInOverflow(),
+                        enabled = !relatedMangasInOverflow,
+                        title = stringResource(KMR.strings.put_related_mangas_in_overflow),
+                        subtitle = stringResource(KMR.strings.put_related_mangas_in_overflow_summary),
+                    ),
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = uiPreferences.showHomeOnRelatedMangas(),
+                        title = stringResource(KMR.strings.pref_show_home_on_related_mangas),
+                        subtitle = stringResource(KMR.strings.pref_show_home_on_related_mangas_summary),
+                        enabled = sourcePreferences.relatedMangas().get(),
                     ),
                     // KMK <--
                     kotlin.run {

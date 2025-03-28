@@ -140,29 +140,29 @@ object EXHMigrations {
     /**
      * Migrate old source ID of delegated sources in old backup
      */
-    fun migratePinnedSources(pinnedSources: Set<String>): Set<String> {
-        var pinned = pinnedSources
-        if (NHENTAI_OLD_ID.toString() in pinned) {
-            pinned = pinned.minus(NHENTAI_OLD_ID.toString())
+    fun migrateSourceIds(oldSourceIds: Set<String>): Set<String> {
+        var newSourceIds = oldSourceIds
+        if (NHENTAI_OLD_ID.toString() in newSourceIds) {
+            newSourceIds = newSourceIds.minus(NHENTAI_OLD_ID.toString())
                 .plus(NHENTAI_SOURCE_ID.toString())
         }
-        if (TSUMINO_OLD_ID.toString() in pinned) {
-            pinned = pinned.minus(TSUMINO_OLD_ID.toString())
+        if (TSUMINO_OLD_ID.toString() in newSourceIds) {
+            newSourceIds = newSourceIds.minus(TSUMINO_OLD_ID.toString())
                 .plus(TSUMINO_SOURCE_ID.toString())
         }
-        if (HBROWSE_OLD_ID.toString() in pinned) {
-            pinned = pinned.minus(HBROWSE_OLD_ID.toString())
+        if (HBROWSE_OLD_ID.toString() in newSourceIds) {
+            newSourceIds = newSourceIds.minus(HBROWSE_OLD_ID.toString())
                 .plus(HBROWSE_SOURCE_ID.toString())
         }
-        if (EH_OLD_ID.toString() in pinned) {
-            pinned = pinned.minus(EH_OLD_ID.toString())
+        if (EH_OLD_ID.toString() in newSourceIds) {
+            newSourceIds = newSourceIds.minus(EH_OLD_ID.toString())
                 .plus(EH_SOURCE_ID.toString())
         }
-        if (EXH_OLD_ID.toString() in pinned) {
-            pinned = pinned.minus(EXH_OLD_ID.toString())
+        if (EXH_OLD_ID.toString() in newSourceIds) {
+            newSourceIds = newSourceIds.minus(EXH_OLD_ID.toString())
                 .plus(EXH_SOURCE_ID.toString())
         }
-        return pinned
+        return newSourceIds
     }
     // KMK -->
 

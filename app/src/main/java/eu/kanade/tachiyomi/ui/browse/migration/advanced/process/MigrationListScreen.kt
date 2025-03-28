@@ -122,8 +122,8 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 val searchScreen = MigrateSearchScreen(migrationItem.manga.id, validSources.map { it.id })
                 navigator push searchScreen
             },
-            migrateNow = { screenModel.migrateManga(it, false) },
-            copyNow = { screenModel.migrateManga(it, true) },
+            migrateNow = { screenModel.migrateManga(it, true) },
+            copyNow = { screenModel.migrateManga(it, false) },
         )
 
         val onDismissRequest = { screenModel.dialog.value = null }
