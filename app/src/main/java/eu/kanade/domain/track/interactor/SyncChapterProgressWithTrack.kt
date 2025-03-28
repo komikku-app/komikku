@@ -1,7 +1,7 @@
 package eu.kanade.domain.track.interactor
 
 import eu.kanade.domain.track.model.toDbTrack
-import eu.kanade.tachiyomi.data.track.EnhancedTracker
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.Tracker
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
@@ -10,6 +10,8 @@ import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.toChapterUpdate
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import kotlin.math.max
 
 class SyncChapterProgressWithTrack(
@@ -17,30 +19,19 @@ class SyncChapterProgressWithTrack(
     private val insertTrack: InsertTrack,
     private val getChaptersByMangaId: GetChaptersByMangaId,
 ) {
-    /**
-     * Sync chapter progress with the [EnhancedTracker]
-     */
+    val trackPreferences: TrackPreferences = Injekt.get()
+
     suspend fun await(
         mangaId: Long,
         remoteTrack: Track,
         tracker: Tracker,
     ): Int? {
-        if (tracker !is EnhancedTracker) {
-            return null
-        }
-        // KMK -->
-        return sync(mangaId, remoteTrack, tracker)
-    }
+        // KKM -->
+        // if (tracker !is EnhancedTracker) {
+        //     return
+        // }
+        // <-- KKM
 
-    /**
-     * Sync chapter progress with the all trackers.
-     */
-    suspend fun sync(
-        mangaId: Long,
-        remoteTrack: Track,
-        tracker: Tracker,
-    ): Int? {
-        // KMK <--
         // Current chapters in database, sort by source's order because database's order is a mess
         val dbChapters = getChaptersByMangaId.await(mangaId)
             // KMK -->
@@ -87,6 +78,7 @@ class SyncChapterProgressWithTrack(
             // KMK -->
             // Always update local chapters following Tracker even past chapters
             if (chapterUpdates.isNotEmpty() &&
+                trackPreferences.autoSyncProgressFromTrackers().get() &&
                 !tracker.hasNotStartedReading(remoteTrack.status)
             ) {
                 updateChapter.awaitAll(chapterUpdates)

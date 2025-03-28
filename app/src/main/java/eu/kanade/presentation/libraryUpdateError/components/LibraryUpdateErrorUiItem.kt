@@ -45,7 +45,6 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                     ListGroupHeader(
                         modifier = Modifier.animateItemFastScroll(),
                         text = it.errorMessage,
-                        tonalElevation = 1.dp,
                     )
                 }
             }

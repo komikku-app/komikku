@@ -176,7 +176,6 @@ class MangaScreenModel(
     private val uiPreferences: UiPreferences = Injekt.get(),
     // KMK -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
-    private val refreshTracks: RefreshTracks = Injekt.get(),
     // KMK <--
     private val trackerManager: TrackerManager = Injekt.get(),
     private val trackChapter: TrackChapter = Injekt.get(),
@@ -563,7 +562,8 @@ class MangaScreenModel(
     private suspend fun syncTrackers() {
         if (!trackPreferences.autoSyncProgressFromTrackers().get()) return
 
-        refreshTracks.await(mangaId, enhancedTrackersOnly = false)
+        val refreshTracks = Injekt.get<RefreshTracks>()
+        refreshTracks.await(mangaId)
             .filter { it.first != null }
             .forEach { (track, e) ->
                 logcat(LogPriority.ERROR, e) {

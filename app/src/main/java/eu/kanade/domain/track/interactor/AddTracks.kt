@@ -20,19 +20,18 @@ import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.InsertTrack
-import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.ZoneOffset
 
 class AddTracks(
     private val insertTrack: InsertTrack,
-    private val syncChapterProgressWithTrack: SyncChapterProgressWithTrack,
+    private val refreshTracks: RefreshTracks,
     private val getChaptersByMangaId: GetChaptersByMangaId,
     private val trackerManager: TrackerManager,
 ) {
 
-    // TODO: update all trackers based on common data
     suspend fun bind(tracker: Tracker, item: Track, mangaId: Long) = withNonCancellableContext {
         withIOContext {
             val allChapters = getChaptersByMangaId.await(mangaId)
@@ -78,12 +77,22 @@ class AddTracks(
                 }
             }
 
-            syncChapterProgressWithTrack.await(mangaId, track, tracker)
-                // KMK -->
-                ?.let {
-                    val context = Injekt.get<Application>()
+            // KMK -->
+            val context = Injekt.get<Application>()
+            refreshTracks.await(mangaId)
+                .filter { it.first != null }
+                .forEach { (track, e) ->
+                    logcat(LogPriority.ERROR, e) {
+                        "Failed to refresh track data mangaId=$mangaId for service ${track!!.id}"
+                    }
                     withUIContext {
-                        context.toast(context.stringResource(KMR.strings.sync_progress_from_trackers_up_to_chapter, it))
+                        context.toast(
+                            context.stringResource(
+                                MR.strings.track_error,
+                                track!!.name,
+                                e.message ?: "",
+                            ),
+                        )
                     }
                 }
             // KMK <--
@@ -101,20 +110,6 @@ class AddTracks(
                             track.manga_id = manga.id
                             (service as Tracker).bind(track)
                             insertTrack.await(track.toDomainTrack(idRequired = false)!!)
-
-                            syncChapterProgressWithTrack.await(
-                                manga.id,
-                                track.toDomainTrack(idRequired = false)!!,
-                                service,
-                            )
-                                // KMK -->
-                                ?.let {
-                                    val context = Injekt.get<Application>()
-                                    withUIContext {
-                                        context.toast(context.stringResource(KMR.strings.sync_progress_from_trackers_up_to_chapter, it))
-                                    }
-                                }
-                            // KMK <--
                         }
                     } catch (e: Exception) {
                         logcat(
@@ -123,6 +118,26 @@ class AddTracks(
                         ) { "Could not match manga: ${manga.title} with service $service" }
                     }
                 }
+
+            // KMK -->
+            val context = Injekt.get<Application>()
+            refreshTracks.await(manga.id)
+                .filter { it.first != null }
+                .forEach { (track, e) ->
+                    logcat(LogPriority.ERROR, e) {
+                        "Failed to refresh track data mangaId=${manga.id} for service ${track!!.id}"
+                    }
+                    withUIContext {
+                        context.toast(
+                            context.stringResource(
+                                MR.strings.track_error,
+                                track!!.name,
+                                e.message ?: "",
+                            ),
+                        )
+                    }
+                }
+            // KMK <--
         }
     }
 }

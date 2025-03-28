@@ -51,10 +51,10 @@
     </plurals>
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s %1$d страница</item>
-        <item quantity="few">%2$s %1$d страницы</item>
-        <item quantity="many">%2$s %1$d страниц</item>
-        <item quantity="other">%2$s %1$d страниц</item>
+        <item quantity="one">%2$s, %1$d страница</item>
+        <item quantity="few">%2$s, %1$d страницы</item>
+        <item quantity="many">%2$s, %1$d страниц</item>
+        <item quantity="other">%2$s, %1$d страниц</item>
     </plurals>
     <!-- Humanize time -->
     <plurals name="humanize_year">
