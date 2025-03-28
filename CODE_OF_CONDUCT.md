@@ -60,7 +60,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community moderators responsible for enforcement at
-the [Discord server](https://discord.gg/85jB7V5AJR).
+the [Discord server](https://discord.gg/Nft8MxpR).
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community moderators are obligated to respect the privacy and security of the
