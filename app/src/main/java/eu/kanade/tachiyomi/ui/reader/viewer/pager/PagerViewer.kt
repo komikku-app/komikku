@@ -116,11 +116,7 @@ abstract class PagerViewer(
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
         pager.adapter = adapter
-        pager.addOnPageChangeListener(
-            // SY -->
-            pagerListener,
-            // SY <--
-        )
+        pager.addOnPageChangeListener(pagerListener)
         pager.tapListener = { event ->
             val viewPosition = IntArray(2)
             pager.getLocationOnScreen(viewPosition)
@@ -302,6 +298,9 @@ abstract class PagerViewer(
      * Sets the active [chapters] on this pager.
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
+        // Remove listener so the change in item doesn't trigger it
+        pager.removeOnPageChangeListener(pagerListener)
+
         val forceTransition =
             config.alwaysShowChapterTransition ||
                 adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
@@ -314,6 +313,8 @@ abstract class PagerViewer(
             moveToPage(pages[min(chapters.currChapter.requestedPage, pages.lastIndex)])
             pager.isVisible = true
         }
+
+        pager.addOnPageChangeListener(pagerListener)
     }
 
     /**
