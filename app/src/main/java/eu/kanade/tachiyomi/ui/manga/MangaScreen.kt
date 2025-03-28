@@ -621,7 +621,7 @@ class MangaScreen(
     }
 
     private fun openChapter(context: Context, chapter: Chapter) {
-        context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
+        context.startActivity(ReaderActivity.newIntent(context, mangaId, chapter.id))
     }
 
     @Suppress("LocalVariableName")
