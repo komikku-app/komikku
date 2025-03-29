@@ -34,7 +34,7 @@ jobs:
       - name: Prepare build
         id: prepare_build
         run: |
-          set -e
+          set -x
 
           commit_count=$(git rev-list --count HEAD)
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT

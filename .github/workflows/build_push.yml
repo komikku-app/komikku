@@ -84,7 +84,7 @@ jobs:
       - name: Rename apk
         id: current_commit
         run: |
-          set -x
+          set -ex
           version_tag=$(echo ${GITHUB_REF/refs\/heads\//} | sed -r 's/[\/]+/_/g')
           commit_count=$(git rev-list --count HEAD)
           echo "VERSION_TAG=$version_tag"

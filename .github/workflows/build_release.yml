@@ -43,7 +43,7 @@ jobs:
       - name: Curren commit
         id: current_commit
         run: |
-          set -e
+          set -x
 
           commit_count=$(git rev-list --count HEAD)
           echo "COMMIT_COUNT=$commit_count"
@@ -55,7 +55,7 @@ jobs:
       - name: Previous commit
         id: previous_commit
         run: |
-          set -e
+          set -x
 
           commit_count_diff=$(git rev-list --count "${{ steps.last_release.outputs.tag_name }}"..HEAD)
 
@@ -74,7 +74,7 @@ jobs:
       - name: Commit logs
         id: commit_logs
         run: |
-          set -e
+          set -x
 
           echo "COMMIT_LOGS<<{delimiter}
           $(curl -H "Accept: application/vnd.github.v3+json" \
