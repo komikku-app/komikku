@@ -120,5 +120,4 @@
     <string name="auto_update_app_disable_auto_download">Não baixar a atualização automaticamente</string>
     <string name="action_remove_merged">Remover entradas originais da biblioteca?</string>
     <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
-    <string name="theme_doom"></string>
 </resources>
