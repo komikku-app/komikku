@@ -38,8 +38,10 @@ data class BackupManga(
     @ProtoNumber(105) var updateStrategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE,
     @ProtoNumber(106) var lastModifiedAt: Long = 0,
     @ProtoNumber(107) var favoriteModifiedAt: Long? = null,
+    // Mihon values start here
     @ProtoNumber(108) var excludedScanlators: List<String> = emptyList(),
     @ProtoNumber(109) var version: Long = 0,
+    @ProtoNumber(110) var notes: String = "",
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -77,6 +79,7 @@ data class BackupManga(
             lastModifiedAt = this@BackupManga.lastModifiedAt,
             favoriteModifiedAt = this@BackupManga.favoriteModifiedAt,
             version = this@BackupManga.version,
+            notes = this@BackupManga.notes,
         )
     }
 }

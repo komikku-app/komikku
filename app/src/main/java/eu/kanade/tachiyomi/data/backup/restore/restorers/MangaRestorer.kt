@@ -167,6 +167,7 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
                 version = manga.version,
                 isSyncing = 1,
+                notes = manga.notes,
             )
         }
         return manga
@@ -567,7 +568,7 @@ class MangaRestorer(
         setCustomMangaInfo.set(mangaJson)
     }
 
-    fun BackupManga.getCustomMangaInfo(): CustomMangaInfo? {
+    private fun BackupManga.getCustomMangaInfo(): CustomMangaInfo? {
         if (customTitle != null ||
             customArtist != null ||
             customAuthor != null ||

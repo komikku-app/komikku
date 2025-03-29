@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.LayoutInflater
 import android.widget.CompoundButton
@@ -15,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.isVisible
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
@@ -88,7 +88,7 @@ fun MigrationBottomSheetDialog(
                     backgroundTintList = colorScheme.editTextBackgroundTintList
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        textCursorDrawable = ColorDrawable(colorScheme.primary)
+                        textCursorDrawable = colorScheme.primary.toDrawable()
                         textSelectHandle?.let { drawable ->
                             drawable.setTint(colorScheme.primary)
                             setTextSelectHandle(drawable)
