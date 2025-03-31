@@ -222,6 +222,7 @@ fun AppBarActions(
                 }
             },
             state = rememberTooltipState(),
+            focusable = false,
         ) {
             IconButton(
                 onClick = it.onClick,
@@ -269,6 +270,7 @@ fun AppBarActions(
                 }
             },
             state = rememberTooltipState(),
+            focusable = false,
         ) {
             IconButton(
                 onClick = { showMenu = !showMenu },
@@ -396,6 +398,7 @@ fun SearchToolbar(
                             }
                         },
                         state = rememberTooltipState(),
+                        focusable = false,
                     ) {
                         IconButton(
                             onClick = onClick,
@@ -415,6 +418,7 @@ fun SearchToolbar(
                             }
                         },
                         state = rememberTooltipState(),
+                        focusable = false,
                     ) {
                         IconButton(
                             onClick = {
