@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
-import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.presentation.util.ioCoroutineScope
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.SourceCatalogue
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
@@ -81,7 +81,7 @@ open class RecommendsScreenModel(
                             val recSourceId = recSource.associatedSourceId
                             if (recSourceId != null) {
                                 // If the recommendation is associated with a source, resolve it
-                                networkToLocalManga.await(it.toDomainManga(recSourceId))
+                                networkToLocalManga(it.toDomainManga(recSourceId))
                             } else {
                                 // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
                                 it.toDomainManga(RECOMMENDS_SOURCE)

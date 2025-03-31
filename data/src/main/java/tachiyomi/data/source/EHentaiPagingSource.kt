@@ -4,21 +4,27 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.RaisedSearchMetadata
+import mihon.domain.manga.model.toDomainManga
+import tachiyomi.domain.manga.model.Manga
 
-abstract class EHentaiPagingSource(override val source: CatalogueSource) : SourcePagingSource(source) {
+abstract class EHentaiPagingSource(override val source: CatalogueSource) : BaseSourcePagingSource(source) {
 
-    override fun getPageLoadResult(
+    override suspend fun getPageLoadResult(
         params: LoadParams<Long>,
         mangasPage: MangasPage,
-    ): LoadResult.Page<Long, Pair<SManga, RaisedSearchMetadata?>> {
+    ): LoadResult.Page<Long, Pair<Manga, RaisedSearchMetadata?>> {
         mangasPage as MetadataMangasPage
         val metadata = mangasPage.mangasMetadata
 
+        val manga = mangasPage.mangas.map { it.toDomainManga(source.id) }
+            .let { networkToLocalManga(it) }
+            // SY -->
+            .mapIndexed { index, manga -> manga to metadata.getOrNull(index) }
+        // SY <--
+
         return LoadResult.Page(
-            data = mangasPage.mangas
-                .mapIndexed { index, sManga -> sManga to metadata.getOrNull(index) },
+            data = manga,
             prevKey = null,
             nextKey = mangasPage.nextKey,
         )

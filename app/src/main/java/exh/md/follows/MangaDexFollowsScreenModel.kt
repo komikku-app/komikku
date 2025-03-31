@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.source.repository.SourcePagingSourceType
+import tachiyomi.domain.source.repository.SourcePagingSource
 
 class MangaDexFollowsScreenModel(sourceId: Long) : BrowseSourceScreenModel(sourceId, null) {
 
-    override fun createSourcePagingSource(query: String, filters: FilterList): SourcePagingSourceType {
+    override fun createSourcePagingSource(query: String, filters: FilterList): SourcePagingSource {
         return MangaDexFollowsPagingSource(source.getMainSource() as MangaDex)
     }
 

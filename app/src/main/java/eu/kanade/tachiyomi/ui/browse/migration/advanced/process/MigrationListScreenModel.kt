@@ -235,7 +235,7 @@ class MigrationListScreenModel(
                                             if (searchResult != null &&
                                                 !(searchResult.url == mangaObj.url && source.id == mangaObj.source)
                                             ) {
-                                                val localManga = networkToLocalManga.await(searchResult)
+                                                val localManga = networkToLocalManga(searchResult)
 
                                                 val chapters = if (source is EHentai) {
                                                     source.getChapterList(localManga.toSManga(), throttleManager::throttle)
@@ -273,7 +273,7 @@ class MigrationListScreenModel(
                                     }
 
                                     if (searchResult != null) {
-                                        val localManga = networkToLocalManga.await(searchResult)
+                                        val localManga = networkToLocalManga(searchResult)
                                         val chapters = try {
                                             if (source is EHentai) {
                                                 source.getChapterList(localManga.toSManga(), throttleManager::throttle)
@@ -514,7 +514,7 @@ class MigrationListScreenModel(
         screenModelScope.launchIO {
             val result = migratingManga.migrationScope.async {
                 val manga = getManga(newMangaId)!!
-                val localManga = networkToLocalManga.await(manga)
+                val localManga = networkToLocalManga(manga)
                 try {
                     val source = sourceManager.get(manga.source)!!
                     val chapters = source.getChapterList(localManga.toSManga())
