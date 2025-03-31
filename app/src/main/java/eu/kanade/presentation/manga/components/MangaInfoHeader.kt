@@ -571,11 +571,7 @@ private fun MangaAndSourceTitlesSmall(
                 modifier = Modifier
                     .sizeIn(maxHeight = 100.dp)
                     // KMK -->
-                    .apply {
-                        if (verticallyCenterCover) {
-                            this.align(Alignment.CenterVertically)
-                        }
-                    },
+                    .align(if (verticallyCenterCover) Alignment.CenterVertically else Alignment.Top),
                 // KMK <--
                 data = ImageRequest.Builder(LocalContext.current)
                     .data(manga)
@@ -597,11 +593,7 @@ private fun MangaAndSourceTitlesSmall(
                 modifier = Modifier
                     .sizeIn(maxWidth = 100.dp)
                     // KMK -->
-                    .apply {
-                        if (verticallyCenterCover) {
-                            this.align(Alignment.CenterVertically)
-                        }
-                    },
+                    .align(if (verticallyCenterCover) Alignment.CenterVertically else Alignment.Top),
                 // KMK <--
                 data = ImageRequest.Builder(LocalContext.current)
                     .data(manga)
