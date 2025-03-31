@@ -38,6 +38,8 @@
     <string name="pref_panorama_cover_summary">Show cover in landscape mode if it\'s a wide image</string>
     <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
     <string name="pref_panorama_cover_flow_summary">Show panorama cover in Global Search &amp; Suggestions</string>
+    <string name="pref_vertically_center_cover">Vertically center cover</string>
+    <string name="pref_vertically_center_cover_summary">Show the cover vertically centered alongside manga info</string>
     <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
     <string name="pref_expand_related_mangas">Expand Suggestions</string>
     <string name="pref_expand_related_mangas_summary">If turned off, Suggestions won\'t automatically load &amp; show expanded</string>

@@ -70,6 +70,8 @@ class UiPreferences(
     fun usePanoramaCoverAlways() = preferenceStore.getBoolean("use_panorama_cover_grid", true)
 
     fun usePanoramaCoverMangaInfo() = preferenceStore.getBoolean("use_panorama_cover_manga_info", false)
+
+    fun verticallyCenterCover() = preferenceStore.getBoolean("vertically_center_cover", true)
     // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)

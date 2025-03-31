@@ -127,6 +127,7 @@ fun MangaInfoBox(
 ) {
     // KMK -->
     val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverMangaInfo().collectAsState()
+    val verticallyCenterCover by Injekt.get<UiPreferences>().verticallyCenterCover().collectAsState()
     // KMK <--
     Box(modifier = modifier) {
         // Backdrop
@@ -184,6 +185,7 @@ fun MangaInfoBox(
                     onCoverLoaded = onCoverLoaded,
                     coverRatio = coverRatio,
                     usePanoramaCover = usePanoramaCover,
+                    verticallyCenterCover = verticallyCenterCover,
                     // KMK <--
                 )
             } else {
@@ -553,6 +555,7 @@ private fun MangaAndSourceTitlesSmall(
     onCoverLoaded: (DomainMangaCover) -> Unit,
     coverRatio: MutableFloatState,
     usePanoramaCover: Boolean = false,
+    verticallyCenterCover: Boolean = false,
     // KMK <--
 ) {
     Row(
@@ -560,7 +563,7 @@ private fun MangaAndSourceTitlesSmall(
             .fillMaxWidth()
             .padding(start = 16.dp, top = appBarPadding + 16.dp, end = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = if (verticallyCenterCover) Alignment.CenterVertically else Alignment.Top,
     ) {
         // KMK -->
         if (usePanoramaCover && coverRatio.floatValue <= RatioSwitchToPanorama) {
@@ -568,7 +571,11 @@ private fun MangaAndSourceTitlesSmall(
                 modifier = Modifier
                     .sizeIn(maxHeight = 100.dp)
                     // KMK -->
-                    .align(Alignment.CenterVertically),
+                    .apply {
+                        if (verticallyCenterCover) {
+                            this.align(Alignment.CenterVertically)
+                        }
+                    },
                 // KMK <--
                 data = ImageRequest.Builder(LocalContext.current)
                     .data(manga)
@@ -590,7 +597,11 @@ private fun MangaAndSourceTitlesSmall(
                 modifier = Modifier
                     .sizeIn(maxWidth = 100.dp)
                     // KMK -->
-                    .align(Alignment.CenterVertically),
+                    .apply {
+                        if (verticallyCenterCover) {
+                            this.align(Alignment.CenterVertically)
+                        }
+                    },
                 // KMK <--
                 data = ImageRequest.Builder(LocalContext.current)
                     .data(manga)
