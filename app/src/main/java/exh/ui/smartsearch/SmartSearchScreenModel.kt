@@ -28,7 +28,7 @@ class SmartSearchScreenModel(
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {
-                    val localManga = networkToLocalManga.await(resultManga)
+                    val localManga = networkToLocalManga(resultManga)
                     SearchResults.Found(localManga)
                 } else {
                     SearchResults.NotFound

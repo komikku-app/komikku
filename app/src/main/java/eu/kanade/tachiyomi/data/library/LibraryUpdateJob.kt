@@ -568,7 +568,7 @@ class LibraryUpdateJob(private val context: Context, private val workerParams: W
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 
                 if (dbManga == null) {
-                    dbManga = networkToLocalManga.await(
+                    dbManga = networkToLocalManga(
                         Manga.create().copy(
                             url = networkManga.url,
                             ogTitle = networkManga.title,

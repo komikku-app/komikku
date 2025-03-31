@@ -121,7 +121,7 @@ class SmartSearchMerge(
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
-            mergedManga = networkToLocalManga.await(mergedManga)
+            mergedManga = networkToLocalManga(mergedManga)
 
             getCategories.await(originalMangaId)
                 .let { categories ->

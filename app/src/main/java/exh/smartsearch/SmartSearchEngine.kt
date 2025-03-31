@@ -1,6 +1,5 @@
 package exh.smartsearch
 
-import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -8,6 +7,7 @@ import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
+import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 import java.util.Locale
 
