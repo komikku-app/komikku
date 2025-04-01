@@ -204,6 +204,11 @@ object SettingsAppearanceScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_panorama_cover),
                     subtitle = stringResource(KMR.strings.pref_panorama_cover_summary),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = uiPreferences.topAlignCover(),
+                    title = stringResource(KMR.strings.pref_top_align_cover),
+                    subtitle = stringResource(KMR.strings.pref_top_align_cover_summary),
+                ),
             ),
         )
     }
