@@ -20,7 +20,6 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.copyFrom
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.model.toDbTrack
@@ -35,7 +34,6 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
@@ -90,7 +88,6 @@ import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.model.SourceNotInstalledException
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
@@ -108,7 +105,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
 
 @OptIn(ExperimentalAtomicApi::class)
-class LibraryUpdateJob(private val context: Context, workerParams: WorkerParameters) :
+class LibraryUpdateJob(private val context: Context, private val workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     private val sourceManager: SourceManager = Injekt.get()
@@ -186,7 +183,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             try {
                 when (target) {
                     Target.CHAPTERS -> updateChapterList()
-                    Target.COVERS -> updateCovers()
                     // SY -->
                     Target.SYNC_FOLLOWS -> syncFollows()
                     Target.PUSH_FAVORITES -> pushFavorites()
@@ -542,55 +538,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         return syncChaptersWithSource.await(chapters, dbManga, source, false, fetchWindow)
     }
 
-    private suspend fun updateCovers() {
-        val semaphore = Semaphore(5)
-        val progressCount = AtomicInteger(0)
-        val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
-
-        coroutineScope {
-            mangaToUpdate.groupBy { it.manga.source }
-                .values
-                .map { mangaInSource ->
-                    async {
-                        semaphore.withPermit {
-                            mangaInSource.forEach { libraryManga ->
-                                val manga = libraryManga.manga
-                                ensureActive()
-
-                                withUpdateNotification(
-                                    currentlyUpdatingManga,
-                                    progressCount,
-                                    manga,
-                                ) {
-                                    val source = sourceManager.get(manga.source) ?: return@withUpdateNotification
-                                    try {
-                                        val networkManga = source.getMangaDetails(manga.toSManga())
-                                        val updatedManga = manga.prepUpdateCover(
-                                            coverCache,
-                                            networkManga,
-                                            true,
-                                        )
-                                            .copyFrom(networkManga)
-                                        try {
-                                            updateManga.await(updatedManga.toMangaUpdate())
-                                        } catch (e: Exception) {
-                                            logcat(LogPriority.ERROR) { "Manga doesn't exist anymore" }
-                                        }
-                                    } catch (e: Throwable) {
-                                        // Ignore errors and continue
-                                        logcat(LogPriority.ERROR, e)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .awaitAll()
-        }
-
-        notifier.cancelProgressNotification()
-    }
-
     // SY -->
     /**
      * filter all follows from Mangadex and only add reading or rereading manga to library
@@ -745,7 +692,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      */
     enum class Target {
         CHAPTERS, // Manga chapters
-        COVERS, // Manga covers
 
         // SY -->
         SYNC_FOLLOWS, // MangaDex specific, pull mangadex manga in reading, rereading
