@@ -79,6 +79,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.mikepenz.markdown.model.markdownAnnotator
+import com.mikepenz.markdown.model.markdownAnnotatorConfig
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
@@ -105,8 +107,6 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
-
-private val whitespaceLineRegex = Regex("[\\r\\n]{2,}", setOf(RegexOption.MULTILINE))
 
 @Composable
 fun MangaInfoBox(
@@ -354,14 +354,9 @@ fun ExpandableMangaDescription(
         }
         val desc =
             description.takeIf { !it.isNullOrBlank() } ?: stringResource(MR.strings.description_placeholder)
-        val trimmedDescription = remember(desc) {
-            desc
-                .replace(whitespaceLineRegex, "\n")
-                .trimEnd()
-        }
+
         MangaSummary(
-            expandedDescription = desc,
-            shrunkDescription = trimmedDescription,
+            description = desc,
             expanded = expanded,
             notes = notes,
             onEditNotesClicked = onEditNotes,
@@ -828,10 +823,15 @@ private fun ColumnScope.MangaContentInfo(
     }
 }
 
+private val descriptionAnnotator = markdownAnnotator(
+    config = markdownAnnotatorConfig(
+        eolAsNewLine = true,
+    ),
+)
+
 @Composable
 private fun MangaSummary(
-    expandedDescription: String,
-    shrunkDescription: String,
+    description: String,
     notes: String,
     expanded: Boolean,
     onEditNotesClicked: () -> Unit,
@@ -859,9 +859,10 @@ private fun MangaSummary(
                         expanded = true,
                         onEditNotes = onEditNotesClicked,
                     )
-                    Text(
-                        text = expandedDescription,
-                        style = MaterialTheme.typography.bodyMedium,
+                    MarkdownRender(
+                        content = description,
+                        annotator = descriptionAnnotator,
+                        modifier = Modifier.secondaryItemAlpha(),
                     )
                 }
             },
@@ -873,11 +874,9 @@ private fun MangaSummary(
                         onEditNotes = onEditNotesClicked,
                     )
                     SelectionContainer {
-                        Text(
-                            text = if (expanded) expandedDescription else shrunkDescription,
-                            maxLines = Int.MAX_VALUE,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
+                        MarkdownRender(
+                            content = description,
+                            annotator = descriptionAnnotator,
                             modifier = Modifier.secondaryItemAlpha(),
                         )
                     }
