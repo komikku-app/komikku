@@ -86,6 +86,7 @@ open class RecommendsScreenModel(
                             // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
                             page.mangas.map { it.toDomainManga(RECOMMENDS_SOURCE) }
                         }
+                            .distinctBy { it.url }
 
                         if (isActive) {
                             updateItem(recSource, RecommendationItemResult.Success(titles))

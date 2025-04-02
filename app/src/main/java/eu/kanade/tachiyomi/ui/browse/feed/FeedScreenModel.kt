@@ -301,7 +301,9 @@ open class FeedScreenModel(
 
                     val result = withIOContext {
                         itemUI.copy(
-                            results = page.map { it.toDomainManga(itemUI.source!!.id) }
+                            results = page
+                                .map { it.toDomainManga(itemUI.source!!.id) }
+                                .distinctBy { it.url }
                                 .let { networkToLocalManga(it) }
                                 // KMK -->
                                 .filter { !hideInLibraryFeedItems.get() || !it.favorite },
