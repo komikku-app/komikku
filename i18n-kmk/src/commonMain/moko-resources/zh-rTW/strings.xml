@@ -125,4 +125,5 @@
     <string name="action_remove_merged">要從書櫃移除原始條目嗎？</string>
     <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses、Tsumino</string>
     <string name="action_manual_install">手動下載</string>
+    <string name="pref_top_align_cover">將封面與頂部對齊</string>
 </resources>
