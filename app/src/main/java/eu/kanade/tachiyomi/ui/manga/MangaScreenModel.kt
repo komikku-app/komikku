@@ -1151,7 +1151,9 @@ class MangaScreenModel(
                 state.source.getRelatedMangaList(state.manga.toSManga(), { e -> exceptionHandler(e) }) { pair, _ ->
                     /* Push found related mangas into collection */
                     val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
-                        mangaList.map { it.toDomainManga(state.source.id) }
+                        mangaList
+                            .map { it.toDomainManga(state.source.id) }
+                            .distinctBy { it.url }
                             .let { networkToLocalManga(it) }
                     }
 
@@ -2013,17 +2015,10 @@ sealed interface RelatedManga {
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
-                    val stripedList = relatedManga.mangaList.mapNotNull {
-                        if (!mangaIds.contains(it.id)) {
-                            mangaIds.add(it.id)
-                            it
-                        } else {
-                            null
-                        }
-                    }
                     Success(
                         relatedManga.keyword,
-                        stripedList,
+                        relatedManga.mangaList
+                            .filter { mangaIds.add(it.id) },
                     )
                 } else {
                     relatedManga
