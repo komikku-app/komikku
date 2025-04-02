@@ -139,16 +139,11 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                     } else {
                         // KMK <--
                         scope.launchIO {
-                            val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
+                            val duplicates = screenModel.getDuplicateLibraryManga(manga)
                             when {
-                                manga.favorite -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga),
-                                )
-                                duplicateManga != null -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(
-                                        manga,
-                                        duplicateManga,
-                                    ),
+                                manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                                duplicates.isNotEmpty() -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(manga, duplicates),
                                 )
                                 else -> screenModel.addFavorite(manga)
                             }
@@ -167,20 +162,18 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
             is BrowseSourceScreenModel.Dialog.Migrate -> {}
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
+                    duplicates = dialog.duplicates,
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
-                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = {
                         PreMigrationScreen.navigateToMigration(
                             Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                             navigator,
-                            dialog.duplicate.id,
+                            it.id,
                             dialog.manga.id,
                         )
                     },
-                    // KMK -->
-                    duplicate = dialog.duplicate,
-                    // KMK <--
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

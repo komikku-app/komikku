@@ -785,10 +785,10 @@ class MangaScreenModel(
                 // Add to library
                 // First, check if duplicate exists if callback is provided
                 if (checkDuplicate) {
-                    val duplicate = getDuplicateLibraryManga.await(manga).getOrNull(0)
+                    val duplicates = getDuplicateLibraryManga(manga)
 
-                    if (duplicate != null) {
-                        updateSuccessState { it.copy(dialog = Dialog.DuplicateManga(manga, duplicate)) }
+                    if (duplicates.isNotEmpty()) {
+                        updateSuccessState { it.copy(dialog = Dialog.DuplicateManga(manga, duplicates)) }
                         return@launchIO
                     }
                 }
@@ -1737,7 +1737,7 @@ class MangaScreenModel(
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
-        data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog
+        data class DuplicateManga(val manga: Manga, val duplicates: List<Manga>) : Dialog
 
         /* SY -->
         data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
