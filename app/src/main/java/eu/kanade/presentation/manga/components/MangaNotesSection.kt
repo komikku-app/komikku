@@ -39,7 +39,7 @@ fun MangaNotesSection(
     ) {
         MangaNotesDisplay(
             content = content,
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         )
         if (expanded) {
             Button(
