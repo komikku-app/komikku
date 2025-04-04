@@ -514,15 +514,14 @@ class MigrationListScreenModel(
         screenModelScope.launchIO {
             val result = migratingManga.migrationScope.async {
                 val manga = getManga(newMangaId)!!
-                val localManga = networkToLocalManga(manga)
                 try {
                     val source = sourceManager.get(manga.source)!!
-                    val chapters = source.getChapterList(localManga.toSManga())
-                    syncChaptersWithSource.await(chapters, localManga, source)
+                    val chapters = source.getChapterList(manga.toSManga())
+                    syncChaptersWithSource.await(chapters, manga, source)
                 } catch (e: Exception) {
                     return@async null
                 }
-                localManga
+                manga
             }.await()
 
             if (result != null) {
