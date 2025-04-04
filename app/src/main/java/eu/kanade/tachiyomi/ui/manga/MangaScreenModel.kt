@@ -95,6 +95,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -193,7 +194,7 @@ class MangaScreenModel(
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
     // KMK <--
     private val updateMergedSettings: UpdateMergedSettings = Injekt.get(),
-    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val deleteMergeById: DeleteMergeById = Injekt.get(),
     private val getFlatMetadata: GetFlatMetadataById = Injekt.get(),
     private val getPagePreviews: GetPagePreviews = Injekt.get(),
@@ -703,12 +704,10 @@ class MangaScreenModel(
     fun getManga(initialManga: Manga): RuntimeState<Manga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
+                .filterNotNull()
                 .flowWithLifecycle(lifecycle)
                 .collectLatest { manga ->
                     value = manga
-                        // KMK -->
-                        ?: initialManga
-                    // KMK <--
                 }
         }
     }
@@ -1153,9 +1152,7 @@ class MangaScreenModel(
                     /* Push found related mangas into collection */
                     val relatedManga = RelatedManga.Success.fromPair(pair) { mangaList ->
                         mangaList.map {
-                            // KMK -->
-                            it.toDomainManga(state.source.id)
-                            // KMK <--
+                            networkToLocalManga.await(it.toDomainManga(state.source.id))
                         }
                     }
 
@@ -2013,13 +2010,13 @@ sealed interface RelatedManga {
         }
 
         internal fun List<RelatedManga>.removeDuplicates(manga: Manga): List<RelatedManga> {
-            val mangaHashes = HashSet<Int>().apply { add(manga.url.hashCode()) }
+            val mangaIds = HashSet<Long>().apply { add(manga.id) }
 
             return map { relatedManga ->
                 if (relatedManga is Success) {
                     val stripedList = relatedManga.mangaList.mapNotNull {
-                        if (!mangaHashes.contains(it.url.hashCode())) {
-                            mangaHashes.add(it.url.hashCode())
+                        if (!mangaIds.contains(it.id)) {
+                            mangaIds.add(it.id)
                             it
                         } else {
                             null

@@ -79,7 +79,7 @@ fun RelatedMangasCompactGrid(
                     )
                 }
                 items(
-                    key = { "related-compact-${relatedManga.mangaList[it].url.hashCode()}" },
+                    key = { "related-compact-${relatedManga.mangaList[it].id}" },
                     count = relatedManga.mangaList.size,
                 ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])

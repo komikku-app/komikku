@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -44,7 +43,6 @@ import exh.md.follows.MangaDexFollowsScreen
 import exh.source.anyIs
 import exh.source.isEhBasedSource
 import exh.util.nullIfBlank
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -71,7 +69,6 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val context = LocalContext.current
 
         // KMK -->
-        val scope = rememberCoroutineScope()
         screenModel.source.let {
             if (it is StubSource) {
                 MissingSourceScreen(
@@ -130,16 +127,13 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     // onClickDelete = screenModel::openDeleteFeed,
                     onLongClickFeed = screenModel::openActionsDialog,
                     // KMK <--
-                    onClickManga = {
+                    onClickManga = { manga ->
                         // KMK -->
-                        scope.launchIO {
-                            val manga = screenModel.networkToLocalManga.getLocal(it)
-                            if (bulkFavoriteState.selectionMode) {
-                                bulkFavoriteScreenModel.toggleSelection(manga)
-                            } else {
-                                // KMK <--
-                                onMangaClick(navigator, manga)
-                            }
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            onMangaClick(navigator, manga)
                         }
                     },
                     onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
@@ -173,14 +167,11 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                                 .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
                                 .isNotEmpty()
                         },
-                    onLongClickManga = {
-                        scope.launchIO {
-                            val manga = screenModel.networkToLocalManga.getLocal(it)
-                            if (!bulkFavoriteState.selectionMode) {
-                                bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                            } else {
-                                navigator.push(MangaScreen(manga.id, true))
-                            }
+                    onLongClickManga = { manga ->
+                        if (!bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                        } else {
+                            navigator.push(MangaScreen(manga.id, true))
                         }
                     },
                     bulkFavoriteScreenModel = bulkFavoriteScreenModel,
