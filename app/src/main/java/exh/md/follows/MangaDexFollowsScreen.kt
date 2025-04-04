@@ -123,26 +123,22 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onWebViewClick = null,
                 onHelpClick = null,
                 onLocalSourceHelpClick = null,
-                onMangaClick = {
+                onMangaClick = { manga ->
                     // KMK -->
-                    scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
-                        if (bulkFavoriteState.selectionMode) {
-                            bulkFavoriteScreenModel.toggleSelection(manga)
-                        } else {
-                            // KMK <--
-                            navigator.push(MangaScreen(manga.id, true))
-                        }
+                    if (bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.toggleSelection(manga)
+                    } else {
+                        // KMK <--
+                        navigator.push(MangaScreen(manga.id, true))
                     }
                 },
-                onMangaLongClick = {
+                onMangaLongClick = { manga ->
                     // KMK -->
-                    scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
-                        if (bulkFavoriteState.selectionMode) {
-                            navigator.push(MangaScreen(manga.id, true))
-                        } else {
-                            // KMK <--
+                    if (bulkFavoriteState.selectionMode) {
+                        navigator.push(MangaScreen(manga.id, true))
+                    } else {
+                        // KMK <--
+                        scope.launchIO {
                             val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(

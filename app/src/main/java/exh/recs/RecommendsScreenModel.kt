@@ -79,11 +79,13 @@ open class RecommendsScreenModel(
 
                         val titles = page.mangas.map {
                             val recSourceId = recSource.associatedSourceId
-                            // KMK -->
-                            // If the recommendation is associated with a source, resolve it
-                            // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
-                            it.toDomainManga(recSourceId ?: RECOMMENDS_SOURCE)
-                            // KMK <--
+                            if (recSourceId != null) {
+                                // If the recommendation is associated with a source, resolve it
+                                networkToLocalManga.await(it.toDomainManga(recSourceId))
+                            } else {
+                                // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
+                                it.toDomainManga(RECOMMENDS_SOURCE)
+                            }
                         }
 
                         if (isActive) {
