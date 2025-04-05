@@ -50,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -61,8 +60,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMaxOfOrNull
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.components.TabbedDialogPaddings
@@ -194,10 +191,24 @@ private fun DuplicateMangaListItem(
     onOpenManga: () -> Unit,
     onMigrate: () -> Unit,
 ) {
+    // KMK -->
+    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverAlways().collectAsState()
+    val coverRatio = remember { mutableFloatStateOf(1f) }
+    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
+    // KMK <--
+
     val source = getSource()
     Column(
         modifier = Modifier
-            .width(MangaCardWidth)
+            // KMK -->
+            .then(
+                if (usePanoramaCover && coverIsWide) {
+                    Modifier.width(MangaCardPanoramaWidth)
+                } else {
+                    Modifier.width(MangaCardWidth)
+                },
+            )
+            // KMK <--
             .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surface)
             .combinedClickable(
@@ -209,13 +220,34 @@ private fun DuplicateMangaListItem(
             )
             .padding(MaterialTheme.padding.small),
     ) {
-        MangaCover.Book(
-            data = ImageRequest.Builder(LocalContext.current)
-                .data(manga)
-                .crossfade(true)
-                .build(),
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // KMK -->
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            if (usePanoramaCover && coverIsWide) {
+                MangaCover.Panorama(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    data = manga,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                )
+            } else {
+                MangaCover.Book(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    data = manga,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                )
+            }
+        }
+        // KMK <--
 
         Spacer(modifier = Modifier.height(MaterialTheme.padding.extraSmall))
 
@@ -402,10 +434,12 @@ private fun TextMeasurer.measureHeight(
     .size
     .height
 
-private val MangaCardWidth = 150.dp
+private val MangaCardWidth = 152.dp
 private val MangaDetailsIconWidth = 16.dp
 
 // KMK -->
+private val MangaCardPanoramaWidth = 322.dp
+
 @Composable
 fun DuplicateMangasDialog(
     onDismissRequest: () -> Unit,
