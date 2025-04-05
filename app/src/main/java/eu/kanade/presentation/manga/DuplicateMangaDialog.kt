@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -124,14 +124,19 @@ fun DuplicateMangaDialog(
             )
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                modifier = Modifier.height(getMaximumMangaCardHeight(duplicates)),
+                horizontalArrangement = /* KMK --> */ Arrangement.SpaceAround, /* KMK <-- */
+                modifier = Modifier.height(getMaximumMangaCardHeight(duplicates))
+                    // KMK -->
+                    .fillMaxWidth(),
+                // KMK <--
                 contentPadding = horizontalPadding,
             ) {
-                items(
+                // KMK -->
+                itemsIndexed(
+                    // KMK <--
                     items = duplicates,
-                    key = { it.id },
-                ) {
+                    key = { _, it -> it.id },
+                ) { index, it ->
                     DuplicateMangaListItem(
                         manga = it,
                         getSource = { sourceManager.getOrStub(it.source) },
@@ -139,6 +144,12 @@ fun DuplicateMangaDialog(
                         onDismissRequest = onDismissRequest,
                         onOpenManga = { onOpenManga(it) },
                     )
+
+                    // KMK -->
+                    if (index != duplicates.lastIndex) {
+                        Spacer(modifier = Modifier.width(MaterialTheme.padding.small))
+                    }
+                    // KMK <--
                 }
             }
 
