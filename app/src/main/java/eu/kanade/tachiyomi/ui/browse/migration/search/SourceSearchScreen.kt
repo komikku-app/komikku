@@ -21,7 +21,7 @@ import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkAllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
@@ -216,8 +216,8 @@ data class SourceSearchScreen(
         when (bulkFavoriteState.dialog) {
             is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                 ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.BulkAllowDuplicate ->
+                BulkAllowDuplicateDialog(bulkFavoriteScreenModel)
             else -> {}
         }
         // KMK <--

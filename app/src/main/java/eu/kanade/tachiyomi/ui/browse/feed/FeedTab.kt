@@ -27,7 +27,7 @@ import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkAllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
@@ -251,8 +251,8 @@ fun feedTab(
                     ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
                 is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                     ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-                is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                    AllowDuplicateDialog(bulkFavoriteScreenModel)
+                is BulkFavoriteScreenModel.Dialog.BulkAllowDuplicate ->
+                    BulkAllowDuplicateDialog(bulkFavoriteScreenModel)
                 else -> {}
             }
             // KMK <--

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -34,7 +33,6 @@ import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -89,6 +87,13 @@ fun DuplicateMangaDialog(
     onOpenManga: (manga: Manga) -> Unit,
     onMigrate: (manga: Manga) -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
+    bulkFavoriteManga: Manga? = null,
+    onAllowAllDuplicate: () -> Unit = {},
+    onSkipAllDuplicate: () -> Unit = {},
+    onSkipDuplicate: () -> Unit = {},
+    stopRunning: () -> Unit = {},
+    // KMK <--
 ) {
     val sourceManager = remember { Injekt.get<SourceManager>() }
     val minHeight = LocalPreferenceMinHeight.current
@@ -97,7 +102,12 @@ fun DuplicateMangaDialog(
 
     AdaptiveSheet(
         modifier = modifier,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            // KMK -->
+            stopRunning()
+            // KMK <--
+            onDismissRequest()
+        },
     ) {
         Column(
             modifier = Modifier
@@ -137,8 +147,12 @@ fun DuplicateMangaDialog(
                     DuplicateMangaListItem(
                         manga = it,
                         getSource = { sourceManager.getOrStub(it.source) },
-                        onMigrate = { onMigrate(it) },
-                        onDismissRequest = onDismissRequest,
+                        onMigrate = {
+                            // KMK -->
+                            if (bulkFavoriteManga == null) onDismissRequest()
+                            // KMK <--
+                            onMigrate(it)
+                        },
                         onOpenManga = { onOpenManga(it) },
                     )
 
@@ -150,34 +164,115 @@ fun DuplicateMangaDialog(
                 }
             }
 
-            Column(modifier = horizontalPaddingModifier) {
-                HorizontalDivider()
+            // KMK -->
+            if (bulkFavoriteManga != null) {
+                Column(
+                    modifier = horizontalPaddingModifier
+                        .padding(bottom = MaterialTheme.padding.medium),
+                ) {
+                    HorizontalDivider()
 
-                TextPreferenceWidget(
-                    title = stringResource(MR.strings.action_add_anyway),
-                    icon = Icons.Outlined.Add,
-                    onPreferenceClick = {
-                        onDismissRequest()
-                        onConfirm()
-                    },
-                    modifier = Modifier.clip(CircleShape),
-                )
-            }
+                    FlowRow(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                    ) {
+                        FlowColumn {
+                            TextButton(
+                                onClick = {
+                                    onDismissRequest()
+                                    onConfirm()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(KMR.strings.action_allow_duplicate_manga))
+                            }
 
-            OutlinedButton(
-                onClick = onDismissRequest,
-                modifier = Modifier
-                    .then(horizontalPaddingModifier)
-                    .padding(bottom = MaterialTheme.padding.medium)
-                    .heightIn(min = minHeight)
-                    .fillMaxWidth(),
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall),
-                    text = stringResource(MR.strings.action_cancel),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+                            TextButton(
+                                onClick = {
+                                    onDismissRequest()
+                                    onAllowAllDuplicate()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(KMR.strings.action_allow_all_duplicate_manga))
+                            }
+                        }
+
+                        FlowColumn {
+                            TextButton(
+                                onClick = {
+                                    onDismissRequest()
+                                    onSkipDuplicate()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(KMR.strings.action_skip_duplicate_manga))
+                            }
+
+                            TextButton(
+                                onClick = {
+                                    onDismissRequest()
+                                    onSkipAllDuplicate()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(KMR.strings.action_skip_all_duplicate_manga))
+                            }
+                        }
+
+                        FlowColumn {
+                            TextButton(
+                                onClick = {
+                                    onOpenManga(bulkFavoriteManga)
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(MR.strings.action_show_manga))
+                            }
+
+                            TextButton(
+                                onClick = {
+                                    stopRunning()
+                                    onDismissRequest()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(text = stringResource(MR.strings.action_cancel))
+                            }
+                        }
+                    }
+                }
+            } else {
+                // KMK <--
+                Column(modifier = horizontalPaddingModifier) {
+                    HorizontalDivider()
+
+                    TextPreferenceWidget(
+                        title = stringResource(MR.strings.action_add_anyway),
+                        icon = Icons.Outlined.Add,
+                        onPreferenceClick = {
+                            onDismissRequest()
+                            onConfirm()
+                        },
+                        modifier = Modifier.clip(CircleShape),
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .then(horizontalPaddingModifier)
+                        .padding(bottom = MaterialTheme.padding.medium)
+                        .heightIn(min = minHeight)
+                        .fillMaxWidth(),
+                ) {
+                    Text(
+                        modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall),
+                        text = stringResource(MR.strings.action_cancel),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
             }
         }
     }
@@ -187,7 +282,6 @@ fun DuplicateMangaDialog(
 private fun DuplicateMangaListItem(
     manga: Manga,
     getSource: () -> Source,
-    onDismissRequest: () -> Unit,
     onOpenManga: () -> Unit,
     onMigrate: () -> Unit,
 ) {
@@ -213,10 +307,7 @@ private fun DuplicateMangaListItem(
             .background(MaterialTheme.colorScheme.surface)
             .combinedClickable(
                 onLongClick = { onOpenManga() },
-                onClick = {
-                    onDismissRequest()
-                    onMigrate()
-                },
+                onClick = { onMigrate() },
             )
             .padding(MaterialTheme.padding.small),
     ) {
@@ -439,140 +530,4 @@ private val MangaDetailsIconWidth = 16.dp
 
 // KMK -->
 private val MangaCardPanoramaWidth = 322.dp
-
-@Composable
-fun DuplicateMangasDialog(
-    onDismissRequest: () -> Unit,
-    onAllowAllDuplicate: () -> Unit,
-    onSkipAllDuplicate: () -> Unit,
-    onOpenManga: () -> Unit,
-    onAllowDuplicate: () -> Unit,
-    onSkipDuplicate: () -> Unit,
-    stopRunning: () -> Unit,
-    mangaName: String,
-    duplicate: Manga,
-) {
-    val usePanoramaCover by Injekt.get<UiPreferences>().usePanoramaCoverAlways().collectAsState()
-    val coverRatio = remember { mutableFloatStateOf(1f) }
-    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
-
-    AlertDialog(
-        onDismissRequest = {
-            stopRunning()
-            onDismissRequest()
-        },
-        title = {
-            Text(text = mangaName)
-        },
-        text = {
-            Column {
-                Text(text = stringResource(MR.strings.possible_duplicates_title))
-
-                Spacer(Modifier.height(MaterialTheme.padding.medium))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                ) {
-                    if (usePanoramaCover && coverIsWide) {
-                        MangaCover.Panorama(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .heightIn(max = 150.dp),
-                            data = duplicate,
-                            onCoverLoaded = { _, result ->
-                                val image = result.result.image
-                                coverRatio.floatValue = image.height.toFloat() / image.width
-                            },
-                        )
-                    } else {
-                        MangaCover.Book(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .widthIn(max = 150.dp),
-                            data = duplicate,
-                            onCoverLoaded = { _, result ->
-                                val image = result.result.image
-                                coverRatio.floatValue = image.height.toFloat() / image.width
-                            },
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            FlowRow(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-            ) {
-                FlowColumn {
-                    TextButton(
-                        onClick = {
-                            onDismissRequest()
-                            onAllowDuplicate()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(KMR.strings.action_allow_duplicate_manga))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            onDismissRequest()
-                            onAllowAllDuplicate()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(KMR.strings.action_allow_all_duplicate_manga))
-                    }
-                }
-
-                FlowColumn {
-                    TextButton(
-                        onClick = {
-                            onDismissRequest()
-                            onSkipDuplicate()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(KMR.strings.action_skip_duplicate_manga))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            onDismissRequest()
-                            onSkipAllDuplicate()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(KMR.strings.action_skip_all_duplicate_manga))
-                    }
-                }
-
-                FlowColumn {
-                    TextButton(
-                        onClick = {
-                            stopRunning()
-                            onDismissRequest()
-                            onOpenManga()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(MR.strings.action_show_manga))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            stopRunning()
-                            onDismissRequest()
-                        },
-                        Modifier.align(Alignment.CenterHorizontally),
-                    ) {
-                        Text(text = stringResource(MR.strings.action_cancel))
-                    }
-                }
-            }
-        },
-    )
-}
 // KMK <--

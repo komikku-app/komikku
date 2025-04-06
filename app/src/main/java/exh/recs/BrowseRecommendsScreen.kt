@@ -19,7 +19,7 @@ import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkAllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
@@ -178,8 +178,8 @@ class BrowseRecommendsScreen(
                 ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
             is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
                 ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                AllowDuplicateDialog(bulkFavoriteScreenModel)
+            is BulkFavoriteScreenModel.Dialog.BulkAllowDuplicate ->
+                BulkAllowDuplicateDialog(bulkFavoriteScreenModel)
             else -> {}
         }
         // KMK <--
