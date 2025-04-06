@@ -549,7 +549,10 @@ private fun MangaScreenSmallImpl(
                             },
                         ) { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount
+                            val newOffsetX = offsetX + dragAmount
+                            if (!newOffsetX.isNaN()) {
+                                offsetX = newOffsetX
+                            }
                         }
                     },
                 // KMK <--
@@ -1004,7 +1007,10 @@ private fun MangaScreenLargeImpl(
                             },
                         ) { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount
+                            val newOffsetX = offsetX + dragAmount
+                            if (!newOffsetX.isNaN()) {
+                                offsetX = newOffsetX
+                            }
                         }
                     },
                 // KMK <--
