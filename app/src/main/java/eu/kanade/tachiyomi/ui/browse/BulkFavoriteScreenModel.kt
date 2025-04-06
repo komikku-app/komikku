@@ -133,9 +133,16 @@ class BulkFavoriteScreenModel(
     fun addFavorite(startIdx: Int = 0) {
         screenModelScope.launch {
             startRunning()
-            val mangaWithDup = getDuplicateLibraryManga(startIdx)
-            if (mangaWithDup != null) {
-                setDialog(Dialog.AllowDuplicate(mangaWithDup))
+            val entryWithDuplicates = getDuplicateLibraryManga(startIdx)
+            if (entryWithDuplicates != null) {
+                val (index, duplicates) = entryWithDuplicates
+                if (state.value.selection.size == 1) {
+                    val manga = state.value.selection.first()
+                    // If only one manga is selected, show the multiple duplicates dialog.
+                    setDialog(Dialog.AddDuplicateManga(manga, duplicates))
+                } else {
+                    setDialog(Dialog.AllowDuplicate(index to duplicates.first()))
+                }
             } else {
                 addFavoriteDuplicate()
             }
@@ -199,13 +206,13 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Pair<Int, Manga>? {
+    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Pair<Int, List<Manga>>? {
         val mangas = state.value.selection
         mangas.fastForEachIndexed { index, manga ->
             if (index < startIdx) return@fastForEachIndexed
-            val dup = getDuplicateLibraryManga(manga)
-            if (dup.isEmpty()) return@fastForEachIndexed
-            return Pair(index, dup.first())
+            val duplicates = getDuplicateLibraryManga(manga)
+            if (duplicates.isEmpty()) return@fastForEachIndexed
+            return Pair(index, duplicates)
         }
         return null
     }
@@ -435,10 +442,15 @@ fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as BulkFavoriteScreenModel.Dialog.AddDuplicateManga
 
+    bulkFavoriteScreenModel.stopRunning()
+
     DuplicateMangaDialog(
         duplicates = dialog.duplicates,
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
-        onConfirm = { bulkFavoriteScreenModel.addFavorite(dialog.manga) },
+        onConfirm = {
+            bulkFavoriteScreenModel.toggleSelectionMode()
+            bulkFavoriteScreenModel.addFavorite(dialog.manga)
+        },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
         onMigrate = {
             PreMigrationScreen.navigateToMigration(
