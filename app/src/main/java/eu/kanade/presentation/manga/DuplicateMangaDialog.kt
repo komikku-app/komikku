@@ -184,7 +184,7 @@ fun DuplicateMangaDialog(
                                 },
                                 Modifier.align(Alignment.CenterHorizontally),
                             ) {
-                                Text(text = stringResource(KMR.strings.action_allow_duplicate_manga))
+                                Text(text = stringResource(MR.strings.action_add_anyway))
                             }
 
                             TextButton(

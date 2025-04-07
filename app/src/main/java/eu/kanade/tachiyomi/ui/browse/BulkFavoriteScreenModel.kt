@@ -496,11 +496,10 @@ fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
         onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
         onPopScreen = {
+            bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
+            bulkFavoriteScreenModel.dismissDialog()
             if (!dialog.isBulkFavorite) {
                 bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
-                bulkFavoriteScreenModel.dismissDialog()
-                navigator.push(MangaScreen(dialog.newManga.id))
-            } else {
             }
         },
     )
