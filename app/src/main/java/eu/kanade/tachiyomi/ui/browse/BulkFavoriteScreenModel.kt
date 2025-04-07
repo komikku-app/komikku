@@ -26,7 +26,8 @@ import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel.Dialog
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.removeCovers
@@ -43,7 +44,6 @@ import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -388,7 +388,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    private fun setDialog(dialog: Dialog?) {
+    fun setDialog(dialog: Dialog?) {
         mutableState.update {
             it.copy(dialog = dialog)
         }
@@ -413,6 +413,7 @@ class BulkFavoriteScreenModel(
     }
 
     interface Dialog {
+        data class Migrate(val newManga: Manga, val oldManga: Manga, val isBulkFavorite: Boolean) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<Manga>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<Manga>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
@@ -474,7 +475,35 @@ fun BulkFavoriteDialogs(
                     bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
                 },
             )
+
+        is Dialog.Migrate ->
+            ShowMigrateDialog(bulkFavoriteScreenModel)
     }
+}
+
+@Composable
+fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+    val navigator = LocalNavigator.currentOrThrow
+    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
+    val dialog = bulkFavoriteState.dialog as Dialog.Migrate
+
+    bulkFavoriteScreenModel.stopRunning()
+
+    MigrateDialog(
+        oldManga = dialog.oldManga,
+        newManga = dialog.newManga,
+        screenModel = MigrateDialogScreenModel(),
+        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
+        onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
+        onPopScreen = {
+            if (!dialog.isBulkFavorite) {
+                bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
+                bulkFavoriteScreenModel.dismissDialog()
+                navigator.push(MangaScreen(dialog.newManga.id))
+            } else {
+            }
+        },
+    )
 }
 
 /**
@@ -501,11 +530,12 @@ fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
         },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
         onMigrate = {
-            PreMigrationScreen.navigateToMigration(
-                Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                navigator,
-                it.id,
-                dialog.manga.id,
+            bulkFavoriteScreenModel.setDialog(
+                Dialog.Migrate(
+                    newManga = dialog.manga,
+                    oldManga = it,
+                    isBulkFavorite = false,
+                ),
             )
         },
     )
@@ -560,7 +590,15 @@ fun BulkAllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
             bulkFavoriteScreenModel.addFavorite(startIdx = dialog.currentIdx + 1)
         },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
-        onMigrate = { navigator.push(MangaScreen(it.id)) },
+        onMigrate = {
+            bulkFavoriteScreenModel.setDialog(
+                Dialog.Migrate(
+                    newManga = dialog.manga,
+                    oldManga = it,
+                    isBulkFavorite = true,
+                ),
+            )
+        },
         bulkFavoriteManga = dialog.manga,
         onAllowAllDuplicate = bulkFavoriteScreenModel::addFavoriteDuplicate,
         onSkipAllDuplicate = {
