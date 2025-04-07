@@ -207,6 +207,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         }
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,

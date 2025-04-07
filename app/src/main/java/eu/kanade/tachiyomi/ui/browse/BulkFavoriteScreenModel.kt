@@ -453,7 +453,7 @@ fun BulkFavoriteDialogs(
                 bulkFavoriteScreenModel,
                 onConfirm = { include, exclude ->
                     bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
-                }
+                },
             )
 
         is Dialog.BulkAllowDuplicate ->
@@ -472,7 +472,7 @@ fun BulkFavoriteDialogs(
                 onConfirm = { include, _ ->
                     bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
                     bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
-                }
+                },
             )
     }
 }

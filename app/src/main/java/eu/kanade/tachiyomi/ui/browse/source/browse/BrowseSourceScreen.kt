@@ -504,6 +504,7 @@ data class BrowseSourceScreen(
         }
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,

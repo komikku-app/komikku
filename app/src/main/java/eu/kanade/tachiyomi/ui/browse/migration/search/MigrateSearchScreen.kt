@@ -14,6 +14,9 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
+/**
+ * Manual search [validSources] for manga to migrate to.
+ */
 class MigrateSearchScreen(private val mangaId: Long, private val validSources: List<Long>) : Screen() {
 
     @Composable
@@ -73,6 +76,7 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
         )
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,

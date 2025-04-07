@@ -41,7 +41,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
 
 /**
- * Opened when click on a source in [MigrateSearchScreen]
+ * Opened when click on a source in [MigrateSearchScreen] while doing manual search for migration
  */
 data class SourceSearchScreen(
     private val oldManga: Manga,
@@ -212,6 +212,7 @@ data class SourceSearchScreen(
         }
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,
