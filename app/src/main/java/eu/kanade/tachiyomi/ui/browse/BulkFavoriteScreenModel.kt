@@ -293,7 +293,7 @@ class BulkFavoriteScreenModel(
      *
      * @return List of categories, not including the default category
      */
-    internal suspend fun getCategories(): List<Category> {
+    private suspend fun getCategories(): List<Category> {
         return getCategories.subscribe()
             .firstOrNull()
             ?.filterNot { it.isSystemCategory }
