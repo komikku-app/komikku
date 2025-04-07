@@ -123,13 +123,15 @@ class MangaRepositoryImpl(
                 mangasQueries.insertNetworkManga(
                     source = it.source,
                     url = it.url,
-                    artist = it.artist,
-                    author = it.author,
-                    description = it.description,
-                    genre = it.genre,
-                    title = it.title,
-                    status = it.status,
-                    thumbnailUrl = it.thumbnailUrl,
+                    // SY -->
+                    title = it.ogTitle,
+                    artist = it.ogArtist,
+                    author = it.ogAuthor,
+                    thumbnailUrl = it.ogThumbnailUrl,
+                    description = it.ogDescription,
+                    genre = it.ogGenre,
+                    status = it.ogStatus,
+                    // SY <--
                     favorite = it.favorite,
                     lastUpdate = it.lastUpdate,
                     nextUpdate = it.nextUpdate,
@@ -141,6 +143,11 @@ class MangaRepositoryImpl(
                     dateAdded = it.dateAdded,
                     updateStrategy = it.updateStrategy,
                     version = it.version,
+                    // SY -->
+                    updateTitle = it.ogTitle.isNotBlank(),
+                    updateCover = !it.ogThumbnailUrl.isNullOrBlank(),
+                    // SY <--
+                    updateDetails = it.initialized,
                     mapper = MangaMapper::mapManga,
                 )
                     .executeAsOne()
