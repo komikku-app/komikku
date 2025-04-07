@@ -97,10 +97,13 @@ class BulkFavoriteScreenModel(
     fun toggleSelection(manga: Manga, toSelectedState: Boolean? = null) {
         mutableState.update { state ->
             val newSelection = state.selection.mutate { list ->
-                if (toSelectedState != true && list.fastAny { it.id == manga.id }) {
-                    list.removeAll { it.id == manga.id }
-                } else if (toSelectedState != false && list.none { it.id == manga.id }) {
+                val isSelected = list.fastAny { it.id == manga.id }
+                val shouldSelect = toSelectedState ?: !isSelected
+                // Both condition to avoid adding duplicate entries
+                if (shouldSelect && !isSelected) {
                     list.add(manga)
+                } else if (!shouldSelect && isSelected) {
+                    list.removeAll { it.id == manga.id }
                 }
             }
             state.copy(
