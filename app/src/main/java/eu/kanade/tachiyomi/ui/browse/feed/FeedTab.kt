@@ -26,12 +26,8 @@ import eu.kanade.presentation.browse.components.FeedActionsDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
-import eu.kanade.tachiyomi.ui.browse.BulkAllowDuplicateDialog
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
 import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -242,19 +238,10 @@ fun feedTab(
             }
 
             // KMK -->
-            when (bulkFavoriteState.dialog) {
-                is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
-                    AddDuplicateMangaDialog(bulkFavoriteScreenModel)
-                is BulkFavoriteScreenModel.Dialog.RemoveManga ->
-                    RemoveMangaDialog(bulkFavoriteScreenModel)
-                is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
-                    ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
-                is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
-                    ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-                is BulkFavoriteScreenModel.Dialog.BulkAllowDuplicate ->
-                    BulkAllowDuplicateDialog(bulkFavoriteScreenModel)
-                else -> {}
-            }
+            BulkFavoriteDialogs(
+                bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+                dialog = bulkFavoriteState.dialog,
+            )
             // KMK <--
 
             val internalErrString = stringResource(MR.strings.internal_error)
