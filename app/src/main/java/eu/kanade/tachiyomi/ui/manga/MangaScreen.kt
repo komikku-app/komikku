@@ -68,6 +68,8 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -327,9 +329,17 @@ class MangaScreen(
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
-            previewsRowCount = successState.previewsRowCount,
+            onMigrateClicked = {
+                // SY -->
+                PreMigrationScreen.navigateToMigration(
+                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    navigator,
+                    listOfNotNull(successState.manga.id),
+                )
+                // SY <--
+            }.takeIf { successState.manga.favorite },
             // SY -->
-            onMigrateClicked = { migrateManga(navigator, screenModel.manga!!) }.takeIf { successState.manga.favorite },
+            previewsRowCount = successState.previewsRowCount,
             onMetadataViewerClicked = {
                 openMetadataViewer(
                     navigator,
@@ -433,7 +443,6 @@ class MangaScreen(
                     },
                 )
             }
-
             is MangaScreenModel.Dialog.DeleteChapters -> {
                 DeleteChaptersDialog(
                     onDismissRequest = onDismissRequest,
@@ -450,14 +459,20 @@ class MangaScreen(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    onMigrate = {
-                        // SY -->
-                        migrateManga(navigator, it, screenModel.manga!!.id)
-                        // SY <--
-                    },
+                    onMigrate = { screenModel.showMigrateDialog(it) },
                 )
             }
 
+            is MangaScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
+                    oldManga = dialog.oldManga,
+                    newManga = dialog.newManga,
+                    screenModel = MigrateDialogScreenModel(),
+                    onDismissRequest = onDismissRequest,
+                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
+                    onPopScreen = { navigator.replace(MangaScreen(dialog.newManga.id)) },
+                )
+            }
             MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
                 onDismissRequest = onDismissRequest,
                 manga = successState.manga,
@@ -471,7 +486,6 @@ class MangaScreen(
                 scanlatorFilterActive = successState.scanlatorFilterActive,
                 onScanlatorFilterClicked = { showScanlatorsDialog = true },
             )
-
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
                     screen = TrackInfoDialogHomeScreen(
@@ -483,7 +497,6 @@ class MangaScreen(
                     onDismissRequest = onDismissRequest,
                 )
             }
-
             MangaScreenModel.Dialog.FullCover -> {
                 val sm = rememberScreenModel { MangaCoverScreenModel(successState.manga.id) }
                 val manga by sm.state.collectAsState()
@@ -540,7 +553,6 @@ class MangaScreen(
                     LoadingScreen(Modifier.systemBarsPadding())
                 }
             }
-
             is MangaScreenModel.Dialog.SetFetchInterval -> {
                 SetIntervalDialog(
                     interval = dialog.manga.fetchInterval,
@@ -737,21 +749,6 @@ class MangaScreen(
         val source = source_ as? HttpSource ?: return
         val url = source.getMangaUrl(manga.toSManga())
         context.copyToClipboard(url, url)
-    }
-
-    // SY -->
-    /**
-     * Initiates source migration for the specific manga.
-     */
-    private fun migrateManga(navigator: Navigator, manga: Manga, toMangaId: Long? = null) {
-        // SY -->
-        PreMigrationScreen.navigateToMigration(
-            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-            navigator,
-            manga.id,
-            toMangaId,
-        )
-        // SY <--
     }
 
     private fun openMetadataViewer(

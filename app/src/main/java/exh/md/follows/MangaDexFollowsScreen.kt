@@ -24,19 +24,17 @@ import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
 
@@ -158,23 +156,31 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is BrowseSourceScreenModel.Dialog.Migrate -> {}
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
                     duplicates = dialog.duplicates,
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    onMigrate = {
-                        PreMigrationScreen.navigateToMigration(
-                            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                            navigator,
-                            it.id,
-                            dialog.manga.id,
-                        )
+                    // KMK -->
+                    onMigrate = { screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(dialog.manga, it)) },
+                    // KMK <--
+                )
+            }
+            // KMK -->
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
+                    oldManga = dialog.oldManga,
+                    newManga = dialog.newManga,
+                    screenModel = MigrateDialogScreenModel(),
+                    onDismissRequest = onDismissRequest,
+                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
+                    onPopScreen = {
+                        onDismissRequest()
                     },
                 )
             }
+            // KMK <--
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {
                 RemoveMangaDialog(
                     onDismissRequest = onDismissRequest,

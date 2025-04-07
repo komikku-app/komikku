@@ -391,6 +391,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
             )
         }
 
+        /* All usages have been replaced by original Mihon's migration dialog */
         fun navigateToMigration(skipPre: Boolean, navigator: Navigator, fromMangaId: Long, toManga: Long?) {
             navigator.push(
                 if (skipPre) {

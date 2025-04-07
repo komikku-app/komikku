@@ -24,7 +24,6 @@ import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
@@ -126,7 +125,7 @@ fun HistoryScreen(
 
 @Composable
 private fun HistoryScreenContent(
-    history: ImmutableList<HistoryUiModel>,
+    history: List<HistoryUiModel>,
     contentPadding: PaddingValues,
     onClickCover: (HistoryWithRelations) -> Unit,
     onClickResume: (HistoryWithRelations) -> Unit,

@@ -73,7 +73,7 @@ class HistoryScreenModel(
                             logcat(LogPriority.ERROR, error)
                             _events.send(Event.InternalError)
                         }
-                        .map { it.toHistoryUiModels().toImmutableList() }
+                        .map { it.toHistoryUiModels() }
                         .flowOn(Dispatchers.IO)
                 }
                 .collect { newList -> mutableState.update { it.copy(list = newList) } }
@@ -215,6 +215,12 @@ class HistoryScreenModel(
         }
     }
 
+    fun showMigrateDialog(currentManga: Manga, duplicate: Manga) {
+        mutableState.update { currentState ->
+            currentState.copy(dialog = Dialog.Migrate(newManga = currentManga, oldManga = duplicate))
+        }
+    }
+
     private fun showChangeCategoryDialog(manga: Manga) {
         screenModelScope.launch {
             val categories = getCategories()
@@ -233,7 +239,7 @@ class HistoryScreenModel(
     @Immutable
     data class State(
         val searchQuery: String? = null,
-        val list: ImmutableList<HistoryUiModel>? = null,
+        val list: List<HistoryUiModel>? = null,
         val dialog: Dialog? = null,
     )
 
@@ -245,6 +251,7 @@ class HistoryScreenModel(
             val manga: Manga,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
+        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
     }
 
     sealed interface Event {
