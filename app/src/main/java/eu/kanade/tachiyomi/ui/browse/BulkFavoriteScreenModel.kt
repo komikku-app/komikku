@@ -35,6 +35,7 @@ import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.toMangaUpdate
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -193,7 +194,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Triple<Int, Manga, List<Manga>>? {
+    private suspend fun getDuplicateLibraryManga(startIdx: Int = 0): Triple<Int, Manga, List<MangaWithChapterCount>>? {
         val mangas = state.value.selection
         mangas.fastForEachIndexed { index, manga ->
             if (index < startIdx) return@fastForEachIndexed
@@ -406,8 +407,8 @@ class BulkFavoriteScreenModel(
 
     sealed interface Dialog {
         data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
-        data class AddDuplicateManga(val manga: Manga, val duplicates: List<Manga>) : Dialog
-        data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<Manga>, val currentIdx: Int) : Dialog
+        data class AddDuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
+        data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<MangaWithChapterCount>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
         data class ChangeMangasCategory(
             val mangas: List<Manga>,
