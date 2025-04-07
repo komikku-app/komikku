@@ -196,7 +196,7 @@ class BulkFavoriteScreenModel(
                         }
                         .toImmutableList()
                     stopRunning()
-                    setDialog(Dialog.ChangeMangaCategory(mangaList, preselected))
+                    setDialog(Dialog.ChangeMangasCategory(mangaList, preselected))
                 }
             }
         }
@@ -367,7 +367,7 @@ class BulkFavoriteScreenModel(
                 else -> {
                     val preselectedIds = getCategories.await(manga.id).map { it.id }
                     setDialog(
-                        Dialog.ChangeMangaCategory(
+                        Dialog.ChangeMangasCategory(
                             listOf(manga),
                             categories.mapAsCheckboxState { it.id in preselectedIds }.toImmutableList(),
                         ),
@@ -419,12 +419,12 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    interface Dialog {
+    sealed interface Dialog {
         data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<Manga>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<Manga>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
-        data class ChangeMangaCategory(
+        data class ChangeMangasCategory(
             val mangas: List<Manga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
@@ -452,8 +452,8 @@ fun BulkFavoriteDialogs(
 ) {
     when (dialog) {
         /* Bulk-favorite actions */
-        is Dialog.ChangeMangaCategory ->
-            ChangeMangaCategoryDialog(
+        is Dialog.ChangeMangasCategory ->
+            ChangeMangasCategoryDialog(
                 bulkFavoriteScreenModel,
                 onConfirm = { include, exclude ->
                     bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
@@ -472,6 +472,8 @@ fun BulkFavoriteDialogs(
 
         is Dialog.Migrate ->
             ShowMigrateDialog(bulkFavoriteScreenModel)
+
+        else -> {}
     }
 }
 
@@ -554,13 +556,13 @@ private fun RemoveMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
 }
 
 @Composable
-private fun ChangeMangaCategoryDialog(
+private fun ChangeMangasCategoryDialog(
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     onConfirm: (List<Long>, List<Long>) -> Unit,
 ) {
     val navigator = LocalNavigator.currentOrThrow
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
-    val dialog = bulkFavoriteState.dialog as Dialog.ChangeMangaCategory
+    val dialog = bulkFavoriteState.dialog as Dialog.ChangeMangasCategory
 
     ChangeCategoryDialog(
         initialSelection = dialog.initialSelection,
