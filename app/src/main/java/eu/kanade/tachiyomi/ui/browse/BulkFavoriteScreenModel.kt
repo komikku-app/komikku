@@ -499,7 +499,7 @@ private fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
             bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
             bulkFavoriteScreenModel.dismissDialog()
             if (!dialog.isBulkFavorite) {
-                bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
+                navigator.push(MangaScreen(dialog.newManga.id))
             }
         },
     )
