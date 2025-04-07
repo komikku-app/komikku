@@ -449,7 +449,12 @@ fun BulkFavoriteDialogs(
     when (dialog) {
         /* Bulk-favorite actions */
         is Dialog.ChangeMangasCategory ->
-            ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
+            ChangeMangaCategoryDialog(
+                bulkFavoriteScreenModel,
+                onConfirm = { include, exclude ->
+                    bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
+                }
+            )
 
         is Dialog.BulkAllowDuplicate ->
             BulkAllowDuplicateDialog(bulkFavoriteScreenModel)
@@ -462,7 +467,13 @@ fun BulkFavoriteDialogs(
             RemoveMangaDialog(bulkFavoriteScreenModel)
 
         is Dialog.ChangeMangaCategory ->
-            ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
+            ChangeMangaCategoryDialog(
+                bulkFavoriteScreenModel,
+                onConfirm = { include, _ ->
+                    bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
+                    bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
+                }
+            )
     }
 }
 
@@ -515,7 +526,10 @@ fun RemoveMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
 }
 
 @Composable
-fun ChangeMangaCategoryDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
+fun ChangeMangaCategoryDialog(
+    bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    onConfirm: (List<Long>, List<Long>) -> Unit,
+) {
     val navigator = LocalNavigator.currentOrThrow
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as Dialog.ChangeMangaCategory
@@ -524,26 +538,7 @@ fun ChangeMangaCategoryDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
         initialSelection = dialog.initialSelection,
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
         onEditCategories = { navigator.push(CategoryScreen()) },
-        onConfirm = { include, _ ->
-            bulkFavoriteScreenModel.changeMangaFavorite(dialog.manga)
-            bulkFavoriteScreenModel.moveMangaToCategories(dialog.manga, include)
-        },
-    )
-}
-
-@Composable
-fun ChangeMangasCategoryDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
-    val navigator = LocalNavigator.currentOrThrow
-    val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
-    val dialog = bulkFavoriteState.dialog as Dialog.ChangeMangasCategory
-
-    ChangeCategoryDialog(
-        initialSelection = dialog.initialSelection,
-        onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
-        onEditCategories = { navigator.push(CategoryScreen()) },
-        onConfirm = { include, exclude ->
-            bulkFavoriteScreenModel.setMangasCategories(dialog.mangas, include, exclude)
-        },
+        onConfirm = onConfirm,
     )
 }
 
