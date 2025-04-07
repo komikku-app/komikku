@@ -483,7 +483,9 @@ fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
         duplicates = dialog.duplicates,
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
         onConfirm = {
-            bulkFavoriteScreenModel.toggleSelectionMode()
+            if (bulkFavoriteState.selectionMode) {
+                bulkFavoriteScreenModel.toggleSelectionMode()
+            }
             bulkFavoriteScreenModel.addFavorite(dialog.manga)
         },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
