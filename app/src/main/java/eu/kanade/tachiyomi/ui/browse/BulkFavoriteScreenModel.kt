@@ -388,7 +388,11 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    internal fun setDialog(dialog: Dialog?) {
+    internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
+        setDialog(Dialog.Migrate(newManga = manga, oldManga = duplicate))
+    }
+
+    private fun setDialog(dialog: Dialog?) {
         mutableState.update {
             it.copy(dialog = dialog)
         }
@@ -413,7 +417,7 @@ class BulkFavoriteScreenModel(
     }
 
     interface Dialog {
-        data class Migrate(val newManga: Manga, val oldManga: Manga, val isBulkFavorite: Boolean) : Dialog
+        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<Manga>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<Manga>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
@@ -498,8 +502,16 @@ private fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
         onPopScreen = {
             bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
             bulkFavoriteScreenModel.dismissDialog()
-            if (!dialog.isBulkFavorite) {
-                navigator.push(MangaScreen(dialog.newManga.id))
+            when {
+                // `selectionMode` is current state before calling above `toggleSelection`
+                !bulkFavoriteState.selectionMode -> {
+                    navigator.push(MangaScreen(dialog.newManga.id))
+                }
+                // `selection.size` is at current value before calling above `toggleSelection`
+                bulkFavoriteState.selection.size > 1 -> {
+                    // Continue adding favorites
+                    bulkFavoriteScreenModel.addFavorite()
+                }
             }
         },
     )
@@ -529,12 +541,9 @@ private fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenM
         },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
         onMigrate = {
-            bulkFavoriteScreenModel.setDialog(
-                Dialog.Migrate(
-                    newManga = dialog.manga,
-                    oldManga = it,
-                    isBulkFavorite = false,
-                ),
+            bulkFavoriteScreenModel.showMigrateDialog(
+                manga = dialog.manga,
+                duplicate = it,
             )
         },
     )
@@ -590,12 +599,9 @@ private fun BulkAllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreen
         },
         onOpenManga = { navigator.push(MangaScreen(it.id)) },
         onMigrate = {
-            bulkFavoriteScreenModel.setDialog(
-                Dialog.Migrate(
-                    newManga = dialog.manga,
-                    oldManga = it,
-                    isBulkFavorite = true,
-                ),
+            bulkFavoriteScreenModel.showMigrateDialog(
+                manga = dialog.manga,
+                duplicate = it,
             )
         },
         bulkFavoriteManga = dialog.manga,
