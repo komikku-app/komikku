@@ -107,4 +107,6 @@
     <string name="pref_theme_cover_based_style_rainbow">Bahaghari</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
     <string name="action_manual_install">Mano-manong i-install</string>
+    <string name="pref_top_align_cover">Ipantay ang Pabalat sa Itaas</string>
+    <string name="pref_top_align_cover_summary">Ipakita ang pabalat na pumantay sa itaas sa tabi ng impo ng manga</string>
 </resources>
