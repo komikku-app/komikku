@@ -463,7 +463,7 @@ data class BrowseSourceScreen(
                     screenModel = MigrateDialogScreenModel(),
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = { onDismissRequest() },
+                    onPopScreen = onDismissRequest,
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

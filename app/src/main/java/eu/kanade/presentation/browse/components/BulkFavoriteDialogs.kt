@@ -115,16 +115,10 @@ private fun ShowMigrateDialog(
         onPopScreen = {
             toggleSelection(dialog.newManga, false)
             onDismiss()
-            when {
-                // `selectionMode` is current state before calling above `toggleSelection`
-                !state.selectionMode -> {
-                    navigator?.push(MangaScreen(dialog.newManga.id))
-                }
-                // `selection.size` is at current value before calling above `toggleSelection`
-                state.selection.size > 1 -> {
-                    // Continue adding favorites
-                    addFavorite()
-                }
+            // `selection.size` is at current value before calling above `toggleSelection`
+            if (state.selection.size > 1) {
+                // Continue adding favorites
+                addFavorite()
             }
         },
     )
