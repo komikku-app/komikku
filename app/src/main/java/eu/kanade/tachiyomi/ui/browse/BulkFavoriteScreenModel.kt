@@ -136,6 +136,9 @@ class BulkFavoriteScreenModel(
     /**
      * Add mangas to library if there is default category or no category exists.
      * If not, it shows the categories list.
+     *
+     * @param skipAllDuplicates if true, skip all duplicates and add all selected mangas to library.
+     * if false, allow all duplicates and add all selected mangas to library
      */
     internal fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
         screenModelScope.launch {
