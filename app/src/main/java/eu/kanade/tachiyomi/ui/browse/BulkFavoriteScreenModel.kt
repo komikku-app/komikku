@@ -16,7 +16,6 @@ import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
@@ -479,7 +478,7 @@ fun BulkFavoriteDialogs(
 
 @Composable
 private fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navigator = LocalNavigator.current
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as Dialog.Migrate
 
@@ -490,14 +489,14 @@ private fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
         newManga = dialog.newManga,
         screenModel = MigrateDialogScreenModel(),
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
-        onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
+        onClickTitle = { navigator?.push(MangaScreen(dialog.oldManga.id)) },
         onPopScreen = {
             bulkFavoriteScreenModel.toggleSelection(dialog.newManga, toSelectedState = false)
             bulkFavoriteScreenModel.dismissDialog()
             when {
                 // `selectionMode` is current state before calling above `toggleSelection`
                 !bulkFavoriteState.selectionMode -> {
-                    navigator.push(MangaScreen(dialog.newManga.id))
+                    navigator?.push(MangaScreen(dialog.newManga.id))
                 }
                 // `selection.size` is at current value before calling above `toggleSelection`
                 bulkFavoriteState.selection.size > 1 -> {
@@ -516,7 +515,7 @@ private fun ShowMigrateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) 
  */
 @Composable
 private fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navigator = LocalNavigator.current
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as Dialog.AddDuplicateManga
 
@@ -531,7 +530,7 @@ private fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenM
             }
             bulkFavoriteScreenModel.addFavorite(dialog.manga)
         },
-        onOpenManga = { navigator.push(MangaScreen(it.id)) },
+        onOpenManga = { navigator?.push(MangaScreen(it.id)) },
         onMigrate = {
             bulkFavoriteScreenModel.showMigrateDialog(
                 manga = dialog.manga,
@@ -560,14 +559,14 @@ private fun ChangeMangasCategoryDialog(
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     onConfirm: (List<Long>, List<Long>) -> Unit,
 ) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navigator = LocalNavigator.current
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as Dialog.ChangeMangasCategory
 
     ChangeCategoryDialog(
         initialSelection = dialog.initialSelection,
         onDismissRequest = bulkFavoriteScreenModel::dismissDialog,
-        onEditCategories = { navigator.push(CategoryScreen()) },
+        onEditCategories = { navigator?.push(CategoryScreen()) },
         onConfirm = onConfirm,
     )
 }
@@ -579,7 +578,7 @@ private fun ChangeMangasCategoryDialog(
  */
 @Composable
 private fun BulkAllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navigator = LocalNavigator.current
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     val dialog = bulkFavoriteState.dialog as Dialog.BulkAllowDuplicate
 
@@ -589,7 +588,7 @@ private fun BulkAllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreen
         onConfirm = {
             bulkFavoriteScreenModel.addFavorite(startIdx = dialog.currentIdx + 1)
         },
-        onOpenManga = { navigator.push(MangaScreen(it.id)) },
+        onOpenManga = { navigator?.push(MangaScreen(it.id)) },
         onMigrate = {
             bulkFavoriteScreenModel.showMigrateDialog(
                 manga = dialog.manga,
