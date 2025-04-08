@@ -175,9 +175,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                     screenModel = MigrateDialogScreenModel(),
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = {
-                        onDismissRequest()
-                    },
+                    onPopScreen = { onDismissRequest() },
                 )
             }
             // KMK <--

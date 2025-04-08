@@ -147,12 +147,7 @@ fun DuplicateMangaDialog(
                     DuplicateMangaListItem(
                         manga = it,
                         getSource = { sourceManager.getOrStub(it.source) },
-                        onMigrate = {
-                            // KMK -->
-                            if (bulkFavoriteManga == null) onDismissRequest()
-                            // KMK <--
-                            onMigrate(it)
-                        },
+                        onMigrate = { onMigrate(it) },
                         onOpenManga = { onOpenManga(it) },
                     )
 
