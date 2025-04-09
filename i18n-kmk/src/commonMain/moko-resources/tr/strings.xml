@@ -95,10 +95,10 @@
     <string name="action_scroll_to_top">Scroll to top</string>
     <string name="action_scroll_to_next">Scroll to next</string>
     <string name="pref_manga_info">Manga Info</string>
-    <string name="manual_download">Manuel indirme</string>
+    <string name="manual_download">El ile indirme</string>
     <string name="open">Aç</string>
     <string name="release_page">Release page</string>
-    <string name="auto_update_app_disable_auto_download">Güncellemeyi otomatik yükleme</string>
+    <string name="auto_update_app_disable_auto_download">Otomatik indirmeyi devre dışı bırak</string>
     <string name="action_remove_merged">Remove original entries from library?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="auto_update_app">Uygulamayı otomatik güncelle</string>
