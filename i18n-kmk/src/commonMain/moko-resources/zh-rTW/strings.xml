@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">每 6 小時</string>
     <string name="download_cache_renew_interval_12hour">每 12 小時</string>
     <string name="download_cache_renew_interval_24hour">每 24 小時</string>
-    <string name="download_cache_renew_interval_info">如果設置為「手動」，則需刷新每本漫畫或在「進階」選項中使用「清除下載索引」功能</string>
+    <string name="download_cache_renew_interval_info">如果設置為手動，則需要刷新每部漫畫或使用進階中的重新索引下載操作</string>
     <string name="pref_clean_invalid_downloads">清理無效下載</string>
     <string name="pref_clean_invalid_downloads_summary">查找並刪除所有未儲存在您的書櫃中的下載、文件和資料夾</string>
     <string name="invalid_downloads_cleaned">已清理無效下載</string>
@@ -125,4 +125,6 @@
     <string name="action_remove_merged">要從書櫃移除原始條目嗎？</string>
     <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses、Tsumino</string>
     <string name="action_manual_install">手動下載</string>
+    <string name="pref_top_align_cover">將封面與頂部對齊</string>
+    <string name="pref_top_align_cover_summary">將封面與頂部對齊並顯示漫畫資訊</string>
 </resources>

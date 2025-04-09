@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Pesquisar fonte</string>
+    <string name="action_source_search">Pesquisar na fonte</string>
     <string name="action_toggle_nsfw_only">Ativar/desativar somente NSFW</string>
     <string name="action_bulk_select">Modo de seleção em massa</string>
     <string name="action_faq_and_guides">FAQ e Guias</string>
@@ -118,6 +118,6 @@
     <string name="action_copy_to_clipboard_second_page">Copiar a segunda página para área de transferência</string>
     <string name="action_copy_to_clipboard_combined_page">Copiar página combinada para área de transferência</string>
     <string name="auto_update_app_disable_auto_download">Não baixar a atualização automaticamente</string>
-    <string name="action_remove_merged">Remover postagens originais da biblioteca?</string>
+    <string name="action_remove_merged">Remover entradas originais da biblioteca?</string>
     <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
 </resources>
