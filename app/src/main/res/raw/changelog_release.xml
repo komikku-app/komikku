@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.13.1" changeDate="April 09, 2025">
+        <changelogtext>[b]Fix:[/b] Mark existing duplicate read chapters as read option not working in some cases</changelogtext>
+        <changelogtext>[b]Fix:[/b] NaN crash when dragging `Start/Resume` reading button in MangaScreen</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.13.0" changeDate="March 28, 2025">
         <changelogtext>[b]New:[/b] feat: unify recommendation screens combine MAL, AniList, MangaUpdates, MangaDex, Comick</changelogtext>
         <changelogtext>[b]New:[/b] Support for private tracking with AniList, Bangumi, Kitsu</changelogtext>
@@ -16,6 +20,7 @@
         <changelogtext>[b]New:[/b] Add option to export minimal library information to a CSV file</changelogtext>
         <changelogtext>[b]New:[/b] Add "Monochrome" theme</changelogtext>
         <changelogtext>[b]New:[/b] Add prefix search to search by internal DB ID</changelogtext>
+        <changelogtext>[b]Improve:[/b] Update view's UI &amp; order (always show latest unread chapter first) (cuong-tran)</changelogtext>
         <changelogtext>[b]Improve:[/b] (EditMergedSettings): Allow open merge children manga</changelogtext>
         <changelogtext>[b]Improve:[/b] Apply "Downloaded only" filter to all entries regardless of favourite status</changelogtext>
         <changelogtext>[b]Improve:[/b] Remove alphabetical category/feed sort option</changelogtext>
