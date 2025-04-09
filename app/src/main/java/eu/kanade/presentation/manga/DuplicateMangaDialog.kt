@@ -147,12 +147,7 @@ fun DuplicateMangaDialog(
                     DuplicateMangaListItem(
                         manga = it,
                         getSource = { sourceManager.getOrStub(it.source) },
-                        onMigrate = {
-                            // KMK -->
-                            if (bulkFavoriteManga == null) onDismissRequest()
-                            // KMK <--
-                            onMigrate(it)
-                        },
+                        onMigrate = { onMigrate(it) },
                         onOpenManga = { onOpenManga(it) },
                     )
 
@@ -184,7 +179,7 @@ fun DuplicateMangaDialog(
                                 },
                                 Modifier.align(Alignment.CenterHorizontally),
                             ) {
-                                Text(text = stringResource(KMR.strings.action_allow_duplicate_manga))
+                                Text(text = stringResource(MR.strings.action_add_anyway))
                             }
 
                             TextButton(

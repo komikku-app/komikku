@@ -102,10 +102,7 @@ internal fun MigrateDialog(
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
                 ) {
                     TextButton(
-                        onClick = {
-                            onDismissRequest()
-                            onClickTitle()
-                        },
+                        onClick = { onClickTitle() },
                     ) {
                         Text(text = stringResource(MR.strings.action_show_manga))
                     }

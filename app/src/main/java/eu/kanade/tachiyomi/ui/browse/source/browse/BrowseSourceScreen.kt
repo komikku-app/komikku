@@ -40,6 +40,7 @@ import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
@@ -52,7 +53,6 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
@@ -463,9 +463,7 @@ data class BrowseSourceScreen(
                     screenModel = MigrateDialogScreenModel(),
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = {
-                        onDismissRequest()
-                    },
+                    onPopScreen = { onDismissRequest() },
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {
@@ -504,6 +502,7 @@ data class BrowseSourceScreen(
         }
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,

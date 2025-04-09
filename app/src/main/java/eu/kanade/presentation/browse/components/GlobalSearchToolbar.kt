@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR

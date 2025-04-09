@@ -22,13 +22,13 @@ import eu.kanade.presentation.browse.FeedAddDialog
 import eu.kanade.presentation.browse.FeedAddSearchDialog
 import eu.kanade.presentation.browse.FeedOrderScreen
 import eu.kanade.presentation.browse.FeedScreen
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.FeedActionsDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
+import eu.kanade.presentation.browse.components.bulkSelectionButton
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen

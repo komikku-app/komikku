@@ -14,7 +14,6 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR

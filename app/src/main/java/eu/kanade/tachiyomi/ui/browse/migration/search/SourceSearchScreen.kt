@@ -16,14 +16,14 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
+import eu.kanade.presentation.browse.components.bulkSelectionButton
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
@@ -41,7 +41,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
 
 /**
- * Opened when click on a source in [MigrateSearchScreen]
+ * Opened when click on a source in [MigrateSearchScreen] while doing manual search for migration
  */
 data class SourceSearchScreen(
     private val oldManga: Manga,
@@ -212,6 +212,7 @@ data class SourceSearchScreen(
         }
 
         // KMK -->
+        // Bulk-favorite actions only
         BulkFavoriteDialogs(
             bulkFavoriteScreenModel = bulkFavoriteScreenModel,
             dialog = bulkFavoriteState.dialog,

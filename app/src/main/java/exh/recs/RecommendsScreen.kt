@@ -10,8 +10,8 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.ui.browse.BulkFavoriteDialogs
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
