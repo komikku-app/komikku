@@ -834,15 +834,15 @@ class ReaderActivity : BaseActivity() {
             ?.pages
             ?.forEachIndexed { _, page ->
                 var shouldQueuePage = false
-                if (page.status == Page.State.ERROR) {
+                if (page.status == Page.State.Error) {
                     shouldQueuePage = true
-                } /*else if (page.status == Page.LOAD_PAGE ||
-                                    page.status == Page.DOWNLOAD_IMAGE) {
+                } /*else if (page.status == Page.State.LoadPage ||
+                                    page.status == Page.State.DownloadImage) {
                                 // Do nothing
                             }*/
 
                 if (shouldQueuePage) {
-                    page.status = Page.State.QUEUE
+                    page.status = Page.State.Queue
                 } else {
                     return@forEachIndexed
                 }
@@ -875,11 +875,11 @@ class ReaderActivity : BaseActivity() {
             return
         }
 
-        if (curPage.status == Page.State.ERROR) {
+        if (curPage.status == Page.State.Error) {
             toast(SYMR.strings.eh_boost_page_errored)
-        } else if (curPage.status == Page.State.LOAD_PAGE || curPage.status == Page.State.DOWNLOAD_IMAGE) {
+        } else if (curPage.status == Page.State.LoadPage || curPage.status == Page.State.DownloadImage) {
             toast(SYMR.strings.eh_boost_page_downloading)
-        } else if (curPage.status == Page.State.READY) {
+        } else if (curPage.status == Page.State.Ready) {
             toast(SYMR.strings.eh_boost_page_downloaded)
         } else {
             val loader = (viewModel.state.value.viewerChapters?.currChapter?.pageLoader as? HttpPageLoader)
