@@ -62,7 +62,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-object AboutScreen : Screen() {
+class AboutScreen : Screen() {
     private fun readResolve(): Any = AboutScreen
 
     @Composable
@@ -78,10 +78,6 @@ object AboutScreen : Screen() {
         var isCheckingWhatsNew by remember { mutableStateOf(false) }
         var isCheckingWhatsComing by remember { mutableStateOf(false) }
         // KMK <--
-
-        // SY -->
-        var showWhatsNewDialog by remember { mutableStateOf(false) }
-        // SY <--
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -295,13 +291,6 @@ object AboutScreen : Screen() {
                 }
             }
         }
-
-        // SY -->
-        // KMK: Unused now
-        if (showWhatsNewDialog) {
-            WhatsNewDialog(onDismissRequest = { showWhatsNewDialog = false })
-        }
-        // SY <--
     }
 
     /**
@@ -343,76 +332,81 @@ object AboutScreen : Screen() {
         }
     }
 
-    // KMK -->
-    private suspend fun getReleaseNotes(
-        context: Context,
-        onAvailableUpdate: (GetApplicationRelease.Result.NewUpdate) -> Unit,
-        onFinish: () -> Unit,
-    ) {
-        val updateChecker = AppUpdateChecker()
-        withUIContext {
-            try {
-                when (val result = withIOContext { updateChecker.getReleaseNotes() }) {
-                    is GetApplicationRelease.Result.NewUpdate -> {
-                        onAvailableUpdate(result)
-                    }
-                    else -> {}
-                }
-            } catch (e: Exception) {
-                context.toast(e.message)
-                logcat(LogPriority.ERROR, e)
-            } finally {
-                onFinish()
-            }
-        }
-    }
-    // KMK <--
+    companion object {
+        // KMK -->
+        suspend fun getReleaseNotes(
+            context: Context,
+            onAvailableUpdate: (GetApplicationRelease.Result.NewUpdate) -> Unit,
+            onFinish: () -> Unit,
+        ) {
+            val updateChecker = AppUpdateChecker()
+            withUIContext {
+                try {
+                    when (val result = withIOContext { updateChecker.getReleaseNotes() }) {
+                        is GetApplicationRelease.Result.NewUpdate -> {
+                            onAvailableUpdate(result)
+                        }
 
-    fun getVersionName(withBuildDate: Boolean): String {
-        return when {
-            isDebugBuildType -> {
-                "Debug ${BuildConfig.COMMIT_SHA}".let {
-                    if (withBuildDate) {
-                        "$it (${getFormattedBuildTime()})"
-                    } else {
-                        it
+                        else -> {}
                     }
-                }
-            }
-            isPreviewBuildType -> {
-                "Beta r${BuildConfig.COMMIT_COUNT}".let {
-                    if (withBuildDate) {
-                        "$it (${BuildConfig.COMMIT_SHA}, ${getFormattedBuildTime()})"
-                    } else {
-                        "$it (${BuildConfig.COMMIT_SHA})"
-                    }
-                }
-            }
-            else -> {
-                "Stable ${BuildConfig.VERSION_NAME}".let {
-                    if (withBuildDate) {
-                        "$it (${getFormattedBuildTime()})"
-                    } else {
-                        it
-                    }
+                } catch (e: Exception) {
+                    context.toast(e.message)
+                    logcat(LogPriority.ERROR, e)
+                } finally {
+                    onFinish()
                 }
             }
         }
-    }
+        // KMK <--
 
-    internal fun getFormattedBuildTime(): String {
-        return try {
-            LocalDateTime.ofInstant(
-                Instant.parse(BuildConfig.BUILD_TIME),
-                ZoneId.systemDefault(),
-            )
-                .toDateTimestampString(
-                    UiPreferences.dateFormat(
-                        Injekt.get<UiPreferences>().dateFormat().get(),
-                    ),
+        fun getVersionName(withBuildDate: Boolean): String {
+            return when {
+                isDebugBuildType -> {
+                    "Debug ${BuildConfig.COMMIT_SHA}".let {
+                        if (withBuildDate) {
+                            "$it (${getFormattedBuildTime()})"
+                        } else {
+                            it
+                        }
+                    }
+                }
+
+                isPreviewBuildType -> {
+                    "Beta r${BuildConfig.COMMIT_COUNT}".let {
+                        if (withBuildDate) {
+                            "$it (${BuildConfig.COMMIT_SHA}, ${getFormattedBuildTime()})"
+                        } else {
+                            "$it (${BuildConfig.COMMIT_SHA})"
+                        }
+                    }
+                }
+
+                else -> {
+                    "Stable ${BuildConfig.VERSION_NAME}".let {
+                        if (withBuildDate) {
+                            "$it (${getFormattedBuildTime()})"
+                        } else {
+                            it
+                        }
+                    }
+                }
+            }
+        }
+
+        internal fun getFormattedBuildTime(): String {
+            return try {
+                LocalDateTime.ofInstant(
+                    Instant.parse(BuildConfig.BUILD_TIME),
+                    ZoneId.systemDefault(),
                 )
-        } catch (e: Exception) {
-            BuildConfig.BUILD_TIME
+                    .toDateTimestampString(
+                        UiPreferences.dateFormat(
+                            Injekt.get<UiPreferences>().dateFormat().get(),
+                        ),
+                    )
+            } catch (e: Exception) {
+                BuildConfig.BUILD_TIME
+            }
         }
     }
 }

@@ -255,7 +255,7 @@ object SettingsMainScreen : Screen() {
                 "${stringResource(MR.strings.app_name)} ${AboutScreen.getVersionName(withBuildDate = false)}"
             },
             icon = Icons.Outlined.Info,
-            screen = AboutScreen,
+            screen = AboutScreen(),
         ),
     )
 }
