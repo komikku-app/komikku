@@ -1,8 +1,10 @@
 package eu.kanade.presentation.more.settings.screen.advanced
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,16 +45,16 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
+import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.data.Database
 import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -73,18 +76,45 @@ class ClearDatabaseScreen : Screen() {
             is ClearDatabaseScreenModel.State.Loading -> LoadingScreen()
             is ClearDatabaseScreenModel.State.Ready -> {
                 if (s.showConfirmation) {
-                    // SY -->
                     var keepReadManga by remember { mutableStateOf(true) }
-                    // SY <--
                     AlertDialog(
+                        title = {
+                            Text(text = stringResource(MR.strings.are_you_sure))
+                        },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                            ) {
+                                Text(text = stringResource(MR.strings.clear_database_text))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = stringResource(MR.strings.clear_db_exclude_read),
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Switch(
+                                        checked = keepReadManga,
+                                        onCheckedChange = { keepReadManga = it },
+                                    )
+                                }
+                                if (!keepReadManga) {
+                                    Text(
+                                        text = stringResource(MR.strings.clear_database_history_warning),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                }
+                            }
+                        },
                         onDismissRequest = model::hideConfirmation,
                         confirmButton = {
                             TextButton(
                                 onClick = {
                                     scope.launchUI {
-                                        // SY -->
                                         model.removeMangaBySourceId(keepReadManga)
-                                        // SY <--
                                         model.clearSelection()
                                         model.hideConfirmation()
                                         context.toast(MR.strings.clear_database_completed)
@@ -98,20 +128,6 @@ class ClearDatabaseScreen : Screen() {
                             TextButton(onClick = model::hideConfirmation) {
                                 Text(text = stringResource(MR.strings.action_cancel))
                             }
-                        },
-                        text = {
-                            // SY -->
-                            Column {
-                                // SY <--
-                                Text(text = stringResource(MR.strings.clear_database_confirmation))
-                                // SY -->
-                                LabeledCheckbox(
-                                    label = stringResource(SYMR.strings.clear_db_exclude_read),
-                                    checked = keepReadManga,
-                                    onCheckedChange = { keepReadManga = it },
-                                )
-                            }
-                            // SY <--
                         },
                     )
                 }
@@ -224,15 +240,9 @@ private class ClearDatabaseScreenModel : StateScreenModel<ClearDatabaseScreenMod
         }
     }
 
-    suspend fun removeMangaBySourceId(/* SY --> */keepReadManga: Boolean /* SY <-- */) = withNonCancellableContext {
+    suspend fun removeMangaBySourceId(keepReadManga: Boolean) = withNonCancellableContext {
         val state = state.value as? State.Ready ?: return@withNonCancellableContext
-        // SY -->
-        if (keepReadManga) {
-            database.mangasQueries.deleteMangasNotInLibraryAndNotReadBySourceIds(state.selection)
-        } else {
-            database.mangasQueries.deleteMangasNotInLibraryBySourceIds(state.selection)
-        }
-        // SY <--
+        database.mangasQueries.deleteNonLibraryManga(state.selection, keepReadManga.toLong())
         database.historyQueries.removeResettedHistory()
     }
 
