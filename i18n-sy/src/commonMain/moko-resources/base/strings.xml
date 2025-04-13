@@ -356,6 +356,7 @@
 
     <!-- Double page spread -->
     <string name="page_layout">Page layout</string>
+    <string name="pref_disable_zoom">Disable Zoom</string>
     <string name="shift_double_pages">Shift one page over</string>
     <string name="double_pages">Double pages</string>
     <string name="single_page">Single page</string>
