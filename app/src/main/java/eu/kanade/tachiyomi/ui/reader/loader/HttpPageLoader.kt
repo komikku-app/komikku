@@ -119,7 +119,7 @@ internal class HttpPageLoader(
         }
 
         // Automatically retry failed pages when subscribed to this page
-        if (page.status == Page.State.Error) {
+        if (page.status is Page.State.Error) {
             page.status = Page.State.Queue
         }
 
@@ -144,7 +144,7 @@ internal class HttpPageLoader(
      * Retries a page. This method is only called from user interaction on the viewer.
      */
     override fun retryPage(page: ReaderPage) {
-        if (page.status == Page.State.Error) {
+        if (page.status is Page.State.Error) {
             page.status = Page.State.Queue
         }
         // EXH -->
@@ -227,7 +227,7 @@ internal class HttpPageLoader(
             page.stream = { chapterCache.getImageFile(imageUrl).inputStream() }
             page.status = Page.State.Ready
         } catch (e: Throwable) {
-            page.status = Page.State.Error
+            page.status = Page.State.Error(e)
             if (e is CancellationException) {
                 throw e
             }
