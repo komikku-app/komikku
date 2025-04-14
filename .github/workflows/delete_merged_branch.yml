@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [closed]
 
+permissions:
+  contents: write
+
 jobs:
   delete_merged_branch:
     runs-on: 'ubuntu-24.04'

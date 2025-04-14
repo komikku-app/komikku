@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened]
 
+permissions:
+  contents: write
+
 jobs:
   label_pr:
     runs-on: 'ubuntu-24.04'

@@ -15,7 +15,7 @@ jobs:
       - name: Update website on release
         uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
         with:
-          workflow: deploy
+          workflow: Deploy
           repo: komikku-app/komikku-app.github.io
           ref: "refs/heads/main"
           token: "${{ secrets.BOT_PAT }}"
