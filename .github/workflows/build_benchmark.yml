@@ -59,7 +59,6 @@ jobs:
   build-app:
     runs-on: 'ubuntu-24.04'
     needs: prepare-build
-    if: startsWith(github.ref, 'refs/tags') && github.repository == 'komikku-app/komikku'
     steps:
       - name: Clone Repository (${{ needs.prepare-build.outputs.TAG_NAME }})
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
